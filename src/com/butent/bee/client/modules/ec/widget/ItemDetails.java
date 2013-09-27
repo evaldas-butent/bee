@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
@@ -27,7 +28,6 @@ public class ItemDetails extends Flow {
   public static final String STYLE_PRIMARY = "ItemDetails";
 
   private static final String STYLE_CONTAINER = "container";
-  private static final String STYLE_LABEL = "label";
   private static final String STYLE_WRAPPER = "wrapper";
   private static final String STYLE_TABLE = "table";
 
@@ -36,6 +36,12 @@ public class ItemDetails extends Flow {
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
     int price = item.getPrice();
+
+    CartAccumulator accumulator = new CartAccumulator(item, 1);
+    accumulator.addStyleName(stylePrefix + "cart");
+
+    container.add(accumulator);
+
     if (price > 0) {
       String priceInfo = BeeUtils.joinWords(Localized.getConstants().ecItemPrice()
           + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
@@ -44,11 +50,6 @@ public class ItemDetails extends Flow {
 
       container.add(itemPrice);
     }
-
-    CartAccumulator accumulator = new CartAccumulator(item, 1);
-    accumulator.addStyleName(stylePrefix + "cart");
-
-    container.add(accumulator);
 
     return container;
   }
@@ -60,10 +61,6 @@ public class ItemDetails extends Flow {
 
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "carTypes-");
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-
-    Label caption = new Label(Localized.getConstants().ecItemDetailsCarTypes());
-    caption.addStyleName(stylePrefix + STYLE_LABEL);
-    container.add(caption);
 
     Flow wrapper = new Flow(stylePrefix + STYLE_WRAPPER);
 
@@ -142,10 +139,6 @@ public class ItemDetails extends Flow {
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "oeNumbers-");
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
-    Label caption = new Label(Localized.getConstants().ecItemDetailsOeNumbers());
-    caption.addStyleName(stylePrefix + STYLE_LABEL);
-    container.add(caption);
-
     Flow wrapper = new Flow(stylePrefix + STYLE_WRAPPER);
 
     String styleNumber = stylePrefix + "number";
@@ -179,10 +172,6 @@ public class ItemDetails extends Flow {
 
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "remainders-");
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-
-    Label caption = new Label(Localized.getConstants().ecItemDetailsRemainders());
-    caption.addStyleName(stylePrefix + STYLE_LABEL);
-    container.add(caption);
 
     HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
 
@@ -218,10 +207,6 @@ public class ItemDetails extends Flow {
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "suppliers-");
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
-    Label caption = new Label(Localized.getConstants().ecItemDetailsSuppliers());
-    caption.addStyleName(stylePrefix + STYLE_LABEL);
-    container.add(caption);
-
     HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
 
     int row = 0;
@@ -244,6 +229,53 @@ public class ItemDetails extends Flow {
     container.add(wrapper);
 
     return container;
+  }
+
+  private static Widget renderTabbedPages(EcItem item, EcItemInfo info) {
+    if (item == null || info == null) {
+      return null;
+    }
+
+    TabbedPages widget = new TabbedPages();
+    Widget remainders = renderRemainders(item);
+    Widget oeNumbers = renderOeNumbers(info);
+    Widget suppliers = renderSuppliers(item);
+    Widget carTypes = renderCarTypes(info);
+
+    int tabIndex = 0;
+
+    if (remainders != null) {
+      StyleUtils.makeAbsolute(remainders);
+      StyleUtils.setLeft(remainders, 0);
+
+      widget.insert(remainders, Localized.getConstants().ecItemDetailsRemainders(), tabIndex);
+      tabIndex++;
+    }
+
+    if (oeNumbers != null) {
+      StyleUtils.makeAbsolute(oeNumbers);
+
+      widget.insert(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers(),
+          tabIndex);
+      tabIndex++;
+    }
+
+    if (suppliers != null) {
+      StyleUtils.makeAbsolute(suppliers);
+      StyleUtils.setLeft(suppliers, 0);
+
+      widget.insert(suppliers, Localized.getConstants().ecItemDetailsSuppliers(), tabIndex);
+      tabIndex++;
+    }
+
+    if (carTypes != null) {
+      StyleUtils.makeAbsolute(carTypes);
+
+      widget.insert(carTypes, Localized.getConstants().ecItemDetailsCarTypes(), tabIndex);
+      tabIndex++;
+    }
+
+    return widget;
   }
 
   public ItemDetails(EcItem item, EcItemInfo info, boolean allowAddToCart) {
@@ -285,65 +317,22 @@ public class ItemDetails extends Flow {
       if (addToCart != null) {
         StyleUtils.makeAbsolute(addToCart);
         StyleUtils.setRight(addToCart, 0);
-        StyleUtils.setTop(addToCart, 0);
+        StyleUtils.setTop(addToCart, heightMargin);
 
         add(addToCart);
       }
     }
 
-    Widget remainders = renderRemainders(item);
-    Widget oeNumbers = renderOeNumbers(info);
-    Widget suppliers = renderSuppliers(item);
-    Widget carTypes = renderCarTypes(info);
-
-    int remaindersWidth = Math.min(width / 5, 160);
-    int oeNumbersWidth = Math.min(width / 6, 140);
-    int brandsWidth = Math.max(remaindersWidth + oeNumbersWidth, width / 3);
-    int carTypesWidth = width - brandsWidth - widthMargin;
+    Widget itemDataTabs = renderTabbedPages(item, info);
 
     int top2 = rowHeight + heightMargin;
 
-    int h3 = (suppliers == null) ? 0 : rowHeight / 2;
-    int h2 = rowHeight - h3;
+    if (itemDataTabs != null) {
 
-    if (remainders != null) {
-      StyleUtils.makeAbsolute(remainders);
-      StyleUtils.setLeft(remainders, 0);
-      StyleUtils.setWidth(remainders, remaindersWidth);
-      StyleUtils.setTop(remainders, top2);
-      StyleUtils.setHeight(remainders, h2);
+      StyleUtils.setTop(itemDataTabs, top2);
+      StyleUtils.setHeight(itemDataTabs, rowHeight);
 
-      add(remainders);
-    }
-
-    if (oeNumbers != null) {
-      StyleUtils.makeAbsolute(oeNumbers);
-      StyleUtils.setLeft(oeNumbers, remaindersWidth);
-      StyleUtils.setWidth(oeNumbers, oeNumbersWidth);
-      StyleUtils.setTop(oeNumbers, top2);
-      StyleUtils.setHeight(oeNumbers, h2);
-
-      add(oeNumbers);
-    }
-
-    if (suppliers != null) {
-      StyleUtils.makeAbsolute(suppliers);
-      StyleUtils.setLeft(suppliers, 0);
-      StyleUtils.setWidth(suppliers, brandsWidth);
-      StyleUtils.setTop(suppliers, top2 + h2 + heightMargin);
-      StyleUtils.setHeight(suppliers, h3 - heightMargin);
-
-      add(suppliers);
-    }
-
-    if (carTypes != null) {
-      StyleUtils.makeAbsolute(carTypes);
-      StyleUtils.setLeft(carTypes, brandsWidth + widthMargin);
-      StyleUtils.setWidth(carTypes, carTypesWidth);
-      StyleUtils.setTop(carTypes, top2);
-      StyleUtils.setHeight(carTypes, rowHeight);
-
-      add(carTypes);
+      add(itemDataTabs);
     }
   }
 }
