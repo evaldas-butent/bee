@@ -94,7 +94,7 @@ public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasV
   public void setSortBy(List<String> sortBy) {
     this.sortBy = sortBy;
   }
-
+  
   @Override
   public void setWhiteSpace(WhiteSpace whiteSpace) {
     this.whiteSpace = whiteSpace;

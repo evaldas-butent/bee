@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;

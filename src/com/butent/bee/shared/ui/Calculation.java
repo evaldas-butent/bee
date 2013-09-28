@@ -52,6 +52,10 @@ public class Calculation implements BeeSerializable, HasInfo {
 
   protected Calculation() {
   }
+  
+  public Calculation copy() {
+    return new Calculation(getExpression(), getFunction());
+  }
 
   @Override
   public void deserialize(String s) {

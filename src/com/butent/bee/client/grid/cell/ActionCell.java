@@ -75,6 +75,15 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
     super(EventUtils.EVENT_TYPE_CLICK);
     this.type = (type == null) ? DEFAULT_TYPE : type;
   }
+  
+  public ActionCell copy() {
+    ActionCell copy = new ActionCell(type);
+    
+    copy.setViewName(getViewName());
+    copy.setOptions(getOptions());
+    
+    return copy;
+  }
 
   @Override
   public String getOptions() {

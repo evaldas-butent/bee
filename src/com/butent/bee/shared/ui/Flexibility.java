@@ -151,6 +151,12 @@ public class Flexibility implements BeeSerializable, HasInfo {
   private Flexibility() {
     super();
   }
+  
+  public Flexibility copy() {
+    Flexibility copy = new Flexibility(getGrow(), getShrink(), getBasisWidth(), getBasisUnit());
+    copy.setBasisAuto(isBasisAuto());
+    return copy;
+  }
 
   @Override
   public void deserialize(String s) {

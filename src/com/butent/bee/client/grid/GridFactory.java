@@ -440,9 +440,6 @@ public final class GridFactory {
 
     grid.setReadOnly(true);
 
-    grid.setMinCellWidth(40);
-    grid.setMaxCellWidth(BeeKeeper.getScreen().getWidth() / 2);
-
     grid.estimateHeaderWidths(true);
     grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
 

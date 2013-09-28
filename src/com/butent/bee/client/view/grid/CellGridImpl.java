@@ -82,7 +82,6 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
 import com.butent.bee.client.widget.Label;
@@ -334,13 +333,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
     if (BeeUtils.isTrue(gridDescr.isReadOnly())) {
       getGrid().setReadOnly(true);
-    }
-
-    if (gridDescr.getMinColumnWidth() != null) {
-      getGrid().setMinCellWidth(gridDescr.getMinColumnWidth());
-    }
-    if (gridDescr.getMaxColumnWidth() != null) {
-      getGrid().setMaxCellWidth(gridDescr.getMaxColumnWidth());
     }
 
     if (gridDescr.getRowStyles() != null) {

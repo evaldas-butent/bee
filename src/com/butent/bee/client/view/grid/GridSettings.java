@@ -17,7 +17,6 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.HasDimensions;
-import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.widget.BooleanWidget;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.SimpleCheckBox;

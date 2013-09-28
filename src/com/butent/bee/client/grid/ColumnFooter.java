@@ -65,17 +65,18 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
   private String options;
 
   private Aggregate aggregate;
-
+  
   public ColumnFooter(CellSource cellSource, AbstractColumn<?> column,
       ColumnDescription columnDescription, List<? extends IsColumn> dataColumns) {
-
-    super(new FooterCell());
-
-    this.cellSource = cellSource;
-
+    this(cellSource);
     init(column, columnDescription, dataColumns);
   }
-  
+
+  private ColumnFooter(CellSource cellSource) {
+    super(new FooterCell());
+    this.cellSource = cellSource;
+  }
+
   public boolean dependsOnSource(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
@@ -89,7 +90,7 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
       return false;
     }
   }
-
+  
   public Aggregate getAggregate() {
     return aggregate;
   }

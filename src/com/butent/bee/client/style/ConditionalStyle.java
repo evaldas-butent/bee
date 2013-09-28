@@ -109,7 +109,7 @@ public final class ConditionalStyle {
 
   private ConditionalStyle() {
   }
-
+  
   public StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex) {
     return getStyleDescriptor(rowValue, rowIndex, colIndex, false, null, null);
   }
@@ -118,7 +118,7 @@ public final class ConditionalStyle {
       ValueType cellType, String cellValue) {
     return getStyleDescriptor(rowValue, rowIndex, colIndex, true, cellType, cellValue);
   }
-
+  
   private void addEntry(Entry entry) {
     if (entry != null) {
       getEntries().add(entry);
@@ -130,7 +130,7 @@ public final class ConditionalStyle {
       addEntry(new Entry(sd, ev));
     }
   }
-
+  
   private List<Entry> getEntries() {
     return entries;
   }

@@ -40,6 +40,19 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
   private ConditionalStyleDeclaration() {
   }
   
+  public ConditionalStyleDeclaration copy() {
+    ConditionalStyleDeclaration copy = new ConditionalStyleDeclaration();
+
+    if (getStyle() != null) {
+      copy.setStyle(getStyle().copy());
+    }
+    if (getCondition() != null) {
+      copy.setCondition(getCondition().copy());
+    }
+    
+    return copy;
+  }
+  
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);

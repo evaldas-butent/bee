@@ -1,6 +1,5 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
@@ -20,7 +19,7 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
     this(new ActionCell(), renderer);
   }
 
-  public ActionColumn(Cell<String> cell, AbstractCellRenderer renderer) {
+  public ActionColumn(ActionCell cell, AbstractCellRenderer renderer) {
     super(cell);
     this.renderer = renderer;
   }
