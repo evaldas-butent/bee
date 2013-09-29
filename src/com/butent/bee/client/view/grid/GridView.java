@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.Collection;
@@ -37,8 +38,9 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     ALL, EDITABLE
   }
 
-  void create(List<BeeColumn> dataColumns, GridDescription gridDescription,
-      GridInterceptor gridInterceptor, boolean hasSearch, Order order);
+  boolean addColumn(ColumnDescription columnDescription, String dynGroup, int beforeIndex);
+  
+  void create(Order order);
 
   void ensureRelId(IdCallback callback);
   
@@ -52,10 +54,14 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   int getDataIndex(String source);
 
+  List<String> getDynamicColumnGroups();
+  
   FormView getForm(boolean edit);
 
   CellGrid getGrid();
 
+  GridDescription getGridDescription();
+  
   GridInterceptor getGridInterceptor();
   
   String getGridKey();

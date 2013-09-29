@@ -121,8 +121,8 @@ final class TaskList {
     public ColumnDescription beforeCreateColumn(GridView gridView,
         ColumnDescription columnDescription) {
 
-      if (type == Type.ASSIGNED && BeeUtils.same(columnDescription.getName(), COL_EXECUTOR)
-          || type == Type.DELEGATED && BeeUtils.same(columnDescription.getName(), COL_OWNER)) {
+      if (type == Type.ASSIGNED && columnDescription.is(COL_EXECUTOR)
+          || type == Type.DELEGATED && columnDescription.is(COL_OWNER)) {
 
         if (columnDescription.getVisible() == null
             && !GridSettings.hasVisibleColumns(gridView.getGridKey())) {

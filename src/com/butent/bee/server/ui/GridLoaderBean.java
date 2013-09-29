@@ -463,7 +463,7 @@ public class GridLoaderBean {
     String source = columnDescription.getSource();
 
     if (!colType.isReadOnly() && BeeUtils.isEmpty(source)) {
-      source = columnDescription.getName();
+      source = columnDescription.getId();
       columnDescription.setSource(source);
     }
 
@@ -505,8 +505,8 @@ public class GridLoaderBean {
         break;
 
       case ACTION:
-        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getName())) {
-          columnDescription.setSource(columnDescription.getName());
+        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getId())) {
+          columnDescription.setSource(columnDescription.getId());
         }
         ok = true;
         break;

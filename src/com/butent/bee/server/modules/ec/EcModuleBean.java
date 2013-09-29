@@ -427,45 +427,62 @@ public class EcModuleBean implements BeeModule {
       @Subscribe
       public void setSuppliersAndRemainders(ViewQueryEvent event) {
         if (event.isAfter() && !DataUtils.isEmpty(event.getRowset())
-            && BeeUtils.same(event.getTargetName(), VIEW_ORDER_ITEMS)) {
+            && BeeUtils.inListSame(event.getTargetName(), VIEW_CATALOG, VIEW_ORDER_ITEMS)) {
+          
+          Set<Long> articleIds = Sets.newHashSet();
 
           BeeRowSet rowSet = event.getRowset();
-          Long orderId = rowSet.getLong(0, rowSet.getColumnIndex(COL_ORDER_ITEM_ORDER));
-          if (!DataUtils.isId(orderId)) {
+
+          int index;
+          if (BeeUtils.same(event.getTargetName(), VIEW_CATALOG)) {
+            index = DataUtils.ID_INDEX;
+          } else if (BeeUtils.same(event.getTargetName(), VIEW_ORDER_ITEMS)) {
+            index = rowSet.getColumnIndex(COL_ORDER_ITEM_ARTICLE); 
+          } else {
+            index = BeeConst.UNDEF;
+          }
+          
+          if (BeeConst.isUndef(index)) {
             return;
           }
           
-          SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
-              .addField(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_TCD_ARTICLE)
-              .addFrom(TBL_ORDER_ITEMS)
-              .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS,  COL_ORDER_ITEM_ORDER, orderId));
+          for (BeeRow row : rowSet.getRows()) {
+            if (index == DataUtils.ID_INDEX) {
+              articleIds.add(row.getId());
+            } else {
+              Long article = row.getLong(index);
+              if (article != null) {
+                articleIds.add(article);
+              }
+            }
+          }
           
-          String tempArticleIds = createTempArticleIds(articleIdQuery);
-          Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(tempArticleIds);
-          qs.sqlDropTemp(tempArticleIds);
-          
+          if (articleIds.isEmpty()) {
+            return;
+          }
+
+          Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(null, articleIds);
           if (articleSuppliers.isEmpty()) {
             return;
           }
-          
-          int articleIndex = rowSet.getColumnIndex(COL_ORDER_ITEM_ARTICLE);
+
           for (BeeRow row : rowSet.getRows()) {
-            Long article = row.getLong(articleIndex);
+            Long article = (index == DataUtils.ID_INDEX) ? row.getId() : row.getLong(index);
 
             if (article != null && articleSuppliers.containsKey(article)) {
               for (ArticleSupplier articleSupplier : articleSuppliers.get(article)) {
-                String supplierSuffix = BeeUtils.toString(articleSupplier.getSupplier().ordinal());
-                
+                String supplierSuffix = articleSupplier.getSupplier().getShortName();
+
                 String supplierId = articleSupplier.getSupplierId();
                 if (!BeeUtils.isEmpty(supplierId)) {
                   row.setProperty(COL_TCD_SUPPLIER_ID + supplierSuffix, supplierId);
                 }
-                
+
                 double cost = articleSupplier.getRealPrice();
                 if (BeeUtils.isPositive(cost)) {
                   row.setProperty(COL_TCD_COST + supplierSuffix, BeeUtils.toString(cost));
                 }
-                
+
                 Map<String, String> remainders = articleSupplier.getRemainders();
                 if (!BeeUtils.isEmpty(remainders)) {
                   for (Map.Entry<String, String> entry : remainders.entrySet()) {
@@ -628,23 +645,36 @@ public class EcModuleBean implements BeeModule {
     return result;
   }
 
-  private Multimap<Long, ArticleSupplier> getArticleSuppliers(String tempArticleIds) {
+  private Multimap<Long, ArticleSupplier> getArticleSuppliers(String tempArticleIds,
+      Collection<Long> articleIds) {
+
     String idName = sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS);
 
-    SimpleRowSet data = qs.getData(new SqlSelect()
+    SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, idName, COL_TCD_ARTICLE, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID, COL_TCD_COST)
         .addFields(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
-        .addFrom(TBL_TCD_ARTICLE_SUPPLIERS)
-        .addFromInner(tempArticleIds,
-            SqlUtils.joinUsing(TBL_TCD_ARTICLE_SUPPLIERS, tempArticleIds, COL_TCD_ARTICLE))
-        .addFromLeft(TBL_TCD_REMAINDERS, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS,
-            TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_SUPPLIER))
-        .addFromLeft(CommonsConstants.TBL_WAREHOUSES,
-            sys.joinTables(CommonsConstants.TBL_WAREHOUSES, TBL_TCD_REMAINDERS,
-                CommonsConstants.COL_WAREHOUSE))
-        .addOrder(TBL_TCD_ARTICLE_SUPPLIERS, idName));
+        .addFrom(TBL_TCD_ARTICLE_SUPPLIERS);
+
+    if (!BeeUtils.isEmpty(tempArticleIds)) {
+      query.addFromInner(tempArticleIds,
+          SqlUtils.joinUsing(TBL_TCD_ARTICLE_SUPPLIERS, tempArticleIds, COL_TCD_ARTICLE));
+    }
+
+    query.addFromLeft(TBL_TCD_REMAINDERS,
+        sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_SUPPLIER));
+    query.addFromLeft(CommonsConstants.TBL_WAREHOUSES,
+        sys.joinTables(CommonsConstants.TBL_WAREHOUSES, TBL_TCD_REMAINDERS,
+            CommonsConstants.COL_WAREHOUSE));
+
+    if (!BeeUtils.isEmpty(articleIds)) {
+      query.setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_ARTICLE, articleIds));
+    }
+
+    query.addOrder(TBL_TCD_ARTICLE_SUPPLIERS, idName);
+
+    SimpleRowSet data = qs.getData(query);
 
     Multimap<Long, ArticleSupplier> suppliers = HashMultimap.create();
     String lastId = null;
@@ -1580,7 +1610,7 @@ public class EcModuleBean implements BeeModule {
         item.setCategories(articleCategories.get(item.getArticleId()));
       }
 
-      Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(tempArticleIds);
+      Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(tempArticleIds, null);
       for (EcItem item : items) {
         item.setSuppliers(articleSuppliers.get(item.getArticleId()));
       }
@@ -1747,14 +1777,14 @@ public class EcModuleBean implements BeeModule {
       double totalDept = creditLimit - (totalTaken + dept + maxedOut + orderTotal);
 
       if (totalDept < 0.0) {
-        
+
         if (BeeUtils.isEmpty(order.getValue(COL_ORDER_MANAGER_COMMENT)
             ) && !DataUtils.isId(order.getLong(COL_ORDER_MANAGER))) {
           return ResponseObject.error(usr.getLocalizableConstants().ecExceededCreditLimit());
         } else {
           return ResponseObject.info(order.getValue(COL_ORDER_MANAGER_COMMENT));
         }
-        
+
       } else {
         return ResponseObject.emptyResponse();
       }
@@ -1870,7 +1900,7 @@ public class EcModuleBean implements BeeModule {
     if (finResp.hasErrors()) {
       return finResp;
     }
-    
+
     SqlSelect query = new SqlSelect()
         .addFields(TBL_ORDER_ITEMS, COL_TCD_ARTICLE)
         .addMax(TBL_ORDER_ITEMS, COL_ORDER_ITEM_PRICE)

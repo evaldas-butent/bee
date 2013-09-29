@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -21,15 +22,47 @@ public class Calculation implements BeeSerializable, HasInfo {
   private enum Serial {
     EXPRESSION, FUNCTION
   }
-  
+
   public static final String TAG_EXPRESSION = "expression";
   public static final String TAG_FUNCTION = "function";
+
+  public static final String CELL_OBJECT = "cell";
+  public static final String ROW_OBJECT = "row";
+  public static final String PROPERTY_VALUE = "value";
+
+  public static final String PROPERTY_OLD_VALUE = "oldValue";
+  public static final String PROPERTY_NEW_VALUE = "newValue";
+  public static final String VAR_COL_ID = "colName";
+
+  public static final String VAR_ROW_ID = "rowId";
+  public static final String VAR_ROW_VERSION = "rowVersion";
+
+  public static final String VAR_ROW_INDEX = "rowIndex";
+
+  public static final String VAR_COL_INDEX = "colIndex";
+
+  public static final String DEFAULT_REPLACE_PREFIX = "[";
+  public static final String DEFAULT_REPLACE_SUFFIX = "]";
+  public static final String PROPERTY_SEPARATOR = ".";
 
   public static boolean canRestore(String[] arr) {
     if (arr == null) {
       return false;
     } else {
       return arr.length == Serial.values().length;
+    }
+  }
+
+  public static String renameColumn(String input, String oldId, String newId) {
+    if (BeeUtils.containsSame(input, oldId) && !BeeUtils.isEmpty(newId)
+        && !BeeUtils.equalsTrim(oldId, newId)) {
+
+      String oldRef = ROW_OBJECT + PROPERTY_SEPARATOR + oldId.trim();
+      String newRef = ROW_OBJECT + PROPERTY_SEPARATOR + newId.trim();
+
+      return NameUtils.replaceName(input, oldRef, newRef);
+    } else {
+      return input;
     }
   }
 
@@ -41,7 +74,7 @@ public class Calculation implements BeeSerializable, HasInfo {
     calculation.deserialize(s);
     return calculation;
   }
-  
+
   private String expression;
   private String function;
 
@@ -52,7 +85,7 @@ public class Calculation implements BeeSerializable, HasInfo {
 
   protected Calculation() {
   }
-  
+
   public Calculation copy() {
     return new Calculation(getExpression(), getFunction());
   }
@@ -65,7 +98,7 @@ public class Calculation implements BeeSerializable, HasInfo {
   public String getExpression() {
     return expression;
   }
-  
+
   public String getFunction() {
     return function;
   }
@@ -90,6 +123,15 @@ public class Calculation implements BeeSerializable, HasInfo {
 
   public boolean hasExpressionOrFunction() {
     return !BeeUtils.isEmpty(getExpression()) || !BeeUtils.isEmpty(getFunction());
+  }
+
+  public void replaceColumn(String oldId, String newId) {
+    if (BeeUtils.containsSame(getExpression(), oldId)) {
+      setExpression(renameColumn(getExpression(), oldId, newId));
+    }
+    if (BeeUtils.containsSame(getFunction(), oldId)) {
+      setFunction(renameColumn(getFunction(), oldId, newId));
+    }
   }
 
   @Override

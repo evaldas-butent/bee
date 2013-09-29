@@ -38,6 +38,7 @@ import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
+import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
@@ -205,19 +206,17 @@ public final class GridFactory {
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, Collection<UiOption> uiOptions) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
+      List<BeeColumn> dataColumns) {
+    return createGridView(gridDescription, supplierKey, dataColumns, null,
         getGridInterceptor(gridDescription.getName()), null);
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, String relColumn, Collection<UiOption> uiOptions,
-      GridInterceptor gridInterceptor, Order order) {
+      List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor, Order order) {
 
-    GridView gridView = new CellGridImpl(gridDescription.getName(), supplierKey,
-        gridDescription.getViewName(), relColumn);
-    gridView.create(dataColumns, gridDescription, gridInterceptor, UiOption.hasSearch(uiOptions),
-        order);
+    GridView gridView = new CellGridImpl(gridDescription, supplierKey, dataColumns, relColumn,
+        gridInterceptor);
+    gridView.create(order);
 
     return gridView;
   }
@@ -434,8 +433,12 @@ public final class GridFactory {
       CellSource source = CellSource.forColumn(table.getColumn(i), i);
       column = createColumn(source);
 
+      String id = table.getColumnId(i);
       String label = table.getColumnLabel(i);
-      grid.addColumn(label, source, column, new ColumnHeader(label, label));
+      
+      ColumnInfo columnInfo = new ColumnInfo(id, label, source, column,
+          new ColumnHeader(id, label));
+      grid.addColumn(columnInfo);
     }
 
     grid.setReadOnly(true);
@@ -517,7 +520,7 @@ public final class GridFactory {
     }
 
     if (brs != null) {
-      GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(), uiOptions,
+      GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(),
           gridInterceptor, order);
       gridView.initData(brs.getNumberOfRows(), brs);
 
@@ -550,7 +553,7 @@ public final class GridFactory {
     }
 
     final GridView gridView = createGridView(gridDescription, supplierKey,
-        Data.getColumns(viewName), uiOptions, gridInterceptor, order);
+        Data.getColumns(viewName), gridInterceptor, order);
 
     final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
         initialUserFilterValues);
@@ -578,10 +581,8 @@ public final class GridFactory {
   }
 
   private static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
-      Order order) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
-        gridInterceptor, order);
+      List<BeeColumn> dataColumns, GridInterceptor gridInterceptor, Order order) {
+    return createGridView(gridDescription, supplierKey, dataColumns, null, gridInterceptor, order);
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,

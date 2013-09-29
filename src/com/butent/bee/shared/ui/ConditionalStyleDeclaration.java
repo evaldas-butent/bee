@@ -89,6 +89,12 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
     return style;
   }
 
+  public void replaceColumn(String oldId, String newId) {
+    if (getCondition() != null) {
+      getCondition().replaceColumn(oldId, newId);
+    }
+  }
+  
   @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getStyle(), getCondition()});

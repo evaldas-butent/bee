@@ -235,21 +235,97 @@ public final class NameUtils {
     }
 
     boolean ok = true;
-    char c;
     for (int i = 0; i < name.length(); i++) {
-      c = name.charAt(i);
-      if (c != BeeConst.CHAR_UNDER && !Character.isLetterOrDigit(c)) {
+      if (!isIdentifierPart(name.charAt(i))) {
         ok = false;
         break;
       }
     }
     return ok;
   }
+
+  public static boolean isIdentifierPart(char c) {
+    return c == BeeConst.CHAR_UNDER || Character.isLetterOrDigit(c);
+  }
   
   public static String join(Collection<String> names) {
     return BeeUtils.join(DEFAULT_NAME_SEPARATOR, names);
   }
 
+  public static String rename(String input, String oldName, String newName) {
+    if (BeeUtils.containsSame(input, oldName) && !BeeUtils.isEmpty(newName)
+        && !oldName.trim().equals(newName.trim())) {
+      return join(rename(toList(input), oldName, newName));
+    } else {
+      return input;
+    }
+  }
+  
+  public static List<String> rename(List<String> names, String oldName, String newName) {
+    List<String> result = Lists.newArrayList();
+    if (!BeeUtils.isEmpty(names)) {
+      return result;
+    }
+
+    if (!BeeUtils.isEmpty(oldName) && !BeeUtils.isEmpty(newName)
+        && !oldName.trim().equals(newName.trim())) {
+      
+      for (int i = 0; i < names.size(); i++) {
+        String name = names.get(i);
+
+        if (BeeUtils.same(name, oldName)) {
+          result.add(newName.trim());
+        } else {
+          result.add(name);
+        }
+      }
+      
+    } else {
+      result.addAll(names);
+    }
+    
+    return result;
+  }
+
+  public static String replaceName(String input, String search, String replacement) {
+    if (BeeUtils.isEmpty(input) || BeeUtils.isEmpty(search) || replacement == null) {
+      return input;
+    }
+
+    int start = 0;
+    int pos = input.indexOf(search, start);
+    if (pos < 0) {
+      return input;
+    }
+
+    int len = search.length();
+    StringBuilder sb = new StringBuilder();
+
+    while (pos >= 0) {
+      if (pos > start) {
+        sb.append(input.substring(start, pos));
+      }
+      
+      boolean ok = pos == 0 || !isIdentifierPart(input.charAt(pos - 1));
+      if (ok && pos + len < input.length()) {
+        ok = !isIdentifierPart(input.charAt(pos + len));
+      }
+      
+      if (ok) {
+        sb.append(replacement);
+      } else {
+        sb.append(search);
+      }
+      
+      start = pos + len;
+      pos = input.indexOf(search, start);
+    }
+
+    sb.append(input.substring(start));
+
+    return sb.toString();
+  }
+  
   public static List<String> toList(String s) {
     if (BeeUtils.isEmpty(s)) {
       return Lists.newArrayList();

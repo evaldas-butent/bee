@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 
 import com.butent.bee.client.grid.ColumnFooter;
@@ -44,7 +43,6 @@ public class ColumnInfo implements HasValueType, Flexible {
   private final AbstractFilterSupplier filterSupplier;
 
   private final String dynGroup;
-  private final List<ColumnInfo> descendants = Lists.newArrayList();
 
   private int initialWidth = BeeConst.UNDEF;
   private int minWidth = BeeConst.UNDEF;
@@ -72,7 +70,12 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private boolean hidable = true;
   
-  ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
+  public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
+      ColumnHeader header) {
+    this(columnId, label, source, column, header, null, null, null);
+  }
+
+  public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
       ColumnHeader header, ColumnFooter footer, AbstractFilterSupplier filterSupplier,
       String dynGroup) {
 
@@ -104,10 +107,6 @@ public class ColumnInfo implements HasValueType, Flexible {
   @Override
   public boolean equals(Object obj) {
     return (obj instanceof ColumnInfo) && columnId.equals(((ColumnInfo) obj).columnId);
-  }
-
-  public List<ColumnInfo> getDescendants() {
-    return descendants;
   }
 
   @Override
@@ -271,6 +270,10 @@ public class ColumnInfo implements HasValueType, Flexible {
   int getWidth() {
     return getWidth(getResizedWidth(), getFlexWidth());
   }
+  
+  boolean hasDynGroup(String group) {
+    return !BeeUtils.isEmpty(group) && BeeUtils.same(dynGroup, group);
+  }
 
   void initProperties(ColumnDescription columnDescription, GridDescription gridDescription,
       List<? extends IsColumn> dataColumns) {
@@ -353,6 +356,10 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   boolean isColReadOnly() {
     return colReadOnly;
+  }
+  
+  boolean isDynamic() {
+    return dynGroup != null;
   }
 
   boolean isHidable() {

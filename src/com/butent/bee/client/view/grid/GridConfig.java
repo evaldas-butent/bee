@@ -176,7 +176,7 @@ class GridConfig {
     if (!visibleColumnNames.isEmpty() || !columnSettings.isEmpty()) {
       List<String> names = Lists.newArrayList();
       for (ColumnDescription columnDescription : gridDescription.getColumns()) {
-        names.add(columnDescription.getName());
+        names.add(columnDescription.getId());
       }
 
       for (Map.Entry<String, ColumnConfig> entry : columnSettings.entrySet()) {
@@ -218,7 +218,8 @@ class GridConfig {
             for (int i = 0; i < cc; i++) {
               if (!indexes.contains(i)) {
                 ColumnDescription columnDescription = gridDescription.getColumns().get(i);
-                if (columnDescription.getVisible() == null) {
+                if (columnDescription.getVisible() == null
+                    && !BeeUtils.isTrue(columnDescription.getDynamic())) {
                   columnDescription.setVisible(false);
                 }
 
@@ -233,7 +234,7 @@ class GridConfig {
       }
 
       for (ColumnDescription columnDescription : gridDescription.getColumns()) {
-        ColumnConfig columnConfig = columnSettings.get(columnDescription.getName());
+        ColumnConfig columnConfig = columnSettings.get(columnDescription.getId());
         if (columnConfig != null) {
           columnConfig.applyTo(columnDescription);
         }

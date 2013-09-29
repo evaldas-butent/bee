@@ -155,6 +155,12 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     return type;
   }
 
+  public void replaceColumn(String oldId, String newId) {
+    if (BeeUtils.containsSame(getExpression(), oldId)) {
+      setExpression(Calculation.renameColumn(getExpression(), oldId, newId));
+    }
+  }
+  
   @Override
   public String serialize() {
     Serial[] members = Serial.values();

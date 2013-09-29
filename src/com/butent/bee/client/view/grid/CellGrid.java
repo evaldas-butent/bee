@@ -63,7 +63,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
-import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
@@ -844,6 +843,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private final List<ColumnInfo> predefinedColumns = Lists.newArrayList();
   private final List<Integer> visibleColumns = Lists.newArrayList();
+
   private final Component headerComponent = new Component(ComponentType.HEADER,
       getDefaultHeaderCellHeight(), defaultMinCellHeight, defaultMaxCellHeight,
       defaultHeaderCellPadding, defaultHeaderBorderWidth, defaultHeaderCellMargin);
@@ -943,44 +943,35 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return addHandler(handler, ActiveRowChangeEvent.getType());
   }
 
-  public ColumnInfo addColumn(String columnId, CellSource source, AbstractColumn<?> column,
-      ColumnHeader header) {
-    return addColumn(columnId, columnId, source, column, header, null, null, null, true);
+  public void addColumn(ColumnInfo columnInfo) {
+    addColumn(columnInfo, true, BeeConst.UNDEF);
   }
 
-  public ColumnInfo addColumn(String columnId, String label, CellSource source,
-      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
-      AbstractFilterSupplier filterSupplier, String dynGroup, Boolean visible) {
+  public void addColumn(ColumnInfo columnInfo, boolean visible, int index) {
+    Assert.notNull(columnInfo);
 
-    Assert.notEmpty(columnId);
-    Assert.notNull(column);
-
-    ColumnInfo columnInfo = new ColumnInfo(columnId, label, source, column, header, footer,
-        filterSupplier, dynGroup);
-    if (BeeUtils.isTrue(visible)) {
-      columnInfo.setHidable(false);
-    }
     predefinedColumns.add(columnInfo);
 
-    if (!BeeUtils.isFalse(visible)) {
-      visibleColumns.add(predefinedColumns.size() - 1);
+    if (visible) {
+      int predefIndex = predefinedColumns.size() - 1;
+      BeeUtils.addQuietly(visibleColumns, index, predefIndex);
     }
 
     Set<String> consumedEvents = Sets.newHashSet();
-    Set<String> cellEvents = column.getCell().getConsumedEvents();
+    Set<String> cellEvents = columnInfo.getColumn().getCell().getConsumedEvents();
     if (cellEvents != null) {
       consumedEvents.addAll(cellEvents);
     }
 
-    if (header != null) {
-      Set<String> headerEvents = header.getCell().getConsumedEvents();
+    if (columnInfo.getHeader() != null) {
+      Set<String> headerEvents = columnInfo.getHeader().getCell().getConsumedEvents();
       if (headerEvents != null) {
         consumedEvents.addAll(headerEvents);
       }
     }
 
-    if (footer != null) {
-      Set<String> footerEvents = footer.getCell().getConsumedEvents();
+    if (columnInfo.getFooter() != null) {
+      Set<String> footerEvents = columnInfo.getFooter().getCell().getConsumedEvents();
       if (footerEvents != null) {
         consumedEvents.addAll(footerEvents);
       }
@@ -989,8 +980,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (!consumedEvents.isEmpty()) {
       EventUtils.sinkEvents(this, consumedEvents);
     }
-
-    return columnInfo;
   }
 
   @Override
@@ -1291,6 +1280,30 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public Order getSortOrder() {
     return sortOrder;
+  }
+
+  public List<ColumnInfo> getStaticPredefinedColumns() {
+    List<ColumnInfo> result = Lists.newArrayList();
+
+    for (ColumnInfo columnInfo : getPredefinedColumns()) {
+      if (!columnInfo.isDynamic()) {
+        result.add(columnInfo);
+      }
+    }
+
+    return result;
+  }
+
+  public List<Integer> getStaticVisibleColumns() {
+    List<Integer> result = Lists.newArrayList();
+
+    for (int col : getVisibleColumns()) {
+      if (!getPredefinedColumns().get(col).isDynamic()) {
+        result.add(col);
+      }
+    }
+
+    return result;
   }
 
   public List<Integer> getVisibleColumns() {
@@ -2235,12 +2248,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  public boolean updateVisibleColumns(List<Integer> columns) {
-    if (!columns.isEmpty() && !columns.equals(getVisibleColumns())) {
+  public boolean updateStaticVisibleColumns(List<Integer> columns) {
+    if (!columns.isEmpty() && !columns.equals(getStaticVisibleColumns())) {
       List<Integer> oldColumns = Lists.newArrayList(visibleColumns);
 
       visibleColumns.clear();
       visibleColumns.addAll(columns);
+
+      for (int col : oldColumns) {
+        if (getPredefinedColumns().get(col).isDynamic() && !visibleColumns.contains(col)) {
+          visibleColumns.add(col);
+        }
+      }
 
       getRenderedRows().clear();
 
@@ -3589,7 +3608,41 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private void render(boolean focus) {
-    RenderingEvent.fireBefore(this);
+    RenderingEvent beforeEvent = RenderingEvent.before();
+    fireEvent(beforeEvent);
+
+    if (beforeEvent.canceled()) {
+      return;
+    }
+
+    if (beforeEvent.dataChanged()) {
+      getRenderedRows().clear();
+
+      getResizedRows().clear();
+      getResizedCells().clear();
+
+      for (int col = 0; col < getColumnCount(); col++) {
+        if (getColumnInfo(col).isDynamic()) {
+          estimateHeaderWidth(col, true);
+          estimateColumnWidth(col, true);
+        }
+      }
+
+      doFlexLayout();
+
+      if (getActiveRowIndex() >= 0) {
+        if (getRowData().isEmpty()) {
+          this.activeRowIndex = BeeConst.UNDEF;
+          this.activeColumnIndex = BeeConst.UNDEF;
+        } else {
+          this.activeRowIndex = BeeUtils.clamp(getActiveRowIndex(), 0, getDataSize() - 1);
+        }
+      }
+
+      if (getActiveColumnIndex() >= 0) {
+        this.activeColumnIndex = BeeUtils.clamp(getActiveColumnIndex(), 0, getColumnCount() - 1);
+      }
+    }
 
     RenderMode mode = getEffectiveRenderMode();
 
@@ -4330,7 +4383,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       DomUtils.moveVerticalBy(resizerId, incr);
     }
   }
-  
+
   private void selectRange(int rowIndex, IsRow rowValue) {
     if (rowValue == null) {
       return;
@@ -4384,7 +4437,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
       }
     }
-    
+
     refreshSelectionHeader();
   }
 
@@ -4613,11 +4666,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     setResizing(false);
 
     if (getResizerStatus() == ResizerMode.HORIZONTAL) {
-      int oldWidth = getResizerStartValue();
-      int newWidth = getColumnWidth(getResizerCol());
+      ColumnInfo columnInfo = getColumnInfo(getResizerCol());
 
-      if (oldWidth >= 0 && newWidth > 0 && oldWidth != newWidth) {
-        SettingsChangeEvent.fireWidth(this, getColumnId(getResizerCol()), newWidth);
+      int oldWidth = getResizerStartValue();
+      int newWidth = columnInfo.getWidth();
+
+      if (oldWidth >= 0 && newWidth > 0 && oldWidth != newWidth && !columnInfo.isDynamic()) {
+        SettingsChangeEvent.fireWidth(this, columnInfo.getColumnId(), newWidth);
       }
 
     } else if (getResizerStatus() == ResizerMode.VERTICAL) {

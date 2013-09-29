@@ -90,11 +90,21 @@ public final class EcConstants {
   }
 
   public enum EcSupplier implements HasCaption {
-    EOLTAS, MOTOPROFIL;
+    EOLTAS("Eolt"), MOTOPROFIL("MotoProf");
+
+    private final String shortName;
+    
+    private EcSupplier(String shortName) {
+      this.shortName = shortName;
+    }
 
     @Override
     public String getCaption() {
       return name();
+    }
+
+    public String getShortName() {
+      return shortName;
     }
   }
 
@@ -211,6 +221,7 @@ public final class EcConstants {
   public static final String TBL_TCD_ARTICLE_CRITERIA = "TcdArticleCriteria";
 
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
+  public static final String VIEW_CATALOG = "EcCatalog";
   public static final String VIEW_CATEGORIES = "TcdCategories";
   public static final String VIEW_CLIENTS = "EcClients";
   public static final String VIEW_CONFIGURATION = "EcConfiguration";
@@ -413,7 +424,6 @@ public final class EcConstants {
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
   public static final String GRID_ARTICLE_GRAPHICS = "TcdArticleGraphics";
   public static final String GRID_GROUP_CATEGORIES = "EcGroupCategories";
-  public static final String GRID_ORDER_ITEMS = "EcOrderItems";
 
   public static final String FORM_CATEGORIES = "TcdCategories";
 

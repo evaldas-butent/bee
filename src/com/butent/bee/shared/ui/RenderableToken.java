@@ -21,12 +21,12 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
   }
 
   public static final String TAG_RENDER_TOKEN = "renderToken";
-  
+
   private static final String ATTR_PREFIX = "prefix";
   private static final String ATTR_SUFFIX = "suffix";
   private static final String ATTR_ADD_PREFIX_WHEN_EMPTY = "addPrefixWhenEmpty";
   private static final String ATTR_ADD_SUFFIX_WHEN_EMPTY = "addSuffixWhenEmpty";
-  
+
   public static RenderableToken create(Map<String, String> attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return null;
@@ -34,18 +34,18 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
 
     RenderableToken renderableToken = new RenderableToken();
     renderableToken.setAttributes(attributes);
-    
+
     return renderableToken;
   }
-  
+
   public static RenderableToken restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    
+
     RenderableToken renderableToken = new RenderableToken();
     renderableToken.deserialize(s);
-    
+
     return renderableToken;
   }
 
@@ -57,7 +57,7 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
     if (ArrayUtils.isEmpty(tokens)) {
       return null;
     }
-    
+
     List<RenderableToken> result = Lists.newArrayList();
     for (String token : tokens) {
       RenderableToken renderableToken = restore(token);
@@ -67,7 +67,7 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
     }
     return result;
   }
-  
+
   private String source;
 
   private String prefix;
@@ -119,7 +119,7 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
           setScale(BeeUtils.toIntOrNull(value.trim()));
           break;
       }
-    }  
+    }
   }
 
   public Boolean getAddPrefixWhenEmpty() {
@@ -161,6 +161,12 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
     return suffix;
   }
 
+  public void replaceSource(String oldId, String newId) {
+    if (BeeUtils.same(getSource(), oldId) && !BeeUtils.isEmpty(newId)) {
+      setSource(newId.trim());
+    }
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -191,7 +197,7 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
           arr[i++] = getScale();
           break;
       }
-    }  
+    }
     return Codec.beeSerialize(arr);
   }
 
@@ -222,7 +228,7 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
   public void setSuffix(String suffix) {
     this.suffix = suffix;
   }
-  
+
   private void setAttributes(Map<String, String> attributes) {
     for (Map.Entry<String, String> attribute : attributes.entrySet()) {
       String key = attribute.getKey();
@@ -230,7 +236,7 @@ public final class RenderableToken implements BeeSerializable, HasInfo {
       if (!BeeUtils.hasLength(value, 1)) {
         continue;
       }
-      
+
       if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
         setSource(value.trim());
       } else if (BeeUtils.same(key, ATTR_PREFIX)) {

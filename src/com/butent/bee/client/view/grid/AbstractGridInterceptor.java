@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -83,7 +84,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public void afterRender(GridView gridView) {
+  public void afterRender(GridView gridView, RenderingEvent event) {
   }
 
   @Override
@@ -140,7 +141,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public void beforeRender(GridView gridView) {
+  public void beforeRender(GridView gridView, RenderingEvent event) {
   }
 
   @Override
@@ -172,6 +173,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
     return deleteRowsMessage(selectedRows);
+  }
+
+  @Override
+  public Collection<DynamicColumnIdentity> getDynamicColumns(GridView gridView, String dynGroup) {
+    return null;
   }
 
   @Override

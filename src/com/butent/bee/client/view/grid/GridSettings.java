@@ -78,8 +78,8 @@ public final class GridSettings {
       return;
     }
 
-    final List<ColumnInfo> predefinedColumns = grid.getPredefinedColumns();
-    List<Integer> visibleColumns = grid.getVisibleColumns();
+    final List<ColumnInfo> predefinedColumns = grid.getStaticPredefinedColumns();
+    List<Integer> visibleColumns = grid.getStaticVisibleColumns();
 
     final HtmlTable table = new HtmlTable();
     table.addStyleName(STYLE_TABLE);
@@ -128,12 +128,14 @@ public final class GridSettings {
       public void onSuccess() {
         List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
 
-        if (grid.updateVisibleColumns(selectedColumns)) {
+        if (grid.updateStaticVisibleColumns(selectedColumns)) {
           List<String> names = Lists.newArrayList();
 
           List<ColumnInfo> columns = grid.getColumns();
           for (ColumnInfo columnInfo : columns) {
-            names.add(columnInfo.getColumnId());
+            if (!columnInfo.isDynamic()) {
+              names.add(columnInfo.getColumnId());
+            }
           }
 
           saveGridSetting(key, GridConfig.columnsIndex, NameUtils.join(names));

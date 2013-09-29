@@ -3,6 +3,7 @@ package com.butent.bee.client.view.grid;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
-    EditStartEvent.Handler, ProvidesGridColumnRenderer {
+    EditStartEvent.Handler, ProvidesGridColumnRenderer, DynamicColumnEnumerator {
 
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
@@ -52,7 +53,7 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void afterInsertRow(IsRow result);
 
-  void afterRender(GridView gridView);
+  void afterRender(GridView gridView, RenderingEvent event);
 
   void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode);
 
@@ -76,7 +77,7 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void beforeRefresh(GridPresenter presenter);
 
-  void beforeRender(GridView gridView);
+  void beforeRender(GridView gridView, RenderingEvent event);
   
   String getColumnCaption(String columnName);
 

@@ -143,16 +143,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private final Map<String, String> properties = Maps.newHashMap();  
   
   public GridDescription(String name) {
-    this(name, null);
-  }
-
-  public GridDescription(String name, String viewName) {
-    super();
-    this.name = name;
-    this.viewName = viewName;
+    this(name, null, null, null);
   }
 
   public GridDescription(String name, String viewName, String idName, String versionName) {
+    super();
+
     this.name = name;
     this.viewName = viewName;
     this.idName = idName;
@@ -164,8 +160,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void addColumn(ColumnDescription column) {
     Assert.notNull(column);
-    Assert.state(!hasColumn(column.getName()),
-        BeeUtils.joinWords("Dublicate column name:", getName(), column.getName()));
+    Assert.state(!hasColumn(column.getId()),
+        BeeUtils.joinWords("Dublicate column id:", getName(), column.getId()));
 
     getColumns().add(column);
   }
@@ -435,6 +431,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public String getCaption() {
     return caption;
   }
+  
+  public ColumnDescription getColumn(String id) {
+    for (ColumnDescription column : getColumns()) {
+      if (column.is(id)) {
+        return column;
+      }
+    }
+    return null;
+  }
 
   public int getColumnCount() {
     return getColumns().size();
@@ -607,7 +612,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     for (ColumnDescription column : getColumns()) {
       int i = 0;
       PropertyUtils.appendChildrenToExtended(info,
-          BeeUtils.joinWords("Column", BeeUtils.progress(++i, cc), column.getName()),
+          BeeUtils.joinWords("Column", BeeUtils.progress(++i, cc), column.getId()),
           column.getInfo());
     }
 
@@ -758,10 +763,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return widgets;
   }
 
-  public boolean hasColumn(String colName) {
-    Assert.notNull(colName);
+  public boolean hasColumn(String id) {
     for (ColumnDescription column : getColumns()) {
-      if (BeeUtils.same(column.getName(), colName)) {
+      if (column.is(id)) {
         return true;
       }
     }

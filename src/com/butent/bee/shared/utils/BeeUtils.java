@@ -47,6 +47,14 @@ public final class BeeUtils {
     }
   }
 
+  public static <T> void addQuietly(List<T> list, int index, T item) {
+    if (isIndex(list, index)) {
+      list.add(index, item);
+    } else {
+      list.add(item);
+    }
+  }
+  
   public static boolean allEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return false;
@@ -1466,6 +1474,24 @@ public final class BeeUtils {
     }
   }
 
+  public static Integer min(Collection<Integer> col) {
+    Integer result = null;
+    if (col == null) {
+      return result;
+    }
+
+    for (Integer item : col) {
+      if (item != null) {
+        if (result == null) {
+          result = item;
+        } else {
+          result = Math.min(result, item);
+        }
+      }
+    }
+    return result;
+  }
+  
   public static <T extends Comparable<T>> T min(T x1, T x2) {
     if (x1 == null) {
       return x2;
