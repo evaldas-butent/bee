@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.bind.JAXBContext;
@@ -36,7 +35,7 @@ import javax.xml.bind.annotation.XmlValue;
 /**
  * Enables to get data from the system using SOAP web service protocol.
  */
-@WebService
+// @WebService
 @SOAPBinding(parameterStyle = ParameterStyle.BARE)
 @Stateless
 public class RemoteCall {
@@ -178,7 +177,7 @@ public class RemoteCall {
     if (rs instanceof BeeRowSet) {
       BeeRowSet rowSet = (BeeRowSet) rs;
       data.affected = rowSet.getNumberOfRows();
-      
+
       data.columns = Lists.newArrayList();
       for (BeeColumn column : rowSet.getColumns()) {
         data.columns.add(column.getLabel());

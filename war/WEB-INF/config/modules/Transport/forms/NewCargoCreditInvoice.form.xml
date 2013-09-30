@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="NewCargoCreditInvoice" viewName="CargoCreditInvoices" caption="=trNewCargoCreditInvoice"
-  width="700" height="200"
+  width="700" height="250"
   >
   <FlowPanel>
     <Table>
@@ -55,6 +55,21 @@
           <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl;" />
         </cell>
         <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" />
+      </row>
+      <row>
+        <Label text="=trCargoCreditInvoiceReason" class="bee-required" style="&lbl;" />
+        <cell colSpan="3">
+          <ListBox name="Cause">
+            <item>Kainos koregavimas</item>
+            <item>Tikslinimas dėl prekybinės nuolaidos</item>
+          </ListBox>
+        </cell>
+      </row>
+      <row>
+        <Label text="=trdNotes" style="&lbl;" />
+        <cell colSpan="2">
+          <InputArea source="Notes" visibleLines="2" style="width:100%" />
+        </cell>
       </row>
     </Table>
   </FlowPanel>

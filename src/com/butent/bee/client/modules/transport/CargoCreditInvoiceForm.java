@@ -6,7 +6,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_CARGO_CREDIT_INCOMES;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -26,6 +26,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
@@ -48,6 +49,14 @@ public class CargoCreditInvoiceForm extends AbstractFormInterceptor
   private ScheduledCommand refresher;
 
   @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_TRADE_VAT_INCL)
+        && widget instanceof InputBoolean) {
+      ((InputBoolean) widget).addValueChangeHandler(this);
+    }
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
@@ -57,11 +66,9 @@ public class CargoCreditInvoiceForm extends AbstractFormInterceptor
       if (BeeUtils.same(name, getTradeItemsName())) {
         grid.setGridInterceptor(new InvoiceItemsGrid(getRefresher()));
 
-      } else if (BeeUtils.same(name, VIEW_CARGO_CREDIT_INCOMES)) {
+      } else if (BeeUtils.inListSame(name, VIEW_CARGO_CREDIT_INCOMES, VIEW_CARGO_INVOICE_INCOMES)) {
         grid.setGridInterceptor(new AbstractGridInterceptor());
       }
-    } else if (BeeUtils.same(name, COL_TRADE_VAT_INCL) && widget instanceof InputBoolean) {
-      ((InputBoolean) widget).addValueChangeHandler(this);
     }
   }
 

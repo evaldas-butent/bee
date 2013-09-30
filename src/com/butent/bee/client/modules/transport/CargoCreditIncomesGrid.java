@@ -24,10 +24,12 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
@@ -141,6 +143,30 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
               @Override
               public FormInterceptor getInstance() {
                 return this;
+              }
+
+              @Override
+              public void onReadyForInsert(ReadyForInsertEvent ev) {
+                FormView form = getFormView();
+                Widget w = form.getWidgetByName("Cause");
+
+                if (w != null && w instanceof BeeListBox) {
+                  String cause = ((BeeListBox) w).getValue();
+                  int idx = -1;
+
+                  for (int i = 0; i < ev.getColumns().size(); i++) {
+                    if (BeeUtils.same(ev.getColumns().get(i).getId(), COL_TRADE_NOTES)) {
+                      idx = i;
+                      break;
+                    }
+                  }
+                  if (idx >= 0) {
+                    ev.getValues().set(idx, cause + "\n" + ev.getValues().get(idx));
+                  } else {
+                    ev.getColumns().add(Data.getColumn(form.getViewName(), COL_TRADE_NOTES));
+                    ev.getValues().add(cause);
+                  }
+                }
               }
 
               @Override

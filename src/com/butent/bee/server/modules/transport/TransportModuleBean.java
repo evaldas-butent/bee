@@ -172,8 +172,7 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CARGO)),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)));
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CARGO)));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
@@ -252,10 +251,11 @@ public class TransportModuleBean implements BeeModule {
                 .setWhere(event.getQuery().getWhere())
                 .addGroup(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS));
 
-            IsExpression xpr = ExchangeUtils.exchangeField(query,
+            IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
                 SqlUtils.field(tbl, COL_AMOUNT),
                 SqlUtils.field(tbl, ExchangeUtils.COL_CURRENCY),
-                SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)));
+                SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
+                SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY));
 
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
@@ -597,7 +597,7 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(wh)));
   }
 
-  private ResponseObject getAssessmentTotals(Long assessorId, Long cargoId, Long currencyId) {
+  private ResponseObject getAssessmentTotals(Long assessorId, Long cargoId) {
     if (!DataUtils.isId(cargoId)) {
       return ResponseObject.error("Cargo ID is not valid:", cargoId);
     }
@@ -613,21 +613,12 @@ public class TransportModuleBean implements BeeModule {
           .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
           .setWhere(SqlUtils.equals(tbl, COL_CARGO, cargoId));
 
-      IsExpression xpr = ExchangeUtils.exchangeField(ss,
-          SqlUtils.field(tbl, COL_AMOUNT),
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss, SqlUtils.field(tbl, COL_AMOUNT),
           SqlUtils.field(tbl, ExchangeUtils.COL_CURRENCY),
-          SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)));
+          SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
+          SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY));
 
-      IsExpression xprTo;
-
-      if (DataUtils.isId(currencyId)) {
-        xprTo = ExchangeUtils.exchangeFieldTo(ss, xpr,
-            SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-            SqlUtils.constant(currencyId));
-      } else {
-        xprTo = xpr;
-      }
-      ss.addSum(xprTo, VAR_TOTAL)
+      ss.addSum(xpr, VAR_TOTAL)
           .addSum(SqlUtils.sqlIf(SqlUtils.equals(tbl, COL_ASSESSOR, assessorId), xpr, null),
               COL_AMOUNT);
 

@@ -64,7 +64,7 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
           public void onResponse(ResponseObject response) {
             header.clearCommandPanel();
             header.addCommandItem(action);
-            response.notify(presenter.getGridView());
+            response.notify(BeeKeeper.getScreen());
             Data.onViewChange(presenter.getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
           }
         });

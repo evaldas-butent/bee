@@ -152,17 +152,9 @@
       <Label name="TotalInWords" />
     </HorizontalPanel>
 
-    <HorizontalPanel style="&section;">
-      <cell style="vertical-align:top;">
-        <Label html="Papildoma informacija:" style="&bold;" />
-      </cell>
-      <TextLabel source="Term" style="white-space:pre-wrap;">
-        <renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
-      </TextLabel>
-    </HorizontalPanel>
-
     <HtmlPanel style="&section;">
       <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
+Pastaba:
 Be PVM: Pagal PVM įst. 13 (1) str.
       </span>
       <span style="font-size:smaller; display:block; white-space:pre-wrap;">

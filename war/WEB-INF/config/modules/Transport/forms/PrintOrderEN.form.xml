@@ -41,69 +41,29 @@
 
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel>
-            <TextLabel source="CustomerName" style="&bold;">
-              <renderToken source="CustomerName" />
-            </TextLabel>
-            <TextLabel source="CustomerCode">
-              <renderToken source="CustomerCode" prefix="Company code: " />
-            </TextLabel>
-            <TextLabel source="CustomerVATCode">
-              <renderToken source="CustomerVATCode" prefix="VAT code: " />
-            </TextLabel>
-            <TextLabel source="CustomerAddress">
-              <renderToken source="CustomerAddress" prefix="Address: " />
-              <renderToken source="CustomerCity" prefix=", " />
-              <renderToken source="CustomerCountry" prefix=", " />
-              <renderToken source="CustomerPostIndex" prefix=", " />
-            </TextLabel>
-            <TextLabel source="CustomerPhone">
-              <renderToken source="CustomerPhone" prefix="Phone: " suffix=" " />
-              <renderToken source="CustomerMobile" prefix="Mobile: " suffix=" " />
-              <renderToken source="CustomerFax" prefix="Fax: " suffix=" " />
-            </TextLabel>
-            <TextLabel source="CustomerEmail">
-              <renderToken source="CustomerEmail" prefix="E-mail: " />
-            </TextLabel>
+          <FlowPanel name="CustomerInfo">
+            <properties locale="en" />
           </FlowPanel>
         </cell>
-        
-        <FlowPanel>
-          <TextLabel source="CompanyName" style="&bold;">
-            <renderToken source="CompanyName" />
-          </TextLabel>
-          <TextLabel source="CompanyCode">
-            <renderToken source="CompanyCode" prefix="Code: " />
-          </TextLabel>
-          <TextLabel source="CompanyVATCode">
-            <renderToken source="CompanyVATCode" prefix="VAT code: " />
-          </TextLabel>
-          <TextLabel source="CompanyAddress">
-            <renderToken source="CompanyAddress" prefix="Address: " />
-            <renderToken source="CompanyCity" prefix=", " />
-            <renderToken source="CompanyCountry" prefix=", " />
-            <renderToken source="CompanyPostIndex" prefix=", " />
-          </TextLabel>
-          <TextLabel source="CompanyPhone">
-            <renderToken source="CompanyPhone" prefix="Phone: " suffix=" " />
-            <renderToken source="CompanyMobile" prefix="Mobile: " suffix=" " />
-            <renderToken source="CompanyFax" prefix="Fax: " suffix=" " />
-          </TextLabel>
-          <TextLabel source="CompanyEmail">
-            <renderToken source="CompanyEmail" prefix="E-mail: " />
-          </TextLabel>
-          <br />
-          <Label html="Representative of the Freight Forwarder" style="&bold;" />
-          <TextLabel source="Position">
-            <renderToken source="FirstName" />
-            <renderToken source="LastName" />
-          </TextLabel>
-          <TextLabel source="Phone">
-            <renderToken source="Phone" suffix=" " />
-            <renderToken source="Mobile" />
-          </TextLabel>
-          <TextLabel source="Email" />
-        </FlowPanel>
+
+        <cell style="vertical-align:top;">
+          <FlowPanel>
+            <FlowPanel name="ForwarderInfo">
+              <properties locale="en" />
+            </FlowPanel>
+            <br />
+            <Label html="Representative of the Freight Forwarder" style="&bold;" />
+            <TextLabel source="Position">
+              <renderToken source="FirstName" />
+              <renderToken source="LastName" />
+            </TextLabel>
+            <TextLabel source="Phone">
+              <renderToken source="Phone" suffix=" " />
+              <renderToken source="Mobile" />
+            </TextLabel>
+            <TextLabel source="Email" />
+          </FlowPanel>
+        </cell>
       </HorizontalPanel>
     </FlowPanel>
 

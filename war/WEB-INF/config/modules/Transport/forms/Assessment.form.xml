@@ -57,22 +57,19 @@
         <InputText source="UnloadingTerminal" style="&inline; width:130px;" />
       </FlowPanel>
 
-      <FlowPanel name="AmountsPanel" style="&section;">
+      <FlowPanel style="&section;">
         &separator;
-        <Label text="=customerPrice" style="&labelLeft;" />
-        <Label name="IncomeTotal" style="&inline; font-weight:bold; margin-right:5px;" />
-        <DataSelector name="Currency" source="Currency" placeholder="=currencyShort"
-          style="&inline; width:40px; margin-right:10px;" editEnabled="false" />
-        <Label text="=print" style="&labelRight;" />
-        <Button name="LT" html="LT" style="&inline; margin-right:10px;" disablable="false" />
-        <Button name="RU" html="RU" style="&inline; margin-right:10px;" disablable="false" />
-        <Button name="EN" html="EN" style="&inline; margin-right:10px;" disablable="false" />
-        
-        <FlowPanel style="&section;">
-          <Label text="=transportCost" style="&labelLeft;" />
-          <Label name="ExpenseTotal" style="&inline; font-weight:bold; margin-right:10px;" />
-          <Label text="=cargoProfit" style="&labelRight;" />
-          <Label name="Profit" style="&inline; font-weight:bold;" />
+        <Label text="=currency" class="bee-required" style="&labelLeft;" />
+        <DataSelector name="Currency" source="Currency" required="true"
+          style="&inline; width:40px; margin-right:20px;" editEnabled="false" />
+                  
+        <FlowPanel name="AmountsPanel" style="&inline; &section;">
+          <InlineLabel text="=customerPrice" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel name="IncomeTotal" style="font-weight:bold; margin-right:20px;" />
+          <InlineLabel text="=transportCost" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel name="ExpenseTotal" style="font-weight:bold; margin-right:20px;" />
+          <InlineLabel text="=cargoProfit" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel name="Profit" style="font-weight:bold;" />
         </FlowPanel>
       </FlowPanel>
     </FlowPanel>

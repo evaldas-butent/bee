@@ -4,20 +4,15 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_CARGO_INVOICE_INCOMES;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
@@ -31,17 +26,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHandler {
 
   private final Button confirmAction = new Button(Localized.getConstants().trInvoice(), this);
-
-  @Override
-  public void afterCreateWidget(String name, IdentifiableWidget widget,
-      WidgetDescriptionCallback callback) {
-
-    if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_CARGO_INVOICE_INCOMES)) {
-      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor());
-    } else {
-      super.afterCreateWidget(name, widget, callback);
-    }
-  }
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {

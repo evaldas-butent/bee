@@ -52,6 +52,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent.Effect;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -67,6 +69,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,14 +129,12 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void afterInsertRow(IsRow result) {
-      refreshExpenses();
-      refreshTotals();
+      refresh();
     }
 
     @Override
     public void afterUpdateRow(IsRow result) {
-      refreshExpenses();
-      refreshTotals();
+      refresh();
     }
 
     @Override
@@ -146,6 +147,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
         public void onSuccess(Integer result) {
           BeeKeeper.getBus().fireEvent(new RowDeleteEvent(expeditionTrips, tripId));
           BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(), row.getId()));
+          refresh();
         }
       });
       return DeleteMode.CANCEL;
@@ -201,16 +203,9 @@ public class AssessmentForm extends AbstractFormInterceptor {
       }
     }
 
-    private void refreshExpenses() {
-      Widget w = getFormView().getWidgetByName(TBL_CARGO_EXPENSES);
-
-      if (w != null && w instanceof ChildGrid) {
-        GridPresenter presenter = ((ChildGrid) w).getPresenter();
-
-        if (presenter != null) {
-          presenter.refresh(false);
-        }
-      }
+    private void refresh() {
+      DataChangeEvent.fireRefresh(TBL_CARGO_EXPENSES);
+      refreshTotals();
     }
   }
 
@@ -218,6 +213,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
 
     @Override
     public void afterDeleteRow(long rowId) {
+      Data.onTableChange(TBL_CARGO_TRIPS, EnumSet.of(Effect.REFRESH));
       refreshTotals();
     }
 
@@ -438,11 +434,6 @@ public class AssessmentForm extends AbstractFormInterceptor {
     args.addDataItem(COL_CARGO, row.getLong(form.getDataIndex(COL_CARGO)));
     args.addDataItem(COL_ASSESSOR, row.getId());
 
-    final Long currency = row.getLong(form.getDataIndex(ExchangeUtils.COL_CURRENCY));
-
-    if (currency != null) {
-      args.addDataItem(ExchangeUtils.COL_CURRENCY, currency);
-    }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -463,8 +454,7 @@ public class AssessmentForm extends AbstractFormInterceptor {
             .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, COL_AMOUNT)), 2);
 
         if (incomeTotalWidget != null) {
-          incomeTotalWidget.getElement()
-              .setInnerText(BeeUtils.joinWords(incomeTotal, currency != null ? null : "LTL"));
+          incomeTotalWidget.getElement().setInnerText(BeeUtils.toString(incomeTotal));
         }
         if (expenseTotalWidget != null) {
           expenseTotalWidget.getElement().setInnerText(BeeUtils.toString(expenseTotal));
@@ -603,14 +593,6 @@ public class AssessmentForm extends AbstractFormInterceptor {
         header.addCommandItem(cmdAnswered);
       }
       if (primary) {
-        if (AssessmentStatus.in(status, AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED)) {
-          header.addCommandItem(new Button(Localized.getConstants().trPreInvoice(),
-              new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                }
-              }));
-        }
         if (AssessmentStatus.in(status, AssessmentStatus.NEW, AssessmentStatus.ANSWERED)) {
           header.addCommandItem(cmdLost);
         }

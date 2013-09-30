@@ -14,7 +14,7 @@
     <Numeric name="TripPercent" precision="3" scale="0" />
     <Numeric name="CargoPercent" precision="3" scale="0" />
     <Numeric name="CargoOrder" precision="2" scale="0" />
-    <Relation name="CargoExpense" relation="CargoExpenses" cascade="SET_NULL" />
+    <Relation name="CargoExpense" relation="CargoExpenses" cascade="DELETE" editable="true" />
   </Fields>
 
   <Constraints>
