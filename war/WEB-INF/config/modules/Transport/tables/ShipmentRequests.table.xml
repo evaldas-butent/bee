@@ -5,20 +5,20 @@
   idName="ShipmentRequestID"
   >
   <Fields>
-    <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" />
+    <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="=trERcreationDate" />
   
-    <String name="CustomerName" precision="100" notNull="true" label="=companyName" />
-    <String name="CustomerCode" precision="30" label="=companyCode" />
-    <String name="CustomerVATCode" precision="30" label="=companyVATCode" />
+    <String name="CustomerName" precision="100" notNull="true" label="=trERcustomerName" />
+    <String name="CustomerCode" precision="30" label="=trERcustomerCode" />
+    <String name="CustomerVatCode" precision="30" label="=trERcustomerVatCode" />
 
-    <String name="CustomerAddress" precision="100" label="=address" />
-    <String name="CustomerPhone" precision="50" label="=phone" />
-    <String name="CustomerEmail" precision="255" label="=email" />
+    <String name="CustomerAddress" precision="100" label="=trERcustomerAddress" />
+    <String name="CustomerPhone" precision="50" label="=trERcustomerPhone" />
+    <String name="CustomerEmail" precision="255" label="=trERcustomerEmail" />
 
-    <String name="CustomerContact" precision="50" label="=personContact" />
-    <String name="CustomerContactPosition" precision="50" label="=personPosition" />
+    <String name="CustomerContact" precision="50" label="=trERcustomerContact" />
+    <String name="CustomerContactPosition" precision="50" label="=trERcustomerContactPosition" />
 
-    <String name="CustomerExchangeCode" precision="30" label="=exchangeCode" />
+    <String name="CustomerExchangeCode" precision="30" label="=trERcustomerExchangeCode" />
 
     <String name="LoadingCompanyName" precision="100" label="=trLoadingCompanyName" />
     <String name="LoadingEmail" precision="255" label="=trLoadingEmail" />
@@ -28,7 +28,7 @@
     <String name="UnloadingEmail" precision="255" label="=trUnloadingEmail" />
     <String name="UnloadingCity" precision="30" label="=trUnloadingCity" />
 
-    <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" />
+    <Relation name="Expedition" relation="ExpeditionTypes" label="=trERexpeditionType" />
 
     <DateTime name="DeliveryTime" label="=trERdeliveryTime" />
     <String name="TermsOfDelivery" precision="30" label="=trERtermsOfDelivery" />
@@ -38,8 +38,9 @@
 
     <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo" />
 
-    <Relation name="Manager" relation="Users" label="=manager" />
+    <Relation name="Manager" relation="Users" label="=trERresponsibleManager" />
 
-    <Text name="Notes" label="=notes" />
+    <Text name="Notes" label="=trERnotes" />
+    <Text name="Host" label="=trERhost" />
   </Fields>
 </Table>

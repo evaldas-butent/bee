@@ -68,6 +68,7 @@ public final class DomUtils {
   public static final String TAG_PROGRESS = "progress";
   public static final String TAG_SELECT = "select";
   public static final String TAG_SPAN = "span";
+  public static final String TAG_SUMMARY = "summary";
   public static final String TAG_SVG = "svg";
   public static final String TAG_TABLE = "table";
   public static final String TAG_TD = "td";

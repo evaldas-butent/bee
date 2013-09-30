@@ -46,6 +46,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.layout.Details;
 import com.butent.bee.client.layout.FieldSet;
 import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.CellVector;
@@ -117,6 +118,7 @@ import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.RowIdLabel;
+import com.butent.bee.client.widget.Summary;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
@@ -184,6 +186,7 @@ public enum FormWidget {
   DATE_TIME_LABEL("DateTimeLabel", EnumSet.of(Type.DISPLAY)),
   DECIMAL_LABEL("DecimalLabel", EnumSet.of(Type.DISPLAY)),
   DECORATOR("decorator", EnumSet.of(Type.IS_DECORATOR)),
+  DETAILS("Details", EnumSet.of(Type.HAS_CHILDREN)),
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DIV("div", null),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
@@ -240,6 +243,7 @@ public enum FormWidget {
   SPLIT_PANEL("SplitPanel", EnumSet.of(Type.PANEL)),
   STACK_PANEL("StackPanel", EnumSet.of(Type.PANEL)),
   STRING_PICKER("StringPicker", EnumSet.of(Type.EDITABLE)),
+  SUMMARY("Summary", null),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
@@ -610,6 +614,10 @@ public enum FormWidget {
         }
         break;
 
+      case DETAILS:
+        widget = new Details(BeeConst.isTrue(attributes.get(ATTR_OPEN)));
+        break;
+        
       case DISCLOSURE:
         if (BeeUtils.isEmpty(html)) {
           widget = new Disclosure();
@@ -1039,6 +1047,10 @@ public enum FormWidget {
         }
         break;
 
+      case SUMMARY:
+        widget = new Summary(html);
+        break;
+        
       case TAB_BAR:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         Orientation orientation = BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL))

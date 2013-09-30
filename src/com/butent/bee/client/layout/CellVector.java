@@ -4,7 +4,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -14,7 +13,7 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.shared.ui.CssUnit;
 
 public abstract class CellVector extends ComplexPanel implements IdentifiableWidget,
-    HasIndexedWidgets, HasAlignment, InsertPanel, IsHtmlTable {
+    HasIndexedWidgets, HasAlignment, IsHtmlTable {
 
   private final Element table;
   private final Element body;

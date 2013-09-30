@@ -5,11 +5,11 @@
   caption="=trERgridCaption" order="Created desc"
   >
   <g:columns>
-    <DataColumn name="Created" caption="=date" />
+    <DataColumn name="Created" />
 
     <DataColumn name="CustomerName" visible="true" />
     <DataColumn name="CustomerCode" visible="false" />
-    <DataColumn name="CustomerVATCode" visible="false" />
+    <DataColumn name="CustomerVatCode" visible="false" />
 
     <DataColumn name="CustomerAddress" visible="false" />
     <DataColumn name="CustomerPhone" />
@@ -21,6 +21,7 @@
     <DataColumn name="CustomerExchangeCode" visible="false" />
     
     <DataColumn name="LoadingCompanyName" visible="false" />
+    <DataColumn name="LoadingContact" visible="false" />
     <DataColumn name="LoadingDate" />
 
     <DataColumn name="LoadingCity" />
@@ -36,6 +37,7 @@
     <DataColumn name="LoadingNumber" visible="false" />
 
     <DataColumn name="UnloadingCompanyName" visible="false" />
+    <DataColumn name="UnloadingContact" visible="false" />
     <DataColumn name="UnloadingDate" />
 
     <DataColumn name="UnloadingCity" />
@@ -76,5 +78,6 @@
     <RelColumn name="Manager" />
 
     <DataColumn name="Notes" visible="false" />
+    <DataColumn name="Host" visible="false" />
   </g:columns>
 </g:Grid>

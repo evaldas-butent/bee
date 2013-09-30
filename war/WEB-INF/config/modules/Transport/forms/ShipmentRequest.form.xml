@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator "<hr/>">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="ShipmentRequest" viewName="ShipmentRequests" caption="=trERrequest"
+  >
+  <FlowPanel>
+    <Details open="true">
+      <Summary text="=trERcustomerInfo" />
+      
+      <Table>
+        <row>
+          <Label text="=trERcustomerName" class="bee-required" />
+          <InputText source="CustomerName" />
+          <Label text="=trERcustomerAddress" class="bee-required" />
+          <InputText source="CustomerAddress" />
+        </row>
+
+        <row>
+          <Label text="=trERcustomerCode" class="bee-required" />
+          <InputText source="CustomerCode" />
+          <Label text="=trERcustomerVatCode" />
+          <InputText source="CustomerVATCode" />
+        </row>
+
+        <row>
+          <Label text="=trERcustomerContact" class="bee-required" />
+          <InputText source="CustomerContact" />
+          <Label text="=trERcustomerContactPosition" class="bee-required" />
+          <InputText source="CustomerContactPosition" />
+        </row>
+
+        <row>
+          <Label text="=trERcustomerPhone" class="bee-required" />
+          <InputText source="CustomerPhone" />
+          <Label text="=trERcustomerEmail" class="bee-required" />
+          <InputText source="CustomerEmail" />
+        </row>
+
+        <row>
+          <Label text="=trERcustomerExchangeCode" />
+          <InputText source="CustomerExchangeCode" />
+        </row>
+      </Table>
+    </Details>
+    &separator;
+
+    <Details open="true">
+      <Summary text="=trLoadingInfo" />
+      
+      <Table>
+        <row>
+          <Label text="=trLoadingCompanyName" class="bee-required" />
+          <InputText source="LoadingCompanyName" />
+          <Label text="=trLoadingContact" class="bee-required" />
+          <InputText source="LoadingContact" />
+        </row>
+
+        <row>
+          <Label text="=trLoadingAddress" class="bee-required" />
+          <InputText source="LoadingAddress" />
+          <Label text="=trLoadingPhone" class="bee-required" />
+          <InputText source="LoadingPhone" />
+        </row>
+
+        <row>
+          <Label text="=trLoadingCity" class="bee-required" />
+          <InputText source="LoadingCity" />
+          <Label text="=trLoadingDate" class="bee-required" />
+          <InputDateTime source="LoadingDate" />
+        </row>
+
+        <row>
+          <Label text="=trLoadingEmail" />
+          <InputText source="LoadingEmail" />
+          <Label text="=trLoadingFax" />
+          <InputText source="LoadingFax" />
+        </row>
+
+        <row>
+          <Label text="=trLoadingNumber" />
+          <InputText source="LoadingNumber" />
+        </row>
+      </Table>
+    </Details>
+    &separator;
+
+    <Details open="true">
+      <Summary text="=trUnloadingInfo" />
+      
+      <Table>
+        <row>
+          <Label text="=trUnloadingCompanyName" class="bee-required" />
+          <InputText source="UnloadingCompanyName" />
+          <Label text="=trUnloadingContact" class="bee-required" />
+          <InputText source="UnloadingContact" />
+        </row>
+
+        <row>
+          <Label text="=trUnloadingAddress" class="bee-required" />
+          <InputText source="UnloadingAddress" />
+          <Label text="=trUnloadingPhone" class="bee-required" />
+          <InputText source="UnloadingPhone" />
+        </row>
+
+        <row>
+          <Label text="=trUnloadingCity" class="bee-required" />
+          <InputText source="UnloadingCity" />
+          <Label text="=trUnloadingDate" class="bee-required" />
+          <InputDateTime source="UnloadingDate" />
+        </row>
+
+        <row>
+          <Label text="=trUnloadingEmail" />
+          <InputText source="UnloadingEmail" />
+          <Label text="=trUnloadingFax" />
+          <InputText source="UnloadingFax" />
+        </row>
+
+        <row>
+          <Label text="=trUnloadingNumber" />
+          <InputText source="UnloadingNumber" />
+        </row>
+      </Table>
+    </Details>
+    &separator;
+
+    <Details open="true">
+      <Summary text="=trERshipmentInfo" />
+      
+      <Table>
+        <row>
+          <Label text="=trERexpeditionType" class="bee-required" />
+          <DataSelector source="Expedition" />
+          <Label text="=trERshippingTerms" class="bee-required" />
+          <DataSelector source="ShippingTerm" />
+        </row>
+
+        <row>
+          <CheckBox source="CustomsBrokerage" text="=trERcustomsBrokerage" />
+          <CheckBox source="FreightInsurance" text="=trERfreightInsurance" />
+        </row>
+      </Table>
+    </Details>
+    &separator;
+
+    <Details open="true">
+      <Summary text="=trERcargoInfo" />
+      
+      <Table>
+        <row>
+          <Label text="=cargo" class="bee-required" />
+          <InputArea source="Description" />
+          <Label text="=quantity" />
+          <InputInteger source="Quantity" />
+        </row>
+
+        <row>
+          <Label text="=weight" class="bee-required" />
+          <InputDecimal source="Weight" />
+          <Label text="=volume" />
+          <InputDecimal source="Volume" />
+        </row>
+
+        <row>
+          <Label text="LDM" />
+          <InputDecimal source="LDM" />
+          <Label text="=length" />
+          <InputDecimal source="Length" />
+        </row>
+
+        <row>
+          <Label text="=width" />
+          <InputDecimal source="Width" />
+          <Label text="=height" />
+          <InputDecimal source="Height" />
+        </row>
+
+        <row>
+          <Label text="=trPalettesQuantity" />
+          <InputInteger source="Palettes" />
+        </row>
+
+        <row>
+          <Label text="=value" />
+          <InputCurrency source="Value" />
+          <Label text="=trCargoValueCurrency" />
+          <DataSelector source="ValueCurrency" />
+        </row>
+
+      </Table>
+    </Details>
+    &separator;
+
+    <Details open="true">
+      <Summary text="=trERadditionalInfo" />
+      
+      <Table>
+        <row>
+          <Label text="=trERresponsibleManager" />
+          <DataSelector source="Manager" />
+          <Label text="=trERnotes" />
+          <InputArea source="Notes" />
+        </row>
+
+        <row>
+          <Label text="=trERcreationDate" />
+          <InputDateTime source="Created" />
+          <Label text="=trERhost" />
+          <InputArea source="Host" />
+        </row>
+
+      </Table>
+    </Details>
+    &separator;
+
+  </FlowPanel>
+</f:Form>

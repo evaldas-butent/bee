@@ -985,4 +985,16 @@
 
   <xs:element name="RowIdLabel" type="valueLabel" substitutionGroup="widget" />
 
+  <xs:element name="Details" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="hasChildren">
+          <xs:attribute name="open" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Summary" type="widgetType" substitutionGroup="widget" />
+
 </xs:schema>
