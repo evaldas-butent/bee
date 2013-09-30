@@ -790,6 +790,12 @@
   overflow: auto;
 }
 
+.bee-ec-ItemDetails-itemAnalogs-info {
+  text-decoration: underline;
+  cursor: pointer;
+  line-height: 1.5;
+}
+
 .bee-ec-ItemDetails-info-itemCode {
   padding-left: 1em;
   font-weight: bold;

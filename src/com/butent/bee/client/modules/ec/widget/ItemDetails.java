@@ -1,8 +1,12 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -14,6 +18,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
@@ -22,6 +27,8 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class ItemDetails extends Flow {
 
@@ -52,6 +59,74 @@ public class ItemDetails extends Flow {
     }
 
     return container;
+  }
+
+  private static Widget renderAnalogs(EcItem item) {
+    if (!item.hasAnalogs()) {
+      return null;
+    }
+
+    ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_ITEM_ANALOGS);
+    params.addDataItem(EcConstants.COL_TCD_ARTICLE, item.getArticleId());
+    params.addDataItem(EcConstants.COL_TCD_ARTICLE_NR, item.getCode());
+    params.addDataItem(EcConstants.COL_TCD_BRAND, item.getBrand());
+    
+    String stylePrefix = EcStyles.name(STYLE_PRIMARY, "itemAnalogs-");
+    final Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
+    final Flow wrapper = new Flow(stylePrefix + STYLE_WRAPPER);
+    
+    final String styleAnalogInfo = stylePrefix + "info";
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          return;
+        }
+        List<EcItem> items = EcKeeper.getResponseItems(response);
+        
+        for (EcItem analog : items) {
+          Widget infoLabel = renderAnalogItem(analog);
+          if (infoLabel != null) {
+            infoLabel.addStyleName(styleAnalogInfo);
+            wrapper.add(infoLabel);
+          }
+        }
+
+        container.add(wrapper);
+      }
+    });
+
+    return container;
+  }
+  
+  private static Widget renderAnalogItem(final EcItem item) {
+
+    if (item == null) {
+      return null;
+    }
+
+    String code = BeeUtils.isEmpty(item.getCode()) ? "" : item.getCode();
+    String name = BeeUtils.isEmpty(item.getName()) ? "" : item.getName();
+    String brand = EcKeeper.getBrandName(item.getBrand());
+    brand = BeeUtils.isEmpty(brand) ? "" : brand;
+    
+    String labelText = BeeUtils.join(" ", code, name, brand);
+
+    if (BeeUtils.isEmpty(labelText)) {
+      return null;
+    }
+
+    Label content = new Label(labelText);
+
+    content.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        EcKeeper.openItem(item, true);
+      }
+    });
+
+    return content;
   }
 
   private static Widget renderCarTypes(EcItemInfo info) {
@@ -241,38 +316,38 @@ public class ItemDetails extends Flow {
     Widget oeNumbers = renderOeNumbers(info);
     Widget suppliers = renderSuppliers(item);
     Widget carTypes = renderCarTypes(info);
-
-    int tabIndex = 0;
+    Widget analogs = renderAnalogs(item);
 
     if (remainders != null) {
       StyleUtils.makeAbsolute(remainders);
       StyleUtils.setLeft(remainders, 0);
 
-      widget.insert(remainders, Localized.getConstants().ecItemDetailsRemainders(), tabIndex);
-      tabIndex++;
+      widget.add(remainders, Localized.getConstants().ecItemDetailsRemainders());
     }
 
     if (oeNumbers != null) {
       StyleUtils.makeAbsolute(oeNumbers);
 
-      widget.insert(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers(),
-          tabIndex);
-      tabIndex++;
+      widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers());
     }
 
     if (suppliers != null) {
       StyleUtils.makeAbsolute(suppliers);
       StyleUtils.setLeft(suppliers, 0);
 
-      widget.insert(suppliers, Localized.getConstants().ecItemDetailsSuppliers(), tabIndex);
-      tabIndex++;
+      widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers());
     }
 
     if (carTypes != null) {
       StyleUtils.makeAbsolute(carTypes);
 
-      widget.insert(carTypes, Localized.getConstants().ecItemDetailsCarTypes(), tabIndex);
-      tabIndex++;
+      widget.add(carTypes, Localized.getConstants().ecItemDetailsCarTypes());
+    }
+
+    if (analogs != null) {
+      StyleUtils.makeAbsolute(analogs);
+
+      widget.add(analogs, Localized.getConstants().ecItemAnalogs());
     }
 
     return widget;

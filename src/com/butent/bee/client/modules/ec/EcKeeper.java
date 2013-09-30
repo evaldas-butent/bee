@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
@@ -17,6 +18,7 @@ import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.ec.render.CategoryFullNameRenderer;
 import com.butent.bee.client.modules.ec.view.EcView;
@@ -27,6 +29,7 @@ import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -74,6 +77,8 @@ public final class EcKeeper {
   private static final InputText searchBox = new InputText();
 
   private static final CartList cartList = new CartList();
+
+  private static final int SHIFT_POPUP_IN_PIXELS = 15;
 
   private static EcCommandWidget activeCommand;
 
@@ -335,7 +340,17 @@ public final class EcKeeper {
 
               dialog.setHideOnEscape(true);
               dialog.setAnimationEnabled(true);
-              dialog.center();
+
+              Widget parent = Popup.getActivePopup();
+
+              if (parent != null) {
+                int left = StyleUtils.getLeft(parent);
+                int top = StyleUtils.getTop(parent);
+
+                dialog.showAt(left + SHIFT_POPUP_IN_PIXELS, top + SHIFT_POPUP_IN_PIXELS, 0);
+              } else {
+                dialog.center();
+              }
             }
           }
         });
