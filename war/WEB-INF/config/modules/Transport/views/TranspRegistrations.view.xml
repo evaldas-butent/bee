@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TranspRegistrations" source="TranspRegistrations" 
+  editForm="TranspRegistration" newRowForm="TranspRegistration"
+  caption="=trRegistrations" newRowCaption="=trRegistrationNew"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="CompanyName" />
+    <SimpleColumn name="CompanyCode" />
+    <SimpleColumn name="VatCode" />
+
+    <SimpleColumn name="Contact" />
+    <SimpleColumn name="ContactPosition" />
+
+    <SimpleColumn name="Address" />
+    <SimpleColumn name="City" />
+    <SimpleColumn name="Country" />
+
+    <SimpleColumn name="Phone" />
+    <SimpleColumn name="Mobile" />
+
+    <SimpleColumn name="Fax" />
+    <SimpleColumn name="Email" />
+
+    <SimpleColumn name="ExchangeCode" />
+
+    <SimpleColumn name="Bank" />
+    <SimpleColumn name="BankAddress" />
+    <SimpleColumn name="BankAccount" />
+    <SimpleColumn name="Swift" />
+
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Host" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

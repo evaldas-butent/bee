@@ -5,42 +5,49 @@
   idName="ShipmentRequestID"
   >
   <Fields>
-    <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="=trERcreationDate" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
   
-    <String name="CustomerName" precision="100" notNull="true" label="=trERcustomerName" />
-    <String name="CustomerCode" precision="30" label="=trERcustomerCode" />
-    <String name="CustomerVatCode" precision="30" label="=trERcustomerVatCode" />
+    <String name="CustomerName" precision="100" notNull="true" label="=trRequestCustomerName" />
+    <String name="CustomerCode" precision="30" notNull="true" label="=trRequestCustomerCode" />
+    <String name="CustomerVatCode" precision="30" label="=trRequestCustomerVatCode" />
 
-    <String name="CustomerAddress" precision="100" label="=trERcustomerAddress" />
-    <String name="CustomerPhone" precision="50" label="=trERcustomerPhone" />
-    <String name="CustomerEmail" precision="255" label="=trERcustomerEmail" />
+    <String name="CustomerAddress" precision="100" notNull="true"
+      label="=trRequestCustomerAddress" />
+    <String name="CustomerPhone" precision="50" notNull="true" label="=trRequestCustomerPhone" />
+    <String name="CustomerEmail" precision="255" notNull="true" label="=trRequestCustomerEmail" />
 
-    <String name="CustomerContact" precision="50" label="=trERcustomerContact" />
-    <String name="CustomerContactPosition" precision="50" label="=trERcustomerContactPosition" />
+    <String name="CustomerContact" precision="50" notNull="true" 
+      label="=trRequestCustomerContact" />
+    <String name="CustomerContactPosition" precision="50" notNull="true"
+      label="=trRequestCustomerContactPosition" />
 
-    <String name="CustomerExchangeCode" precision="30" label="=trERcustomerExchangeCode" />
+    <String name="CustomerExchangeCode" precision="30" label="=trRequestCustomerExchangeCode" />
 
-    <String name="LoadingCompanyName" precision="100" label="=trLoadingCompanyName" />
+    <String name="LoadingCompanyName" precision="100" notNull="true"
+      label="=trLoadingCompanyName" />
     <String name="LoadingEmail" precision="255" label="=trLoadingEmail" />
-    <String name="LoadingCity" precision="30" label="=trLoadingCity" />
+    <String name="LoadingCity" precision="30" notNull="true" label="=trLoadingCity" />
 
-    <String name="UnloadingCompanyName" precision="100" label="=trUnloadingCompanyName" />
+    <String name="UnloadingCompanyName" precision="100" notNull="true"
+      label="=trUnloadingCompanyName" />
     <String name="UnloadingEmail" precision="255" label="=trUnloadingEmail" />
-    <String name="UnloadingCity" precision="30" label="=trUnloadingCity" />
+    <String name="UnloadingCity" precision="30" notNull="true" label="=trUnloadingCity" />
 
-    <Relation name="Expedition" relation="ExpeditionTypes" label="=trERexpeditionType" />
+    <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
+      label="=trRequestExpeditionType" />
 
-    <DateTime name="DeliveryTime" label="=trERdeliveryTime" />
-    <String name="TermsOfDelivery" precision="30" label="=trERtermsOfDelivery" />
+    <Date name="DeliveryDate" label="=trRequestDeliveryDate" />
+    <String name="DeliveryTime" precision="10" label="=trRequestDeliveryTime" />
+    <String name="TermsOfDelivery" precision="30" label="=trRequestTermsOfDelivery" />
     
-    <Boolean name="CustomsBrokerage" label="=trERcustomsBrokerage" />
-    <Boolean name="FreightInsurance" label="=trERfreightInsurance" />
+    <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
+    <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
 
     <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo" />
 
-    <Relation name="Manager" relation="Users" label="=trERresponsibleManager" />
+    <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
 
-    <Text name="Notes" label="=trERnotes" />
-    <Text name="Host" label="=trERhost" />
+    <Text name="Notes" label="=trRequestNotes" />
+    <Text name="Host" label="=trRequestHost" />
   </Fields>
 </Table>

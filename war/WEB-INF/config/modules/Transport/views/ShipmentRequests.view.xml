@@ -4,10 +4,10 @@
 
   name="ShipmentRequests" source="ShipmentRequests"
   newRowForm="ShipmentRequest" editForm="ShipmentRequest"
-  newRowCaption="=trERrequestNew"
+  newRowCaption="=trRequestUnregisteredNew"
   >
   <Columns>
-    <SimpleColumn name="Created" />
+    <SimpleColumn name="Date" />
 
     <SimpleColumn name="CustomerName" />
     <SimpleColumn name="CustomerCode" />
@@ -35,6 +35,7 @@
       <SimpleColumn name="Name" alias="ExpeditionType" />
     </SimpleJoin>
 
+    <SimpleColumn name="DeliveryDate" />
     <SimpleColumn name="DeliveryTime" />
     <SimpleColumn name="TermsOfDelivery" />
 
@@ -45,10 +46,13 @@
     <SimpleJoin name="Cargo" joinType="LEFT">
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
-        <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" editable="true" />
-        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" editable="true" />
+        <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"
+          editable="true" />
+        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" 
+          editable="true" />
 
-        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
+        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" 
+          editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
           <SimpleColumn name="Code" alias="LoadingCountryCode" />
@@ -56,45 +60,51 @@
 
         <SimpleColumn name="Phone" alias="LoadingPhone" editable="true" label="=trLoadingPhone" />
         <SimpleColumn name="Fax" alias="LoadingFax" editable="true" label="=trLoadingFax" />
-        <SimpleColumn name="Number" alias="LoadingNumber" editable="true" label="=trLoadingNumber" />
+        <SimpleColumn name="Number" alias="LoadingNumber" editable="true" 
+          label="=trLoadingNumber" />
       </SimpleJoin>
 
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
-        <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" editable="true" />
-        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" editable="true" />
+        <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"
+          editable="true" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" 
+          editable="true" />
 
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" 
+          editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
 
-        <SimpleColumn name="Phone" alias="UnloadingPhone" editable="true" label="=trUnloadingPhone" />
+        <SimpleColumn name="Phone" alias="UnloadingPhone" editable="true" 
+          label="=trUnloadingPhone" />
         <SimpleColumn name="Fax" alias="UnloadingFax" editable="true" label="=trUnloadingFax" />
-        <SimpleColumn name="Number" alias="UnloadingNumber" editable="true" label="=trUnloadingNumber" />
+        <SimpleColumn name="Number" alias="UnloadingNumber" editable="true" 
+          label="=trUnloadingNumber" />
       </SimpleJoin>
 
-      <SimpleColumn name="Description" editable="true" />
-      <SimpleColumn name="Quantity" editable="true" />
+      <SimpleColumn name="Description" alias="CargoDescription" editable="true" 
+        label="=trRequestCargoDescription"/>
+      <SimpleColumn name="Quantity" editable="true" label="=trRequestCargoQuantity" />
 
-      <SimpleColumn name="Weight" editable="true" />
-      <SimpleColumn name="Volume" editable="true" />
-      <SimpleColumn name="LDM" editable="true" />
-      <SimpleColumn name="Length" editable="true" />
-      <SimpleColumn name="Width" editable="true" />
-      <SimpleColumn name="Height" editable="true" />
+      <SimpleColumn name="Weight" editable="true" label="=trRequestCargoWeight" />
+      <SimpleColumn name="Volume" editable="true" label="=trRequestCargoVolume" />
+      <SimpleColumn name="LDM" editable="true" label="=trRequestCargoLdm" />
+      <SimpleColumn name="Length" editable="true" label="=trRequestCargoLength" />
+      <SimpleColumn name="Width" editable="true" label="=trRequestCargoWidth" /> 
+      <SimpleColumn name="Height" editable="true" label="=trRequestCargoHeight" />
 
-      <SimpleColumn name="Palettes" editable="true" />
+      <SimpleColumn name="Palettes" editable="true" label="=trRequestCargoPalettes" />
 
-      <SimpleColumn name="Value" editable="true" />
-
-      <SimpleColumn name="ValueCurrency" editable="true" />
+      <SimpleColumn name="Value" editable="true" label="=trRequestCargoValue" />
+      <SimpleColumn name="ValueCurrency" editable="true" label="=trRequestCargoCurrency" />
       <SimpleJoin joinType="LEFT" name="ValueCurrency">
         <SimpleColumn name="Name" alias="ValueCurrencyName" />
       </SimpleJoin>
 
-      <SimpleColumn name="ShippingTerm" editable="true" />
+      <SimpleColumn name="ShippingTerm" editable="true" label="=trRequestShippingTerms" />
       <SimpleJoin joinType="LEFT" name="ShippingTerm">
         <SimpleColumn name="Name" alias="ShippingTermName" />
         <SimpleColumn name="Description" alias="ShippingTermDescription" />
@@ -114,6 +124,9 @@
 
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Host" />
-
   </Columns>
+  
+  <Order>
+    <OrderBy column="LoadingDate" />
+  </Order>
 </View>

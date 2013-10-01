@@ -132,8 +132,8 @@ public class CargoRequestForm extends AbstractFormInterceptor {
   private void finishRequest() {
     final FormView form = getFormView();
 
-    Global.inputString(Localized.getConstants().trRequestFinishAction(), Localized.getConstants()
-        .trRequestFinishReason(), new StringCallback(true) {
+    Global.inputString(Localized.getConstants().trRequestActionFinish(),
+        Localized.getConstants().trRequestFinishReason(), new StringCallback(true) {
       @Override
       public void onSuccess(String value) {
         List<BeeColumn> columns = Lists.newArrayList(DataUtils

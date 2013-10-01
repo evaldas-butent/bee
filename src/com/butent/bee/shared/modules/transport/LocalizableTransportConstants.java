@@ -224,7 +224,7 @@ public interface LocalizableTransportConstants {
 
   String trProformaInvoice();
 
-  String trRequestFinishAction();
+  String trRequestActionFinish();
 
   String trRequestFinishReason();
 
@@ -293,5 +293,4 @@ public interface LocalizableTransportConstants {
   String vehicleTankCapacity();
 
   String vehicleType();
-
 }

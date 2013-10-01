@@ -3,39 +3,78 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
-  flexGrow="1" flexShrink="1" order="Date desc"
+  flexGrow="1" order="Date desc"
   >
-  <g:north size="40">
-    <w:HorizontalPanel>
-      <w:CheckBox name="Owned" text="=trOwned" checked="true" />
-      <w:CheckBox name="Finished" text="=trShowFinished" />
-    </w:HorizontalPanel>
-  </g:north>
+<!--   <g:north size="40"> -->
+<!--     <w:HorizontalPanel> -->
+<!--       <w:CheckBox name="Owned" text="=trOwned" checked="true" /> -->
+<!--       <w:CheckBox name="Finished" text="=trShowFinished" /> -->
+<!--     </w:HorizontalPanel> -->
+<!--   </g:north> -->
+
   <g:columns>
-    <DataColumn name="Date" caption="=date" width="100" />
-    <DataColumn name="Finished" caption="=trRequestFinished" width="100" format="DATE_TIME_SHORT" />
+    <DataColumn name="Date" width="100" visible="true" />
+    <DataColumn name="Status" />
+    <DataColumn name="Finished" width="100" format="DATE_TIME_SHORT" />
+    <DataColumn name="Result" whiteSpace="nowrap" visible="false" />
     
-    <RelColumn name="Customer" caption="=customer" minWidth="100" whiteSpace="nowrap" />
+    <RelColumn name="Customer" caption="=trRequestCustomer" minWidth="100" whiteSpace="nowrap" 
+      visible="true" />
 
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+    <DataColumn name="LoadingDate" />
+    <RelColumn name="LoadingCompany" visible="false" />
+    <DataColumn name="LoadingContact" visible="false" />
 
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="=from" horizontalAlignment="center">
-      <renderer type="flag" />
-    </CalcColumn>
+    <RelColumn name="LoadingCity" />
+    <RelColumn name="LoadingCountry" />
 
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="=to" horizontalAlignment="center">
-      <renderer type="flag" />
-    </CalcColumn>
+    <DataColumn name="LoadingAddress" visible="false" />
+    <RelColumn name="LoadingEmail" visible="false" />
+    <DataColumn name="LoadingPhone" visible="false" />
+    <DataColumn name="LoadingFax" visible="false" />
+    <DataColumn name="LoadingNumber" visible="false" />
 
-    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
-    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="UnloadingDate" />
+    <RelColumn name="UnloadingCompany" visible="false" />
+    <DataColumn name="UnloadingContact" visible="false" />
 
-    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
-    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
-    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <RelColumn name="UnloadingCity" />
+    <RelColumn name="UnloadingCountry" />
+
+    <DataColumn name="UnloadingAddress" visible="false" />
+    <RelColumn name="UnloadingEmail" visible="false" />
+    <DataColumn name="UnloadingPhone" visible="false" />
+    <DataColumn name="UnloadingFax" visible="false" />
+    <DataColumn name="UnloadingNumber" visible="false" />
+    
+    <RelColumn name="Expedition" visible="false" />
+    <RelColumn name="ShippingTerm" visible="false" />
+
+    <DataColumn name="DeliveryDate" visible="false" />
+    <DataColumn name="DeliveryTime" visible="false" />
+    <DataColumn name="TermsOfDelivery" visible="false" />
+
+    <DataColumn name="CustomsBrokerage" visible="false" />
+    <DataColumn name="FreightInsurance" visible="false" />
+
+    <DataColumn name="CargoDescription" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Quantity" visible="false" />
+
+    <DataColumn name="Weight" visible="false" />
+    <DataColumn name="Volume" visible="false" />
+    <DataColumn name="LDM" visible="false" />
+    <DataColumn name="Length" visible="false" />
+    <DataColumn name="Width" visible="false" />
+    <DataColumn name="Height" visible="false" />
+    <DataColumn name="Palettes" visible="false" />
+
+    <DataColumn name="Value" />
+    <RelColumn name="ValueCurrency" />
 
     <RelColumn name="Manager" caption="=manager" minWidth="100" whiteSpace="nowrap" />
+    
+    <DataColumn name="Notes" whiteSpace="nowrap" visible="false" />
+    <DataColumn name="Host" whiteSpace="nowrap" visible="false" />
+    
   </g:columns>
 </g:Grid>

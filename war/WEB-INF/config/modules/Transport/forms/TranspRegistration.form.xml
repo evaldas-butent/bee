@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY area "width: 100&#37;; height: 40px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="TranspRegistration" viewName="TranspRegistrations" caption="=trRegistration"
+  >
+  <FlowPanel>
+
+    <Table style="border-collapse: collapse; margin-top: 2ex; margin-left: 1em;"
+        cellStyle="text-align: right; vertical-align: top; padding: 3px 5px;">
+
+      <row>
+        <Label text="=trRegistrationCompanyName" class="bee-required" />
+        <InputText source="CompanyName" />
+        <Label text="=trRegistrationCompanyCode" class="bee-required" />
+        <InputText source="CompanyCode" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationAddress" class="bee-required" />
+        <InputText source="Address" />
+        <Label text="=trRegistrationVatCode" />
+        <InputText source="VATCode" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationCity" class="bee-required" />
+        <InputText source="City" />
+        <Label text="=trRegistrationCountry" class="bee-required" />
+        <InputText source="Country" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationContact" class="bee-required" />
+        <InputText source="Contact" />
+        <Label text="=trRegistrationBank" />
+        <InputText source="Bank" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationContactPosition" class="bee-required" />
+        <InputText source="ContactPosition" />
+        <Label text="=trRegistrationBankAddress" />
+        <InputText source="BankAddress" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationPhone" class="bee-required" />
+        <InputText source="Phone" />
+        <Label text="=trRegistrationBankAccount" />
+        <InputText source="BankAccount" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationEmail" class="bee-required" />
+        <InputText source="Email" />
+        <Label text="=trRegistrationMobile" />
+        <InputText source="Mobile" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationExchangeCode" />
+        <InputText source="ExchangeCode" />
+        <Label text="=trRegistrationFax" />
+        <InputText source="Fax" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationSwift" />
+        <InputText source="Swift" />
+        <Label text="=trRegistrationNotes" />
+        <InputArea source="Notes" style="&area;" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationDate" />
+        <InputDateTime source="Date" />
+        <Label text="=trRegistrationHost" />
+        <InputArea source="Host" style="&area;" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

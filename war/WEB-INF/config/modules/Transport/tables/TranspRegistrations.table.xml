@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TranspRegistrations"
+  idName="TranspRegistrationID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" label="=trRegistrationDate" defExpr="CURRENT_TIME" />
+
+    <String name="CompanyName" notNull="true" precision="100" label="=trRegistrationCompanyName" />
+    <String name="CompanyCode" notNull="true" precision="30" label="=trRegistrationCompanyCode" />
+    <String name="VatCode" precision="30" label="=trRegistrationVatCode" />
+
+    <String name="Contact" precision="50" notNull="true" label="=trRegistrationContact" />
+    <String name="ContactPosition" precision="50" notNull="true"
+      label="=trRegistrationContactPosition" />
+
+    <String name="Address" precision="100" notNull="true" label="=trRegistrationAddress" />
+    <String name="City" precision="30" notNull="true" label="=trRegistrationCity" />
+    <String name="Country" precision="60" notNull="true" label="=trRegistrationCountry" />
+
+    <String name="Phone" precision="50" notNull="true" label="=trRegistrationPhone" />
+    <String name="Mobile" precision="50" label="=trRegistrationMobile" />
+
+    <String name="Fax" precision="50" label="=trRegistrationFax" />
+    <String name="Email" precision="255" notNull="true" label="=trRegistrationEmail" />
+
+    <String name="ExchangeCode" precision="30" label="=trRegistrationExchangeCode" />
+
+    <String name="Bank" precision="100" label="=trRegistrationBank" />
+    <String name="BankAddress" precision="100" label="=trRegistrationBankAddress" />
+    <String name="BankAccount" precision="30" label="=trRegistrationBankAccount" />
+    <String name="Swift" precision="30" label="=trRegistrationSwift" />
+
+    <Text name="Notes" label="=trRegistrationNotes" />
+    <Text name="Host" label="=trRegistrationHost" />
+  </Fields>
+</Table>
