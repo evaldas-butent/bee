@@ -19,7 +19,7 @@
   </DataColumn>
 
   <DataColumn name="Price" visible="true" maxWidth="100" />
-  <CalcColumn name="Amount" type="decimal" scale="2" caption="=amount" maxWidth="100">
+  <CalcColumn name="Amount" type="decimal" scale="2" caption="=total" maxWidth="100">
     <render>
       <ui:expression>row.Quantity * row.Price</ui:expression>
     </render>

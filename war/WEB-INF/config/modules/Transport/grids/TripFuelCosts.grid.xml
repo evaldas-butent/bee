@@ -12,7 +12,7 @@
     <DataColumn name="Quantity" caption="=quantity" />
     <DataColumn name="Price" caption="=price" format="#.00" />
     <RelColumn name="Currency" caption="=currencyShort" />
-    <CalcColumn name="Total" type="decimal" caption="=amount" format="#.00">
+    <CalcColumn name="Total" type="decimal" caption="=total" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>

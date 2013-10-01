@@ -10,7 +10,7 @@
       <carry><ui:expression>row.Date</ui:expression></carry>
     </DataColumn>
     <DataColumn name="Number" caption="=trDocumentNumberShort" flexGrow="1" flexShrink="1" />
-    <DataColumn name="Amount" caption="=amount" format="#.00" flexGrow="1" flexShrink="1">
+    <DataColumn name="Amount" caption="=total" format="#.00" flexGrow="1" flexShrink="1">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>

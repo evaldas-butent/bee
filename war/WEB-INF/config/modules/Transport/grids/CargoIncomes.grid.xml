@@ -10,7 +10,7 @@
     <DataColumn name="Date" caption="=date" />
 
     <RelColumn name="Service" caption="=trServiceName" />
-    <DataColumn name="Amount" caption="=amount" format="0.00">
+    <DataColumn name="Amount" caption="=total" format="0.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
