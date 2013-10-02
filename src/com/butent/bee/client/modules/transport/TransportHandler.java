@@ -652,6 +652,9 @@ public final class TransportHandler {
     Captions.register(AssessmentStatus.class);
     Captions.register(TripStatus.class);
 
+    String key = Captions.register(CargoRequestStatus.class);
+    Captions.registerColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS, key);
+
     SelectorEvent.register(new TransportSelectorHandler());
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());

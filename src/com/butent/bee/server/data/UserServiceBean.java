@@ -382,10 +382,13 @@ public class UserServiceBean {
         .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_COMPANY_PERSON, COL_PROPERTIES)
         .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
         .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
         .addFrom(TBL_USERS)
         .addFromLeft(TBL_COMPANY_PERSONS,
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS,
+            COL_COMPANY));
 
     for (SimpleRow row : qs.getData(ss)) {
       long userId = row.getLong(userIdName);
@@ -393,8 +396,8 @@ public class UserServiceBean {
 
       userCache.put(userId, login);
 
-      UserData userData = new UserData(userId, login,
-          row.getValue(COL_FIRST_NAME), row.getValue(COL_LAST_NAME), row.getValue(COL_PHOTO),
+      UserData userData = new UserData(userId, login, row.getValue(COL_FIRST_NAME),
+          row.getValue(COL_LAST_NAME), row.getValue(COL_PHOTO), row.getValue(ALS_COMPANY_NAME),
           row.getLong(COL_COMPANY_PERSON), row.getLong(COL_COMPANY), row.getLong(COL_PERSON));
 
       UserInfo user = new UserInfo(userData)

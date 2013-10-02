@@ -35,8 +35,8 @@ public class UserData implements BeeSerializable, HasInfo {
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_PERSON, COMPANY, PERSON,
-    LOCALE, PROPERTIES, RIGHTS, CONSTANTS
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
+    COMPANY_PERSON, COMPANY, PERSON, LOCALE, PROPERTIES, RIGHTS, CONSTANTS
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
@@ -53,6 +53,8 @@ public class UserData implements BeeSerializable, HasInfo {
   private String firstName;
   private String lastName;
   private String photoFileName;
+
+  private String companyName;
   
   private Long companyPerson;
   private Long company;
@@ -71,13 +73,15 @@ public class UserData implements BeeSerializable, HasInfo {
   }
   
   public UserData(long userId, String login, String firstName, String lastName,
-      String photoFileName, Long companyPerson, Long company, Long person) {
+      String photoFileName, String companyName, Long companyPerson, Long company, Long person) {
     this.userId = userId;
     this.login = login;
     
     this.firstName = firstName;
     this.lastName = lastName;
     this.photoFileName = photoFileName;
+    
+    this.companyName = companyName;
     
     this.companyPerson = companyPerson;
     this.company = company;
@@ -112,6 +116,9 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case PHOTO_FILE_NAME:
           this.photoFileName = value;
+          break;
+        case COMPANY_NAME:
+          this.companyName = value;
           break;
         case COMPANY_PERSON:
           this.companyPerson = BeeUtils.toLongOrNull(value);
@@ -172,6 +179,10 @@ public class UserData implements BeeSerializable, HasInfo {
     return company;
   }
 
+  public String getCompanyName() {
+    return companyName;
+  }
+
   public Long getCompanyPerson() {
     return companyPerson;
   }
@@ -195,6 +206,7 @@ public class UserData implements BeeSerializable, HasInfo {
         "First Name", getFirstName(),
         "Last Name", getLastName(),
         "Photo File Name", getPhotoFileName(),
+        "Company Name", getCompanyName(),
         "Company Person ID", getCompanyPerson(),
         "Company ID", getCompany(),
         "Person ID", getPerson(),
@@ -227,11 +239,11 @@ public class UserData implements BeeSerializable, HasInfo {
   public String getLocale() {
     return locale;
   }
-
+  
   public String getLogin() {
     return login;
   }
-  
+
   public Long getPerson() {
     return person;
   }
@@ -240,15 +252,15 @@ public class UserData implements BeeSerializable, HasInfo {
     return photoFileName;
   }
 
-  public Map<String, String> getProperties() {
-    return ImmutableMap.copyOf(properties);
-  }
-
   public String getProperty(String name) {
     if (properties != null) {
       return this.properties.get(name);
     }
     return null;
+  }
+
+  public Map<String, String> getProperties() {
+    return ImmutableMap.copyOf(properties);
   }
 
   public long getUserId() {
@@ -302,6 +314,9 @@ public class UserData implements BeeSerializable, HasInfo {
         case PHOTO_FILE_NAME:
           arr[i++] = photoFileName;
           break;
+        case COMPANY_NAME:
+          arr[i++] = companyName;
+          break;
         case COMPANY_PERSON:
           arr[i++] = companyPerson;
           break;
@@ -337,6 +352,10 @@ public class UserData implements BeeSerializable, HasInfo {
     return Codec.beeSerialize(arr);
   }
 
+  public void setCompanyName(String companyName) {
+    this.companyName = companyName;
+  }
+
   public void setConstants(Map<String, String> constants) {
     this.constants = constants;
   }
@@ -362,16 +381,16 @@ public class UserData implements BeeSerializable, HasInfo {
     this.photoFileName = photoFileName;
   }
 
-  public void setProperties(Map<String, String> properties) {
-    this.properties = properties;
-  }
-
   public UserData setProperty(String name, String value) {
     if (this.properties == null) {
       this.properties = Maps.newHashMap();
     }
     this.properties.put(name, value);
     return this;
+  }
+
+  public void setProperties(Map<String, String> properties) {
+    this.properties = properties;
   }
 
   public void setRights(Map<RightsState, Multimap<RightsObjectType, String>> userRights) {

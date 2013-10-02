@@ -7,7 +7,12 @@
   <g:columns>
     <DataColumn name="Name" visible="true" />
     <DataColumn name="TemplateDescription" visible="false" />
-    <RelColumn name="User" visible="true" />
+
+    <RelColumn name="User" visible="true">
+      <renderToken source="CustomerFirstName" />
+      <renderToken source="CustomerLastName" />
+      <renderToken source="CustomerCompanyName" prefix=", " />
+    </RelColumn>
 
     <RelColumn name="LoadingCompany" visible="false" />
     <DataColumn name="LoadingContact" visible="false" />
@@ -16,7 +21,7 @@
     <RelColumn name="LoadingCountry" />
 
     <DataColumn name="LoadingAddress" visible="false" />
-    <RelColumn name="LoadingEmail" visible="false" />
+    <RelColumn name="LoadingEmailId" visible="false" />
     <DataColumn name="LoadingPhone" visible="false" />
     <DataColumn name="LoadingFax" visible="false" />
     <DataColumn name="LoadingNumber" visible="false" />
@@ -29,7 +34,7 @@
     <RelColumn name="UnloadingCountry" />
 
     <DataColumn name="UnloadingAddress" visible="false" />
-    <RelColumn name="UnloadingEmail" visible="false" />
+    <RelColumn name="UnloadingEmailId" visible="false" />
     <DataColumn name="UnloadingPhone" visible="false" />
     <DataColumn name="UnloadingFax" visible="false" />
     <DataColumn name="UnloadingNumber" visible="false" />

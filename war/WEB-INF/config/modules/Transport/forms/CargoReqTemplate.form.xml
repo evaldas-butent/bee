@@ -12,7 +12,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="NewCargoRequest" viewName="CargoRequests" caption="=trRequestNew"
+  name="CargoReqTemplate" viewName="CargoReqTemplate" caption="=trRequestTemplate"
   >
   <FlowPanel>
     <br/>
@@ -21,19 +21,21 @@
       &cols;
      
       <row>
-        <Label text="=trRequestDate" />
-        <InputDateTime source="Date" />
-        <Label text="=trRequestCustomer" />
-        <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
-          <renderToken source="CustomerCompanyName" suffix=", " />
-          <renderToken source="CustomerFirstName" />
-          <renderToken source="CustomerLastName" />
-        </DataSelector>
+        <Label text="=trRequestTemplateName" class="bee-required" />
+        <InputText source="Name" />
+        <Label text="=trRequestTemplateDescription" />
+        <InputArea source="TemplateDescription" style="&area;" />
       </row>
-      
+
       <row>
-        <Label text="=trRequestTemplate" />
-        <DataSelector viewName="CargoReqTemplates" choiceColumns="Name" newRowEnabled="false" />
+        <Label text="=trRequestTemplateUser" class="bee-required" />
+        <cell colSpan="3">
+          <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
+            <renderToken source="CustomerFirstName" />
+            <renderToken source="CustomerLastName" />
+            <renderToken source="CustomerCompanyName" prefix=", " />
+          </DataSelector>
+        </cell>
       </row>
     </Table>
     &separator;
@@ -45,21 +47,21 @@
         &cols;
 
         <row>
-          <Label text="=trRequestPlaceCompanyName" class="bee-required" />
+          <Label text="=trRequestPlaceCompanyName" />
           <DataSelector source="LoadingCompany" />
-          <Label text="=trRequestPlaceContact" class="bee-required" />
-          <InputText source="LoadingContact" required="true" />
+          <Label text="=trRequestPlaceContact" />
+          <InputText source="LoadingContact" />
         </row>
 
         <row>
-          <Label text="=address" class="bee-required" />
-          <InputText source="LoadingAddress" required="true" />
-          <Label text="=phone" class="bee-required" />
-          <InputText source="LoadingPhone" required="true" />
+          <Label text="=address" />
+          <InputText source="LoadingAddress" />
+          <Label text="=phone" />
+          <InputText source="LoadingPhone" />
         </row>
 
         <row>
-          <Label text="=city" class="bee-required" />
+          <Label text="=city" />
           <DataSelector source="LoadingCity" />
           <Label text="=country" />
           <DataSelector source="LoadingCountry" />
@@ -73,8 +75,6 @@
         </row>
 
         <row>
-          <Label text="=date" class="bee-required" />
-          <InputDateTime source="LoadingDate" required="true" />
           <Label text="=trLoadingNumber" />
           <InputText source="LoadingNumber" />
         </row>
@@ -89,21 +89,21 @@
         &cols;
 
         <row>
-          <Label text="=trRequestPlaceCompanyName" class="bee-required" />
+          <Label text="=trRequestPlaceCompanyName" />
           <DataSelector source="UnloadingCompany" />
-          <Label text="=trRequestPlaceContact" class="bee-required" />
-          <InputText source="UnloadingContact" required="true" />
+          <Label text="=trRequestPlaceContact" />
+          <InputText source="UnloadingContact" />
         </row>
 
         <row>
-          <Label text="=address" class="bee-required" />
-          <InputText source="UnloadingAddress" required="true" />
-          <Label text="=phone" class="bee-required" />
-          <InputText source="UnloadingPhone" required="true" />
+          <Label text="=address" />
+          <InputText source="UnloadingAddress" />
+          <Label text="=phone" />
+          <InputText source="UnloadingPhone" />
         </row>
 
         <row>
-          <Label text="=city" class="bee-required" />
+          <Label text="=city" />
           <DataSelector source="UnloadingCity" />
           <Label text="=country" />
           <DataSelector source="UnloadingCountry" />
@@ -117,8 +117,6 @@
         </row>
 
         <row>
-          <Label text="=date" />
-          <InputDateTime source="UnloadingDate" />
           <Label text="=trUnloadingNumber" />
           <InputText source="UnloadingNumber" />
         </row>
@@ -134,18 +132,15 @@
           &cols;
 
           <row>
-            <Label text="=trRequestExpeditionType" class="bee-required" />
+            <Label text="=trRequestExpeditionType" />
             <DataSelector source="Expedition" />
-            <Label text="=trRequestShippingTerms" class="bee-required" />
-            <DataSelector source="ShippingTerm" required="true" />
+            <Label text="=trRequestShippingTerms" />
+            <DataSelector source="ShippingTerm" />
           </row>
 
           <row>
-            <Label text="=trRequestDeliveryDateAndTime" />
-            <FlowPanel style="display: inline-block;">
-              <InputDate source="DeliveryDate" style="width: 80px;" />
-              <InputTimeOfDay source="DeliveryTime" style="margin-left: 1em; width: 50px;" />
-            </FlowPanel>
+            <Label text="=trRequestDeliveryTime" />
+            <InputTimeOfDay source="DeliveryTime" style="width: 50px;" />
             <Label text="=trRequestTermsOfDelivery" />
             <InputText source="TermsOfDelivery" />
           </row>
@@ -166,15 +161,15 @@
         &cols;
 
         <row>
-          <Label text="=trRequestCargoDescription" class="bee-required" />
-          <InputArea source="CargoDescription" required="true" style="width: 100%; height: 40px;" />
+          <Label text="=trRequestCargoDescription" />
+          <InputArea source="CargoDescription" style="width: 100%; height: 40px;" />
           <Label text="=trRequestCargoQuantity" />
           <InputInteger source="Quantity" />
         </row>
 
         <row>
-          <Label text="=trRequestCargoWeight" class="bee-required" />
-          <InputDecimal source="Weight" required="true" />
+          <Label text="=trRequestCargoWeight" />
+          <InputDecimal source="Weight" />
           <HtmlLabel text="=trRequestCargoVolume" />
           <InputDecimal source="Volume" />
         </row>
@@ -218,8 +213,6 @@
         <row>
           <Label text="=trRequestResponsibleManager" />
           <DataSelector source="Manager" />
-          <Label text="=trRequestNotes" />
-          <InputArea source="Notes" style="&area;" />
         </row>
       </Table>
     </Disclosure>

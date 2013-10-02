@@ -138,8 +138,8 @@
         </row>
 
         <row>
-          <Label text="=date" class="bee-required" />
-          <InputDateTime source="UnloadingDate" required="true" />
+          <Label text="=date" />
+          <InputDateTime source="UnloadingDate" />
           <Label text="=trUnloadingNumber" />
           <InputText source="UnloadingNumber" />
         </row>

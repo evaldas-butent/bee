@@ -3,23 +3,18 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
-  flexGrow="1" order="Date desc"
   >
-<!--   <g:north size="40"> -->
-<!--     <w:HorizontalPanel> -->
-<!--       <w:CheckBox name="Owned" text="=trOwned" checked="true" /> -->
-<!--       <w:CheckBox name="Finished" text="=trShowFinished" /> -->
-<!--     </w:HorizontalPanel> -->
-<!--   </g:north> -->
-
   <g:columns>
-    <DataColumn name="Date" width="100" visible="true" />
-    <DataColumn name="Status" />
-    <DataColumn name="Finished" width="100" format="DATE_TIME_SHORT" />
-    <DataColumn name="Result" whiteSpace="nowrap" visible="false" />
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="Status" itemKey="CargoRequestStatus" visible="true" />
+    <DataColumn name="Finished" visible="false" />
+    <DataColumn name="Result" visible="false" />
     
-    <RelColumn name="Customer" caption="=trRequestCustomer" minWidth="100" whiteSpace="nowrap" 
-      visible="true" />
+    <RelColumn name="User" visible="true" editEnabled="true" editSource="CustomerCompany" >
+      <renderToken source="CustomerCompanyName" suffix=", " />
+      <renderToken source="CustomerFirstName" />
+      <renderToken source="CustomerLastName" />
+    </RelColumn>
 
     <DataColumn name="LoadingDate" />
     <RelColumn name="LoadingCompany" visible="false" />
@@ -29,7 +24,7 @@
     <RelColumn name="LoadingCountry" />
 
     <DataColumn name="LoadingAddress" visible="false" />
-    <RelColumn name="LoadingEmail" visible="false" />
+    <RelColumn name="LoadingEmailId" visible="false" />
     <DataColumn name="LoadingPhone" visible="false" />
     <DataColumn name="LoadingFax" visible="false" />
     <DataColumn name="LoadingNumber" visible="false" />
@@ -42,7 +37,7 @@
     <RelColumn name="UnloadingCountry" />
 
     <DataColumn name="UnloadingAddress" visible="false" />
-    <RelColumn name="UnloadingEmail" visible="false" />
+    <RelColumn name="UnloadingEmailId" visible="false" />
     <DataColumn name="UnloadingPhone" visible="false" />
     <DataColumn name="UnloadingFax" visible="false" />
     <DataColumn name="UnloadingNumber" visible="false" />
@@ -57,7 +52,7 @@
     <DataColumn name="CustomsBrokerage" visible="false" />
     <DataColumn name="FreightInsurance" visible="false" />
 
-    <DataColumn name="CargoDescription" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="CargoDescription" />
     <DataColumn name="Quantity" visible="false" />
 
     <DataColumn name="Weight" visible="false" />
@@ -71,10 +66,10 @@
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />
 
-    <RelColumn name="Manager" caption="=manager" minWidth="100" whiteSpace="nowrap" />
+    <RelColumn name="Manager" />
     
-    <DataColumn name="Notes" whiteSpace="nowrap" visible="false" />
-    <DataColumn name="Host" whiteSpace="nowrap" visible="false" />
+    <DataColumn name="Notes" visible="false" />
+    <DataColumn name="Host" visible="false" />
     
   </g:columns>
 </g:Grid>

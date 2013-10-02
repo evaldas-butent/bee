@@ -92,8 +92,6 @@ public interface LocalizableTransportConstants {
 
   String newTransportationOrder();
 
-  String newTransportationRequest();
-
   String orderDate();
 
   String orderNumber();
@@ -228,6 +226,10 @@ public interface LocalizableTransportConstants {
 
   String trRequestFinishReason();
 
+  String trRequestStatusActive();
+
+  String trRequestStatusNew();
+  
   String trSendToERP();
 
   String trSendToERPConfirm();

@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -8,14 +9,17 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.DateValue;
@@ -25,7 +29,9 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TransportSelectorHandler implements Handler {
 
@@ -36,6 +42,9 @@ public class TransportSelectorHandler implements Handler {
 
     } else if (BeeUtils.same(event.getRelatedViewName(), CommonsConstants.TBL_COMPANIES)) {
       handleCompanies(event);
+
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_CARGO_REQUEST_TEMPLATES)) {
+      handleRequestTemplate(event);
     }
   }
 
@@ -83,6 +92,64 @@ public class TransportSelectorHandler implements Handler {
     }
   }
 
+  private static void handleRequestTemplate(SelectorEvent event) {
+    DataSelector selector = event.getSelector();
+
+    FormView form = UiHelper.getForm(selector);
+    if (form == null) {
+      return;
+    }
+    if (!BeeUtils.same(form.getViewName(), VIEW_CARGO_REQUESTS) || !form.isEnabled()) {
+      return;
+    }
+
+    IsRow targetRow = form.getActiveRow();
+    if (targetRow == null) {
+      return;
+    }
+
+    if (event.isClosed()) {
+      selector.clearDisplay();
+    }
+    if (!event.isChanged()) {
+      return;
+    }
+
+    IsRow sourceRow = event.getRelatedRow();
+    if (sourceRow == null) {
+      selector.clearDisplay();
+      return;
+    }
+
+    List<BeeColumn> sourceColumns = Data.getColumns(VIEW_CARGO_REQUEST_TEMPLATES);
+    if (BeeUtils.isEmpty(sourceColumns)) {
+      return;
+    }
+
+    Set<String> updatedColumns = Sets.newHashSet();
+
+    for (int i = 0; i < sourceColumns.size(); i++) {
+      String colName = sourceColumns.get(i).getId();
+      String value = sourceRow.getString(i);
+
+      if (BeeUtils.same(colName, COL_CARGO_REQUEST_TEMPLATE_NAME)) {
+        selector.setDisplayValue(BeeUtils.trim(value));
+      } else if (!BeeUtils.isEmpty(value)) {
+        int index = form.getDataIndex(colName);
+        if (index >= 0 && targetRow.isNull(index)) {
+          targetRow.setValue(index, value);
+          if (sourceColumns.get(i).isEditable()) {
+            updatedColumns.add(colName);
+          }
+        }
+      }
+    }
+
+    for (String colName : updatedColumns) {
+      form.refreshBySource(colName);
+    }
+  }
+  
   private static void handleServices(SelectorEvent event) {
     if (!event.isChanged()) {
       return;

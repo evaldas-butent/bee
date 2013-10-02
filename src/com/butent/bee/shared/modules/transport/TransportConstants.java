@@ -89,6 +89,22 @@ public final class TransportConstants {
     }
   }
 
+  public enum CargoRequestStatus implements HasCaption {
+    NEW(Localized.getConstants().trRequestStatusNew()),
+    ACTIVE(Localized.getConstants().trRequestStatusActive());
+
+    private final String caption;
+
+    private CargoRequestStatus(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+  
   public enum TripStatus implements HasCaption {
     NEW(Localized.getConstants().trTripStatusNew()),
     ACTIVE(Localized.getConstants().trTripStatusActive()),
@@ -197,6 +213,7 @@ public final class TransportConstants {
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
   public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
+  public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
@@ -254,12 +271,6 @@ public final class TransportConstants {
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
-
-  public static final String COL_CARGO_REQUEST_ROUTE = "Route";
-  public static final String COL_CARGO_REQUEST_LOADING_ADDRESS = "LoadingAddress";
-  public static final String COL_CARGO_REQUEST_UNLOADING_ADDRESS = "UnloadingAddress";
-  public static final String COL_CARGO_REQUEST_LOADING_COUNTRY_NAME = "LoadingCountryName";
-  public static final String COL_CARGO_REQUEST_UNLOADING_COUNTRY_NAME = "UnloadingCountryName";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
@@ -429,6 +440,10 @@ public final class TransportConstants {
   public static final String COL_TRAILER_ITEM_OPACITY = "TrailerItemOpacity";
   public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
 
+  public static final String COL_CARGO_REQUEST_STATUS = "Status";
+
+  public static final String COL_CARGO_REQUEST_TEMPLATE_NAME = "Name";
+  
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";

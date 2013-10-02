@@ -29,8 +29,8 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -94,7 +94,7 @@ public class MessageBoxes {
     panel.addStyleName(STYLE_CHOICE_PANEL);
 
     if (!BeeUtils.isEmpty(prompt)) {
-      Label label = new Label(prompt.trim());
+      Html label = new Html(prompt.trim());
       label.addStyleName(STYLE_CHOICE_PROMPT);
 
       UiHelper.add(panel, label, initializer, DialogConstants.WIDGET_PROMPT);
@@ -305,7 +305,7 @@ public class MessageBoxes {
     if (!BeeUtils.isEmpty(messages)) {
       for (String message : messages) {
         if (message != null) {
-          Widget messageWidget = UiHelper.initialize(new Label(message), initializer,
+          Widget messageWidget = UiHelper.initialize(new Html(message), initializer,
               DialogConstants.WIDGET_PROMPT);
 
           if (messageWidget != null) {

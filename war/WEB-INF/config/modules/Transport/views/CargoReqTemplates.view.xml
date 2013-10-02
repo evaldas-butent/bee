@@ -3,11 +3,12 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="CargoReqTemplates" source="CargoReqTemplates"
+  newRowForm="CargoReqTemplate" editForm="CargoReqTemplate"
   newRowCaption="=trRequestTemplateNew"
   >
-<!--   newRowForm="CargoReqTemplate" editForm="CargoReqTemplate" -->
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="TemplateDescription" />
 
     <SimpleColumn name="User" />
     <SimpleJoin name="User" joinType="LEFT">
@@ -29,8 +30,6 @@
     </SimpleJoin>
 
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
-
       <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany"
         editable="true" />
       <SimpleJoin name="Company" joinType="LEFT">
@@ -68,8 +67,6 @@
     </SimpleJoin>
 
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
-
       <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany"
         editable="true" />
       <SimpleJoin name="Company" joinType="LEFT">

@@ -7,7 +7,7 @@
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
     <Relation name="User" relation="Users" cascade="DELETE" notNull="true" defExpr="CURRENT_USER"
-      label="=trRequestUser" />
+      label="=trRequestCustomer" />
   
     <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
       label="=trRequestExpeditionType" />
