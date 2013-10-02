@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 3px; outline: none;">
+  <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
   <!ENTITY table "border-collapse: collapse;">
-  <!ENTITY cols '<col index="0" width="180" /><col index="1" width="160" /><col index="2" width="180" /><col index="3" width="160" />'>
-  <!ENTITY cells "text-align: right; vertical-align: top; padding: 3px 5px;">
+  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
+  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" />'>
+  <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
   <!ENTITY separator "<hr/>">
-  <!ENTITY area "width: 100&#37;; height: 40px;">
+  <!ENTITY area "width: 200px; height: 40px;">
+  <!ENTITY check "margin-top: 5px; margin-left: 1em; display: block;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -162,17 +164,17 @@
           <Label text="=trRequestDeliveryDateAndTime" />
           <FlowPanel style="display: inline-block;">
             <InputDate source="DeliveryDate" style="width: 80px;" />
-            <InputTimeOfDay source="DeliveryTime" style="margin-left: 1em; width: 40px;" />
+            <InputTimeOfDay source="DeliveryTime" style="margin-left: 1em; width: 50px;" />
           </FlowPanel>
           <Label text="=trRequestTermsOfDelivery" />
           <InputText source="TermsOfDelivery" />
         </row>
-
-        <row>
-          <CheckBox source="CustomsBrokerage" text="=trRequestCustomsBrokerage" />
-          <CheckBox source="FreightInsurance" text="=trRequestFreightInsurance" />
-        </row>
       </Table>
+      
+      <FlowPanel>
+        <CheckBox source="CustomsBrokerage" text="=trRequestCustomsBrokerage" style="&check;" />
+        <CheckBox source="FreightInsurance" text="=trRequestFreightInsurance" style="&check;" />
+      </FlowPanel>
     </Details>
     &separator;
 
@@ -184,7 +186,7 @@
 
         <row>
           <Label text="=trRequestCargoDescription" class="bee-required" />
-          <InputArea source="CargoDescription" required="true" style="&area;" />
+          <InputArea source="CargoDescription" required="true" style="width: 100%; height: 40px;" />
           <Label text="=trRequestCargoQuantity" />
           <InputInteger source="Quantity" />
         </row>
@@ -219,7 +221,7 @@
           <Label text="=trRequestCargoValue" />
           <InputCurrency source="Value" />
           <Label text="=trRequestCargoCurrency" />
-          <DataSelector source="ValueCurrency" />
+          <DataSelector source="ValueCurrency" style="width: 60px;" />
         </row>
 
       </Table>

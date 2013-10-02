@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
@@ -23,6 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable {
 
@@ -246,17 +248,24 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
   
+  private static Element createRow() {
+    return DOM.createTR();
+  }
   private final Element tableElem;
+
   private final Element bodyElem;
 
   private final ElementMapperImpl<Widget> widgetMap;
-
   private final CellFormatter cellFormatter;
   private final ColumnFormatter columnFormatter;
-  private final RowFormatter rowFormatter;
 
+  private final RowFormatter rowFormatter;
   private String defaultCellClasses;
+  
   private String defaultCellStyles;
+  private final Map<Integer, String> columnCellClases = Maps.newHashMap();
+
+  private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
 
   public HtmlTable() {
     this.tableElem = DOM.createTable();
@@ -274,14 +283,14 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
     init();
   }
-
+  
   public HtmlTable(String styleName) {
     this();
     if (!BeeUtils.isEmpty(styleName)) {
       addStyleName(styleName);
     }
   }
-  
+
   public void alignCenter(int row, int column) {
     getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_CENTER);
   }
@@ -336,12 +345,12 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   public RowFormatter getRowFormatter() {
     return rowFormatter;
   }
-
+  
   public Widget getWidget(int row, int column) {
     checkCellBounds(row, column);
     return getWidgetImpl(row, column);
   }
-  
+
   public int insertRow(int beforeRow) {
     if (beforeRow != getRowCount()) {
       checkRowBounds(beforeRow);
@@ -415,7 +424,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
     return true;
   }
-
+  
   public void removeRow(int row) {
     int columnCount = getCellCount(row);
     for (int column = 0; column < columnCount; ++column) {
@@ -423,10 +432,28 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
     DOM.removeChild(bodyElem, rowFormatter.getElement(row));
   }
-  
+
   @Override
   public void setBorderSpacing(int spacing) {
     StyleUtils.setBorderSpacing(tableElem, spacing);
+  }
+
+  public void setColumnCellClasses(int column, String classes) {
+    Assert.nonNegative(column);
+    if (BeeUtils.isEmpty(classes)) {
+      columnCellClases.remove(column);
+    } else {
+      columnCellClases.put(column, classes);
+    }
+  }
+  
+  public void setColumnCellStyles(int column, String styles) {
+    Assert.nonNegative(column);
+    if (BeeUtils.isEmpty(styles)) {
+      columnCellStyles.remove(column);
+    } else {
+      columnCellStyles.put(column, styles);
+    }
   }
 
   @Override
@@ -459,12 +486,12 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       DOM.setInnerText(td, text);
     }
   }
-
+  
   public void setText(int row, int column, String text, String cellStyleName) {
     setText(row, column, text);
     getCellFormatter().addStyleName(row, column, cellStyleName);
   }
-  
+
   public void setWidget(int row, int column, Widget widget) {
     prepareCell(row, column);
     if (widget != null) {
@@ -479,12 +506,12 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       adopt(widget);
     }
   }
-
+  
   public void setWidget(int row, int column, Widget widget, String cellStyleName) {
     setWidget(row, column, widget);
     getCellFormatter().addStyleName(row, column, cellStyleName);
   }
-  
+
   public void setWidgetAndStyle(int row, int column, Widget widget, String styleName) {
     widget.addStyleName(styleName);
     setWidget(row, column, widget, styleName + STYLE_SUFFIX_CELL);
@@ -512,16 +539,22 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     return td;
   }
 
-  private Element createCell() {
-    Element td = DOM.createTD();
+  private TableCellElement createCell(int column) {
+    TableCellElement td = Document.get().createTDElement();
+
     StyleUtils.updateAppearance(td, getDefaultCellClasses(), getDefaultCellStyles());
+    StyleUtils.updateAppearance(td, getColumnCellClasses(column), getColumnCellStyles(column));
     return td;
   }
 
-  private static Element createRow() {
-    return DOM.createTR();
+  private String getColumnCellClasses(int column) {
+    return columnCellClases.get(column);
   }
 
+  private String getColumnCellStyles(int column) {
+    return columnCellStyles.get(column);
+  }
+  
   private String getDefaultCellClasses() {
     return defaultCellClasses;
   }
@@ -584,7 +617,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     if (required > 0) {
       Element tr = getRow(row);
       for (int i = 0; i < required; i++) {
-        tr.appendChild(createCell());
+        tr.appendChild(createCell(column));
       }
     }
   }

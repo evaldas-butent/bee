@@ -497,6 +497,7 @@
                 <xs:attribute name="width" type="type:positiveDecimal" />
                 <xs:attribute name="widthUnit" type="ui:cssUnit" />
                 <xs:attributeGroup ref="ui:appearance" />
+                <xs:attributeGroup ref="ui:cellAppearance" />
               </xs:complexType>
             </xs:element>
 

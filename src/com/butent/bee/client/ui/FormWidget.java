@@ -1725,9 +1725,19 @@ public enum FormWidget {
             table.getColumnFormatter().setWidth(c, width,
                 XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, CssUnit.PX));
           }
+          
           StyleUtils.updateAppearance(table.getColumnFormatter().getElement(c),
               child.getAttribute(UiConstants.ATTR_CLASS),
               child.getAttribute(UiConstants.ATTR_STYLE));
+          
+          String classes = child.getAttribute(ATTR_CELL_CLASS);
+          if (!BeeUtils.isEmpty(classes)) {
+            table.setColumnCellClasses(c, classes);
+          }
+          String styles = child.getAttribute(ATTR_CELL_STYLE);
+          if (!BeeUtils.isEmpty(styles)) {
+            table.setColumnCellStyles(c, styles);
+          }
         }
 
       } else if (BeeUtils.same(childTag, UiConstants.TAG_ROW)) {
