@@ -24,8 +24,8 @@
 
     <DataColumn name="Address" />
 
-    <DataColumn name="CityName" caption="Miestas" />
-    <DataColumn name="CountryName" caption="Šalis" />
+    <DataColumn name="CityName" caption="=city" />
+    <DataColumn name="CountryName" caption="=country" />
 
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"

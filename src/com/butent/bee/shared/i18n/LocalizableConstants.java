@@ -32,6 +32,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionFilter();
 
+  String actionNew();
+
   String actionPrint();
 
   String actionRefresh();
@@ -40,7 +42,25 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionRemoveFilter();
 
+  String actionRename();
+
+  String actionRenameFilter();
+
   String actionSave();
+
+  String actionWorkspaceMaxSize();
+
+  String actionWorkspaceNewBottom();
+
+  String actionWorkspaceNewLeft();
+
+  String actionWorkspaceNewRight();
+
+  String actionWorkspaceNewTab();
+
+  String actionWorkspaceNewTop();
+
+  String actionWorkspaceRestoreSize();
 
   String additionalInfo();
 
@@ -299,6 +319,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String removeFilter();
 
   String repeatNewPassword();
+
+  String reports();
 
   String resource();
 

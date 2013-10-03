@@ -49,15 +49,22 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
 
   private enum TabAction {
-    CREATE(new Image(Global.getImages().silverPlus()), null, null, "Naujas skirtukas"),
+    CREATE(new Image(Global.getImages().silverPlus()), null, null, Localized.getConstants()
+        .actionWorkspaceNewTab()),
 
-    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, "Nauja sritis viršuje"),
-    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, "Nauja sritis apačioje"),
-    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT, "Nauja sritis kairėje"),
-    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT, "Nauja sritis dešinėje"),
+    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewTop()),
+    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewBottom()),
+    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewLeft()),
+    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewRight()),
 
-    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, "Max dydis"),
-    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, "Atstatyti dydį"),
+    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, Localized
+        .getConstants().actionWorkspaceMaxSize()),
+    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, Localized
+        .getConstants().actionWorkspaceRestoreSize()),
 
     UP(new Image(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
         "Didinti aukštyn"),
@@ -68,7 +75,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     RIGHT(new Image(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
         "Didinti į dešinę"),
 
-    CLOSE(new Image(Global.getImages().silverMinus()), null, null, "Uždaryti");
+    CLOSE(new Image(Global.getImages().silverMinus()), null, null, Localized.getConstants()
+        .actionClose());
 
     private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
 

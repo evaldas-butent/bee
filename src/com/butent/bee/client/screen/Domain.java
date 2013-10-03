@@ -3,11 +3,12 @@ package com.butent.bee.client.screen;
 import com.google.gwt.resources.client.ImageResource;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.shared.i18n.Localized;
 
 public enum Domain {
   FAVORITE(0, Global.getImages().bookmark(), null, false, false),
   CALENDAR(1, Global.getImages().calendar(), null, true, true),
-  REPORT(2, Global.getImages().report(), "Ataskaitos", false, false),
+  REPORT(2, Global.getImages().report(), Localized.getConstants().reports(), false, false),
   MAIL(3, Global.getImages().plane(), null, true, true),
   ADMIN(4, Global.getImages().configure(), "Admin", false, true);
 

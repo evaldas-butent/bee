@@ -310,7 +310,7 @@ public class Filters {
       if (item.isEditable()) {
         Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName(STYLE_EDIT);
-        edit.setTitle("keisti pavadinimą");
+        edit.setTitle(Localized.getConstants().actionRenameFilter());
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -318,7 +318,8 @@ public class Filters {
             final Item editItem = getItem(items, id);
             final String oldLabel = normalizeLabel(LocaleUtils.maybeLocalize(editItem.getLabel()));
 
-            Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
+            Global.inputString(Localized.getConstants().actionRenameFilter(), null,
+                new StringCallback() {
               @Override
               public void onSuccess(String newValue) {
                 String newLabel = normalizeLabel(newValue);

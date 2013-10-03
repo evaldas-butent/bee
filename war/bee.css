@@ -1558,6 +1558,12 @@ body {
   right: 20px;
 }
 
+.bee-ApplianceAdmin {
+}
+
+.bee-ApplianceReport {
+}
+
 .bee-Shell {
   width: 100%;
   height: calc(100% - 3px);

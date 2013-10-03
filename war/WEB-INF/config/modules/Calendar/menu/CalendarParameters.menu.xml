@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Item xmlns="http://www.butent.com/menu"
-      name="CalendarParameters" parent="Administration" label="Priminimų parametrai" order="1000"
+      name="CalendarParameters" parent="Administration" label="=reminderParameters" order="1000"
       service="parameters" parameters="Calendar"  separator="true" />

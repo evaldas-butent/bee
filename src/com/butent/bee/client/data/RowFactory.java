@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -60,7 +61,7 @@ public final class RowFactory {
 
   private static final int GENERATED_AREA_HEIGHT = 60;
 
-  private static final String DEFAULT_CAPTION = "Naujas";
+  private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
   

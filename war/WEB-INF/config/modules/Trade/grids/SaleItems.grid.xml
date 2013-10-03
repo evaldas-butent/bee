@@ -4,7 +4,7 @@
 
   name="SaleItems" viewName="SaleItems"
   flexGrow="1"
-  newRowCaption="Nauja prekė"
+  newRowCaption="=newItem"
   >
   <g:columns>
     <RelColumn name="Item" renderColumns="ItemName" />

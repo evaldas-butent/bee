@@ -14,7 +14,7 @@
       </w:calc>
       <w:form text="=trModifyType">
         <w:FlowPanel>
-          <w:Label text="=trModifyType" class="bee-required" />
+          <w:Label text="=types" class="bee-required" />
           <w:InputText source="Name" style="width: 20em" />
         </w:FlowPanel>
       </w:form>

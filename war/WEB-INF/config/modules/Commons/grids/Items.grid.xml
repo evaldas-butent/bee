@@ -8,7 +8,7 @@
   newRowPopup="true" editPopup="true"
   >
   <g:west size="200" splitterSize="2">
-    <w:DataTree name="Categories" caption="Kategorijos" source="CategoryTree" parentColumn="Parent"
+    <w:DataTree name="Categories" caption="=categories" source="CategoryTree" parentColumn="Parent"
               hideActions="true">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
