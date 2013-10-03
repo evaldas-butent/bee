@@ -24,9 +24,9 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.ui.CssUnit;
@@ -443,7 +443,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   }
 
   private static Widget createSpacer(Double width, CssUnit unit) {
-    Html spacer = new Html();
+    CustomDiv spacer = new CustomDiv();
     spacer.setWidth(StyleUtils.toCssLength(width, unit));
     return spacer;
   }

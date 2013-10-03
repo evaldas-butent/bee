@@ -114,7 +114,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(sf.getFileVersion()));
+          ((Label) widget).setHtml(BeeUtils.trim(sf.getFileVersion()));
         }
       }
 
@@ -147,9 +147,9 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Link) {
-          ((Link) widget).setHref(FileUtils
-              .getUrl(BeeUtils.notEmpty(sf.getCaption(), sf.getName()), sf.getFileId()));
-          ((Link) widget).setText(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
+          ((Link) widget).setHref(FileUtils.getUrl(BeeUtils.notEmpty(sf.getCaption(),
+              sf.getName()), sf.getFileId()));
+          ((Link) widget).setHtml(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
         }
       }
 
@@ -187,7 +187,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(sf.getDescription()));
+          ((Label) widget).setHtml(BeeUtils.trim(sf.getDescription()));
         }
       }
 
@@ -218,7 +218,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(FileUtils.sizeToText(sf.getSize()));
+          ((Label) widget).setHtml(FileUtils.sizeToText(sf.getSize()));
         }
       }
 
@@ -244,7 +244,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(sf.getType()));
+          ((Label) widget).setHtml(BeeUtils.trim(sf.getType()));
         }
       }
 

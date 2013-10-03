@@ -112,7 +112,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     Flow panel = new Flow(STYLE_PREFIX + "panel");
 
     CustomDiv caption = new CustomDiv(STYLE_PREFIX + "caption");
-    caption.setHTML(getColumnLabel());
+    caption.setHtml(getColumnLabel());
     panel.add(caption);
 
     panel.add(editor);
@@ -268,7 +268,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       update(changed);
 
     } else {
-      errorMessage.setText(Localized.getConstants().error());
+      errorMessage.setHtml(Localized.getConstants().error());
     }
   }
 

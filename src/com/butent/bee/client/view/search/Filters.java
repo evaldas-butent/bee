@@ -295,7 +295,7 @@ public class Filters {
       c++;
 
       final CustomDiv labelWidget = new CustomDiv();
-      labelWidget.setHTML(LocaleUtils.maybeLocalize(item.getLabel()));
+      labelWidget.setHtml(LocaleUtils.maybeLocalize(item.getLabel()));
 
       labelWidget.addClickHandler(new ClickHandler() {
         @Override
@@ -325,7 +325,7 @@ public class Filters {
                 String newLabel = normalizeLabel(newValue);
                 if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
                   editItem.setLabel(newLabel);
-                  labelWidget.setHTML(newLabel);
+                  labelWidget.setHtml(newLabel);
 
                   Queries.update(CommonsConstants.TBL_FILTERS, editItem.getId(), COL_LABEL,
                       new TextValue(newLabel));

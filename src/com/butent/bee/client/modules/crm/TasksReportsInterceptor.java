@@ -4,13 +4,13 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -202,24 +202,25 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
           int gridRows = rowSet.getNumberOfRows();
           int gridCols = rowSet.getNumberOfColumns();
-          Grid g = new Grid(gridRows, gridCols);
+          HtmlTable g = new HtmlTable();
 
           if (gridRows < MIN_ROW_SET) {
-            g.setText(0, 0, Localized.getConstants().noData());
+            g.setHtml(0, 0, Localized.getConstants().noData());
             reportPanel.add(g);
             return;
           }
 
-          g.setStyleName("bee-HtmlTable bee-crm-taskDuration-display");
+          g.addStyleName("bee-HtmlTable bee-crm-taskDuration-display");
           for (int i = 0; i < gridRows; i++) {
             for (int j = 0; j < gridCols; j++) {
+              g.setHtml(i, j, rowSet.getValue(i, j));
+
               if (i == 0) {
                 g.getCellFormatter().addStyleName(i, j, "bee-crm-taskDuration-colLabel");
               }
               if (i == gridRows - 1) {
                 g.getCellFormatter().addStyleName(i, j, "bee-crm-taskDuration-rowTotal");
               }
-              g.setText(i, j, rowSet.getValue(i, j));
             }
           }
           reportPanel.add(g);

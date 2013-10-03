@@ -265,7 +265,7 @@ public class MonthView extends CalendarView {
 
   private void buildGrid() {
     for (int i = 0; i < TimeUtils.DAYS_PER_WEEK; i++) {
-      grid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
+      grid.setHtml(0, i, CalendarFormat.getDayOfWeekNames()[i]);
       grid.getCellFormatter().setStyleName(0, i, CalendarStyleManager.WEEKDAY_LABEL);
     }
 

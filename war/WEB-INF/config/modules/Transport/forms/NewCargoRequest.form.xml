@@ -175,7 +175,7 @@
         <row>
           <Label text="=trRequestCargoWeight" class="bee-required" />
           <InputDecimal source="Weight" required="true" />
-          <HtmlLabel text="=trRequestCargoVolume" />
+          <Label text="=trRequestCargoVolume" />
           <InputDecimal source="Volume" />
         </row>
 

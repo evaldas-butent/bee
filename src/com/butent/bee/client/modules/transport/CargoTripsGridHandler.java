@@ -58,7 +58,7 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
       HtmlTable container = new HtmlTable();
       container.setBorderSpacing(5);
 
-      container.setText(0, 0, Localized.getConstants().trCargoSelectTrip());
+      container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
 
       Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
           Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",

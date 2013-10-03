@@ -97,7 +97,7 @@ class SearchByBrand extends EcView {
       EcBrand brand = brands.get(index);
       String name = brand.getName();
 
-      brandWidget.setText(name);
+      brandWidget.setHtml(name);
       brandWidget.addStyleName(STYLE_BRAND + "selected");
 
       itemPanel.clear();

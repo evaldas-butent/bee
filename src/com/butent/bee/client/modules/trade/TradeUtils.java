@@ -93,7 +93,7 @@ public final class TradeUtils {
           for (String col : cols.keySet()) {
             Element cell = DomUtils.createDiv(cols.get(col));
             DomUtils.setDataProperty(cell, COL_NAME, col);
-            table.setHTML(0, j++, cell.getString());
+            table.setHtml(0, j++, cell.getString());
           }
           Widget cell = new CustomDiv();
           DomUtils.setDataProperty(cell.getElement(),

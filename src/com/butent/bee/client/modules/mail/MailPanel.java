@@ -261,7 +261,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
       }
-      sender.setText(address);
+      sender.setHtml(address);
       fp.add(sender);
 
       Integer att = row.getInteger(attachmentCount);
@@ -274,7 +274,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (att > 1) {
           TextLabel attachments = new TextLabel(false);
           attachments.setStyleName("bee-mail-AttachmentCount");
-          attachments.setText(BeeUtils.toString(att));
+          attachments.setHtml(BeeUtils.toString(att));
           fp.add(attachments);
         }
       }
@@ -287,7 +287,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
       TextLabel subject = new TextLabel(false);
       subject.setStyleName("bee-mail-HeaderSubject");
-      subject.setText(row.getString(subjectIdx));
+      subject.setHtml(row.getString(subjectIdx));
       fp.add(subject);
 
       return fp.toString();

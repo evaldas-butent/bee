@@ -110,7 +110,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       super(getStylePrefix() + "tabWrapper");
 
       CustomDiv dropDown = new CustomDiv(getStylePrefix() + "dropDown");
-      dropDown.setText(String.valueOf(BeeConst.DROP_DOWN));
+      dropDown.setHtml(String.valueOf(BeeConst.DROP_DOWN));
       dropDown.setTitle(Localized.getConstants().tabControl());
       add(dropDown);
 
@@ -123,11 +123,11 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       });
 
       CustomDiv label = new CustomDiv(getStylePrefix() + "caption");
-      label.setHTML(caption);
+      label.setHtml(caption);
       add(label);
 
       CustomDiv closeTab = new CustomDiv(getStylePrefix() + "closeTab");
-      closeTab.setHTML(String.valueOf(BeeConst.CHAR_TIMES));
+      closeTab.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
       closeTab.setTitle(Localized.getConstants().closeTab());
       add(closeTab);
 
@@ -141,7 +141,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     @Override
     public String getCaption() {
-      return getCaptionWidget().getText();
+      return getCaptionWidget().getHtml();
     }
 
     private CustomDiv getCaptionWidget() {
@@ -149,7 +149,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     private void setCaption(String caption) {
-      getCaptionWidget().setText(caption);
+      getCaptionWidget().setHtml(caption);
     }
   }
 
@@ -169,7 +169,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(DomUtils.TAG_ASIDE),
         getStylePrefix() + "newTab");
-    newTab.setHTML(BeeConst.STRING_PLUS);
+    newTab.setHtml(BeeConst.STRING_PLUS);
     newTab.setTitle(Localized.getConstants().newTab());
     
     newTab.addClickHandler(new ClickHandler() {

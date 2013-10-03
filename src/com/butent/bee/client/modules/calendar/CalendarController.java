@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -36,6 +35,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
 import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -411,8 +411,8 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
           row.setValue(captionIndex, value);
           Widget widget = table.getWidget(index, UcaColumn.CAPTION.ordinal());
-          if (widget instanceof HasText) {
-            ((HasText) widget).setText(BeeUtils.trim(value));
+          if (widget instanceof HasHtml) {
+            ((HasHtml) widget).setHtml(BeeUtils.trim(value));
           }
 
           postUpdate();

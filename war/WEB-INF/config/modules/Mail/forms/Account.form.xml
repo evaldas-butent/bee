@@ -33,9 +33,9 @@
         <Table>
           <row>
             <cell colSpan="2">
-              <HtmlLabel style="font-weight:bold; text-align:center;">
+              <TextLabel style="font-weight:bold; text-align:center;">
                 <render><ui:expression>row.StoreType + ' serverio parametrai'</ui:expression></render>
-              </HtmlLabel>
+              </TextLabel>
             </cell>
           </row>
           <row>

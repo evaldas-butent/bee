@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
@@ -40,6 +39,7 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
@@ -68,7 +68,7 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel;
 
   private HasWidgets userPhotoContainer;
-  private HasText userSignature;
+  private HasHtml userSignature;
 
   private Notification notification;
 
@@ -360,7 +360,7 @@ public class ScreenImpl implements Screen {
       }
 
       if (getUserSignature() != null) {
-        getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
+        getUserSignature().setHtml(BeeUtils.trim(userData.getUserSign()));
       }
     }
   }
@@ -613,7 +613,7 @@ public class ScreenImpl implements Screen {
     this.userPhotoContainer = userPhotoContainer;
   }
 
-  protected void setUserSignature(HasText userSignature) {
+  protected void setUserSignature(HasHtml userSignature) {
     this.userSignature = userSignature;
   }
 
@@ -637,7 +637,7 @@ public class ScreenImpl implements Screen {
     return userPhotoContainer;
   }
 
-  private HasText getUserSignature() {
+  private HasHtml getUserSignature() {
     return userSignature;
   }
 

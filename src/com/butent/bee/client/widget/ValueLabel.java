@@ -25,7 +25,7 @@ public class ValueLabel<T> extends Label implements TakesValue<T> {
   @Override
   public void setValue(T value) {
     this.value = value;
-    setText(render(value));
+    setHtml(render(value));
   }
 
   protected Renderer<? super T> getRenderer() {

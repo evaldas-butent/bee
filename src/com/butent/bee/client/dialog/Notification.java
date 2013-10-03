@@ -17,7 +17,7 @@ import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.LogLevel;
@@ -171,7 +171,7 @@ public class Notification extends Composite implements PreviewHandler, Identifia
     
     container.appendChild(messageContainer);
 
-    Html html = new Html(container);
+    Label html = new Label(container);
     initWidget(html);
   }
 

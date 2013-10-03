@@ -64,9 +64,9 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -1002,7 +1002,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       String bc = Data.getString(viewName, row, CommonsConstants.COL_BACKGROUND);
       String fc = Data.getString(viewName, row, CommonsConstants.COL_FOREGROUND);
 
-      Html item = new Html();
+      Label item = new Label();
       item.getElement().getStyle().setBackgroundColor(bc);
       if (!BeeUtils.isEmpty(fc)) {
         item.getElement().getStyle().setColor(fc);

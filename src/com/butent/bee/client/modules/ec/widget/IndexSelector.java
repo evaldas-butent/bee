@@ -236,7 +236,7 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
       text = BeeUtils.toString(cnt);
     }
 
-    counter.setText(text);
+    counter.setHtml(text);
   }
 
   private void setItemCount(int itemCount) {

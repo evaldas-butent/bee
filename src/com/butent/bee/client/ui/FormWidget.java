@@ -81,6 +81,7 @@ import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeVideo;
@@ -93,9 +94,7 @@ import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.Flag;
 import com.butent.bee.client.widget.Heading;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.HtmlList;
-import com.butent.bee.client.widget.InlineHtml;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
@@ -111,7 +110,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.IntegerLabel;
-import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Legend;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.client.widget.LongLabel;
@@ -201,7 +199,6 @@ public enum FormWidget {
   HEADING("Heading", null),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
   HR("hr", null),
-  HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
   HTML_PANEL("HtmlPanel", EnumSet.of(Type.PANEL)),
   IMAGE("Image", EnumSet.of(Type.DISPLAY)),
   INLINE_LABEL("InlineLabel", EnumSet.of(Type.IS_LABEL)),
@@ -637,7 +634,7 @@ public enum FormWidget {
       case DIV:
         widget = new CustomDiv();
         if (!BeeUtils.isEmpty(html)) {
-          ((CustomDiv) widget).setHTML(html);
+          ((CustomDiv) widget).setHtml(html);
         }
         break;
 
@@ -726,14 +723,6 @@ public enum FormWidget {
         widget = new CustomWidget(Document.get().createHRElement());
         break;
 
-      case HTML_LABEL:
-        if (BeeUtils.isEmpty(html)) {
-          widget = new Html();
-        } else {
-          widget = new Html(html);
-        }
-        break;
-
       case HTML_PANEL:
         if (!children.isEmpty()) {
           StringBuilder sb = new StringBuilder();
@@ -743,10 +732,6 @@ public enum FormWidget {
           widget = new HtmlPanel(sb.toString());
           children.clear();
         }
-        break;
-
-      case INTERNAL_LINK:
-        widget = new InternalLink(html);
         break;
 
       case IMAGE:
@@ -868,6 +853,10 @@ public enum FormWidget {
         }
         break;
 
+      case INTERNAL_LINK:
+        widget = new InternalLink(html);
+        break;
+        
       case LABEL:
         widget = new Label(html);
         break;
@@ -882,13 +871,7 @@ public enum FormWidget {
 
       case LINK:
         url = attributes.get(ATTR_URL);
-        if (!BeeUtils.isEmpty(url)) {
-          widget = new Link(html, true, url);
-        } else if (!BeeUtils.isEmpty(html)) {
-          widget = new Link(html, true);
-        } else {
-          widget = new Link();
-        }
+        widget = new Link(html, url);
         break;
 
       case LIST_BOX:
@@ -1442,13 +1425,13 @@ public enum FormWidget {
     if (BeeUtils.same(tag, TAG_TEXT)) {
       String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
       if (!BeeUtils.isEmpty(text)) {
-        widget = new InlineHtml(text);
+        widget = new InlineLabel(text);
       }
 
     } else if (BeeUtils.same(tag, TAG_HTML)) {
       String html = XmlUtils.getText(element);
       if (!BeeUtils.isEmpty(html)) {
-        widget = new Html(html);
+        widget = new Label(html);
       }
 
     } else {
@@ -1521,12 +1504,12 @@ public enum FormWidget {
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
       String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
-      table.setText(row, col, text);
+      table.setHtml(row, col, text);
       ok = true;
 
     } else if (BeeUtils.same(tag, TAG_HTML)) {
       String html = XmlUtils.getText(element);
-      table.setHTML(row, col, html);
+      table.setHtml(row, col, html);
       ok = true;
 
     } else {
@@ -1824,8 +1807,7 @@ public enum FormWidget {
       if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()
           && parent instanceof Stack) {
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          ((Stack) parent).add(hc.getContent().asWidget(), hc.getHeaderString(), hc.isHeaderHtml(),
-              headerSize);
+          ((Stack) parent).add(hc.getContent().asWidget(), hc.getHeaderString(), headerSize);
         } else {
           ((Stack) parent).add(hc.getContent().asWidget(), hc.getHeaderWidget().asWidget(),
               headerSize);
@@ -1837,8 +1819,7 @@ public enum FormWidget {
 
       if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString(),
-              hc.isHeaderHtml());
+          ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString());
         } else {
           ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderWidget().asWidget());
         }
@@ -1847,7 +1828,7 @@ public enum FormWidget {
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {
       String opt = XmlUtils.getText(child);
       if (!BeeUtils.isEmpty(opt) && parent instanceof RadioGroup) {
-        ((RadioGroup) parent).addOption(opt, true);
+        ((RadioGroup) parent).addOption(opt);
       }
 
     } else if (BeeUtils.same(childTag, HasItems.TAG_ITEM) && parent instanceof HasItems) {
@@ -1889,7 +1870,7 @@ public enum FormWidget {
         if (XmlUtils.tagIs(tabContent, TAG_HTML)) {
           String html = XmlUtils.getText(tabContent);
           if (!BeeUtils.isEmpty(html)) {
-            ((TabBar) parent).addItem(html, true);
+            ((TabBar) parent).addItem(html);
             break;
           }
         }

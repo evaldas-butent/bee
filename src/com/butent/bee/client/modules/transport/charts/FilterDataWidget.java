@@ -80,7 +80,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     int itemCount = addItems(data.getItems());
 
     CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
-    caption.setText(data.getType().getCaption());
+    caption.setHtml(data.getType().getCaption());
     add(caption);
 
     CustomWidget unselectedPanel = new CustomWidget(unselectedContainer, STYLE_DATA_UNSELECTED);
@@ -216,7 +216,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       } else {
         text = BeeUtils.toString(cnt);
       }
-      unselectedSizeWidget.setText(text);
+      unselectedSizeWidget.setHtml(text);
     }
 
     if (selectAllWidget != null) {
@@ -227,7 +227,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     cnt = data.getNumberOfSelectedItems();
     if (selectedSizeWidget != null) {
       String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
-      selectedSizeWidget.setText(text);
+      selectedSizeWidget.setHtml(text);
     }
 
     if (deselectAllWidget != null) {

@@ -177,7 +177,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public String getCaption() {
-    return captionWidget.getText();
+    return captionWidget.getHtml();
   }
 
   @Override
@@ -250,7 +250,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public void setCaption(String caption) {
-    captionWidget.setText(BeeUtils.trim(LocaleUtils.maybeLocalize(caption)));
+    captionWidget.setHtml(BeeUtils.trim(LocaleUtils.maybeLocalize(caption)));
   }
 
   @Override
@@ -284,7 +284,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public void setMessage(String message) {
-    messageWidget.setText(BeeUtils.trim(message));
+    messageWidget.setHtml(BeeUtils.trim(message));
   }
 
   @Override

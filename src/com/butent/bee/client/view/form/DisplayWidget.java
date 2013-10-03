@@ -22,7 +22,6 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.Flag;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Link;
@@ -120,7 +119,7 @@ public class DisplayWidget {
 
       case BUTTON:
         if (!BeeUtils.isEmpty(value) && widget instanceof Button) {
-          ((Button) widget).setHTML(value);
+          ((Button) widget).setHtml(value);
         }
         break;
 
@@ -179,12 +178,6 @@ public class DisplayWidget {
         }
         break;
 
-      case HTML_LABEL:
-        if (widget instanceof Html) {
-          ((Html) widget).setHTML(BeeUtils.trim(value));
-        }
-        break;
-
       case IMAGE:
         if (!BeeUtils.isEmpty(value) && widget instanceof Image) {
           ImageResource resource = Images.get(value);
@@ -205,10 +198,10 @@ public class DisplayWidget {
 
       case INTERNAL_LINK:
         if (!BeeUtils.isEmpty(value) && widget instanceof InternalLink) {
-          ((InternalLink) widget).setHTML(value);
+          ((InternalLink) widget).setHtml(value);
         }
         break;
-
+        
       case LINK:
         if (!BeeUtils.isEmpty(value) && widget instanceof Link) {
           ((Link) widget).update(value);

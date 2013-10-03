@@ -112,7 +112,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputFile;
@@ -1914,10 +1913,10 @@ public final class CliWorker {
         int col = 0;
         table.getCellFormatter().setHorizontalAlignment(row, col,
             HasHorizontalAlignment.ALIGN_RIGHT);
-        table.setText(row, col, BeeUtils.toString(row + 1));
+        table.setHtml(row, col, BeeUtils.toString(row + 1));
         col++;
 
-        table.setText(row, col, key);
+        table.setHtml(row, col, key);
         col++;
 
         CustomDiv keySwatch = new CustomDiv();
@@ -1932,7 +1931,7 @@ public final class CliWorker {
         table.setWidget(row, col, valueSwatch);
         col++;
 
-        table.setText(row, col, value);
+        table.setHtml(row, col, value);
       }
 
       BeeKeeper.getScreen().updateActivePanel(table);
@@ -1946,14 +1945,14 @@ public final class CliWorker {
 
       HtmlTable table = new HtmlTable();
 
-      table.setText(0, 0, args);
+      table.setHtml(0, 0, args);
 
       CustomDiv argSwatch = new CustomDiv();
       StyleUtils.setSize(argSwatch, 50, 50);
       StyleUtils.setBackgroundColor(argSwatch, args);
       table.setWidget(0, 1, argSwatch);
 
-      table.setText(1, 0, normalized);
+      table.setHtml(1, 0, normalized);
 
       CustomDiv normSwatch = new CustomDiv();
       StyleUtils.setSize(normSwatch, 50, 50);
@@ -2256,7 +2255,7 @@ public final class CliWorker {
           Map<String, String> flags = new TreeMap<String, String>(Flags.getFlags());
 
           for (Map.Entry<String, String> entry : flags.entrySet()) {
-            table.setText(row, col, entry.getKey());
+            table.setHtml(row, col, entry.getKey());
             table.getCellFormatter().setHorizontalAlignment(row, col,
                 HasHorizontalAlignment.ALIGN_RIGHT);
             col++;
@@ -2379,7 +2378,7 @@ public final class CliWorker {
       Map<String, ImageResource> map = new TreeMap<String, ImageResource>(Images.getMap());
 
       for (Map.Entry<String, ImageResource> entry : map.entrySet()) {
-        table.setText(row, col, entry.getKey());
+        table.setHtml(row, col, entry.getKey());
         table.getCellFormatter().setHorizontalAlignment(row, col,
             HasHorizontalAlignment.ALIGN_RIGHT);
         col++;
@@ -2628,28 +2627,28 @@ public final class CliWorker {
     table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
 
     int r = 0;
-    table.setHTML(r, 0, "min");
-    table.setHTML(r, 1, BeeUtils.toString(min));
+    table.setHtml(r, 0, "min");
+    table.setHtml(r, 1, BeeUtils.toString(min));
     r++;
-    table.setHTML(r, 0, "max");
-    table.setHTML(r, 1, BeeUtils.toString(max));
+    table.setHtml(r, 0, "max");
+    table.setHtml(r, 1, BeeUtils.toString(max));
     r++;
-    table.setHTML(r, 0, "low");
-    table.setHTML(r, 1, BeeUtils.toString(low));
+    table.setHtml(r, 0, "low");
+    table.setHtml(r, 1, BeeUtils.toString(low));
     r++;
-    table.setHTML(r, 0, "high");
-    table.setHTML(r, 1, BeeUtils.toString(high));
+    table.setHtml(r, 0, "high");
+    table.setHtml(r, 1, BeeUtils.toString(high));
     r++;
-    table.setHTML(r, 0, "optimum");
-    table.setHTML(r, 1, BeeUtils.toString(optimum));
+    table.setHtml(r, 0, "optimum");
+    table.setHtml(r, 1, BeeUtils.toString(optimum));
 
     r++;
-    table.setHTML(r, 0, BeeUtils.toString(value));
+    table.setHtml(r, 0, BeeUtils.toString(value));
     table.setWidget(r, 1, new Meter(min, max, value, low, high, optimum));
 
     for (double i = min; i <= max; i += (max - min) / 10) {
       r++;
-      table.setHTML(r, 0, BeeUtils.toString(i));
+      table.setHtml(r, 0, BeeUtils.toString(i));
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
     BeeKeeper.getScreen().updateActivePanel(table);
@@ -2899,26 +2898,24 @@ public final class CliWorker {
       info.addAll(font.getInfo());
     }
 
-    InlineLabel span = new InlineLabel();
+    InlineLabel span = new InlineLabel(html);
     if (font != null) {
       font.applyTo(span);
     }
     StyleUtils.setWhiteSpace(span, StyleUtils.WhiteSpace.PRE);
-    span.setText(html);
 
-    Html div = new Html();
+    Label div = new Label(html);
     if (font != null) {
       font.applyTo(div);
     }
-    div.setHTML(html);
 
     HtmlTable table = new HtmlTable();
     table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
     StyleUtils.collapseBorders(table);
 
     for (int i = 0; i < info.size(); i++) {
-      table.setHTML(i, 0, info.get(i).getName());
-      table.setHTML(i, 1, info.get(i).getValue());
+      table.setHtml(i, 0, info.get(i).getName());
+      table.setHtml(i, 1, info.get(i).getValue());
     }
 
     Flow panel = new Flow();
@@ -3297,7 +3294,7 @@ public final class CliWorker {
     int col = 0;
 
     for (String key : keys) {
-      table.setText(row, col++, key);
+      table.setHtml(row, col++, key);
       if (col >= 5) {
         row++;
         col = 0;

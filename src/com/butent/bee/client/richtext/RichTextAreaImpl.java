@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Timer;
 import com.butent.bee.client.richtext.RichTextArea.FontSize;
 import com.butent.bee.client.richtext.RichTextArea.Justification;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -19,7 +20,7 @@ import elemental.js.html.JsIFrameElement;
 import elemental.html.IFrameElement;
 import elemental.client.Browser;
 
-class RichTextAreaImpl implements RichTextArea.Formatter {
+class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
 
   private static final BeeLogger logger = LogUtils.getLogger(RichTextAreaImpl.class);
       
@@ -53,6 +54,11 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
   @Override
   public String getForeColor() {
     return queryCommandValue("ForeColor");
+  }
+
+  @Override
+  public String getHtml() {
+    return isReady ? getBody().getInnerHTML() : textOrHtml;
   }
 
   @Override
@@ -170,6 +176,15 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
   }
 
   @Override
+  public void setHtml(String html) {
+    if (isReady) {
+      setHtmlImpl(html);
+    } else {
+      textOrHtml = html;
+    }
+  }
+
+  @Override
   public void setJustification(Justification justification) {
     if (justification != null) {
       execCommand(justification.getCmd());
@@ -213,14 +228,6 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
 
   Element getElement() {
     return Element.as((JsIFrameElement) element);
-  }
-
-  String getHTML() {
-    return isReady ? getBody().getInnerHTML() : textOrHtml;
-  }
-
-  String getText() {
-    return isReady ? getBody().getInnerText() : textOrHtml;
   }
 
   void initElement() {
@@ -268,22 +275,6 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
       setFocusImpl(focused);
     } else {
       isPendingFocus = focused;
-    }
-  }
-
-  void setHTML(String html) {
-    if (isReady) {
-      setHTMLImpl(html);
-    } else {
-      textOrHtml = html;
-    }
-  }
-
-  void setText(String text) {
-    if (isReady) {
-      setTextImpl(text);
-    } else {
-      textOrHtml = text;
     }
   }
 
@@ -380,7 +371,7 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
 
     setEnabledImpl(isEnabled());
     if (!BeeUtils.isEmpty(textOrHtml)) {
-      setHTMLImpl(textOrHtml);
+      setHtmlImpl(textOrHtml);
     }
 
     hookEvents();
@@ -436,7 +427,7 @@ class RichTextAreaImpl implements RichTextArea.Formatter {
     }
   }
 
-  private void setHTMLImpl(String html) {
+  private void setHtmlImpl(String html) {
     getBody().setInnerHTML(html);
   }
 

@@ -170,7 +170,7 @@
         <row>
           <Label text="=trRequestCargoWeight" />
           <InputDecimal source="Weight" />
-          <HtmlLabel text="=trRequestCargoVolume" />
+          <Label text="=trRequestCargoVolume" />
           <InputDecimal source="Volume" />
         </row>
 

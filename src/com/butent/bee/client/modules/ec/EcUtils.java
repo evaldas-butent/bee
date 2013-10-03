@@ -73,12 +73,12 @@ public final class EcUtils {
 
     if (!BeeUtils.isEmpty(label)) {
       CustomSpan labelWidget = new CustomSpan(styleName + STYLE_FIELD_LABEL);
-      labelWidget.setText(label);
+      labelWidget.setHtml(label);
       container.add(labelWidget);
     }
 
     CustomSpan valueWidget = new CustomSpan(styleName);
-    valueWidget.setText(value);
+    valueWidget.setHtml(value);
     container.add(valueWidget);
     
     return container;

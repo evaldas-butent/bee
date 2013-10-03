@@ -12,7 +12,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -85,7 +85,7 @@ public class SimplePager extends AbstractPager {
   private final Image widgetForw;
   private final Image widgetLast;
 
-  private final Html widgetInfo;
+  private final Label widgetInfo;
   
   private final boolean showPageSize;
   
@@ -132,7 +132,7 @@ public class SimplePager extends AbstractPager {
     }
     container.add(widgetPrev);
 
-    this.widgetInfo = new Html();
+    this.widgetInfo = new Label();
     widgetInfo.addStyleName(STYLE_INFO);
 
     int width = getMaxInfoWidth(maxRowCount);
@@ -177,7 +177,7 @@ public class SimplePager extends AbstractPager {
       StyleUtils.setWidth(widgetInfo, getMaxInfoWidth(rowCount));
     }
 
-    widgetInfo.setText(createText(Math.min(start + 1, rowCount),
+    widgetInfo.setHtml(createText(Math.min(start + 1, rowCount),
         Math.min(rowCount, start + length), rowCount));
 
     widgetFirst.setEnabled(start > 0);

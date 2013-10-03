@@ -989,7 +989,7 @@ body {
 .bee-DatePicker-monthNavigation-disabled {
   visibility: hidden;
 }
-.bee-DatePicker-month {
+.bee-DatePicker-month > div {
   width: 96px;
 }
 

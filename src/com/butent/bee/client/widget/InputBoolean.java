@@ -42,16 +42,12 @@ public class InputBoolean extends Composite implements Editor {
   private boolean handlesTabulation;
   
   public InputBoolean(String label) {
-    this(label, false);
-  }
-
-  public InputBoolean(String label, boolean asHTML) {
     super();
 
     if (BeeUtils.isEmpty(label)) {
       this.checkBox = new SimpleCheckBox();
     } else {
-      this.checkBox = new CheckBox(label, asHTML);
+      this.checkBox = new CheckBox(label);
     }
     initWidget(checkBox.asWidget());
 

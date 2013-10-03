@@ -21,7 +21,6 @@ import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -198,11 +197,7 @@ public class TabbedPages extends Flow implements
   }
 
   public void add(Widget content, String text) {
-    add(content, text, false);
-  }
-
-  public void add(Widget content, String text, boolean asHtml) {
-    add(content, createTabWidget(text, asHtml));
+    add(content, new Label(text));
   }
 
   public void add(Widget content, Widget tab) {
@@ -251,12 +246,8 @@ public class TabbedPages extends Flow implements
     return getTab(index).getWidget();
   }
 
-  public void insert(Widget content, String text, boolean asHtml, int beforeIndex) {
-    insert(content, createTabWidget(text, asHtml), beforeIndex);
-  }
-
   public void insert(Widget content, String text, int beforeIndex) {
-    insert(content, text, false, beforeIndex);
+    insert(content, createTabWidget(text), beforeIndex);
   }
 
   public void insert(Widget content, Widget tab, int beforeIndex) {
@@ -364,8 +355,8 @@ public class TabbedPages extends Flow implements
     Assert.betweenExclusive(index, 0, getPageCount(), "page index out of bounds");
   }
 
-  private static Widget createTabWidget(String text, boolean asHtml) {
-    return asHtml ? new Html(text) : new Label(text);
+  private static Widget createTabWidget(String text) {
+    return new Label(text);
   }
 
   private Tab getTab(int index) {

@@ -1,13 +1,15 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Document;
+
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class InternalLink extends Html {
+public class InternalLink extends CustomHasHtml {
 
   public InternalLink(String html) {
-    super();
+    super(Document.get().createDivElement());
     if (!BeeUtils.isEmpty(html)) {
-      setHTML(html);
+      setHtml(html);
     }
   }
 
@@ -17,7 +19,8 @@ public class InternalLink extends Html {
   }
 
   @Override
-  protected String getDefaultStyleName() {
-    return "bee-InternalLink";
+  protected void init() {
+    super.init();
+    addStyleName("bee-InternalLink");
   }
 }

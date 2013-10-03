@@ -15,7 +15,7 @@ import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -224,12 +224,12 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     Flow panel = new Flow(STYLE_PREFIX + "panel");
 
     CustomDiv caption = new CustomDiv(STYLE_PREFIX + "caption");
-    caption.setHTML(getColumnLabel());
+    caption.setHtml(getColumnLabel());
     panel.add(caption);
 
     Flow fromWrapper = new Flow(STYLE_FROM + STYLE_SUFFIX_WRAPPER);
     
-    Html labelFrom = new Html(LOWER_OPERATOR.toTextString());
+    Label labelFrom = new Label(LOWER_OPERATOR.toTextString());
     labelFrom.addStyleName(STYLE_FROM + STYLE_SUFFIX_LABEL);
     
     fromWrapper.add(labelFrom);
@@ -239,7 +239,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
 
     Flow toWrapper = new Flow(STYLE_TO + STYLE_SUFFIX_WRAPPER);
     
-    Html labelTo = new Html(UPPER_OPERATOR.toTextString());
+    Label labelTo = new Label(UPPER_OPERATOR.toTextString());
     labelTo.addStyleName(STYLE_TO + STYLE_SUFFIX_LABEL);
     
     toWrapper.add(labelTo);

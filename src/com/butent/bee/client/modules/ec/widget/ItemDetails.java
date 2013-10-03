@@ -175,7 +175,7 @@ public class ItemDetails extends Flow {
       
       if (!BeeUtils.isEmpty(item.getDescription())) {
         CustomDiv descriptionWidget = new CustomDiv(stylePrefix + "description");
-        descriptionWidget.setHTML(item.getDescription());
+        descriptionWidget.setHtml(item.getDescription());
         container.add(descriptionWidget);
       }
     }
@@ -290,10 +290,10 @@ public class ItemDetails extends Flow {
     for (ArticleSupplier as : item.getSuppliers()) {
       col = 0;
 
-      table.setText(row, col++, BeeUtils.toString(as.getRealPrice()));
+      table.setHtml(row, col++, BeeUtils.toString(as.getRealPrice()));
 
-      table.setText(row, col++, as.getSupplier().name());
-      table.setText(row, col++, as.getSupplierId());
+      table.setHtml(row, col++, as.getSupplier().name());
+      table.setHtml(row, col++, as.getSupplierId());
 
       row++;
     }

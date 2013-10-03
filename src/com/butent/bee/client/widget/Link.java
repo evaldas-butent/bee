@@ -1,75 +1,47 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.dom.client.AnchorElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.user.client.ui.FocusWidget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Enables using hyperlink user interface component with {@code_blank} parameter.
+ * Enables using hyperlink user interface component.
  */
 
-public class Link extends Anchor implements IdentifiableWidget {
+public class Link extends FocusWidget implements IdentifiableWidget, HasHtml {
 
   private static final String DEFAULT_TARGET = "_blank";
 
   public Link() {
-    super();
-    init();
-  }
-
-  public Link(boolean useDefaultHref) {
-    super(useDefaultHref);
-    init();
-  }
-
-  public Link(SafeHtml html, String href, String target) {
-    super(html, href, target);
-    init();
-  }
-
-  public Link(SafeHtml html, String href) {
-    super(html, href);
-    init();
-  }
-
-  public Link(SafeHtml html) {
-    super(html);
-    init();
-  }
-
-  public Link(String text, boolean asHtml, String href, String target) {
-    super(text, asHtml, href, target);
-    init();
-  }
-
-  public Link(String text, boolean asHTML, String href) {
-    super(text, asHTML, href);
-    init();
-  }
-
-  public Link(String text, boolean asHtml) {
-    super(text, asHtml);
-    init();
-  }
-
-  public Link(String text, String href, String target) {
-    super(text, href, target);
+    super(Document.get().createAnchorElement());
     init();
   }
 
   public Link(String text, String href) {
-    super(text, href);
-    init();
+    this();
+    
+    if (!BeeUtils.isEmpty(text)) {
+      setHtml(text);
+    }
+    if (!BeeUtils.isEmpty(href)) {
+      setHref(href);
+    }
   }
 
-  public Link(String text) {
-    super(text);
-    init();
+  public String getHref() {
+    return getAnchorElement().getHref();
+  }
+
+  @Override
+  public String getHtml() {
+    return getElement().getInnerHTML();
   }
 
   @Override
@@ -82,15 +54,32 @@ public class Link extends Anchor implements IdentifiableWidget {
     return "link";
   }
 
+  public String getTarget() {
+    return getAnchorElement().getTarget();
+  }
+  
+  public void setHref(String href) {
+    getAnchorElement().setHref(href);
+  }
+
+  @Override
+  public void setHtml(String html) {
+    getElement().setInnerHTML(html);
+  }
+  
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
+  public void setTarget(String target) {
+    getAnchorElement().setTarget(target);
+  }
+  
   public void update(String value) {
     update(value, BeeConst.DEFAULT_VALUE_SEPARATOR);
   }
-
+  
   public void update(String value, String separator) {
     Assert.notEmpty(value);
     String sep = BeeUtils.notEmpty(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
@@ -104,16 +93,18 @@ public class Link extends Anchor implements IdentifiableWidget {
       html = value;
       href = value;
     }
-    setHTML(BeeUtils.trim(html));
+    setHtml(BeeUtils.trim(html));
     setHref(BeeUtils.trim(href));
   }
 
+  private AnchorElement getAnchorElement() {
+    return AnchorElement.as(getElement());
+  }
+  
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Link");
 
-    if (BeeUtils.isEmpty(getTarget())) {
-      setTarget(DEFAULT_TARGET);
-    }
+    setTarget(DEFAULT_TARGET);
   }
 }

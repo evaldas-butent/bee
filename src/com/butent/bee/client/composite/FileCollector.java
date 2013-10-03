@@ -118,7 +118,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(fileInfo.getFileVersion()));
+          ((Label) widget).setHtml(BeeUtils.trim(fileInfo.getFileVersion()));
         }
       }
 
@@ -151,8 +151,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.notEmpty(fileInfo.getCaption(),
-              fileInfo.getName()));
+          ((Label) widget).setHtml(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
         }
       }
 
@@ -190,7 +189,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(fileInfo.getDescription()));
+          ((Label) widget).setHtml(BeeUtils.trim(fileInfo.getDescription()));
         }
       }
 
@@ -221,7 +220,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(FileUtils.sizeToText(fileInfo.getSize()));
+          ((Label) widget).setHtml(FileUtils.sizeToText(fileInfo.getSize()));
         }
       }
 
@@ -247,7 +246,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(fileInfo.getType()));
+          ((Label) widget).setHtml(BeeUtils.trim(fileInfo.getType()));
         }
       }
 

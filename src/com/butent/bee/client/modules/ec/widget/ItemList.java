@@ -156,7 +156,7 @@ public class ItemList extends Flow {
     String description = item.getDescription();
     if (!BeeUtils.isEmpty(description)) {
       CustomDiv descriptionWidget = new CustomDiv(STYLE_ITEM_DESCRIPTION);
-      descriptionWidget.setHTML(description);
+      descriptionWidget.setHtml(description);
       panel.add(descriptionWidget);
     }
 

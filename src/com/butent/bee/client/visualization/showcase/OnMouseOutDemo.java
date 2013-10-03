@@ -22,6 +22,6 @@ public class OnMouseOutDemo extends OnMouseOutHandler {
     b.append(event.getRow());
     b.append(", column: ");
     b.append(event.getColumn());
-    label.setText("Mouse out of " + b.toString());
+    label.setHtml("Mouse out of " + b.toString());
   }
 }

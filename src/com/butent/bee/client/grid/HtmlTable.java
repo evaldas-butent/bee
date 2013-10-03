@@ -38,6 +38,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       ensureElement(row, column).addClassName(styleName);
     }
 
+    public Element ensureElement(int row, int column) {
+      prepareCell(row, column);
+      return getElement(row, column);
+    }
+
     public int getColSpan(int row, int column) {
       return DomUtils.getColSpan(getElement(row, column));
     }
@@ -92,7 +97,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     public void setStyleName(int row, int column, String styleName) {
       ensureElement(row, column).setClassName(styleName);
     }
-
+    
     public void setStyleName(int row, int column, String styleName, boolean add) {
       if (add) {
         addStyleName(row, column, styleName);
@@ -100,7 +105,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
         removeStyleName(row, column, styleName);
       }
     }
-    
+
     public void setVerticalAlignment(int row, int column, VerticalAlignmentConstant align) {
       StyleUtils.setVerticalAlign(ensureElement(row, column), align);
     }
@@ -119,11 +124,6 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
     public void setWordWrap(int row, int column, boolean wrap) {
       StyleUtils.setWordWrap(ensureElement(row, column), wrap);
-    }
-
-    protected Element ensureElement(int row, int column) {
-      prepareCell(row, column);
-      return getElement(row, column);
     }
 
     private native Element getTd(Element table, int row, int col) /*-{
@@ -466,30 +466,22 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     this.defaultCellStyles = styles;
   }
 
-  public void setHTML(int row, int column, String html) {
+  public void setHtml(int row, int column, String html) {
     prepareCell(row, column);
     Element td = cleanCell(row, column, html == null);
     if (html != null) {
-      DOM.setInnerHTML(td, html);
+      td.setInnerHTML(html);
     }
   }
 
+  public void setHtml(int row, int column, String html, String cellStyleName) {
+    setHtml(row, column, html);
+    getCellFormatter().addStyleName(row, column, cellStyleName);
+  }
+  
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
-  }
-
-  public void setText(int row, int column, String text) {
-    prepareCell(row, column);
-    Element td = cleanCell(row, column, text == null);
-    if (text != null) {
-      DOM.setInnerText(td, text);
-    }
-  }
-  
-  public void setText(int row, int column, String text, String cellStyleName) {
-    setText(row, column, text);
-    getCellFormatter().addStyleName(row, column, cellStyleName);
   }
 
   public void setWidget(int row, int column, Widget widget) {
@@ -533,9 +525,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     Assert.isTrue(row < rowSize && row >= 0, "Row index: " + row + ", Row size: " + rowSize);
   }
 
-  private Element cleanCell(int row, int column, boolean clearInnerHTML) {
+  private Element cleanCell(int row, int column, boolean clearInnerHtml) {
     Element td = getCellFormatter().getElement(row, column);
-    internalClearCell(td, clearInnerHTML);
+    internalClearCell(td, clearInnerHtml);
     return td;
   }
 
@@ -586,7 +578,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     DomUtils.createId(this, getIdPrefix());
   }
 
-  private boolean internalClearCell(Element td, boolean clearInnerHTML) {
+  private boolean internalClearCell(Element td, boolean clearInnerHtml) {
     if (td == null) {
       return false;
     }
@@ -601,8 +593,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       remove(widget);
       return true;
     } else {
-      if (clearInnerHTML) {
-        DOM.setInnerHTML(td, BeeConst.STRING_EMPTY);
+      if (clearInnerHtml) {
+        td.setInnerHTML(BeeConst.STRING_EMPTY);
       }
       return false;
     }

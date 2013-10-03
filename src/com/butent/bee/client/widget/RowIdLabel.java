@@ -52,7 +52,7 @@ public class RowIdLabel extends Label implements HandlesRendering, HasNumberForm
       text = BeeUtils.toString(row.getId());
     }
     
-    setText(text);
+    setHtml(text);
   }
 
   @Override

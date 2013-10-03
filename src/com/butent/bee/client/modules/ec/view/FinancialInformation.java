@@ -409,7 +409,7 @@ class FinancialInformation extends EcView {
     String text = (cents == 0) ? BeeConst.STRING_ZERO
         : BeeUtils.joinWords(EcUtils.renderCents(cents), CURRENCY);
 
-    widget.setText(text);
+    widget.setHtml(text);
     return widget;
   }
 
@@ -530,7 +530,7 @@ class FinancialInformation extends EcView {
   private static Widget renderOrderDetailValue(String value) {
     CustomDiv widget = new CustomDiv(STYLE_PREFIX_ORDER_DETAILS + STYLE_SUFFIX_VALUE);
     if (value != null) {
-      widget.setHTML(value);
+      widget.setHtml(value);
     }
     return widget;
   }

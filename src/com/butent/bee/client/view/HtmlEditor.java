@@ -317,7 +317,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
     }
 
     if (hasHtml()) {
-      htmlLabel.setHTML(getCurrentHtml());
+      htmlLabel.setHtml(getCurrentHtml());
     } else {
       StyleUtils.hideDisplay(htmlLabel);
     }
@@ -386,10 +386,10 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
       if (!had) {
         StyleUtils.unhideDisplay(htmlLabel);
       }
-      htmlLabel.setHTML(getCurrentHtml());
+      htmlLabel.setHtml(getCurrentHtml());
 
     } else if (had) {
-      htmlLabel.setHTML(BeeConst.STRING_EMPTY);
+      htmlLabel.setHtml(BeeConst.STRING_EMPTY);
       StyleUtils.hideDisplay(htmlLabel);
     }
   }

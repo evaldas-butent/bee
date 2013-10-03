@@ -10,7 +10,7 @@ public class Legend extends CustomHasHtml {
 
   public Legend(String text) {
     this();
-    setText(text);
+    setHtml(text);
   }
   
   @Override

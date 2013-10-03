@@ -52,7 +52,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
@@ -111,7 +111,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private final HeaderView header;
 
   private final CalendarWidget calendar;
-  private final Html dateBox;
+  private final Label dateBox;
 
   private final TabBar viewTabs;
   private final List<ViewType> views = Lists.newArrayList();
@@ -160,7 +160,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS, Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
-    this.dateBox = new Html();
+    this.dateBox = new Label();
     dateBox.addStyleName(STYLE_DATE);
 
     dateBox.addClickHandler(new ClickHandler() {
@@ -193,7 +193,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     add(header);
 
-    Html today = new Html("Šiandien");
+    Label today = new Label("Šiandien");
     today.addStyleName(STYLE_TODAY);
 
     today.addClickHandler(new ClickHandler() {
@@ -203,7 +203,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    Html prev = new Html("<");
+    Label prev = new Label("<");
     prev.addStyleName(STYLE_NAV_ITEM);
     prev.addStyleName(STYLE_NAV_PREV);
 
@@ -214,7 +214,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    Html next = new Html(">");
+    Label next = new Label(">");
     next.addStyleName(STYLE_NAV_ITEM);
     next.addStyleName(STYLE_NAV_NEXT);
 
@@ -666,7 +666,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       html = from + " - " + to;
     }
 
-    dateBox.setHTML(html);
+    dateBox.setHtml(html);
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,

@@ -127,7 +127,7 @@ public class MailMessage extends AbstractFormInterceptor {
               if (recipients.containsKey(type.getA())) {
                 int c = ft.getRowCount();
                 ft.getCellFormatter().setStyleName(c, 0, "bee-mail-RecipientsType");
-                ft.setText(c, 0, type.getB());
+                ft.setHtml(c, 0, type.getB());
                 FlowPanel fp = new FlowPanel();
 
                 for (String[] address : recipients.get(type.getA())) {

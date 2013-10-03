@@ -63,7 +63,7 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
       }
     }
 
-    status.setText("not ready");
+    status.setHtml("not ready");
     chart = new AnnotatedTimeLine(data, options, "600px", "300px");
 
     widget.add(chart);
@@ -77,7 +77,7 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     chart.addRangeChangeHandler(new RangeChangeHandler() {
       @Override
       public void onRangeChange(RangeChangeEvent event) {
-        rangeStatus.setText(BeeUtils.joinWords(event.getStart(), event.getEnd()));
+        rangeStatus.setHtml(BeeUtils.joinWords(event.getStart(), event.getEnd()));
       }
     });
     chart.addReadyHandler(new ReadyDemo(status));

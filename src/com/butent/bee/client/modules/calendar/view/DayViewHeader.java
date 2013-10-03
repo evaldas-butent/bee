@@ -12,8 +12,8 @@ import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.RangeMap;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -53,7 +53,7 @@ public class DayViewHeader extends Horizontal {
     dayPanel.addStyleName(CalendarStyleManager.DAY_CELL_CONTAINER);
     add(dayPanel);
     
-    Html filler = new Html();
+    CustomDiv filler = new CustomDiv();
     add(filler);
     setCellWidth(filler, DomUtils.getScrollBarWidth());
   }

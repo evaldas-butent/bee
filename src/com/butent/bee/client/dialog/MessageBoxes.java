@@ -29,8 +29,8 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -94,7 +94,7 @@ public class MessageBoxes {
     panel.addStyleName(STYLE_CHOICE_PANEL);
 
     if (!BeeUtils.isEmpty(prompt)) {
-      Html label = new Html(prompt.trim());
+      Label label = new Label(prompt.trim());
       label.addStyleName(STYLE_CHOICE_PROMPT);
 
       UiHelper.add(panel, label, initializer, DialogConstants.WIDGET_PROMPT);
@@ -305,7 +305,7 @@ public class MessageBoxes {
     if (!BeeUtils.isEmpty(messages)) {
       for (String message : messages) {
         if (message != null) {
-          Widget messageWidget = UiHelper.initialize(new Html(message), initializer,
+          Widget messageWidget = UiHelper.initialize(new Label(message), initializer,
               DialogConstants.WIDGET_PROMPT);
 
           if (messageWidget != null) {
@@ -499,7 +499,7 @@ public class MessageBoxes {
     int index = 0;
 
     if (!BeeUtils.isEmpty(caption)) {
-      grid.setHTML(index, 0, caption.trim());
+      grid.setHtml(index, 0, caption.trim());
       grid.alignCenter(index, 0);
       if (c > 1) {
         grid.getCellFormatter().setColSpan(index, 0, c);
@@ -508,7 +508,7 @@ public class MessageBoxes {
     }
 
     for (int j = 0; j < c; j++) {
-      grid.setHTML(index, j, table.getColumnLabel(j));
+      grid.setHtml(index, j, table.getColumnLabel(j));
       grid.alignCenter(index, j);
     }
     index++;
@@ -517,7 +517,7 @@ public class MessageBoxes {
       for (int j = 0; j < c; j++) {
         String value = table.getString(i, j);
         if (!BeeUtils.isEmpty(value)) {
-          grid.setHTML(index, j, value);
+          grid.setHtml(index, j, value);
           if (ValueType.isNumeric(table.getColumnType(j))) {
             grid.alignRight(index, j);
           }

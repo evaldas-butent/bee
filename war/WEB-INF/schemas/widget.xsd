@@ -368,8 +368,6 @@
   <xs:element name="Label" type="labelType" substitutionGroup="widget" />
   <xs:element name="InlineLabel" type="labelType" substitutionGroup="widget" />
 
-  <xs:element name="HtmlLabel" type="display" substitutionGroup="widget" />
-
   <xs:complexType name="valueLabel">
     <xs:complexContent>
       <xs:extension base="display">

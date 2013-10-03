@@ -192,7 +192,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     int row = 0;
     for (DataItem dataItem : data) {
       int col = 0;
-      display.setText(row, col++, getCaption(dataItem.getIndex()));
+      display.setHtml(row, col++, getCaption(dataItem.getIndex()));
       addBinSize(display, row, col, dataItem.getCount());
       
       if (values.contains(dataItem.getIndex())) {

@@ -17,10 +17,10 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -291,12 +291,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     Flow panel = new Flow(STYLE_PREFIX + "panel");
 
     CustomDiv caption = new CustomDiv(STYLE_PREFIX + "caption");
-    caption.setHTML(getColumnLabel());
+    caption.setHtml(getColumnLabel());
     panel.add(caption);
 
     HtmlTable display = createDisplay(false);
 
-    Html labelFrom = new Html(Localized.getConstants().dateFromShort());
+    Label labelFrom = new Label(Localized.getConstants().dateFromShort());
     display.setWidgetAndStyle(START_ROW, LABEL_COL, labelFrom, STYLE_LABEL);
 
     InputDate dateFrom = new InputDate();
@@ -311,7 +311,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       SimpleEditorHandler.observe(null, timeFrom);
     }
 
-    Html labelTo = new Html(Localized.getConstants().dateToShort());
+    Label labelTo = new Label(Localized.getConstants().dateToShort());
     display.setWidgetAndStyle(END_ROW, LABEL_COL, labelTo, STYLE_LABEL);
 
     InputDate dateTo = new InputDate();

@@ -203,7 +203,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           final Image disconnect = new Image(Global.getImages().disconnect());
           disconnect.addStyleName("bee-mail-FolderAction");
           disconnect.setTitle(BeeUtils.joinWords("Nutraukti aplanko",
-              BeeUtils.bracket(label.getText()), "sinchronizaciją su pašto serveriu?"));
+              BeeUtils.bracket(label.getHtml()), "sinchronizaciją su pašto serveriu?"));
 
           disconnect.addClickHandler(new ClickHandler() {
             @Override
@@ -226,7 +226,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         }
         final Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName("bee-mail-FolderAction");
-        edit.setTitle(BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getText()),
+        edit.setTitle(BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getHtml()),
             "pavadinimą"));
 
         edit.addClickHandler(new ClickHandler() {
@@ -235,18 +235,18 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
             Global.inputString(edit.getTitle(), null, new StringCallback() {
               @Override
               public void onSuccess(String value) {
-                if (!label.getText().equals(value)) {
+                if (!label.getHtml().equals(value)) {
                   MailKeeper.renameFolder(account, folderId, value);
                 }
               }
-            }, label.getText());
+            }, label.getHtml());
           }
         });
         row.add(edit);
 
         final Image delete = new Image(Global.getImages().silverMinus());
         delete.addStyleName("bee-mail-FolderAction");
-        delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getText()) + "?");
+        delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getHtml()) + "?");
 
         delete.addClickHandler(new ClickHandler() {
           @Override

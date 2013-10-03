@@ -237,7 +237,7 @@ public final class GridSettings {
   private static Widget createLabel(ColumnInfo columnInfo, int index) {
     DndDiv widget = new DndDiv(STYLE_LABEL);
 
-    widget.setHTML(columnInfo.getLabel());
+    widget.setHtml(columnInfo.getLabel());
     DomUtils.setDataIndex(widget.getElement(), index);
 
     DndHelper.makeSource(widget, DND_CONTENT_TYPE, index, STYLE_DRAG);

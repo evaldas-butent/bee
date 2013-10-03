@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -32,6 +31,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.Cart;
@@ -155,8 +155,8 @@ public class ShoppingCart extends Split {
     });
   }
 
-  private static int getInt(HasText widget) {
-    return BeeUtils.toInt(widget.getText());
+  private static int getInt(HasHtml widget) {
+    return BeeUtils.toInt(widget.getHtml());
   }
 
   private void initCenter() {
@@ -176,7 +176,7 @@ public class ShoppingCart extends Split {
   private void initSouth(Cart cart) {
     Flow panel = new Flow(STYLE_PRIMARY + "-south");
 
-    totalWidget.setHTML(renderTotal(cart));
+    totalWidget.setHtml(renderTotal(cart));
     panel.add(totalWidget);
 
     if (!BeeUtils.isEmpty(deliveryMethods)) {
@@ -514,13 +514,13 @@ public class ShoppingCart extends Split {
         EcUtils.renderCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
-  private static void setInt(HasText widget, int value) {
-    widget.setText(BeeUtils.toString(value));
+  private static void setInt(HasHtml widget, int value) {
+    widget.setHtml(BeeUtils.toString(value));
   }
 
   private void updateTotal(Cart cart) {
     if (cart != null) {
-      totalWidget.setHTML(renderTotal(cart));
+      totalWidget.setHtml(renderTotal(cart));
     }
   }
 }

@@ -502,28 +502,28 @@ class SearchByCar extends EcView {
   private void refreshAttributeWidgets() {
     boolean hasManufacturer = !BeeUtils.isEmpty(getManufacturer());
 
-    manufacturerWidget.setText(hasManufacturer
+    manufacturerWidget.setHtml(hasManufacturer
         ? getManufacturer() : Localized.getConstants().ecCarManufacturer());
     manufacturerWidget.setHasValue(hasManufacturer);
 
     boolean modelEnabled = hasManufacturer;
     boolean hasModel = modelEnabled && getModelIndex() != null;
 
-    modelWidget.setText(hasModel ? renderModel(getModel()) : Localized.getConstants().ecCarModel());
+    modelWidget.setHtml(hasModel ? renderModel(getModel()) : Localized.getConstants().ecCarModel());
     modelWidget.setHasValue(hasModel);
     modelWidget.setEnabled(modelEnabled);
 
     boolean yearEnabled = hasModel && !types.isEmpty();
     boolean hasYear = yearEnabled && getYear() != null;
 
-    yearWidget.setText(hasYear ? getYear().toString() : Localized.getConstants().ecCarYear());
+    yearWidget.setHtml(hasYear ? getYear().toString() : Localized.getConstants().ecCarYear());
     yearWidget.setHasValue(hasYear);
     yearWidget.setEnabled(yearEnabled);
 
     boolean engineEnabled = hasModel && !types.isEmpty();
     boolean hasEngine = engineEnabled && !BeeUtils.isEmpty(getEngine());
 
-    engineWidget.setText(hasEngine ? getEngine() : Localized.getConstants().ecCarEngine());
+    engineWidget.setHtml(hasEngine ? getEngine() : Localized.getConstants().ecCarEngine());
     engineWidget.setHasValue(hasEngine);
     engineWidget.setEnabled(engineEnabled);
   }
@@ -547,19 +547,19 @@ class SearchByCar extends EcView {
     int row = 0;
     int col = 0;
 
-    table.setText(row, col++, Localized.getConstants().ecCarProduced());
-    table.setText(row, col++, Localized.getConstants().ecCarEngine());
+    table.setHtml(row, col++, Localized.getConstants().ecCarProduced());
+    table.setHtml(row, col++, Localized.getConstants().ecCarEngine());
 
-    table.setText(row, col++, Localized.getConstants().ecCarPower());
+    table.setHtml(row, col++, Localized.getConstants().ecCarPower());
 
-    table.setText(row, col++, COL_TCD_CCM);
-    table.setText(row, col++, COL_TCD_CYLINDERS);
-    table.setText(row, col++, COL_TCD_MAX_WEIGHT);
+    table.setHtml(row, col++, COL_TCD_CCM);
+    table.setHtml(row, col++, COL_TCD_CYLINDERS);
+    table.setHtml(row, col++, COL_TCD_MAX_WEIGHT);
 
-    table.setText(row, col++, COL_TCD_ENGINE);
-    table.setText(row, col++, COL_TCD_FUEL);
-    table.setText(row, col++, COL_TCD_BODY);
-    table.setText(row, col++, COL_TCD_AXLE);
+    table.setHtml(row, col++, COL_TCD_ENGINE);
+    table.setHtml(row, col++, COL_TCD_FUEL);
+    table.setHtml(row, col++, COL_TCD_BODY);
+    table.setHtml(row, col++, COL_TCD_AXLE);
 
     table.getRowFormatter().addStyleName(row, STYLE_TYPE + "headerRow");
     row++;
@@ -583,19 +583,19 @@ class SearchByCar extends EcView {
 
       col = 0;
 
-      table.setText(row, col++,
+      table.setHtml(row, col++,
           EcUtils.renderProduced(type.getProducedFrom(), type.getProducedTo()));
-      table.setText(row, col++, type.getTypeName());
-      table.setText(row, col++, type.getPower());
+      table.setHtml(row, col++, type.getTypeName());
+      table.setHtml(row, col++, type.getPower());
 
-      table.setText(row, col++, EcUtils.string(type.getCcm()));
-      table.setText(row, col++, EcUtils.string(type.getCylinders()));
-      table.setText(row, col++, EcUtils.string(type.getMaxWeight()));
+      table.setHtml(row, col++, EcUtils.string(type.getCcm()));
+      table.setHtml(row, col++, EcUtils.string(type.getCylinders()));
+      table.setHtml(row, col++, EcUtils.string(type.getMaxWeight()));
 
-      table.setText(row, col++, type.getEngine());
-      table.setText(row, col++, type.getFuel());
-      table.setText(row, col++, type.getBody());
-      table.setText(row, col++, type.getAxle());
+      table.setHtml(row, col++, type.getEngine());
+      table.setHtml(row, col++, type.getFuel());
+      table.setHtml(row, col++, type.getBody());
+      table.setHtml(row, col++, type.getAxle());
 
       DomUtils.setDataIndex(table.getRowFormatter().getElement(row), type.getTypeId());
 

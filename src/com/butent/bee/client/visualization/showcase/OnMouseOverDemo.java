@@ -24,6 +24,6 @@ public class OnMouseOverDemo extends OnMouseOverHandler {
     b.append(row);
     b.append(", column: ");
     b.append(column);
-    label.setText("Mouse over " + b.toString());
+    label.setHtml("Mouse over " + b.toString());
   }
 }

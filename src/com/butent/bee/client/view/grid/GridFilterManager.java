@@ -287,7 +287,7 @@ public class GridFilterManager {
     panel.add(icon);
 
     CustomDiv message = new CustomDiv(STYLE_SAVE_MESSAGE);
-    message.setText(Localized.getConstants().saveFilter());
+    message.setHtml(Localized.getConstants().saveFilter());
     message.addClickHandler(clickHandler);
     panel.add(message);
 
@@ -298,7 +298,7 @@ public class GridFilterManager {
       final AbstractFilterSupplier filterSupplier) {
 
     CustomDiv label = new CustomDiv();
-    label.setHTML(columnInfo.getLabel());
+    label.setHtml(columnInfo.getLabel());
 
     table.setWidgetAndStyle(row, 0, label, STYLE_SUPPLIER_LABEL);
 
@@ -306,7 +306,7 @@ public class GridFilterManager {
     button.addStyleName(STYLE_SUPPLIER_BUTTON);
 
     if (!filterSupplier.isEmpty()) {
-      button.setHTML(filterSupplier.getLabel());
+      button.setHtml(filterSupplier.getLabel());
       button.setTitle(filterSupplier.getTitle());
     }
 
@@ -327,7 +327,7 @@ public class GridFilterManager {
     button.addClickHandler(clickHandler);
 
     CustomDiv clear = new CustomDiv(STYLE_SUPPLIER_CLEAR);
-    clear.setText(String.valueOf(BeeConst.CHAR_TIMES));
+    clear.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
     clear.setTitle(Action.REMOVE_FILTER.getCaption());
 
     clear.addClickHandler(new ClickHandler() {

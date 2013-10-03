@@ -10,7 +10,7 @@ public class Summary extends CustomHasHtml {
 
   public Summary(String text) {
     this();
-    setText(text);
+    setHtml(text);
   }
   
   @Override

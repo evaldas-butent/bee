@@ -84,7 +84,7 @@ public class Tablet extends Mobile {
     int w = 70;
     int h = 20;
 
-    grid.setHTML(r, 0, "Count:");
+    grid.setHtml(r, 0, "Count:");
     r++;
 
     minCount = new VolumeSlider(10, 1, 1000);
@@ -95,7 +95,7 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 1, maxCount);
     r++;
 
-    grid.setHTML(r, 0, "Radius:");
+    grid.setHtml(r, 0, "Radius:");
     r++;
 
     minRadius = new VolumeSlider(10, 1, 1000);
@@ -106,7 +106,7 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 1, maxRadius);
     r++;
 
-    grid.setHTML(r, 0, "Color Step:");
+    grid.setHtml(r, 0, "Color Step:");
     r++;
 
     colorStep = new VolumeSlider(16, 1, 256);
@@ -114,7 +114,7 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 0, colorStep);
     r++;
 
-    grid.setHTML(r, 0, "Opacity:");
+    grid.setHtml(r, 0, "Opacity:");
     r++;
 
     minOpacity = new VolumeSlider(50, 0, 100);

@@ -1,11 +1,12 @@
 package com.butent.bee.client.datepicker;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
+import com.google.gwt.user.client.Element;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;
+import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.JustDate;
@@ -34,7 +35,9 @@ class MonthSelector extends Component {
   private final Image nextMonth;
   private final Image nextYear;
   
-  private final Grid grid;
+  private final CustomDiv monthName;
+  
+  private final Horizontal table;
   
   MonthSelector(CssClasses cssClasses) {
     String styleDisabled = cssClasses.monthNavigationDisabled(); 
@@ -44,30 +47,35 @@ class MonthSelector extends Component {
     this.nextMonth = new Image(Global.getImages().next(), new Navigation(1), styleDisabled);
     this.nextYear = new Image(Global.getImages().forward(), new Navigation(12), styleDisabled);
     
-    this.grid = new Grid(1, 5);
-    grid.setWidget(0, 0, prevYear);
-    grid.setWidget(0, 1, prevMonth);
-    grid.setWidget(0, 3, nextMonth);
-    grid.setWidget(0, 4, nextYear);
+    this.monthName = new CustomDiv();
+    
+    this.table = new Horizontal();
+    table.add(prevYear);
+    table.add(prevMonth);
 
-    CellFormatter formatter = grid.getCellFormatter();
-    for (int i = 0; i < 5; i++) {
-      if (i != 2) {
-        formatter.setStyleName(0, i, cssClasses.monthNavigation());
+    table.add(monthName);
+    
+    table.add(nextMonth);
+    table.add(nextYear);
+
+    for (int i = 0; i < table.getWidgetCount(); i++) {
+      Element cell = table.getCell(i);
+
+      if (i == 2) {
+        cell.addClassName(cssClasses.month());
+      } else {
+        cell.addClassName(cssClasses.monthNavigation());
       }
     }
 
-    formatter.setWidth(0, 2, "100%");
-    formatter.setStyleName(0, 2, cssClasses.month());
-    
-    grid.setStyleName(cssClasses.monthSelector());
-    initWidget(grid);
+    table.addStyleName(cssClasses.monthSelector());
+    initWidget(table);
   }
  
   @Override
   protected void refresh() {
     YearMonth current = getModel().getCurrentMonth();
-    grid.setText(0, 2, getModel().format(current));
+    monthName.setHtml(getModel().format(current));
     
     refresh(prevYear, current.previousYear());
     refresh(prevMonth, current.previousMonth());

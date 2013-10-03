@@ -39,7 +39,7 @@ class SelectionDemo extends SelectHandler {
         b.append(s.get(i).getColumn());
       }
     }
-    label.setText("selection changed " + b.toString());
+    label.setHtml("selection changed " + b.toString());
   }
 
   private JsArray<Selection> getSelections() {

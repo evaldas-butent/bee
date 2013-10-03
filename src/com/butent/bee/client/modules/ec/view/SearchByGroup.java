@@ -297,7 +297,7 @@ class SearchByGroup extends EcView implements HasCaption {
       EcGroup group = groups.get(i);
 
       CustomDiv groupWidget = new CustomDiv(groupStyle);
-      groupWidget.setHTML(group.getName());
+      groupWidget.setHtml(group.getName());
       DomUtils.setDataIndex(groupWidget.getElement(), i);
 
       groupWidget.addClickHandler(clickHandler);

@@ -154,7 +154,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public String getValue() {
-    return getArea().getHTML();
+    return getArea().getHtml();
   }
 
   @Override
@@ -261,7 +261,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public void setValue(String value) {
-    getArea().setHTML(value);
+    getArea().setHtml(value);
   }
 
   @Override

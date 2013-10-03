@@ -1,9 +1,10 @@
 package com.butent.bee.client.richtext;
 
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HasHTML;
 
-class RichTextArea extends FocusWidget implements HasHTML {
+import com.butent.bee.shared.HasHtml;
+
+class RichTextArea extends FocusWidget implements HasHtml {
 
   enum FontSize {
     XX_SMALL(1),
@@ -119,13 +120,8 @@ class RichTextArea extends FocusWidget implements HasHTML {
   }
 
   @Override
-  public String getHTML() {
-    return impl.getHTML();
-  }
-
-  @Override
-  public String getText() {
-    return impl.getText();
+  public String getHtml() {
+    return impl.getHtml();
   }
 
   @Override
@@ -146,13 +142,8 @@ class RichTextArea extends FocusWidget implements HasHTML {
   }
 
   @Override
-  public void setHTML(String html) {
-    impl.setHTML(html);
-  }
-
-  @Override
-  public void setText(String text) {
-    impl.setText(text);
+  public void setHtml(String html) {
+    impl.setHtml(html);
   }
 
   @Override

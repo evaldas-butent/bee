@@ -1823,7 +1823,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
         if (!info.isEmpty()) {
           CustomDiv label = new CustomDiv(STYLE_SHIPMENT_DAY_LABEL);
-          label.setText(BeeUtils.join(BeeConst.STRING_SPACE, info));
+          label.setHtml(BeeUtils.join(BeeConst.STRING_SPACE, info));
 
           widget.add(label);
         }

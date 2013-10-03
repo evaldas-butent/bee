@@ -15,7 +15,7 @@ public class Heading extends CustomHasHtml {
   public Heading(int n, String text) {
     this(n);
     if (!BeeUtils.isEmpty(text)) {
-      setText(text);
+      setHtml(text);
     }
   }
 
