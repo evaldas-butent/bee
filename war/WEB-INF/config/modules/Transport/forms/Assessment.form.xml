@@ -14,6 +14,8 @@
   name="Assessment" viewName="Assessments" caption="=transportAssessmentRequest"
   showRowId="true"
   >
+  <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
+
   <FlowPanel style="padding: 10px 2px 2px 10px;" class="flexBox-vertical bee-tr-assessment-form">
     <FlowPanel style="height:65%; overflow:auto;">
       <FlowPanel style="&section;">

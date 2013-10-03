@@ -5,6 +5,7 @@
   name="CargoInvoiceIncomes" source="CargoIncomes"
   >
   <Columns>
+    <SimpleColumn name="Assessor" />
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleColumn name="Cmr" />

@@ -4,7 +4,7 @@
 
   name="CargoAssessors" viewName="CargoAssessors"
   newRowCaption="=trNewAssessment"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
   <g:columns>
     <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />

@@ -12,7 +12,7 @@
 >
   <FlowPanel style="&section;">
     <Label text="=route" class="bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="Route" required="true" visibleLines="8" style="width:400px;" />
+    <InputArea source="Route" required="true" visibleLines="7" style="width:400px;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
@@ -69,7 +69,7 @@
   &separator;
   <FlowPanel style="&section;">
     <Label text="=cargo" class="bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="Description" visibleLines="5" style="width:200px;" />
+    <InputArea source="Description" visibleLines="4" style="width:200px;" />
     <VerticalPanel style="&inline;">
       <CheckBox source="Partial" text="=partialCargo" />
       <CheckBox source="Outsized" text="=outsized" />
@@ -80,13 +80,16 @@
   <FlowPanel style="&section;">
     <Label text="=quantity" style="&labelLeft;" />
     <InputInteger source="Quantity" style="&input;" />
+    <DataSelector source="QuantityUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
     <Label text="=weight" style="&labelRight;" />
     <InputDecimal source="Weight" format="#.000" style="&input;" />
+    <DataSelector source="WeightUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
     <Label text="=volume" style="&labelLeft;" />
     <InputDecimal source="Volume" format="#.000" style="&input;" />
+    <DataSelector source="VolumeUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
     <Label text="=value" style="&labelRight;" />
     <InputCurrency source="Value" style="&input;" />
     <DataSelector source="ValueCurrency" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />

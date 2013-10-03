@@ -572,11 +572,6 @@ public final class Queries {
 
   public static int update(String viewName, List<BeeColumn> columns, IsRow oldRow, IsRow newRow,
       Collection<RowChildren> children, RowCallback callback) {
-    Assert.notEmpty(viewName);
-    Assert.notEmpty(columns);
-
-    Assert.notNull(oldRow);
-    Assert.notNull(newRow);
 
     BeeRowSet rs = DataUtils.getUpdated(viewName, columns, oldRow, newRow, children);
 
@@ -601,30 +596,12 @@ public final class Queries {
       updateChildren(viewName, rowId, children, callback);
       return;
     }
+    BeeRowSet rs = DataUtils.getUpdated(viewName, rowId, version, columns, oldValues, newValues,
+        children);
 
-    Assert.notEmpty(viewName);
-    Assert.notNull(columns);
-    Assert.notNull(oldValues);
-    Assert.notNull(newValues);
-
-    int cc = columns.size();
-    Assert.isPositive(cc);
-    Assert.isTrue(cc == oldValues.size());
-    Assert.isTrue(cc == newValues.size());
-
-    BeeRowSet rs = new BeeRowSet(columns);
-    rs.setViewName(viewName);
-    rs.addRow(rowId, version, oldValues);
-
-    for (int i = 0; i < cc; i++) {
-      rs.getRow(0).preliminaryUpdate(i, newValues.get(i));
+    if (!DataUtils.isEmpty(rs)) {
+      updateRow(rs, callback);
     }
-
-    if (!BeeUtils.isEmpty(children)) {
-      rs.getRow(0).setChildren(children);
-    }
-
-    updateRow(rs, callback);
   }
 
   public static void updateCell(BeeRowSet rowSet, RowCallback callback) {

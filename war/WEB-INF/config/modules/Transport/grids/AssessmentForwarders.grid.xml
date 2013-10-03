@@ -5,7 +5,7 @@
   name="AssessmentForwarders" viewName="AssessmentForwarders"
   newRowForm="AssessmentForwarder" newRowCaption="=trNewCarrier" newRowPopup="true"
   editForm="AssessmentForwarder"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
   <g:columns>
     <DataColumn name="LoadingDate" caption="=trLoadingDate" width="80" format="DATE_SHORT" />
