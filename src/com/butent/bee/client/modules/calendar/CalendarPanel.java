@@ -203,7 +203,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    Label prev = new Label("<");
+    Label prev = new Label();
+    prev.getElement().setInnerText("<");
+
     prev.addStyleName(STYLE_NAV_ITEM);
     prev.addStyleName(STYLE_NAV_PREV);
 
@@ -214,7 +216,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    Label next = new Label(">");
+    Label next = new Label();
+    next.getElement().setInnerText(">");
+
     next.addStyleName(STYLE_NAV_ITEM);
     next.addStyleName(STYLE_NAV_NEXT);
 

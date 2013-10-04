@@ -685,6 +685,11 @@ public final class BeeUtils {
     }
   }
 
+  public static int getDecimals(String s) {
+    int index = (s == null) ? BeeConst.UNDEF : s.lastIndexOf(BeeConst.CHAR_POINT);
+    return (index >= 0) ? s.length() - index - 1 : 0;
+  }
+  
   public static <K, V> Collection<V> getIfContains(Multimap<K, V> multimap, K key) {
     if (multimap != null && multimap.containsKey(key)) {
       return multimap.get(key);
@@ -812,6 +817,10 @@ public final class BeeUtils {
 
   public static <C extends Comparable<C>> C getUpperEndpoint(Range<C> range) {
     return (range != null && range.hasUpperBound()) ? range.upperEndpoint() : null;
+  }
+
+  public static boolean hasExponent(String s) {
+    return contains(s, 'E') || contains(s, 'e');
   }
 
   public static boolean hasLength(CharSequence cs, int min) {
@@ -1934,7 +1943,7 @@ public final class BeeUtils {
     if (p < 1) {
       return str;
     }
-    if (!isDigit(str.substring(p + 1))) {
+    if (!isDigit(str.substring(p + 1)) || hasExponent(str)) {
       return str;
     }
 
@@ -2636,6 +2645,15 @@ public final class BeeUtils {
    */
   public static String toString(double x) {
     return removeTrailingZeros(Double.toString(x));
+  }
+
+  public static String toString(double x, int maxDec) {
+    String s = toString(x);
+    if (maxDec >= 0 && getDecimals(s) > maxDec && !hasExponent(s)) {
+      return removeTrailingZeros(round(s, maxDec));
+    } else {
+      return s;
+    }
   }
 
   public static String toString(Enum<?> e) {

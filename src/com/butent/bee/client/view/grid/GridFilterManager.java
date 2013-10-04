@@ -306,7 +306,7 @@ public class GridFilterManager {
     button.addStyleName(STYLE_SUPPLIER_BUTTON);
 
     if (!filterSupplier.isEmpty()) {
-      button.setHtml(filterSupplier.getLabel());
+      button.getElement().setInnerText(filterSupplier.getLabel());
       button.setTitle(filterSupplier.getTitle());
     }
 

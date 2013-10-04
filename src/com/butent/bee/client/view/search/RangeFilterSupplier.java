@@ -229,7 +229,8 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
 
     Flow fromWrapper = new Flow(STYLE_FROM + STYLE_SUFFIX_WRAPPER);
     
-    Label labelFrom = new Label(LOWER_OPERATOR.toTextString());
+    Label labelFrom = new Label();
+    labelFrom.getElement().setInnerText(LOWER_OPERATOR.toTextString());
     labelFrom.addStyleName(STYLE_FROM + STYLE_SUFFIX_LABEL);
     
     fromWrapper.add(labelFrom);
@@ -239,7 +240,8 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
 
     Flow toWrapper = new Flow(STYLE_TO + STYLE_SUFFIX_WRAPPER);
     
-    Label labelTo = new Label(UPPER_OPERATOR.toTextString());
+    Label labelTo = new Label();
+    labelTo.getElement().setInnerText(UPPER_OPERATOR.toTextString());
     labelTo.addStyleName(STYLE_TO + STYLE_SUFFIX_LABEL);
     
     toWrapper.add(labelTo);

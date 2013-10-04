@@ -277,7 +277,7 @@ public final class RowFactory {
 
     List<String> colNames = Lists.newArrayList();
     if (!BeeUtils.isEmpty(specified)) {
-      List<String> list = DataUtils.parseColumns(specified, dataInfo.getColumns(), null, null);
+      List<String> list = DataUtils.parseColumns(specified, dataInfo.getColumns());
       if (list != null) {
         colNames.addAll(list);
       }

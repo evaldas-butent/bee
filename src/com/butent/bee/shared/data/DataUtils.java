@@ -28,6 +28,8 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Wildcards;
+import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.Collection;
 import java.util.List;
@@ -656,19 +658,92 @@ public final class DataUtils {
   }
 
   public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
+      String idName, String versionName) {
+
     List<String> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
     Assert.notEmpty(columns);
 
+    boolean hasWildcards = false;
+    boolean hasExclusions = false;
+
     for (String item : input) {
-      String colName = getColumnName(item, columns, idColumnName, versionColumnName);
-      if (!BeeUtils.isEmpty(colName) && !result.contains(colName)) {
-        result.add(colName);
+      if (!hasWildcards) {
+        hasWildcards = Wildcards.hasDefaultWildcards(item);
+      }
+      if (!hasExclusions) {
+        hasExclusions = BeeUtils.isPrefixOrSuffix(item, BeeConst.CHAR_MINUS);
       }
     }
+
+    if (hasWildcards || hasExclusions) {
+      Set<Pattern> include = Sets.newHashSet();
+      Set<Pattern> exclude = Sets.newHashSet();
+
+      for (String item : input) {
+        if (hasExclusions && BeeUtils.isPrefixOrSuffix(item, BeeConst.CHAR_MINUS)) {
+          String expr = BeeUtils.removePrefixAndSuffix(item, BeeConst.CHAR_MINUS);
+          if (!BeeUtils.isEmpty(expr)) {
+            exclude.add(Wildcards.getDefaultPattern(BeeUtils.trim(expr)));
+          }
+        } else if (!BeeUtils.isEmpty(item)) {
+          include.add(Wildcards.getDefaultPattern(BeeUtils.trim(item)));
+        }
+      }
+
+      List<String> colNames = Lists.newArrayList();
+
+      if (!include.isEmpty()) {
+        if (!BeeUtils.isEmpty(idName) && Wildcards.contains(include, idName)) {
+          colNames.add(idName);
+        }
+        if (!BeeUtils.isEmpty(versionName) && Wildcards.contains(include, versionName)) {
+          colNames.add(versionName);
+        }
+
+        for (IsColumn column : columns) {
+          if (Wildcards.contains(include, column.getId())) {
+            colNames.add(column.getId());
+          }
+        }
+
+      } else if (!exclude.isEmpty()) {
+        if (!BeeUtils.isEmpty(idName)) {
+          colNames.add(idName);
+        }
+        if (!BeeUtils.isEmpty(versionName)) {
+          colNames.add(versionName);
+        }
+
+        for (IsColumn column : columns) {
+          colNames.add(column.getId());
+        }
+      }
+      
+      if (exclude.isEmpty()) {
+        if (!colNames.isEmpty()) {
+          result.addAll(colNames);
+        }
+
+      } else if (!colNames.isEmpty()) {
+        for (String colName : colNames) {
+          if (!Wildcards.contains(exclude, colName)) {
+            result.add(colName);
+          }
+        }
+      }
+
+    } else {
+      for (String item : input) {
+        String colName = getColumnName(item, columns, idName, versionName);
+        if (!BeeUtils.isEmpty(colName) && !result.contains(colName)) {
+          result.add(colName);
+        }
+      }
+    }
+
     return result;
   }
 

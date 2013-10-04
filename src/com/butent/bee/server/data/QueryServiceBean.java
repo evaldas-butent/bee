@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -795,18 +796,24 @@ public class QueryServiceBean {
               values[i] = null;
             }
             break;
+
           case DATE:
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
             values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
             break;
+          
           case NUMBER:
           case DECIMAL:
-            if (column.getScale() > 0) {
-              values[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
+            Double d = rs.getDouble(colIndex);
+            if (rs.wasNull() || !BeeUtils.isDouble(d)) {
+              values[i] = null;
+            } else if (column.getScale() >= 0) {
+              values[i] = BeeUtils.toString(d, column.getScale());
             } else {
-              values[i] = rs.getString(colIndex);
+              values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
             }
             break;
+          
           default:
             values[i] = rs.getString(colIndex);
         }

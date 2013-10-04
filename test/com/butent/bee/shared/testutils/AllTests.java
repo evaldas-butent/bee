@@ -1,5 +1,7 @@
 package com.butent.bee.shared.testutils;
 
+import com.butent.bee.shared.data.TestDataUtils;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
@@ -20,6 +22,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TestService.class, TestStringArray.class,
     TestBooleanValue.class, TestDateTimeValue.class,
     TestDateValue.class, TestNumberValue.class, TestTextValue.class,
-    TestTimeOfDayValue.class })
+    TestTimeOfDayValue.class, TestDataUtils.class })
+
 public class AllTests {
 }
