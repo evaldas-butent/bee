@@ -929,17 +929,17 @@ body {
   padding-left: 24px;
   padding-top: 1px;
   padding-bottom: 1px;
-  background-image: url("images/silver/tree_rtb.gif");
+  background-image: url(../images/silver/tree_rtb.gif);
   background-repeat: no-repeat;
   background-position: 5px 0px;
 }
 
 .bee-TreeItem-leafContainer:last-of-type {
-  background-image: url("images/silver/tree_rt.gif");
+  background-image: url(../images/silver/tree_rt.gif);
 }
 
 .bee-TreeItem-branchContainer {
-  background-image: url('images/silver/tree_tb.gif');
+  background-image: url(../images/silver/tree_tb.gif);
   background-repeat: repeat-y;
   background-position: 5px 0px;
 }
@@ -957,7 +957,7 @@ body {
 }
 
 .bee-TreeItem-imageCell {
-  background-image: url("images/silver/tree_rt_plus.gif");
+  background-image: url(../images/silver/tree_rt_plus.gif);
   background-repeat: no-repeat;
   background-position: 3px 3px;
 }

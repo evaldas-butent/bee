@@ -140,7 +140,7 @@
   border-bottom: 2px solid transparent;
 }
 .bee-ec-cartList-active {
-  background-image: url("images/ec/red_background.png");
+  background-image: url(../images/ec/red_background.png);
 }
 .bee-ec-cartList-inactive {
   background-color: black;
@@ -291,7 +291,7 @@
   margin-left: 2em;
 }
 .bee-ec-ItemSelector-submit {
-  background-image: url("images/ec/red_background.png");
+  background-image: url(../images/ec/red_background.png);
   height: 32px;
   color: white;
 }
@@ -395,7 +395,7 @@
 .bee-ec-ItemList-more {
   margin-top: 5px;
   margin-left: 360px;
-  background-image: url("images/ec/red_background.png");
+  background-image: url(../images/ec/red_background.png);
   color: white;
   font-size: medium;
 }
@@ -727,7 +727,7 @@
   margin-left: 1em;
   font-size: medium;
   margin-top: 8px;
-  background-image: url("images/ec/red_background.png");
+  background-image: url(../images/ec/red_background.png);
   height: 32px;
   color: white
 }
@@ -1068,7 +1068,7 @@
 
 .bee-ec-searchByGroup-doFilter, 
 .bee-ec-searchByGroup-clearSelection {
-  background-image: url("images/ec/red_background.png");
+  background-image: url(../images/ec/red_background.png);
   color: white;
 }
 

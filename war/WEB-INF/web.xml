@@ -51,14 +51,14 @@
 
   <servlet-mapping>
     <servlet-name>BeeServlet</servlet-name>
-    <url-pattern>/bee/bee</url-pattern>
+    <url-pattern>/bee</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>FileServlet</servlet-name>
-    <url-pattern>/bee/file/*</url-pattern>
+    <url-pattern>/file/*</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>UploadServlet</servlet-name>
-    <url-pattern>/bee/upload/*</url-pattern>
+    <url-pattern>/upload/*</url-pattern>
   </servlet-mapping>
 </web-app>

@@ -84,7 +84,7 @@
 
 input[type="checkbox"] {
   -webkit-appearance: none;
-  background-image: url('images/silver/checkbox17.png');
+  background-image: url(../images/silver/checkbox17.png);
   background-repeat: no-repeat;
   width: 17px;
   height: 18px;

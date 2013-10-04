@@ -1229,7 +1229,6 @@ public final class DomUtils {
     Assert.notNull(head, "<head> element not found");
 
     LinkElement link = Document.get().createLinkElement();
-    link.setType("text/css");
     link.setRel("stylesheet");
     link.setHref(css);
     head.appendChild(link);

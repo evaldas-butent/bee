@@ -2341,6 +2341,7 @@ public final class CliWorker {
     List<Property> info = PropertyUtils.createProperties(
         "Host Page Base URL", GWT.getHostPageBaseURL(),
         "Module Base URL", GWT.getModuleBaseURL(),
+        "Module Base For Static Files", GWT.getModuleBaseForStaticFiles(),
         "Module Name", GWT.getModuleName(),
         "Permutation Strong Name", GWT.getPermutationStrongName(),
         "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),

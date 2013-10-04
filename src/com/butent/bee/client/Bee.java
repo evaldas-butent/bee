@@ -53,7 +53,7 @@ public class Bee implements EntryPoint {
       DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
     }
 
-    Bee.keeper = new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
+    Bee.keeper = new BeeKeeper(RootLayoutPanel.get());
 
     Bee.keeper.init();
     Bee.keeper.start();

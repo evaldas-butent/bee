@@ -276,7 +276,7 @@
 .bee-tr-dtb-Inactive,
 .bee-tr-vtb-Inactive {
   position: absolute;
-  background-image: url("images/checkered_background.png");
+  background-image: url(../images/checkered_background.png);
 }
 
 .bee-tr-ss-trip-Group-overlap,
@@ -317,7 +317,7 @@
 .bee-tr-vtb-Service-panel {
   position: absolute;
   cursor: pointer;
-  background-image: url("images/checkered_background.png");
+  background-image: url(../images/checkered_background.png);
   overflow: hidden;
 }
 .bee-tr-vtb-Service-label {

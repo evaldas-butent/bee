@@ -47,12 +47,12 @@ public class BeeKeeper {
 
   private Module[] modules;
 
-  BeeKeeper(LayoutPanel root, String url) {
+  BeeKeeper(LayoutPanel root) {
     screen = GWT.create(Screen.class);
     screen.setRootPanel(root);
 
     bus = new EventManager();
-    rpc = new RpcFactory(url);
+    rpc = new RpcFactory();
     user = new UserInfo();
     glob = new Global();
     stor = new Storage();

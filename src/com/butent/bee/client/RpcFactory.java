@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
@@ -38,8 +39,8 @@ public class RpcFactory implements Module {
   private final RpcList rpcList = new RpcList();
   private final AsyncCallback reqCallBack = new AsyncCallback();
 
-  public RpcFactory(String url) {
-    this.rpcUrl = url;
+  public RpcFactory() {
+    this.rpcUrl = GWT.getHostPageBaseURL() + GWT.getModuleName();
   }
 
   public boolean cancelRequest(int id) {

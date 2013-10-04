@@ -125,7 +125,7 @@ public final class FileUtils {
     parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
-    return RpcUtils.addQueryString(GWT.getModuleBaseURL() + OPEN_URL,
+    return RpcUtils.addQueryString(GWT.getHostPageBaseURL() + OPEN_URL,
         RpcUtils.buildQueryString(parameters, true));
   }
   
@@ -309,7 +309,7 @@ public final class FileUtils {
   }
   
   private static String getUploadUrl(Map<String, String> parameters) {
-    return RpcUtils.addQueryString(GWT.getModuleBaseURL() + UPLOAD_URL,
+    return RpcUtils.addQueryString(GWT.getHostPageBaseURL() + UPLOAD_URL,
         RpcUtils.buildQueryString(parameters, true));
   }
   
