@@ -212,6 +212,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String goods();
 
+
   String group();
 
   String height();
@@ -276,6 +277,16 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String nothingFound();
 
+  String objectEvent();
+  
+  String objectGrid();
+  
+  String objectForm();
+  
+  String objectMenu();
+
+  String objectModule();
+  
   String ok();
 
   String oldPassword();
@@ -329,6 +340,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String responsibleEmployee();
 
   String responsiblePerson();
+  
+  String rightStateAmendable();
+
+  String rightStateVisible();
 
   String saveChanges();
 

@@ -27,11 +27,11 @@ body {
 
 .bee-SignIn-Logo-container {
   position: absolute;
-  top: 0;
-  left: 100px;
+  top: -150px;
+  left: 25%;
   width: 185px;
-  height: 80px;
-  background-image: url("images/logo.gif");
+  height: 100%;
+  background-image: url("images/logo.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
