@@ -104,7 +104,7 @@ public final class TransportConstants {
       return caption;
     }
   }
-  
+
   public enum TripStatus implements HasCaption {
     NEW(Localized.getConstants().trTripStatusNew()),
     ACTIVE(Localized.getConstants().trTripStatusActive()),
@@ -443,7 +443,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_REQUEST_STATUS = "Status";
 
   public static final String COL_CARGO_REQUEST_TEMPLATE_NAME = "Name";
-  
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -475,7 +475,6 @@ public final class TransportConstants {
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
 
-  public static final String ALS_UNASSIGNED_CARGO = "UnassignedCargo";
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
 

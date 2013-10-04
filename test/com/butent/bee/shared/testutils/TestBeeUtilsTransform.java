@@ -618,7 +618,7 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   @Test
   public final void testToDoubleOrNull() {
     assertEquals(null, BeeUtils.toDoubleOrNull(null));
-    assertEquals(0.0, BeeUtils.toDoubleOrNull("asd"));
+    assertEquals(null, BeeUtils.toDoubleOrNull("asd"));
     assertEquals(15.0, BeeUtils.toDoubleOrNull("15.0"));
   }
 

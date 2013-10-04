@@ -49,7 +49,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -518,7 +517,7 @@ public class AssessmentForm extends PrintFormInterceptor {
       selector.addEditStopHandler(new EditStopEvent.Handler() {
         @Override
         public void onEditStop(EditStopEvent event) {
-          if (event.getState() == State.CHANGED && DataUtils.isId(currentRow.getId())) {
+          if (event.isChanged() && DataUtils.isId(currentRow.getId())) {
             int idx = form.getDataIndex(COL_CURRENCY);
             String oldCurrency = form.getOldRow().getString(idx);
             String newCurrency = selector.getNormalizedValue();

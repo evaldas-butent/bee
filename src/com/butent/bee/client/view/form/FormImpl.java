@@ -20,8 +20,8 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
@@ -372,9 +372,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private State state;
 
   private DataObserver dataObserver;
-  
+
   private String options;
-  private final Map<String, String> properties = Maps.newHashMap();  
+  private final Map<String, String> properties = Maps.newHashMap();
 
   public FormImpl(String formName) {
     this(formName, Position.RELATIVE);
@@ -933,7 +933,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void onClose(final CloseCallback closeCallback) {
     Assert.notNull(closeCallback);
-    if (!hasData() || getOldRow() == null || getActiveRow() == null) {
+    if (!hasData() || getOldRow() == null || getActiveRow() == null
+        || BeeUtils.isEmpty(getViewName())) {
       closeCallback.onClose();
       return;
     }
@@ -1527,7 +1528,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private void fireDataRequest(NavigationOrigin origin) {
     fireEvent(new DataRequestEvent(origin));
   }
-  
+
   private void fireScopeChange() {
     fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount()));
   }
@@ -1973,7 +1974,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private void setViewName(String viewName) {
     this.viewName = viewName;
   }
-  
+
   private void showNote(LogLevel level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget().asWidget()) + 1);
     getNotification().show(level, messages);

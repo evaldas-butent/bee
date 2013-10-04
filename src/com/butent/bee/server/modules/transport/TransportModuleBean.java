@@ -1556,19 +1556,14 @@ public class TransportModuleBean implements BeeModule {
   private ResponseObject getUnassignedCargos(RequestInfo reqInfo) {
     long orderId = BeeUtils.toLong(reqInfo.getParameter(COL_ORDER));
 
-    SqlSelect query =
-        new SqlSelect().addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO),
-            "ALS_UNASSIGNED_CARGO")
-            .addFrom(TBL_ORDERS)
-            .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-            .addFromLeft(TBL_CARGO_TRIPS,
-                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)
-                , SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO)));
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
+        .addFrom(TBL_ORDER_CARGO)
+        .addFromLeft(TBL_CARGO_TRIPS, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_CARGO, COL_ORDER, orderId),
+            SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO)));
 
-    SimpleRowSet orderList = qs.getData(query);
-
-    return ResponseObject.response(orderList);
+    return ResponseObject.response(qs.getColumn(query));
   }
 
   private SimpleRowSet getVehicleServices(IsCondition condition) {
