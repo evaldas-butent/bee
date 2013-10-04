@@ -104,8 +104,16 @@ body {
 
 .bee-SignIn-Caption {
   position: absolute;
-  left: 119px;
+  left: 105px;
   bottom: 64px;
+}
+
+.bee-Copyright-logo {
+  max-height: 16px;
+  max-width: 16px;
+  width: auto;
+  height: auto;
+  margin-bottom: -4px
 }
 
 </style>
@@ -143,7 +151,7 @@ body {
         <div class="bee-SignIn-Error">Bandykite dar kartą</div>
       <% } %>
 
-      <div class="bee-SignIn-Caption">UAB "Būtenta" &copy; 2010 - <%= TimeUtils.today().getYear() %></div>
+      <div class="bee-SignIn-Caption"><img id="img-36" class="bee-Copyright-logo" src="images/logo.gif"> UAB "Būtenta" &copy; 2010 - <%= TimeUtils.today().getYear() %></div>
     </form>
   </div>
 </body>
