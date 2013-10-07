@@ -4,48 +4,48 @@
   <col index="1" width="100" />
   
   <row>
-    <Label html="Intervalų skaičius valandoje:" />
+    <Label text="=calIntervalsPerHour" />
     <InputSpinner source="IntervalsPerHour" minValue="1" maxValue="30" />
-    <Label html="Vaizdai:" />
+    <Label text="=calViews" />
   </row>
 
   <row>
-    <Label html="Intervalo aukštis px:" />
+    <Label text="=calPixelsPerInterval" />
     <InputSpinner source="PixelsPerInterval" minValue="1" maxValue="30" />
-    <CheckBox source="DayView" html="Diena" />
+    <CheckBox source="DayView" text="=calDayView" />
   </row>
 
   <row>
-    <Label html="Dienos:" />
+    <Label text="=calDefaultDisplayedDays" />
     <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="99" />
-    <CheckBox source="DaysView" html="Dienos" />
+    <CheckBox source="DaysView" text="Dienos" />
   </row>
 
   <row>
-    <Label html="Darbo dienos pradžia:" />
+    <Label text="=calWorkingHourStart" />
     <InputSpinner source="WorkingHourStart" minValue="0" maxValue="23" />
-    <CheckBox source="WorkWeekView" html="Darbo savaitė" />
+    <CheckBox source="WorkWeekView" text="=calWorkWeekView" />
   </row>
 
   <row>
-    <Label html="Darbo dienos pabaiga:" />
+    <Label text="=calWorkingHourEnd" />
     <InputSpinner source="WorkingHourEnd" minValue="0" maxValue="23" />
-    <CheckBox source="WeekView" html="Savaitė" />
+    <CheckBox source="WeekView" text="=calWeekView" />
   </row>
 
   <row>
-    <Label html="Rodyti nuo valandos:" />
+    <Label text="=calScrollToHour" />
     <InputSpinner source="ScrollToHour" minValue="0" maxValue="23" />
-    <CheckBox source="MonthView" html="Mėnuo" />
+    <CheckBox source="MonthView" text="=calMonthView" />
   </row>
 
   <row>
-    <Label html="Pelės spragtelėjimai" />
+    <Label text="=calTimeBlockClickNumber" />
     <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
-    <CheckBox source="ResourceView" html="Resursai" />
+    <CheckBox source="ResourceView" text="=calResourceView" />
   </row>
 
   <row>
-    <CheckBox source="SeparateAttendees" html="Resursus rodyti atskirai" />
+    <CheckBox source="SeparateAttendees" text="=calSeparateAttendees" />
   </row>
 </Table>

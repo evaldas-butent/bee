@@ -3,27 +3,27 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="ServiceAttendee" viewName="Attendees" caption="Resursas" width="680" height="460">
+  name="ServiceAttendee" viewName="Attendees" caption="=calAttendee" width="680" height="460">
 
   <FlowPanel>
-    <InputText source="Name" caption="Pavadinimas:" style="width: 340px;" d:size="100" d:unit="px"
+    <InputText source="Name" caption="=calAttendeeName" style="width: 340px;" d:size="100" d:unit="px"
        d:rootStyle="position: absolute; left: 20px; top: 20px;" />
-    <InputInteger source="Ordinal" caption="Eil. Nr.:" style="width: 60px;" d:size="60" d:unit="px"
+    <InputInteger source="Ordinal" caption="=ordinal" style="width: 60px;" d:size="60" d:unit="px"
        d:rootStyle="position: absolute; left: 500px; top: 20px;" />
 
-    <DataSelector source="TypeName" caption="Tipas:" style="width: 180px;" d:size="100" d:unit="px"
+    <DataSelector source="TypeName" caption="=calAppointmentType" style="width: 180px;" d:size="100" d:unit="px"
        d:rootStyle="position: absolute; left: 20px; top: 60px;" />
-    <InputText source="Location" caption="Vieta:" style="width: 180px;" d:size="80" d:unit="px"
+    <InputText source="Location" caption="=location" style="width: 180px;" d:size="80" d:unit="px"
        d:rootStyle="position: absolute; left: 360px; top: 60px;" />
 
-    <ChildGrid name="PropsA" gridName="AttendeeProps" relColumn="Attendee" caption="Serviso tipas"
+    <ChildGrid name="PropsA" gridName="AttendeeProps" relColumn="Attendee" caption="=calServiceType"
       filter="GroupName serv"
       style="position: absolute; left: 20px; width: 300px; top: 100px; height: 180px;" />
-    <ChildGrid name="PropsB" gridName="AttendeeProps" relColumn="Attendee" caption="Remonto tipas"
+    <ChildGrid name="PropsB" gridName="AttendeeProps" relColumn="Attendee" caption="=calRepairType"
       filter="GroupName rem"
       style="position: absolute; left: 360px; width: 300px; top: 100px; height: 180px;" />
 
-    <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"
+    <DataSelector source="CompanyPerson" caption="=responsiblePerson" style="width: 180px;"
         d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />

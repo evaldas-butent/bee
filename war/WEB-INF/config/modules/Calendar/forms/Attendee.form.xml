@@ -3,20 +3,20 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="Attendee" viewName="Attendees" caption="Resursas" width="640" height="300">
+  name="Attendee" viewName="Attendees" caption="=calAttendee" width="640" height="300">
 
   <FlowPanel>
-    <InputText source="Name" caption="Pavadinimas" style="width: 340px;" d:size="100" d:unit="px"
+    <InputText source="Name" caption="=calAttendeeName" style="width: 340px;" d:size="100" d:unit="px"
        d:rootStyle="position: absolute; left: 20px; top: 20px;" />
-    <InputInteger source="Ordinal" caption="Eil. Nr." style="width: 60px;" d:size="60" d:unit="px"
+    <InputInteger source="Ordinal" caption="=ordinal" style="width: 60px;" d:size="60" d:unit="px"
        d:rootStyle="position: absolute; left: 500px; top: 20px;" />
 
-    <DataSelector source="TypeName" caption="Tipas" style="width: 180px;" d:size="100" d:unit="px"
+    <DataSelector source="TypeName" caption="=calAttendeeType" style="width: 180px;" d:size="100" d:unit="px"
        d:rootStyle="position: absolute; left: 20px; top: 60px;" />
-    <InputText source="Location" caption="Vieta" style="width: 180px;" d:size="80" d:unit="px"
+    <InputText source="Location" caption="=location" style="width: 180px;" d:size="80" d:unit="px"
        d:rootStyle="position: absolute; left: 360px; top: 60px;" />
 
-    <DataSelector source="CompanyPerson" caption="Atsakingas" style="width: 180px;"
+    <DataSelector source="CompanyPerson" caption="=responsibleEmployee" style="width: 180px;"
         d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 100px;">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
@@ -28,10 +28,10 @@
 
     <DataSelector source="Color" renderColumns="ColorName" caption="=color" style="width: 180px;"
        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 140px;" />
-    <DataSelector source="Style" caption="Stilius" style="width: 180px;" d:size="80" d:unit="px"
+    <DataSelector source="Style" caption="=style" style="width: 180px;" d:size="80" d:unit="px"
       d:rootStyle="position: absolute; left: 360px; top: 140px;" />
 
-    <Label html="Aprašymas" style="position: absolute; left: 20px; top: 180px;" />
+    <Label text="=calDescription" style="position: absolute; left: 20px; top: 180px;" />
     <InputArea source="Description" visibleLines="3"
        style="width: 500px; position: absolute; left: 122px; top: 180px;" />
   </FlowPanel>

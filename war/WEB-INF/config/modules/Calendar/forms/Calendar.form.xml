@@ -4,7 +4,7 @@
   xmlns:d="http://www.butent.com/decorator"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Calendar" viewName="Calendars" caption="Kalendorius">
+  name="Calendar" viewName="Calendars" caption="=calendar">
 
   <FlowPanel>
     <Table style="margin-top: 1ex; border-collapse: collapse;" cellStyle="padding: 5px 10px;">
@@ -24,15 +24,15 @@
   
     <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 120px; bottom: 1ex;">
       <page>
-        <text>Resursų tipai</text>
+        <text>=calAppointmentTypes</text>
         <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />
       </page>
       <page>
-        <text>Resursai</text>
+        <text>=calAppointmentAttendees</text>
         <ChildGrid name="CalendarAttendees" relColumn="Calendar" />
       </page>
       <page>
-        <text>Asmenys</text>
+        <text>=persons</text>
         <ChildGrid name="CalendarPersons" relColumn="Calendar" />
       </page>
       <page>
@@ -40,7 +40,7 @@
         <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
       </page>
       <page>
-        <text>Nustatymai</text>
+        <text>=settings</text>
         <xi:include href="widgets/Settings.widget.xml" />
       </page>
     </TabbedPages>
