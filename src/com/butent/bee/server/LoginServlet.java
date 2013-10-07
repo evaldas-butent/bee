@@ -35,7 +35,7 @@ public class LoginServlet extends HttpServlet {
     EMPTY, SUCCES, FAIL, BLOCK
   }
 
-  public static final String URL = "/login";
+  public static final String URL = "/index.html";
 
   private static final String CSS_DIR = "css";
   private static final String CSS_EXT = "css";
@@ -94,7 +94,7 @@ public class LoginServlet extends HttpServlet {
     html.add("<body>");
 
     html.add("<div class=\"bee-SignIn-Panel\">");
-    html.add("<form class=\"bee-SignIn-Form\" method=\"post\" action=\"login\">");
+    html.add("<form class=\"bee-SignIn-Form\" method=\"post\">");
 
     if (SupportedLocale.values().length > 1) {
       html.add("<div class=\"bee-SignIn-Locale-container\">");
