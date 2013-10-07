@@ -208,6 +208,8 @@ public final class TransportConstants {
   public static final String TBL_DRIVER_ABSENCE = "DriverAbsence";
   public static final String TBL_ABSENCE_TYPES = "AbsenceTypes";
 
+  public static final String TBL_REGISTRATIONS = "TranspRegistrations";
+
   public static final String VIEW_ORDERS = "TransportationOrders";
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
@@ -444,6 +446,35 @@ public final class TransportConstants {
 
   public static final String COL_CARGO_REQUEST_TEMPLATE_NAME = "Name";
 
+  public static final String COL_REGISTRATION_DATE = "Date";
+
+  public static final String COL_REGISTRATION_COMPANY_NAME = "CompanyName";
+  public static final String COL_REGISTRATION_COMPANY_CODE = "CompanyCode";
+  public static final String COL_REGISTRATION_VAT_CODE = "VatCode";
+  public static final String COL_REGISTRATION_CONTACT = "Contact";
+  public static final String COL_REGISTRATION_CONTACT_POSITION = "ContactPosition";
+
+  public static final String COL_REGISTRATION_ADDRESS = "Address";
+  public static final String COL_REGISTRATION_CITY = "City";
+  public static final String COL_REGISTRATION_COUNTRY = "Country";
+
+  public static final String COL_REGISTRATION_PHONE = "Phone";
+  public static final String COL_REGISTRATION_MOBILE = "Mobile";
+
+  public static final String COL_REGISTRATION_FAX = "Fax";
+  public static final String COL_REGISTRATION_EMAIL = "Email";
+
+  public static final String COL_REGISTRATION_EXCHANGE_CODE = "ExchangeCode";
+
+  public static final String COL_REGISTRATION_BANK = "Bank";
+  public static final String COL_REGISTRATION_BANK_ADDRESS = "BankAddress";
+  public static final String COL_REGISTRATION_BANK_ACCOUNT = "BankAccount";
+  public static final String COL_REGISTRATION_SWIFT = "Swift";
+
+  public static final String COL_REGISTRATION_NOTES = "Notes";
+  public static final String COL_REGISTRATION_HOST = "Host";
+  public static final String COL_REGISTRATION_AGENT = "Agent";
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -494,6 +525,8 @@ public final class TransportConstants {
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
 
+  public static final String STYLE_SHEET = "transport";
+  
   public static String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;
   }

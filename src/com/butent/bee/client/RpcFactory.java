@@ -4,14 +4,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
-import com.google.gwt.i18n.client.LocaleInfo;
 
 import com.butent.bee.client.communication.AsyncCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.communication.RpcList;
-import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -274,8 +272,6 @@ public class RpcFactory implements Module {
     String svc = params.getService();
     Assert.notEmpty(svc);
 
-    params.addHeaderItem(Service.RPC_VAR_LOC, LocaleInfo.getCurrentLocale().getLocaleName());
-
     boolean debug = Global.isDebug();
 
     ContentType ctp = type;
@@ -297,7 +293,7 @@ public class RpcFactory implements Module {
     int id = info.getId();
 
     String qs = params.getQuery();
-    String url = RpcUtils.addQueryString(rpcUrl, qs);
+    String url = CommUtils.addQueryString(rpcUrl, qs);
 
     RequestBuilder bld = new RequestBuilder(meth, url);
     if (timeout > 0) {

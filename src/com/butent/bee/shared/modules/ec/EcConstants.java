@@ -436,6 +436,9 @@ public final class EcConstants {
 
   public static final String PICTURE_PREFIX = "data:image/";
 
+  public static final String STYLE_SHEET = "ecommerce";
+  public static final String CLIENT_STYLE_SHEET = "ec";
+  
   public static String picture(String type, String text) {
     return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
   }

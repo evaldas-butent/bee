@@ -1,12 +1,10 @@
 package com.butent.bee.server.data;
 
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MutableClassToInstanceMap;
 import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
@@ -21,6 +19,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
@@ -29,10 +28,14 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -64,70 +67,70 @@ public class UserServiceBean {
   private final class UserInfo {
     private final UserData userData;
     private Collection<Long> userRoles;
-    private boolean online;
-    private Locale locale = Localizations.getDefaultLocale();
 
-    private final ClassToInstanceMap<Object> sessionObjects = MutableClassToInstanceMap.create();
+    private SupportedLocale userLocale = SupportedLocale.DEFAULT;
+    private UserInterface userInterface;
+
+    private DateTime blockAfter;
+    private DateTime blockBefore;
+
+    private boolean online;
 
     private UserInfo(UserData userData) {
       this.userData = userData;
     }
 
-    private void endSession() {
-      sessionObjects.clear();
+    private DateTime getBlockAfter() {
+      return blockAfter;
     }
 
-    private Locale getLocale() {
-      return locale;
+    private DateTime getBlockBefore() {
+      return blockBefore;
+    }
+
+    private String getLanguage() {
+      return (getUserLocale() == null) ? null : getUserLocale().getLanguage();
     }
 
     private Collection<Long> getRoles() {
       return userRoles;
     }
 
-    private <T> T getSessionObject(Class<T> type) {
-      return sessionObjects.getInstance(type);
-    }
-
     private UserData getUserData() {
       return userData;
+    }
+
+    private UserInterface getUserInterface() {
+      return userInterface;
+    }
+
+    private SupportedLocale getUserLocale() {
+      return userLocale;
+    }
+
+    private boolean isBlocked(long time) {
+      if (getBlockAfter() != null && getBlockBefore() != null) {
+        return getBlockAfter().getTime() <= time && getBlockBefore().getTime() > time;
+      } else if (getBlockAfter() != null) {
+        return getBlockAfter().getTime() <= time;
+      } else if (getBlockBefore() != null) {
+        return getBlockBefore().getTime() > time;
+      } else {
+        return false;
+      }
     }
 
     private boolean isOnline() {
       return online;
     }
 
-    private <T> void putSessionObject(Class<T> type, T value) {
-      if (value == null) {
-        sessionObjects.remove(type);
-      } else {
-        sessionObjects.putInstance(type, value);
-      }
+    private UserInfo setBlockAfter(DateTime after) {
+      this.blockAfter = after;
+      return this;
     }
 
-    private void removeSessionObject(Class<?> type) {
-      sessionObjects.remove(type);
-    }
-
-    private UserInfo setLocale(String localeName) {
-      Locale loc = null;
-      UserData data = getUserData();
-
-      if (!BeeUtils.isEmpty(localeName)) {
-        loc = I18nUtils.toLocale(localeName);
-
-        if (loc == null) {
-          logger.warning(data.getUserSign(), "Unknown user locale:", localeName);
-        }
-      }
-      if (loc == null) {
-        loc = Localizations.getDefaultLocale();
-      }
-      data.setLocale(loc.toString());
-
-      data.setConstants(Localizations.getDictionary(loc));
-
-      this.locale = loc;
+    private UserInfo setBlockBefore(DateTime before) {
+      this.blockBefore = before;
       return this;
     }
 
@@ -160,27 +163,37 @@ public class UserServiceBean {
       this.userRoles = roles;
       return this;
     }
+
+    private UserInfo setUserInterface(UserInterface ui) {
+      this.userInterface = ui;
+      return this;
+    }
+
+    private UserInfo setUserLocale(SupportedLocale sl) {
+      this.userLocale = BeeUtils.nvl(sl, SupportedLocale.DEFAULT);
+      return this;
+    }
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserServiceBean.class);
 
   private static String key(String value) {
-    return value.toLowerCase();
+    return (value == null) ? null : value.toLowerCase();
   }
 
   @Resource
   EJBContext ctx;
   @EJB
   SystemBean sys;
-
   @EJB
   QueryServiceBean qs;
+
   private final Map<Long, String> roleCache = Maps.newHashMap();
   private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
 
-  private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache = Maps
-      .newHashMap();
+  private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache =
+      Maps.newHashMap();
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
@@ -201,16 +214,20 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
+  public String getLanguage() {
+    return getCurrentUserInfo().getLanguage();
+  }
+
   public Locale getLocale() {
-    return getCurrentUserInfo().getLocale();
+    return BeeUtils.nvl(I18nUtils.toLocale(getLanguage()), Localizations.getDefaultLocale());
   }
 
   public LocalizableConstants getLocalizableConstants() {
-    return Localizations.getConstants(getLocale());
+    return Localizations.getPreferredConstants(getLanguage());
   }
 
   public LocalizableMessages getLocalizableMesssages() {
-    return Localizations.getMessages(getLocale());
+    return Localizations.getPreferredMessages(getLanguage());
   }
 
   public String getRoleName(Long roleId) {
@@ -222,16 +239,22 @@ public class UserServiceBean {
     return roleCache.keySet();
   }
 
-  public <T> T getSessionData(Class<T> type) {
-    Assert.notNull(type);
-    return getCurrentUserInfo().getSessionObject(type);
-  }
-
   public Long getUserId(String user) {
-    if (!userCache.inverse().containsKey(key(user))) {
+    if (userCache.inverse().containsKey(key(user))) {
+      return userCache.inverse().get(key(user));
+    } else {
       return null;
     }
-    return userCache.inverse().get(key(user));
+  }
+
+  public UserInterface getUserInterface(String user) {
+    UserInfo userInfo = getUserInfo(getUserId(user));
+    return (userInfo == null) ? null : userInfo.getUserInterface();
+  }
+
+  public SupportedLocale getUserLocale(String user) {
+    UserInfo userInfo = getUserInfo(getUserId(user));
+    return (userInfo == null) ? null : userInfo.getUserLocale();
   }
 
   public String getUserName(Long userId) {
@@ -379,7 +402,8 @@ public class UserServiceBean {
     }
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_COMPANY_PERSON, COL_PROPERTIES)
+        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_COMPANY_PERSON, COL_USER_PROPERTIES,
+            COL_USER_LOCALE, COL_USER_INTERFACE, COL_USER_BLOCK_AFTER, COL_USER_BLOCK_BEFORE)
         .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
         .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
@@ -402,16 +426,26 @@ public class UserServiceBean {
 
       UserInfo user = new UserInfo(userData)
           .setRoles(userRoles.get(userId))
-          .setProperties(row.getValue(COL_PROPERTIES));
+          .setProperties(row.getValue(COL_USER_PROPERTIES))
+          .setUserLocale(NameUtils.getEnumByIndex(SupportedLocale.class,
+              row.getInt(COL_USER_LOCALE)))
+          .setUserInterface(NameUtils.getEnumByIndex(UserInterface.class,
+              row.getInt(COL_USER_INTERFACE)))
+          .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_AFTER)))
+          .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_BEFORE)));
 
       UserInfo oldInfo = expiredCache.get(login);
-
       if (oldInfo != null) {
-        user.setLocale(oldInfo.getUserData().getLocale())
-            .setOnline(oldInfo.isOnline());
+        user.setOnline(oldInfo.isOnline());
       }
+
       infoCache.put(login, user);
     }
+  }
+
+  public Boolean isBlocked(String user) {
+    UserInfo userInfo = getUserInfo(getUserId(user));
+    return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
   public boolean isRightsTable(String tblName) {
@@ -423,7 +457,7 @@ public class UserServiceBean {
   }
 
   public boolean isUser(String user) {
-    return userCache.inverse().containsKey(key(user));
+    return !BeeUtils.isEmpty(user) && userCache.inverse().containsKey(key(user));
   }
 
   public boolean isUserTable(String tblName) {
@@ -431,22 +465,26 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
-  public ResponseObject login(String locale, String host, String agent) {
+  public ResponseObject login(String host, String agent) {
     ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
 
     if (isUser(user)) {
-      UserInfo info = getUserInfo(getUserId(user));
+      Long userId = getUserId(user);
+
+      UserInfo info = getUserInfo(userId);
       info.setOnline(true);
-      info.setLocale(locale);
 
       UserData data = info.getUserData();
+
       data.setProperty("dsn", SqlBuilderFactory.getDsn())
           .setRights(getUserRights(getUserId(user)));
+      data.setConstants(Localizations.getPreferredDictionary(info.getLanguage()));
 
       qs.updateData(new SqlUpdate(TBL_USERS)
-          .addConstant(COL_HOST, BeeUtils.joinWords(host, agent))
-          .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
+          .addConstant(COL_REMOTE_HOST, host)
+          .addConstant(COL_USER_AGENT, agent)
+          .setWhere(sys.idEquals(TBL_USERS, userId)));
 
       response.setResponse(data);
       logger.info("User logged in:", user, BeeUtils.parenthesize(data.getUserSign()));
@@ -470,10 +508,8 @@ public class UserServiceBean {
       String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
       qs.updateData(new SqlUpdate(TBL_USERS)
-          .addConstant(COL_HOST, null)
+          .addConstant(COL_REMOTE_HOST, null)
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
-
-      info.endSession();
 
       if (info.isOnline()) {
         info.setOnline(false);
@@ -489,14 +525,29 @@ public class UserServiceBean {
     }
   }
 
-  public <T> void putSessionData(Class<T> type, T value) {
-    Assert.notNull(type);
-    getCurrentUserInfo().putSessionObject(type, value);
-  }
+  public boolean updateUserLocale(String user, SupportedLocale locale) {
+    if (!isUser(user) || locale == null) {
+      return false;
+    }
 
-  public void removeSessionData(Class<?> type) {
-    Assert.notNull(type);
-    getCurrentUserInfo().removeSessionObject(type);
+    Long userId = getUserId(user);
+    if (!DataUtils.isId(userId)) {
+      return false;
+    }
+
+    UserInfo userInfo = getUserInfo(userId);
+    if (userInfo == null || userInfo.getUserLocale() == locale) {
+      return false;
+    }
+
+    userInfo.setUserLocale(locale);
+
+    qs.updateData(new SqlUpdate(TBL_USERS)
+        .addConstant(COL_USER_LOCALE, locale.ordinal())
+        .setWhere(sys.idEquals(TBL_USERS, userId)));
+    
+    logger.info("user", user, "updated locale:", locale.getLanguage());
+    return true;
   }
 
   @PreDestroy

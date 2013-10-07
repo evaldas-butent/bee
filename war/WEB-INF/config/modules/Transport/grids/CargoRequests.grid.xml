@@ -70,6 +70,6 @@
     
     <DataColumn name="Notes" visible="false" />
     <DataColumn name="Host" visible="false" />
-    
+    <DataColumn name="Agent" visible="false" />
   </g:columns>
 </g:Grid>

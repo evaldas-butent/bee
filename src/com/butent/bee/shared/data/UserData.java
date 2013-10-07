@@ -36,7 +36,7 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
-    COMPANY_PERSON, COMPANY, PERSON, LOCALE, PROPERTIES, RIGHTS, CONSTANTS
+    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS, CONSTANTS
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
@@ -60,7 +60,6 @@ public class UserData implements BeeSerializable, HasInfo {
   private Long company;
   private Long person;
   
-  private String locale;
   private Map<String, String> properties;
 
   private Map<RightsState, Multimap<RightsObjectType, String>> rights;
@@ -128,9 +127,6 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case PERSON:
           this.person = BeeUtils.toLongOrNull(value);
-          break;
-        case LOCALE:
-          this.locale = value;
           break;
         case PROPERTIES:
           String[] entry = Codec.beeDeserializeCollection(value);
@@ -209,8 +205,7 @@ public class UserData implements BeeSerializable, HasInfo {
         "Company Name", getCompanyName(),
         "Company Person ID", getCompanyPerson(),
         "Company ID", getCompany(),
-        "Person ID", getPerson(),
-        "Locale", getLocale());
+        "Person ID", getPerson());
 
     if (!BeeUtils.isEmpty(properties)) {
       info.add(new Property("Properties", BeeUtils.bracket(properties.size())));
@@ -236,10 +231,6 @@ public class UserData implements BeeSerializable, HasInfo {
     return lastName;
   }
 
-  public String getLocale() {
-    return locale;
-  }
-  
   public String getLogin() {
     return login;
   }
@@ -326,9 +317,6 @@ public class UserData implements BeeSerializable, HasInfo {
         case PERSON:
           arr[i++] = person;
           break;
-        case LOCALE:
-          arr[i++] = locale;
-          break;
         case PROPERTIES:
           arr[i++] = properties;
           break;
@@ -366,11 +354,6 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public void setLastName(String lastName) {
     this.lastName = lastName;
-  }
-
-  public UserData setLocale(String loc) {
-    this.locale = loc;
-    return this;
   }
 
   public void setPerson(Long person) {

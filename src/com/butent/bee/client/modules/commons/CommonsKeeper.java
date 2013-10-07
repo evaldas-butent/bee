@@ -23,11 +23,13 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.Captions;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class CommonsKeeper {
@@ -85,6 +87,12 @@ public final class CommonsKeeper {
 
     String key = Captions.register(ReminderMethod.class);
     Captions.registerColumn(VIEW_REMINDER_TYPES, COL_REMINDER_METHOD, key);
+
+    key = Captions.register(SupportedLocale.class);
+    Captions.registerColumn(VIEW_USERS, COL_USER_LOCALE, key);
+
+    key = Captions.register(UserInterface.class);
+    Captions.registerColumn(VIEW_USERS, COL_USER_INTERFACE, key);
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }

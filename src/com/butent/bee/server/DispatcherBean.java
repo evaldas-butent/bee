@@ -52,7 +52,7 @@ public class DispatcherBean {
   @EJB
   SystemBean system;
 
-  public ResponseObject doLogin(String locale, String host, String agent) {
+  public ResponseObject doLogin(String host, String agent) {
     if (BeeUtils.isEmpty(SqlBuilderFactory.getDsn())) {
       return ResponseObject.error("DSN not specified");
     }
@@ -60,7 +60,7 @@ public class DispatcherBean {
     ResponseObject response = new ResponseObject();
     Map<String, Object> data = Maps.newHashMap();
     
-    ResponseObject userData = userService.login(locale, host, agent);
+    ResponseObject userData = userService.login(host, agent);
     response.addMessagesFrom(userData);
     if (userData.hasErrors()) {
       return response;

@@ -10,10 +10,10 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -125,8 +125,8 @@ public final class FileUtils {
     parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
-    return RpcUtils.addQueryString(GWT.getHostPageBaseURL() + OPEN_URL,
-        RpcUtils.buildQueryString(parameters, true));
+    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + OPEN_URL,
+        CommUtils.buildQueryString(parameters, true));
   }
   
   public static String sizeToText(Long size) {
@@ -309,8 +309,8 @@ public final class FileUtils {
   }
   
   private static String getUploadUrl(Map<String, String> parameters) {
-    return RpcUtils.addQueryString(GWT.getHostPageBaseURL() + UPLOAD_URL,
-        RpcUtils.buildQueryString(parameters, true));
+    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + UPLOAD_URL,
+        CommUtils.buildQueryString(parameters, true));
   }
   
   private static String maybeCreateProgress(String caption, long size) {

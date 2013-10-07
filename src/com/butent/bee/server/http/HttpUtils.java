@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -72,6 +73,15 @@ public final class HttpUtils {
       }
     }
     return headers;
+  }
+  
+  public static String getLanguage(HttpServletRequest req) {
+    if (req == null) {
+      return null;
+    } else {
+      Locale locale = req.getLocale();
+      return (locale == null) ? null : locale.getLanguage();
+    }
   }
 
   public static Map<String, String> getParameters(HttpServletRequest req, boolean decode) {

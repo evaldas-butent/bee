@@ -7,6 +7,7 @@
   <Columns>
     <SimpleColumn name="Login" />
     <SimpleColumn name="Password" />
+
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
       <SimpleColumn name="Person" />
@@ -22,7 +23,17 @@
         <SimpleColumn name="Name" alias="CompanyName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="Locale" />
+    <SimpleColumn name="Interface" />
+
+    <SimpleColumn name="BlockAfter" />
+    <SimpleColumn name="BlockBefore" />
+
     <SimpleColumn name="Properties" />
+
+    <SimpleColumn name="Host" />
+    <SimpleColumn name="Agent" />
   </Columns>
   <Order>
     <OrderBy column="Login" />

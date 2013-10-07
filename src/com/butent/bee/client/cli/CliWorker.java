@@ -402,7 +402,7 @@ public final class CliWorker {
       showPropData(Settings.getInfo());
 
     } else if (z.startsWith("sheets")) {
-      Global.showGrid(new PropertiesData(Global.getStylesheets()));
+      Global.showGrid(new PropertiesData(Global.getStyleSheets()));
 
     } else if ("size".equals(z) && arr.length >= 2) {
       showSize(arr);

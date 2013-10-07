@@ -276,6 +276,8 @@ public final class CrmConstants {
 
   public static final String LABEL_OBSERVERS = "Stebėtojai";
 
+  public static final String STYLE_SHEET = "crm";
+  
   private CrmConstants() {
   }
 }

@@ -83,7 +83,6 @@ public final class Service {
   public static final String RPC_VAR_SID = RPC_VAR_SYS_PREFIX + "sid";
   public static final String RPC_VAR_SEP = RPC_VAR_SYS_PREFIX + "sep";
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
-  public static final String RPC_VAR_LOC = RPC_VAR_SYS_PREFIX + "loc";
   public static final String RPC_VAR_RESP = RPC_VAR_SYS_PREFIX + "ro";
 
   public static final String RPC_VAR_CNT = RPC_VAR_SYS_PREFIX + "cnt";

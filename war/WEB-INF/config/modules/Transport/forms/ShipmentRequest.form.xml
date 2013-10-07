@@ -244,7 +244,7 @@
         <row>
           <Label text="=trRequestDate" />
           <InputDateTime source="Date" />
-          <Label text="=trRequestHost" />
+          <Label text="=remoteHost" />
           <InputArea source="Host" style="&area;" />
         </row>
 

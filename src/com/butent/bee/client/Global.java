@@ -203,7 +203,7 @@ public class Global implements Module {
     return search.ensureSearchWidget();
   }
 
-  public static Map<String, String> getStylesheets() {
+  public static Map<String, String> getStyleSheets() {
     return styleSheets;
   }
 

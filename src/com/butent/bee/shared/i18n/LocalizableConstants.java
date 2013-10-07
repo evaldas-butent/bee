@@ -241,6 +241,18 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String location();
 
+  String loginCommandQuery();
+
+  String loginCommandRegister();
+
+  String loginFailed();
+
+  String loginPassword();
+  
+  String loginSubmit();
+  
+  String loginUserName();
+  
   String mainEmail();
 
   String maxValue();

@@ -33,5 +33,6 @@
 
     <DataColumn name="Notes" />
     <DataColumn name="Host" />
+    <DataColumn name="Agent" />
   </g:columns>
 </g:Grid>

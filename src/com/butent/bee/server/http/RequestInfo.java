@@ -38,34 +38,325 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   private static int counter;
 
+  private static Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
+    if (ac == null) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root = "Async Context";
+
+    PropertyUtils.addProperties(info, true, root, "Timeout", ac.getTimeout(),
+        root, "Has Original Request And Response", ac.hasOriginalRequestAndResponse());
+
+    return info;
+  }
+  private static Collection<ExtendedProperty> getAttributeInfo(HttpServletRequest req) {
+    if (req == null) {
+      return null;
+    }
+
+    Enumeration<String> lst = req.getAttributeNames();
+    if (lst == null) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root = "Attribute";
+    String nm;
+
+    while (lst.hasMoreElements()) {
+      nm = lst.nextElement();
+      PropertyUtils.addExtended(info, root, nm, req.getAttribute(nm));
+    }
+
+    return info;
+  }
+
+  private static Collection<ExtendedProperty> getCookieInfo(HttpServletRequest req) {
+    if (req == null) {
+      return null;
+    }
+
+    Cookie[] arr = req.getCookies();
+    if (arr == null) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    PropertyUtils.addExtended(info, "Cookies", "cnt", arr.length);
+
+    String nm;
+
+    for (Cookie coo : arr) {
+      nm = coo.getName();
+      if (BeeUtils.isEmpty(nm)) {
+        continue;
+      }
+
+      PropertyUtils.addProperties(info, true, nm, "Value", coo.getValue(),
+          nm, "Comment", coo.getComment(), nm, "Domain", coo.getDomain(),
+          nm, "Max Age", coo.getMaxAge(), nm, "Path", coo.getPath(),
+          nm, "Secure", coo.getSecure(), nm, "Version", coo.getVersion(),
+          nm, "Http Only", coo.isHttpOnly());
+    }
+    return info;
+  }
+  private static Collection<ExtendedProperty> getHeaderInfo(HttpServletRequest req) {
+    if (req == null) {
+      return null;
+    }
+
+    Map<String, String> lst = HttpUtils.getHeaders(req, false);
+    if (BeeUtils.isEmpty(lst)) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root = "Header";
+    String nm;
+    String v;
+
+    for (Map.Entry<String, String> el : lst.entrySet()) {
+      nm = el.getKey();
+      if (BeeUtils.isEmpty(nm)) {
+        continue;
+      }
+
+      v = el.getValue();
+      if (BeeUtils.isEmpty(v)) {
+        continue;
+      }
+
+      PropertyUtils.addExtended(info, root, nm, v);
+    }
+    return info;
+  }
+
+  private static Collection<ExtendedProperty> getLocaleInfo(HttpServletRequest req) {
+    if (req == null) {
+      return null;
+    }
+
+    Locale loc;
+    List<Locale> lst = new ArrayList<Locale>();
+
+    Enumeration<Locale> z = req.getLocales();
+    if (z == null) {
+      loc = req.getLocale();
+      if (loc != null) {
+        lst.add(loc);
+      }
+    } else {
+      while (z.hasMoreElements()) {
+        lst.add(z.nextElement());
+      }
+    }
+
+    if (lst.isEmpty()) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root;
+
+    for (int i = 0; i < lst.size(); i++) {
+      loc = lst.get(i);
+      root = "Locale " + i;
+
+      PropertyUtils.addProperties(info, true, root, "Country", loc.getCountry(),
+          root, "Display Country", loc.getDisplayCountry(),
+          root, "Display Country loc", loc.getDisplayCountry(loc),
+          root, "Display Language", loc.getDisplayLanguage(),
+          root, "Display Language loc", loc.getDisplayLanguage(loc),
+          root, "Display Name", loc.getDisplayName(),
+          root, "Display Name loc", loc.getDisplayName(loc),
+          root, "Display Variant", loc.getDisplayVariant(),
+          root, "Display Variant loc", loc.getDisplayVariant(loc),
+          root, "ISO3 Country", loc.getISO3Country(),
+          root, "ISO3 Language", loc.getISO3Language(),
+          root, "Language", loc.getLanguage(),
+          root, "Variant", loc.getVariant());
+    }
+    return info;
+  }
+  private static Collection<ExtendedProperty> getParameterInfo(HttpServletRequest req) {
+    if (req == null) {
+      return null;
+    }
+
+    Map<String, String> lst = HttpUtils.getParameters(req, false);
+    if (BeeUtils.isEmpty(lst)) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root = "Parameter";
+    String nm;
+    String v;
+
+    for (Map.Entry<String, String> el : lst.entrySet()) {
+      nm = el.getKey();
+      v = el.getValue();
+      if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v)) {
+        continue;
+      }
+
+      PropertyUtils.addExtended(info, root, nm, v);
+    }
+    return info;
+  }
+  private static Collection<ExtendedProperty> getServletContextInfo(ServletContext sc) {
+    if (sc == null) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root = "Servlet Context";
+    String nm;
+    String v;
+    int c;
+    String[] arr;
+
+    Enumeration<String> lst = sc.getAttributeNames();
+    if (lst != null) {
+      while (lst.hasMoreElements()) {
+        nm = lst.nextElement();
+
+        Object attribute = sc.getAttribute(nm);
+        if (attribute == null) {
+          continue;
+        }
+        v = BeeUtils.trim(attribute.toString());
+        if (BeeUtils.isEmpty(v)) {
+          continue;
+        }
+
+        if (v.length() > 100) {
+          arr = splitValue(v);
+          if (arr == null) {
+            c = 0;
+          } else {
+            c = arr.length;
+          }
+
+          if (c > 1) {
+            for (int i = 0; i < c; i++) {
+              PropertyUtils.addExtended(info, root + " attribute " + nm,
+                  BeeUtils.toString(i), arr[i]);
+            }
+            continue;
+          }
+        }
+        PropertyUtils.addExtended(info, root + " attribute " + nm, null, v);
+      }
+    }
+
+    PropertyUtils.addExtended(info, root, "Context Path", sc.getContextPath());
+
+    Set<SessionTrackingMode> trackMd = sc.getDefaultSessionTrackingModes();
+    if (!BeeUtils.isEmpty(trackMd)) {
+      for (SessionTrackingMode md : trackMd) {
+        PropertyUtils.addExtended(info, root, "Default Session Tracking Mode", md.name());
+      }
+    }
+
+    trackMd = sc.getEffectiveSessionTrackingModes();
+    if (!BeeUtils.isEmpty(trackMd)) {
+      for (SessionTrackingMode md : trackMd) {
+        PropertyUtils.addExtended(info, root, "Effective Session Tracking Mode", md.name());
+      }
+    }
+
+    PropertyUtils.addProperties(info, true,
+        root, "Effective Major Version", sc.getEffectiveMajorVersion(),
+        root, "Effective Minor Version", sc.getEffectiveMinorVersion(),
+        root, "Major Version", sc.getMajorVersion(),
+        root, "Minor Version", sc.getMinorVersion(),
+        root, "Server Info", sc.getServerInfo(),
+        root, "Servlet Context Name", sc.getServletContextName());
+
+    lst = sc.getInitParameterNames();
+    if (lst != null) {
+      while (lst.hasMoreElements()) {
+        nm = lst.nextElement();
+        PropertyUtils.addExtended(info, root + " init parameter", nm, sc.getInitParameter(nm));
+      }
+    }
+
+    return info;
+  }
+
+  private static Collection<ExtendedProperty> getSessionInfo(HttpSession hs) {
+    if (hs == null) {
+      return null;
+    }
+
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    String root = "Session";
+    String nm;
+
+    Enumeration<String> lst = hs.getAttributeNames();
+    if (lst != null) {
+      while (lst.hasMoreElements()) {
+        nm = lst.nextElement();
+        PropertyUtils.addExtended(info, root + " attribute", nm, hs.getAttribute(nm));
+      }
+    }
+
+    PropertyUtils.addProperties(info, true, root, "Id", hs.getId(),
+        root, "Creation Time", hs.getCreationTime(),
+        root, "Last Accessed Time", hs.getLastAccessedTime(),
+        root, "Max Inactive Interval", hs.getMaxInactiveInterval(),
+        root, "Is New", hs.isNew());
+
+    return info;
+  }
+  private static String[] splitValue(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    } else if (s.contains(", ")) {
+      return s.split(", ");
+    } else if (s.contains(";")) {
+      return s.split(";");
+    } else {
+      return null;
+    }
+  }
   private final HttpServletRequest request;
+  
+  private final String sessionId;
 
   private final String method;
   private final String query;
 
   private final Map<String, String> headers;
   private final Map<String, String> params;
+
   private final Map<String, String> vars;
 
   private final int contentLen;
+
   private String contentTypeHeader;
+
   private String content;
-  
+
   private String id;
 
   private String service;
-  private String locale;
 
   private String separator;
+
   private String options;
 
   private ContentType contentType;
 
-  public RequestInfo(HttpServletRequest req) {
+  public RequestInfo(HttpServletRequest req, String sessionId) {
     super();
     counter++;
 
     this.request = req;
+    this.sessionId = sessionId;
 
     this.method = req.getMethod();
     this.query = req.getQueryString();
@@ -201,10 +492,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return id;
   }
 
-  public String getLocale() {
-    return locale;
-  }
-
   public String getMethod() {
     return method;
   }
@@ -261,6 +548,10 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   public String getService() {
     return service;
+  }
+
+  public String getSessionId() {
+    return sessionId;
   }
 
   public Map<String, String> getVars() {
@@ -382,285 +673,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
             "service", service, "sep", separator, "opt", options), headers, params);
   }
 
-  private static Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
-    if (ac == null) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root = "Async Context";
-
-    PropertyUtils.addProperties(info, true, root, "Timeout", ac.getTimeout(),
-        root, "Has Original Request And Response", ac.hasOriginalRequestAndResponse());
-
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getAttributeInfo(HttpServletRequest req) {
-    if (req == null) {
-      return null;
-    }
-
-    Enumeration<String> lst = req.getAttributeNames();
-    if (lst == null) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root = "Attribute";
-    String nm;
-
-    while (lst.hasMoreElements()) {
-      nm = lst.nextElement();
-      PropertyUtils.addExtended(info, root, nm, req.getAttribute(nm));
-    }
-
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getCookieInfo(HttpServletRequest req) {
-    if (req == null) {
-      return null;
-    }
-
-    Cookie[] arr = req.getCookies();
-    if (arr == null) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    PropertyUtils.addExtended(info, "Cookies", "cnt", arr.length);
-
-    String nm;
-
-    for (Cookie coo : arr) {
-      nm = coo.getName();
-      if (BeeUtils.isEmpty(nm)) {
-        continue;
-      }
-
-      PropertyUtils.addProperties(info, true, nm, "Value", coo.getValue(),
-          nm, "Comment", coo.getComment(), nm, "Domain", coo.getDomain(),
-          nm, "Max Age", coo.getMaxAge(), nm, "Path", coo.getPath(),
-          nm, "Secure", coo.getSecure(), nm, "Version", coo.getVersion(),
-          nm, "Http Only", coo.isHttpOnly());
-    }
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getHeaderInfo(HttpServletRequest req) {
-    if (req == null) {
-      return null;
-    }
-
-    Map<String, String> lst = HttpUtils.getHeaders(req, false);
-    if (BeeUtils.isEmpty(lst)) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root = "Header";
-    String nm;
-    String v;
-
-    for (Map.Entry<String, String> el : lst.entrySet()) {
-      nm = el.getKey();
-      if (BeeUtils.isEmpty(nm)) {
-        continue;
-      }
-
-      v = el.getValue();
-      if (BeeUtils.isEmpty(v)) {
-        continue;
-      }
-
-      PropertyUtils.addExtended(info, root, nm, v);
-    }
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getLocaleInfo(HttpServletRequest req) {
-    if (req == null) {
-      return null;
-    }
-
-    Locale loc;
-    List<Locale> lst = new ArrayList<Locale>();
-
-    Enumeration<Locale> z = req.getLocales();
-    if (z == null) {
-      loc = req.getLocale();
-      if (loc != null) {
-        lst.add(loc);
-      }
-    } else {
-      while (z.hasMoreElements()) {
-        lst.add(z.nextElement());
-      }
-    }
-
-    if (lst.isEmpty()) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root;
-
-    for (int i = 0; i < lst.size(); i++) {
-      loc = lst.get(i);
-      root = "Locale " + i;
-
-      PropertyUtils.addProperties(info, true, root, "Country", loc.getCountry(),
-          root, "Display Country", loc.getDisplayCountry(),
-          root, "Display Country loc", loc.getDisplayCountry(loc),
-          root, "Display Language", loc.getDisplayLanguage(),
-          root, "Display Language loc", loc.getDisplayLanguage(loc),
-          root, "Display Name", loc.getDisplayName(),
-          root, "Display Name loc", loc.getDisplayName(loc),
-          root, "Display Variant", loc.getDisplayVariant(),
-          root, "Display Variant loc", loc.getDisplayVariant(loc),
-          root, "ISO3 Country", loc.getISO3Country(),
-          root, "ISO3 Language", loc.getISO3Language(),
-          root, "Language", loc.getLanguage(),
-          root, "Variant", loc.getVariant());
-    }
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getParameterInfo(HttpServletRequest req) {
-    if (req == null) {
-      return null;
-    }
-
-    Map<String, String> lst = HttpUtils.getParameters(req, false);
-    if (BeeUtils.isEmpty(lst)) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root = "Parameter";
-    String nm;
-    String v;
-
-    for (Map.Entry<String, String> el : lst.entrySet()) {
-      nm = el.getKey();
-      v = el.getValue();
-      if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v)) {
-        continue;
-      }
-
-      PropertyUtils.addExtended(info, root, nm, v);
-    }
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getServletContextInfo(ServletContext sc) {
-    if (sc == null) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root = "Servlet Context";
-    String nm;
-    String v;
-    int c;
-    String[] arr;
-
-    Enumeration<String> lst = sc.getAttributeNames();
-    if (lst != null) {
-      while (lst.hasMoreElements()) {
-        nm = lst.nextElement();
-
-        Object attribute = sc.getAttribute(nm);
-        if (attribute == null) {
-          continue;
-        }
-        v = BeeUtils.trim(attribute.toString());
-        if (BeeUtils.isEmpty(v)) {
-          continue;
-        }
-
-        if (v.length() > 100) {
-          arr = splitValue(v);
-          if (arr == null) {
-            c = 0;
-          } else {
-            c = arr.length;
-          }
-
-          if (c > 1) {
-            for (int i = 0; i < c; i++) {
-              PropertyUtils.addExtended(info, root + " attribute " + nm,
-                  BeeUtils.toString(i), arr[i]);
-            }
-            continue;
-          }
-        }
-        PropertyUtils.addExtended(info, root + " attribute " + nm, null, v);
-      }
-    }
-
-    PropertyUtils.addExtended(info, root, "Context Path", sc.getContextPath());
-
-    Set<SessionTrackingMode> trackMd = sc.getDefaultSessionTrackingModes();
-    if (!BeeUtils.isEmpty(trackMd)) {
-      for (SessionTrackingMode md : trackMd) {
-        PropertyUtils.addExtended(info, root, "Default Session Tracking Mode", md.name());
-      }
-    }
-
-    trackMd = sc.getEffectiveSessionTrackingModes();
-    if (!BeeUtils.isEmpty(trackMd)) {
-      for (SessionTrackingMode md : trackMd) {
-        PropertyUtils.addExtended(info, root, "Effective Session Tracking Mode", md.name());
-      }
-    }
-
-    PropertyUtils.addProperties(info, true,
-        root, "Effective Major Version", sc.getEffectiveMajorVersion(),
-        root, "Effective Minor Version", sc.getEffectiveMinorVersion(),
-        root, "Major Version", sc.getMajorVersion(),
-        root, "Minor Version", sc.getMinorVersion(),
-        root, "Server Info", sc.getServerInfo(),
-        root, "Servlet Context Name", sc.getServletContextName());
-
-    lst = sc.getInitParameterNames();
-    if (lst != null) {
-      while (lst.hasMoreElements()) {
-        nm = lst.nextElement();
-        PropertyUtils.addExtended(info, root + " init parameter", nm, sc.getInitParameter(nm));
-      }
-    }
-
-    return info;
-  }
-
-  private static Collection<ExtendedProperty> getSessionInfo(HttpSession hs) {
-    if (hs == null) {
-      return null;
-    }
-
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
-    String root = "Session";
-    String nm;
-
-    Enumeration<String> lst = hs.getAttributeNames();
-    if (lst != null) {
-      while (lst.hasMoreElements()) {
-        nm = lst.nextElement();
-        PropertyUtils.addExtended(info, root + " attribute", nm, hs.getAttribute(nm));
-      }
-    }
-
-    PropertyUtils.addProperties(info, true, root, "Id", hs.getId(),
-        root, "Creation Time", hs.getCreationTime(),
-        root, "Last Accessed Time", hs.getLastAccessedTime(),
-        root, "Max Inactive Interval", hs.getMaxInactiveInterval(),
-        root, "Is New", hs.isNew());
-
-    return info;
-  }
-
   private void setRpcInfo(String nm, String v) {
     if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v)) {
       return;
@@ -676,20 +688,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       options = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_CTP)) {
       contentType = CommUtils.getContentType(v);
-    } else if (BeeUtils.same(nm, Service.RPC_VAR_LOC)) {
-      locale = v;
-    }
-  }
-
-  private static String[] splitValue(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    } else if (s.contains(", ")) {
-      return s.split(", ");
-    } else if (s.contains(";")) {
-      return s.split(";");
-    } else {
-      return null;
     }
   }
 }

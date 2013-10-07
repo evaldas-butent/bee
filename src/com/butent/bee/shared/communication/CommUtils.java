@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains utility functions for communication between server and client sides, for example
@@ -36,6 +37,20 @@ public final class CommUtils {
   public static final ContentType DEFAULT_RESPONSE_CONTENT_TYPE = ContentType.TEXT;
 
   public static final ContentType FORM_RESPONSE_CONTENT_TYPE = ContentType.HTML;
+  
+  public static String getPath(String url, Map<String, String> parameters, boolean encode) {
+    return addQueryString(url, buildQueryString(parameters, encode)); 
+  }
+
+  public static String addQueryString(String url, String qs) {
+    Assert.notEmpty(url);
+
+    if (BeeUtils.isEmpty(qs)) {
+      return url;
+    } else {
+      return url.trim() + QUERY_STRING_SEPARATOR + qs.trim();
+    }
+  }
 
   public static String buildContentType(String type) {
     return buildContentType(type, getCharacterEncoding(getContentType(type)));
@@ -56,6 +71,28 @@ public final class CommUtils {
       segments.addAll(Arrays.asList(rest));
     }
     return BeeUtils.join(PATH_SEGMENT_SEPARATOR, segments);
+  }
+  
+  public static String buildQueryString(Map<String, String> parameters, boolean encode) {
+    if (BeeUtils.isEmpty(parameters)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      String key = BeeUtils.trim(entry.getKey());
+      String value = BeeUtils.trim(entry.getValue());
+
+      if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(QUERY_STRING_PAIR_SEPARATOR);
+        }
+
+        sb.append(key).append(QUERY_STRING_VALUE_SEPARATOR);
+        sb.append(encode ? Codec.encodeBase64(value) : value);
+      }
+    }
+    return sb.toString();
   }
 
   public static boolean equals(ContentType z1, ContentType z2) {

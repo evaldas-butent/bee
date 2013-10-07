@@ -48,6 +48,7 @@
     <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
 
     <Text name="Notes" label="=trRequestNotes" />
-    <Text name="Host" label="=trRequestHost" />
+    <Text name="Host" label="=remoteHost" />
+    <Text name="Agent" label="=userAgent" />
   </Fields>
 </Table>

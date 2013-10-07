@@ -23,8 +23,8 @@ public final class FileNameUtils {
   public static final char EXTENSION_SEPARATOR = '.';
   public static final String EXTENSION_SEPARATOR_STR = Character.toString(EXTENSION_SEPARATOR);
 
-  private static final char UNIX_SEPARATOR = '/';
-  private static final char WINDOWS_SEPARATOR = '\\';
+  public static final char UNIX_SEPARATOR = '/';
+  public static final char WINDOWS_SEPARATOR = '\\';
   private static final char SYSTEM_SEPARATOR = File.separatorChar;
 
   public static String addExtension(String name, String ext) {

@@ -40,6 +40,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_VAT_PERC = "VatPercent";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
+  public static final String STYLE_SHEET = "trade";
+  
   private TradeConstants() {
   }
 }

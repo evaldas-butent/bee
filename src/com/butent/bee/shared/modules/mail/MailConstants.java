@@ -119,6 +119,8 @@ public final class MailConstants {
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 
+  public static final String STYLE_SHEET = "mail";
+  
   private MailConstants() {
   }
 }

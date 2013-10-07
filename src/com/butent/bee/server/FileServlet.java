@@ -36,9 +36,10 @@ import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
 public class FileServlet extends HttpServlet {
-  private static BeeLogger logger = LogUtils.getLogger(FileServlet.class);
 
   private static final int DEFAULT_BUFFER_SIZE = 10240;
+
+  private static BeeLogger logger = LogUtils.getLogger(FileServlet.class);
 
   @EJB
   QueryServiceBean qs;

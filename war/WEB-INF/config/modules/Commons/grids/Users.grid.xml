@@ -2,14 +2,24 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Users" viewName="Users" caption="=users"
-  newRowPopup="true"
-  flexGrow="1" flexShrink="1"
+  newRowPopup="true" editInPlace="Locale Interface BlockAfter BlockBefore"
   >
   <g:columns>
-    <IdColumn name="Id" caption="ID" flexGrow="0" />
+    <IdColumn name="Id" caption="ID" />
     <DataColumn name="Login" caption="=userLogin" visible="true" />
-    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName" />
-    <DataColumn name="CompanyName" caption="=company" />
-    <DataColumn name="Position" />
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName"
+      visible="true" />
+    <DataColumn name="CompanyName" caption="=company" visible="false" />
+    <DataColumn name="Position" visible="false" />
+
+    <DataColumn name="Locale" itemKey="SupportedLocale" />
+    <DataColumn name="Interface" itemKey="UserInterface" />
+
+    <DataColumn name="BlockAfter" />
+    <DataColumn name="BlockBefore" />
+
+    <DataColumn name="Properties" visible="false" />
+    <DataColumn name="Host" />
+    <DataColumn name="Agent" />
   </g:columns>
 </g:Grid>

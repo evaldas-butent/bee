@@ -80,7 +80,7 @@ public final class Localizations {
       init(LocalizableType.CONSTANTS);
     }
 
-    Locale z = normalize(locale, availableConstants);
+    Locale z = normalize(locale, availableConstants.keySet());
     if (z == null) {
       logger.severe(LocalizableType.CONSTANTS, I18nUtils.toString(locale), "not available");
       return null;
@@ -104,29 +104,74 @@ public final class Localizations {
     return ensureMessages(locale);
   }
 
-  public static Locale normalize(Locale locale, Map<Locale, File> available) {
+  public static LocalizableConstants getPreferredConstants(String language) {
+    if (availableConstants == null) {
+      init(LocalizableType.CONSTANTS);
+    }
+
+    Locale locale = normalize(BeeUtils.nvl(I18nUtils.toLocale(language), getDefaultLocale()),
+        getAvailableConstants().keySet());
+    if (locale == null) {
+      logger.severe(LocalizableType.CONSTANTS, language, "not available");
+      return null;
+    } else {
+      return getConstants(locale);
+    }
+  }
+
+  public static Map<String, String> getPreferredDictionary(String language) {
+    if (availableConstants == null) {
+      init(LocalizableType.CONSTANTS);
+    }
+
+    Locale locale = normalize(BeeUtils.nvl(I18nUtils.toLocale(language), getDefaultLocale()),
+        getAvailableConstants().keySet());
+    if (locale == null) {
+      logger.severe(LocalizableType.CONSTANTS, language, "not available");
+      return null;
+    } else {
+      return getDictionary(locale);
+    }
+  }
+
+  public static LocalizableMessages getPreferredMessages(String language) {
+    if (availableMessages == null) {
+      init(LocalizableType.MESSAGES);
+    }
+
+    Locale locale = normalize(BeeUtils.nvl(I18nUtils.toLocale(language), getDefaultLocale()),
+        getAvailableMessages().keySet());
+    if (locale == null) {
+      logger.severe(LocalizableType.MESSAGES, language, "not available");
+      return null;
+    } else {
+      return getMessages(locale);
+    }
+  }
+  
+  public static Locale normalize(Locale locale, Collection<Locale> available) {
     if (locale == null || available == null) {
       return null;
     }
-    if (available.containsKey(locale)) {
+    if (available.contains(locale)) {
       return locale;
     }
     Locale z;
 
     if (!BeeUtils.isEmpty(locale.getVariant())) {
       z = new Locale(locale.getLanguage(), locale.getCountry());
-      if (available.containsKey(z)) {
+      if (available.contains(z)) {
         return z;
       }
     }
     if (!BeeUtils.isEmpty(locale.getCountry())) {
       z = new Locale(locale.getLanguage());
-      if (available.containsKey(z)) {
+      if (available.contains(z)) {
         return z;
       }
     }
 
-    if (available.containsKey(rootLocale)) {
+    if (available.contains(rootLocale)) {
       return rootLocale;
     }
     return null;
@@ -137,7 +182,7 @@ public final class Localizations {
       Assert.isTrue(init(LocalizableType.CONSTANTS));
     }
 
-    Locale z = normalize(locale, availableConstants);
+    Locale z = normalize(locale, availableConstants.keySet());
     Assert.notNull(z, BeeUtils.joinWords(LocalizableType.CONSTANTS, I18nUtils.toString(locale),
         "not available"));
 
@@ -157,7 +202,7 @@ public final class Localizations {
       Assert.isTrue(init(LocalizableType.MESSAGES));
     }
 
-    Locale z = normalize(locale, availableMessages);
+    Locale z = normalize(locale, availableMessages.keySet());
     Assert.notNull(z, BeeUtils.joinWords(LocalizableType.MESSAGES, I18nUtils.toString(locale),
         "not available"));
 

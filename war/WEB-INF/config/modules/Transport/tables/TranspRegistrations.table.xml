@@ -33,6 +33,7 @@
     <String name="Swift" precision="30" label="=trRegistrationSwift" />
 
     <Text name="Notes" label="=trRegistrationNotes" />
-    <Text name="Host" label="=trRegistrationHost" />
+    <Text name="Host" label="=remoteHost" />
+    <Text name="Agent" label="=userAgent" />
   </Fields>
 </Table>

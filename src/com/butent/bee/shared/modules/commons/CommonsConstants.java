@@ -142,8 +142,14 @@ public final class CommonsConstants {
 
   public static final String COL_LOGIN = "Login";
   public static final String COL_PASSWORD = "Password";
-  public static final String COL_PROPERTIES = "Properties";
-  public static final String COL_HOST = "Host";
+  public static final String COL_USER_PROPERTIES = "Properties";
+  public static final String COL_USER_LOCALE = "Locale";
+  public static final String COL_USER_INTERFACE = "Interface";
+  public static final String COL_USER_BLOCK_AFTER = "BlockAfter";
+  public static final String COL_USER_BLOCK_BEFORE = "BlockBefore";
+  public static final String COL_REMOTE_HOST = "Host";
+  public static final String COL_USER_AGENT = "Agent";
+
   public static final String COL_ROLE_NAME = "Name";
   public static final String COL_USER = "User";
   public static final String COL_ROLE = "Role";

@@ -222,9 +222,57 @@ public interface LocalizableTransportConstants {
 
   String trProformaInvoice();
 
+  String trRegistrationActionSubmit();
+
+  String trRegistrationAddress();
+
+  String trRegistrationBank();
+  
+  String trRegistrationBankAccount();
+
+  String trRegistrationBankAddress();
+
+  String trRegistrationCity();
+
+  String trRegistrationCompanyCode();
+
+  String trRegistrationCompanyName();
+
+  String trRegistrationContact();
+
+  String trRegistrationContactPosition();
+
+  String trRegistrationCountry();
+
+  String trRegistrationEmail();
+
+  String trRegistrationExchangeCode();
+
+  String trRegistrationFax();
+
+  String trRegistrationFormCaption();
+
+  String trRegistrationMobile();
+
+  String trRegistrationNew();
+
+  String trRegistrationNotes();
+
+  String trRegistrationPhone();
+
+  String trRegistrationSwift();
+
+  String trRegistrationVatCode();
+
+  String trRegistrationVatPayer();
+
   String trRequestActionFinish();
 
   String trRequestFinishReason();
+
+  String trRequestNew();
+
+  String trRequests();
 
   String trRequestStatusActive();
 

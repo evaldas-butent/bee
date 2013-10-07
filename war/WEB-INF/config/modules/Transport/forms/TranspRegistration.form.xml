@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY area "width: 200px; height: 40px;">
-  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
+  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -81,7 +81,7 @@
       <row>
         <Label text="=trRegistrationDate" />
         <InputDateTime source="Date" />
-        <Label text="=trRegistrationHost" />
+        <Label text="=remoteHost" />
         <InputArea source="Host" style="&area;" />
       </row>
     </Table>
