@@ -8,8 +8,7 @@ import com.google.common.net.MediaType;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.LoginServlet;
-import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
@@ -189,10 +188,7 @@ public class TransportSelfService extends HttpServlet {
   }
 
   @EJB
-  QueryServiceBean queryService;
-
-  @EJB
-  UserServiceBean userService;
+  ProxyBean transactionService;
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -290,7 +286,7 @@ public class TransportSelfService extends HttpServlet {
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
     si.addConstant(COL_REGISTRATION_AGENT, req.getHeader(HttpHeaders.USER_AGENT));
     
-    ResponseObject response = queryService.insertDataWithResponse(si);
+    ResponseObject response = transactionService.insert(si);
     if (response.hasErrors()) {
       for (String message : response.getErrors()) {
         html.add(message);

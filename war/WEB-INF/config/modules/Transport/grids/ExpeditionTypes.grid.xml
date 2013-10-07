@@ -4,6 +4,7 @@
   name="ExpeditionTypes" viewName="ExpeditionTypes" caption="=trExpeditionTypes"
   >
   <g:columns>
-    <DataColumn name="Name" minWidth="200" />
+    <DataColumn name="Name" minWidth="200" visible="true" />
+    <DataColumn name="SelfService" />
   </g:columns>
 </g:Grid>

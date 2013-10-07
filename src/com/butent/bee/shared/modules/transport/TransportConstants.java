@@ -494,6 +494,10 @@ public final class TransportConstants {
   public static final String FORM_TRUCK_SETTINGS = "TruckTbSettings";
   public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
+  public static final String FORM_REGISTRATION = "TranspRegistration";
+  public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
+  public static final String FORM_CARGO_REQUEST = "CargoRequest";
+
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
   public static final String PROP_DRIVERS = "Drivers";

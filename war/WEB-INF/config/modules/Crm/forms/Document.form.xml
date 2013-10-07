@@ -42,6 +42,14 @@
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
             style="&chselect;" />
         </row>
+
+        <row>
+          <Label text="=trRequestsShort" style="&chlabel;" />
+          <ChildSelector viewName="CargoRequests" childTable="Relations" 
+            renderColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName"
+            choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName CargoDescription"
+            style="&chselect;" />
+        </row>
         
         <row>
           <Label text="=vehiclesShort" style="&chlabel;" />

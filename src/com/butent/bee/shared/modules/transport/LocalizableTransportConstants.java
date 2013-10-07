@@ -184,6 +184,16 @@ public interface LocalizableTransportConstants {
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
+  String trCommandBlockIpAddress();
+
+  String trCommandConvertToRequest();
+
+  String trCommandCopyRequest();
+
+  String trCommandCreateNewUser();
+
+  String trCommandSaveRequestAsTemplate();
+  
   String trConfirmProforma();
 
   String trContractPrinting();
@@ -277,6 +287,16 @@ public interface LocalizableTransportConstants {
   String trRequestStatusActive();
 
   String trRequestStatusNew();
+
+  String trRequestTemplates();
+  
+  String trSelfServiceCommandHistory();
+  
+  String trSelfServiceCommandNewRequest();
+  
+  String trSelfServiceCommandRequests();
+  
+  String trSelfServiceCommandTemplates();
   
   String trSendToERP();
 

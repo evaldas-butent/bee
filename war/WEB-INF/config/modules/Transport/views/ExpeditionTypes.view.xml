@@ -7,6 +7,7 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="SelfService" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

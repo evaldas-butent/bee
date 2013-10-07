@@ -664,7 +664,6 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_ALL_CARGO, new CargoPlaceRenderer());
 
     // GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
-    // FormFactory.registerFormInterceptor("CargoRequest", new CargoRequestForm());
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentsGrid());
@@ -682,6 +681,10 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_CREDIT_INVOICE, new CargoCreditInvoiceForm());
+
+    FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
+    FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 

@@ -4,7 +4,8 @@
   name="ShippingTerms" viewName="ShippingTerms" caption="=trShippingTerms"
   >
   <g:columns>
-    <DataColumn name="Name" minWidth="50" />
+    <DataColumn name="Name" minWidth="50" visible="true" />
     <DataColumn name="Description" minWidth="200" />
+    <DataColumn name="SelfService" />
   </g:columns>
 </g:Grid>

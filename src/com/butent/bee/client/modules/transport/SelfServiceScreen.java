@@ -24,22 +24,34 @@ public class SelfServiceScreen extends ScreenImpl {
   @Override
   public void start() {
     super.start();
-    
-    addCommandItem(new Button(Localized.getConstants().trRequestNew(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        RowFactory.createRow(TransportConstants.VIEW_CARGO_REQUESTS);
-      }
-    }));
 
-    addCommandItem(new Button(Localized.getConstants().trRequests(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        GridFactory.openGrid(TransportConstants.VIEW_CARGO_REQUESTS);
-      }
-    }));
+    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
+        new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            RowFactory.createRow(TransportConstants.VIEW_CARGO_REQUESTS);
+          }
+        }));
+
+    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandRequests(),
+        new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            GridFactory.openGrid(TransportConstants.VIEW_CARGO_REQUESTS);
+          }
+        }));
+
+    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandTemplates(),
+        new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            GridFactory.openGrid(TransportConstants.VIEW_CARGO_REQUEST_TEMPLATES);
+          }
+        }));
+
+    addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandHistory()));
   }
-  
+
   @Override
   public void updateMenu(IdentifiableWidget widget) {
   }

@@ -13,6 +13,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="NewCargoRequest" viewName="CargoRequests" caption="=trRequestNew"
+  width="750" height="600"
   >
   <FlowPanel>
     <br/>
@@ -223,6 +224,14 @@
         </row>
       </Table>
     </Disclosure>
+    &separator;
+
+    <FlowPanel class="flexBox-horizontal">
+      <Label text="=documentFiles" style="margin: 5px 2em 0 1em;" />
+      <FileCollector name="Files" editableColumns="name">
+        <face resource="attachment" />
+      </FileCollector>
+    </FlowPanel>
     &separator;
 
   </FlowPanel>
