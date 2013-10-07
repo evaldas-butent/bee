@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Attendees" source="Attendees" caption="Resursai"
-  editForm="Attendee" rowCaption="Name" newRowForm="Attendee" newRowCaption="Naujas resursas"
+  name="Attendees" source="Attendees" caption="=calAttendees"
+  editForm="Attendee" rowCaption="Name" newRowForm="Attendee" newRowCaption="=calNewAttendee"
   >
   <Columns>
     <SimpleColumn name="AttendeeType" />

@@ -4,7 +4,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator"
 
-  name="Appointment" viewName="Appointments" caption="=appointment">
+  name="Appointment" viewName="Appointments" caption="=calAppointment">
 
   <FlowPanel>
     <AbsolutePanel style="top: 5px; height: 240px; left: 1em; right: 1em;">
@@ -165,7 +165,7 @@
           <row>
             <Radio source="Transparency" itemKey="Transparency" vertical="false" />
             <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false" />
-            <CheckBox source="ReadOnly" html="Read Only" />
+            <CheckBox source="ReadOnly" text="=calReadOnly" />
           </row>
 
           <row>

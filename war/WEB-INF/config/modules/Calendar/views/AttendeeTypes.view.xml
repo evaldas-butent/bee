@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AttendeeTypes" source="AttendeeTypes" newRowCaption="Naujas resursų tipas"
+  name="AttendeeTypes" source="AttendeeTypes" newRowCaption="=calNewAttendeeType"
   >
   <Columns>
-    <SimpleColumn name="Name" label="Tipas" />
+    <SimpleColumn name="Name" label="=calAttendeeType" />
     <SimpleColumn name="Description" />
 
     <SimpleColumn name="Transparency" />

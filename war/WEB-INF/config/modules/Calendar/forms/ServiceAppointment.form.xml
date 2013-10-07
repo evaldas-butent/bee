@@ -11,7 +11,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="ServiceAppointment" viewName="Appointments" caption="=appointment"
+  name="ServiceAppointment" viewName="Appointments" caption="=calAppointment"
   disabledActions="add delete" enabledActions="save" 
   options="Company, Vehicle, ServiceType, RepairType, Resources">
 

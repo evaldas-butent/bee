@@ -5,8 +5,8 @@
   idName="PropertyGroupID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" />
-    <Text name="Description" />
-    <Relation name="DefaultProperty" relation="ExtendedProperties" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=calPropertyGroupName" />
+    <Text name="Description" label="=description" />
+    <Relation name="DefaultProperty" relation="ExtendedProperties"  label="=calDefaultParameter" />
   </Fields>
 </Table>

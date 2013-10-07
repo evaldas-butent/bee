@@ -5,9 +5,9 @@
   idName="ConfigurationID"
   >
   <Fields>
-    <Relation name="Company" notNull="true" relation="Companies" />
-    <Relation name="AppointmentType" notNull="true" relation="AppointmentTypes" />
+    <Relation name="Company" notNull="true" relation="Companies" label="=company" />
+    <Relation name="AppointmentType" notNull="true" relation="AppointmentTypes" label="=calAppointmentType" />
 
-    <Relation name="TimeZone" relation="TimeZones" />
+    <Relation name="TimeZone" relation="TimeZones" label="=timeZone"/>
   </Fields>
 </Table>

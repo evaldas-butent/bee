@@ -10,7 +10,7 @@
     <DataColumn name="Description" caption="=calDescription" whiteSpace="pre-wrap" />
 
     <RelColumn name="ThemeName" caption="=colorTheme" />
-    <RelColumn name="StyleName" caption="=appointmentStyle" />
+    <RelColumn name="StyleName" caption="=calAppointmentStyle" />
 
     <DataColumn name="SimpleHeader" caption="=appointmentRenderSimpleHeader" whiteSpace="pre-wrap" />
     <DataColumn name="SimpleBody" caption="=appointmentRenderSimpleBody" whiteSpace="pre-wrap" />

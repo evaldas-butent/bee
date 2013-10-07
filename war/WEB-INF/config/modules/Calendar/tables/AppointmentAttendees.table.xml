@@ -5,14 +5,14 @@
   idName="AppointmentAttendeeID"
   >
   <Fields>
-    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" />
-    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" />
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" label="=calAppointment" />
+    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" label="=calAttendee"/>
 
     <Boolean name="Optional" />
     <Integer name="ResponseStatus" />
     <Integer name="AdditionalGuests" />
 
-    <Text name="Comment" />
+    <Text name="Comment" label="=calComment" />
   </Fields>
   
   <Constraints>

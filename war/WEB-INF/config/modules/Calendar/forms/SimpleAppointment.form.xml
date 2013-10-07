@@ -5,7 +5,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator" name="SimpleAppointment" viewName="Appointments"
-  caption="=appointment" disabledActions="add delete" enabledActions="save">
+  caption="=calAppointment" disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; width: 760px; height: 360px;">
     <InputText source="Summary" required="true" caption="=summary" style="width: 240px;"

@@ -5,19 +5,19 @@
   idName="ReportOptionID"
   >
   <Fields>
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
-    <Integer name="Report" notNull="true" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <Integer name="Report" notNull="true" label="=report" />
 
-    <String name="Caption" precision="200" />
+    <String name="Caption" precision="200" label="=caption"/>
     
-    <Date name="LowerDate" />
-    <Date name="UpperDate" />
+    <Date name="LowerDate" label="=calReportLowerDate" />
+    <Date name="UpperDate" label="=calReportUpperDate" />
 
-    <Integer name="LowerHour" />
-    <Integer name="UpperHour" />
+    <Integer name="LowerHour" label="=calReportLowerHour" />
+    <Integer name="UpperHour" label="=calReportUpperHour" />
     
-    <Text name="AttendeeTypes"/>
-    <Text name="Attendees"/>
+    <Text name="AttendeeTypes" label="=calAttendeesTypes" />
+    <Text name="Attendees" label="=calAttendees"/>
   </Fields>
 
   <Constraints>
