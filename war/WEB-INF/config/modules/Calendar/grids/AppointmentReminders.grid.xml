@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AppointmentReminders" viewName="AppointmentReminders" newRowCaption="Naujas priminimas"
+  name="AppointmentReminders" viewName="AppointmentReminders" newRowCaption="=calNewReminder"
   >
   <g:columns>
-    <RelColumn name="Recipient" caption="Gavėjas">
+    <RelColumn name="Recipient" caption="=recipient">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
       <renderToken source="CompanyName" prefix=", " />
@@ -15,15 +15,15 @@
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
 
-    <RelColumn name="TypeName" caption="Tipas" newRowEnabled="false" />
-    <DataColumn name="Method" caption="Metodas" itemKey="ReminderMethod" />
+    <RelColumn name="TypeName" caption="=type" newRowEnabled="false" />
+    <DataColumn name="Method" caption="=reminderMethod" itemKey="ReminderMethod" />
 
-    <DataColumn name="Hours" caption="Valandos iki" />
-    <DataColumn name="Minutes" caption="Minutės iki" />
-    <DataColumn name="Scheduled" caption="Siųsti" />
+    <DataColumn name="Hours" caption="=calHoursTo" />
+    <DataColumn name="Minutes" caption="=calMinutesTo" />
+    <DataColumn name="Scheduled" caption="=calSendTo" />
 
-    <DataColumn name="Message" caption="Tekstas" />
-    <DataColumn name="Sent" caption="Išsiųstas" readOnly="true" />
-    <DataColumn name="Error" caption="Klaidos pranešimas" readOnly="true" />
+    <DataColumn name="Message" caption="=calMessage" />
+    <DataColumn name="Sent" caption="=calSent" readOnly="true" />
+    <DataColumn name="Error" caption="=errorMessage" readOnly="true" />
   </g:columns>
 </g:Grid>

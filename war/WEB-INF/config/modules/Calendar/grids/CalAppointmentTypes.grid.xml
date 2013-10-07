@@ -5,7 +5,7 @@
   minColumnWidth="100"
   >
   <g:columns>
-    <RelColumn name="TypeName" caption="Tipas" visible="true" />
-    <DataColumn name="TypeDescription" caption="Aprašymas" />
+    <RelColumn name="TypeName" caption="=calAppointmentType" visible="true" />
+    <DataColumn name="TypeDescription" caption="=calAppointmentTypeDescription" />
   </g:columns>
 </g:Grid>

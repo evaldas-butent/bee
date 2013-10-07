@@ -2,16 +2,16 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ExtendedProperties" viewName="ExtendedProperties"
-  caption="Parametrai" newRowCaption="Naujas parametras"
+  caption="=calParameters" newRowCaption="=calNewParameter"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <RelColumn name="GroupName" caption="Grupė" minWidth="100" visible="true" />
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" visible="true" />
+    <RelColumn name="GroupName" caption="=calParameterGroup" minWidth="100" visible="true" />
+    <DataColumn name="Name" caption="=calName" minWidth="100" visible="true" />
 
-    <DataColumn name="Hours" caption="Valandos" flexGrow="0" />
-    <DataColumn name="Minutes" caption="Minutės" flexGrow="0" />
+    <DataColumn name="Hours" caption="=unitHours" flexGrow="0" />
+    <DataColumn name="Minutes" caption="=unitMinutes" flexGrow="0" />
 
-    <DataColumn name="Description" caption="Aprašymas" flexGrow="2" flexShrink="2" />
+    <DataColumn name="Description" caption="=calDescription" flexGrow="2" flexShrink="2" />
   </g:columns>
 </g:Grid>

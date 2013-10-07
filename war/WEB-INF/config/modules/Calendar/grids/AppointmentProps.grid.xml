@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AppointmentProps" viewName="AppointmentProps" newRowCaption="Naujas parametras"
+  name="AppointmentProps" viewName="AppointmentProps" newRowCaption="=newParameter"
   >
   <g:columns>
-    <DataColumn name="GroupName" caption="Grupė" minWidth="100" visible="true" />
-    <RelColumn name="PropertyName" caption="Pavadinimas" choiceColumns="Name GroupName"
+    <DataColumn name="GroupName" caption="=calAppointmentGroup" minWidth="100" visible="true" />
+    <RelColumn name="PropertyName" caption="=caption" choiceColumns="Name GroupName"
       minWidth="100" visible="true" />
 
-    <DataColumn name="Hours" caption="Valandos" />
-    <DataColumn name="Minutes" caption="Minutės" />
+    <DataColumn name="Hours" caption="=unitHours" />
+    <DataColumn name="Minutes" caption="=unitMinutes" />
   </g:columns>
 </g:Grid>

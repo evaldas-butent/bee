@@ -5,12 +5,12 @@
   >
   <g:body height="80" /> 
   <g:columns>
-    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Name" caption="=calAppointmentStyleName" visible="true" />
+    <DataColumn name="Description" caption="=calDescription" />
 
     <DataColumn name="Simple" caption="=appointmentStyleSimple" whiteSpace="pre-wrap" />
-    <DataColumn name="Multi" caption="Daugiadienis" whiteSpace="pre-wrap" />
-    <DataColumn name="Compact" caption="Kompaktiškas" whiteSpace="pre-wrap" />
+    <DataColumn name="Multi" caption="=calMultiday" whiteSpace="pre-wrap" />
+    <DataColumn name="Compact" caption="=calCompact" whiteSpace="pre-wrap" />
     
     <DataColumn name="Header" caption="=appointmentStyleHeader" whiteSpace="pre-wrap" />
     <DataColumn name="Body" caption="=appointmentStyleBody" whiteSpace="pre-wrap" />

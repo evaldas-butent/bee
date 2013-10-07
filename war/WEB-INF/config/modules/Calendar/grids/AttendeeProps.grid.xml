@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AttendeeProps" viewName="AttendeeProps" newRowCaption="Naujas"
+  name="AttendeeProps" viewName="AttendeeProps" newRowCaption="=calNew"
   headerMode="grid"
   >
   <g:columns>
-    <DataColumn name="GroupName" caption="Grupė" width="100" visible="true" />
-    <RelColumn name="PropertyName" caption="Pavadinimas" width="180" newRowEnabled="false" visible="true" />
+    <DataColumn name="GroupName" caption="=calAttendeeGroup" width="100" visible="true" />
+    <RelColumn name="PropertyName" caption="=calAttendeePropertyName" width="180" newRowEnabled="false" visible="true" />
   </g:columns>
 </g:Grid>
