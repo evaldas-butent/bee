@@ -29,7 +29,7 @@
     
     &separator;
     <FlowPanel style="&section;">
-      <Label text="=request" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
+      <Label text="=crmRequest" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
       <InputArea source="Content" visibleLines="8" style="width:490px;" />
     </FlowPanel>
 

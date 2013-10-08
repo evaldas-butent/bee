@@ -463,7 +463,7 @@ public class AssessmentForm extends PrintFormInterceptor {
 
   private IsRow currentRow;
 
-  private final Button cmdNew = new Button(Localized.getConstants().request(),
+  private final Button cmdNew = new Button(Localized.getConstants().crmRequest(),
       new StatusUpdater(AssessmentStatus.NEW, null));
 
   private final Button cmdLost = new Button(Localized.getConstants().trAssessmentStatusLost(),

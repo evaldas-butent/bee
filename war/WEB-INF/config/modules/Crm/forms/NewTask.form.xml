@@ -38,7 +38,7 @@
       <Label text="=startingDate" style="&lbl1;" />
       <InputDate name="Start_Date" style="&dateStyle;" />
       <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label text="=expectedDuration" style="&lbl3;" />
+      <Label text="=crmTaskExpectedDuration" style="&lbl3;" />
       <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; min-width: 50px;max-width: 50px;" />
     </FlowPanel>
 
@@ -81,14 +81,14 @@
 
     &separator;
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=taskExecutors" class="bee-required" style="&top1; padding-right:12px;" />
+      <Label text="=crmTaskExecutors" class="bee-required" style="&top1; padding-right:12px;" />
       <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
         editPopup="true" editSource="CompanyPerson" style="&inp2x;"
-        label="Vykdytojai" required="true" />
+        label="=crmTaskExecutors" required="true" />
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=taskObservers" style="&top1; min-width:60px; padding-right:18px;" />
+      <Label text="=crmTaskObservers" style="&top1; min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
         editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
     </FlowPanel>

@@ -12,6 +12,14 @@ public interface LocalizableCrmConstants {
   
   String creditTolerance();
   
+  String crmRequest();
+
+  String crmTaskExecutors();
+
+  String crmTaskExpectedDuration();
+
+  String crmTaskObservers();
+
   String customer();
 
   String documentFileExists();
@@ -19,9 +27,7 @@ public interface LocalizableCrmConstants {
   String durationType();
   
   String endingDate();
-  
-  String expectedDuration();
-  
+
   String financialInfo();
   
   String financialState();
@@ -49,9 +55,7 @@ public interface LocalizableCrmConstants {
   String relationship();
   
   String relationshipInfo();
-  
-  String request();
-  
+
   String requestFinish();
 
   String requestFinishing();
@@ -67,8 +71,6 @@ public interface LocalizableCrmConstants {
   String spentTime();
   
   String startingDate();
-  
-  String taskExecutors();
 
   String taskFilterAll();
 
@@ -93,8 +95,6 @@ public interface LocalizableCrmConstants {
   String taskLabelScheduled();
   
   String taskLabelStarred();
-  
-  String taskObservers();
   
   String taskReminder();
   

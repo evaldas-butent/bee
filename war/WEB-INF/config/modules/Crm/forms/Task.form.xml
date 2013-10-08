@@ -23,24 +23,24 @@
   <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
     <FlowPanel style="margin-left: 5px;">
       <FlowPanel style="&section;">
-        <Label html="Būsena:" style="&lbl1;" />
+        <Label text="=crmTaskStatus" style="&lbl1;" />
         <ListBox source="Status" itemKey="TaskStatus" style="&inp2;" readOnly="true" />
-        <Label html="Prioritetas:" style="&inline; margin-left: 16px;" />
+        <Label text="=crmTaskPriority" style="&inline; margin-left: 16px;" />
         <Radio source="Priority" itemKey="TaskPriority"
           style="&inline; font-size: 12px; margin-left: 8px;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Vadovas:" style="&lbl1;" />
+        <Label text="=crmTaskManager" style="&lbl1;" />
         <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2;" readOnly="true" />
-        <Label html="Įmonė:" style="&lbl3;" />
+        <Label text="=company" style="&lbl3;" />
         <DataSelector source="Company" style="&inp4;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Vykdytojas:" style="&lbl1;" />
+        <Label text="=crmTaskExecutor" style="&lbl1;" />
         <DataSelector source="Executor" editSource="ExecutorPerson" style="&inp2;" readOnly="true" />
-        <Label html="Kontaktinis asmuo:" style="&lbl3;" />
+        <Label text="=personContact" style="&lbl3;" />
         <DataSelector source="Contact" style="&inp4;" disablable="true"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
@@ -48,42 +48,42 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Įkelta:" style="&lbl1;" />
+        <Label text="=crmTaskCreated" style="&lbl1;" />
         <InputDateTime source="Created" style="&inp2;" readOnly="true" />
-        <Label html="Numatoma trukmė:" style="&lbl3;" />
+        <Label text="=crmTaskExpectedDuration" style="&lbl3;" />
         <InputTime source="ExpectedDuration" step="30" style="&inline; width: 60px;" 
           disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Pradžios data:" style="&lbl1;" />
+        <Label text="=crmStartDate" style="&lbl1;" />
         <InputDateTime source="StartTime" style="&inp2;" readOnly="true" />
-        <Label html="Įvykdymo data:" style="&lbl3;" />
+        <Label text="=crmTaskCompleteDate" style="&lbl3;" />
         <InputDateTime source="Completed" step="30" style="&inp4;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Pabaigos data:" style="&lbl1;" />
+        <Label text="=crmFinishDate" style="&lbl1;" />
         <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
-        <Label html="Patvirtinimo data:" style="&lbl3;" />
+        <Label text="=crmTaskConfirmDate" style="&lbl3;" />
         <InputDateTime source="Approved" style="&inp4;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <FlowPanel name="TaskExtensions" style="&inp2; margin-left: 100px;" />
-        <Label html="Priminimas:" style="&lbl3;" />
+        <Label text="=crmReminder" style="&lbl3;" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
           style="&inp4;" disablable="true" />
       </FlowPanel>
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Tema:" class="bee-required" style="&lbl1;" />
+        <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;" />
         <InputText source="Summary" style="&inp2x;" readOnly="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Aprašymas:" style="&top1;" />
+        <Label text="=crmTaskDescription" style="&top1;" />
         <InputArea source="Description" style="width: 424px; height: 60px;" readOnly="true" />
       </FlowPanel>
 
@@ -91,7 +91,7 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Stebėtojai:" style="&top1;" />
+        <Label text="=crmTaskObservers" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
           editSource="CompanyPerson" style="&inp2x;" disablable="true" label="Stebėtojai" />
       </FlowPanel>

@@ -21,37 +21,37 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewRecurringTask" caption="Nauja periodinė užduotis">
+  name="NewRecurringTask" caption="=crmNewRecurringTask">
 
   <FlowPanel style="margin: 10px 5px 2px 5px;">
 
     <FlowPanel style="&section;">
-      <Label html="Prioritetas:" style="&lbl3;" />
+      <Label text="=crmTaskPriority" style="&lbl3;" />
       <Radio source="Priority" itemKey="TaskPriority" style="&inp4;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Pradžios data:" style="&lbl1;" />
+      <Label text="=crmStartDate" style="&lbl1;" />
       <InputDate name="Start_Date" style="&dateStyle;" />
       <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label html="Numatoma trukmė:" style="&lbl3;" />
+      <Label text="=crmTaskExpectedDuration" style="&lbl3;" />
       <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; width: 50px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Pabaigos data:" style="&lbl1;" />
+      <Label text="=crmFinishDate" style="&lbl1;" />
       <InputDate name="End_Date" style="&dateStyle;" />
       <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label html="Įmonė:" style="&lbl3;" />
+      <Label text="=company" style="&lbl3;" />
       <DataSelector source="Company" editPopup="true"
         style="&inp4; width: 200px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Priminimas:" style="&lbl1;" />
+      <Label text="=crmReminder" style="&lbl1;" />
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
         style="&inp2;" />
-      <Label html="Kontaktinis asmuo:" style="&lbl3;" />
+      <Label text="=personContact" style="&lbl3;" />
       <DataSelector source="Contact" style="&inp4; width: 200px;" editPopup="true"
         renderColumns="ContactFirstName ContactLastName"
         choiceColumns="FirstName LastName CompanyName" />
@@ -59,18 +59,18 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Tema:" class="bee-required" style="&lbl1;" />
+      <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;" />
       <InputText source="Summary" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Aprašymas:" style="&top1;" />
+      <Label text="=crmTaskDescription" style="&top1;" />
       <InputArea source="Description" style="width: 500px; height: 60px;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Bylos:" style="&top1;" />
+      <Label text="=crmFiles" style="&top1;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
       </FileCollector>
@@ -78,30 +78,30 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Vykdytojai:" class="bee-required" style="&top1;" />
+      <Label text="=crmTaskExecutors" class="bee-required" style="&top1;" />
       <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Stebėtojai:" style="&top1;" />
+      <Label text="=crmTaskObservers" style="&top1;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Susijusi su:" style="&header;" />
+      <Label text="=relatedTo" style="&header;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Įmonės:" style="&top1;" />
+      <Label text="=companies" style="&top1;" />
       <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Asmenys:" style="&top1;" />
+      <Label text="=persons" style="&top1;" />
       <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
