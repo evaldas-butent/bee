@@ -19,7 +19,6 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
@@ -295,7 +294,7 @@ public class Filters {
       c++;
 
       final CustomDiv labelWidget = new CustomDiv();
-      labelWidget.setHtml(LocaleUtils.maybeLocalize(item.getLabel()));
+      labelWidget.setHtml(Localized.maybeTranslate(item.getLabel()));
 
       labelWidget.addClickHandler(new ClickHandler() {
         @Override
@@ -316,7 +315,7 @@ public class Filters {
           @Override
           public void onClick(ClickEvent event) {
             final Item editItem = getItem(items, id);
-            final String oldLabel = normalizeLabel(LocaleUtils.maybeLocalize(editItem.getLabel()));
+            final String oldLabel = normalizeLabel(Localized.maybeTranslate(editItem.getLabel()));
 
             Global.inputString(Localized.getConstants().actionRenameFilter(), null,
                 new StringCallback() {

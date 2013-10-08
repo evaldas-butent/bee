@@ -32,6 +32,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class EcScreen extends ScreenImpl {
@@ -78,6 +79,11 @@ public class EcScreen extends ScreenImpl {
   @Override
   public IdentifiableWidget getActiveWidget() {
     return getScreenPanel().getCenter();
+  }
+
+  @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.E_COMMERCE;
   }
 
   @Override

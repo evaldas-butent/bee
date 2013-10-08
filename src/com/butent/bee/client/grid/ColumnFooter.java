@@ -12,7 +12,6 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
@@ -29,6 +28,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Calculation;
@@ -296,7 +296,7 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
 
     if (footerDescription != null) {
       if (!BeeUtils.isEmpty(footerDescription.getText())) {
-        setHtml(LocaleUtils.maybeLocalize(footerDescription.getText()));
+        setHtml(Localized.maybeTranslate(footerDescription.getText()));
       } else if (!BeeUtils.isEmpty(footerDescription.getHtml())) {
         setHtml(footerDescription.getHtml());
       }

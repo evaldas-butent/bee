@@ -30,6 +30,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -88,6 +89,11 @@ public class Mobile extends ScreenImpl {
     return getScreenPanel().getCenter();
   }
 
+  @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.MOBILE;
+  }
+  
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return false;

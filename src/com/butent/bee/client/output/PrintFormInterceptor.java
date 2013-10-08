@@ -7,7 +7,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormDescription;
@@ -79,8 +78,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
                 for (FormDescription dscr : forms) {
                   if (dscr != null) {
-                    captions.add(BeeUtils.notEmpty(LocaleUtils
-                        .maybeLocalize(dscr.getCaption()), dscr.getName()));
+                    captions.add(BeeUtils.notEmpty(Localized.maybeTranslate(dscr.getCaption()),
+                        dscr.getName()));
                     descriptions.add(dscr);
                   }
                 }

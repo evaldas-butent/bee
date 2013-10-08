@@ -17,6 +17,7 @@ import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -57,6 +58,11 @@ public class Tablet extends Mobile {
     super();
   }
 
+  @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.TABLET;
+  }
+  
   @Override
   protected int addLogToggle(LayoutPanel panel) {
     final Toggle toggle = new Toggle("Hide Log", "Show Log", "toggleLog");

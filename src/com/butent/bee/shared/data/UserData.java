@@ -36,7 +36,7 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
-    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS, CONSTANTS
+    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
@@ -63,8 +63,6 @@ public class UserData implements BeeSerializable, HasInfo {
   private Map<String, String> properties;
 
   private Map<RightsState, Multimap<RightsObjectType, String>> rights;
-
-  private Map<String, String> constants;
 
   public UserData(long userId, String login) {
     this.userId = userId;
@@ -104,30 +102,39 @@ public class UserData implements BeeSerializable, HasInfo {
         case LOGIN:
           this.login = value;
           break;
+
         case USER_ID:
           this.userId = BeeUtils.toLong(value);
           break;
+
         case FIRST_NAME:
           this.firstName = value;
           break;
+
         case LAST_NAME:
           this.lastName = value;
           break;
+        
         case PHOTO_FILE_NAME:
           this.photoFileName = value;
           break;
+        
         case COMPANY_NAME:
           this.companyName = value;
           break;
+        
         case COMPANY_PERSON:
           this.companyPerson = BeeUtils.toLongOrNull(value);
           break;
+        
         case COMPANY:
           this.company = BeeUtils.toLongOrNull(value);
           break;
+        
         case PERSON:
           this.person = BeeUtils.toLongOrNull(value);
           break;
+        
         case PROPERTIES:
           String[] entry = Codec.beeDeserializeCollection(value);
 
@@ -139,6 +146,7 @@ public class UserData implements BeeSerializable, HasInfo {
             }
           }
           break;
+
         case RIGHTS:
           entry = Codec.beeDeserializeCollection(value);
 
@@ -157,16 +165,6 @@ public class UserData implements BeeSerializable, HasInfo {
             }
           }
           break;
-        case CONSTANTS:
-          entry = Codec.beeDeserializeCollection(value);
-
-          if (!ArrayUtils.isEmpty(entry)) {
-            constants = Maps.newHashMap();
-            for (int j = 0; j < entry.length; j += 2) {
-              constants.put(entry[j], entry[j + 1]);
-            }
-          }
-          break;
       }
     }
   }
@@ -181,14 +179,6 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public Long getCompanyPerson() {
     return companyPerson;
-  }
-
-  public String getConstant(String name) {
-    return (constants == null) ? null : constants.get(name);
-  }
-
-  public Map<String, String> getConstants() {
-    return constants;
   }
 
   public String getFirstName() {
@@ -217,11 +207,6 @@ public class UserData implements BeeSerializable, HasInfo {
       for (Map.Entry<RightsState, Multimap<RightsObjectType, String>> entry : rights.entrySet()) {
         info.add(new Property(entry.getKey().toString(), entry.getValue().toString()));
       }
-    }
-
-    if (!BeeUtils.isEmpty(constants)) {
-      info.add(new Property("Constants", BeeUtils.bracket(constants.size())));
-      info.addAll(PropertyUtils.createProperties(constants));
     }
 
     return info;
@@ -332,9 +317,6 @@ public class UserData implements BeeSerializable, HasInfo {
           }
           arr[i++] = x;
           break;
-        case CONSTANTS:
-          arr[i++] = constants;
-          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -342,10 +324,6 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public void setCompanyName(String companyName) {
     this.companyName = companyName;
-  }
-
-  public void setConstants(Map<String, String> constants) {
-    this.constants = constants;
   }
 
   public void setFirstName(String firstName) {

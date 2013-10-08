@@ -8,12 +8,12 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import com.butent.bee.client.event.logical.RenderingEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -97,12 +97,12 @@ public final class DynamicColumnFactory {
 
     for (String name : names) {
       String suffix = BeeUtils.removePrefix(name, prefix);
-      String caption = BeeUtils.joinWords(LocaleUtils.maybeLocalize(template.getCaption()), suffix);
+      String caption = BeeUtils.joinWords(Localized.maybeTranslate(template.getCaption()), suffix);
 
       DynamicColumnIdentity dynamicColumn = new DynamicColumnIdentity(name, caption);
 
       if (!BeeUtils.isEmpty(template.getLabel())) {
-        dynamicColumn.setLabel(BeeUtils.joinWords(LocaleUtils.maybeLocalize(template.getLabel()),
+        dynamicColumn.setLabel(BeeUtils.joinWords(Localized.maybeTranslate(template.getLabel()),
             suffix));
       }
 
@@ -149,13 +149,13 @@ public final class DynamicColumnFactory {
         String id = dataColumn.getId();
         
         String suffix = BeeUtils.removePrefix(id, prefix);
-        String caption = BeeUtils.isEmpty(template.getCaption()) ? LocaleUtils.getLabel(dataColumn)
-            : BeeUtils.joinWords(LocaleUtils.maybeLocalize(template.getCaption()), suffix);
+        String caption = BeeUtils.isEmpty(template.getCaption()) ? Localized.getLabel(dataColumn)
+            : BeeUtils.joinWords(Localized.maybeTranslate(template.getCaption()), suffix);
 
         DynamicColumnIdentity dynamicColumn = new DynamicColumnIdentity(id, caption);
 
         if (!BeeUtils.isEmpty(template.getLabel())) {
-          dynamicColumn.setLabel(BeeUtils.joinWords(LocaleUtils.maybeLocalize(template.getLabel()),
+          dynamicColumn.setLabel(BeeUtils.joinWords(Localized.maybeTranslate(template.getLabel()),
               suffix));
         }
 

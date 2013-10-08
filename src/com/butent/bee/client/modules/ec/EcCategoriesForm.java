@@ -11,7 +11,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -67,7 +66,7 @@ class EcCategoriesForm extends AbstractFormInterceptor implements CatchHandler<I
           presenter.evaluate(destination));
     } else {
       prompt = Localized.getMessages().ecCategoryMigrate(presenter.evaluate(source),
-          LocaleUtils.maybeLocalize(presenter.getCaption()));
+          Localized.maybeTranslate(presenter.getCaption()));
     }
     Global.choice(presenter.getCaption(), prompt, actions, new ChoiceCallback() {
       @Override

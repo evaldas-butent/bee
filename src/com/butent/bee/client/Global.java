@@ -403,7 +403,7 @@ public class Global implements Module {
     $wnd.Bee_getCaption = $entry(@com.butent.bee.shared.ui.Captions::getCaption(Ljava/lang/String;I));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
-    $wnd.Bee_maybeLocalize = $entry(@com.butent.bee.client.i18n.LocaleUtils::maybeLocalize(Ljava/lang/String;));
+    $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
   }-*/;
 
   // CHECKSTYLE:ON

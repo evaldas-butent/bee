@@ -22,7 +22,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
@@ -104,7 +103,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
     this.column = column;
     this.columnLabel = BeeUtils.notEmpty(label,
-        (column == null) ? null : LocaleUtils.getLabel(column));
+        (column == null) ? null : Localized.getLabel(column));
 
     this.options = options;
   }

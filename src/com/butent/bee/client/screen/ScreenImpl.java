@@ -46,6 +46,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -215,6 +216,11 @@ public class ScreenImpl implements Screen {
     return screenPanel;
   }
 
+  @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.DESKTOP;
+  }
+  
   @Override
   public int getWidth() {
     return getScreenPanel().getOffsetWidth();

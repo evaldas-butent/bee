@@ -57,7 +57,7 @@ public class BeeServlet extends HttpServlet {
     HttpSession session = req.getSession();
     String sessionId = session.getId();
 
-    RequestInfo reqInfo = new RequestInfo(req, sessionId);
+    RequestInfo reqInfo = new RequestInfo(req);
 
     String meth = reqInfo.getMethod();
 
@@ -93,7 +93,6 @@ public class BeeServlet extends HttpServlet {
     if (BeeUtils.same(svc, Service.LOGIN)) {
       doLogin = session.getAttribute(Service.VAR_USER) == null;
       doLogout = !doLogin;
-      doLogin = true;
 
     } else if (BeeUtils.same(svc, Service.LOGOUT)) {
       doLogout = true;
@@ -108,7 +107,7 @@ public class BeeServlet extends HttpServlet {
 
     if (doLogin) {
       try {
-        response = dispatcher.doLogin(req.getRemoteAddr(), req.getHeader(HttpHeaders.USER_AGENT));
+        response = dispatcher.doLogin(reqInfo);
       } catch (EJBException ex) {
         response = ResponseObject.error(ex);
       }
@@ -140,9 +139,9 @@ public class BeeServlet extends HttpServlet {
       resp.setHeader(Service.RPC_VAR_QID, rid);
     }
 
-    resp.setHeader("Cache-Control", "no-cache");
-    resp.setHeader("Pragma", "no-cache");
-    resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
+    resp.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+    resp.setHeader(HttpHeaders.PRAGMA, "no-cache");
+    resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
 
     String s;
 

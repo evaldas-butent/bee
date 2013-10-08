@@ -43,7 +43,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Details;
@@ -133,6 +132,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
@@ -1368,7 +1368,7 @@ public enum FormWidget {
       String childTag = XmlUtils.getLocalName(child);
 
       if (BeeUtils.same(childTag, TAG_TEXT)) {
-        String text = LocaleUtils.maybeLocalize(XmlUtils.getText(child));
+        String text = Localized.maybeTranslate(XmlUtils.getText(child));
         if (!BeeUtils.isEmpty(text)) {
           headerTag = TAG_TEXT;
           headerString = text;
@@ -1423,7 +1423,7 @@ public enum FormWidget {
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
-      String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
+      String text = Localized.maybeTranslate(XmlUtils.getText(element));
       if (!BeeUtils.isEmpty(text)) {
         widget = new InlineLabel(text);
       }
@@ -1503,7 +1503,7 @@ public enum FormWidget {
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
-      String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
+      String text = Localized.maybeTranslate(XmlUtils.getText(element));
       table.setHtml(row, col, text);
       ok = true;
 
@@ -1570,7 +1570,7 @@ public enum FormWidget {
     if (BeeUtils.isEmpty(text)) {
       return element.getAttribute(UiConstants.ATTR_HTML);
     } else {
-      return LocaleUtils.maybeLocalize(text);
+      return Localized.maybeTranslate(text);
     }
   }
 
@@ -1860,7 +1860,7 @@ public enum FormWidget {
     } else if (this == TAB_BAR && parent instanceof TabBar && BeeUtils.same(childTag, TAG_TAB)) {
       for (Element tabContent : XmlUtils.getChildrenElements(child)) {
         if (XmlUtils.tagIs(tabContent, TAG_TEXT)) {
-          String text = LocaleUtils.maybeLocalize(XmlUtils.getText(tabContent));
+          String text = Localized.maybeTranslate(XmlUtils.getText(tabContent));
           if (!BeeUtils.isEmpty(text)) {
             ((TabBar) parent).addItem(text);
             break;

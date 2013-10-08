@@ -25,7 +25,6 @@ import com.butent.bee.client.grid.column.DoubleColumn;
 import com.butent.bee.client.grid.column.IntegerColumn;
 import com.butent.bee.client.grid.column.LongColumn;
 import com.butent.bee.client.grid.column.StringColumn;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -60,6 +59,7 @@ import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.CellType;
@@ -285,7 +285,7 @@ public final class GridFactory {
     if (BeeUtils.allEmpty(caption, filter)) {
       return null;
     } else {
-      return new GridOptions(LocaleUtils.maybeLocalize(caption), filter);
+      return new GridOptions(Localized.maybeTranslate(caption), filter);
     }
   }
 

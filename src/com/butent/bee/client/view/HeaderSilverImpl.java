@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
@@ -20,6 +19,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -250,7 +250,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public void setCaption(String caption) {
-    captionWidget.setHtml(BeeUtils.trim(LocaleUtils.maybeLocalize(caption)));
+    captionWidget.setHtml(BeeUtils.trim(Localized.maybeTranslate(caption)));
   }
 
   @Override

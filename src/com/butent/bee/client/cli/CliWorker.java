@@ -1142,7 +1142,7 @@ public final class CliWorker {
     } else {
       List<Property> info = Lists.newArrayList();
       for (int i = 1; i < arr.length; i++) {
-        String value = BeeKeeper.getUser().getConstant(arr[i]);
+        String value = Localized.translate(arr[i]);
         PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL)); 
       }
       showPropData(info);

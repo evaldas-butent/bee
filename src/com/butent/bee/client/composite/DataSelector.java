@@ -43,7 +43,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
@@ -77,6 +76,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
@@ -794,7 +794,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editSourceIndex = BeeConst.UNDEF;
     }
 
-    this.relationLabel = LocaleUtils.maybeLocalize(relation.getLabel());
+    this.relationLabel = Localized.maybeTranslate(relation.getLabel());
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 

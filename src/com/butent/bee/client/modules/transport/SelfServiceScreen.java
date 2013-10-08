@@ -14,6 +14,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.ui.UserInterface;
 
 public class SelfServiceScreen extends ScreenImpl {
 
@@ -21,6 +22,11 @@ public class SelfServiceScreen extends ScreenImpl {
     super();
   }
 
+  @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.SELF_SERVICE;
+  }
+  
   @Override
   public void start() {
     super.start();

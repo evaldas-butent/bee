@@ -6,13 +6,13 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -23,8 +23,8 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     ColumnToken columnToken = new ColumnToken(dataIndex, valueType);
     
     if (renderableToken != null) {
-      columnToken.setPrefix(LocaleUtils.maybeLocalize(renderableToken.getPrefix()));
-      columnToken.setSuffix(LocaleUtils.maybeLocalize(renderableToken.getSuffix()));
+      columnToken.setPrefix(Localized.maybeTranslate(renderableToken.getPrefix()));
+      columnToken.setSuffix(Localized.maybeTranslate(renderableToken.getSuffix()));
       
       if (BeeUtils.isTrue(renderableToken.getAddPrefixWhenEmpty())) {
         columnToken.setAddPrefixWhenEmpty(true);

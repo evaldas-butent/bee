@@ -2,11 +2,11 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorAction;
@@ -269,7 +269,7 @@ public class WidgetDescription implements HasInfo {
         setParentName(value.trim());
 
       } else if (BeeUtils.same(key, UiConstants.ATTR_CAPTION)) {
-        setCaption(LocaleUtils.maybeLocalize(value.trim()));
+        setCaption(Localized.maybeTranslate(value.trim()));
       } else if (BeeUtils.same(key, UiConstants.ATTR_READ_ONLY)) {
         setReadOnly(BeeUtils.toBooleanOrNull(value));
       } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {

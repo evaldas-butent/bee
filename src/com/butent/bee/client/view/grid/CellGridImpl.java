@@ -42,7 +42,6 @@ import com.butent.bee.client.grid.column.RowIdColumn;
 import com.butent.bee.client.grid.column.RowVersionColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -104,6 +103,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -357,7 +357,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
     }
 
-    String caption = LocaleUtils.maybeLocalize(cd.getCaption());
+    String caption = Localized.maybeTranslate(cd.getCaption());
     if (BeeUtils.isEmpty(caption)) {
       int index;
       if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
@@ -367,7 +367,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       }
 
       if (!BeeConst.isUndef(index)) {
-        caption = LocaleUtils.getLabel(dataColumns.get(index));
+        caption = Localized.getLabel(dataColumns.get(index));
       }
     }
 
@@ -375,7 +375,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     if (Captions.isCaption(caption)) {
       label = caption;
     } else {
-      label = BeeUtils.notEmpty(LocaleUtils.maybeLocalize(cd.getLabel()), columnId);
+      label = BeeUtils.notEmpty(Localized.maybeTranslate(cd.getLabel()), columnId);
     }
 
     CellSource cellSource;

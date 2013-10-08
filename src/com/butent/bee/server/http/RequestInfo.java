@@ -1,5 +1,7 @@
 package com.butent.bee.server.http;
 
+import com.google.common.net.HttpHeaders;
+
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -325,8 +327,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   }
   private final HttpServletRequest request;
   
-  private final String sessionId;
-
   private final String method;
   private final String query;
 
@@ -351,12 +351,11 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   private ContentType contentType;
 
-  public RequestInfo(HttpServletRequest req, String sessionId) {
+  public RequestInfo(HttpServletRequest req) {
     super();
     counter++;
 
     this.request = req;
-    this.sessionId = sessionId;
 
     this.method = req.getMethod();
     this.query = req.getQueryString();
@@ -537,6 +536,18 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   public String getQuery() {
     return query;
   }
+  
+  public String getRemoteAddr() {
+    return request.getRemoteAddr();
+  }
+
+  public String getRemoteHost() {
+    return request.getRemoteHost();
+  }
+
+  public String getRemoteUser() {
+    return request.getRemoteUser();
+  }
 
   public HttpServletRequest getRequest() {
     return request;
@@ -550,8 +561,8 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return service;
   }
 
-  public String getSessionId() {
-    return sessionId;
+  public String getUserAgent() {
+    return getHeaders().get(HttpHeaders.USER_AGENT);
   }
 
   public Map<String, String> getVars() {

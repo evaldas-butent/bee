@@ -12,11 +12,18 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
 public enum UserInterface implements HasCaption {
   DESKTOP {
+    @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.allOf(Component.class);
+    }
+
     @Override
     public Map<String, String> getMeta() {
       return Maps.newHashMap();
@@ -46,6 +53,11 @@ public enum UserInterface implements HasCaption {
   },
   
   TABLET {
+    @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.allOf(Component.class);
+    }
+
     @Override
     public Map<String, String> getMeta() {
       Map<String, String> meta = Maps.newHashMap();
@@ -82,6 +94,11 @@ public enum UserInterface implements HasCaption {
   },
   
   MOBILE {
+    @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.allOf(Component.class);
+    }
+
     @Override
     public Map<String, String> getMeta() {
       Map<String, String> meta = Maps.newHashMap();
@@ -120,6 +137,11 @@ public enum UserInterface implements HasCaption {
   
   E_COMMERCE {
     @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.noneOf(Component.class);
+    }
+
+    @Override
     public Map<String, String> getMeta() {
       Map<String, String> meta = Maps.newHashMap();
       meta.put("gwt:property", "screen=ec");
@@ -150,6 +172,12 @@ public enum UserInterface implements HasCaption {
   
   SELF_SERVICE {
     @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.of(Component.DATA_INFO, Component.DICTIONARY, Component.FILTERS,
+          Component.DECORATORS, Component.GRIDS);
+    }
+
+    @Override
     public Map<String, String> getMeta() {
       Map<String, String> meta = Maps.newHashMap();
       meta.put("gwt:property", "screen=trss");
@@ -178,6 +206,14 @@ public enum UserInterface implements HasCaption {
     }
   };
   
+  public enum Component {
+    DATA_INFO, DICTIONARY, FAVORITES, FILTERS, DECORATORS, GRIDS, MENU;
+    
+    public String key() {
+      return name().toLowerCase();
+    }
+  }
+  
   public static final UserInterface DEFAULT = DESKTOP;
 
   public static final String MAIN_STYLE_SHEET = "bee";
@@ -200,10 +236,16 @@ public enum UserInterface implements HasCaption {
     return NameUtils.getEnumByName(UserInterface.class, input);
   }
   
+  public static UserInterface normalize(UserInterface ui) {
+    return (ui == null) ? DEFAULT : ui;
+  }
+  
   @Override
   public String getCaption() {
     return name();
   }
+  
+  public abstract Collection<Component> getComponents();
   
   public abstract Map<String, String> getMeta();
 

@@ -62,10 +62,6 @@ public final class Localizations {
     return localizedMessages.keySet();
   }
 
-  public static LocalizableConstants getConstants() {
-    return getConstants(defaultLocale);
-  }
-
   public static LocalizableConstants getConstants(Locale locale) {
     Assert.notNull(locale);
     return ensureConstants(locale);
@@ -93,10 +89,6 @@ public final class Localizations {
       dictionary.put(name, properties.getProperty(name));
     }
     return dictionary;
-  }
-
-  public static LocalizableMessages getMessages() {
-    return getMessages(defaultLocale);
   }
 
   public static LocalizableMessages getMessages(Locale locale) {

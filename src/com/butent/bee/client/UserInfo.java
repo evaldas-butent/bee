@@ -21,10 +21,6 @@ public class UserInfo implements Module, HasInfo {
   private String sessionId;
   private UserData userData;
 
-  public String getConstant(String name) {
-    return (userData == null) ? null : userData.getConstant(name);
-  }
-  
   public String getDsn() {
     if (!isLoggedIn()) {
       return null;

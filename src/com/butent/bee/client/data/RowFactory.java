@@ -14,7 +14,6 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
@@ -220,7 +219,7 @@ public final class RowFactory {
 
       Element label = doc.createElement(FormWidget.LABEL.getTagName());
       label.setAttribute(UiConstants.ATTR_HTML,
-          BeeUtils.notEmpty(LocaleUtils.getLabel(column), column.getId()));
+          BeeUtils.notEmpty(Localized.getLabel(column), column.getId()));
 
       String labelClass;
       if (column.hasDefaults()) {

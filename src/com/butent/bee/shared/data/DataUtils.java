@@ -197,6 +197,10 @@ public final class DataUtils {
     return "Column " + index;
   }
 
+  public static BeeRowSet emptyToNull(BeeRowSet rowSet) {
+    return isEmpty(rowSet) ? null : rowSet;
+  }
+
   public static boolean equals(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;

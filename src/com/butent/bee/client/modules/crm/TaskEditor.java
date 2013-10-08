@@ -34,7 +34,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
@@ -1111,7 +1110,7 @@ class TaskEditor extends AbstractFormInterceptor {
       String newValue = newRow.getString(i);
 
       if (!BeeUtils.equalsTrimRight(oldValue, newValue) && column.isEditable()) {
-        String label = LocaleUtils.getLabel(column);
+        String label = Localized.getLabel(column);
         String note;
 
         if (BeeUtils.isEmpty(oldValue)) {

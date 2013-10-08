@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -13,6 +12,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -61,14 +61,14 @@ public final class Data {
   }
 
   public static String getColumnLabel(String viewName, String colName) {
-    return LocaleUtils.getLabel(getColumn(viewName, colName));
+    return Localized.getLabel(getColumn(viewName, colName));
   }
 
   public static List<String> getColumnLabels(String viewName, List<String> colNames) {
     List<String> result = Lists.newArrayList();
 
     for (BeeColumn column : getColumns(viewName, colNames)) {
-      result.add(LocaleUtils.getLabel(column));
+      result.add(Localized.getLabel(column));
     }
 
     return result;
@@ -151,7 +151,7 @@ public final class Data {
 
   public static String getViewCaption(String viewName) {
     DataInfo dataInfo = getDataInfo(viewName);
-    return BeeUtils.notEmpty(LocaleUtils.maybeLocalize(dataInfo.getCaption()), viewName);
+    return BeeUtils.notEmpty(Localized.maybeTranslate(dataInfo.getCaption()), viewName);
   }
 
   public static void init() {

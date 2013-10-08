@@ -35,7 +35,6 @@ import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -947,7 +946,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     final BeeRowSet rowSet =
         DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow(), null);
     if (!DataUtils.isEmpty(rowSet)) {
-      updatedLabels.addAll(LocaleUtils.getLabels(rowSet.getColumns()));
+      updatedLabels.addAll(Localized.getLabels(rowSet.getColumns()));
     }
 
     for (EditableWidget editableWidget : getEditableWidgets()) {

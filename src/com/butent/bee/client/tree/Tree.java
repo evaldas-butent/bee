@@ -66,12 +66,12 @@ import com.google.gwt.user.client.ui.impl.FocusImpl;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -311,7 +311,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     root.setTree(this);
 
     if (!BeeUtils.isEmpty(caption)) {
-      this.caption = new InlineLabel(LocaleUtils.maybeLocalize(caption));
+      this.caption = new InlineLabel(Localized.maybeTranslate(caption));
       this.caption.setStyleName("bee-Tree-caption");
       getElement().appendChild(this.caption.getElement());
     } else {

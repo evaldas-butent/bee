@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -13,6 +14,7 @@ import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
@@ -20,9 +22,8 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
@@ -47,7 +48,7 @@ public class Bee implements EntryPoint {
 
     Localized.setConstants((LocalizableConstants) GWT.create(LocalizableConstants.class));
     Localized.setMessages((LocalizableMessages) GWT.create(LocalizableMessages.class));
-    
+
     LayoutEngine layoutEngine = LayoutEngine.detect();
     if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
       DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
@@ -63,7 +64,10 @@ public class Bee implements EntryPoint {
     }
     BeeKeeper.getScreen().start();
 
-    BeeKeeper.getRpc().makeGetRequest(Service.LOGIN, new ResponseCallback() {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGIN);
+    params.addQueryItem(Service.VAR_UI, BeeKeeper.getScreen().getUserInterface().getShortName());
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         load(Codec.beeDeserializeMap((String) response.getResponse()));
@@ -73,21 +77,46 @@ public class Bee implements EntryPoint {
   }
 
   private static void load(Map<String, String> data) {
-    UserData userData = UserData.restore(data.get(Service.LOGIN));
+    UserData userData = UserData.restore(data.get(Service.VAR_USER));
     BeeKeeper.getUser().setUserData(userData);
     BeeKeeper.getScreen().updateUserData(userData);
 
-    BeeKeeper.getMenu().restore(data.get(Service.LOAD_MENU));
+    for (UserInterface.Component component : UserInterface.Component.values()) {
+      String serialized = data.get(component.key());
 
-    Data.getDataInfoProvider().restore(data.get(Service.GET_DATA_INFO));
+      if (!BeeUtils.isEmpty(serialized)) {
+        switch (component) {
+          case DATA_INFO:
+            Data.getDataInfoProvider().restore(serialized);
+            break;
 
-    Global.getFavorites().load(data.get(CommonsConstants.TBL_FAVORITES));
-    Global.getFilters().load(data.get(CommonsConstants.TBL_FILTERS));
+          case DICTIONARY:
+            Localized.setDictionary(Codec.beeDeserializeMap(serialized));
+            break;
 
-    TuningFactory.parseDecorators(data.get(Service.GET_DECORATORS));
+          case DECORATORS:
+            TuningFactory.parseDecorators(serialized);
+            break;
 
-    GridSettings.load(data.get(GridDescription.VIEW_GRID_SETTINGS),
-        data.get(ColumnDescription.VIEW_COLUMN_SETTINGS));
+          case FAVORITES:
+            Global.getFavorites().load(serialized);
+            break;
+
+          case FILTERS:
+            Global.getFilters().load(serialized);
+            break;
+
+          case GRIDS:
+            Pair<String, String> settings = Pair.restore(serialized);
+            GridSettings.load(settings.getA(), settings.getB());
+            break;
+
+          case MENU:
+            BeeKeeper.getMenu().restore(serialized);
+            break;
+        }
+      }
+    }
   }
 
   private static void start() {

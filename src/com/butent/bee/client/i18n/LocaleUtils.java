@@ -6,12 +6,8 @@ import com.google.gwt.i18n.client.LocalizedNames;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -26,11 +22,7 @@ import java.util.List;
 
 public final class LocaleUtils {
 
-  private static final BeeLogger logger = LogUtils.getLogger(LocaleUtils.class);
-
   private static final String LOCALE_SEPARATOR = "_";
-
-  private static final char L10N_PREFIX = '=';
 
   private static final String LOCALE_NAME_LT = "lt";
   
@@ -178,18 +170,6 @@ public final class LocaleUtils {
     return lst;
   }
   
-  public static String getLabel(IsColumn column) {
-    return maybeLocalize(column.getLabel());
-  }
-  
-  public static List<String> getLabels(List<? extends IsColumn> columns) {
-    List<String> labels = Lists.newArrayList();
-    for (IsColumn column : columns) {
-      labels.add(getLabel(column));
-    }
-    return labels;
-  }
-
   public static String getLanguageCode(LocaleInfo locale) {
     if (locale == null) {
       return BeeConst.STRING_EMPTY;
@@ -203,21 +183,6 @@ public final class LocaleUtils {
     }
   }
 
-  public static String maybeLocalize(String text) {
-    if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
-      return text;
-    }
-
-    String localized = BeeKeeper.getUser().getConstant(text.substring(1));
-
-    if (localized == null) {
-      logger.warning("cannot localize:", text);
-      return text;
-    } else {
-      return localized;
-    }
-  }
-  
   /**
    * cldr patch.
    */

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuSelectionHandler;
@@ -15,6 +14,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
@@ -165,7 +165,7 @@ public class MenuManager implements Module {
   }
 
   private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
-    String txt = LocaleUtils.maybeLocalize(item.getLabel());
+    String txt = Localized.maybeTranslate(item.getLabel());
     String svc = null;
     String opt = null;
 

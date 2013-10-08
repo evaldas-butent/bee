@@ -35,6 +35,7 @@ import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -240,18 +241,15 @@ public class UiServiceBean {
         usr.getCurrentUserFilter(CommonsConstants.COL_FILTER_USER), order);
   }
 
-  public List<BeeRowSet> getUserSettings() {
-    List<BeeRowSet> result = Lists.newArrayList();
-
+  public Pair<BeeRowSet, BeeRowSet> getGridAndColumnSettings() {
     Filter userFilter = usr.getCurrentUserFilter(GridDescription.COL_GRID_SETTING_USER);
 
-    BeeRowSet gridSettings = qs.getViewData(GridDescription.VIEW_GRID_SETTINGS, userFilter);
-    result.add(gridSettings);
+    BeeRowSet gridSettings =
+        DataUtils.emptyToNull(qs.getViewData(GridDescription.VIEW_GRID_SETTINGS, userFilter));
+    BeeRowSet columnSettings =
+        DataUtils.emptyToNull(qs.getViewData(ColumnDescription.VIEW_COLUMN_SETTINGS, userFilter));
 
-    BeeRowSet columnSettings = qs.getViewData(ColumnDescription.VIEW_COLUMN_SETTINGS, userFilter);
-    result.add(columnSettings);
-
-    return result;
+    return Pair.of(gridSettings, columnSettings);
   }
 
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
