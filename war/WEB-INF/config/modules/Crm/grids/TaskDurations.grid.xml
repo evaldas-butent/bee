@@ -13,7 +13,7 @@
 
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
-    <DataColumn name="CompanyName" caption="Klientas" />
+    <DataColumn name="CompanyName" caption="=client" />
 
     <RelColumn name="Task" editEnabled="true" renderColumns="Summary" flexGrow="1" />
 

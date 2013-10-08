@@ -22,7 +22,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewTask" caption="=newTask" width="650" height="520">
+  name="NewTask" caption="=crmNewTask" width="650" height="520">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
 

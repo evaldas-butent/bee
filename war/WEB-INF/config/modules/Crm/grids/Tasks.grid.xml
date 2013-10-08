@@ -24,7 +24,7 @@
     <RelColumn name="Company" editEnabled="true" />
 
     <DataColumn name="Status" itemKey="TaskStatus" visible="true" />
-    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />
+    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="=crmTaskDelayPlannedShort" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />

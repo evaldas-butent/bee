@@ -15,15 +15,15 @@
 
   <g:columns>
     <IdColumn name="ID" width="50" />
-    <DataColumn name="Date" caption="Data" width="100" visible="true" />
-    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" 
+    <DataColumn name="Date" caption="=date" width="100" visible="true" />
+    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" 
       filterOptions="empty" />
-    <RelColumn name="Customer" caption="Klientas" minWidth="100" visible="true" />
+    <RelColumn name="Customer" caption="=client" minWidth="100" visible="true" />
 
-    <DataColumn name="Content" caption="Užklausimas" minWidth="100" flexShrink="1" 
+    <DataColumn name="Content" caption="=crmRequest" minWidth="100" flexShrink="1" 
       whiteSpace="nowrap" visible="true" />
 
-    <RelColumn name="Manager" caption="Atsakingas" minWidth="100" />
+    <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
     <DataColumn name="Result" visible="false" />
   </g:columns>
   

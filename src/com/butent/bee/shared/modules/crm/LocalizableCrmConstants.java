@@ -12,6 +12,10 @@ public interface LocalizableCrmConstants {
   
   String creditTolerance();
   
+  String crmNewRequest();
+
+  String crmNewTask();
+
   String crmRequest();
 
   String crmTaskExecutors();
@@ -45,11 +49,7 @@ public interface LocalizableCrmConstants {
   String limitCurrency();
   
   String manager();
-  
-  String newRequest();
-  
-  String newTask();
-  
+
   String rating();
   
   String relationship();

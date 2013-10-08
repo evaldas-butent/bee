@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
-  name="RecurringTasks" viewName="RecurringTasks" caption="Periodinės užduotys"
+  name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
   editShowId="true"
   >
   <g:columns>
