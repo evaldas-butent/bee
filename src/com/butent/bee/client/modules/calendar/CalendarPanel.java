@@ -67,6 +67,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -193,7 +194,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     add(header);
 
-    Label today = new Label("Šiandien");
+    Label today = new Label(Localized.getConstants().calToday());
     today.addStyleName(STYLE_TODAY);
 
     today.addClickHandler(new ClickHandler() {

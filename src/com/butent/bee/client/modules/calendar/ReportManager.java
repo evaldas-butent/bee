@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -100,7 +101,8 @@ class ReportManager {
         }
 
         if (rs == null || rs.isEmpty()) {
-          BeeKeeper.getScreen().notifyWarning(report.getCaption(), "nėra duomenų");
+          BeeKeeper.getScreen().notifyWarning(report.getCaption(),
+              Localized.getConstants().noData());
         } else {
           showReport(report, getReportCaption(report, row), rs);
         }
@@ -119,12 +121,14 @@ class ReportManager {
 
     JustDate lower = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_LOWER_DATE);
     if (lower != null) {
-      sb.append(separator).append("nuo").append(separator).append(lower.toString());
+      sb.append(separator).append(Localized.getConstants().dateFromShort().toLowerCase()).append(
+          separator).append(lower.toString());
     }
 
     JustDate upper = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_UPPER_DATE);
     if (upper != null) {
-      sb.append(separator).append("iki").append(separator).append(upper.toString());
+      sb.append(separator).append(Localized.getConstants().dateToShort().toLowerCase()).append(
+          separator).append(upper.toString());
     }
 
     return sb.toString();
@@ -149,7 +153,8 @@ class ReportManager {
         }
 
         if (row == null) {
-          BeeKeeper.getScreen().notifyWarning(report.getCaption(), "nėra duomenų");
+          BeeKeeper.getScreen().notifyWarning(report.getCaption(),
+              Localized.getConstants().noData());
         } else {
           reportOptions.put(report, row);
           openDialog(report, row);
@@ -164,7 +169,7 @@ class ReportManager {
     final Flow container = new Flow();
     addStyle(container, "container");
 
-    Label capLabel = new Label("Pavadinimas:");
+    Label capLabel = new Label(Localized.getConstants().calName());
     addStyle(capLabel, "capLabel");
     container.add(capLabel);
 
@@ -177,7 +182,7 @@ class ReportManager {
     addStyle(caption, "caption");
     container.add(caption);
 
-    Label ldLabel = new Label("Data nuo:");
+    Label ldLabel = new Label(Localized.getConstants().calReportLowerDate());
     addStyle(ldLabel, "ldLabel");
     container.add(ldLabel);
 
@@ -186,7 +191,7 @@ class ReportManager {
     addStyle(lowerDate.asWidget(), "lowerDate");
     container.add(lowerDate);
 
-    Label udLabel = new Label("Data iki:");
+    Label udLabel = new Label(Localized.getConstants().calReportUpperDate());
     addStyle(udLabel, "udLabel");
     container.add(udLabel);
 
@@ -199,7 +204,7 @@ class ReportManager {
     final InputSpinner upperHour;
 
     if (EnumSet.of(Report.BUSY_HOURS, Report.CANCEL_HOURS).contains(report)) {
-      Label lhLabel = new Label("Valanda nuo:");
+      Label lhLabel = new Label(Localized.getConstants().calReportLowerHour());
       addStyle(lhLabel, "lhLabel");
       container.add(lhLabel);
 
@@ -208,7 +213,7 @@ class ReportManager {
       addStyle(lowerHour, "lowerHour");
       container.add(lowerHour);
 
-      Label uhLabel = new Label("Valanda iki:");
+      Label uhLabel = new Label(Localized.getConstants().calReportUpperHour());
       addStyle(uhLabel, "uhLabel");
       container.add(uhLabel);
 
@@ -222,7 +227,7 @@ class ReportManager {
       upperHour = null;
     }
 
-    Label atpLabel = new Label("Resursų tipai:");
+    Label atpLabel = new Label(Localized.getConstants().calAttendeesTypes());
     addStyle(atpLabel, "atpLabel");
     container.add(atpLabel);
 
@@ -235,7 +240,7 @@ class ReportManager {
     addStyle(atpSelector, "attendeeTypes");
     container.add(atpSelector);
 
-    Label attLabel = new Label("Resursai:");
+    Label attLabel = new Label(Localized.getConstants().calAttendees());
     addStyle(attLabel, "attLabel");
     container.add(attLabel);
 
@@ -249,7 +254,7 @@ class ReportManager {
     addStyle(attSelector, "attendees");
     container.add(attSelector);
 
-    final Button tableCommand = new Button("Lentelė", new Command() {
+    final Button tableCommand = new Button(Localized.getConstants().calTable(), new Command() {
       @Override
       public void execute() {
         String vCap = caption.getValue();
@@ -258,14 +263,14 @@ class ReportManager {
         JustDate vUd = TimeUtils.parseDate(upperDate.getValue());
 
         if (vLd != null && vUd != null && TimeUtils.isMeq(vLd, vUd)) {
-          Global.showError("Neteisingas datų intervalas");
+          Global.showError(Localized.getConstants().calInvalidDateInterval());
           return;
         }
 
         int vLh = (lowerHour == null) ? 0 : lowerHour.getIntValue();
         int vUh = (upperHour == null) ? 0 : upperHour.getIntValue();
         if (vUh > 0 && vUh <= vLh) {
-          Global.showError("Neteisingas valandų intervalas");
+          Global.showError(Localized.getConstants().calInvalidHoursInterval());
           return;
         }
 
@@ -315,10 +320,10 @@ class ReportManager {
 
       switch (i) {
         case 0:
-          columnDescription.setCaption("Tipas");
+          columnDescription.setCaption(Localized.getConstants().calReportLowerHour());
           break;
         case 1:
-          columnDescription.setCaption("Resursas");
+          columnDescription.setCaption(Localized.getConstants().calAttendee());
           break;
         default:
           columnDescription.setHorAlign(HasHorizontalAlignment.ALIGN_RIGHT.getTextAlignString());

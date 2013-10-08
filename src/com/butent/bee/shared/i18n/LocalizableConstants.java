@@ -14,6 +14,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionAdd();
 
+  String actionAppend();
+
   String actionBookmark();
 
   String actionCancel();
@@ -33,6 +35,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionFilter();
 
   String actionNew();
+
+  String actionNew1();
 
   String actionPrint();
 
@@ -400,6 +404,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String type();
 
   String unit();
+
+  String unitDays();
+
+  String unitDayShort();
+
+  String unitDaysShort();
+
+  String unitWeekShort();
 
   String userFullName();
 

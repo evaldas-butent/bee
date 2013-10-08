@@ -283,9 +283,9 @@ public class CalendarModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
         new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, ParameterType.TIME,
-            "Kalendoriaus anksčiausias priminimų laikas", false, "8:00"),
+            usr.getLocalizableConstants().calRemindersEarliestTime(), false, "8:00"),
         new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, ParameterType.TIME,
-            "Kalendoriaus vėliausias priminimų laikas", false, "18:00"));
+            usr.getLocalizableConstants().calRemindersLatestTime(), false, "18:00"));
   }
 
   @Override
@@ -656,7 +656,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (hours.size() > 1) {
-      result.addColumn(ValueType.TEXT, "Viso");
+      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -681,7 +681,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 
@@ -743,7 +743,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (months.size() > 1) {
-      result.addColumn(ValueType.TEXT, "Viso");
+      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -768,7 +768,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 

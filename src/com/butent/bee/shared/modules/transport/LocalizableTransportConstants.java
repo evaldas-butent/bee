@@ -218,6 +218,8 @@ public interface LocalizableTransportConstants {
 
   String trNewTrip();
 
+  String trNewVehicle();
+
   String trOrder();
 
   String trOrderStatusActive();
