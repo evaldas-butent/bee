@@ -3,7 +3,7 @@
 
   name="DurationTypes"
   source="DurationTypes"
-  newRowCaption="Naujas darbo tipas"
+  newRowCaption="=crmNewDurationType"
   >
   <Columns>
     <SimpleColumn name="Name" />

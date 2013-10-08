@@ -5,9 +5,9 @@
   idName="TaskUserID"
   >
   <Fields>
-    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" />
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
-    <DateTime name="LastAccess" />
+    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="=crmTask"/>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user"/>
+    <DateTime name="LastAccess" label="=crmTaskLastAccess" />
     <Integer name="Star"/>
   </Fields>
 

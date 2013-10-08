@@ -4,6 +4,6 @@
   name="DocumentTypes" viewName="DocumentTypes" caption="=documentTypes"
   >
   <g:columns>
-    <DataColumn name="Name" source="Name" caption="Tipas" minWidth="200" visible="true" />
+    <DataColumn name="Name" source="Name" caption="=documentType" minWidth="200" visible="true" />
   </g:columns>
 </g:Grid>

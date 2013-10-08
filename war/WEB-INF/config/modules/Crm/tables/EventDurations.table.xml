@@ -6,8 +6,8 @@
   x="948" y="8"
   >
   <Fields>
-    <Relation name="DurationType" notNull="true" relation="DurationTypes" />
-    <DateTime name="DurationDate" notNull="true" label="Data" />
-    <String name="Duration" precision="20" notNull="true" label="Sugaištas laikas" />
+    <Relation name="DurationType" notNull="true" relation="DurationTypes" label="=crmDurationType" />
+    <DateTime name="DurationDate" notNull="true" label="=date" />
+    <String name="Duration" precision="20" notNull="true" label="=crmSpentTime" />
   </Fields>
 </Table>

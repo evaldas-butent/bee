@@ -5,16 +5,16 @@
   idName="RequestID"
   >
   <Fields>
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="Data" />
-    <Relation name="Customer" relation="Companies" notNull="true" label="Klientas" />
-    <Relation name="CustomerPerson" relation="CompanyPersons" label="Kontaktinis asmuo" />
-    <String name="Contacts" precision="50" label="Kontaktai" />
-    <Relation name="Payer" relation="Companies" label="Mokėtojas" />
-    <Relation name="Manager" relation="Users" label="Vadybininkas" />
-    <Text name="Content" notNull="true" label="Užklausimas" />
-    <Text name="Result" label="Rezultatas" />
-    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="Autorius" />
-    <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="Sukurtas" />
-    <DateTime name="Finished" label="Užbaigtas" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <Relation name="Customer" relation="Companies" notNull="true" label="=client" />
+    <Relation name="CustomerPerson" relation="CompanyPersons" label="=personContact" />
+    <String name="Contacts" precision="50" label="=contacts" />
+    <Relation name="Payer" relation="Companies" label="=payer" />
+    <Relation name="Manager" relation="Users" label="=manager" />
+    <Text name="Content" notNull="true" label="=crmRequest" />
+    <Text name="Result" label="=result" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=author" />
+    <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" label="=createdOn" />
+    <DateTime name="Finished" label="=crmRequestCompleted" />
   </Fields>
 </Table>

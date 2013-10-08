@@ -5,17 +5,17 @@
   idName="TaskTemplateID"
   >
   <Fields>
-    <String name="Name" notNull="true" precision="100" label="Pavadinimas" />
+    <String name="Name" notNull="true" precision="100" label="=crmTaskTemplateName" />
 
-    <String name="Summary" precision="100" label="Tema" />
-    <Text name="Description" label="Aprašymas" />
-    <Integer name="Priority" label="Prioritetas" />
+    <String name="Summary" precision="100" label="=crmTaskSubject" />
+    <Text name="Description" label="=crmTaskDescription" />
+    <Integer name="Priority" label="=crmTaskPriority" />
 
-    <String name="ExpectedDuration" precision="10" label="Numatoma trukmė" />
+    <String name="ExpectedDuration" precision="10" label="=crmTaskExpectedDuration" />
 
-    <Relation name="Company" relation="Companies" label="Įmonė" />
-    <Relation name="Contact" relation="CompanyPersons" label="Kontaktinis asmuo" />
+    <Relation name="Company" relation="Companies" label="=company" />
+    <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
 
-    <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="Priminimas" />
+    <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
   </Fields>
 </Table>

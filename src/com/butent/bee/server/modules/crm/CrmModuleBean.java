@@ -622,7 +622,7 @@ public class CrmModuleBean implements BeeModule {
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
     long totalTimeMls = 0;
 
-    result.addRow(new String[] {constants.client(), constants.spentTime()});
+    result.addRow(new String[] {constants.client(), constants.crmSpentTime()});
 
     /* Register times in tasks without company */
     companiesListSet.addRow(new String[] {null, "—", null});
@@ -846,7 +846,7 @@ public class CrmModuleBean implements BeeModule {
     SimpleRowSet dTypesList = qs.getData(durationTypes);
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
 
-    result.addRow(new String[] {constants.durationType(), constants.spentTime()});
+    result.addRow(new String[] {constants.crmDurationType(), constants.crmSpentTime()});
     Assert.notNull(dTypesList);
 
     long totalTimeMls = 0;
@@ -967,7 +967,7 @@ public class CrmModuleBean implements BeeModule {
     long totalTimeMls = 0;
 
     result.addRow(new String[] {
-        constants.userFullName(), constants.spentTime()});
+        constants.userFullName(), constants.crmSpentTime()});
 
     for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
       String userFullName =

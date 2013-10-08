@@ -5,13 +5,13 @@
   idName="TaskEventID"
   >
   <Fields>
-    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="=task" />
-    <Relation name="Publisher" notNull="true" relation="Users" label="Naudotojas" />
-    <DateTime name="PublishTime" notNull="true" />
-    <Text name="Comment" label="Komentaras" />
-    <Integer name="Event" notNull="true" />
-    <Text name="EventNote" />
-    <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" />
-    <DateTime name="FinishTime" label="Pabaigos data" />
+    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="=crmTask" />
+    <Relation name="Publisher" notNull="true" relation="Users" label="=user" />
+    <DateTime name="PublishTime" notNull="true" label="=crmTaskPublishTime" />
+    <Text name="Comment" label="=crmTaskComment" />
+    <Integer name="Event" notNull="true" label="=crmTaskEvent" />
+    <Text name="EventNote" label="=crmTaskEventNote" />
+    <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" label="=crmTaskDuration" />
+    <DateTime name="FinishTime" label="=crmFinishDate" />
   </Fields>
 </Table>
