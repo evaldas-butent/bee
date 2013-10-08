@@ -477,7 +477,7 @@ public class UserServiceBean {
 
       UserData data = info.getUserData();
 
-      data.setProperty("dsn", SqlBuilderFactory.getDsn()).setRights(getUserRights(getUserId(user)));
+      data.setProperty("dsn", SqlBuilderFactory.getDsn()).setRights(getUserRights(userId));
 
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(COL_REMOTE_HOST, host)
