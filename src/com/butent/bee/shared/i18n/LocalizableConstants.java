@@ -5,12 +5,13 @@ import com.google.gwt.i18n.client.Constants;
 import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
 import com.butent.bee.shared.modules.crm.LocalizableCrmConstants;
 import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
+import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
-    LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants,
-    LocalizableEcConstants {
+    LocalizableMailConstants, LocalizableTransportConstants, LocalizableTradeConstants,
+    LocalizableCrmConstants, LocalizableEcConstants {
 
   String actionAdd();
 
@@ -382,8 +383,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String services();
 
   String settings();
-
-  String smtpServerSettings();
 
   String sorry();
 

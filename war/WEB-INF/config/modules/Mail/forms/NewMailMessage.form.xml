@@ -4,7 +4,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewMailMessage" caption="Naujas laiškas"
+  name="NewMailMessage" caption="=mailNewMessage"
   >
   <FlowPanel class="flexBox-vertical"
     style="margin:5px; position:relative; width:760px; height:460px;">
@@ -12,24 +12,24 @@
 
     <FlowPanel class="bee-mail-Envelope">
       <MultiSelector name="To" viewName="Emails"
-         caption="Skirta" d:size="40" d:unit="px" style="display:inline-block; width:600px;">
+         caption="=mailTo" d:size="40" d:unit="px" style="display:inline-block; width:600px;">
         <renderToken source="Label" suffix=" " />
         <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
       </MultiSelector>
 
       <Disclosure style="display: inline-block;">
-        <Label html="Kopijos" style="font-size: smaller" />
+        <Label text="=mailMailingCopies" style="font-size: smaller" />
         <FlowPanel>
           <Table>
             <row>
-              <Label html="Paprasta" horizontalAlignment="right" />
+              <Label text="=mailCc" horizontalAlignment="right" />
               <MultiSelector name="Cc" viewName="Emails" style="width:600px">
                 <renderToken source="Label" suffix=" " />
                 <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
               </MultiSelector>
             </row>
             <row>
-              <Label html="Nematoma" horizontalAlignment="right" />
+              <Label text="=mailBcc" horizontalAlignment="right" />
               <MultiSelector name="Bcc" viewName="Emails" style="width:600px;">
                 <renderToken source="Label" suffix=" " />
                 <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
@@ -41,7 +41,7 @@
 
       <Image name="Send" resource="plane" style="float:right;" />
 
-      <InputText name="Subject" placeholder="Tema" style="width:600px; display:block;" />
+      <InputText name="Subject" placeholder="=mailSubject" style="width:600px; display:block;" />
 
       <FileCollector name="Attachments">
         <face resource="attachment" />
