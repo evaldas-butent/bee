@@ -175,18 +175,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String email();
 
-  String emailLoginName();
-
-  String emailPassword();
-
-  String emailServerAddress();
-
-  String emailServerPort();
-
-  String emailServerSettings();
-
-  String emailType();
-
   String enterColor();
 
   String enterDate();

@@ -5,27 +5,27 @@
   idName="AccountID"
   >
   <Fields>
-    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
-    <String name="Description" precision="50" notNull="true" />
-    <Boolean name="Main" />
-    <Relation name="Address" relation="Emails" notNull="true" unique="true" />
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" label="=user"/>
+    <String name="Description" precision="50" notNull="true" label="=mailName" />
+    <Boolean name="Main" label="=mailDefault" />
+    <Relation name="Address" relation="Emails" notNull="true" unique="true" label="=mailAddress" />
 
-    <String name="StoreType" precision="5" notNull="true" defValue="IMAP" />
-    <String name="StoreServer" precision="50" />
-    <Integer name="StorePort" />
-    <String name="StoreLogin" precision="50" />
-    <String name="StorePassword" precision="50" audit="false"  />
-    <Boolean name="StoreSSL" />
+    <String name="StoreType" precision="5" notNull="true" defValue="IMAP" label="=mailType"/>
+    <String name="StoreServer" precision="50" label="=mailServerAddress" />
+    <Integer name="StorePort" label="=mailPort" />
+    <String name="StoreLogin" precision="50" label="=mailAccountLogin" />
+    <String name="StorePassword" precision="50" audit="false" label="=mailAccountPassword" />
+    <Boolean name="StoreSSL" label="=mailSSL"/>
 
-    <String name="TransportServer" precision="50" />
-    <Integer name="TransportPort" />
-    <String name="TransportLogin" precision="50" />
-    <String name="TransportPassword" precision="50" audit="false" />
+    <String name="TransportServer" precision="50" label="=mailSMTPServer"/>
+    <Integer name="TransportPort" label="=mailPort" />
+    <String name="TransportLogin" precision="50" label="=mailAccountLogin" />
+    <String name="TransportPassword" precision="50" audit="false" label="=mailAccountPassword" />
     <Boolean name="TransportSSL" />
 
-    <Relation name="InboxFolder" relation="Folders" cascade="SET_NULL" />
-    <Relation name="SentFolder" relation="Folders" cascade="SET_NULL" />
-    <Relation name="DraftsFolder" relation="Folders" cascade="SET_NULL" />
-    <Relation name="TrashFolder" relation="Folders" cascade="SET_NULL" />
+    <Relation name="InboxFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderInbox" />
+    <Relation name="SentFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderSent"/>
+    <Relation name="DraftsFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderDrafts" />
+    <Relation name="TrashFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderTrash" />
   </Fields>
 </Table>
