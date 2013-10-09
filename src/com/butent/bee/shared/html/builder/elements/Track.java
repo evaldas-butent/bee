@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Track extends FertileNode {
+public class Track extends FertileElement {
 
   public Track() {
     super("track");

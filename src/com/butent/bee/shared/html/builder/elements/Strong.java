@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Strong extends FertileNode {
+public class Strong extends FertileElement {
 
   public Strong() {
     super("strong");
@@ -49,8 +49,8 @@ public class Strong extends FertileNode {
     return removeAttribute("d");
   }
 
-  public Strong setCSSClass(String value) {
-    setAttribute("class", value);
+  public Strong addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +62,26 @@ public class Strong extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Strong setTitle(String value) {
-    setAttribute("title", value);
+  public Strong title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Strong setStyle(String value) {
-    setAttribute("style", value);
+  public Strong style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Strong setDir(String value) {
-    setAttribute("dir", value);
+  public Strong dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +93,8 @@ public class Strong extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Strong setLang(String value) {
-    setAttribute("lang", value);
+  public Strong lang(String value) {
+    setLang(value);
     return this;
   }
 

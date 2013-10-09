@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Table extends FertileNode {
+public class Table extends FertileElement {
 
   public Table() {
     super("table");
@@ -153,21 +153,17 @@ public class Table extends FertileNode {
     return removeAttribute("width");
   }
 
-  public Table setId(String value) {
-    setAttribute("id", value);
+  public Table id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Table setCSSClass(String value) {
-    setAttribute("class", value);
+  public Table addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -179,34 +175,26 @@ public class Table extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Table setTitle(String value) {
-    setAttribute("title", value);
+  public Table title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Table setStyle(String value) {
-    setAttribute("style", value);
+  public Table style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Table setDir(String value) {
-    setAttribute("dir", value);
+  public Table dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -218,8 +206,8 @@ public class Table extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Table setLang(String value) {
-    setAttribute("lang", value);
+  public Table lang(String value) {
+    setLang(value);
     return this;
   }
 

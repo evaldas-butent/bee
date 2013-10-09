@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Td extends FertileNode {
+public class Td extends FertileElement {
 
   public Td() {
     super("td");
@@ -218,21 +218,17 @@ public class Td extends FertileNode {
     return removeAttribute("width");
   }
 
-  public Td setId(String value) {
-    setAttribute("id", value);
+  public Td id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Td setCSSClass(String value) {
-    setAttribute("class", value);
+  public Td addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -244,34 +240,26 @@ public class Td extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Td setTitle(String value) {
-    setAttribute("title", value);
+  public Td title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Td setStyle(String value) {
-    setAttribute("style", value);
+  public Td style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Td setDir(String value) {
-    setAttribute("dir", value);
+  public Td dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -283,8 +271,8 @@ public class Td extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Td setLang(String value) {
-    setAttribute("lang", value);
+  public Td lang(String value) {
+    setLang(value);
     return this;
   }
 

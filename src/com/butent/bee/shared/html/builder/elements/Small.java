@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Small extends FertileNode {
+public class Small extends FertileElement {
 
   public Small() {
     super("small");
@@ -36,21 +36,17 @@ public class Small extends FertileNode {
     return this;
   }
 
-  public Small setId(String value) {
-    setAttribute("id", value);
+  public Small id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Small setCSSClass(String value) {
-    setAttribute("class", value);
+  public Small addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +58,26 @@ public class Small extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Small setTitle(String value) {
-    setAttribute("title", value);
+  public Small title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Small setStyle(String value) {
-    setAttribute("style", value);
+  public Small style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Small setDir(String value) {
-    setAttribute("dir", value);
+  public Small dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +89,8 @@ public class Small extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Small setLang(String value) {
-    setAttribute("lang", value);
+  public Small lang(String value) {
+    setLang(value);
     return this;
   }
 

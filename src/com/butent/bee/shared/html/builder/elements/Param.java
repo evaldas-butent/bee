@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Param extends Node {
+public class Param extends Element {
 
   public Param(String name) {
     super("param");
@@ -61,13 +61,9 @@ public class Param extends Node {
     return removeAttribute("valuetype");
   }
 
-  public Param setId(String value) {
-    setAttribute("id", value);
+  public Param id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {

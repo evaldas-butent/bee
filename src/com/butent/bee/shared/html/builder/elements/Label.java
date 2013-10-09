@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Label extends FertileNode {
+public class Label extends FertileElement {
 
   public Label() {
     super("label");
@@ -49,21 +49,17 @@ public class Label extends FertileNode {
     return removeAttribute("for");
   }
 
-  public Label setId(String value) {
-    setAttribute("id", value);
+  public Label id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Label setCSSClass(String value) {
-    setAttribute("class", value);
+  public Label addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -75,34 +71,26 @@ public class Label extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Label setTitle(String value) {
-    setAttribute("title", value);
+  public Label title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Label setStyle(String value) {
-    setAttribute("style", value);
+  public Label style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Label setDir(String value) {
-    setAttribute("dir", value);
+  public Label dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -114,8 +102,8 @@ public class Label extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Label setLang(String value) {
-    setAttribute("lang", value);
+  public Label lang(String value) {
+    setLang(value);
     return this;
   }
 

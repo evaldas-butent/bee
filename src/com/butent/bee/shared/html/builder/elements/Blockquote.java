@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Blockquote extends FertileNode {
+public class Blockquote extends FertileElement {
 
   public Blockquote() {
     super("blockquote");
@@ -49,21 +49,17 @@ public class Blockquote extends FertileNode {
     return removeAttribute("cite");
   }
 
-  public Blockquote setId(String value) {
-    setAttribute("id", value);
+  public Blockquote id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Blockquote setCSSClass(String value) {
-    setAttribute("class", value);
+  public Blockquote addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -75,34 +71,26 @@ public class Blockquote extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Blockquote setTitle(String value) {
-    setAttribute("title", value);
+  public Blockquote title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Blockquote setStyle(String value) {
-    setAttribute("style", value);
+  public Blockquote style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Blockquote setDir(String value) {
-    setAttribute("dir", value);
+  public Blockquote dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -114,8 +102,8 @@ public class Blockquote extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Blockquote setLang(String value) {
-    setAttribute("lang", value);
+  public Blockquote lang(String value) {
+    setLang(value);
     return this;
   }
 

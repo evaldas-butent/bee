@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Tfoot extends FertileNode {
+public class Tfoot extends FertileElement {
 
   public Tfoot() {
     super("tfoot");
@@ -88,21 +88,17 @@ public class Tfoot extends FertileNode {
     return removeAttribute("valign");
   }
 
-  public Tfoot setId(String value) {
-    setAttribute("id", value);
+  public Tfoot id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Tfoot setCSSClass(String value) {
-    setAttribute("class", value);
+  public Tfoot addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -114,34 +110,26 @@ public class Tfoot extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Tfoot setTitle(String value) {
-    setAttribute("title", value);
+  public Tfoot title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Tfoot setStyle(String value) {
-    setAttribute("style", value);
+  public Tfoot style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Tfoot setDir(String value) {
-    setAttribute("dir", value);
+  public Tfoot dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -153,8 +141,8 @@ public class Tfoot extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Tfoot setLang(String value) {
-    setAttribute("lang", value);
+  public Tfoot lang(String value) {
+    setLang(value);
     return this;
   }
 

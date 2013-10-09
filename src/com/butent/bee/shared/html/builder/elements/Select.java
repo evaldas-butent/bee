@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Select extends FertileNode {
+public class Select extends FertileElement {
 
   public Select() {
     super("select");
@@ -88,21 +88,17 @@ public class Select extends FertileNode {
     return removeAttribute("size");
   }
 
-  public Select setId(String value) {
-    setAttribute("id", value);
+  public Select id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Select setCSSClass(String value) {
-    setAttribute("class", value);
+  public Select addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -114,34 +110,26 @@ public class Select extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Select setTitle(String value) {
-    setAttribute("title", value);
+  public Select title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Select setStyle(String value) {
-    setAttribute("style", value);
+  public Select style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Select setDir(String value) {
-    setAttribute("dir", value);
+  public Select dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -153,8 +141,8 @@ public class Select extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Select setLang(String value) {
-    setAttribute("lang", value);
+  public Select lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -179,8 +167,8 @@ public class Select extends FertileNode {
     return removeAttribute("xml:lang");
   }
 
-  public Select setAccesskey(String value) {
-    setAttribute("accesskey", value);
+  public Select accessKey(String value) {
+    setAccessKey(value);
     return this;
   }
 
@@ -192,8 +180,8 @@ public class Select extends FertileNode {
     return removeAttribute("accesskey");
   }
 
-  public Select setTabindex(String value) {
-    setAttribute("tabindex", value);
+  public Select tabIndex(int value) {
+    setTabIndex(value);
     return this;
   }
 

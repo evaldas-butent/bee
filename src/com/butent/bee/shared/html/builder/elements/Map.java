@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Map extends FertileNode {
+public class Map extends FertileElement {
 
   public Map(String id) {
     super("map");
@@ -37,13 +37,9 @@ public class Map extends FertileNode {
     return this;
   }
 
-  public Map setId(String value) {
-    setAttribute("id", value);
+  public Map id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
@@ -63,8 +59,8 @@ public class Map extends FertileNode {
     return removeAttribute("name");
   }
 
-  public Map setCSSClass(String value) {
-    setAttribute("class", value);
+  public Map addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -76,34 +72,26 @@ public class Map extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Map setTitle(String value) {
-    setAttribute("title", value);
+  public Map title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Map setStyle(String value) {
-    setAttribute("style", value);
+  public Map style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Map setDir(String value) {
-    setAttribute("dir", value);
+  public Map dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -115,8 +103,8 @@ public class Map extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Map setLang(String value) {
-    setAttribute("lang", value);
+  public Map lang(String value) {
+    setLang(value);
     return this;
   }
 

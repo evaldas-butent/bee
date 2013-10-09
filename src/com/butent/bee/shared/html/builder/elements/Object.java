@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Object extends FertileNode {
+public class Object extends FertileElement {
 
   public Object() {
     super("object");
@@ -244,21 +244,17 @@ public class Object extends FertileNode {
     return removeAttribute("width");
   }
 
-  public Object setId(String value) {
-    setAttribute("id", value);
+  public Object id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Object setCSSClass(String value) {
-    setAttribute("class", value);
+  public Object addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -270,34 +266,26 @@ public class Object extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Object setTitle(String value) {
-    setAttribute("title", value);
+  public Object title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Object setStyle(String value) {
-    setAttribute("style", value);
+  public Object style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Object setDir(String value) {
-    setAttribute("dir", value);
+  public Object dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -309,8 +297,8 @@ public class Object extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Object setLang(String value) {
-    setAttribute("lang", value);
+  public Object lang(String value) {
+    setLang(value);
     return this;
   }
 

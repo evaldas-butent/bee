@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Address extends FertileNode {
+public class Address extends FertileElement {
 
   public Address() {
     super("address");
@@ -36,21 +36,17 @@ public class Address extends FertileNode {
     return this;
   }
 
-  public Address setId(String value) {
-    setAttribute("id", value);
+  public Address id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Address setCSSClass(String value) {
-    setAttribute("class", value);
+  public Address addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +58,26 @@ public class Address extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Address setTitle(String value) {
-    setAttribute("title", value);
+  public Address title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Address setStyle(String value) {
-    setAttribute("style", value);
+  public Address style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Address setDir(String value) {
-    setAttribute("dir", value);
+  public Address dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +89,8 @@ public class Address extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Address setLang(String value) {
-    setAttribute("lang", value);
+  public Address lang(String value) {
+    setLang(value);
     return this;
   }
 

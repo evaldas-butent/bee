@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Article extends FertileNode {
+public class Article extends FertileElement {
 
   public Article() {
     super("article");
@@ -36,21 +36,17 @@ public class Article extends FertileNode {
     return this;
   }
 
-  public Article setId(String value) {
-    setAttribute("id", value);
+  public Article id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Article setCSSClass(String value) {
-    setAttribute("class", value);
+  public Article addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +58,26 @@ public class Article extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Article setTitle(String value) {
-    setAttribute("title", value);
+  public Article title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Article setStyle(String value) {
-    setAttribute("style", value);
+  public Article style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Article setDir(String value) {
-    setAttribute("dir", value);
+  public Article dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +89,8 @@ public class Article extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Article setLang(String value) {
-    setAttribute("lang", value);
+  public Article lang(String value) {
+    setLang(value);
     return this;
   }
 

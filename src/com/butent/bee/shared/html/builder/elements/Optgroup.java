@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Optgroup extends FertileNode {
+public class Optgroup extends FertileElement {
 
   public Optgroup(String label) {
     super("optgroup");
@@ -63,21 +63,17 @@ public class Optgroup extends FertileNode {
     return removeAttribute("disabled");
   }
 
-  public Optgroup setId(String value) {
-    setAttribute("id", value);
+  public Optgroup id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Optgroup setCSSClass(String value) {
-    setAttribute("class", value);
+  public Optgroup addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -89,34 +85,26 @@ public class Optgroup extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Optgroup setTitle(String value) {
-    setAttribute("title", value);
+  public Optgroup title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Optgroup setStyle(String value) {
-    setAttribute("style", value);
+  public Optgroup style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Optgroup setDir(String value) {
-    setAttribute("dir", value);
+  public Optgroup dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -128,8 +116,8 @@ public class Optgroup extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Optgroup setLang(String value) {
-    setAttribute("lang", value);
+  public Optgroup lang(String value) {
+    setLang(value);
     return this;
   }
 

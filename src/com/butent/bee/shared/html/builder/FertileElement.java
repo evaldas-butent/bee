@@ -3,19 +3,18 @@ package com.butent.bee.shared.html.builder;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.html.builder.elements.Text;
 
 import java.util.List;
 
-public class FertileNode extends Node {
+public class FertileElement extends Element {
 
   private final List<Node> children = Lists.newArrayList();
 
-  protected FertileNode() {
+  protected FertileElement() {
     super();
   }
 
-  protected FertileNode(String tag) {
+  protected FertileElement(String tag) {
     super(tag);
   }
 

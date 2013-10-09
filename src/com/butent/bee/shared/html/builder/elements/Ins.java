@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Ins extends FertileNode {
+public class Ins extends FertileElement {
 
   public Ins() {
     super("ins");
@@ -62,21 +62,17 @@ public class Ins extends FertileNode {
     return removeAttribute("datetime");
   }
 
-  public Ins setId(String value) {
-    setAttribute("id", value);
+  public Ins id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Ins setCSSClass(String value) {
-    setAttribute("class", value);
+  public Ins addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -88,34 +84,26 @@ public class Ins extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Ins setTitle(String value) {
-    setAttribute("title", value);
+  public Ins title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Ins setStyle(String value) {
-    setAttribute("style", value);
+  public Ins style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Ins setDir(String value) {
-    setAttribute("dir", value);
+  public Ins dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -127,8 +115,8 @@ public class Ins extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Ins setLang(String value) {
-    setAttribute("lang", value);
+  public Ins lang(String value) {
+    setLang(value);
     return this;
   }
 

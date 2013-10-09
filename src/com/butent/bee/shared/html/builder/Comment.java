@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder;
 
 
-public class Comment extends FertileNode {
+public class Comment extends FertileElement {
 
   public Comment() {
     super();

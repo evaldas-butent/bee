@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Del extends FertileNode {
+public class Del extends FertileElement {
 
   public Del() {
     super("del");
@@ -62,21 +62,17 @@ public class Del extends FertileNode {
     return removeAttribute("datetime");
   }
 
-  public Del setId(String value) {
-    setAttribute("id", value);
+  public Del id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Del setCSSClass(String value) {
-    setAttribute("class", value);
+  public Del addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -88,34 +84,26 @@ public class Del extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Del setTitle(String value) {
-    setAttribute("title", value);
+  public Del title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Del setStyle(String value) {
-    setAttribute("style", value);
+  public Del style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Del setDir(String value) {
-    setAttribute("dir", value);
+  public Del dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -127,8 +115,8 @@ public class Del extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Del setLang(String value) {
-    setAttribute("lang", value);
+  public Del lang(String value) {
+    setLang(value);
     return this;
   }
 

@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Button extends FertileNode {
+public class Button extends FertileElement {
 
   public Button() {
     super("button");
@@ -88,21 +88,17 @@ public class Button extends FertileNode {
     return removeAttribute("value");
   }
 
-  public Button setId(String value) {
-    setAttribute("id", value);
+  public Button id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Button setCSSClass(String value) {
-    setAttribute("class", value);
+  public Button addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -114,34 +110,26 @@ public class Button extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Button setTitle(String value) {
-    setAttribute("title", value);
+  public Button title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Button setStyle(String value) {
-    setAttribute("style", value);
+  public Button style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Button setDir(String value) {
-    setAttribute("dir", value);
+  public Button dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -153,8 +141,8 @@ public class Button extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Button setLang(String value) {
-    setAttribute("lang", value);
+  public Button lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -179,8 +167,8 @@ public class Button extends FertileNode {
     return removeAttribute("xml:lang");
   }
 
-  public Button setAccesskey(String value) {
-    setAttribute("accesskey", value);
+  public Button accessKey(String value) {
+    setAccessKey(value);
     return this;
   }
 
@@ -192,8 +180,8 @@ public class Button extends FertileNode {
     return removeAttribute("accesskey");
   }
 
-  public Button setTabindex(String value) {
-    setAttribute("tabindex", value);
+  public Button tabIndex(int value) {
+    setTabIndex(value);
     return this;
   }
 

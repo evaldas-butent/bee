@@ -221,11 +221,12 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
     return result;
   }
+
   private final Map<String, String> attributes = Maps.newHashMap();
+
   private String viewName;
 
   private Filter filter;
-
   private Order order;
 
   private Caching caching;

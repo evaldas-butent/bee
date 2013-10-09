@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Form extends FertileNode {
+public class Form extends FertileElement {
 
   private static final String ACCEPT_CHARSET = "accept-charset";
 
@@ -130,21 +130,17 @@ public class Form extends FertileNode {
     return removeAttribute("target");
   }
 
-  public Form setId(String value) {
-    setAttribute("id", value);
+  public Form id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Form setCSSClass(String value) {
-    setAttribute("class", value);
+  public Form addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -156,34 +152,26 @@ public class Form extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Form setTitle(String value) {
-    setAttribute("title", value);
+  public Form title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Form setStyle(String value) {
-    setAttribute("style", value);
+  public Form style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Form setDir(String value) {
-    setAttribute("dir", value);
+  public Form dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -195,8 +183,8 @@ public class Form extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Form setLang(String value) {
-    setAttribute("lang", value);
+  public Form lang(String value) {
+    setLang(value);
     return this;
   }
 

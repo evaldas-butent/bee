@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Option extends FertileNode {
+public class Option extends FertileElement {
 
   public Option() {
     super("option");
@@ -88,21 +88,17 @@ public class Option extends FertileNode {
     return removeAttribute("value");
   }
 
-  public Option setId(String value) {
-    setAttribute("id", value);
+  public Option id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Option setCSSClass(String value) {
-    setAttribute("class", value);
+  public Option addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -114,34 +110,26 @@ public class Option extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Option setTitle(String value) {
-    setAttribute("title", value);
+  public Option title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Option setStyle(String value) {
-    setAttribute("style", value);
+  public Option style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Option setDir(String value) {
-    setAttribute("dir", value);
+  public Option dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -153,8 +141,8 @@ public class Option extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Option setLang(String value) {
-    setAttribute("lang", value);
+  public Option lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -179,8 +167,8 @@ public class Option extends FertileNode {
     return removeAttribute("xml:lang");
   }
 
-  public Option setTabindex(String value) {
-    setAttribute("tabindex", value);
+  public Option tabIndex(int value) {
+    setTabIndex(value);
     return this;
   }
 

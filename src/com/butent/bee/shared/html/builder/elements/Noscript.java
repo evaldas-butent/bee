@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Noscript extends FertileNode {
+public class Noscript extends FertileElement {
 
   public Noscript() {
     super("noscript");
@@ -36,21 +36,17 @@ public class Noscript extends FertileNode {
     return this;
   }
 
-  public Noscript setId(String value) {
-    setAttribute("id", value);
+  public Noscript id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Noscript setCSSClass(String value) {
-    setAttribute("class", value);
+  public Noscript addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +58,26 @@ public class Noscript extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Noscript setTitle(String value) {
-    setAttribute("title", value);
+  public Noscript title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Noscript setStyle(String value) {
-    setAttribute("style", value);
+  public Noscript style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Noscript setDir(String value) {
-    setAttribute("dir", value);
+  public Noscript dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +89,8 @@ public class Noscript extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Noscript setLang(String value) {
-    setAttribute("lang", value);
+  public Noscript lang(String value) {
+    setLang(value);
     return this;
   }
 

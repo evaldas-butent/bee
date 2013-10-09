@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Style extends FertileNode {
+public class Style extends FertileElement {
 
   public Style(String type) {
     super("style");
@@ -63,21 +63,17 @@ public class Style extends FertileNode {
     return removeAttribute("media");
   }
 
-  public Style setTitle(String value) {
-    setAttribute("title", value);
+  public Style title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Style setDir(String value) {
-    setAttribute("dir", value);
+  public Style dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -89,8 +85,8 @@ public class Style extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Style setLang(String value) {
-    setAttribute("lang", value);
+  public Style lang(String value) {
+    setLang(value);
     return this;
   }
 

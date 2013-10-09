@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class S extends FertileNode {
+public class S extends FertileElement {
 
   public S() {
     super("s");
@@ -36,21 +36,17 @@ public class S extends FertileNode {
     return this;
   }
 
-  public S setId(String value) {
-    setAttribute("id", value);
+  public S id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public S setCSSClass(String value) {
-    setAttribute("class", value);
+  public S addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +58,26 @@ public class S extends FertileNode {
     return removeAttribute("class");
   }
 
-  public S setTitle(String value) {
-    setAttribute("title", value);
+  public S title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public S setStyle(String value) {
-    setAttribute("style", value);
+  public S style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public S setDir(String value) {
-    setAttribute("dir", value);
+  public S dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +89,8 @@ public class S extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public S setLang(String value) {
-    setAttribute("lang", value);
+  public S lang(String value) {
+    setLang(value);
     return this;
   }
 

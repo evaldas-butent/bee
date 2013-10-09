@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Iframe extends Node {
+public class Iframe extends Element {
 
   public Iframe() {
     super("iframe");
@@ -138,21 +138,17 @@ public class Iframe extends Node {
     return removeAttribute("width");
   }
 
-  public Iframe setId(String value) {
-    setAttribute("id", value);
+  public Iframe id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Iframe setCSSClass(String value) {
-    setAttribute("class", value);
+  public Iframe addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -164,26 +160,18 @@ public class Iframe extends Node {
     return removeAttribute("class");
   }
 
-  public Iframe setTitle(String value) {
-    setAttribute("title", value);
+  public Iframe title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Iframe setStyle(String value) {
-    setAttribute("style", value);
+  public Iframe style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {

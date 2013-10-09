@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Col extends Node {
+public class Col extends Element {
 
   public Col() {
     super("col");
@@ -96,21 +96,17 @@ public class Col extends Node {
     return removeAttribute("width");
   }
 
-  public Col setId(String value) {
-    setAttribute("id", value);
+  public Col id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Col setCSSClass(String value) {
-    setAttribute("class", value);
+  public Col addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -122,34 +118,26 @@ public class Col extends Node {
     return removeAttribute("class");
   }
 
-  public Col setTitle(String value) {
-    setAttribute("title", value);
+  public Col title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Col setStyle(String value) {
-    setAttribute("style", value);
+  public Col style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Col setDir(String value) {
-    setAttribute("dir", value);
+  public Col dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -161,8 +149,8 @@ public class Col extends Node {
     return removeAttribute("dir");
   }
 
-  public Col setLang(String value) {
-    setAttribute("lang", value);
+  public Col lang(String value) {
+    setLang(value);
     return this;
   }
 

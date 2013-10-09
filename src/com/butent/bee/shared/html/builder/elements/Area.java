@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Area extends FertileNode {
+public class Area extends FertileElement {
 
   public Area(String alt) {
     super("area");
@@ -115,21 +115,17 @@ public class Area extends FertileNode {
     return removeAttribute("target");
   }
 
-  public Area setId(String value) {
-    setAttribute("id", value);
+  public Area id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Area setCSSClass(String value) {
-    setAttribute("class", value);
+  public Area addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -141,34 +137,26 @@ public class Area extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Area setTitle(String value) {
-    setAttribute("title", value);
+  public Area title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Area setStyle(String value) {
-    setAttribute("style", value);
+  public Area style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Area setDir(String value) {
-    setAttribute("dir", value);
+  public Area dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -180,8 +168,8 @@ public class Area extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Area setLang(String value) {
-    setAttribute("lang", value);
+  public Area lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -206,8 +194,8 @@ public class Area extends FertileNode {
     return removeAttribute("xml:lang");
   }
 
-  public Area setTabindex(String value) {
-    setAttribute("tabindex", value);
+  public Area tabIndex(int value) {
+    setTabIndex(value);
     return this;
   }
 
@@ -219,8 +207,8 @@ public class Area extends FertileNode {
     return removeAttribute("tabindex");
   }
 
-  public Area setAccesskey(String value) {
-    setAttribute("accesskey", value);
+  public Area accessKey(String value) {
+    setAccessKey(value);
     return this;
   }
 

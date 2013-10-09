@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Input extends Node {
+public class Input extends Element {
 
   private static final String ACCEPT = "accept";
 
@@ -166,21 +166,17 @@ public class Input extends Node {
     return removeAttribute("value");
   }
 
-  public Input setId(String value) {
-    setAttribute("id", value);
+  public Input id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Input setCSSClass(String value) {
-    setAttribute("class", value);
+  public Input addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -192,34 +188,26 @@ public class Input extends Node {
     return removeAttribute("class");
   }
 
-  public Input setTitle(String value) {
-    setAttribute("title", value);
+  public Input title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Input setStyle(String value) {
-    setAttribute("style", value);
+  public Input style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Input setDir(String value) {
-    setAttribute("dir", value);
+  public Input dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -231,8 +219,8 @@ public class Input extends Node {
     return removeAttribute("dir");
   }
 
-  public Input setLang(String value) {
-    setAttribute("lang", value);
+  public Input lang(String value) {
+    setLang(value);
     return this;
   }
 

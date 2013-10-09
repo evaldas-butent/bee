@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Thead extends FertileNode {
+public class Thead extends FertileElement {
 
   public Thead() {
     super("thead");
@@ -88,21 +88,17 @@ public class Thead extends FertileNode {
     return removeAttribute("valign");
   }
 
-  public Thead setId(String value) {
-    setAttribute("id", value);
+  public Thead id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Thead setCSSClass(String value) {
-    setAttribute("class", value);
+  public Thead addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -114,34 +110,26 @@ public class Thead extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Thead setTitle(String value) {
-    setAttribute("title", value);
+  public Thead title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Thead setStyle(String value) {
-    setAttribute("style", value);
+  public Thead style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Thead setDir(String value) {
-    setAttribute("dir", value);
+  public Thead dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -153,8 +141,8 @@ public class Thead extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Thead setLang(String value) {
-    setAttribute("lang", value);
+  public Thead lang(String value) {
+    setLang(value);
     return this;
   }
 

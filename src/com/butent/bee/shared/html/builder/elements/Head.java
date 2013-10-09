@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Head extends FertileNode {
+public class Head extends FertileElement {
 
   public Head() {
     super("head");
@@ -49,8 +49,8 @@ public class Head extends FertileNode {
     return removeAttribute("profile");
   }
 
-  public Head setDir(String value) {
-    setAttribute("dir", value);
+  public Head dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -62,8 +62,8 @@ public class Head extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Head setLang(String value) {
-    setAttribute("lang", value);
+  public Head lang(String value) {
+    setLang(value);
     return this;
   }
 

@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Tr extends FertileNode {
+public class Tr extends FertileElement {
 
   public Tr() {
     super("tr");
@@ -101,21 +101,17 @@ public class Tr extends FertileNode {
     return removeAttribute("valign");
   }
 
-  public Tr setId(String value) {
-    setAttribute("id", value);
+  public Tr id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Tr setCSSClass(String value) {
-    setAttribute("class", value);
+  public Tr addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -127,34 +123,26 @@ public class Tr extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Tr setTitle(String value) {
-    setAttribute("title", value);
+  public Tr title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Tr setStyle(String value) {
-    setAttribute("style", value);
+  public Tr style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Tr setDir(String value) {
-    setAttribute("dir", value);
+  public Tr dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -166,8 +154,8 @@ public class Tr extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Tr setLang(String value) {
-    setAttribute("lang", value);
+  public Tr lang(String value) {
+    setLang(value);
     return this;
   }
 

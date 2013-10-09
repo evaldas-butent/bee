@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Img extends Node {
+public class Img extends Element {
 
   public Img(String alt, String src) {
     super("img");
@@ -153,21 +153,17 @@ public class Img extends Node {
     return removeAttribute("width");
   }
 
-  public Img setId(String value) {
-    setAttribute("id", value);
+  public Img id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Img setCSSClass(String value) {
-    setAttribute("class", value);
+  public Img addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -179,34 +175,26 @@ public class Img extends Node {
     return removeAttribute("class");
   }
 
-  public Img setTitle(String value) {
-    setAttribute("title", value);
+  public Img title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Img setStyle(String value) {
-    setAttribute("style", value);
+  public Img style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Img setLang(String value) {
-    setAttribute("lang", value);
+  public Img lang(String value) {
+    setLang(value);
     return this;
   }
 

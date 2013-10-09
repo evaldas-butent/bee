@@ -1,28 +1,24 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Br extends Node {
+public class Br extends Element {
 
   public Br() {
     super("br");
   }
 
-  public Br setId(String value) {
-    setAttribute("id", value);
+  public Br id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Br setCSSClass(String value) {
-    setAttribute("class", value);
+  public Br addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -34,26 +30,18 @@ public class Br extends Node {
     return removeAttribute("class");
   }
 
-  public Br setTitle(String value) {
-    setAttribute("title", value);
+  public Br title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Br setStyle(String value) {
-    setAttribute("style", value);
+  public Br style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {

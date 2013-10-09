@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Sub extends FertileNode {
+public class Sub extends FertileElement {
 
   public Sub() {
     super("sub");
@@ -36,21 +36,17 @@ public class Sub extends FertileNode {
     return this;
   }
 
-  public Sub setId(String value) {
-    setAttribute("id", value);
+  public Sub id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Sub setCSSClass(String value) {
-    setAttribute("class", value);
+  public Sub addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -62,34 +58,26 @@ public class Sub extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Sub setTitle(String value) {
-    setAttribute("title", value);
+  public Sub title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Sub setStyle(String value) {
-    setAttribute("style", value);
+  public Sub style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Sub setDir(String value) {
-    setAttribute("dir", value);
+  public Sub dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -101,8 +89,8 @@ public class Sub extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Sub setLang(String value) {
-    setAttribute("lang", value);
+  public Sub lang(String value) {
+    setLang(value);
     return this;
   }
 

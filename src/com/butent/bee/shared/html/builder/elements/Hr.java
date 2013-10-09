@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Element;
 
-public class Hr extends Node {
+public class Hr extends Element {
 
   public Hr() {
     super("hr");
@@ -60,21 +60,17 @@ public class Hr extends Node {
     return removeAttribute("width");
   }
 
-  public Hr setId(String value) {
-    setAttribute("id", value);
+  public Hr id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Hr setCSSClass(String value) {
-    setAttribute("class", value);
+  public Hr addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -86,34 +82,26 @@ public class Hr extends Node {
     return removeAttribute("class");
   }
 
-  public Hr setTitle(String value) {
-    setAttribute("title", value);
+  public Hr title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Hr setStyle(String value) {
-    setAttribute("style", value);
+  public Hr style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Hr setDir(String value) {
-    setAttribute("dir", value);
+  public Hr dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -125,8 +113,8 @@ public class Hr extends Node {
     return removeAttribute("dir");
   }
 
-  public Hr setLang(String value) {
-    setAttribute("lang", value);
+  public Hr lang(String value) {
+    setLang(value);
     return this;
   }
 

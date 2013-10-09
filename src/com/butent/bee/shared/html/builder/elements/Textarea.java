@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Textarea extends FertileNode {
+public class Textarea extends FertileElement {
 
   public Textarea(String cols, String rows) {
     super("textarea");
@@ -103,21 +103,17 @@ public class Textarea extends FertileNode {
     return removeAttribute("readonly");
   }
 
-  public Textarea setId(String value) {
-    setAttribute("id", value);
+  public Textarea id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Textarea setCSSClass(String value) {
-    setAttribute("class", value);
+  public Textarea addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -129,34 +125,26 @@ public class Textarea extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Textarea setTitle(String value) {
-    setAttribute("title", value);
+  public Textarea title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Textarea setStyle(String value) {
-    setAttribute("style", value);
+  public Textarea style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Textarea setDir(String value) {
-    setAttribute("dir", value);
+  public Textarea dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -168,8 +156,8 @@ public class Textarea extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Textarea setLang(String value) {
-    setAttribute("lang", value);
+  public Textarea lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -194,8 +182,8 @@ public class Textarea extends FertileNode {
     return removeAttribute("xml:lang");
   }
 
-  public Textarea setTabindex(String value) {
-    setAttribute("tabindex", value);
+  public Textarea tabIndex(int value) {
+    setTabIndex(value);
     return this;
   }
 
@@ -207,8 +195,8 @@ public class Textarea extends FertileNode {
     return removeAttribute("tabindex");
   }
 
-  public Textarea setAccesskey(String value) {
-    setAttribute("accesskey", value);
+  public Textarea accessKey(String value) {
+    setAccessKey(value);
     return this;
   }
 

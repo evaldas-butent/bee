@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Bdo extends FertileNode {
+public class Bdo extends FertileElement {
 
   public Bdo(String dir) {
     super("bdo");
@@ -37,8 +37,8 @@ public class Bdo extends FertileNode {
     return this;
   }
 
-  public Bdo setDir(String value) {
-    setAttribute("dir", value);
+  public Bdo dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -50,21 +50,17 @@ public class Bdo extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Bdo setId(String value) {
-    setAttribute("id", value);
+  public Bdo id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Bdo setCSSClass(String value) {
-    setAttribute("class", value);
+  public Bdo addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -76,34 +72,26 @@ public class Bdo extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Bdo setTitle(String value) {
-    setAttribute("title", value);
+  public Bdo title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Bdo setStyle(String value) {
-    setAttribute("style", value);
+  public Bdo style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Bdo setLang(String value) {
-    setAttribute("lang", value);
+  public Bdo lang(String value) {
+    setLang(value);
     return this;
   }
 

@@ -1,11 +1,11 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileNode;
+import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Body extends FertileNode {
+public class Body extends FertileElement {
 
   public Body() {
     super("body");
@@ -114,21 +114,17 @@ public class Body extends FertileNode {
     return removeAttribute("vlink");
   }
 
-  public Body setId(String value) {
-    setAttribute("id", value);
+  public Body id(String value) {
+    setId(value);
     return this;
-  }
-
-  public String getId() {
-    return getAttribute("id");
   }
 
   public boolean removeId() {
     return removeAttribute("id");
   }
 
-  public Body setCSSClass(String value) {
-    setAttribute("class", value);
+  public Body addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -140,34 +136,26 @@ public class Body extends FertileNode {
     return removeAttribute("class");
   }
 
-  public Body setTitle(String value) {
-    setAttribute("title", value);
+  public Body title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getTitle() {
-    return getAttribute("title");
   }
 
   public boolean removeTitle() {
     return removeAttribute("title");
   }
 
-  public Body setStyle(String value) {
-    setAttribute("style", value);
+  public Body style(String value) {
+    setStyle(value);
     return this;
-  }
-
-  public String getStyle() {
-    return getAttribute("style");
   }
 
   public boolean removeStyle() {
     return removeAttribute("style");
   }
 
-  public Body setDir(String value) {
-    setAttribute("dir", value);
+  public Body dir(String value) {
+    setDir(value);
     return this;
   }
 
@@ -179,8 +167,8 @@ public class Body extends FertileNode {
     return removeAttribute("dir");
   }
 
-  public Body setLang(String value) {
-    setAttribute("lang", value);
+  public Body lang(String value) {
+    setLang(value);
     return this;
   }
 
