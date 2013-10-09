@@ -159,14 +159,15 @@ final class TaskList {
       if (owner == userId) {
         return GridInterceptor.DeleteMode.SINGLE;
       } else {
-        presenter.getGridView().notifyWarning("Užduotį išmesti gali tik vadovas");
+        presenter.getGridView().notifyWarning(Localized.getConstants().crmTaskDeleteCanManager());
         return GridInterceptor.DeleteMode.CANCEL;
       }
     }
 
     @Override
     public List<String> getDeleteRowMessage(IsRow row) {
-      String message = BeeUtils.joinWords("Išmesti užduotį", row.getId(), "?");
+      String message =
+          BeeUtils.joinWords(Localized.getConstants().crmTaskDelete(), row.getId(), "?");
       return Lists.newArrayList(message);
     }
 
@@ -901,14 +902,14 @@ final class TaskList {
   }
 
   private enum Type implements HasCaption {
-    ASSIGNED("Gautos užduotys") {
+    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
       }
     },
 
-    DELEGATED("Deleguotos užduotys") {
+    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
@@ -916,7 +917,7 @@ final class TaskList {
       }
     },
 
-    OBSERVED("Stebimos užduotys") {
+    OBSERVED(Localized.getConstants().crmTasksObservedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
@@ -926,7 +927,7 @@ final class TaskList {
       }
     },
 
-    GENERAL("Užduočių sąrašas") {
+    GENERAL(Localized.getConstants().crmTasksList()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return null;

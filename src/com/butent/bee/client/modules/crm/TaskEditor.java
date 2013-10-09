@@ -121,7 +121,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     private String addComment(boolean required) {
       String styleName = STYLE_DIALOG + "-commentLabel";
-      Label label = new Label("Komentaras:");
+      Label label = new Label(Localized.getConstants().crmTaskComment());
       label.addStyleName(styleName);
       if (required) {
         label.addStyleName(StyleUtils.NAME_REQUIRED);
@@ -180,10 +180,12 @@ class TaskEditor extends AbstractFormInterceptor {
     private Map<String, String> addDuration() {
       Map<String, String> result = Maps.newHashMap();
 
-      result.put(COL_DURATION, addTime("Sugaištas laikas:"));
-      result.put(COL_DURATION_TYPE, addSelector("Darbo tipas:", VIEW_DURATION_TYPES,
+      result.put(COL_DURATION, addTime(Localized.getConstants().crmSpentTime()));
+      result.put(COL_DURATION_TYPE, addSelector(Localized.getConstants().crmDurationType(),
+          VIEW_DURATION_TYPES,
           Lists.newArrayList(COL_NAME), false, null));
-      result.put(COL_DURATION_DATE, addDateTime("Atlikimo data:", false, TimeUtils.nowMinutes()));
+      result.put(COL_DURATION_DATE, addDateTime(Localized.getConstants().crmTaskFinishDate(),
+          false, TimeUtils.nowMinutes()));
 
       return result;
     }
@@ -194,7 +196,7 @@ class TaskEditor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-filesLabel";
-      Label label = new Label("Bylos:");
+      Label label = new Label(Localized.getConstants().crmFiles());
       label.addStyleName(styleName);
 
       table.setWidget(row, col, label);
@@ -618,11 +620,12 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doActivate() {
-    final TaskDialog dialog = new TaskDialog("Užduoties perdavimas vykdymui");
+    final TaskDialog dialog =
+        new TaskDialog(Localized.getConstants().crmTaskForwardingForExecution());
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction("Perduoti vykdymui", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmTaskForwardForExecution(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -638,18 +641,20 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doApprove() {
-    final TaskDialog dialog = new TaskDialog("Užduoties patvirtinimas");
+    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskConfirmation());
 
-    final String did = dialog.addDateTime("Patvirtinimo data:", true, TimeUtils.nowMinutes());
+    final String did =
+        dialog.addDateTime(Localized.getConstants().crmTaskConfirmDate(), true, TimeUtils
+            .nowMinutes());
     final String cid = dialog.addComment(false);
 
-    dialog.addAction("Patvirtinti", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmTaskConfirm(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         DateTime approved = dialog.getDateTime(did);
         if (approved == null) {
-          showError("Įveskite patvirtinimo datą");
+          showError(Localized.getConstants().crmEnterConfirmDate());
           return;
         }
 
@@ -667,17 +672,17 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doCancel() {
-    final TaskDialog dialog = new TaskDialog("Užduoties nutraukimas");
+    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskCancellation());
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction("Nutraukti", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmTaskCancel(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError("Įveskite komentarą");
+          showError(Localized.getConstants().crmEnterComment());
           return;
         }
 
@@ -693,20 +698,21 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doComment() {
-    final TaskDialog dialog = new TaskDialog("Užduoties komentaras, laiko registracija");
+    final TaskDialog dialog =
+        new TaskDialog(Localized.getConstants().crmTaskCommentTimeRegistration());
 
     final String cid = dialog.addComment(true);
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
 
-    dialog.addAction("Išsaugoti", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError("Įveskite komentarą");
+          showError(Localized.getConstants().crmEnterComment());
           return;
         }
 
@@ -748,26 +754,28 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doComplete() {
-    final TaskDialog dialog = new TaskDialog("Užduoties užbaigimas");
+    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskFinishing());
 
-    final String did = dialog.addDateTime("Įvykdymo data:", true, TimeUtils.nowMinutes());
+    final String did =
+        dialog.addDateTime(Localized.getConstants().crmTaskCompleteDate(), true, TimeUtils
+            .nowMinutes());
     final String cid = dialog.addComment(true);
 
     final Map<String, String> durIds = dialog.addDuration();
 
-    dialog.addAction("Užbaigti", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmActionFinish(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         DateTime completed = dialog.getDateTime(did);
         if (completed == null) {
-          showError("Įveskite įvykdymo datą");
+          showError(Localized.getConstants().crmEnterCompleteDate());
           return;
         }
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError("Įveskite komentarą");
+          showError(Localized.getConstants().crmEnterComment());
           return;
         }
 
@@ -788,7 +796,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doEvent(TaskEvent event) {
     if (!isEventEnabled(event, getStatus(), getOwner(), getExecutor())) {
-      showError("Veiksmas neleidžiamas");
+      showError(Localized.getConstants().actionNotAllowed());
     }
 
     switch (event) {
@@ -836,17 +844,18 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doExtend() {
-    final TaskDialog dialog = new TaskDialog("Užduoties termino keitimas");
+    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskTermChange());
 
     final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
 
     final String startId = isScheduled
-        ? dialog.addDateTime("Pradžios data:", false, getDateTime(COL_START_TIME)) : null;
-    final String endId = dialog.addDateTime("Pabaigos data:", true, null);
+            ? dialog.addDateTime(Localized.getConstants().crmStartDate(), false,
+                getDateTime(COL_START_TIME)) : null;
+    final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction("Keisti terminą", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmTaskChangeTerm(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -857,24 +866,25 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime newEnd = dialog.getDateTime(endId);
 
         if (newEnd == null) {
-          showError("Įveskite pabaigos datą");
+          showError(Localized.getConstants().crmEnterFinishDate());
           return;
         }
 
         if (Objects.equal(newStart, oldStart) && Objects.equal(newEnd, oldEnd)) {
-          showError("Terminas nepakeistas");
+          showError(Localized.getConstants().crmTermNotChanged());
           return;
         }
 
         if (newStart != null && TimeUtils.isLeq(newEnd, newStart)) {
-          showError("Pabaigos data turi būti didesnė už pradžios datą");
+          showError(Localized.getConstants().crmFinishDateMustGreaterThanStart());
           return;
         }
 
         DateTime now = TimeUtils.nowMinutes();
         if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
           Global.showError("Time travel not supported",
-              Lists.newArrayList("Pabaigos data turi būti didesnė už " + now.toCompactString()));
+              Lists.newArrayList(Localized.getConstants().crmFinishDateMustGreaterThan() + " "
+                  + now.toCompactString()));
           return;
         }
 
@@ -906,14 +916,15 @@ class TaskEditor extends AbstractFormInterceptor {
       exclusions.add(oldUser);
     }
 
-    final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
+    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskForwarding());
 
-    final String sid = dialog.addSelector("Vykdytojas:", CommonsConstants.VIEW_USERS,
+    final String sid =
+        dialog.addSelector(Localized.getConstants().crmTaskExecutor(), CommonsConstants.VIEW_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), true, exclusions);
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction("Persiųsti", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmActionForward(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -921,17 +932,17 @@ class TaskEditor extends AbstractFormInterceptor {
 
         Long newUser = selector.getRelatedId();
         if (newUser == null) {
-          showError("Įveskite vykdytoją");
+          showError(Localized.getConstants().crmEnterExecutor());
           return;
         }
         if (Objects.equal(newUser, oldUser)) {
-          showError("Nurodėte tą patį vykdytoją");
+          showError(Localized.getConstants().crmSelectedSameExecutor());
           return;
         }
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError("Įveskite komentarą");
+          showError(Localized.getConstants().crmEnterComment());
           return;
         }
 
@@ -950,11 +961,12 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doRenew() {
-    final TaskDialog dialog = new TaskDialog("Užduoties grąžinimas vykdymui");
+    final TaskDialog dialog =
+        new TaskDialog(Localized.getConstants().crmTaskReturningForExecution());
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction("Grąžinti vykdymui", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmTaskReturnExecution(), new ScheduledCommand() {
       @Override
       public void execute() {
 
@@ -975,17 +987,17 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void doSuspend() {
-    final TaskDialog dialog = new TaskDialog("Užduoties sustabdymas");
+    final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskSuspension());
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction("Sustabdyti", new ScheduledCommand() {
+    dialog.addAction(Localized.getConstants().crmActionSuspend(), new ScheduledCommand() {
       @Override
       public void execute() {
 
         String comment = dialog.getComment(cid);
         if (BeeUtils.isEmpty(comment)) {
-          showError("Įveskite komentarą");
+          showError(Localized.getConstants().crmEnterComment());
           return;
         }
 
@@ -1020,7 +1032,9 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static String getDeleteNote(String label, String value) {
-    return BeeUtils.join(": ", label, BeeUtils.joinWords("pašalinta", value));
+    return BeeUtils.join(": ", label, BeeUtils.joinWords(Localized.getConstants().crmDeleted()
+        .toLowerCase(),
+        value));
   }
 
   private Long getExecutor() {
@@ -1028,7 +1042,8 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static String getInsertNote(String label, String value) {
-    return BeeUtils.join(": ", label, BeeUtils.joinWords("įtraukta", value));
+    return BeeUtils.join(": ", label, BeeUtils
+        .joinWords(Localized.getConstants().crmAdded().toLowerCase(), value));
   }
 
   private Long getLong(String colName) {
@@ -1302,13 +1317,13 @@ class TaskEditor extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(time)) {
       Long type = dialog.getSelector(ids.get(COL_DURATION_TYPE)).getRelatedId();
       if (!DataUtils.isId(type)) {
-        showError("Įveskite darbo tipą");
+        showError(Localized.getConstants().crmEnterDurationType());
         return false;
       }
 
       DateTime date = dialog.getDateTime(ids.get(COL_DURATION_DATE));
       if (date == null) {
-        showError("Įveskite atlikimo datą");
+        showError(Localized.getConstants().crmEnterDueDate());
         return false;
       }
 
@@ -1341,7 +1356,7 @@ class TaskEditor extends AbstractFormInterceptor {
     int r = 0;
     int c = 0;
 
-    addDurationCell(display, r, c++, "Sugaištas laikas:", "caption");
+    addDurationCell(display, r, c++, Localized.getConstants().crmSpentTime(), "caption");
     for (String column : columns) {
       addDurationCell(display, r, c++, column, "colLabel");
     }
@@ -1463,7 +1478,8 @@ class TaskEditor extends AbstractFormInterceptor {
       Flow col2 = new Flow();
       col2.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
 
-      col2.add(createEventCell(COL_DURATION, "Sugaištas laikas: " + duration));
+      col2.add(createEventCell(COL_DURATION, Localized.getConstants().crmSpentTime() + " "
+          + duration));
 
       String durType = row.getString(DataUtils.getColumnIndex(COL_DURATION_TYPE, columns));
       if (!BeeUtils.isEmpty(durType)) {

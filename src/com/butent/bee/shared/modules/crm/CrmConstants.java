@@ -7,18 +7,26 @@ import com.butent.bee.shared.ui.HasCaption;
 public final class CrmConstants {
 
   public enum TaskEvent implements HasCaption {
-    CREATE("Sukurta", null),
-    VISIT("Peržiūrėta", null),
-    ACTIVATE("Perduota vykdymui", "Perduoti vykdymui"),
-    COMMENT("Komentaras", "Komentuoti"),
-    EXTEND("Pratęsta", "Keisti terminą"),
-    SUSPEND("Sustabdyta", "Sustabdyti"),
-    RENEW("Atnaujinta", "Grąžinti vykdymui"),
-    FORWARD("Persiųsta", "Persiųsti"),
-    CANCEL("Nutraukta", "Nutraukti"),
-    COMPLETE("Įvykdyta", "Užbaigti"),
-    APPROVE("Patvirtinta", "Patvirtinti"),
-    EDIT("Koreguota", null);
+    CREATE(Localized.getConstants().crmTaskEventCreated(), null),
+    VISIT(Localized.getConstants().crmTaskEventVisited(), null),
+    ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(), Localized.getConstants()
+        .crmTaskForwardForExecution()),
+    COMMENT(Localized.getConstants().crmTaskComment(), Localized.getConstants().crmActionComment()),
+    EXTEND(Localized.getConstants().crmTaskEventExtended(), Localized.getConstants()
+        .crmTaskChangeTerm()),
+    SUSPEND(Localized.getConstants().crmTaskStatusSuspended(), Localized.getConstants()
+        .crmActionSuspend()),
+    RENEW(Localized.getConstants().crmTaskEventRenewed(), Localized.getConstants()
+        .crmTaskReturnExecution()),
+    FORWARD(Localized.getConstants().crmTaskEventForwarded(), Localized.getConstants()
+        .crmActionForward()),
+    CANCEL(Localized.getConstants().crmTaskStatusCanceled(), Localized.getConstants()
+        .crmTaskCancel()),
+    COMPLETE(Localized.getConstants().crmTaskStatusCompleted(), Localized.getConstants()
+        .crmActionFinish()),
+    APPROVE(Localized.getConstants().crmTaskEventApproved(), Localized.getConstants()
+        .crmTaskConfirm()),
+    EDIT(Localized.getConstants().crmTaskEventEdited(), null);
 
     private final String caption;
     private final String commandLabel;
@@ -39,7 +47,8 @@ public final class CrmConstants {
   }
 
   public enum TaskPriority implements HasCaption {
-    LOW("Žemas"), MEDIUM("Vidutinis"), HIGH("Aukštas");
+    LOW(Localized.getConstants().crmTaskPriorityLow()), MEDIUM(Localized.getConstants()
+        .crmTaskPriorityMedium()), HIGH(Localized.getConstants().crmTaskPriorityHigh());
 
     private final String caption;
 
@@ -54,13 +63,13 @@ public final class CrmConstants {
   }
 
   public enum TaskStatus implements HasCaption {
-    NOT_VISITED(Localized.getConstants().taskStatusNotVisited()),
-    ACTIVE(Localized.getConstants().taskStatusActive()),
-    SCHEDULED(Localized.getConstants().taskStatusScheduled()),
-    SUSPENDED(Localized.getConstants().taskStatusSuspended()),
-    COMPLETED(Localized.getConstants().taskStatusCompleted()),
-    APPROVED(Localized.getConstants().taskStatusApproved()),
-    CANCELED(Localized.getConstants().taskStatusCanceled());
+    NOT_VISITED(Localized.getConstants().crmTaskStatusNotVisited()),
+    ACTIVE(Localized.getConstants().crmTaskStatusActive()),
+    SCHEDULED(Localized.getConstants().crmTaskStatusScheduled()),
+    SUSPENDED(Localized.getConstants().crmTaskStatusSuspended()),
+    COMPLETED(Localized.getConstants().crmTaskStatusCompleted()),
+    APPROVED(Localized.getConstants().crmTaskStatusApproved()),
+    CANCELED(Localized.getConstants().crmTaskStatusCanceled());
 
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {
@@ -274,7 +283,7 @@ public final class CrmConstants {
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
-  public static final String LABEL_OBSERVERS = "Stebėtojai";
+  public static final String LABEL_OBSERVERS = Localized.getConstants().crmTaskObservers();
 
   public static final String STYLE_SHEET = "crm";
   
