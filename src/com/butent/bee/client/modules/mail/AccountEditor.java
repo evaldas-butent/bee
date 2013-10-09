@@ -49,7 +49,8 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
       ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Global.inputString("Naujas slaptažodis", null, new StringCallback(false) {
+          Global.inputString(Localized.getConstants().mailNewAccountPassword(), null,
+              new StringCallback(false) {
             @Override
             public void onSuccess(String value) {
               getFormView().getActiveRow().setValue(getFormView().getDataIndex(name),

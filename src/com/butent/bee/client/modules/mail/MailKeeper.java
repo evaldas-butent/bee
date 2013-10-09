@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -79,7 +80,8 @@ public final class MailKeeper {
   static void activateController(MailPanel mailPanel) {
     if (controller == null) {
       controller = new MailController();
-      BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null, "Laiškai");
+      BeeKeeper.getScreen().addDomainEntry(Domain.MAIL, controller, null,
+          Localized.getConstants().mails());
     }
     activePanel = mailPanel;
     rebuildController();
@@ -121,8 +123,10 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors() && Objects.equal(folderFrom, panel.getCurrentFolderId())) {
-          panel.getFormView().notifyInfo(move ? "Perkelta" : "Nukopijuota",
-              (String) response.getResponse(), "laiškų į aplanką",
+          panel.getFormView().notifyInfo(
+              move ? Localized.getMessages().mailMovedMessagesToFolder(
+                  (String) response.getResponse()) : Localized.getMessages()
+                  .mailCopiedMessagesToFolder((String) response.getResponse()),
               BeeUtils.bracket(panel.getCurrentAccount().getFolder(folderTo).getName()));
           panel.refresh(null);
         }
@@ -143,7 +147,9 @@ public final class MailKeeper {
     String caption = null;
 
     if (account.getSystemFolder(parentId) == null) {
-      caption = "Aplanke " + BeeUtils.bracket(account.getFolder(parentId).getName());
+      caption =
+          Localized.getConstants().mailInFolder() + " "
+              + BeeUtils.bracket(account.getFolder(parentId).getName());
     }
     Global.inputString(title, caption, new StringCallback() {
       @Override

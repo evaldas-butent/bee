@@ -516,7 +516,7 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
-    header.addCommandItem(new Button("Užklausimas", new ClickHandler() {
+    header.addCommandItem(new Button(Localized.getConstants().crmRequest(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         createRequest(currentMessage != null
@@ -803,12 +803,12 @@ public class MailPanel extends AbstractFormInterceptor {
     if (currentMessage == null) {
       return;
     }
-    final List<String> options = Lists.newArrayList("Aktyvų laišką");
+    final List<String> options = Lists.newArrayList(Localized.getConstants().mailCurrentMessage());
     final Collection<RowInfo> rows = messages.getGridPresenter().getGridView()
         .getSelectedRows(SelectedRows.ALL);
 
     if (!BeeUtils.isEmpty(rows)) {
-      options.add(BeeUtils.joinWords("Pažymėtus", rows.size(), "laiškus"));
+      options.add(Localized.getMessages().mailSelectedMessages(rows.size()));
     }
     final AccountInfo account = getCurrentAccount();
     final Long folderId = getCurrentFolderId();
@@ -817,7 +817,9 @@ public class MailPanel extends AbstractFormInterceptor {
     options.add(Localized.getConstants().cancel());
     Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
-    Global.messageBox(purge ? "Pašalinti" : "Perkelti į šiukšlinę", icon, null, options,
+    Global.messageBox(purge ? Localized.getConstants().actionDelete() : Localized.getConstants()
+        .mailActionMoveToTrash(),
+        icon, null, options,
         options.size() - 1, new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
@@ -847,8 +849,10 @@ public class MailPanel extends AbstractFormInterceptor {
                 response.notify(getFormView());
 
                 if (!response.hasErrors() && Objects.equal(folderId, getCurrentFolderId())) {
-                  getFormView().notifyInfo(purge ? "Pašalinta" : "Perkelta į šiukšlinę",
-                      (String) response.getResponse(), "laiškų");
+                  getFormView().notifyInfo(
+                      purge ? Localized.getMessages().mailDeletedMessages(
+                          (String) response.getResponse()) : Localized.getMessages()
+                          .mailMovedMessagesToTrash((String) response.getResponse()));
                   refresh(null);
                 }
               }
