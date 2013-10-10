@@ -1,38 +1,48 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileElement;
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.builder.Element;
 
-import java.util.List;
-
-public class Source extends FertileElement {
+public class Source extends Element {
 
   public Source() {
-    super("source");
+    super();
   }
 
-  public Source insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Source addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
-  public Source append(List<Node> nodes) {
-    super.appendChildren(nodes);
+  
+
+  public Source id(String value) {
+    setId(value);
     return this;
   }
 
-  public Source append(Node... nodes) {
-    super.appendChildren(nodes);
+  public Source lang(String value) {
+    setLang(value);
     return this;
   }
 
-  public Source text(String text) {
-    super.appendText(text);
+  public Source media(String value) {
+    setAttribute(Attribute.MEDIA, value);
     return this;
   }
 
-  public Source remove(Node child) {
-    super.removeChild(child);
+  public Source src(String value) {
+    setAttribute(Attribute.SRC, value);
+    return this;
+  }
+
+  public Source title(String value) {
+    setTitle(value);
+    return this;
+  }
+
+  public Source type(String value) {
+    setAttribute(Attribute.TYPE, value);
     return this;
   }
 }

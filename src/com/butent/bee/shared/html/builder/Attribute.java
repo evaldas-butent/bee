@@ -80,6 +80,7 @@ public class Attribute {
   public static final String MENU = "menu";
   public static final String METHOD = "method";
   public static final String MIN = "min";
+  public static final String MINLENGTH = "minlength";
   public static final String MULTIPLE = "multiple";
   public static final String MUTED = "muted";
   public static final String NAME = "name";
@@ -106,6 +107,8 @@ public class Attribute {
   public static final String SHAPE = "shape";
   public static final String SIZE = "size";
   public static final String SIZES = "sizes";
+  public static final String SORTABLE = "sortable";
+  public static final String SORTED = "sorted";
   public static final String SPAN = "span";
   public static final String SRC = "src";
   public static final String SRCDOC = "srcdoc";
@@ -199,13 +202,8 @@ public class Attribute {
 
   public static final String DATA_PREFIX = "data-";
   
-  private String name;
+  private final String name;
   private String value;
-
-  public Attribute(String name) {
-    this.name = name;
-    this.value = null;
-  }
 
   public Attribute(String name, String value) {
     this.name = name;
@@ -218,10 +216,6 @@ public class Attribute {
 
   public String getValue() {
     return value;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public void setValue(String value) {

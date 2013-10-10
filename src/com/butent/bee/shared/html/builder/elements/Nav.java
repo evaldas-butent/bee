@@ -8,11 +8,11 @@ import java.util.List;
 public class Nav extends FertileElement {
 
   public Nav() {
-    super("nav");
+    super();
   }
 
-  public Nav insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Nav addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,13 +26,35 @@ public class Nav extends FertileElement {
     return this;
   }
 
-  public Nav text(String text) {
-    super.appendText(text);
+  
+
+  public Nav id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Nav insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Nav lang(String value) {
+    setLang(value);
     return this;
   }
 
   public Nav remove(Node child) {
     super.removeChild(child);
+    return this;
+  }
+
+  public Nav text(String text) {
+    super.appendText(text);
+    return this;
+  }
+
+  public Nav title(String value) {
+    setTitle(value);
     return this;
   }
 }

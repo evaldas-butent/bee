@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -8,25 +9,11 @@ import java.util.List;
 public class Html extends FertileElement {
 
   public Html() {
-    super("html");
-    setXmlns("http://www.w3.org/1999/xhtml");
+    super();
   }
 
-  public Html setXmlns(String value) {
-    setAttribute("xmlns", value);
-    return this;
-  }
-
-  public String getXmlns() {
-    return getAttribute("xmlns");
-  }
-
-  public boolean removeXmlns() {
-    return removeAttribute("xmlns");
-  }
-
-  public Html insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Html addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -40,8 +27,25 @@ public class Html extends FertileElement {
     return this;
   }
 
-  public Html text(String text) {
-    super.appendText(text);
+  
+
+  public Html id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Html insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Html lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Html manifest(String value) {
+    setAttribute(Attribute.MANIFEST, value);
     return this;
   }
 
@@ -50,42 +54,13 @@ public class Html extends FertileElement {
     return this;
   }
 
-  public Html dir(String value) {
-    setDir(value);
+  public Html text(String text) {
+    super.appendText(text);
     return this;
   }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public Html lang(String value) {
-    setLang(value);
+  
+  public Html title(String value) {
+    setTitle(value);
     return this;
-  }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Html setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
   }
 }

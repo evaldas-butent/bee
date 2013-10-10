@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -8,11 +9,11 @@ import java.util.List;
 public class Select extends FertileElement {
 
   public Select() {
-    super("select");
+    super();
   }
 
-  public Select insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Select addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +27,50 @@ public class Select extends FertileElement {
     return this;
   }
 
-  public Select text(String text) {
-    super.appendText(text);
+  public Select autofocus() {
+    setAttribute(Attribute.AUTOFOCUS, true);
+    return this;
+  }
+
+  
+
+  public Select disabled() {
+    setAttribute(Attribute.DISABLED, true);
+    return this;
+  }
+
+  public Select enabled() {
+    setAttribute(Attribute.DISABLED, false);
+    return this;
+  }
+
+  public Select form(String value) {
+    setAttribute(Attribute.FORM, value);
+    return this;
+  }
+
+  public Select id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Select insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Select lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Select multiple() {
+    setAttribute(Attribute.MULTIPLE, true);
+    return this;
+  }
+
+  public Select name(String value) {
+    setAttribute(Attribute.NAME, value);
     return this;
   }
 
@@ -36,161 +79,23 @@ public class Select extends FertileElement {
     return this;
   }
 
-  public Select setDisabled(String value) {
-    setAttribute("disabled", value);
+  public Select required() {
+    setAttribute(Attribute.REQUIRED, true);
     return this;
   }
 
-  public String getDisabled() {
-    return getAttribute("disabled");
-  }
-
-  public boolean removeDisabled() {
-    return removeAttribute("disabled");
-  }
-
-  public Select setMultiple(String value) {
-    setAttribute("multiple", value);
+  public Select size(int value) {
+    setAttribute(Attribute.SIZE, value);
     return this;
   }
 
-  public String getMultiple() {
-    return getAttribute("multiple");
-  }
-
-  public boolean removeMultiple() {
-    return removeAttribute("multiple");
-  }
-
-  public Select setName(String value) {
-    setAttribute("name", value);
+  public Select text(String text) {
+    super.appendText(text);
     return this;
-  }
-
-  public String getName() {
-    return getAttribute("name");
-  }
-
-  public boolean removeName() {
-    return removeAttribute("name");
-  }
-
-  public Select setSize(String value) {
-    setAttribute("size", value);
-    return this;
-  }
-
-  public String getSize() {
-    return getAttribute("size");
-  }
-
-  public boolean removeSize() {
-    return removeAttribute("size");
-  }
-
-  public Select id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Select addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
   }
 
   public Select title(String value) {
     setTitle(value);
     return this;
   }
-
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Select style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Select dir(String value) {
-    setDir(value);
-    return this;
-  }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public Select lang(String value) {
-    setLang(value);
-    return this;
-  }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Select setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
-  public Select accessKey(String value) {
-    setAccessKey(value);
-    return this;
-  }
-
-  public String getAccesskey() {
-    return getAttribute("accesskey");
-  }
-
-  public boolean removeAccesskey() {
-    return removeAttribute("accesskey");
-  }
-
-  public Select tabIndex(int value) {
-    setTabIndex(value);
-    return this;
-  }
-
-  public String getTabindex() {
-    return getAttribute("tabindex");
-  }
-
-  public boolean removeTabindex() {
-    return removeAttribute("tabindex");
-  }
-
 }

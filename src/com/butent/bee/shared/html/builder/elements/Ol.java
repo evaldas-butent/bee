@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -7,12 +8,18 @@ import java.util.List;
 
 public class Ol extends FertileElement {
 
+  private static final String TYPE_DECIMAL = "1";
+  private static final String TYPE_LOWER_ALPHA = "a";
+  private static final String TYPE_UPPER_ALPHA = "A";
+  private static final String TYPE_LOWER_ROMAN = "i";
+  private static final String TYPE_UPPER_ROMAN = "I";
+
   public Ol() {
-    super("ol");
+    super();
   }
 
-  public Ol insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Ol addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +33,20 @@ public class Ol extends FertileElement {
     return this;
   }
 
-  public Ol text(String text) {
-    super.appendText(text);
+  
+
+  public Ol id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Ol insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Ol lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -36,65 +55,19 @@ public class Ol extends FertileElement {
     return this;
   }
 
-  public Ol setCompact(String value) {
-    setAttribute("compact", value);
+  public Ol reversed() {
+    setAttribute(Attribute.REVERSED, true);
     return this;
   }
 
-  public String getCompact() {
-    return getAttribute("compact");
-  }
-
-  public boolean removeCompact() {
-    return removeAttribute("compact");
-  }
-
-  public Ol setStart(String value) {
-    setAttribute("start", value);
+  public Ol start(int value) {
+    setAttribute(Attribute.START, value);
     return this;
   }
 
-  public String getStart() {
-    return getAttribute("start");
-  }
-
-  public boolean removeStart() {
-    return removeAttribute("start");
-  }
-
-  public Ol setType(String value) {
-    setAttribute("type", value);
+  public Ol text(String text) {
+    super.appendText(text);
     return this;
-  }
-
-  public String getType() {
-    return getAttribute("type");
-  }
-
-  public boolean removeType() {
-    return removeAttribute("type");
-  }
-
-  public Ol id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Ol addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
   }
 
   public Ol title(String value) {
@@ -102,56 +75,28 @@ public class Ol extends FertileElement {
     return this;
   }
 
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Ol style(String value) {
-    setStyle(value);
+  public Ol type(String value) {
+    setAttribute(Attribute.TYPE, value);
     return this;
   }
 
-  public boolean removeStyle() {
-    return removeAttribute("style");
+  public Ol typeDecimal() {
+    return type(TYPE_DECIMAL);
   }
 
-  public Ol dir(String value) {
-    setDir(value);
-    return this;
+  public Ol typeLowerAlpha() {
+    return type(TYPE_LOWER_ALPHA);
   }
 
-  public String getDir() {
-    return getAttribute("dir");
+  public Ol typeLowerRoman() {
+    return type(TYPE_LOWER_ROMAN);
   }
 
-  public boolean removeDir() {
-    return removeAttribute("dir");
+  public Ol typeUpperAlpha() {
+    return type(TYPE_UPPER_ALPHA);
   }
 
-  public Ol lang(String value) {
-    setLang(value);
-    return this;
+  public Ol typeUpperRoman() {
+    return type(TYPE_UPPER_ROMAN);
   }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Ol setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
 }

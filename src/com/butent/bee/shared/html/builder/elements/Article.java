@@ -8,11 +8,11 @@ import java.util.List;
 public class Article extends FertileElement {
 
   public Article() {
-    super("article");
+    super();
   }
 
-  public Article insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Article addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +26,18 @@ public class Article extends FertileElement {
     return this;
   }
 
-  public Article text(String text) {
-    super.appendText(text);
+  public Article id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Article insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Article lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -36,83 +46,13 @@ public class Article extends FertileElement {
     return this;
   }
 
-  public Article id(String value) {
-    setId(value);
+  public Article text(String text) {
+    super.appendText(text);
     return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Article addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
   }
 
   public Article title(String value) {
     setTitle(value);
     return this;
   }
-
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Article style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Article dir(String value) {
-    setDir(value);
-    return this;
-  }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public Article lang(String value) {
-    setLang(value);
-    return this;
-  }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Article setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
 }

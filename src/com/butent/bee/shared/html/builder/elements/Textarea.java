@@ -1,30 +1,167 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
-import com.butent.bee.shared.html.builder.Node;
-
-import java.util.List;
+import com.butent.bee.shared.html.builder.Keywords;
 
 public class Textarea extends FertileElement {
 
-  public Textarea(String cols, String rows) {
-    super("textarea");
-    setCols(cols);
-    setRows(rows);
+  private static final String WRAP_HARD = "hard";
+  private static final String WRAP_SOFT = "soft";
+
+  public Textarea() {
+    super();
   }
 
-  public Textarea insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Textarea addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
-  public Textarea append(List<Node> nodes) {
-    super.appendChildren(nodes);
+  public Textarea autocomplete(String value) {
+    setAttribute(Attribute.AUTOCOMPLETE, value);
     return this;
   }
 
-  public Textarea append(Node... nodes) {
-    super.appendChildren(nodes);
+  public Textarea autocompleteOff() {
+    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
+    return this;
+  }
+
+  public Textarea autocompleteOn() {
+    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
+    return this;
+  }
+
+  public Textarea autofocus() {
+    setAttribute(Attribute.AUTOFOCUS, true);
+    return this;
+  }
+
+  public Textarea cols(int value) {
+    setAttribute(Attribute.COLS, value);
+    return this;
+  }
+
+  
+
+  public Textarea dirName(String value) {
+    setAttribute(Attribute.DIRNAME, value);
+    return this;
+  }
+
+  public Textarea disabled() {
+    setAttribute(Attribute.DISABLED, true);
+    return this;
+  }
+
+  public Textarea enabled() {
+    setAttribute(Attribute.DISABLED, false);
+    return this;
+  }
+
+  public Textarea form(String value) {
+    setAttribute(Attribute.FORM, value);
+    return this;
+  }
+
+  public Textarea id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Textarea inputModeEmail() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_EMAIL);
+    return this;
+  }
+
+  public Textarea inputModeFullWidthLatin() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_FULL_WIDTH_LATIN);
+    return this;
+  }
+
+  public Textarea inputModeKana() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_KANA);
+    return this;
+  }
+
+  public Textarea inputModeKatakana() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_KATAKANA);
+    return this;
+  }
+
+  public Textarea inputModeLatin() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN);
+    return this;
+  }
+
+  public Textarea inputModeLatinName() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN_NAME);
+    return this;
+  }
+
+  public Textarea inputModeLatinProse() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN_PROSE);
+    return this;
+  }
+
+  public Textarea inputModeNumeric() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_NUMERIC);
+    return this;
+  }
+
+  public Textarea inputModeTel() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_TEL);
+    return this;
+  }
+
+  public Textarea inputModeUrl() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_URL);
+    return this;
+  }
+
+  public Textarea inputModeVerbatim() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_VERBATIM);
+    return this;
+  }
+
+  public Textarea lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Textarea maxLength(int value) {
+    setAttribute(Attribute.MAXLENGTH, value);
+    return this;
+  }
+
+  public Textarea minLength(int value) {
+    setAttribute(Attribute.MINLENGTH, value);
+    return this;
+  }
+
+  public Textarea name(String value) {
+    setAttribute(Attribute.NAME, value);
+    return this;
+  }
+
+  public Textarea placeholder(String value) {
+    setAttribute(Attribute.PLACEHOLDER, value);
+    return this;
+  }
+
+  public Textarea readOnly() {
+    setAttribute(Attribute.READONLY, true);
+    return this;
+  }
+
+  public Textarea required() {
+    setAttribute(Attribute.REQUIRED, true);
+    return this;
+  }
+
+  public Textarea rows(int value) {
+    setAttribute(Attribute.ROWS, value);
     return this;
   }
 
@@ -33,179 +170,18 @@ public class Textarea extends FertileElement {
     return this;
   }
 
-  public Textarea remove(Node child) {
-    super.removeChild(child);
-    return this;
-  }
-
-  public Textarea setCols(String value) {
-    setAttribute("cols", value);
-    return this;
-  }
-
-  public String getCols() {
-    return getAttribute("cols");
-  }
-
-  public boolean removeCols() {
-    return removeAttribute("cols");
-  }
-
-  public Textarea setRows(String value) {
-    setAttribute("rows", value);
-    return this;
-  }
-
-  public String getRows() {
-    return getAttribute("rows");
-  }
-
-  public boolean removeRows() {
-    return removeAttribute("rows");
-  }
-
-  public Textarea setDisabled(String value) {
-    setAttribute("disabled", value);
-    return this;
-  }
-
-  public String getDisabled() {
-    return getAttribute("disabled");
-  }
-
-  public boolean removeDisabled() {
-    return removeAttribute("disabled");
-  }
-
-  public Textarea setName(String value) {
-    setAttribute("name", value);
-    return this;
-  }
-
-  public String getName() {
-    return getAttribute("name");
-  }
-
-  public boolean removeName() {
-    return removeAttribute("name");
-  }
-
-  public Textarea setReadonly(String value) {
-    setAttribute("readonly", value);
-    return this;
-  }
-
-  public String getReadonly() {
-    return getAttribute("readonly");
-  }
-
-  public boolean removeReadonly() {
-    return removeAttribute("readonly");
-  }
-
-  public Textarea id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Textarea addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
-  }
-
   public Textarea title(String value) {
     setTitle(value);
     return this;
   }
 
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Textarea style(String value) {
-    setStyle(value);
+  public Textarea wrapHard() {
+    setAttribute(Attribute.WRAP, WRAP_HARD);
     return this;
   }
 
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Textarea dir(String value) {
-    setDir(value);
+  public Textarea wrapSoft() {
+    setAttribute(Attribute.WRAP, WRAP_SOFT);
     return this;
   }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public Textarea lang(String value) {
-    setLang(value);
-    return this;
-  }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Textarea setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
-  public Textarea tabIndex(int value) {
-    setTabIndex(value);
-    return this;
-  }
-
-  public String getTabindex() {
-    return getAttribute("tabindex");
-  }
-
-  public boolean removeTabindex() {
-    return removeAttribute("tabindex");
-  }
-
-  public Textarea accessKey(String value) {
-    setAccessKey(value);
-    return this;
-  }
-
-  public String getAccesskey() {
-    return getAttribute("accesskey");
-  }
-
-  public boolean removeAccesskey() {
-    return removeAttribute("accesskey");
-  }
-
 }

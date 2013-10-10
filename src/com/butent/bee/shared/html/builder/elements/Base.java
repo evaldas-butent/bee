@@ -1,66 +1,38 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileElement;
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.Keywords;
 
-import java.util.List;
+public class Base extends Element {
 
-public class Base extends FertileElement {
-
-  public Base(String href) {
-    super("base");
-    setHref(href);
+  public Base() {
+    super();
   }
 
-  public Base insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Base href(String value) {
+    setAttribute(Attribute.HREF, value);
     return this;
   }
-
-  public Base append(List<Node> nodes) {
-    super.appendChildren(nodes);
-    return this;
-  }
-
-  public Base append(Node... nodes) {
-    super.appendChildren(nodes);
-    return this;
-  }
-
-  public Base text(String text) {
-    super.appendText(text);
-    return this;
-  }
-
-  public Base remove(Node child) {
-    super.removeChild(child);
-    return this;
-  }
-
-  public Base setHref(String value) {
-    setAttribute("href", value);
-    return this;
-  }
-
-  public String getHref() {
-    return getAttribute("href");
-  }
-
-  public boolean removeHref() {
-    return removeAttribute("href");
-  }
-
+  
   public Base setTarget(String value) {
-    setAttribute("target", value);
+    setAttribute(Attribute.TARGET, value);
     return this;
   }
-
-  public String getTarget() {
-    return getAttribute("target");
+  
+  public Base targetBlank() {
+    return setTarget(Keywords.BROWSING_CONTEXT_BLANK);
   }
 
-  public boolean removeTarget() {
-    return removeAttribute("target");
+  public Base targetParent() {
+    return setTarget(Keywords.BROWSING_CONTEXT_PARENT);
+  }
+  
+  public Base targetSelf() {
+    return setTarget(Keywords.BROWSING_CONTEXT_SELF);
   }
 
+  public Base targetTop() {
+    return setTarget(Keywords.BROWSING_CONTEXT_TOP);
+  }
 }

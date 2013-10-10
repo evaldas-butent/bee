@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -8,11 +9,11 @@ import java.util.List;
 public class Dialog extends FertileElement {
 
   public Dialog() {
-    super("dialog");
+    super();
   }
 
-  public Dialog insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Dialog addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -20,9 +21,41 @@ public class Dialog extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
+  
   public Dialog append(Node... nodes) {
     super.appendChildren(nodes);
+    return this;
+  }
+
+  public Dialog closed() {
+    setAttribute(Attribute.OPEN, false);
+    return this;
+  }
+
+  
+
+  public Dialog id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Dialog insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Dialog lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Dialog open() {
+    setAttribute(Attribute.OPEN, true);
+    return this;
+  }
+
+  public Dialog remove(Node child) {
+    super.removeChild(child);
     return this;
   }
 
@@ -31,8 +64,8 @@ public class Dialog extends FertileElement {
     return this;
   }
 
-  public Dialog remove(Node child) {
-    super.removeChild(child);
+  public Dialog title(String value) {
+    setTitle(value);
     return this;
   }
 }

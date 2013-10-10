@@ -8,11 +8,11 @@ import java.util.List;
 public class Figure extends FertileElement {
 
   public Figure() {
-    super("figure");
+    super();
   }
 
-  public Figure insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Figure addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,13 +26,35 @@ public class Figure extends FertileElement {
     return this;
   }
 
-  public Figure text(String text) {
-    super.appendText(text);
+  
+
+  public Figure id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Figure insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Figure lang(String value) {
+    setLang(value);
     return this;
   }
 
   public Figure remove(Node child) {
     super.removeChild(child);
+    return this;
+  }
+
+  public Figure text(String text) {
+    super.appendText(text);
+    return this;
+  }
+
+  public Figure title(String value) {
+    setTitle(value);
     return this;
   }
 }

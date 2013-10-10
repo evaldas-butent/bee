@@ -5,55 +5,55 @@ import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
-public class Head extends FertileElement {
+public class Main extends FertileElement {
 
-  public Head() {
+  public Main() {
     super();
   }
 
-  public Head addClass(String value) {
+  public Main addClass(String value) {
     super.addClassName(value);
     return this;
   }
 
-  public Head append(List<Node> nodes) {
+  public Main append(List<Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
 
-  public Head append(Node... nodes) {
+  public Main append(Node... nodes) {
     super.appendChildren(nodes);
     return this;
   }
 
   
 
-  public Head id(String value) {
+  public Main id(String value) {
     setId(value);
     return this;
   }
 
-  public Head insert(int index, Node child) {
+  public Main insert(int index, Node child) {
     super.insertChild(index, child);
     return this;
   }
 
-  public Head lang(String value) {
+  public Main lang(String value) {
     setLang(value);
     return this;
   }
 
-  public Head remove(Node child) {
+  public Main remove(Node child) {
     super.removeChild(child);
     return this;
   }
 
-  public Head text(String text) {
+  public Main text(String text) {
     super.appendText(text);
     return this;
   }
 
-  public Head title(String value) {
+  public Main title(String value) {
     setTitle(value);
     return this;
   }

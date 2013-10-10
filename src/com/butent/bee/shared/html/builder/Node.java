@@ -8,7 +8,7 @@ public abstract class Node {
   }
 
   public Node getParent() {
-    return this.parent;
+    return parent;
   }
 
   public void setParent(Node parent) {

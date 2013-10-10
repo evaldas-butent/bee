@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -8,11 +9,11 @@ import java.util.List;
 public class Fieldset extends FertileElement {
 
   public Fieldset() {
-    super("fieldset");
+    super();
   }
 
-  public Fieldset insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Fieldset addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -25,14 +26,21 @@ public class Fieldset extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  public Fieldset text(String text) {
-    super.appendText(text);
+  
+  
+  
+  public Fieldset disabled() {
+    setAttribute(Attribute.DISABLED, true);
     return this;
   }
 
-  public Fieldset remove(Node child) {
-    super.removeChild(child);
+  public Fieldset enabled() {
+    setAttribute(Attribute.DISABLED, false);
+    return this;
+  }
+
+  public Fieldset form(String value) {
+    setAttribute(Attribute.FORM, value);
     return this;
   }
 
@@ -41,52 +49,9 @@ public class Fieldset extends FertileElement {
     return this;
   }
 
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Fieldset addClass(String value) {
-    super.addClassName(value);
+  public Fieldset insert(int index, Node child) {
+    super.insertChild(index, child);
     return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
-  }
-
-  public Fieldset title(String value) {
-    setTitle(value);
-    return this;
-  }
-
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Fieldset style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Fieldset dir(String value) {
-    setDir(value);
-    return this;
-  }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
   }
 
   public Fieldset lang(String value) {
@@ -94,25 +59,23 @@ public class Fieldset extends FertileElement {
     return this;
   }
 
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Fieldset setXMLLang(String value) {
-    setAttribute("xml:lang", value);
+  public Fieldset name(String value) {
+    setAttribute(Attribute.NAME, value);
     return this;
   }
 
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
+  public Fieldset remove(Node child) {
+    super.removeChild(child);
+    return this;
   }
 
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
+  public Fieldset text(String text) {
+    super.appendText(text);
+    return this;
   }
 
+  public Fieldset title(String value) {
+    setTitle(value);
+    return this;
+  }
 }

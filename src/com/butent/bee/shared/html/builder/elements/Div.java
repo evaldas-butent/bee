@@ -11,8 +11,8 @@ public class Div extends FertileElement {
     super();
   }
 
-  public Div insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Div addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +26,18 @@ public class Div extends FertileElement {
     return this;
   }
 
-  public Div text(String text) {
-    super.appendText(text);
+  public Div id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Div insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Div lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -36,33 +46,13 @@ public class Div extends FertileElement {
     return this;
   }
 
-  public Div id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public Div addClass(String value) {
-    super.addClassName(value);
+  public Div text(String text) {
+    super.appendText(text);
     return this;
   }
 
   public Div title(String value) {
     setTitle(value);
-    return this;
-  }
-
-  public Div style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public Div dir(String value) {
-    setDir(value);
-    return this;
-  }
-
-  public Div lang(String value) {
-    setLang(value);
     return this;
   }
 }

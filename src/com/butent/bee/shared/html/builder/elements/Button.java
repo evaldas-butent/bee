@@ -1,18 +1,25 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
+import com.butent.bee.shared.html.builder.Keywords;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
 
 public class Button extends FertileElement {
 
+  private static final String TYPE_BUTTON = "button";
+  private static final String TYPE_MENU = "menu";
+  private static final String TYPE_RESET = "reset";
+  private static final String TYPE_SUBMIT = "submit";
+
   public Button() {
-    super("button");
+    super();
   }
 
-  public Button insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Button addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +33,108 @@ public class Button extends FertileElement {
     return this;
   }
 
-  public Button text(String text) {
-    super.appendText(text);
+  public Button autofocus() {
+    setAttribute(Attribute.AUTOFOCUS, true);
+    return this;
+  }
+
+  public Button disabled() {
+    setAttribute(Attribute.DISABLED, true);
+    return this;
+  }
+
+  public Button enabled() {
+    setAttribute(Attribute.DISABLED, false);
+    return this;
+  }
+
+  public Button form(String value) {
+    setAttribute(Attribute.FORM, value);
+    return this;
+  }
+
+  public Button formAction(String value) {
+    setAttribute(Attribute.FORMACTION, value);
+    return this;
+  }
+
+  public Button formEncTypeMultipart() {
+    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    return this;
+  }
+  
+  public Button formEncTypeText() {
+    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    return this;
+  }
+
+  public Button formEncTypeUrl() {
+    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    return this;
+  }
+
+  public Button formMethodGet() {
+    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_GET);
+    return this;
+  }
+
+  public Button formMethodPost() {
+    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_POST);
+    return this;
+  }
+
+  public Button formNoValidate() {
+    setAttribute(Attribute.FORMNOVALIDATE, true);
+    return this;
+  }
+
+  public Button formTarget(String value) {
+    setAttribute(Attribute.FORMTARGET, value);
+    return this;
+  }
+
+  public Button formTargetBlank() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    return this;
+  }
+  
+  public Button formTargetParent() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    return this;
+  }
+
+  public Button formTargetSelf() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_SELF);
+    return this;
+  }
+  
+  public Button formTargetTop() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_TOP);
+    return this;
+  }
+  
+  public Button id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Button insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Button lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Button menu(String value) {
+    setAttribute(Attribute.MENU, value);
+    return this;
+  }
+
+  public Button name(String value) {
+    setAttribute(Attribute.NAME, value);
     return this;
   }
 
@@ -36,78 +143,9 @@ public class Button extends FertileElement {
     return this;
   }
 
-  public Button setDisabled(String value) {
-    setAttribute("disabled", value);
+  public Button text(String text) {
+    super.appendText(text);
     return this;
-  }
-
-  public String getDisabled() {
-    return getAttribute("disabled");
-  }
-
-  public boolean removeDisabled() {
-    return removeAttribute("disabled");
-  }
-
-  public Button setName(String value) {
-    setAttribute("name", value);
-    return this;
-  }
-
-  public String getName() {
-    return getAttribute("name");
-  }
-
-  public boolean removeName() {
-    return removeAttribute("name");
-  }
-
-  public Button setType(String value) {
-    setAttribute("type", value);
-    return this;
-  }
-
-  public String getType() {
-    return getAttribute("type");
-  }
-
-  public boolean removeType() {
-    return removeAttribute("type");
-  }
-
-  public Button setValue(String value) {
-    setAttribute("value", value);
-    return this;
-  }
-
-  public String getValue() {
-    return getAttribute("value");
-  }
-
-  public boolean removeValue() {
-    return removeAttribute("value");
-  }
-
-  public Button id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Button addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
   }
 
   public Button title(String value) {
@@ -115,82 +153,28 @@ public class Button extends FertileElement {
     return this;
   }
 
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Button style(String value) {
-    setStyle(value);
+  public Button typeButton() {
+    setAttribute(Attribute.TYPE, TYPE_BUTTON);
     return this;
   }
 
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Button dir(String value) {
-    setDir(value);
+  public Button typeMenu() {
+    setAttribute(Attribute.TYPE, TYPE_MENU);
     return this;
   }
 
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public Button lang(String value) {
-    setLang(value);
+  public Button typeReset() {
+    setAttribute(Attribute.TYPE, TYPE_RESET);
     return this;
   }
 
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Button setXMLLang(String value) {
-    setAttribute("xml:lang", value);
+  public Button typeSubmit() {
+    setAttribute(Attribute.TYPE, TYPE_SUBMIT);
     return this;
   }
 
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
-  public Button accessKey(String value) {
-    setAccessKey(value);
+  public Button value(String value) {
+    setAttribute(Attribute.VALUE, value);
     return this;
   }
-
-  public String getAccesskey() {
-    return getAttribute("accesskey");
-  }
-
-  public boolean removeAccesskey() {
-    return removeAttribute("accesskey");
-  }
-
-  public Button tabIndex(int value) {
-    setTabIndex(value);
-    return this;
-  }
-
-  public String getTabindex() {
-    return getAttribute("tabindex");
-  }
-
-  public boolean removeTabindex() {
-    return removeAttribute("tabindex");
-  }
-
 }

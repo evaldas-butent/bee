@@ -1,150 +1,40 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Element;
+import com.google.common.collect.Sets;
 
-public class Iframe extends Element {
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.builder.FertileElement;
+import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+public class Iframe extends FertileElement {
+
+  public enum Sandbox {
+    ALLOW_FORMS("allow-forms"),
+    ALLOW_POINTER_LOCK("allow-pointer-lock"),
+    ALLOW_POPUPS("allow-popups"),
+    ALLOW_SAME_ORIGIN("allow-same-origin"),
+    ALLOW_SCRIPTS("allow-scripts"),
+    ALLOW_TOP_NAVIGATION("allow-top-navigation");
+
+    private final String keyword;
+
+    private Sandbox(String keyword) {
+      this.keyword = keyword;
+    }
+
+    public String getKeyword() {
+      return keyword;
+    }
+  }
 
   public Iframe() {
-    super("iframe");
-  }
-
-  public Iframe setAlign(String value) {
-    setAttribute("align", value);
-    return this;
-  }
-
-  public String getAlign() {
-    return getAttribute("align");
-  }
-
-  public boolean removeAlign() {
-    return removeAttribute("align");
-  }
-
-  public Iframe setFrameborder(String value) {
-    setAttribute("frameborder", value);
-    return this;
-  }
-
-  public String getFrameborder() {
-    return getAttribute("frameborder");
-  }
-
-  public boolean removeFrameborder() {
-    return removeAttribute("frameborder");
-  }
-
-  public Iframe setHeight(String value) {
-    setAttribute("height", value);
-    return this;
-  }
-
-  public String getHeight() {
-    return getAttribute("height");
-  }
-
-  public boolean removeHeight() {
-    return removeAttribute("height");
-  }
-
-  public Iframe setLongdesc(String value) {
-    setAttribute("longdesc", value);
-    return this;
-  }
-
-  public String getLongdesc() {
-    return getAttribute("longdesc");
-  }
-
-  public boolean removeLongdesc() {
-    return removeAttribute("longdesc");
-  }
-
-  public Iframe setMarginheight(String value) {
-    setAttribute("marginheight", value);
-    return this;
-  }
-
-  public String getMarginheight() {
-    return getAttribute("marginheight");
-  }
-
-  public boolean removeMarginheight() {
-    return removeAttribute("marginheight");
-  }
-
-  public Iframe setMarginwidth(String value) {
-    setAttribute("marginwidth", value);
-    return this;
-  }
-
-  public String getMarginwidth() {
-    return getAttribute("marginwidth");
-  }
-
-  public boolean removeMarginwidth() {
-    return removeAttribute("marginwidth");
-  }
-
-  public Iframe setName(String value) {
-    setAttribute("name", value);
-    return this;
-  }
-
-  public String getName() {
-    return getAttribute("name");
-  }
-
-  public boolean removeName() {
-    return removeAttribute("name");
-  }
-
-  public Iframe setScrolling(String value) {
-    setAttribute("scrolling", value);
-    return this;
-  }
-
-  public String getScrolling() {
-    return getAttribute("scrolling");
-  }
-
-  public boolean removeScrolling() {
-    return removeAttribute("scrolling");
-  }
-
-  public Iframe setSrc(String value) {
-    setAttribute("src", value);
-    return this;
-  }
-
-  public String getSrc() {
-    return getAttribute("src");
-  }
-
-  public boolean removeSrc() {
-    return removeAttribute("src");
-  }
-
-  public Iframe setWidth(String value) {
-    setAttribute("width", value);
-    return this;
-  }
-
-  public String getWidth() {
-    return getAttribute("width");
-  }
-
-  public boolean removeWidth() {
-    return removeAttribute("width");
-  }
-
-  public Iframe id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
+    super();
   }
 
   public Iframe addClass(String value) {
@@ -152,12 +42,91 @@ public class Iframe extends Element {
     return this;
   }
 
-  public String getCSSClass() {
-    return getAttribute("class");
+  public Iframe allowFullScreen() {
+    setAttribute(Attribute.ALLOWFULLSCREEN, true);
+    return this;
   }
 
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
+  public Iframe append(List<Node> nodes) {
+    super.appendChildren(nodes);
+    return this;
+  }
+
+  public Iframe append(Node... nodes) {
+    super.appendChildren(nodes);
+    return this;
+  }
+
+  
+
+  public Iframe height(int value) {
+    setAttribute(Attribute.HEIGHT, value);
+    return this;
+  }
+
+  public Iframe id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Iframe insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Iframe lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Iframe name(String value) {
+    setAttribute(Attribute.NAME, value);
+    return this;
+  }
+
+  public Iframe remove(Node child) {
+    super.removeChild(child);
+    return this;
+  }
+
+  public Iframe sandbox(Collection<Sandbox> values) {
+    Set<String> kwds = Sets.newHashSet();
+
+    if (!BeeUtils.isEmpty(values)) {
+      for (Sandbox sandbox : values) {
+        if (sandbox != null) {
+          kwds.add(sandbox.getKeyword());
+        }
+      }
+    }
+
+    if (kwds.isEmpty()) {
+      removeAttribute(Attribute.SANDBOX);
+    } else {
+      setAttribute(Attribute.SANDBOX, BeeUtils.join(BeeConst.STRING_SPACE, kwds));
+    }
+
+    return this;
+  }
+
+  public Iframe seamless() {
+    setAttribute(Attribute.SEAMLESS, true);
+    return this;
+  }
+
+  public Iframe src(String value) {
+    setAttribute(Attribute.SRC, value);
+    return this;
+  }
+
+  public Iframe srcDoc(String value) {
+    setAttribute(Attribute.SRCDOC, value);
+    return this;
+  }
+
+  public Iframe text(String text) {
+    super.appendText(text);
+    return this;
   }
 
   public Iframe title(String value) {
@@ -165,17 +134,8 @@ public class Iframe extends Element {
     return this;
   }
 
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Iframe style(String value) {
-    setStyle(value);
+  public Iframe width(int value) {
+    setAttribute(Attribute.WIDTH, value);
     return this;
   }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
 }

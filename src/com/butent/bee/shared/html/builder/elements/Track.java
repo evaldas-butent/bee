@@ -1,38 +1,84 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.FertileElement;
-import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.builder.Element;
 
-import java.util.List;
+public class Track extends Element {
 
-public class Track extends FertileElement {
+  private static final String KIND_CAPTIONS = "captions";
+  private static final String KIND_CHAPTERS = "chapters";
+  private static final String KIND_DESCRIPTIONS = "descriptions";
+  private static final String KIND_METADATA = "metadata";
+  private static final String KIND_SUBTITLES = "subtitles";
 
   public Track() {
-    super("track");
+    super();
   }
 
-  public Track insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Track addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
-  public Track append(List<Node> nodes) {
-    super.appendChildren(nodes);
+  
+
+  public Track htmlDefault() {
+    setAttribute(Attribute.DEFAULT, true);
     return this;
   }
 
-  public Track append(Node... nodes) {
-    super.appendChildren(nodes);
+  public Track id(String value) {
+    setId(value);
     return this;
   }
 
-  public Track text(String text) {
-    super.appendText(text);
+  public Track kindCaptions() {
+    setAttribute(Attribute.KIND, KIND_CAPTIONS);
     return this;
   }
 
-  public Track remove(Node child) {
-    super.removeChild(child);
+  public Track kindChapters() {
+    setAttribute(Attribute.KIND, KIND_CHAPTERS);
+    return this;
+  }
+
+  public Track kindDescriptions() {
+    setAttribute(Attribute.KIND, KIND_DESCRIPTIONS);
+    return this;
+  }
+
+  public Track kindMetadata() {
+    setAttribute(Attribute.KIND, KIND_METADATA);
+    return this;
+  }
+
+  public Track kindSubtitles() {
+    setAttribute(Attribute.KIND, KIND_SUBTITLES);
+    return this;
+  }
+
+  public Track label(String value) {
+    setAttribute(Attribute.LABEL, value);
+    return this;
+  }
+
+  public Track lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Track src(String value) {
+    setAttribute(Attribute.SRC, value);
+    return this;
+  }
+
+  public Track srcLang(String value) {
+    setAttribute(Attribute.SRCLANG, value);
+    return this;
+  }
+
+  public Track title(String value) {
+    setTitle(value);
     return this;
   }
 }

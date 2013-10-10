@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -8,11 +9,11 @@ import java.util.List;
 public class Body extends FertileElement {
 
   public Body() {
-    super("body");
+    super();
   }
 
-  public Body insert(int index, Node child) {
-    super.insertChild(index, child);
+  public Body addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +27,83 @@ public class Body extends FertileElement {
     return this;
   }
 
-  public Body text(String text) {
-    super.appendText(text);
+  public Body id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Body insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public Body lang(String value) {
+    setLang(value);
+    return this;
+  }
+
+  public Body onAfterPrint(String value) {
+    setAttribute(Attribute.ONAFTERPRINT, value);
+    return this;
+  }
+
+  public Body onBeforePrint(String value) {
+    setAttribute(Attribute.ONBEFOREPRINT, value);
+    return this;
+  }
+
+  public Body onBeforeUnload(String value) {
+    setAttribute(Attribute.ONBEFOREUNLOAD, value);
+    return this;
+  }
+
+  public Body onHashChange(String value) {
+    setAttribute(Attribute.ONHASHCHANGE, value);
+    return this;
+  }
+
+  public Body onMessage(String value) {
+    setAttribute(Attribute.ONMESSAGE, value);
+    return this;
+  }
+
+  public Body onOffline(String value) {
+    setAttribute(Attribute.ONOFFLINE, value);
+    return this;
+  }
+
+  public Body onOnline(String value) {
+    setAttribute(Attribute.ONONLINE, value);
+    return this;
+  }
+
+  public Body onPageHide(String value) {
+    setAttribute(Attribute.ONPAGEHIDE, value);
+    return this;
+  }
+
+  public Body onPageShow(String value) {
+    setAttribute(Attribute.ONPAGESHOW, value);
+    return this;
+  }
+
+  public Body onPopState(String value) {
+    setAttribute(Attribute.ONPOPSTATE, value);
+    return this;
+  }
+
+  public Body onResize(String value) {
+    setAttribute(Attribute.ONRESIZE, value);
+    return this;
+  }
+
+  public Body onStorage(String value) {
+    setAttribute(Attribute.ONSTORAGE, value);
+    return this;
+  }
+
+  public Body onUnload(String value) {
+    setAttribute(Attribute.ONUNLOAD, value);
     return this;
   }
 
@@ -36,161 +112,13 @@ public class Body extends FertileElement {
     return this;
   }
 
-  public Body setAlink(String value) {
-    setAttribute("alink", value);
+  public Body text(String text) {
+    super.appendText(text);
     return this;
-  }
-
-  public String getAlink() {
-    return getAttribute("alink");
-  }
-
-  public boolean removeAlink() {
-    return removeAttribute("alink");
-  }
-
-  public Body setBackground(String value) {
-    setAttribute("background", value);
-    return this;
-  }
-
-  public String getBackground() {
-    return getAttribute("background");
-  }
-
-  public boolean removeBackground() {
-    return removeAttribute("background");
-  }
-
-  public Body setBgcolor(String value) {
-    setAttribute("bgcolor", value);
-    return this;
-  }
-
-  public String getBgcolor() {
-    return getAttribute("bgcolor");
-  }
-
-  public boolean removeBgcolor() {
-    return removeAttribute("bgcolor");
-  }
-
-  public Body setLink(String value) {
-    setAttribute("link", value);
-    return this;
-  }
-
-  public String getLink() {
-    return getAttribute("link");
-  }
-
-  public boolean removeLink() {
-    return removeAttribute("link");
-  }
-
-  public Body setText(String value) {
-    setAttribute("text", value);
-    return this;
-  }
-
-  public String getText() {
-    return getAttribute("text");
-  }
-
-  public boolean removeText() {
-    return removeAttribute("text");
-  }
-
-  public Body setVlink(String value) {
-    setAttribute("vlink", value);
-    return this;
-  }
-
-  public String getVlink() {
-    return getAttribute("vlink");
-  }
-
-  public boolean removeVlink() {
-    return removeAttribute("vlink");
-  }
-
-  public Body id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public Body addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
   }
 
   public Body title(String value) {
     setTitle(value);
     return this;
   }
-
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Body style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Body dir(String value) {
-    setDir(value);
-    return this;
-  }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public Body lang(String value) {
-    setLang(value);
-    return this;
-  }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Body setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
 }

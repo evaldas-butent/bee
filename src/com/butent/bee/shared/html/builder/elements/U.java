@@ -8,11 +8,11 @@ import java.util.List;
 public class U extends FertileElement {
 
   public U() {
-    super("u");
+    super();
   }
 
-  public U insert(int index, Node child) {
-    super.insertChild(index, child);
+  public U addClass(String value) {
+    super.addClassName(value);
     return this;
   }
 
@@ -26,8 +26,20 @@ public class U extends FertileElement {
     return this;
   }
 
-  public U text(String text) {
-    super.appendText(text);
+  
+
+  public U id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public U insert(int index, Node child) {
+    super.insertChild(index, child);
+    return this;
+  }
+
+  public U lang(String value) {
+    setLang(value);
     return this;
   }
 
@@ -36,83 +48,13 @@ public class U extends FertileElement {
     return this;
   }
 
-  public U id(String value) {
-    setId(value);
+  public U text(String text) {
+    super.appendText(text);
     return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
-  }
-
-  public U addClass(String value) {
-    super.addClassName(value);
-    return this;
-  }
-
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
   }
 
   public U title(String value) {
     setTitle(value);
     return this;
   }
-
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public U style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public U dir(String value) {
-    setDir(value);
-    return this;
-  }
-
-  public String getDir() {
-    return getAttribute("dir");
-  }
-
-  public boolean removeDir() {
-    return removeAttribute("dir");
-  }
-
-  public U lang(String value) {
-    setLang(value);
-    return this;
-  }
-
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public U setXMLLang(String value) {
-    setAttribute("xml:lang", value);
-    return this;
-  }
-
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
-  }
-
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
-  }
-
 }

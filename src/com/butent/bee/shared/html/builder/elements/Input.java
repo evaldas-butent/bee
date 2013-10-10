@@ -1,178 +1,56 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.Keywords;
 
 public class Input extends Element {
 
-  private static final String ACCEPT = "accept";
+  public enum Type {
+    HIDDEN("hidden"),
+    TEXT("text"),
+    SEARCH("search"),
+    TEL("tel"),
+    URL("url"),
+    EMAIL("email"),
+    PASSWORD("password"),
+    DATE_TIME("datetime"),
+    DATE("date"),
+    MONTH("month"),
+    WEEK("week"),
+    TIME("time"),
+    DATE_TIME_LOCAL("datetime-local"),
+    NUMBER("number"),
+    RANGE("range"),
+    COLOR("color"),
+    CHECK_BOX("checkbox"),
+    RADIO("radio"),
+    FILE("file"),
+    SUBMIT("submit"),
+    IMAGE("image"),
+    RESET("reset"),
+    BUTTON("button");
+
+    private final String keyword;
+
+    private Type(String keyword) {
+      this.keyword = keyword;
+    }
+
+    public String getKeyword() {
+      return keyword;
+    }
+  }
+
+  private static final String STEP_ANY = "any";
 
   public Input() {
-    super("input");
+    super();
   }
 
-  public Input setAccept(String value) {
-    setAttribute(ACCEPT, value);
+  public Input accept(String value) {
+    setAttribute(Attribute.ACCEPT, value);
     return this;
-  }
-
-  public String getAccept() {
-    return getAttribute(ACCEPT);
-  }
-
-  public boolean removeAccept() {
-    return removeAttribute(ACCEPT);
-  }
-
-  public Input setAlign(String value) {
-    setAttribute("align", value);
-    return this;
-  }
-
-  public String getAlign() {
-    return getAttribute("align");
-  }
-
-  public boolean removeAlign() {
-    return removeAttribute("align");
-  }
-
-  public Input setAlt(String value) {
-    setAttribute("alt", value);
-    return this;
-  }
-
-  public String getAlt() {
-    return getAttribute("alt");
-  }
-
-  public boolean removeAlt() {
-    return removeAttribute("alt");
-  }
-
-  public Input setChecked(String value) {
-    setAttribute("checked", value);
-    return this;
-  }
-
-  public String getChecked() {
-    return getAttribute("checked");
-  }
-
-  public boolean removeChecked() {
-    return removeAttribute("checked");
-  }
-
-  public Input setDisabled(String value) {
-    setAttribute("disabled", value);
-    return this;
-  }
-
-  public String getDisabled() {
-    return getAttribute("disabled");
-  }
-
-  public boolean removeDisabled() {
-    return removeAttribute("disabled");
-  }
-
-  public Input setMaxlength(String value) {
-    setAttribute("maxlength", value);
-    return this;
-  }
-
-  public String getMaxlength() {
-    return getAttribute("maxlength");
-  }
-
-  public boolean removeMaxlength() {
-    return removeAttribute("maxlength");
-  }
-
-  public Input setName(String value) {
-    setAttribute("name", value);
-    return this;
-  }
-
-  public String getName() {
-    return getAttribute("name");
-  }
-
-  public boolean removeName() {
-    return removeAttribute("name");
-  }
-
-  public Input setReadonly(String value) {
-    setAttribute("readonly", value);
-    return this;
-  }
-
-  public String getReadonly() {
-    return getAttribute("readonly");
-  }
-
-  public boolean removeReadonly() {
-    return removeAttribute("readonly");
-  }
-
-  public Input setSize(String value) {
-    setAttribute("size", value);
-    return this;
-  }
-
-  public String getSize() {
-    return getAttribute("size");
-  }
-
-  public boolean removeSize() {
-    return removeAttribute("size");
-  }
-
-  public Input setSrc(String value) {
-    setAttribute("src", value);
-    return this;
-  }
-
-  public String getSrc() {
-    return getAttribute("src");
-  }
-
-  public boolean removeSrc() {
-    return removeAttribute("src");
-  }
-
-  public Input setType(String value) {
-    setAttribute("type", value);
-    return this;
-  }
-
-  public String getType() {
-    return getAttribute("type");
-  }
-
-  public boolean removeType() {
-    return removeAttribute("type");
-  }
-
-  public Input setValue(String value) {
-    setAttribute("value", value);
-    return this;
-  }
-
-  public String getValue() {
-    return getAttribute("value");
-  }
-
-  public boolean removeValue() {
-    return removeAttribute("value");
-  }
-
-  public Input id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
   }
 
   public Input addClass(String value) {
@@ -180,43 +58,181 @@ public class Input extends Element {
     return this;
   }
 
-  public String getCSSClass() {
-    return getAttribute("class");
-  }
-
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
-  }
-
-  public Input title(String value) {
-    setTitle(value);
+  public Input alt(String value) {
+    setAttribute(Attribute.ALT, value);
     return this;
   }
 
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Input style(String value) {
-    setStyle(value);
+  public Input autocomplete(String value) {
+    setAttribute(Attribute.AUTOCOMPLETE, value);
     return this;
   }
 
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
-  public Input dir(String value) {
-    setDir(value);
+  public Input autocompleteOff() {
+    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
     return this;
   }
 
-  public String getDir() {
-    return getAttribute("dir");
+  public Input autocompleteOn() {
+    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
+    return this;
   }
 
-  public boolean removeDir() {
-    return removeAttribute("dir");
+  public Input autofocus() {
+    setAttribute(Attribute.AUTOFOCUS, true);
+    return this;
+  }
+
+  public Input checked() {
+    setAttribute(Attribute.CHECKED, true);
+    return this;
+  }
+
+  
+
+  public Input dirName(String value) {
+    setAttribute(Attribute.DIRNAME, value);
+    return this;
+  }
+
+  public Input disabled() {
+    setAttribute(Attribute.DISABLED, true);
+    return this;
+  }
+
+  public Input enabled() {
+    setAttribute(Attribute.DISABLED, false);
+    return this;
+  }
+
+  public Input form(String value) {
+    setAttribute(Attribute.FORM, value);
+    return this;
+  }
+
+  public Input formAction(String value) {
+    setAttribute(Attribute.FORMACTION, value);
+    return this;
+  }
+
+  public Input formEncTypeMultipart() {
+    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    return this;
+  }
+
+  public Input formEncTypeText() {
+    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    return this;
+  }
+
+  public Input formEncTypeUrl() {
+    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    return this;
+  }
+
+  public Input formMethodGet() {
+    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_GET);
+    return this;
+  }
+
+  public Input formMethodPost() {
+    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_POST);
+    return this;
+  }
+
+  public Input formNoValidate() {
+    setAttribute(Attribute.FORMNOVALIDATE, true);
+    return this;
+  }
+
+  public Input formTarget(String value) {
+    setAttribute(Attribute.FORMTARGET, value);
+    return this;
+  }
+
+  public Input formTargetBlank() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    return this;
+  }
+
+  public Input formTargetParent() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    return this;
+  }
+
+  public Input formTargetSelf() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_SELF);
+    return this;
+  }
+
+  public Input formTargetTop() {
+    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_TOP);
+    return this;
+  }
+
+  public Input height(int value) {
+    setAttribute(Attribute.HEIGHT, value);
+    return this;
+  }
+
+  public Input id(String value) {
+    setId(value);
+    return this;
+  }
+
+  public Input inputModeEmail() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_EMAIL);
+    return this;
+  }
+
+  public Input inputModeFullWidthLatin() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_FULL_WIDTH_LATIN);
+    return this;
+  }
+
+  public Input inputModeKana() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_KANA);
+    return this;
+  }
+
+  public Input inputModeKatakana() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_KATAKANA);
+    return this;
+  }
+
+  public Input inputModeLatin() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN);
+    return this;
+  }
+
+  public Input inputModeLatinName() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN_NAME);
+    return this;
+  }
+
+  public Input inputModeLatinProse() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN_PROSE);
+    return this;
+  }
+
+  public Input inputModeNumeric() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_NUMERIC);
+    return this;
+  }
+
+  public Input inputModeTel() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_TEL);
+    return this;
+  }
+
+  public Input inputModeUrl() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_URL);
+    return this;
+  }
+
+  public Input inputModeVerbatim() {
+    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_VERBATIM);
+    return this;
   }
 
   public Input lang(String value) {
@@ -224,25 +240,117 @@ public class Input extends Element {
     return this;
   }
 
-  public String getLang() {
-    return getAttribute("lang");
-  }
-
-  public boolean removeLang() {
-    return removeAttribute("lang");
-  }
-
-  public Input setXMLLang(String value) {
-    setAttribute("xml:lang", value);
+  public Input list(String value) {
+    setAttribute(Attribute.LIST, value);
     return this;
   }
 
-  public String getXMLLang() {
-    return getAttribute("xml:lang");
+  public Input max(int value) {
+    setAttribute(Attribute.MAX, value);
+    return this;
   }
 
-  public boolean removeXMLLang() {
-    return removeAttribute("xml:lang");
+  public Input max(String value) {
+    setAttribute(Attribute.MAX, value);
+    return this;
   }
 
+  public Input maxLength(int value) {
+    setAttribute(Attribute.MAXLENGTH, value);
+    return this;
+  }
+
+  public Input min(int value) {
+    setAttribute(Attribute.MIN, value);
+    return this;
+  }
+
+  public Input min(String value) {
+    setAttribute(Attribute.MIN, value);
+    return this;
+  }
+
+  public Input minLength(int value) {
+    setAttribute(Attribute.MINLENGTH, value);
+    return this;
+  }
+
+  public Input multiple() {
+    setAttribute(Attribute.MULTIPLE, true);
+    return this;
+  }
+
+  public Input name(String value) {
+    setAttribute(Attribute.NAME, value);
+    return this;
+  }
+
+  public Input pattern(String value) {
+    setAttribute(Attribute.PATTERN, value);
+    return this;
+  }
+
+  public Input placeholder(String value) {
+    setAttribute(Attribute.PLACEHOLDER, value);
+    return this;
+  }
+
+  public Input readOnly() {
+    setAttribute(Attribute.READONLY, true);
+    return this;
+  }
+
+  public Input required() {
+    setAttribute(Attribute.REQUIRED, true);
+    return this;
+  }
+
+  public Input size(int value) {
+    setAttribute(Attribute.SIZE, value);
+    return this;
+  }
+
+  public Input src(String value) {
+    setAttribute(Attribute.SRC, value);
+    return this;
+  }
+
+  public Input step(double value) {
+    setAttribute(Attribute.STEP, value);
+    return this;
+  }
+
+  public Input step(int value) {
+    setAttribute(Attribute.STEP, value);
+    return this;
+  }
+
+  public Input stepAny() {
+    setAttribute(Attribute.STEP, STEP_ANY);
+    return this;
+  }
+
+  public Input title(String value) {
+    setTitle(value);
+    return this;
+  }
+
+  public Input type(Type type) {
+    if (type == null) {
+      removeAttribute(Attribute.TYPE);
+    } else {
+      setAttribute(Attribute.TYPE, type.getKeyword());
+    }
+    return this;
+  }
+
+  public Input value(String value) {
+    setAttribute(Attribute.VALUE, value);
+    return this;
+  }
+
+  public Input width(int value) {
+    setAttribute(Attribute.WIDTH, value);
+    return this;
+  }
 }

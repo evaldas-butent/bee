@@ -14,10 +14,6 @@ public class FertileElement extends Element {
     super();
   }
 
-  protected FertileElement(String tag) {
-    super(tag);
-  }
-
   public void appendChild(Node child) {
     Assert.notNull(child);
     Assert.isTrue(this != child, "cannot append a node to itself");
@@ -69,11 +65,6 @@ public class FertileElement extends Element {
 
   public void removeChild(Node child) {
     children.remove(child);
-  }
-
-  @Override
-  public String toString() {
-    return write();
   }
 
   @Override

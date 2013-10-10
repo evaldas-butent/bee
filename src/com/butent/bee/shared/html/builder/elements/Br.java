@@ -5,16 +5,7 @@ import com.butent.bee.shared.html.builder.Element;
 public class Br extends Element {
 
   public Br() {
-    super("br");
-  }
-
-  public Br id(String value) {
-    setId(value);
-    return this;
-  }
-
-  public boolean removeId() {
-    return removeAttribute("id");
+    super();
   }
 
   public Br addClass(String value) {
@@ -22,30 +13,20 @@ public class Br extends Element {
     return this;
   }
 
-  public String getCSSClass() {
-    return getAttribute("class");
+  
+
+  public Br id(String value) {
+    setId(value);
+    return this;
   }
 
-  public boolean removeCSSClass() {
-    return removeAttribute("class");
+  public Br lang(String value) {
+    setLang(value);
+    return this;
   }
 
   public Br title(String value) {
     setTitle(value);
     return this;
   }
-
-  public boolean removeTitle() {
-    return removeAttribute("title");
-  }
-
-  public Br style(String value) {
-    setStyle(value);
-    return this;
-  }
-
-  public boolean removeStyle() {
-    return removeAttribute("style");
-  }
-
 }

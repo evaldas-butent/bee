@@ -2,6 +2,7 @@ package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
+import com.butent.bee.shared.html.builder.Keywords;
 import com.butent.bee.shared.html.builder.Node;
 
 import java.util.List;
@@ -32,8 +33,8 @@ public class A extends FertileElement {
     return this;
   }
 
-  public A dir(String value) {
-    setDir(value);
+  public A download(String value) {
+    setAttribute(Attribute.DOWNLOAD, value);
     return this;
   }
 
@@ -72,11 +73,6 @@ public class A extends FertileElement {
     return this;
   }
 
-  public A style(String value) {
-    setStyle(value);
-    return this;
-  }
-
   public A tabIndex(int value) {
     setTabIndex(value);
     return this;
@@ -86,19 +82,39 @@ public class A extends FertileElement {
     setAttribute(Attribute.TARGET, value);
     return this;
   }
+  
+  public A targetBlank() {
+    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    return this;
+  }
+  
+  public A targetParent() {
+    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    return this;
+  }
 
+  public A targetSelf() {
+    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_SELF);
+    return this;
+  }
+  
+  public A targetTop() {
+    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_TOP);
+    return this;
+  }
+  
   public A text(String text) {
     super.appendText(text);
     return this;
   }
 
-  public A type(String value) {
-    setAttribute(Attribute.TYPE, value);
+  public A title(String value) {
+    setTitle(value);
     return this;
   }
 
-  public A title(String value) {
-    setTitle(value);
+  public A type(String value) {
+    setAttribute(Attribute.TYPE, value);
     return this;
   }
 }
