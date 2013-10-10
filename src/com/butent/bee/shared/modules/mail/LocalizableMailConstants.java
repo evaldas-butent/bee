@@ -44,6 +44,10 @@ public interface LocalizableMailConstants {
 
   String mailReplayPrefix();
 
+  String mailMessageIsSavedInDraft();
+
+  String mailMessageSent();
+
   String mailSpecifyRecipient();
 
   String mailSpecifySubject();
