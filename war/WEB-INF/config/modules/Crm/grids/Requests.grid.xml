@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:w="http://www.butent.com/widget"
 
-  name="Requests" viewName="Requests" caption="Užklausimai"
+  name="Requests" viewName="Requests" caption="=crmRequests"
   flexGrow="1" order="RequestID desc"
   >
 

@@ -11,7 +11,7 @@
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
     <Numeric name="Price" precision="15" scale="5" label="=sellingPrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
-    <Boolean name="Vat" label="PVM" />
+    <Boolean name="Vat" label="=vat" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
     <Boolean name="IsService" />
     <String name="ExternalCode" precision="10" label="ERPCode" />
