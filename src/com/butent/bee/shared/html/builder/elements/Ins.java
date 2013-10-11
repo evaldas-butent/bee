@@ -33,7 +33,7 @@ public class Ins extends FertileElement {
   }
 
   public Ins dateTime(String value) {
-    setAttribute(Attribute.DATETIME, value);
+    setAttribute(Attribute.DATE_TIME, value);
     return this;
   }
   

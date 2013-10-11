@@ -7,6 +7,10 @@ public abstract class Node {
   protected Node() {
   }
 
+  public int getLevel() {
+    return (getParent() == null) ? 0 : getParent().getLevel() + 1;
+  }
+  
   public Node getParent() {
     return parent;
   }
@@ -17,8 +21,8 @@ public abstract class Node {
 
   @Override
   public String toString() {
-    return write();
+    return build();
   }
 
-  protected abstract String write();
+  protected abstract String build();
 }

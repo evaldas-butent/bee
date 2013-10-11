@@ -28,7 +28,7 @@ public class Time extends FertileElement {
   }
 
   public Time dateTime(String value) {
-    setAttribute(Attribute.DATETIME, value);
+    setAttribute(Attribute.DATE_TIME, value);
     return this;
   }
 

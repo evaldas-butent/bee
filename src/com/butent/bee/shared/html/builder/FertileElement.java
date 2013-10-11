@@ -42,6 +42,30 @@ public class FertileElement extends Element {
     appendChild(new Text(text));
   }
 
+  @Override
+  public String build() {
+    StringBuilder sb = new StringBuilder(buildStart());
+    for (Node child : children) {
+      sb.append(child.build());
+    }
+    sb.append(buildEnd());
+
+    return sb.toString();
+  }
+
+  @Override
+  protected String buildEnd() {
+    StringBuilder sb = new StringBuilder("</");
+    sb.append(getTag());
+    sb.append(">");
+    return sb.toString();
+  }
+
+  @Override
+  protected String buildStart() {
+    return super.buildStart() + ">";
+  }
+  
   public void clearChildren() {
     children.clear();
   }
@@ -52,6 +76,24 @@ public class FertileElement extends Element {
 
   public List<Node> getChildren() {
     return children;
+  }
+
+  public boolean hasComment() {
+    for (Node child : children) {
+      if (child instanceof Comment) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  public boolean hasText() {
+    for (Node child : children) {
+      if (child instanceof Text) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void insertChild(int index, Node child) {
@@ -65,16 +107,5 @@ public class FertileElement extends Element {
 
   public void removeChild(Node child) {
     children.remove(child);
-  }
-
-  @Override
-  public String write() {
-    StringBuilder sb = new StringBuilder(writeOpen());
-    for (Node child : children) {
-      sb.append(child.write());
-    }
-    sb.append(writeClose());
-
-    return sb.toString();
   }
 }

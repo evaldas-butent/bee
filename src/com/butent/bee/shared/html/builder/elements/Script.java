@@ -26,12 +26,12 @@ public class Script extends FertileElement {
   }
 
   public Script crossoriginAnonymous() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Script crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 

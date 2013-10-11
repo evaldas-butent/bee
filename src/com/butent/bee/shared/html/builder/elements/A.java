@@ -44,7 +44,7 @@ public class A extends FertileElement {
   }
 
   public A hrefLang(String value) {
-    setAttribute(Attribute.HREFLANG, value);
+    setAttribute(Attribute.HREF_LANG, value);
     return this;
   }
 

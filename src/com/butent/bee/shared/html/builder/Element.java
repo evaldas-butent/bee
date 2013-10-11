@@ -89,7 +89,7 @@ public class Element extends Node {
   }
 
   public void setAccessKey(String accessKey) {
-    setAttribute(Attribute.ACCESSKEY, accessKey);
+    setAttribute(Attribute.ACCESS_KEY, accessKey);
   }
 
   public void setAttribute(String name, boolean value) {
@@ -135,16 +135,16 @@ public class Element extends Node {
 
   public void setContentEditable(Boolean editable) {
     if (editable == null) {
-      removeAttribute(Attribute.CONTENTEDITABLE);
+      removeAttribute(Attribute.CONTENT_EDITABLE);
     } else if (editable) {
-      setAttribute(Attribute.CONTENTEDITABLE, Keywords.CONTENT_IS_EDITABLE);
+      setAttribute(Attribute.CONTENT_EDITABLE, Keywords.CONTENT_IS_EDITABLE);
     } else {
-      setAttribute(Attribute.CONTENTEDITABLE, Keywords.CONTENT_NOT_EDITABLE);
+      setAttribute(Attribute.CONTENT_EDITABLE, Keywords.CONTENT_NOT_EDITABLE);
     }
   }
 
   public void setContextMenu(String contextMenu) {
-    setAttribute(Attribute.CONTEXTMENU, contextMenu);
+    setAttribute(Attribute.CONTEXT_MENU, contextMenu);
   }
 
   public void setData(String key, String value) {
@@ -192,36 +192,272 @@ public class Element extends Node {
   }
 
   public void setItemId(String itemId) {
-    setAttribute(Attribute.ITEMID, itemId);
+    setAttribute(Attribute.ITEM_ID, itemId);
   }
 
   public void setItemProp(String itemProp) {
-    setAttribute(Attribute.ITEMPROP, itemProp);
+    setAttribute(Attribute.ITEM_PROP, itemProp);
   }
 
   public void setItemRef(String itemRef) {
-    setAttribute(Attribute.ITEMREF, itemRef);
+    setAttribute(Attribute.ITEM_REF, itemRef);
   }
 
   public void setItemScope(boolean itemScope) {
-    setAttribute(Attribute.ITEMSCOPE, itemScope);
+    setAttribute(Attribute.ITEM_SCOPE, itemScope);
   }
 
   public void setItemType(String itemType) {
-    setAttribute(Attribute.ITEMTYPE, itemType);
+    setAttribute(Attribute.ITEM_TYPE, itemType);
   }
 
   public void setLang(String lang) {
     setAttribute(Attribute.LANG, lang);
   }
 
+  public void setOnAbort(String onAbort) {
+    setAttribute(Attribute.ON_ABORT, onAbort);
+  }
+
+  public void setOnBlur(String onBlur) {
+    setAttribute(Attribute.ON_BLUR, onBlur);
+  }
+
+  public void setOnCancel(String onCancel) {
+    setAttribute(Attribute.ON_CANCEL, onCancel);
+  }
+
+  public void setOnCanPlay(String onCanPlay) {
+    setAttribute(Attribute.ON_CAN_PLAY, onCanPlay);
+  }
+
+  public void setOnCanPlayThrough(String onCanPlayThrough) {
+    setAttribute(Attribute.ON_CAN_PLAY_THROUGH, onCanPlayThrough);
+  }
+
+  public void setOnChange(String onChange) {
+    setAttribute(Attribute.ON_CHANGE, onChange);
+  }
+
+  public void setOnClick(String onClick) {
+    setAttribute(Attribute.ON_CLICK, onClick);
+  }
+
+  public void setOnClose(String onClose) {
+    setAttribute(Attribute.ON_CLOSE, onClose);
+  }
+
+  public void setOnContextMenu(String onContextMenu) {
+    setAttribute(Attribute.ON_CONTEXT_MENU, onContextMenu);
+  }
+
+  public void setOnCueChange(String onCueChange) {
+    setAttribute(Attribute.ON_CUE_CHANGE, onCueChange);
+  }
+
+  public void setOnDblClick(String onDblClick) {
+    setAttribute(Attribute.ON_DBL_CLICK, onDblClick);
+  }
+
+  public void setOnDrag(String onDrag) {
+    setAttribute(Attribute.ON_DRAG, onDrag);
+  }
+
+  public void setOnDragEnd(String onDragEnd) {
+    setAttribute(Attribute.ON_DRAG_END, onDragEnd);
+  }
+
+  public void setOnDragEnter(String onDragEnter) {
+    setAttribute(Attribute.ON_DRAG_ENTER, onDragEnter);
+  }
+
+  public void setOnDragExit(String onDragExit) {
+    setAttribute(Attribute.ON_DRAG_EXIT, onDragExit);
+  }
+
+  public void setOnDragLeave(String onDragLeave) {
+    setAttribute(Attribute.ON_DRAG_LEAVE, onDragLeave);
+  }
+
+  public void setOnDragOver(String onDragOver) {
+    setAttribute(Attribute.ON_DRAG_OVER, onDragOver);
+  }
+
+  public void setOnDragStart(String onDragStart) {
+    setAttribute(Attribute.ON_DRAG_START, onDragStart);
+  }
+
+  public void setOnDrop(String onDrop) {
+    setAttribute(Attribute.ON_DROP, onDrop);
+  }
+
+  public void setOnDurationChange(String onDurationChange) {
+    setAttribute(Attribute.ON_DURATION_CHANGE, onDurationChange);
+  }
+
+  public void setOnEmptied(String onEmptied) {
+    setAttribute(Attribute.ON_EMPTIED, onEmptied);
+  }
+
+  public void setOnEnded(String onEnded) {
+    setAttribute(Attribute.ON_ENDED, onEnded);
+  }
+
+  public void setOnError(String onError) {
+    setAttribute(Attribute.ON_ERROR, onError);
+  }
+
+  public void setOnFocus(String onFocus) {
+    setAttribute(Attribute.ON_FOCUS, onFocus);
+  }
+
+  public void setOnInput(String onInput) {
+    setAttribute(Attribute.ON_INPUT, onInput);
+  }
+
+  public void setOnInvalid(String onInvalid) {
+    setAttribute(Attribute.ON_INVALID, onInvalid);
+  }
+
+  public void setOnKeyDown(String onKeyDown) {
+    setAttribute(Attribute.ON_KEY_DOWN, onKeyDown);
+  }
+
+  public void setOnKeyPress(String onKeyPress) {
+    setAttribute(Attribute.ON_KEY_PRESS, onKeyPress);
+  }
+
+  public void setOnKeyUp(String onKeyUp) {
+    setAttribute(Attribute.ON_KEY_UP, onKeyUp);
+  }
+
+  public void setOnLoad(String onLoad) {
+    setAttribute(Attribute.ON_LOAD, onLoad);
+  }
+
+  public void setOnLoadedData(String onLoadedData) {
+    setAttribute(Attribute.ON_LOADED_DATA, onLoadedData);
+  }
+
+  public void setOnLoadedMetaData(String onLoadedMetaData) {
+    setAttribute(Attribute.ON_LOADED_META_DATA, onLoadedMetaData);
+  }
+
+  public void setOnLoadStart(String onLoadStart) {
+    setAttribute(Attribute.ON_LOAD_START, onLoadStart);
+  }
+
+  public void setOnMouseDown(String onMouseDown) {
+    setAttribute(Attribute.ON_MOUSE_DOWN, onMouseDown);
+  }
+
+  public void setOnMouseEnter(String onMouseEnter) {
+    setAttribute(Attribute.ON_MOUSE_ENTER, onMouseEnter);
+  }
+
+  public void setOnMouseLeave(String onMouseLeave) {
+    setAttribute(Attribute.ON_MOUSE_LEAVE, onMouseLeave);
+  }
+
+  public void setOnMouseMove(String onMouseMove) {
+    setAttribute(Attribute.ON_MOUSE_MOVE, onMouseMove);
+  }
+
+  public void setOnMouseOut(String onMouseOut) {
+    setAttribute(Attribute.ON_MOUSE_OUT, onMouseOut);
+  }
+
+  public void setOnMouseOver(String onMouseOver) {
+    setAttribute(Attribute.ON_MOUSE_OVER, onMouseOver);
+  }
+
+  public void setOnMouseUp(String onMouseUp) {
+    setAttribute(Attribute.ON_MOUSE_UP, onMouseUp);
+  }
+
+  public void setOnMouseWheel(String onMouseWheel) {
+    setAttribute(Attribute.ON_MOUSE_WHEEL, onMouseWheel);
+  }
+
+  public void setOnPause(String onPause) {
+    setAttribute(Attribute.ON_PAUSE, onPause);
+  }
+
+  public void setOnPlay(String onPlay) {
+    setAttribute(Attribute.ON_PLAY, onPlay);
+  }
+
+  public void setOnPlaying(String onPlaying) {
+    setAttribute(Attribute.ON_PLAYING, onPlaying);
+  }
+
+  public void setOnProgress(String onProgress) {
+    setAttribute(Attribute.ON_PROGRESS, onProgress);
+  }
+
+  public void setOnRateChange(String onRateChange) {
+    setAttribute(Attribute.ON_RATE_CHANGE, onRateChange);
+  }
+
+  public void setOnReset(String onReset) {
+    setAttribute(Attribute.ON_RESET, onReset);
+  }
+
+  public void setOnScroll(String onScroll) {
+    setAttribute(Attribute.ON_SCROLL, onScroll);
+  }
+
+  public void setOnSeeked(String onSeeked) {
+    setAttribute(Attribute.ON_SEEKED, onSeeked);
+  }
+
+  public void setOnSeeking(String onSeeking) {
+    setAttribute(Attribute.ON_SEEKING, onSeeking);
+  }
+
+  public void setOnSelect(String onSelect) {
+    setAttribute(Attribute.ON_SELECT, onSelect);
+  }
+
+  public void setOnShow(String onShow) {
+    setAttribute(Attribute.ON_SHOW, onShow);
+  }
+
+  public void setOnSort(String onSort) {
+    setAttribute(Attribute.ON_SORT, onSort);
+  }
+
+  public void setOnStalled(String onStalled) {
+    setAttribute(Attribute.ON_STALLED, onStalled);
+  }
+
+  public void setOnSubmit(String onSubmit) {
+    setAttribute(Attribute.ON_SUBMIT, onSubmit);
+  }
+
+  public void setOnSuspend(String onSuspend) {
+    setAttribute(Attribute.ON_SUSPEND, onSuspend);
+  }
+
+  public void setOnTimeUpdate(String onTimeUpdate) {
+    setAttribute(Attribute.ON_TIME_UPDATE, onTimeUpdate);
+  }
+
+  public void setOnVolumeChange(String onVolumeChange) {
+    setAttribute(Attribute.ON_VOLUME_CHANGE, onVolumeChange);
+  }
+
+  public void setOnWaiting(String onWaiting) {
+    setAttribute(Attribute.ON_WAITING, onWaiting);
+  }
+
   public void setSpellCheck(Boolean spellCheck) {
     if (spellCheck == null) {
-      removeAttribute(Attribute.SPELLCHECK);
+      removeAttribute(Attribute.SPELL_CHECK);
     } else if (spellCheck) {
-      setAttribute(Attribute.SPELLCHECK, Keywords.SPELL_CHECK_ENABLED);
+      setAttribute(Attribute.SPELL_CHECK, Keywords.SPELL_CHECK_ENABLED);
     } else {
-      setAttribute(Attribute.SPELLCHECK, Keywords.SPELL_CHECK_DISABLED);
+      setAttribute(Attribute.SPELL_CHECK, Keywords.SPELL_CHECK_DISABLED);
     }
   }
 
@@ -240,7 +476,7 @@ public class Element extends Node {
   }
 
   public void setTabIndex(int tabIndex) {
-    setAttribute(Attribute.TABINDEX, BeeUtils.toString(tabIndex));
+    setAttribute(Attribute.TAB_INDEX, BeeUtils.toString(tabIndex));
   }
 
   public void setTitle(String title) {
@@ -258,38 +494,34 @@ public class Element extends Node {
   }
 
   @Override
-  protected String write() {
-    StringBuilder sb = new StringBuilder(writeOpen());
-    sb.append(writeClose());
+  protected String build() {
+    StringBuilder sb = new StringBuilder(buildStart());
+    sb.append(buildEnd());
     return sb.toString();
   }
 
-  protected String writeClose() {
-    StringBuilder sb = new StringBuilder("</");
-    sb.append(tag);
-    sb.append(">");
-    return sb.toString();
+  protected String buildEnd() {
+    return " />";
   }
 
-  protected String writeOpen() {
+  protected String buildStart() {
     StringBuilder sb = new StringBuilder("<");
     sb.append(tag);
 
-    for (Attribute attribute : attributes) {
-      sb.append(attribute.write());
-    }
-
     if (!classes.isEmpty()) {
       Attribute cs = new Attribute(Attribute.CLASS, BeeUtils.join(BeeConst.STRING_SPACE, classes));
-      sb.append(cs.write());
+      sb.append(cs.build());
     }
 
     if (!styles.isEmpty()) {
       Attribute st = new Attribute(Attribute.STYLE, BeeUtils.join(BeeConst.STRING_SPACE, styles));
-      sb.append(st.write());
+      sb.append(st.build());
     }
 
-    sb.append(">");
+    for (Attribute attribute : attributes) {
+      sb.append(attribute.build());
+    }
+
     return sb.toString();
   }
 

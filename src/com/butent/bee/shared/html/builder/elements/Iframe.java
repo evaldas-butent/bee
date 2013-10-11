@@ -43,7 +43,7 @@ public class Iframe extends FertileElement {
   }
 
   public Iframe allowFullScreen() {
-    setAttribute(Attribute.ALLOWFULLSCREEN, true);
+    setAttribute(Attribute.ALLOW_FULL_SCREEN, true);
     return this;
   }
 
@@ -120,7 +120,7 @@ public class Iframe extends FertileElement {
   }
 
   public Iframe srcDoc(String value) {
-    setAttribute(Attribute.SRCDOC, value);
+    setAttribute(Attribute.SRC_DOC, value);
     return this;
   }
 

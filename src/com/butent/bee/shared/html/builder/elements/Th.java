@@ -38,7 +38,7 @@ public class Th extends FertileElement {
   }
 
   public Th colSpan(int value) {
-    setAttribute(Attribute.COLSPAN, value);
+    setAttribute(Attribute.COL_SPAN, value);
     return this;
   }
 
@@ -70,7 +70,7 @@ public class Th extends FertileElement {
   }
 
   public Th rowSpan(int value) {
-    setAttribute(Attribute.ROWSPAN, value);
+    setAttribute(Attribute.ROW_SPAN, value);
     return this;
   }
 

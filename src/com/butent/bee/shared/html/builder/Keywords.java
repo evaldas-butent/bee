@@ -11,7 +11,7 @@ public final class Keywords {
   public static final String CORS_SETTINGS_USE_CREDENTIALS = "use-credentials";
 
   public static final String PRELOAD_AUTO = "auto"; 
-  public static final String PRELOAD_METADATA = "metadata";
+  public static final String PRELOAD_META_DATA = "metadata";
   public static final String PRELOAD_NONE = "none";
 
   public static final String METHOD_GET = "get";

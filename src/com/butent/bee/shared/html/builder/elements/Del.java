@@ -33,7 +33,7 @@ public class Del extends FertileElement {
   }
 
   public Del dateTime(String value) {
-    setAttribute(Attribute.DATETIME, value);
+    setAttribute(Attribute.DATE_TIME, value);
     return this;
   }
   

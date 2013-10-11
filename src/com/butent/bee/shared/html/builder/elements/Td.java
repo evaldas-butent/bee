@@ -28,7 +28,7 @@ public class Td extends FertileElement {
   }
 
   public Td colSpan(int value) {
-    setAttribute(Attribute.COLSPAN, value);
+    setAttribute(Attribute.COL_SPAN, value);
     return this;
   }
 
@@ -60,7 +60,7 @@ public class Td extends FertileElement {
   }
 
   public Td rowSpan(int value) {
-    setAttribute(Attribute.ROWSPAN, value);
+    setAttribute(Attribute.ROW_SPAN, value);
     return this;
   }
 

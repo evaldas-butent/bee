@@ -21,12 +21,12 @@ public class Img extends Element {
   }
 
   public Img crossoriginAnonymous() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Img crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
@@ -43,7 +43,7 @@ public class Img extends Element {
   }
 
   public Img isMap(boolean value) {
-    setAttribute(Attribute.ISMAP, value);
+    setAttribute(Attribute.IS_MAP, value);
     return this;
   }
 
@@ -63,7 +63,7 @@ public class Img extends Element {
   }
 
   public Img useMap(String value) {
-    setAttribute(Attribute.USEMAP, value);
+    setAttribute(Attribute.USE_MAP, value);
     return this;
   }
 

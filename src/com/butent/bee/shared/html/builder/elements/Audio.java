@@ -39,12 +39,12 @@ public class Audio extends FertileElement {
   }
 
   public Audio crossoriginAnonymous() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Audio crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
@@ -69,7 +69,7 @@ public class Audio extends FertileElement {
   }
 
   public Audio mediaGroup(String value) {
-    setAttribute(Attribute.MEDIAGROUP, value);
+    setAttribute(Attribute.MEDIA_GROUP, value);
     return this;
   }
   
@@ -103,8 +103,8 @@ public class Audio extends FertileElement {
     return this;
   }
 
-  public Audio preloadMetadata() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_METADATA);
+  public Audio preloadMetaData() {
+    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_META_DATA);
     return this;
   }
 

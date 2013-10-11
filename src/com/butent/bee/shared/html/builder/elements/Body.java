@@ -43,67 +43,67 @@ public class Body extends FertileElement {
   }
 
   public Body onAfterPrint(String value) {
-    setAttribute(Attribute.ONAFTERPRINT, value);
+    setAttribute(Attribute.ON_AFTER_PRINT, value);
     return this;
   }
 
   public Body onBeforePrint(String value) {
-    setAttribute(Attribute.ONBEFOREPRINT, value);
+    setAttribute(Attribute.ON_BEFORE_PRINT, value);
     return this;
   }
 
   public Body onBeforeUnload(String value) {
-    setAttribute(Attribute.ONBEFOREUNLOAD, value);
+    setAttribute(Attribute.ON_BEFORE_UNLOAD, value);
     return this;
   }
 
   public Body onHashChange(String value) {
-    setAttribute(Attribute.ONHASHCHANGE, value);
+    setAttribute(Attribute.ON_HASH_CHANGE, value);
     return this;
   }
 
   public Body onMessage(String value) {
-    setAttribute(Attribute.ONMESSAGE, value);
+    setAttribute(Attribute.ON_MESSAGE, value);
     return this;
   }
 
   public Body onOffline(String value) {
-    setAttribute(Attribute.ONOFFLINE, value);
+    setAttribute(Attribute.ON_OFFLINE, value);
     return this;
   }
 
   public Body onOnline(String value) {
-    setAttribute(Attribute.ONONLINE, value);
+    setAttribute(Attribute.ON_ONLINE, value);
     return this;
   }
 
   public Body onPageHide(String value) {
-    setAttribute(Attribute.ONPAGEHIDE, value);
+    setAttribute(Attribute.ON_PAGE_HIDE, value);
     return this;
   }
 
   public Body onPageShow(String value) {
-    setAttribute(Attribute.ONPAGESHOW, value);
+    setAttribute(Attribute.ON_PAGE_SHOW, value);
     return this;
   }
 
   public Body onPopState(String value) {
-    setAttribute(Attribute.ONPOPSTATE, value);
+    setAttribute(Attribute.ON_POP_STATE, value);
     return this;
   }
 
   public Body onResize(String value) {
-    setAttribute(Attribute.ONRESIZE, value);
+    setAttribute(Attribute.ON_RESIZE, value);
     return this;
   }
 
   public Body onStorage(String value) {
-    setAttribute(Attribute.ONSTORAGE, value);
+    setAttribute(Attribute.ON_STORAGE, value);
     return this;
   }
 
   public Body onUnload(String value) {
-    setAttribute(Attribute.ONUNLOAD, value);
+    setAttribute(Attribute.ON_UNLOAD, value);
     return this;
   }
 

@@ -49,7 +49,7 @@ public class Keygen extends Element {
   }
 
   public Keygen keyTypeRsa() {
-    setAttribute(Attribute.KEYTYPE, KEY_TYPE_RSA);
+    setAttribute(Attribute.KEY_TYPE, KEY_TYPE_RSA);
     return this;
   }
 

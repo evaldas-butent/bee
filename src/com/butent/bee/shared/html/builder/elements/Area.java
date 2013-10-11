@@ -51,7 +51,7 @@ public class Area extends Element {
   }
 
   public Area hrefLang(String value) {
-    setAttribute(Attribute.HREFLANG, value);
+    setAttribute(Attribute.HREF_LANG, value);
     return this;
   }
   

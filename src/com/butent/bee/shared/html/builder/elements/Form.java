@@ -51,17 +51,17 @@ public class Form extends FertileElement {
   
 
   public Form encTypeMultipart() {
-    setAttribute(Attribute.ENCTYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
   
   public Form encTypeText() {
-    setAttribute(Attribute.ENCTYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
   }
 
   public Form encTypeUrl() {
-    setAttribute(Attribute.ENCTYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
     return this;
   }
 
@@ -96,7 +96,7 @@ public class Form extends FertileElement {
   }
   
   public Form noValidate() {
-    setAttribute(Attribute.NOVALIDATE, true);
+    setAttribute(Attribute.NO_VALIDATE, true);
     return this;
   }
 

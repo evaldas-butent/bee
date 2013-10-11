@@ -1,6 +1,5 @@
 package com.butent.bee.shared.html.builder;
 
-
 public class Doctype extends Node {
 
   public Doctype() {
@@ -8,7 +7,7 @@ public class Doctype extends Node {
   }
 
   @Override
-  public String write() {
+  public String build() {
     return "<!doctype html>";
   }
 }

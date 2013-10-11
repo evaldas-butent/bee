@@ -54,62 +54,62 @@ public class Button extends FertileElement {
   }
 
   public Button formAction(String value) {
-    setAttribute(Attribute.FORMACTION, value);
+    setAttribute(Attribute.FORM_ACTION, value);
     return this;
   }
 
   public Button formEncTypeMultipart() {
-    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
   
   public Button formEncTypeText() {
-    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
   }
 
   public Button formEncTypeUrl() {
-    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
     return this;
   }
 
   public Button formMethodGet() {
-    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_GET);
+    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_GET);
     return this;
   }
 
   public Button formMethodPost() {
-    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_POST);
+    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_POST);
     return this;
   }
 
   public Button formNoValidate() {
-    setAttribute(Attribute.FORMNOVALIDATE, true);
+    setAttribute(Attribute.FORM_NO_VALIDATE, true);
     return this;
   }
 
   public Button formTarget(String value) {
-    setAttribute(Attribute.FORMTARGET, value);
+    setAttribute(Attribute.FORM_TARGET, value);
     return this;
   }
 
   public Button formTargetBlank() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
   
   public Button formTargetParent() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public Button formTargetSelf() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
   
   public Button formTargetTop() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
   

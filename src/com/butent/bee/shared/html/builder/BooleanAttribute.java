@@ -18,7 +18,7 @@ public class BooleanAttribute extends Attribute {
   }
 
   @Override
-  public String write() {
+  public String build() {
     return getBoolean() ? (BeeConst.STRING_SPACE + getName()) : BeeConst.STRING_EMPTY;
   }
 }

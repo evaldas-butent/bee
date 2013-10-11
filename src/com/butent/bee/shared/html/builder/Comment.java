@@ -1,26 +1,26 @@
 package com.butent.bee.shared.html.builder;
 
+import com.butent.bee.shared.BeeConst;
 
-public class Comment extends FertileElement {
+public class Comment extends Node {
 
-  public Comment() {
-    super();
-  }
-
+  private final String text;
+  
   public Comment(String text) {
-    this();
-    appendText(text);
+    super();
+    this.text = text;
   }
 
   @Override
-  public String write() {
-    StringBuilder sb = new StringBuilder("<!-- >");
-
-    for (Node child : getChildren()) {
-      sb.append(child.write());
+  public String build() {
+    if (text == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return "<!-- " + text + " -->";
     }
-    sb.append("< -->");
+  }
 
-    return sb.toString();
+  public String getText() {
+    return text;
   }
 }

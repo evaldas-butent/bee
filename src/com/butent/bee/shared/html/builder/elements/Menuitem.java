@@ -66,7 +66,7 @@ public class Menuitem extends Element {
   }
 
   public Menuitem radioGroup(String value) {
-    setAttribute(Attribute.RADIOGROUP, value);
+    setAttribute(Attribute.RADIO_GROUP, value);
     return this;
   }
 

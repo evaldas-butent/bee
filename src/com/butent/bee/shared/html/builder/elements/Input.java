@@ -91,7 +91,7 @@ public class Input extends Element {
   
 
   public Input dirName(String value) {
-    setAttribute(Attribute.DIRNAME, value);
+    setAttribute(Attribute.DIR_NAME, value);
     return this;
   }
 
@@ -111,62 +111,62 @@ public class Input extends Element {
   }
 
   public Input formAction(String value) {
-    setAttribute(Attribute.FORMACTION, value);
+    setAttribute(Attribute.FORM_ACTION, value);
     return this;
   }
 
   public Input formEncTypeMultipart() {
-    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
 
   public Input formEncTypeText() {
-    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
   }
 
   public Input formEncTypeUrl() {
-    setAttribute(Attribute.FORMENCTYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
     return this;
   }
 
   public Input formMethodGet() {
-    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_GET);
+    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_GET);
     return this;
   }
 
   public Input formMethodPost() {
-    setAttribute(Attribute.FORMMETHOD, Keywords.METHOD_POST);
+    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_POST);
     return this;
   }
 
   public Input formNoValidate() {
-    setAttribute(Attribute.FORMNOVALIDATE, true);
+    setAttribute(Attribute.FORM_NO_VALIDATE, true);
     return this;
   }
 
   public Input formTarget(String value) {
-    setAttribute(Attribute.FORMTARGET, value);
+    setAttribute(Attribute.FORM_TARGET, value);
     return this;
   }
 
   public Input formTargetBlank() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
 
   public Input formTargetParent() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public Input formTargetSelf() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
 
   public Input formTargetTop() {
-    setAttribute(Attribute.FORMTARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
 
@@ -181,57 +181,57 @@ public class Input extends Element {
   }
 
   public Input inputModeEmail() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_EMAIL);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_EMAIL);
     return this;
   }
 
   public Input inputModeFullWidthLatin() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_FULL_WIDTH_LATIN);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_FULL_WIDTH_LATIN);
     return this;
   }
 
   public Input inputModeKana() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_KANA);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_KANA);
     return this;
   }
 
   public Input inputModeKatakana() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_KATAKANA);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_KATAKANA);
     return this;
   }
 
   public Input inputModeLatin() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_LATIN);
     return this;
   }
 
   public Input inputModeLatinName() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN_NAME);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_LATIN_NAME);
     return this;
   }
 
   public Input inputModeLatinProse() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_LATIN_PROSE);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_LATIN_PROSE);
     return this;
   }
 
   public Input inputModeNumeric() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_NUMERIC);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_NUMERIC);
     return this;
   }
 
   public Input inputModeTel() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_TEL);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_TEL);
     return this;
   }
 
   public Input inputModeUrl() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_URL);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_URL);
     return this;
   }
 
   public Input inputModeVerbatim() {
-    setAttribute(Attribute.INPUTMODE, Keywords.INPUT_MODE_VERBATIM);
+    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_VERBATIM);
     return this;
   }
 
@@ -256,7 +256,7 @@ public class Input extends Element {
   }
 
   public Input maxLength(int value) {
-    setAttribute(Attribute.MAXLENGTH, value);
+    setAttribute(Attribute.MAX_LENGTH, value);
     return this;
   }
 
@@ -271,7 +271,7 @@ public class Input extends Element {
   }
 
   public Input minLength(int value) {
-    setAttribute(Attribute.MINLENGTH, value);
+    setAttribute(Attribute.MIN_LENGTH, value);
     return this;
   }
 
@@ -296,7 +296,7 @@ public class Input extends Element {
   }
 
   public Input readOnly() {
-    setAttribute(Attribute.READONLY, true);
+    setAttribute(Attribute.READ_ONLY, true);
     return this;
   }
 

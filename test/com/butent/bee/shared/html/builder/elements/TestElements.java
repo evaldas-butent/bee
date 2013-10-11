@@ -11,6 +11,6 @@ public class TestElements {
   public final void testDiv() {
     Div div = new Div();
 
-    assertTrue("<div></div>".equals(div.write()));
+    assertTrue("<div></div>".equals(div.build()));
   }
 }

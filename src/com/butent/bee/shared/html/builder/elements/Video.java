@@ -39,12 +39,12 @@ public class Video extends FertileElement {
   }
 
   public Video crossoriginAnonymous() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Video crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSSORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
@@ -76,7 +76,7 @@ public class Video extends FertileElement {
   }
 
   public Video mediaGroup(String value) {
-    setAttribute(Attribute.MEDIAGROUP, value);
+    setAttribute(Attribute.MEDIA_GROUP, value);
     return this;
   }
 
@@ -115,8 +115,8 @@ public class Video extends FertileElement {
     return this;
   }
 
-  public Video preloadMetadata() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_METADATA);
+  public Video preloadMetaData() {
+    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_META_DATA);
     return this;
   }
 

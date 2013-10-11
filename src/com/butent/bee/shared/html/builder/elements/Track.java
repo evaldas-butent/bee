@@ -8,7 +8,7 @@ public class Track extends Element {
   private static final String KIND_CAPTIONS = "captions";
   private static final String KIND_CHAPTERS = "chapters";
   private static final String KIND_DESCRIPTIONS = "descriptions";
-  private static final String KIND_METADATA = "metadata";
+  private static final String KIND_META_DATA = "metadata";
   private static final String KIND_SUBTITLES = "subtitles";
 
   public Track() {
@@ -47,8 +47,8 @@ public class Track extends Element {
     return this;
   }
 
-  public Track kindMetadata() {
-    setAttribute(Attribute.KIND, KIND_METADATA);
+  public Track kindMetaData() {
+    setAttribute(Attribute.KIND, KIND_META_DATA);
     return this;
   }
 
@@ -73,7 +73,7 @@ public class Track extends Element {
   }
 
   public Track srcLang(String value) {
-    setAttribute(Attribute.SRCLANG, value);
+    setAttribute(Attribute.SRC_LANG, value);
     return this;
   }
 

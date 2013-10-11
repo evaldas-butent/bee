@@ -85,12 +85,12 @@ public class Object extends FertileElement {
   }
   
   public Object typeMustMatch() {
-    setAttribute(Attribute.TYPEMUSTMATCH, true);
+    setAttribute(Attribute.TYPE_MUST_MATCH, true);
     return this;
   }
 
   public Object useMap(String value) {
-    setAttribute(Attribute.USEMAP, value);
+    setAttribute(Attribute.USE_MAP, value);
     return this;
   }
 

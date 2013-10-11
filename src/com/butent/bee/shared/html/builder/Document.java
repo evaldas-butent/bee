@@ -8,17 +8,26 @@ public class Document {
 
   private final Doctype doctype;
   private final Html html;
+
   private final Head head;
   private final Body body;
 
   public Document() {
     this.doctype = new Doctype();
     this.html = new Html();
+
     this.head = new Head();
     this.body = new Body();
     
     html.appendChild(head);
     html.appendChild(body);
+  }
+
+  public String build() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(doctype.build());
+    sb.append(html.build());
+    return sb.toString();
   }
 
   public Body getBody() {
@@ -31,13 +40,6 @@ public class Document {
 
   @Override
   public String toString() {
-    return write();
-  }
-
-  public String write() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(doctype.write());
-    sb.append(html.write());
-    return sb.toString();
+    return build();
   }
 }
