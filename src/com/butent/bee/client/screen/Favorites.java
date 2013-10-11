@@ -294,7 +294,7 @@ public class Favorites implements HandlesDeleteEvents {
     List<String> values = DataUtils.translate(expressions, sourceColumns, row);
     String html = BeeUtils.join(BeeConst.STRING_SPACE, values);
 
-    Global.inputString("Žymos pavadinimas", null, new StringCallback() {
+    Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         addItem(group, viewName, row.getId(), value);

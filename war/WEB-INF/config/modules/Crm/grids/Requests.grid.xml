@@ -27,7 +27,7 @@
     <DataColumn name="Result" visible="false" />
   </g:columns>
   
-  <!-- <g:predefinedFilter name="Executing" label="Vykdomi">
+  <!-- <g:predefinedFilter name="Executing" label="=crmRequestFilterActive">
     <g:column name="Finished" emptyValues="true" />
   </g:predefinedFilter> -->
 </g:Grid>

@@ -55,6 +55,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionSave();
 
+  String actionWorkspaceEnlargeDown();
+
+  String actionWorkspaceEnlargeToLeft();
+
+  String actionWorkspaceEnlargeToRight();
+
+  String actionWorkspaceEnlargeUp();
+
   String actionWorkspaceMaxSize();
 
   String actionWorkspaceNewBottom();
@@ -76,6 +84,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String allowPhotoSize();
 
   String article();
+
+  String bookmarkName();
 
   String branch();
 
@@ -189,11 +199,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String fax();
 
+  String fileDataCorrection();
+
+  String fileDescription();
+
+  String fileName();
+
   String fileOriginalName();
 
   String fileSize();
 
   String fileType();
+
+  String fileVersion();
 
   String filter();
 

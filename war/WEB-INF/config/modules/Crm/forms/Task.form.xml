@@ -93,7 +93,7 @@
       <FlowPanel style="&section;">
         <Label text="=crmTaskObservers" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editSource="CompanyPerson" style="&inp2x;" disablable="true" label="Stebėtojai" />
+          editSource="CompanyPerson" style="&inp2x;" disablable="true" label="=crmTaskObservers" />
       </FlowPanel>
 
       &separator;

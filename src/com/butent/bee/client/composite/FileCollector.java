@@ -63,7 +63,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     DragEnterHandler, DragLeaveHandler, HasSelectionHandlers<NewFileInfo>, HasOptions {
 
   public enum Column implements HasCaption {
-    DATE("date", "Data", false, false) {
+    DATE("date", Localized.getConstants().date(), false, false) {
       @Override
       Widget createDisplay() {
         return new DateTimeLabel(false);
@@ -102,7 +102,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    VERSION("version", "Versija", false, false) {
+    VERSION("version", Localized.getConstants().fileVersion(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -135,7 +135,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    NAME("name", "Pavadinimas", true, false) {
+    NAME("name", Localized.getConstants().fileName(), true, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -173,7 +173,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    DESCRIPTION("description", "Aprašymas", false, false) {
+    DESCRIPTION("description", Localized.getConstants().fileDescription(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -206,7 +206,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    SIZE("size", "Dydis", false, true) {
+    SIZE("size", Localized.getConstants().fileSize(), false, true) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -230,7 +230,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    TYPE("type", "Tipas", false, false) {
+    TYPE("type", Localized.getConstants().fileType(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -263,7 +263,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    EDIT("edit", "Koreguoti", false, true) {
+    EDIT("edit", Localized.getConstants().actionEdit(), false, true) {
       @Override
       Widget createDisplay() {
         Image widget = new Image(Global.getImages().silverEdit());
@@ -286,7 +286,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     },
 
-    DELETE("delete", "Pašalinti", false, true) {
+    DELETE("delete", Localized.getConstants().actionRemove(), false, true) {
       @Override
       Widget createDisplay() {
         Image widget = new Image(Global.getImages().silverMinus());
@@ -669,7 +669,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       row++;
     }
 
-    Global.inputWidget("Bylos duomenų koregavimas", panel, new InputCallback() {
+    Global.inputWidget(Localized.getConstants().fileDataCorrection(), panel, new InputCallback() {
       @Override
       public void onCancel() {
         getRowFormatter().removeStyleName(index, STYLE_PREFIX + STYLE_EDITING);

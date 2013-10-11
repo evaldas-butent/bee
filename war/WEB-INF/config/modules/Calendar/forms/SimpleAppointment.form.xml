@@ -61,7 +61,7 @@
       <renderToken source="OrganizerCompanyName" prefix=", " />
     </DataSelector>
 
-    <DataSelector source="AppointmentType" required="true" caption="Tipas:" style="width: 300px;"
+    <DataSelector source="AppointmentType" required="true" caption="=appointmentType" style="width: 300px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 320px;" />
 
   </FlowPanel>

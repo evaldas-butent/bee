@@ -67,13 +67,13 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         .getConstants().actionWorkspaceRestoreSize()),
 
     UP(new Image(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
-        "Didinti aukštyn"),
+        Localized.getConstants().actionWorkspaceEnlargeUp()),
     DOWN(new Image(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
-        "Didinti žemyn"),
+        Localized.getConstants().actionWorkspaceEnlargeDown()),
     LEFT(new Image(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
-        "Didinti į kairę"),
+        Localized.getConstants().actionWorkspaceEnlargeToLeft()),
     RIGHT(new Image(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
-        "Didinti į dešinę"),
+        Localized.getConstants().actionWorkspaceEnlargeToRight()),
 
     CLOSE(new Image(Global.getImages().silverMinus()), null, null, Localized.getConstants()
         .actionClose());

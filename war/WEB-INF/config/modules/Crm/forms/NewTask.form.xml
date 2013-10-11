@@ -90,7 +90,7 @@
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=crmTaskObservers" style="&top1; min-width:60px; padding-right:18px;" />
       <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-        editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="Stebėtojai" />
+        editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskObservers" />
     </FlowPanel>
 
     &separator;
