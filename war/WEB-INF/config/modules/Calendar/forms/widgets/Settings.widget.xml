@@ -18,7 +18,7 @@
   <row>
     <Label text="=calDefaultDisplayedDays" />
     <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="99" />
-    <CheckBox source="DaysView" text="Dienos" />
+    <CheckBox source="DaysView" text="=calDaysView" />
   </row>
 
   <row>

@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="PropertyGroup" notNull="true" relation="PropertyGroups" label="=calPropertyGroup"/>
-    <String name="Name" precision="100" notNull="true" unique="true" label="=calPropertyName" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=calPropertyGroupName" />
     
     <Integer name="Hours" label="=unitHours" />
     <Integer name="Minutes" label="=unitMinutes" />

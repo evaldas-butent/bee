@@ -10,7 +10,7 @@
     <RelColumn name="CompanyPhone" caption="=phone" />
 
     <RelColumn name="VehicleNumber" caption="=vehicleNumber" />
-    <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
+    <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="=vehicleModel" />
 
     <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
       caption="=calAppointmentStart" visible="true" />

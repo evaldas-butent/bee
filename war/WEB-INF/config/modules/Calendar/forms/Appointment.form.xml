@@ -139,7 +139,7 @@
           </row>
 
           <row>
-            <TextLabel source="VehicleFuel" caption="Kuro rūšis" inline="true" />
+            <TextLabel source="VehicleFuel" caption="=vehicleFuel" inline="true" />
             <DecimalLabel source="VehicleTankCapacity" caption="=vehicleTankCapacity"
               inline="true" style="width: 100px;" />
             <IntegerLabel source="VehicleSpeedometer" caption="=vehicleSpeedometer"
