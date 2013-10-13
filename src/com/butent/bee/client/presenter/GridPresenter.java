@@ -19,7 +19,7 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.Font;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
@@ -45,6 +45,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -264,8 +265,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
                 deleteCallback.onConfirm();
               }
             }
-          }, BeeConst.UNDEF, null, StyleUtils.FontSize.XX_LARGE.getClassName(),
-          StyleUtils.FontSize.MEDIUM.getClassName(), null);
+          }, BeeConst.UNDEF, null, Font.getClassName(FontSize.XX_LARGE),
+          Font.getClassName(FontSize.MEDIUM), null);
     }
   }
 

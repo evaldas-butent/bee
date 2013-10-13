@@ -35,8 +35,8 @@ import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;

@@ -1080,7 +1080,7 @@ public final class DomUtils {
     Style st = el.getStyle();
     if (st != null) {
       PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Style"),
-          StyleUtils.getStyleInfo(st));
+          JsUtils.getInfo(st));
     }
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Computed"),
         new ComputedStyles(el).getInfo());

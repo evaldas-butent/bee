@@ -12,7 +12,8 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -300,10 +301,10 @@ public final class Rulers {
     }
     if (content != null) {
       if (asHtml) {
-        StyleUtils.setWhiteSpace(ruler, StyleUtils.WhiteSpace.NORMAL);
+        StyleUtils.setWhiteSpace(ruler, WhiteSpace.NORMAL);
         ruler.setInnerHTML(content);
       } else {
-        StyleUtils.setWhiteSpace(ruler, StyleUtils.WhiteSpace.PRE);
+        StyleUtils.setWhiteSpace(ruler, WhiteSpace.PRE);
         ruler.setInnerText(content);
       }
     }

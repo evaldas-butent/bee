@@ -12,11 +12,11 @@ public class Comment extends Node {
   }
 
   @Override
-  public String build() {
+  public String build(int indentStart, int indentStep) {
     if (text == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return "<!-- " + text + " -->";
+      return Node.indent(indentStart, "<!-- " + text + " -->");
     }
   }
 

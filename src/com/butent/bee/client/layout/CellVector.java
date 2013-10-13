@@ -10,7 +10,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 
 public abstract class CellVector extends ComplexPanel implements IdentifiableWidget,
     HasIndexedWidgets, HasAlignment, IsHtmlTable {

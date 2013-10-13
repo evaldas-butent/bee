@@ -6,9 +6,9 @@ import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.CssUnit;
 
 public class AppointmentGrid extends Absolute {
   

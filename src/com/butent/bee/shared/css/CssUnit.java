@@ -1,5 +1,6 @@
-package com.butent.bee.shared.ui;
+package com.butent.bee.shared.css;
 
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public enum CssUnit implements HasCaption {
@@ -12,6 +13,20 @@ public enum CssUnit implements HasCaption {
   IN("in"),
   CM("cm"),
   MM("mm");
+  
+  public static final CssUnit DEFAULT = PX;
+  
+  public static String format(double value, CssUnit unit) {
+    return BeeUtils.toString(value) + normalize(unit).getCaption();
+  }
+
+  public static String format(int value, CssUnit unit) {
+    return BeeUtils.toString(value) + normalize(unit).getCaption();
+  }
+  
+  public static CssUnit normalize(CssUnit unit) {
+    return (unit == null) ? DEFAULT : unit;
+  }
   
   public static CssUnit parse(String input) {
     if (BeeUtils.isEmpty(input)) {

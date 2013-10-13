@@ -12,7 +12,7 @@ public class Text extends Node {
   }
 
   @Override
-  public String build() {
+  public String build(int indentStart, int indentStep) {
     return Strings.nullToEmpty(text);
   }
 

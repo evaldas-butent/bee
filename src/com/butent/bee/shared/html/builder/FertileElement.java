@@ -43,13 +43,15 @@ public class FertileElement extends Element {
   }
 
   @Override
-  public String build() {
-    StringBuilder sb = new StringBuilder(buildStart());
+  public String build(int indentStart, int indentStep) {
+    StringBuilder sb = new StringBuilder(Node.indent(indentStart, buildStart()));
+    
+    int indent = (indentStart >= 0 && indentStep > 0) ? indentStart + indentStep : indentStart; 
     for (Node child : children) {
-      sb.append(child.build());
+      sb.append(child.build(indent, indentStep));
     }
-    sb.append(buildEnd());
-
+    
+    sb.append(Node.indent(indentStart, buildEnd()));
     return sb.toString();
   }
 

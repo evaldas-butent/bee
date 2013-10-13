@@ -1,6 +1,7 @@
 package com.butent.bee.client.style;
 
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssAngle;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public enum Axis {
@@ -12,17 +13,18 @@ public enum Axis {
     this.suffix = suffix;
   }
 
-  public String rotate(int angle) {
+  public String rotate(int value, CssAngle angle) {
     return StyleUtils.TRANSFORM_ROTATE + suffix
-        + BeeUtils.parenthesize(StyleUtils.toDegrees(angle));
+        + BeeUtils.parenthesize(CssAngle.format(value, angle));
   }
 
   public String scale(double value) {
     return StyleUtils.TRANSFORM_SCALE + suffix + BeeUtils.parenthesize(value);
   }
 
-  public String skew(int angle) {
-    return StyleUtils.TRANSFORM_SKEW + suffix + BeeUtils.parenthesize(StyleUtils.toDegrees(angle));
+  public String skew(int value, CssAngle angle) {
+    return StyleUtils.TRANSFORM_SKEW + suffix 
+        + BeeUtils.parenthesize(CssAngle.format(value, angle));
   }
 
   public String translate(double value, CssUnit unit) {

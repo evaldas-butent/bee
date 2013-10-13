@@ -15,24 +15,24 @@ public class Base extends Element {
     return this;
   }
   
-  public Base setTarget(String value) {
+  public Base target(String value) {
     setAttribute(Attribute.TARGET, value);
     return this;
   }
   
   public Base targetBlank() {
-    return setTarget(Keywords.BROWSING_CONTEXT_BLANK);
+    return target(Keywords.BROWSING_CONTEXT_BLANK);
   }
 
   public Base targetParent() {
-    return setTarget(Keywords.BROWSING_CONTEXT_PARENT);
+    return target(Keywords.BROWSING_CONTEXT_PARENT);
   }
   
   public Base targetSelf() {
-    return setTarget(Keywords.BROWSING_CONTEXT_SELF);
+    return target(Keywords.BROWSING_CONTEXT_SELF);
   }
 
   public Base targetTop() {
-    return setTarget(Keywords.BROWSING_CONTEXT_TOP);
+    return target(Keywords.BROWSING_CONTEXT_TOP);
   }
 }

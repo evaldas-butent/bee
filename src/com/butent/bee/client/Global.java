@@ -26,7 +26,7 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
-import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.Font;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -35,6 +35,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
@@ -42,7 +44,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -130,7 +131,7 @@ public class Global implements Module {
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
     msgBoxen.confirm(caption, icon, messages, callback, null,
-        StyleUtils.FontSize.LARGE.getClassName(), StyleUtils.FontSize.MEDIUM.getClassName());
+        Font.getClassName(FontSize.LARGE), Font.getClassName(FontSize.MEDIUM));
   }
 
   public static void debug(String s) {

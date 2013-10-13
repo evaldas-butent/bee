@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 
 /**
  * Implements a class for panels that can contain multiple child widgets and manages their creation

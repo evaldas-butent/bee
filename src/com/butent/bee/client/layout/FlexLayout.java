@@ -6,7 +6,7 @@ import com.google.common.collect.Sets;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.Orientation;

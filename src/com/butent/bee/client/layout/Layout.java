@@ -5,7 +5,7 @@ import com.google.gwt.animation.client.Animation;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.Rulers;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.Orientation;
 
 import java.util.List;

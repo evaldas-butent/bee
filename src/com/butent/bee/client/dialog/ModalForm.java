@@ -12,7 +12,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ModalForm extends Popup {

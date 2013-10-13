@@ -15,9 +15,9 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.RangeMap;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.CssUnit;
 
 public class DayViewHeader extends Horizontal {
 

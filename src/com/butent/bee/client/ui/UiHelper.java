@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -26,7 +25,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.HasWhiteSpace;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.form.FormView;
@@ -37,6 +35,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
@@ -622,7 +623,7 @@ public final class UiHelper {
 
     VerticalAlign align = StyleUtils.parseVerticalAlign(text);
     if (align != null) {
-      elem.getStyle().setVerticalAlign(align);
+      StyleUtils.setProperty(elem.getStyle(), CssProperty.VERTICAL_ALIGN, align);
     }
   }
 

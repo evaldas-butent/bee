@@ -29,7 +29,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 
 /**
  * Handles a rich text editor toolbar with all the buttons for formatting the text.

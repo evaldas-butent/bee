@@ -1,6 +1,6 @@
 package com.butent.bee.client.style;
 
-import com.butent.bee.client.style.StyleUtils.WhiteSpace;
+import com.butent.bee.shared.css.values.WhiteSpace;
 
 public interface HasWhiteSpace {
 

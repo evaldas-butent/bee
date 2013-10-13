@@ -20,8 +20,8 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.logging.LogLevel;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedList;

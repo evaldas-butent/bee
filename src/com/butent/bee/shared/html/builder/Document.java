@@ -4,16 +4,18 @@ import com.butent.bee.shared.html.builder.elements.Body;
 import com.butent.bee.shared.html.builder.elements.Head;
 import com.butent.bee.shared.html.builder.elements.Html;
 
-public class Document {
+public class Document extends Node {
 
-  private final Doctype doctype;
+  private static final String DOC_TYPE = "<!doctype html>";
+  private static final int DEFAULT_INDENT_STEP = 2;
+
   private final Html html;
 
   private final Head head;
   private final Body body;
 
   public Document() {
-    this.doctype = new Doctype();
+    super();
     this.html = new Html();
 
     this.head = new Head();
@@ -22,11 +24,23 @@ public class Document {
     html.appendChild(head);
     html.appendChild(body);
   }
-
+  
   public String build() {
+    return build(0, DEFAULT_INDENT_STEP);
+  }
+
+  @Override
+  public String build(int indentStart, int indentStep) {
     StringBuilder sb = new StringBuilder();
-    sb.append(doctype.build());
-    sb.append(html.build());
+    
+    if (indentStart > 0) {
+      sb.append(Node.indent(indentStart, DOC_TYPE));
+    } else {
+      sb.append(DOC_TYPE);
+    }
+
+    sb.append(html.build(indentStart, indentStep));
+
     return sb.toString();
   }
 

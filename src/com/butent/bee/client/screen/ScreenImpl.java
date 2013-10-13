@@ -30,7 +30,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
-import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.style.Font;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
@@ -41,6 +41,7 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -509,7 +510,7 @@ public class ScreenImpl implements Screen {
               public void onConfirm() {
                 Bee.exit();
               }
-            }, null, StyleUtils.FontSize.MEDIUM.getClassName(), null);
+            }, null, Font.getClassName(FontSize.MEDIUM), null);
       }
     });
     exit.addStyleName("bee-UserExit");

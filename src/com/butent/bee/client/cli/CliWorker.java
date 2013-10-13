@@ -126,6 +126,9 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssAngle;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsTable;
@@ -144,7 +147,6 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Color;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -531,23 +533,23 @@ public final class CliWorker {
       protected boolean run(double elapsed) {
         if (axis == null) {
           if (isRotate()) {
-            StyleUtils.setTransformRotate(style, getInt(elapsed, Axis.X));
+            StyleUtils.setTransformRotate(style, getInt(elapsed, Axis.X), CssAngle.DEG);
           } else if (isScale()) {
             StyleUtils.setTransformScale(style, getDouble(elapsed, Axis.X),
                 getDouble(elapsed, Axis.Y));
           } else if (isSkew()) {
-            StyleUtils.setTransformSkew(style, Axis.X, getInt(elapsed, Axis.X));
+            StyleUtils.setTransformSkew(style, Axis.X, getInt(elapsed, Axis.X), CssAngle.DEG);
           } else if (isTranslate()) {
             StyleUtils.setTransformTranslate(style, getDouble(elapsed, Axis.X), CssUnit.PX,
                 getDouble(elapsed, Axis.Y), CssUnit.PX);
           }
 
         } else if (isRotate()) {
-          StyleUtils.setTransformRotate(style, axis, getInt(elapsed, axis));
+          StyleUtils.setTransformRotate(style, axis, getInt(elapsed, axis), CssAngle.DEG);
         } else if (isScale()) {
           StyleUtils.setTransformScale(style, axis, getDouble(elapsed, axis));
         } else if (isSkew()) {
-          StyleUtils.setTransformSkew(style, axis, getInt(elapsed, axis));
+          StyleUtils.setTransformSkew(style, axis, getInt(elapsed, axis), CssAngle.DEG);
         } else if (isTranslate()) {
           StyleUtils.setTransformTranslate(style, axis, getDouble(elapsed, axis), CssUnit.PX);
         }
@@ -2903,7 +2905,7 @@ public final class CliWorker {
     if (font != null) {
       font.applyTo(span);
     }
-    StyleUtils.setWhiteSpace(span, StyleUtils.WhiteSpace.PRE);
+    StyleUtils.setWhiteSpace(span, WhiteSpace.PRE);
 
     Label div = new Label(html);
     if (font != null) {
@@ -3390,7 +3392,7 @@ public final class CliWorker {
       List<Property> lst;
 
       if (elem.getStyle() != null) {
-        lst = StyleUtils.getStyleInfo(elem.getStyle());
+        lst = JsUtils.getInfo(elem.getStyle());
         if (!BeeUtils.isEmpty(lst)) {
           info.add(new Property("element style", BeeUtils.bracket(lst.size())));
           info.addAll(lst);

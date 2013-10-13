@@ -58,13 +58,15 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleDescriptor;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -76,7 +78,6 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.GridComponentDescription;
@@ -3891,11 +3892,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     if (hAlign != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(StyleUtils.CSS_TEXT_ALIGN,
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.TEXT_ALIGN,
           hAlign.getTextAlignString()));
     }
     if (whiteSpace != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(StyleUtils.CSS_WHITE_SPACE,
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.WHITE_SPACE,
           whiteSpace.getCssName()));
     }
 

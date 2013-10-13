@@ -26,11 +26,11 @@ import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;

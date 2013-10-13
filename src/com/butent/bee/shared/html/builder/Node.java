@@ -1,6 +1,21 @@
 package com.butent.bee.shared.html.builder;
 
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
+
 public abstract class Node {
+  
+  protected static String indent(int indent, String string) {
+    if (string == null) {
+      return BeeConst.STRING_EMPTY;
+    } else if (indent < 0) {
+      return string;
+    } else if (indent == 0) {
+      return BeeConst.STRING_EOL + string;
+    } else {
+      return BeeConst.STRING_EOL + BeeUtils.space(indent) + string;
+    }
+  }
 
   private Node parent;
 
@@ -21,8 +36,8 @@ public abstract class Node {
 
   @Override
   public String toString() {
-    return build();
+    return build(BeeConst.UNDEF, BeeConst.UNDEF);
   }
 
-  protected abstract String build();
+  protected abstract String build(int indentStart, int indentStep);
 }

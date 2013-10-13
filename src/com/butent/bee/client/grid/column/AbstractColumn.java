@@ -6,8 +6,8 @@ import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.user.cellview.client.Column;
 
 import com.butent.bee.client.style.HasWhiteSpace;
-import com.butent.bee.client.style.StyleUtils.WhiteSpace;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;

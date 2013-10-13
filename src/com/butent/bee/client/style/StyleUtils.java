@@ -7,13 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.FontStyle;
-import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.HasCssName;
-import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.TextTransform;
-import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
@@ -29,7 +23,20 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssAngle;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.values.BorderCollapse;
+import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.FontStyle;
+import com.butent.bee.shared.css.values.FontVariant;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.Position;
+import com.butent.bee.shared.css.values.TextTransform;
+import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -50,191 +57,8 @@ import elemental.js.stylesheets.JsStyleSheetList;
 
 public final class StyleUtils {
 
-  /**
-   * Contains possible font sizes.
-   */
-
-  public enum FontSize implements HasCssName {
-    XX_SMALL {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_XX_SMALL;
-      }
-    },
-    X_SMALL {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_X_SMALL;
-      }
-    },
-    SMALL {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_SMALL;
-      }
-    },
-    MEDIUM {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_MEDIUM;
-      }
-    },
-    LARGE {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_LARGE;
-      }
-    },
-    X_LARGE {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_X_LARGE;
-      }
-    },
-    XX_LARGE {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_XX_LARGE;
-      }
-    },
-
-    SMALLER {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_SMALLER;
-      }
-    },
-    LARGER {
-      @Override
-      public String getCssName() {
-        return FONT_SIZE_LARGER;
-      }
-    };
-
-    public String getClassName() {
-      return "bee-font-" + getCssName();
-    }
-  }
-
-  /**
-   * Contains possible font variations, like normal and small caps.
-   */
-
-  public enum FontVariant implements HasCssName {
-    NORMAL {
-      @Override
-      public String getCssName() {
-        return FONT_VARIANT_NORMAL;
-      }
-    },
-    SMALL_CAPS {
-      @Override
-      public String getCssName() {
-        return FONT_VARIANT_SMALL_CAPS;
-      }
-    }
-  }
-
-  public enum OutlineStyle implements HasCssName {
-    NONE {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_NONE;
-      }
-    },
-    DOTTED {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_DOTTED;
-      }
-    },
-    DASHED {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_DASHED;
-      }
-    },
-    SOLID {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_SOLID;
-      }
-    },
-    DOUBLE {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_DOUBLE;
-      }
-    },
-    GROOVE {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_GROOVE;
-      }
-    },
-    RIDGE {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_RIDGE;
-      }
-    },
-    INSET {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_INSET;
-      }
-    },
-    OUTSET {
-      @Override
-      public String getCssName() {
-        return BORDER_STYLE_OUTSET;
-      }
-    };
-  }
-
-  /**
-   * Contains possible scroll bar configurations, from none, to vertical, horizontal and both.
-   */
-
   public enum ScrollBars {
     NONE, HORIZONTAL, VERTICAL, BOTH
-  }
-
-  /**
-   * Specifies available ways how white space inside an element is handled.
-   */
-
-  public enum WhiteSpace implements HasCssName {
-    NORMAL {
-      @Override
-      public String getCssName() {
-        return WHITE_SPACE_NORMAL;
-      }
-    },
-    NOWRAP {
-      @Override
-      public String getCssName() {
-        return WHITE_SPACE_NOWRAP;
-      }
-    },
-    PRE {
-      @Override
-      public String getCssName() {
-        return WHITE_SPACE_PRE;
-      }
-    },
-    PRE_LINE {
-      @Override
-      public String getCssName() {
-        return WHITE_SPACE_PRE_LINE;
-      }
-    },
-    PRE_WRAP {
-      @Override
-      public String getCssName() {
-        return WHITE_SPACE_PRE_WRAP;
-      }
-    }
   }
 
   public static final String DND_SOURCE = "bee-dndSource";
@@ -348,70 +172,13 @@ public final class StyleUtils {
   public static final String NAME_BOLD = "bee-font-bold";
   public static final String NAME_ITALIC = "bee-font-italic";
 
-  public static final String FONT_SIZE_XX_SMALL = "xx-small";
-  public static final String FONT_SIZE_X_SMALL = "x-small";
-  public static final String FONT_SIZE_SMALL = "small";
-  public static final String FONT_SIZE_MEDIUM = "medium";
-  public static final String FONT_SIZE_LARGE = "large";
-  public static final String FONT_SIZE_X_LARGE = "x-large";
-  public static final String FONT_SIZE_XX_LARGE = "xx-large";
-
-  public static final String FONT_SIZE_SMALLER = "smaller";
-  public static final String FONT_SIZE_LARGER = "larger";
-
-  public static final String FONT_VARIANT_NORMAL = "normal";
-  public static final String FONT_VARIANT_SMALL_CAPS = "small-caps";
-
-  public static final String WHITE_SPACE_NORMAL = "normal";
-  public static final String WHITE_SPACE_NOWRAP = "nowrap";
-  public static final String WHITE_SPACE_PRE = "pre";
-  public static final String WHITE_SPACE_PRE_LINE = "pre-line";
-  public static final String WHITE_SPACE_PRE_WRAP = "pre-wrap";
-
-  public static final String BORDER_COLLAPSE = "collapse";
-  public static final String BORDER_SEPARATE = "separate";
-
-  public static final String POSITION_ABSOLUTE = "absolute";
-
-  public static final String BORDER_STYLE_NONE = "none";
-  public static final String BORDER_STYLE_HIDDEN = "hidden";
-  public static final String BORDER_STYLE_DOTTED = "dotted";
-  public static final String BORDER_STYLE_DASHED = "dashed";
-  public static final String BORDER_STYLE_SOLID = "solid";
-  public static final String BORDER_STYLE_DOUBLE = "double";
-  public static final String BORDER_STYLE_GROOVE = "groove";
-  public static final String BORDER_STYLE_RIDGE = "ridge";
-  public static final String BORDER_STYLE_INSET = "inset";
-  public static final String BORDER_STYLE_OUTSET = "outset";
-
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
   public static final String TRANSFORM_SKEW = "skew";
   public static final String TRANSFORM_TRANSLATE = "translate";
 
-  public static final String CSS_BORDER_WIDTH = "border-width";
-  public static final String CSS_BORDER_LEFT_WIDTH = "border-left-width";
-  public static final String CSS_BORDER_RIGHT_WIDTH = "border-right-width";
-  public static final String CSS_BORDER_TOP_WIDTH = "border-top-width";
-  public static final String CSS_BORDER_BOTTOM_WIDTH = "border-bottom-width";
-
-  public static final String CSS_TEXT_ALIGN = "text-align";
-  public static final String CSS_WHITE_SPACE = "white-space";
-
-  public static final String CSS_Z_INDEX = "z-index";
-
-  public static final String CSS_FONT_STYLE = "font-style";
-  public static final String CSS_FONT_VARIANT = "font-variant";
-  public static final String CSS_FONT_WEIGHT = "font-weight";
-  public static final String CSS_FONT_SIZE = "font-size";
-  public static final String CSS_FONT_FAMILY = "font-family";
-
-  public static final String CSS_LINE_HEIGHT = "line-height";
-  public static final String CSS_TEXT_TRANSFORM = "text-transform";
-  public static final String CSS_LETTER_SPACING = "letter-spacing";
-
   public static final SafeStyles PREFAB_POSITION_ABSOLUTE =
-      buildStyle(STYLE_POSITION, POSITION_ABSOLUTE);
+      buildStyle(STYLE_POSITION, Position.ABSOLUTE.getCssName());
 
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
@@ -543,7 +310,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderBottomWidth(String value) {
-    return buildStyle(CSS_BORDER_BOTTOM_WIDTH, value);
+    return buildStyle(CssProperty.BORDER_BOTTOM_WIDTH, value);
   }
 
   public static SafeStyles buildBorderLeftWidth(double value, CssUnit unit) {
@@ -555,7 +322,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderLeftWidth(String value) {
-    return buildStyle(CSS_BORDER_LEFT_WIDTH, value);
+    return buildStyle(CssProperty.BORDER_LEFT_WIDTH, value);
   }
 
   public static SafeStyles buildBorderRightWidth(double value, CssUnit unit) {
@@ -567,7 +334,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderRightWidth(String value) {
-    return buildStyle(CSS_BORDER_RIGHT_WIDTH, value);
+    return buildStyle(CssProperty.BORDER_RIGHT_WIDTH, value);
   }
 
   public static SafeStyles buildBorderTopWidth(double value, CssUnit unit) {
@@ -579,7 +346,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderTopWidth(String value) {
-    return buildStyle(CSS_BORDER_TOP_WIDTH, value);
+    return buildStyle(CssProperty.BORDER_TOP_WIDTH, value);
   }
 
   public static SafeStyles buildBorderWidth(double value, CssUnit unit) {
@@ -591,7 +358,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderWidth(String value) {
-    return buildStyle(CSS_BORDER_WIDTH, value);
+    return buildStyle(CssProperty.BORDER_WIDTH, value);
   }
 
   public static String buildClasses(Collection<String> styleNames) {
@@ -604,32 +371,32 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildFontFamily(String family) {
-    return buildStyle(CSS_FONT_FAMILY, family);
+    return buildStyle(CssProperty.FONT_FAMILY, family);
   }
 
   public static SafeStyles buildFontSize(double size, CssUnit unit) {
     Assert.isPositive(size);
-    return buildStyle(CSS_FONT_SIZE, toCssLength(size, normalizeUnit(unit)));
+    return buildStyle(CssProperty.FONT_SIZE, toCssLength(size, normalizeUnit(unit)));
   }
 
   public static SafeStyles buildFontSize(FontSize size) {
     Assert.notNull(size);
-    return buildStyle(CSS_FONT_SIZE, size.getCssName());
+    return buildStyle(CssProperty.FONT_SIZE, size.getCssName());
   }
 
   public static SafeStyles buildFontStyle(FontStyle style) {
     Assert.notNull(style);
-    return buildStyle(CSS_FONT_STYLE, style.getCssName());
+    return buildStyle(CssProperty.FONT_STYLE, style.getCssName());
   }
 
   public static SafeStyles buildFontVariant(FontVariant variant) {
     Assert.notNull(variant);
-    return buildStyle(CSS_FONT_VARIANT, variant.getCssName());
+    return buildStyle(CssProperty.FONT_VARIANT, variant.getCssName());
   }
 
   public static SafeStyles buildFontWeight(FontWeight weight) {
     Assert.notNull(weight);
-    return buildStyle(CSS_FONT_WEIGHT, weight.getCssName());
+    return buildStyle(CssProperty.FONT_WEIGHT, weight.getCssName());
   }
 
   public static SafeStyles buildHeight(double value, CssUnit unit) {
@@ -649,11 +416,11 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildLetterSpacing(String value) {
-    return buildStyle(CSS_LETTER_SPACING, value);
+    return buildStyle(CssProperty.LETTER_SPACING, value);
   }
 
   public static SafeStyles buildLineHeight(String value) {
-    return buildStyle(CSS_LINE_HEIGHT, value);
+    return buildStyle(CssProperty.LINE_HEIGHT, value);
   }
 
   public static SafeStyles buildMargin(String value) {
@@ -690,7 +457,7 @@ public final class StyleUtils {
 
   public static SafeStyles buildTextTransform(TextTransform textTransform) {
     Assert.notNull(textTransform);
-    return buildStyle(CSS_TEXT_TRANSFORM, textTransform.getCssName());
+    return buildStyle(CssProperty.TEXT_TRANSFORM, textTransform.getCssName());
   }
 
   public static SafeStyles buildTop(double value, CssUnit unit) {
@@ -710,7 +477,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildZIndex(int value) {
-    return buildStyle(CSS_Z_INDEX, value);
+    return buildStyle(CssProperty.Z_INDEX, value);
   }
 
   public static void clearClip(Element el) {
@@ -784,7 +551,7 @@ public final class StyleUtils {
 
   public static void collapseBorders(Style st) {
     Assert.notNull(st);
-    st.setProperty(STYLE_BORDER_COLLAPSE, BORDER_COLLAPSE);
+    st.setProperty(STYLE_BORDER_COLLAPSE, BorderCollapse.COLLAPSE.getCssName());
   }
 
   public static void collapseBorders(UIObject obj) {
@@ -1149,10 +916,6 @@ public final class StyleUtils {
     return getScroll(obj.getElement());
   }
 
-  public static List<Property> getStyleInfo(Style st) {
-    return JsUtils.getInfo(st);
-  }
-
   public static String getStylePrimaryName(Element el) {
     Assert.notNull(el);
     String className = el.getClassName();
@@ -1234,7 +997,7 @@ public final class StyleUtils {
 
   public static void hideDisplay(Element el) {
     Assert.notNull(el);
-    el.getStyle().setDisplay(Display.NONE);
+    setProperty(el.getStyle(), CssProperty.DISPLAY, Display.NONE);
   }
 
   public static void hideDisplay(String id) {
@@ -1252,7 +1015,7 @@ public final class StyleUtils {
   }
 
   public static void hideOutline(Style st) {
-    setOutlineStyle(st, OutlineStyle.NONE);
+    setOutlineStyle(st, BorderStyle.NONE);
   }
 
   public static void hideOutline(UIObject obj) {
@@ -1359,7 +1122,7 @@ public final class StyleUtils {
 
   public static void makeAbsolute(Element el) {
     Assert.notNull(el);
-    el.getStyle().setPosition(Position.ABSOLUTE);
+    setProperty(el.getStyle(), CssProperty.POSITION, Position.ABSOLUTE);
   }
 
   public static void makeAbsolute(UIObject obj) {
@@ -1379,7 +1142,7 @@ public final class StyleUtils {
 
   public static void makeRelative(Element el) {
     Assert.notNull(el);
-    el.getStyle().setPosition(Position.RELATIVE);
+    setProperty(el.getStyle(), CssProperty.POSITION, Position.RELATIVE);
   }
 
   public static void makeRelative(UIObject obj) {
@@ -1394,7 +1157,7 @@ public final class StyleUtils {
 
   public static void occupy(Style st) {
     Assert.notNull(st);
-    st.setPosition(Position.ABSOLUTE);
+    setProperty(st, CssProperty.POSITION, Position.ABSOLUTE);
 
     setLeft(st, 0, CssUnit.PX);
     setRight(st, 0, CssUnit.PX);
@@ -1707,7 +1470,7 @@ public final class StyleUtils {
 
   public static void setDisplay(Element el, Display value) {
     Assert.notNull(el);
-    el.getStyle().setDisplay(value);
+    setProperty(el.getStyle(), CssProperty.DISPLAY, value);
   }
 
   public static void setDisplay(UIObject obj, Display value) {
@@ -2052,18 +1815,18 @@ public final class StyleUtils {
     setOpacity(obj.getElement(), value);
   }
 
-  public static void setOutlineStyle(Element el, OutlineStyle value) {
+  public static void setOutlineStyle(Element el, BorderStyle value) {
     Assert.notNull(el);
     setOutlineStyle(el.getStyle(), value);
   }
 
-  public static void setOutlineStyle(Style st, OutlineStyle value) {
+  public static void setOutlineStyle(Style st, BorderStyle value) {
     Assert.notNull(st);
     Assert.notNull(value);
     st.setProperty(STYLE_OUTLINE_STYLE, value.getCssName());
   }
 
-  public static void setOutlineStyle(UIObject obj, OutlineStyle value) {
+  public static void setOutlineStyle(UIObject obj, BorderStyle value) {
     Assert.notNull(obj);
     setOutlineStyle(obj.getElement(), value);
   }
@@ -2103,8 +1866,16 @@ public final class StyleUtils {
     setOverflow(obj.getElement(), scroll, value);
   }
 
+  public static void setProperty(Style st, String name, HasCssName value) {
+    if (value == null) {
+      st.clearProperty(checkPropertyName(name));
+    } else {
+      st.setProperty(checkPropertyName(name), value.getCssName());
+    }
+  }
+
   public static void setProperty(Style st, String name, double value, CssUnit unit) {
-    st.setProperty(name, value + unit.getCaption());
+    st.setProperty(checkPropertyName(name), value + unit.getCaption());
   }
 
   public static void setRectangle(Element el, int left, int top, int width, int height) {
@@ -2276,36 +2047,36 @@ public final class StyleUtils {
     setTop(obj.getElement(), px);
   }
 
-  public static void setTransformRotate(Element el, int angle) {
+  public static void setTransformRotate(Element el, int value, CssAngle angle) {
     Assert.notNull(el);
-    setTransformRotate(el.getStyle(), angle);
+    setTransformRotate(el.getStyle(), value, angle);
   }
 
-  public static void setTransformRotate(Style st, int angle) {
+  public static void setTransformRotate(Style st, int value, CssAngle angle) {
     Assert.notNull(st);
     st.setProperty(getStyleTransformPropertyName(st),
-        TRANSFORM_ROTATE + BeeUtils.parenthesize(toDegrees(angle)));
+        TRANSFORM_ROTATE + BeeUtils.parenthesize(CssAngle.format(value, angle)));
   }
 
-  public static void setTransformRotate(UIObject obj, int angle) {
+  public static void setTransformRotate(UIObject obj, int value, CssAngle angle) {
     Assert.notNull(obj);
-    setTransformRotate(obj.getElement(), angle);
+    setTransformRotate(obj.getElement(), value, angle);
   }
 
-  public static void setTransformRotate(Element el, Axis axis, int angle) {
+  public static void setTransformRotate(Element el, Axis axis, int value, CssAngle angle) {
     Assert.notNull(el);
-    setTransformRotate(el.getStyle(), axis, angle);
+    setTransformRotate(el.getStyle(), axis, value, angle);
   }
 
-  public static void setTransformRotate(Style st, Axis axis, int angle) {
+  public static void setTransformRotate(Style st, Axis axis, int value, CssAngle angle) {
     Assert.notNull(st);
     Assert.notNull(axis);
-    st.setProperty(getStyleTransformPropertyName(st), axis.rotate(angle));
+    st.setProperty(getStyleTransformPropertyName(st), axis.rotate(value, angle));
   }
 
-  public static void setTransformRotate(UIObject obj, Axis axis, int angle) {
+  public static void setTransformRotate(UIObject obj, Axis axis, int value, CssAngle angle) {
     Assert.notNull(obj);
-    setTransformRotate(obj.getElement(), axis, angle);
+    setTransformRotate(obj.getElement(), axis, value, angle);
   }
 
   public static void setTransformScale(Element el, double x, double y) {
@@ -2340,20 +2111,20 @@ public final class StyleUtils {
     setTransformScale(obj.getElement(), axis, value);
   }
 
-  public static void setTransformSkew(Element el, Axis axis, int angle) {
+  public static void setTransformSkew(Element el, Axis axis, int value, CssAngle angle) {
     Assert.notNull(el);
-    setTransformSkew(el.getStyle(), axis, angle);
+    setTransformSkew(el.getStyle(), axis, value, angle);
   }
 
-  public static void setTransformSkew(Style st, Axis axis, int angle) {
+  public static void setTransformSkew(Style st, Axis axis, int value, CssAngle angle) {
     Assert.notNull(st);
     Assert.notNull(axis);
-    st.setProperty(getStyleTransformPropertyName(st), axis.skew(angle));
+    st.setProperty(getStyleTransformPropertyName(st), axis.skew(value, angle));
   }
 
-  public static void setTransformSkew(UIObject obj, Axis axis, int angle) {
+  public static void setTransformSkew(UIObject obj, Axis axis, int value, CssAngle angle) {
     Assert.notNull(obj);
-    setTransformSkew(obj.getElement(), axis, angle);
+    setTransformSkew(obj.getElement(), axis, value, angle);
   }
   
   public static void setTransformTranslate(Style st, double x, CssUnit xu, double y, CssUnit yu) {
@@ -2405,7 +2176,7 @@ public final class StyleUtils {
       if (visible) {
         el.getStyle().clearDisplay();
       } else {
-        el.getStyle().setDisplay(Display.NONE);
+        setProperty(el.getStyle(), CssProperty.DISPLAY, Display.NONE);
       }
     }
   }
@@ -2491,10 +2262,6 @@ public final class StyleUtils {
 
   public static String toCssLength(double value, CssUnit unit) {
     return BeeUtils.toString(value) + normalizeUnit(unit).getCaption();
-  }
-
-  public static String toDegrees(int angle) {
-    return angle + "deg";
   }
 
   public static SafeStyles toSafeStyles(String s) {

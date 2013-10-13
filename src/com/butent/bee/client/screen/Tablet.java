@@ -10,13 +10,13 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.FontSize;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
