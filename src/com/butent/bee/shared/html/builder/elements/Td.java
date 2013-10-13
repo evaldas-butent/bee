@@ -1,5 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
@@ -32,8 +35,6 @@ public class Td extends FertileElement {
     return this;
   }
 
-  
-
   public Td headers(String value) {
     setAttribute(Attribute.HEADERS, value);
     return this;
@@ -54,6 +55,26 @@ public class Td extends FertileElement {
     return this;
   }
 
+  public Td paddingBottom(int value, CssUnit unit) {
+    setPaddingBottom(value, unit);
+    return this;
+  }
+
+  public Td paddingLeft(int value, CssUnit unit) {
+    setPaddingLeft(value, unit);
+    return this;
+  }
+  
+  public Td paddingRight(int value, CssUnit unit) {
+    setPaddingRight(value, unit);
+    return this;
+  }
+  
+  public Td paddingTop(int value, CssUnit unit) {
+    setPaddingTop(value, unit);
+    return this;
+  }
+
   public Td remove(Node child) {
     super.removeChild(child);
     return this;
@@ -69,8 +90,18 @@ public class Td extends FertileElement {
     return this;
   }
 
+  public Td textAlign(TextAlign textAlign) {
+    setTextAlign(textAlign);
+    return this;
+  }
+
   public Td title(String value) {
     setTitle(value);
+    return this;
+  }
+  
+  public Td verticalAlign(VerticalAlign verticalAlign) {
+    setVerticalAlign(verticalAlign);
     return this;
   }
 }

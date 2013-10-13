@@ -42,7 +42,7 @@ public class Style {
     if (getValue() == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return getName() + ": \"" + getValue() + "\";";
+      return getName() + ": " + getValue() + ";";
     }
   }
 

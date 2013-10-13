@@ -285,6 +285,21 @@ public class Input extends Element {
     return this;
   }
 
+  public Input onKeyDown(String event) {
+    setOnKeyDown(event);
+    return this;
+  }
+
+  public Input onKeyPress(String event) {
+    setOnKeyPress(event);
+    return this;
+  }
+
+  public Input onKeyUp(String event) {
+    setOnKeyUp(event);
+    return this;
+  }
+  
   public Input pattern(String value) {
     setAttribute(Attribute.PATTERN, value);
     return this;

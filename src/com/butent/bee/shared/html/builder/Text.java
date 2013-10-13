@@ -1,9 +1,7 @@
 package com.butent.bee.shared.html.builder;
 
-import com.google.common.base.Strings;
-
 public class Text extends Node {
-  
+
   private final String text;
 
   public Text(String text) {
@@ -13,7 +11,7 @@ public class Text extends Node {
 
   @Override
   public String build(int indentStart, int indentStep) {
-    return Strings.nullToEmpty(text);
+    return Node.indent(indentStart, text);
   }
 
   public String getText() {

@@ -24,8 +24,6 @@ public class Meta extends Element {
     return this;
   }
 
-  
-
   public Meta httpEquiv(String value) {
     setAttribute(Attribute.HTTP_EQUIV, value);
     return this;

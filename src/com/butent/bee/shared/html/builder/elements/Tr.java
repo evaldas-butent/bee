@@ -16,7 +16,7 @@ public class Tr extends FertileElement {
     return this;
   }
 
-  public Tr append(List<Node> nodes) {
+  public Tr append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Tr extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Tr id(String value) {
     setId(value);

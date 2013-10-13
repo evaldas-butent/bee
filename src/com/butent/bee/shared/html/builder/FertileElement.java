@@ -3,6 +3,7 @@ package com.butent.bee.shared.html.builder;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class FertileElement extends Element {
     children.add(child);
   }
 
-  public void appendChildren(List<Node> nodes) {
+  public void appendChildren(List<? extends Node> nodes) {
     if (nodes != null) {
       for (Node node : nodes) {
         appendChild(node);
@@ -44,15 +45,37 @@ public class FertileElement extends Element {
 
   @Override
   public String build(int indentStart, int indentStep) {
-    StringBuilder sb = new StringBuilder(Node.indent(indentStart, buildStart()));
-    
-    int indent = (indentStart >= 0 && indentStep > 0) ? indentStart + indentStep : indentStart; 
-    for (Node child : children) {
-      sb.append(child.build(indent, indentStep));
+    if (children.isEmpty()) {
+      return super.build(indentStart, indentStep);
+
+    } else {
+      StringBuilder sb = new StringBuilder(Node.indent(indentStart, buildStart()));
+      
+      int textCount = 0;
+      for (Node child : children) {
+        if (child instanceof Text) {
+          textCount++;
+        }
+      }
+      
+      boolean indentChildren = textCount != 1;
+
+      int nextIndent;
+      if (!indentChildren) {
+        nextIndent = BeeConst.UNDEF;
+      } else if (indentStart >= 0 && indentStep > 0) {
+        nextIndent = indentStart + indentStep;
+      } else {
+        nextIndent = indentStart;
+      }
+
+      for (Node child : children) {
+        sb.append(child.build(nextIndent, indentStep));
+      }
+
+      sb.append(Node.indent(indentChildren ? indentStart : BeeConst.UNDEF, buildEnd()));
+      return sb.toString();
     }
-    
-    sb.append(Node.indent(indentStart, buildEnd()));
-    return sb.toString();
   }
 
   @Override
@@ -67,7 +90,7 @@ public class FertileElement extends Element {
   protected String buildStart() {
     return super.buildStart() + ">";
   }
-  
+
   public void clearChildren() {
     children.clear();
   }
@@ -88,7 +111,7 @@ public class FertileElement extends Element {
     }
     return false;
   }
-  
+
   public boolean hasText() {
     for (Node child : children) {
       if (child instanceof Text) {

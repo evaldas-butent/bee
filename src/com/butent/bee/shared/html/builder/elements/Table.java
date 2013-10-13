@@ -1,5 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.BorderCollapse;
 import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
@@ -34,7 +36,15 @@ public class Table extends FertileElement {
     return this;
   }
 
-  
+  public Table borderCollapse() {
+    setBorderCollapse(BorderCollapse.COLLAPSE);
+    return this;
+  }
+
+  public Table borderSeparate() {
+    setBorderCollapse(BorderCollapse.SEPARATE);
+    return this;
+  }
 
   public Table id(String value) {
     setId(value);
@@ -48,6 +58,26 @@ public class Table extends FertileElement {
 
   public Table lang(String value) {
     setLang(value);
+    return this;
+  }
+
+  public Table marginBottom(int value, CssUnit unit) {
+    setMarginBottom(value, unit);
+    return this;
+  }
+
+  public Table marginLeft(int value, CssUnit unit) {
+    setMarginLeft(value, unit);
+    return this;
+  }
+
+  public Table marginRight(int value, CssUnit unit) {
+    setMarginRight(value, unit);
+    return this;
+  }
+
+  public Table marginTop(int value, CssUnit unit) {
+    setMarginTop(value, unit);
     return this;
   }
 
