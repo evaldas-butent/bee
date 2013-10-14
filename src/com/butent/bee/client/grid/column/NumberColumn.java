@@ -5,6 +5,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.grid.cell.NumberCell;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
@@ -17,7 +18,7 @@ public abstract class NumberColumn<C extends Number> extends DataColumn<C> imple
 
   public NumberColumn(Cell<C> cell, CellSource cellSource) {
     super(cell, cellSource);
-    setHorizontalAlignment(ALIGN_RIGHT);
+    setTextAlign(TextAlign.RIGHT);
   }
 
   public NumberColumn(NumberFormat format, CellSource cellSource) {

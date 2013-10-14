@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
@@ -42,6 +41,7 @@ import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -258,7 +258,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     Button confirm = new Button(Localized.getConstants().ecOrderRejectConfirm());
     table.setWidgetAndStyle(row, col, confirm, stylePrefix + "confirm");
 
-    table.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
+    table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.CENTER);
     table.getCellFormatter().setColSpan(row, col, 2);
 
     final DialogBox dialog = DialogBox.create(Localized.getConstants().ecOrderRejectCaption(),

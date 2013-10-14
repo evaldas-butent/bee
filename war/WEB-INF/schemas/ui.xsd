@@ -40,20 +40,30 @@
 
   <xs:simpleType name="horizontalAlignmentType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="left" />
-      <xs:enumeration value="center" />
-      <xs:enumeration value="right" />
-      <xs:enumeration value="justify" />
       <xs:enumeration value="start" />
       <xs:enumeration value="end" />
+      <xs:enumeration value="left" />
+      <xs:enumeration value="right" />
+      <xs:enumeration value="center" />
+      <xs:enumeration value="justify" />
+      <xs:enumeration value="match-parent" />
+      <xs:enumeration value="start end" />
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="verticalAlignmentType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="auto" />
+      <xs:enumeration value="use-script" />
+      <xs:enumeration value="baseline" />
+      <xs:enumeration value="sub" />
+      <xs:enumeration value="super" />
       <xs:enumeration value="top" />
+      <xs:enumeration value="text-top" />
+      <xs:enumeration value="central" />
       <xs:enumeration value="middle" />
       <xs:enumeration value="bottom" />
+      <xs:enumeration value="text-bottom" />
     </xs:restriction>
   </xs:simpleType>
 

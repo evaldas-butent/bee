@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.grid.cell.SelectionCell;
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
@@ -21,7 +22,7 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   private SelectionColumn(CellGrid grid, SelectionCell cell) {
     super(cell);
     this.grid = grid;
-    setHorizontalAlignment(ALIGN_CENTER);
+    setTextAlign(TextAlign.CENTER);
   }
 
   @Override

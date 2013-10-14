@@ -6,9 +6,6 @@ import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -20,6 +17,8 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -68,8 +67,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       getElement(row, column).removeClassName(styleName);
     }
 
-    public void setAlignment(int row, int column,
-        HorizontalAlignmentConstant hAlign, VerticalAlignmentConstant vAlign) {
+    public void setAlignment(int row, int column, TextAlign hAlign, VerticalAlign vAlign) {
       setHorizontalAlignment(row, column, hAlign);
       setVerticalAlignment(row, column, vAlign);
     }
@@ -86,7 +84,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       StyleUtils.setHeight(ensureElement(row, column), height);
     }
 
-    public void setHorizontalAlignment(int row, int column, HorizontalAlignmentConstant align) {
+    public void setHorizontalAlignment(int row, int column, TextAlign align) {
       StyleUtils.setTextAlign(ensureElement(row, column), align);
     }
 
@@ -106,7 +104,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       }
     }
 
-    public void setVerticalAlignment(int row, int column, VerticalAlignmentConstant align) {
+    public void setVerticalAlignment(int row, int column, VerticalAlign align) {
       StyleUtils.setVerticalAlign(ensureElement(row, column), align);
     }
 
@@ -227,7 +225,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       }
     }
     
-    public void setVerticalAlign(int row, VerticalAlignmentConstant align) {
+    public void setVerticalAlign(int row, VerticalAlign align) {
       StyleUtils.setVerticalAlign(ensureElement(row), align);
     }
 
@@ -292,15 +290,15 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   }
 
   public void alignCenter(int row, int column) {
-    getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_CENTER);
+    getCellFormatter().setHorizontalAlignment(row, column, TextAlign.CENTER);
   }
 
   public void alignLeft(int row, int column) {
-    getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_LEFT);
+    getCellFormatter().setHorizontalAlignment(row, column, TextAlign.LEFT);
   }
 
   public void alignRight(int row, int column) {
-    getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_RIGHT);
+    getCellFormatter().setHorizontalAlignment(row, column, TextAlign.RIGHT);
   }
 
   @Override

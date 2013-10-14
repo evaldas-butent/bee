@@ -24,7 +24,6 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
@@ -66,6 +65,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssProperty;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -3866,7 +3866,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           result.add(renderCell(rowIdx, col, StyleUtils.buildClasses(cellClasses), left, top,
               cellWidth, cellHeight, defaultStyles, extraStylesBuilder.toSafeStyles(),
-              column.getHorizontalAlignment(), column.getWhiteSpace(), cellHtml, true));
+              column.getTextAlign(), column.getWhiteSpace(), cellHtml, true));
         }
         left += columnWidth + defaultWidthIncr;
         col++;
@@ -3878,8 +3878,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private RenderInfo renderCell(String rowIdx, int col, String classes, int left, int top,
       int width, int height, SafeStyles styles, SafeStyles extraStyles,
-      HorizontalAlignmentConstant hAlign, WhiteSpace whiteSpace, SafeHtml content,
-      boolean focusable) {
+      TextAlign hAlign, WhiteSpace whiteSpace, SafeHtml content, boolean focusable) {
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
     stylesBuilder.append(StyleUtils.PREFAB_POSITION_ABSOLUTE);
@@ -3892,12 +3891,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     if (hAlign != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.TEXT_ALIGN,
-          hAlign.getTextAlignString()));
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.TEXT_ALIGN, hAlign.getCssName()));
     }
     if (whiteSpace != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.WHITE_SPACE,
-          whiteSpace.getCssName()));
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.WHITE_SPACE, whiteSpace.getCssName()));
     }
 
     stylesBuilder.append(StyleUtils.buildLeft(left));
@@ -3994,7 +3991,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       ColumnInfo columnInfo = getColumnInfo(i);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-      HorizontalAlignmentConstant hAlign = null;
+      TextAlign hAlign = null;
 
       if (isHeader) {
         if (columnInfo.getHeader() != null) {
@@ -4005,7 +4002,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       } else if (columnInfo.getFooter() != null) {
         CellContext context = new CellContext(0, i, null, this);
         columnInfo.getFooter().render(context, cellBuilder);
-        hAlign = columnInfo.getFooter().getHorizontalAlignment();
+        hAlign = columnInfo.getFooter().getTextAlign();
       }
 
       int width = columnInfo.getWidth();

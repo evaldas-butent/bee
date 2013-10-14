@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -29,6 +28,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -148,7 +148,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     addStyleName(stylePrefix + STYLE_PANEL);
     addStyleName(getStyle(STYLE_PANEL));
     
-    panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+    panel.setVerticalAlign(VerticalAlign.BOTTOM);
     
     sinkEvents(Event.ONCLICK);
   }

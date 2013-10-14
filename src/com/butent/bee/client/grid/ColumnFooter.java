@@ -4,7 +4,6 @@ import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 import com.butent.bee.client.grid.cell.FooterCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -12,12 +11,14 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasScale;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -39,7 +40,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
-public class ColumnFooter extends Header<String> implements HasHorizontalAlignment,
+public class ColumnFooter extends Header<String> implements HasTextAlign,
     HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType {
 
   public enum Aggregate {
@@ -55,7 +56,7 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
   private Evaluator rowEvaluator;
   private ValueType valueType;
 
-  private HorizontalAlignmentConstant horizontalAlignment;
+  private TextAlign horizontalAlignment;
 
   private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
@@ -104,11 +105,6 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
     return dateTimeFormat;
   }
 
-  @Override
-  public HorizontalAlignmentConstant getHorizontalAlignment() {
-    return horizontalAlignment;
-  }
-
   public String getHtml() {
     return html;
   }
@@ -130,6 +126,11 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
   @Override
   public int getScale() {
     return scale;
+  }
+
+  @Override
+  public TextAlign getTextAlign() {
+    return horizontalAlignment;
   }
 
   @Override
@@ -177,11 +178,6 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
     this.dateTimeFormat = dateTimeFormat;
   }
 
-  @Override
-  public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
-    this.horizontalAlignment = align;
-  }
-
   public void setHtml(String html) {
     this.html = html;
   }
@@ -203,6 +199,11 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
   @Override
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  @Override
+  public void setTextAlign(TextAlign align) {
+    this.horizontalAlignment = align;
   }
 
   public void setValueType(ValueType valueType) {
@@ -364,13 +365,13 @@ public class ColumnFooter extends Header<String> implements HasHorizontalAlignme
       }
     }
 
-    if (getHorizontalAlignment() == null) {
+    if (getTextAlign() == null) {
       if (getAggregate() == Aggregate.COUNT) {
-        setHorizontalAlignment(ALIGN_RIGHT);
+        setTextAlign(TextAlign.RIGHT);
       } else if (getAggregate() != null && getValueType() != null) {
         UiHelper.setDefaultHorizontalAlignment(this, getValueType());
-      } else if (column.getHorizontalAlignment() != null) {
-        setHorizontalAlignment(column.getHorizontalAlignment());
+      } else if (column.getTextAlign() != null) {
+        setTextAlign(column.getTextAlign());
       }
     }
 

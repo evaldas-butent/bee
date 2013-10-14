@@ -8,7 +8,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.XMLParser;
@@ -27,6 +26,7 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -100,7 +100,7 @@ public final class TradeUtils {
               COL_NAME, COL_TRADE_ITEM_QUANTITY + COL_TOTAL);
 
           table.getCellFormatter().setColSpan(1, 0, 3);
-          table.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_TOP);
+          table.getCellFormatter().setVerticalAlignment(1, 0, VerticalAlign.TOP);
           table.setWidget(1, 0, cell);
 
           FlowPanel cap = new FlowPanel();

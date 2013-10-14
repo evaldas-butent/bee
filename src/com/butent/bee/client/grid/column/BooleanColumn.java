@@ -3,6 +3,7 @@ package com.butent.bee.client.grid.column;
 import com.google.gwt.cell.client.Cell;
 
 import com.butent.bee.client.grid.cell.BooleanCell;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
@@ -14,7 +15,7 @@ public class BooleanColumn extends DataColumn<Boolean> {
 
   public BooleanColumn(Cell<Boolean> cell, CellSource cellSource) {
     super(cell, cellSource);
-    setHorizontalAlignment(ALIGN_CENTER);
+    setTextAlign(TextAlign.CENTER);
   }
 
   @Override

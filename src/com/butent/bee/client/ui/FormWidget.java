@@ -9,11 +9,7 @@ import com.google.gwt.user.client.ui.CustomButton;
 import com.google.gwt.user.client.ui.CustomButton.Face;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasOneWidget;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.xml.client.Element;
 
@@ -67,6 +63,8 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
+import com.butent.bee.client.style.HasTextAlign;
+import com.butent.bee.client.style.HasVerticalAlign;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
@@ -129,6 +127,8 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
@@ -1923,15 +1923,15 @@ public enum FormWidget {
         }
 
       } else if (BeeUtils.same(name, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
-        if (widget instanceof HasHorizontalAlignment) {
-          UiHelper.setHorizontalAlignment((HasHorizontalAlignment) widget, value);
+        if (widget instanceof HasTextAlign) {
+          UiHelper.setHorizontalAlignment((HasTextAlign) widget, value);
         } else {
           UiHelper.setHorizontalAlignment(widget.getElement(), value);
         }
 
       } else if (BeeUtils.same(name, UiConstants.ATTR_VERTICAL_ALIGNMENT)) {
-        if (widget instanceof HasVerticalAlignment) {
-          UiHelper.setVerticalAlignment((HasVerticalAlignment) widget, value);
+        if (widget instanceof HasVerticalAlign) {
+          UiHelper.setVerticalAlignment((HasVerticalAlign) widget, value);
         } else {
           UiHelper.setVerticalAlignment(widget.getElement(), value);
         }
@@ -2039,7 +2039,7 @@ public enum FormWidget {
   private static void setTableCellAttributes(HtmlTable table, Element element, int row, int col) {
     String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
-      HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
+      TextAlign horAlign = StyleUtils.parseTextAlign(z);
       if (horAlign != null) {
         table.getCellFormatter().setHorizontalAlignment(row, col, horAlign);
       }
@@ -2047,7 +2047,7 @@ public enum FormWidget {
 
     z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
-      VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
+      VerticalAlign vertAlign = StyleUtils.parseVerticalAlign(z);
       if (vertAlign != null) {
         table.getCellFormatter().setVerticalAlignment(row, col, vertAlign);
       }
@@ -2087,7 +2087,7 @@ public enum FormWidget {
   private static void setTableRowAttributes(HtmlTable table, Element element, int row) {
     String z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
-      VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
+      VerticalAlign vertAlign = StyleUtils.parseVerticalAlign(z);
       if (vertAlign != null) {
         table.getRowFormatter().setVerticalAlign(row, vertAlign);
       }
@@ -2103,7 +2103,7 @@ public enum FormWidget {
       IdentifiableWidget cellContent) {
     String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
-      HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
+      TextAlign horAlign = StyleUtils.parseTextAlign(z);
       if (horAlign != null) {
         parent.setCellHorizontalAlignment(cellContent.asWidget(), horAlign);
       }
@@ -2111,7 +2111,7 @@ public enum FormWidget {
 
     z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
-      VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
+      VerticalAlign vertAlign = StyleUtils.parseVerticalAlign(z);
       if (vertAlign != null) {
         parent.setCellVerticalAlignment(cellContent.asWidget(), vertAlign);
       }

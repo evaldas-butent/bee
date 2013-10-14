@@ -10,7 +10,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -58,6 +57,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -113,8 +113,7 @@ class TaskEditor extends AbstractFormInterceptor {
       table.setWidget(row, col, button);
 
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      table.getCellFormatter().setHorizontalAlignment(row, col,
-          HasHorizontalAlignment.ALIGN_CENTER);
+      table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.CENTER);
 
       table.getCellFormatter().setColSpan(row, col, 2);
     }

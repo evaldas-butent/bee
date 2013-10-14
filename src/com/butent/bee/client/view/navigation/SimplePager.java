@@ -2,7 +2,6 @@ package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -14,6 +13,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -141,7 +141,7 @@ public class SimplePager extends AbstractPager {
     }
 
     container.add(widgetInfo);
-    container.setCellHorizontalAlignment(widgetInfo, HasHorizontalAlignment.ALIGN_CENTER);
+    container.setCellHorizontalAlignment(widgetInfo, TextAlign.CENTER);
 
     container.add(widgetNext);
     if (widgetForw != null) {

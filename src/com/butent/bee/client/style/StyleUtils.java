@@ -11,8 +11,6 @@ import com.google.gwt.dom.client.Style.HasCssName;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -34,6 +32,7 @@ import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontVariant;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.Position;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.TextTransform;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
@@ -1242,6 +1241,10 @@ public final class StyleUtils {
     return sb;
   }
 
+  public static TextAlign parseTextAlign(String input) {
+    return parseCssName(TextAlign.class, input);
+  }
+
   public static TextTransform parseTextTransform(String input) {
     return parseCssName(TextTransform.class, input);
   }
@@ -2007,15 +2010,15 @@ public final class StyleUtils {
     return setStyleProperty(nodes, name, value, CssUnit.PX);
   }
 
-  public static void setTextAlign(Element el, HorizontalAlignmentConstant align) {
+  public static void setTextAlign(Element el, TextAlign align) {
     Assert.notNull(el);
     setTextAlign(el.getStyle(), align);
   }
 
-  public static void setTextAlign(Style st, HorizontalAlignmentConstant align) {
+  public static void setTextAlign(Style st, TextAlign align) {
     Assert.notNull(st);
     Assert.notNull(align);
-    st.setProperty(STYLE_TEXT_ALIGN, align.getTextAlignString());
+    st.setProperty(STYLE_TEXT_ALIGN, align.getCssName());
   }
 
   public static void setTop(Element el, double value, CssUnit unit) {
@@ -2159,15 +2162,15 @@ public final class StyleUtils {
     setTransformTranslate(el.getStyle(), axis, value, unit);
   }
 
-  public static void setVerticalAlign(Element el, VerticalAlignmentConstant align) {
+  public static void setVerticalAlign(Element el, VerticalAlign align) {
     Assert.notNull(el);
     setVerticalAlign(el.getStyle(), align);
   }
 
-  public static void setVerticalAlign(Style st, VerticalAlignmentConstant align) {
+  public static void setVerticalAlign(Style st, VerticalAlign align) {
     Assert.notNull(st);
     Assert.notNull(align);
-    st.setProperty(STYLE_VERTICAL_ALIGN, align.getVerticalAlignString());
+    st.setProperty(STYLE_VERTICAL_ALIGN, align.getCssName());
   }
 
   public static void setVisible(Element el, boolean visible) {

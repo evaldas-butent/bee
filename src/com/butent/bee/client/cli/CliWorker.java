@@ -30,7 +30,6 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -128,6 +127,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssAngle;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
@@ -1913,8 +1913,7 @@ public final class CliWorker {
         }
 
         int col = 0;
-        table.getCellFormatter().setHorizontalAlignment(row, col,
-            HasHorizontalAlignment.ALIGN_RIGHT);
+        table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
         table.setHtml(row, col, BeeUtils.toString(row + 1));
         col++;
 
@@ -2258,8 +2257,7 @@ public final class CliWorker {
 
           for (Map.Entry<String, String> entry : flags.entrySet()) {
             table.setHtml(row, col, entry.getKey());
-            table.getCellFormatter().setHorizontalAlignment(row, col,
-                HasHorizontalAlignment.ALIGN_RIGHT);
+            table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
             col++;
 
             ImageElement imageElement = Document.get().createImageElement();
@@ -2382,8 +2380,7 @@ public final class CliWorker {
 
       for (Map.Entry<String, ImageResource> entry : map.entrySet()) {
         table.setHtml(row, col, entry.getKey());
-        table.getCellFormatter().setHorizontalAlignment(row, col,
-            HasHorizontalAlignment.ALIGN_RIGHT);
+        table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
         col++;
 
         table.setWidget(row, col, new Image(entry.getValue()));
