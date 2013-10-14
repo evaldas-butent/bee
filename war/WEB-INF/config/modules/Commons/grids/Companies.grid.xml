@@ -13,7 +13,7 @@
     <DataColumn name="ExchangeCode" caption="=exchangeCode" visible="false" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
-    <DataColumn name="Fax" caption="Faksas" visible="false" />
+    <DataColumn name="Fax" caption="=fax" visible="false" />
     <RelColumn name="EmailId">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />

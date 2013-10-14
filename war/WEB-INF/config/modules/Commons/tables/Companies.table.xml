@@ -32,7 +32,7 @@
     <Relation name="LimitCurrency" relation="Currencies" label="=companyCreditLimitCurrency" />
     <Integer name="CreditDays" label="=companyCreditLimitDays" />
     
-    <Relation name="FinancialState" relation="FinancialStates" label="Mokumas" />
+    <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
 
     <Text name="Notes" label="=notes" />
   </Fields>
