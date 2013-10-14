@@ -28,7 +28,7 @@ public class Form extends FertileElement {
     return this;
   }
 
-  public Form append(List<Node> nodes) {
+  public Form append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -48,13 +48,11 @@ public class Form extends FertileElement {
     return this;
   }
 
-  
-
   public Form encTypeMultipart() {
     setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
-  
+
   public Form encTypeText() {
     setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
@@ -89,12 +87,12 @@ public class Form extends FertileElement {
     setAttribute(Attribute.METHOD, Keywords.METHOD_POST);
     return this;
   }
-  
+
   public Form name(String value) {
     setAttribute(Attribute.NAME, value);
     return this;
   }
-  
+
   public Form noValidate() {
     setAttribute(Attribute.NO_VALIDATE, true);
     return this;
@@ -109,7 +107,7 @@ public class Form extends FertileElement {
     setAttribute(Attribute.TARGET, value);
     return this;
   }
-  
+
   public Form targetBlank() {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;

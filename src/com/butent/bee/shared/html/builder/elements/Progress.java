@@ -17,7 +17,7 @@ public class Progress extends FertileElement {
     return this;
   }
 
-  public Progress append(List<Node> nodes) {
+  public Progress append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Progress extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Progress id(String value) {
     setId(value);

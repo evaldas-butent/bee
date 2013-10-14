@@ -17,7 +17,7 @@ public class Q extends FertileElement {
     return this;
   }
 
-  public Q append(List<Node> nodes) {
+  public Q append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -31,8 +31,6 @@ public class Q extends FertileElement {
     setAttribute(Attribute.CITE, value);
     return this;
   }
-
-  
 
   public Q id(String value) {
     setId(value);

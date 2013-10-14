@@ -16,7 +16,7 @@ public class Header extends FertileElement {
     return this;
   }
 
-  public Header append(List<Node> nodes) {
+  public Header append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Header extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Header id(String value) {
     setId(value);

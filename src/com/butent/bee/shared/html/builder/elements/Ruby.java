@@ -16,7 +16,7 @@ public class Ruby extends FertileElement {
     return this;
   }
 
-  public Ruby append(List<Node> nodes) {
+  public Ruby append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Ruby extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Ruby id(String value) {
     setId(value);

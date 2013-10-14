@@ -17,7 +17,7 @@ public class Blockquote extends FertileElement {
     return this;
   }
 
-  public Blockquote append(List<Node> nodes) {
+  public Blockquote append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

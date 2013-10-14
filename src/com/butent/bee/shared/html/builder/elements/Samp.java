@@ -16,7 +16,7 @@ public class Samp extends FertileElement {
     return this;
   }
 
-  public Samp append(List<Node> nodes) {
+  public Samp append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Samp extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Samp id(String value) {
     setId(value);

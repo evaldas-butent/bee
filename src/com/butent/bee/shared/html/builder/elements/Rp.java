@@ -16,7 +16,7 @@ public class Rp extends FertileElement {
     return this;
   }
 
-  public Rp append(List<Node> nodes) {
+  public Rp append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Rp extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Rp id(String value) {
     setId(value);

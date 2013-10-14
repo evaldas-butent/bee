@@ -23,7 +23,7 @@ public class Col extends Element {
     setLang(value);
     return this;
   }
-  
+
   public Col span(int value) {
     setAttribute(Attribute.SPAN, value);
     return this;

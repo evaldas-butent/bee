@@ -6,6 +6,8 @@
   <inherits name="com.google.gwt.json.JSON"/>  
   
   <inherits name='com.google.common.cache.Cache'/>
+  <inherits name='com.google.common.net.Net'/>
+
   <inherits name='elemental.Elemental'/>
   
   <inherits name='com.butent.bee.Screen'/>

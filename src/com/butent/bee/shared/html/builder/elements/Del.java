@@ -17,7 +17,7 @@ public class Del extends FertileElement {
     return this;
   }
 
-  public Del append(List<Node> nodes) {
+  public Del append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -36,7 +36,7 @@ public class Del extends FertileElement {
     setAttribute(Attribute.DATE_TIME, value);
     return this;
   }
-  
+
   public Del id(String value) {
     setId(value);
     return this;

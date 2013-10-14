@@ -16,7 +16,7 @@ public class Noscript extends FertileElement {
     return this;
   }
 
-  public Noscript append(List<Node> nodes) {
+  public Noscript append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Noscript extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Noscript id(String value) {
     setId(value);

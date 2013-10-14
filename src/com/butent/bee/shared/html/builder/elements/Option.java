@@ -14,8 +14,6 @@ public class Option extends FertileElement {
     return this;
   }
 
-  
-
   public Option disabled() {
     setAttribute(Attribute.DISABLED, true);
     return this;

@@ -16,7 +16,7 @@ public class Tfoot extends FertileElement {
     return this;
   }
 
-  public Tfoot append(List<Node> nodes) {
+  public Tfoot append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Tfoot extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Tfoot id(String value) {
     setId(value);

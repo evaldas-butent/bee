@@ -22,22 +22,26 @@ public abstract class Node {
   protected Node() {
   }
 
+  public String build() {
+    return build(BeeConst.UNDEF, BeeConst.UNDEF);
+  }
+  
+  public abstract String build(int indentStart, int indentStep);
+
   public int getLevel() {
     return (getParent() == null) ? 0 : getParent().getLevel() + 1;
   }
-  
+
   public Node getParent() {
     return parent;
   }
-
+  
   public void setParent(Node parent) {
     this.parent = parent;
   }
 
   @Override
   public String toString() {
-    return build(BeeConst.UNDEF, BeeConst.UNDEF);
+    return build();
   }
-
-  protected abstract String build(int indentStart, int indentStep);
 }

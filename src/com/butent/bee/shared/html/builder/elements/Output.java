@@ -17,7 +17,7 @@ public class Output extends FertileElement {
     return this;
   }
 
-  public Output append(List<Node> nodes) {
+  public Output append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Output extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Output form(String value) {
     setAttribute(Attribute.FORM, value);
@@ -58,12 +56,12 @@ public class Output extends FertileElement {
     setAttribute(Attribute.NAME, value);
     return this;
   }
-  
+
   public Output remove(Node child) {
     super.removeChild(child);
     return this;
   }
-  
+
   public Output text(String text) {
     super.appendText(text);
     return this;

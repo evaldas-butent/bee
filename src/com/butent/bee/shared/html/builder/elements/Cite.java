@@ -16,7 +16,7 @@ public class Cite extends FertileElement {
     return this;
   }
 
-  public Cite append(List<Node> nodes) {
+  public Cite append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

@@ -16,7 +16,7 @@ public class Mark extends FertileElement {
     return this;
   }
 
-  public Mark append(List<Node> nodes) {
+  public Mark append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Mark extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Mark id(String value) {
     setId(value);

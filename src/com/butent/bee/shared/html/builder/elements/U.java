@@ -16,7 +16,7 @@ public class U extends FertileElement {
     return this;
   }
 
-  public U append(List<Node> nodes) {
+  public U append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class U extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public U id(String value) {
     setId(value);

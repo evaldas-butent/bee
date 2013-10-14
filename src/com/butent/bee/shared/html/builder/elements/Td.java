@@ -20,7 +20,7 @@ public class Td extends FertileElement {
     return this;
   }
 
-  public Td append(List<Node> nodes) {
+  public Td append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -64,12 +64,12 @@ public class Td extends FertileElement {
     setPaddingLeft(value, unit);
     return this;
   }
-  
+
   public Td paddingRight(int value, CssUnit unit) {
     setPaddingRight(value, unit);
     return this;
   }
-  
+
   public Td paddingTop(int value, CssUnit unit) {
     setPaddingTop(value, unit);
     return this;
@@ -99,7 +99,7 @@ public class Td extends FertileElement {
     setTitle(value);
     return this;
   }
-  
+
   public Td verticalAlign(VerticalAlign verticalAlign) {
     setVerticalAlign(verticalAlign);
     return this;

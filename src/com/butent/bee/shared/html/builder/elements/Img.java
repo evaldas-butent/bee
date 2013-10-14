@@ -30,8 +30,6 @@ public class Img extends Element {
     return this;
   }
 
-  
-
   public Img height(int value) {
     setAttribute(Attribute.HEIGHT, value);
     return this;

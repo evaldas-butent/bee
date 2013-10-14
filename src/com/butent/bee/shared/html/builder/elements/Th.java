@@ -27,7 +27,7 @@ public class Th extends FertileElement {
     return this;
   }
 
-  public Th append(List<Node> nodes) {
+  public Th append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -41,8 +41,6 @@ public class Th extends FertileElement {
     setAttribute(Attribute.COL_SPAN, value);
     return this;
   }
-
-  
 
   public Th headers(String value) {
     setAttribute(Attribute.HEADERS, value);

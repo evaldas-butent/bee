@@ -17,7 +17,7 @@ public class Html extends FertileElement {
     return this;
   }
 
-  public Html append(List<Node> nodes) {
+  public Html append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Html extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Html id(String value) {
     setId(value);
@@ -58,7 +56,7 @@ public class Html extends FertileElement {
     super.appendText(text);
     return this;
   }
-  
+
   public Html title(String value) {
     setTitle(value);
     return this;

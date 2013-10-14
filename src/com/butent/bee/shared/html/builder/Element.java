@@ -38,6 +38,13 @@ public class Element extends Node {
     }
   }
 
+  @Override
+  public String build(int indentStart, int indentStep) {
+    StringBuilder sb = new StringBuilder(Node.indent(indentStart, buildStart()));
+    sb.append(buildEnd());
+    return sb.toString();
+  }
+
   public String getAttribute(String name) {
     Attribute attribute = findAttribute(name);
     return (attribute == null) ? null : attribute.getValue();
@@ -513,7 +520,7 @@ public class Element extends Node {
     } else if (v2 == null) {
       setStyle(CssProperty.BORDER_IMAGE_REPEAT, v1);
     } else {
-      setStyle(CssProperty.BORDER_IMAGE_REPEAT, BeeUtils.joinWords(v1.getCssName(), 
+      setStyle(CssProperty.BORDER_IMAGE_REPEAT, BeeUtils.joinWords(v1.getCssName(),
           v2.getCssName()));
     }
   }
@@ -1121,6 +1128,10 @@ public class Element extends Node {
     setStyle(CssProperty.FONT_LANGUAGE_OVERRIDE, fontLanguageOverride);
   }
 
+  public void setFontSynthesis(String fontSynthesis) {
+    setStyle(CssProperty.FONT_SYNTHESIS, fontSynthesis);
+  }
+
   public void setFontSize(double value, CssUnit unit) {
     setStyle(CssProperty.FONT_SIZE, value, unit);
   }
@@ -1141,16 +1152,12 @@ public class Element extends Node {
     setStyle(CssProperty.FONT_SIZE_ADJUST, fontSizeAdjust);
   }
 
-  public void setFontStretch(FontStretch fontStretch) {
-    setStyle(CssProperty.FONT_STRETCH, fontStretch);
-  }
-
   public void setFontStyle(FontStyle fontStyle) {
     setStyle(CssProperty.FONT_STYLE, fontStyle);
   }
 
-  public void setFontSynthesis(String fontSynthesis) {
-    setStyle(CssProperty.FONT_SYNTHESIS, fontSynthesis);
+  public void setFontStretch(FontStretch fontStretch) {
+    setStyle(CssProperty.FONT_STRETCH, fontStretch);
   }
 
   public void setFontVariant(FontVariant fontVariant) {
@@ -1986,6 +1993,10 @@ public class Element extends Node {
     setStyle(CssProperty.OVERFLOW_Y, y);
   }
 
+  public void setOverflowY(Overflow overflowY) {
+    setStyle(CssProperty.OVERFLOW_Y, overflowY);
+  }
+
   public void setOverflowStyle(OverflowStyle overflowStyle) {
     setStyle(CssProperty.OVERFLOW_STYLE, overflowStyle);
   }
@@ -2000,10 +2011,6 @@ public class Element extends Node {
 
   public void setOverflowX(Overflow overflowX) {
     setStyle(CssProperty.OVERFLOW_X, overflowX);
-  }
-
-  public void setOverflowY(Overflow overflowY) {
-    setStyle(CssProperty.OVERFLOW_Y, overflowY);
   }
 
   public void setPadding(double value, CssUnit unit) {
@@ -2463,18 +2470,6 @@ public class Element extends Node {
     }
   }
 
-  public void setStress(double stress) {
-    setStyle(CssProperty.STRESS, BeeUtils.toString(stress));
-  }
-
-  public void setStress(int stress) {
-    setStyle(CssProperty.STRESS, stress);
-  }
-
-  public void setStringSet(String stringSet) {
-    setStyle(CssProperty.STRING_SET, stringSet);
-  }
-
   public void setStyle(String name, double value, CssUnit unit) {
     setStyle(name, CssUnit.format(value, unit));
   }
@@ -2507,6 +2502,18 @@ public class Element extends Node {
         style.setValue(value);
       }
     }
+  }
+
+  public void setStress(double stress) {
+    setStyle(CssProperty.STRESS, BeeUtils.toString(stress));
+  }
+
+  public void setStress(int stress) {
+    setStyle(CssProperty.STRESS, stress);
+  }
+
+  public void setStringSet(String stringSet) {
+    setStyle(CssProperty.STRING_SET, stringSet);
   }
 
   public void setTabIndex(int tabIndex) {
@@ -2946,13 +2953,6 @@ public class Element extends Node {
 
   public void setZIndex(String zIndex) {
     setStyle(CssProperty.Z_INDEX, zIndex);
-  }
-
-  @Override
-  protected String build(int indentStart, int indentStep) {
-    StringBuilder sb = new StringBuilder(Node.indent(indentStart, buildStart()));
-    sb.append(buildEnd());
-    return sb.toString();
   }
 
   protected String buildEnd() {

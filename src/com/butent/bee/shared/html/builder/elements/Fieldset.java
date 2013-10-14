@@ -17,7 +17,7 @@ public class Fieldset extends FertileElement {
     return this;
   }
 
-  public Fieldset append(List<Node> nodes) {
+  public Fieldset append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,9 +26,7 @@ public class Fieldset extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-  
-  
-  
+
   public Fieldset disabled() {
     setAttribute(Attribute.DISABLED, true);
     return this;

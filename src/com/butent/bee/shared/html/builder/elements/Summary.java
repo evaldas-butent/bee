@@ -16,7 +16,7 @@ public class Summary extends FertileElement {
     return this;
   }
 
-  public Summary append(List<Node> nodes) {
+  public Summary append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Summary extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Summary id(String value) {
     setId(value);

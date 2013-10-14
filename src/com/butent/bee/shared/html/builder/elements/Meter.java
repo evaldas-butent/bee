@@ -17,7 +17,7 @@ public class Meter extends FertileElement {
     return this;
   }
 
-  public Meter append(List<Node> nodes) {
+  public Meter append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Meter extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Meter high(double value) {
     setAttribute(Attribute.HIGH, value);

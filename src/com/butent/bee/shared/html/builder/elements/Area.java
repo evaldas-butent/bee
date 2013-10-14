@@ -5,12 +5,12 @@ import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.Keywords;
 
 public class Area extends Element {
-  
+
   private enum Shape {
     CIRCLE("circle"), DEFAULT("default"), POLY("poly"), RECT("rect");
-    
+
     private final String keyword;
-    
+
     private Shape(String keyword) {
       this.keyword = keyword;
     }
@@ -44,7 +44,7 @@ public class Area extends Element {
     setAttribute(Attribute.DOWNLOAD, value);
     return this;
   }
-  
+
   public Area href(String value) {
     setAttribute(Attribute.HREF, value);
     return this;
@@ -54,22 +54,22 @@ public class Area extends Element {
     setAttribute(Attribute.HREF_LANG, value);
     return this;
   }
-  
+
   public Area id(String value) {
     setId(value);
     return this;
   }
-  
+
   public Area lang(String value) {
     setLang(value);
     return this;
   }
-  
+
   public Area rel(String value) {
     setAttribute(Attribute.REL, value);
     return this;
   }
-  
+
   public Area shapeCircle() {
     return setShape(Shape.CIRCLE.keyword);
   }
@@ -100,7 +100,7 @@ public class Area extends Element {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
-  
+
   public Area targetParent() {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
@@ -110,7 +110,7 @@ public class Area extends Element {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
-  
+
   public Area targetTop() {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
@@ -125,7 +125,7 @@ public class Area extends Element {
     setAttribute(Attribute.TYPE, value);
     return this;
   }
-  
+
   private Area setShape(String value) {
     setAttribute(Attribute.SHAPE, value);
     return this;

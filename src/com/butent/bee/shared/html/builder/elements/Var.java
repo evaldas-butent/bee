@@ -16,7 +16,7 @@ public class Var extends FertileElement {
     return this;
   }
 
-  public Var append(List<Node> nodes) {
+  public Var append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Var extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Var id(String value) {
     setId(value);

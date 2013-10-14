@@ -16,7 +16,7 @@ public class H2 extends FertileElement {
     return this;
   }
 
-  public H2 append(List<Node> nodes) {
+  public H2 append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class H2 extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public H2 id(String value) {
     setId(value);

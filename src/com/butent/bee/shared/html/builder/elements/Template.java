@@ -16,7 +16,7 @@ public class Template extends FertileElement {
     return this;
   }
 
-  public Template append(List<Node> nodes) {
+  public Template append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Template extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Template id(String value) {
     setId(value);

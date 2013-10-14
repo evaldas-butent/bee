@@ -13,8 +13,6 @@ public class Title extends FertileElement {
     return this;
   }
 
-  
-
   public Title id(String value) {
     setId(value);
     return this;

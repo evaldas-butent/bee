@@ -16,7 +16,7 @@ public class Figcaption extends FertileElement {
     return this;
   }
 
-  public Figcaption append(List<Node> nodes) {
+  public Figcaption append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Figcaption extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Figcaption id(String value) {
     setId(value);

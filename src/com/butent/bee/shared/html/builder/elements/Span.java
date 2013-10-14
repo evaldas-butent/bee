@@ -16,7 +16,7 @@ public class Span extends FertileElement {
     return this;
   }
 
-  public Span append(List<Node> nodes) {
+  public Span append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Span extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Span id(String value) {
     setId(value);

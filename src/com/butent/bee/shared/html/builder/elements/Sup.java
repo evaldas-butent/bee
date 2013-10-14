@@ -16,7 +16,7 @@ public class Sup extends FertileElement {
     return this;
   }
 
-  public Sup append(List<Node> nodes) {
+  public Sup append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Sup extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Sup id(String value) {
     setId(value);

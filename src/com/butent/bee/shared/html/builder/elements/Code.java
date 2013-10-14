@@ -16,7 +16,7 @@ public class Code extends FertileElement {
     return this;
   }
 
-  public Code append(List<Node> nodes) {
+  public Code append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

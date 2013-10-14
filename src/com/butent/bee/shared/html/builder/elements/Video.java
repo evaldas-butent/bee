@@ -18,7 +18,7 @@ public class Video extends FertileElement {
     return this;
   }
 
-  public Video append(List<Node> nodes) {
+  public Video append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -47,8 +47,6 @@ public class Video extends FertileElement {
     setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
-
-  
 
   public Video height(int value) {
     setAttribute(Attribute.HEIGHT, value);

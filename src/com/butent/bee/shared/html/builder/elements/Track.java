@@ -20,8 +20,6 @@ public class Track extends Element {
     return this;
   }
 
-  
-
   public Track htmlDefault() {
     setAttribute(Attribute.DEFAULT, true);
     return this;

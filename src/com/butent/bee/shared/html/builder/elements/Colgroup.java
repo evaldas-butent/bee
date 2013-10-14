@@ -17,7 +17,7 @@ public class Colgroup extends FertileElement {
     return this;
   }
 
-  public Colgroup append(List<Node> nodes) {
+  public Colgroup append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -51,7 +51,7 @@ public class Colgroup extends FertileElement {
     setAttribute(Attribute.SPAN, value);
     return this;
   }
-  
+
   public Colgroup text(String text) {
     super.appendText(text);
     return this;

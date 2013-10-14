@@ -16,7 +16,7 @@ public class Address extends FertileElement {
     return this;
   }
 
-  public Address append(List<Node> nodes) {
+  public Address append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

@@ -17,11 +17,11 @@ public class Details extends FertileElement {
     return this;
   }
 
-  public Details append(List<Node> nodes) {
+  public Details append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
-  
+
   public Details append(Node... nodes) {
     super.appendChildren(nodes);
     return this;

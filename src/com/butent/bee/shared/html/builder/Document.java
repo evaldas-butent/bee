@@ -7,7 +7,6 @@ import com.butent.bee.shared.html.builder.elements.Html;
 public class Document extends Node {
 
   private static final String DOC_TYPE = "<!doctype html>";
-  private static final int DEFAULT_INDENT_STEP = 2;
 
   private final Html html;
 
@@ -20,19 +19,15 @@ public class Document extends Node {
 
     this.head = new Head();
     this.body = new Body();
-    
+
     html.appendChild(head);
     html.appendChild(body);
-  }
-  
-  public String build() {
-    return build(0, DEFAULT_INDENT_STEP);
   }
 
   @Override
   public String build(int indentStart, int indentStep) {
     StringBuilder sb = new StringBuilder();
-    
+
     if (indentStart > 0) {
       sb.append(Node.indent(indentStart, DOC_TYPE));
     } else {
@@ -50,10 +45,5 @@ public class Document extends Node {
 
   public Head getHead() {
     return head;
-  }
-
-  @Override
-  public String toString() {
-    return build();
   }
 }

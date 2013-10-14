@@ -14,8 +14,6 @@ public class Style extends FertileElement {
     return this;
   }
 
-  
-
   public Style id(String value) {
     setId(value);
     return this;

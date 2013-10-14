@@ -43,8 +43,6 @@ public class Textarea extends FertileElement {
     return this;
   }
 
-  
-
   public Textarea dirName(String value) {
     setAttribute(Attribute.DIR_NAME, value);
     return this;

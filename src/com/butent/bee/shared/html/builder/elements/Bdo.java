@@ -16,7 +16,7 @@ public class Bdo extends FertileElement {
     return this;
   }
 
-  public Bdo append(List<Node> nodes) {
+  public Bdo append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

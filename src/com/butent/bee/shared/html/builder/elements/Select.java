@@ -17,7 +17,7 @@ public class Select extends FertileElement {
     return this;
   }
 
-  public Select append(List<Node> nodes) {
+  public Select append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -31,8 +31,6 @@ public class Select extends FertileElement {
     setAttribute(Attribute.AUTOFOCUS, true);
     return this;
   }
-
-  
 
   public Select disabled() {
     setAttribute(Attribute.DISABLED, true);

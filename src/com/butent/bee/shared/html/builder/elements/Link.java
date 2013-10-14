@@ -52,8 +52,6 @@ public class Link extends Element {
     return this;
   }
 
-  
-
   public Link href(String value) {
     setAttribute(Attribute.HREF, value);
     return this;
@@ -93,6 +91,10 @@ public class Link extends Element {
     return this;
   }
 
+  public Link styleSheet(String href) {
+    return rel(Rel.STYLE_SHEET).href(href);
+  }
+  
   public Link title(String value) {
     setTitle(value);
     return this;

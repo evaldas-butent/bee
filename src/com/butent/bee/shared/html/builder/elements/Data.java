@@ -17,7 +17,7 @@ public class Data extends FertileElement {
     return this;
   }
 
-  public Data append(List<Node> nodes) {
+  public Data append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -56,7 +56,7 @@ public class Data extends FertileElement {
     setTitle(value);
     return this;
   }
-  
+
   public Data value(String value) {
     setAttribute(Attribute.VALUE, value);
     return this;

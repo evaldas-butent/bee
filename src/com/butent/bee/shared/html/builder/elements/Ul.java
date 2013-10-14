@@ -16,7 +16,7 @@ public class Ul extends FertileElement {
     return this;
   }
 
-  public Ul append(List<Node> nodes) {
+  public Ul append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Ul extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Ul id(String value) {
     setId(value);

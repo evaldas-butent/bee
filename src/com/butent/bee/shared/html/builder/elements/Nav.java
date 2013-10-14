@@ -16,7 +16,7 @@ public class Nav extends FertileElement {
     return this;
   }
 
-  public Nav append(List<Node> nodes) {
+  public Nav append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Nav extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Nav id(String value) {
     setId(value);

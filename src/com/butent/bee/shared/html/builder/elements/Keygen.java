@@ -26,8 +26,6 @@ public class Keygen extends Element {
     return this;
   }
 
-  
-
   public Keygen disabled() {
     setAttribute(Attribute.DISABLED, true);
     return this;

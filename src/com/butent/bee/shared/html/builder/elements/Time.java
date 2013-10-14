@@ -17,7 +17,7 @@ public class Time extends FertileElement {
     return this;
   }
 
-  public Time append(List<Node> nodes) {
+  public Time append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -31,8 +31,6 @@ public class Time extends FertileElement {
     setAttribute(Attribute.DATE_TIME, value);
     return this;
   }
-
-  
 
   public Time id(String value) {
     setId(value);

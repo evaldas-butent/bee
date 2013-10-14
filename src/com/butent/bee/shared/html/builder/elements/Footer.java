@@ -16,7 +16,7 @@ public class Footer extends FertileElement {
     return this;
   }
 
-  public Footer append(List<Node> nodes) {
+  public Footer append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Footer extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Footer id(String value) {
     setId(value);

@@ -17,7 +17,7 @@ public class Optgroup extends FertileElement {
     return this;
   }
 
-  public Optgroup append(List<Node> nodes) {
+  public Optgroup append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Optgroup extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Optgroup disabled() {
     setAttribute(Attribute.DISABLED, true);

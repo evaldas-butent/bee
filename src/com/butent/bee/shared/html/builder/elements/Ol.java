@@ -23,7 +23,7 @@ public class Ol extends FertileElement {
     return this;
   }
 
-  public Ol append(List<Node> nodes) {
+  public Ol append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -32,8 +32,6 @@ public class Ol extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Ol id(String value) {
     setId(value);

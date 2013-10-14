@@ -47,7 +47,7 @@ public class Iframe extends FertileElement {
     return this;
   }
 
-  public Iframe append(List<Node> nodes) {
+  public Iframe append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -56,8 +56,6 @@ public class Iframe extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Iframe height(int value) {
     setAttribute(Attribute.HEIGHT, value);

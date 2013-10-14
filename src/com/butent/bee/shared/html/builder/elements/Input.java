@@ -88,8 +88,6 @@ public class Input extends Element {
     return this;
   }
 
-  
-
   public Input dirName(String value) {
     setAttribute(Attribute.DIR_NAME, value);
     return this;
@@ -299,7 +297,7 @@ public class Input extends Element {
     setOnKeyUp(event);
     return this;
   }
-  
+
   public Input pattern(String value) {
     setAttribute(Attribute.PATTERN, value);
     return this;
@@ -317,6 +315,11 @@ public class Input extends Element {
 
   public Input required() {
     setAttribute(Attribute.REQUIRED, true);
+    return this;
+  }
+
+  public Input required(boolean value) {
+    setAttribute(Attribute.REQUIRED, value);
     return this;
   }
 

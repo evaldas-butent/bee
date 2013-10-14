@@ -13,8 +13,6 @@ public class Br extends Element {
     return this;
   }
 
-  
-
   public Br id(String value) {
     setId(value);
     return this;

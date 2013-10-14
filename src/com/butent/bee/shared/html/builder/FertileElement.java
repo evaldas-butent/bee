@@ -78,19 +78,6 @@ public class FertileElement extends Element {
     }
   }
 
-  @Override
-  protected String buildEnd() {
-    StringBuilder sb = new StringBuilder("</");
-    sb.append(getTag());
-    sb.append(">");
-    return sb.toString();
-  }
-
-  @Override
-  protected String buildStart() {
-    return super.buildStart() + ">";
-  }
-
   public void clearChildren() {
     children.clear();
   }
@@ -132,5 +119,18 @@ public class FertileElement extends Element {
 
   public void removeChild(Node child) {
     children.remove(child);
+  }
+
+  @Override
+  protected String buildEnd() {
+    StringBuilder sb = new StringBuilder("</");
+    sb.append(getTag());
+    sb.append(">");
+    return sb.toString();
+  }
+
+  @Override
+  protected String buildStart() {
+    return super.buildStart() + ">";
   }
 }

@@ -16,7 +16,7 @@ public class Kbd extends FertileElement {
     return this;
   }
 
-  public Kbd append(List<Node> nodes) {
+  public Kbd append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Kbd extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Kbd id(String value) {
     setId(value);

@@ -17,7 +17,7 @@ public class Body extends FertileElement {
     return this;
   }
 
-  public Body append(List<Node> nodes) {
+  public Body append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

@@ -18,7 +18,7 @@ public class Audio extends FertileElement {
     return this;
   }
 
-  public Audio append(List<Node> nodes) {
+  public Audio append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -72,7 +72,7 @@ public class Audio extends FertileElement {
     setAttribute(Attribute.MEDIA_GROUP, value);
     return this;
   }
-  
+
   public Audio muted() {
     setAttribute(Attribute.MUTED, true);
     return this;
@@ -92,7 +92,7 @@ public class Audio extends FertileElement {
     setAttribute(Attribute.LOOP, false);
     return this;
   }
-  
+
   public Audio notMuted() {
     setAttribute(Attribute.MUTED, false);
     return this;

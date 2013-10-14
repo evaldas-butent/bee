@@ -17,7 +17,7 @@ public class Object extends FertileElement {
     return this;
   }
 
-  public Object append(List<Node> nodes) {
+  public Object append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -31,8 +31,6 @@ public class Object extends FertileElement {
     setAttribute(Attribute.DATA, value);
     return this;
   }
-
-  
 
   public Object form(String value) {
     setAttribute(Attribute.FORM, value);
@@ -58,7 +56,7 @@ public class Object extends FertileElement {
     setLang(value);
     return this;
   }
-  
+
   public Object name(String value) {
     setAttribute(Attribute.NAME, value);
     return this;
@@ -83,7 +81,7 @@ public class Object extends FertileElement {
     setAttribute(Attribute.TYPE, value);
     return this;
   }
-  
+
   public Object typeMustMatch() {
     setAttribute(Attribute.TYPE_MUST_MATCH, true);
     return this;
@@ -98,5 +96,5 @@ public class Object extends FertileElement {
     setAttribute(Attribute.WIDTH, value);
     return this;
   }
-  
+
 }

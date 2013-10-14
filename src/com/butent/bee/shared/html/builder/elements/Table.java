@@ -21,7 +21,7 @@ public class Table extends FertileElement {
     return this;
   }
 
-  public Table append(List<Node> nodes) {
+  public Table append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

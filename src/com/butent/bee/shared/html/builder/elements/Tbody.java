@@ -16,7 +16,7 @@ public class Tbody extends FertileElement {
     return this;
   }
 
-  public Tbody append(List<Node> nodes) {
+  public Tbody append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Tbody extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Tbody id(String value) {
     setId(value);

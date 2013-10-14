@@ -17,7 +17,7 @@ public class Li extends FertileElement {
     return this;
   }
 
-  public Li append(List<Node> nodes) {
+  public Li append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Li extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Li id(String value) {
     setId(value);
@@ -58,7 +56,7 @@ public class Li extends FertileElement {
     setTitle(value);
     return this;
   }
-  
+
   public Li value(int value) {
     setAttribute(Attribute.VALUE, value);
     return this;

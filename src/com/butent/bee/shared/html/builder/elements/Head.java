@@ -16,7 +16,7 @@ public class Head extends FertileElement {
     return this;
   }
 
-  public Head append(List<Node> nodes) {
+  public Head append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Head extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Head id(String value) {
     setId(value);

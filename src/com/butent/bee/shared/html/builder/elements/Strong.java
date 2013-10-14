@@ -16,7 +16,7 @@ public class Strong extends FertileElement {
     return this;
   }
 
-  public Strong append(List<Node> nodes) {
+  public Strong append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Strong extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Strong id(String value) {
     setId(value);

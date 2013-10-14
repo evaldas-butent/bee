@@ -16,7 +16,7 @@ public class Figure extends FertileElement {
     return this;
   }
 
-  public Figure append(List<Node> nodes) {
+  public Figure append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Figure extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Figure id(String value) {
     setId(value);

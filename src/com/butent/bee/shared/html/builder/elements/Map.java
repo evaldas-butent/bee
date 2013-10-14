@@ -17,7 +17,7 @@ public class Map extends FertileElement {
     return this;
   }
 
-  public Map append(List<Node> nodes) {
+  public Map append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Map extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Map id(String value) {
     setId(value);

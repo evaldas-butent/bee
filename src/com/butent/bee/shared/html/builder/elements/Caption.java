@@ -16,7 +16,7 @@ public class Caption extends FertileElement {
     return this;
   }
 
-  public Caption append(List<Node> nodes) {
+  public Caption append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

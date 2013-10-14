@@ -20,7 +20,7 @@ public class Menu extends FertileElement {
     return this;
   }
 
-  public Menu append(List<Node> nodes) {
+  public Menu append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -29,8 +29,6 @@ public class Menu extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Menu id(String value) {
     setId(value);

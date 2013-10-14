@@ -14,12 +14,12 @@ public class Base extends Element {
     setAttribute(Attribute.HREF, value);
     return this;
   }
-  
+
   public Base target(String value) {
     setAttribute(Attribute.TARGET, value);
     return this;
   }
-  
+
   public Base targetBlank() {
     return target(Keywords.BROWSING_CONTEXT_BLANK);
   }
@@ -27,7 +27,7 @@ public class Base extends Element {
   public Base targetParent() {
     return target(Keywords.BROWSING_CONTEXT_PARENT);
   }
-  
+
   public Base targetSelf() {
     return target(Keywords.BROWSING_CONTEXT_SELF);
   }

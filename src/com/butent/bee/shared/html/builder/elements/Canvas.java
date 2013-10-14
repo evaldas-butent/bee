@@ -17,7 +17,7 @@ public class Canvas extends FertileElement {
     return this;
   }
 
-  public Canvas append(List<Node> nodes) {
+  public Canvas append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -56,7 +56,7 @@ public class Canvas extends FertileElement {
     super.appendText(text);
     return this;
   }
-  
+
   public Canvas title(String value) {
     setTitle(value);
     return this;

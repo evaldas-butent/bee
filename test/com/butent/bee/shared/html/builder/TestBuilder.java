@@ -13,9 +13,7 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Form;
-import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
-import com.butent.bee.shared.html.builder.elements.Link.Rel;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.time.TimeUtils;
@@ -32,23 +30,16 @@ public class TestBuilder {
   private static List<Td> renderCells(String label, String source, boolean required) {
     List<Td> cells = Lists.newArrayList();
 
-    Div labelWrapper = div().text(label);
-    if (required) {
-      labelWrapper.addClass("bee-required");
-    }
-
     cells.add(td().verticalAlign(VerticalAlign.TOP).paddingBottom(4, CssUnit.PX)
         .textAlign(TextAlign.RIGHT).paddingLeft(1, CssUnit.EM).paddingRight(1, CssUnit.EM)
-        .append(labelWrapper));
+        .append(div().text(label).addClass(required ? "bee-required" : null)));
 
-    Input input = input().type(Type.TEXT).name(source);
-    if (required) {
-      input.required();
-    }
+    cells.add(td().verticalAlign(VerticalAlign.TOP).paddingBottom(4, CssUnit.PX)
+        .append(input().type(Type.TEXT).name(source).required(required)));
 
-    cells.add(td().verticalAlign(VerticalAlign.TOP).paddingBottom(4, CssUnit.PX).append(input));
     return cells;
   }
+
   private static void renderField(List<Pair<Integer, String>> html, int indent,
       String label, String source, String cellStyle, String labelCellStyle, boolean required) {
 
@@ -63,6 +54,7 @@ public class TestBuilder {
         + (required ? " required" : "") + " />"));
     html.add(Pair.of(indent + 1, "</td>"));
   }
+
   private String userNameLabel = "Prisijungimo vardas";
 
   private String passwordLabel = "Slaptažodis";
@@ -95,7 +87,7 @@ public class TestBuilder {
     html.add("<!doctype html>");
     html.add("<html>");
     html.add("<head>");
-    html.add("<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\" />");
+    html.add("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />");
     html.add("<title>to BEE or not to BEE</title>");
 
     html.add("<link rel=\"stylesheet\" href=\"" + "css/login.css" + "\" />");
@@ -208,7 +200,7 @@ public class TestBuilder {
     html.add(Pair.of(indent, "<head>"));
     indent++;
     html.add(Pair.of(indent,
-        "<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\" />"));
+        "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />"));
 
     html.add(Pair.of(indent, "<title>" + registrationTitle + "</title>"));
 
@@ -323,9 +315,9 @@ public class TestBuilder {
     Document doc = new Document();
 
     doc.getHead().append(
-        meta().httpEquiv("content-type").content("text/html;charset=utf-8"),
+        meta().encodingDeclarationUtf8(),
         title().text("to BEE or not to BEE"),
-        link().rel(Rel.STYLE_SHEET).href("css/login.css"),
+        link().styleSheet("css/login.css"),
         script().src("js/login.js"));
 
     Form form = form().addClass("bee-SignIn-Form").methodPost();
@@ -343,21 +335,25 @@ public class TestBuilder {
     }
 
     form.append(
-        div().addClass("bee-SignIn-Logo-container").append(
-            img().addClass("bee-SignIn-Logo").src("images/logo.png")),
-        div().addClass("bee-SignIn-Label").addClass("bee-SignIn-Label-user").text(userNameLabel));
-
-    Input nameInput = input().addClass("bee-SignIn-Input").addClass("bee-SignIn-Input-user")
-        .type(Type.TEXT).name(HttpConst.PARAM_USER).id("user");
-    if (!BeeUtils.isEmpty(userName)) {
-      nameInput.value(userName.trim());
-    }
-    nameInput.onKeyDown("return goPswd(event)").autofocus().required();
-
-    form.append(nameInput,
-        div().addClass("bee-SignIn-Label bee-SignIn-Label-password").text(passwordLabel),
-        input().addClass("bee-SignIn-Input bee-SignIn-Input-password").type(Type.PASSWORD)
-            .name(HttpConst.PARAM_PASSWORD).id("pswd").required());
+        div().addClass("bee-SignIn-Logo-container")
+            .append(
+                img().addClass("bee-SignIn-Logo").src("images/logo.png")),
+        div().addClass("bee-SignIn-Label").addClass("bee-SignIn-Label-user").text(userNameLabel),
+        input().addClass("bee-SignIn-Input").addClass("bee-SignIn-Input-user")
+            .type(Type.TEXT)
+            .name(HttpConst.PARAM_USER)
+            .id("user")
+            .value(userName)
+            .onKeyDown("return goPswd(event)")
+            .autofocus()
+            .required(),
+        div().addClass("bee-SignIn-Label bee-SignIn-Label-password")
+            .text(passwordLabel),
+        input().addClass("bee-SignIn-Input bee-SignIn-Input-password")
+            .type(Type.PASSWORD)
+            .name(HttpConst.PARAM_PASSWORD)
+            .id("pswd")
+            .required());
 
     if (!BeeUtils.isEmpty(ui)) {
       form.append(input().type(Type.HIDDEN).name(HttpConst.PARAM_UI).value(ui.trim()));
@@ -402,7 +398,7 @@ public class TestBuilder {
 
     doc.getBody().append(container);
 
-    Assert.assertEquals(BeeUtils.join("", loginHtml), doc.build(-1, -1));
+    Assert.assertEquals(BeeUtils.join("", loginHtml), doc.build());
     Assert.assertEquals(BeeUtils.buildLines(loginHtml), doc.build(0, 0));
   }
 
@@ -411,7 +407,7 @@ public class TestBuilder {
     Document doc = new Document();
 
     doc.getHead().append(
-        meta().httpEquiv("content-type").content("text/html;charset=utf-8"),
+        meta().encodingDeclarationUtf8(),
         title().text(registrationTitle),
         style()
             .text(".bee-required:after {")

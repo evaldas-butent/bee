@@ -16,7 +16,7 @@ public class Pre extends FertileElement {
     return this;
   }
 
-  public Pre append(List<Node> nodes) {
+  public Pre append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Pre extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Pre id(String value) {
     setId(value);

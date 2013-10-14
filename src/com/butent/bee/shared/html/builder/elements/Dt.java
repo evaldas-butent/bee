@@ -16,7 +16,7 @@ public class Dt extends FertileElement {
     return this;
   }
 
-  public Dt append(List<Node> nodes) {
+  public Dt append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Dt extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Dt id(String value) {
     setId(value);

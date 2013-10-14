@@ -16,7 +16,7 @@ public class Bdi extends FertileElement {
     return this;
   }
 
-  public Bdi append(List<Node> nodes) {
+  public Bdi append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

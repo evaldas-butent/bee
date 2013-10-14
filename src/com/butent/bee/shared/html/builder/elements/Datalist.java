@@ -16,7 +16,7 @@ public class Datalist extends FertileElement {
     return this;
   }
 
-  public Datalist append(List<Node> nodes) {
+  public Datalist append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

@@ -16,7 +16,7 @@ public class Aside extends FertileElement {
     return this;
   }
 
-  public Aside append(List<Node> nodes) {
+  public Aside append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

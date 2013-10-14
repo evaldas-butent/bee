@@ -17,7 +17,7 @@ public class Label extends FertileElement {
     return this;
   }
 
-  public Label append(List<Node> nodes) {
+  public Label append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -26,8 +26,6 @@ public class Label extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Label form(String value) {
     setAttribute(Attribute.FORM, value);
@@ -38,7 +36,7 @@ public class Label extends FertileElement {
     setAttribute(Attribute.FOR, value);
     return this;
   }
-  
+
   public Label id(String value) {
     setId(value);
     return this;

@@ -16,7 +16,7 @@ public class Abbr extends FertileElement {
     return this;
   }
 
-  public Abbr append(List<Node> nodes) {
+  public Abbr append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

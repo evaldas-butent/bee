@@ -16,7 +16,7 @@ public class Section extends FertileElement {
     return this;
   }
 
-  public Section append(List<Node> nodes) {
+  public Section append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Section extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Section id(String value) {
     setId(value);

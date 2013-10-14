@@ -17,11 +17,11 @@ public class Dialog extends FertileElement {
     return this;
   }
 
-  public Dialog append(List<Node> nodes) {
+  public Dialog append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
-  
+
   public Dialog append(Node... nodes) {
     super.appendChildren(nodes);
     return this;
@@ -31,8 +31,6 @@ public class Dialog extends FertileElement {
     setAttribute(Attribute.OPEN, false);
     return this;
   }
-
-  
 
   public Dialog id(String value) {
     setId(value);

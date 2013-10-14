@@ -19,8 +19,6 @@ public class Embed extends Element {
     return this;
   }
 
-  
-
   public Embed height(int value) {
     setAttribute(Attribute.HEIGHT, value);
     return this;

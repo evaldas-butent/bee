@@ -28,8 +28,6 @@ public class Menuitem extends Element {
     return this;
   }
 
-  
-
   public Menuitem disabled() {
     setAttribute(Attribute.DISABLED, true);
     return this;

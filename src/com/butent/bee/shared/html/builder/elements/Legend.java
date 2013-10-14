@@ -16,7 +16,7 @@ public class Legend extends FertileElement {
     return this;
   }
 
-  public Legend append(List<Node> nodes) {
+  public Legend append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Legend extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Legend id(String value) {
     setId(value);

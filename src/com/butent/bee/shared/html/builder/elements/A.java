@@ -23,7 +23,7 @@ public class A extends FertileElement {
     return this;
   }
 
-  public A append(List<Node> nodes) {
+  public A append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -82,12 +82,12 @@ public class A extends FertileElement {
     setAttribute(Attribute.TARGET, value);
     return this;
   }
-  
+
   public A targetBlank() {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
-  
+
   public A targetParent() {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
@@ -97,12 +97,12 @@ public class A extends FertileElement {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
-  
+
   public A targetTop() {
     setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
-  
+
   public A text(String text) {
     super.appendText(text);
     return this;

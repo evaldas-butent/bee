@@ -16,7 +16,7 @@ public class Dl extends FertileElement {
     return this;
   }
 
-  public Dl append(List<Node> nodes) {
+  public Dl append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -25,8 +25,6 @@ public class Dl extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
-
-  
 
   public Dl id(String value) {
     setId(value);

@@ -16,7 +16,7 @@ public class Div extends FertileElement {
     return this;
   }
 
-  public Div append(List<Node> nodes) {
+  public Div append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }

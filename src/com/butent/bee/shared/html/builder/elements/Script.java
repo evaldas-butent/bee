@@ -40,8 +40,6 @@ public class Script extends FertileElement {
     return this;
   }
 
-  
-
   public Script id(String value) {
     setId(value);
     return this;
@@ -61,7 +59,7 @@ public class Script extends FertileElement {
     super.appendText(text);
     return this;
   }
-  
+
   public Script title(String value) {
     setTitle(value);
     return this;

@@ -14,8 +14,6 @@ public class Source extends Element {
     return this;
   }
 
-  
-
   public Source id(String value) {
     setId(value);
     return this;

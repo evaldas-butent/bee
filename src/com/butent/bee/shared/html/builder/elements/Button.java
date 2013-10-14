@@ -23,7 +23,7 @@ public class Button extends FertileElement {
     return this;
   }
 
-  public Button append(List<Node> nodes) {
+  public Button append(List<? extends Node> nodes) {
     super.appendChildren(nodes);
     return this;
   }
@@ -62,7 +62,7 @@ public class Button extends FertileElement {
     setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
-  
+
   public Button formEncTypeText() {
     setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
@@ -97,7 +97,7 @@ public class Button extends FertileElement {
     setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
-  
+
   public Button formTargetParent() {
     setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
@@ -107,12 +107,12 @@ public class Button extends FertileElement {
     setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
-  
+
   public Button formTargetTop() {
     setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
-  
+
   public Button id(String value) {
     setId(value);
     return this;
