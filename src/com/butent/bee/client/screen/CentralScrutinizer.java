@@ -16,6 +16,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -55,8 +56,8 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       add(label);
 
       if (domain.isRemovable()) {
-        Image close = new Image(Global.getImages().closeSmall());
-        close.addStyleName(STYLE_NAME + "-close");
+        CustomDiv close = new CustomDiv(STYLE_NAME + "-close");
+        close.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
 
         close.addClickHandler(new ClickHandler() {
           @Override

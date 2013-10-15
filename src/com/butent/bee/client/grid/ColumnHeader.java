@@ -1,8 +1,6 @@
 package com.butent.bee.client.grid;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.user.cellview.client.Header;
-
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.HeaderCell;
 import com.butent.bee.shared.ui.HasCaption;
 
@@ -18,7 +16,7 @@ public class ColumnHeader extends Header<String> implements HasCaption {
     this(columnId, new HeaderCell(caption));
   }
 
-  public ColumnHeader(String columnId, Cell<String> cell) {
+  public ColumnHeader(String columnId, AbstractCell<String> cell) {
     super(cell);
     this.columnId = columnId;
   }

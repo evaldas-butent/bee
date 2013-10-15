@@ -1404,7 +1404,12 @@ body {
 .bee-MultiSelector-close {
   position: absolute;
   right: 3px;
-  top: 1px;
+  top: -3px;
+  font-size: 15px;
+}
+.bee-MultiSelector-close:hover {
+  color: red;
+  cursor: pointer;
 }
 .bee-MultiSelector-container.bee-disabled .bee-MultiSelector-close {
   display: none;
@@ -1555,8 +1560,13 @@ body {
 }
 .bee-Appliance-close {
   position: absolute;
-  top: 8px;
-  right: 20px;
+  top: 2px;
+  right: 10px;
+  font-size: 17px;
+}
+.bee-Appliance-close:hover {
+  color: red;
+  cursor: pointer;
 }
 
 .bee-ApplianceAdmin {

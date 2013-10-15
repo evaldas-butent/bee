@@ -32,6 +32,9 @@
 
     <SimpleColumn name="Activity" />
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Host" />
+    <SimpleColumn name="Agent" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

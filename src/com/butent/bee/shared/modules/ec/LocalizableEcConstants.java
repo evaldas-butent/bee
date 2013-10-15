@@ -22,11 +22,27 @@ public interface LocalizableEcConstants {
 
   String ecCategoryMove();
 
+  String ecClientActivity();
+
+  String ecClientCompanyCode();
+
+  String ecClientCompanyName();
+
+  String ecClientFirstName();
+
+  String ecClientLastName();
+
+  String ecClientPersonCode();
+
   String ecClientPrice();
+
+  String ecClientType();
 
   String ecClientTypeCompany();
 
   String ecClientTypePerson();
+
+  String ecClientVatCode();
 
   String ecContacts();
 
@@ -187,6 +203,10 @@ public interface LocalizableEcConstants {
   String ecRejectionReasonRequired();
 
   String ecRegister();
+
+  String ecRegistrationFormCaption();
+
+  String ecRegistrationNew();
 
   String ecSearchBy();
 

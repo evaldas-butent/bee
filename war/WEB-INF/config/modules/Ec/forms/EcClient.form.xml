@@ -36,6 +36,7 @@
         <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning" style="margin-left: 150px;" />
       </FlowPanel>
       &separator;
+      &separator;
 
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecBranchPrimary" class="bee-required" style="&lbl;" />
@@ -44,6 +45,18 @@
         <Label text="=ecBranchSecondary" style="&lbl;" />
         <DataSelector source="SecondaryBranch" style="&inp;" />
       </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecWarehousesPrimary" style="&lbl;" />
+        <ChildSelector viewName="Warehouses" childTable="PrimaryWarehouses" renderColumns="Code"
+          newRowEnabled="false" label="=ecWarehousesPrimary" style="&inp;" />
+
+        <Label text="=ecWarehousesSecondary" style="&lbl;" />
+        <ChildSelector viewName="Warehouses" childTable="SecondaryWarehouses" renderColumns="Code"
+          newRowEnabled="false" label="=ecWarehousesSecondary" style="&inp;" />
+      </FlowPanel>
+      &separator;
       &separator;
 
       <FlowPanel class="flexBox-horizontal-top">

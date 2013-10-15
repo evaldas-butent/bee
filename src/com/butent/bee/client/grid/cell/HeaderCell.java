@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -73,20 +71,14 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   }
 
   @Override
-  public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
-      ValueUpdater<String> valueUpdater) {
-    if (!(context instanceof CellContext)) {
-      super.onBrowserEvent(context, parent, value, event, valueUpdater);
-      return;
-    }
-
-    CellGrid grid = ((CellContext) context).getGrid();
+  public void onBrowserEvent(CellContext context, Element parent, String value, NativeEvent event) {
+    CellGrid grid = context.getGrid();
     if (grid == null) {
       return;
     }
 
     if (EventUtils.isClick(event)) {
-      int col = context.getColumn();
+      int col = context.getColumnIndex();
 
       if (EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
         event.preventDefault();
@@ -113,12 +105,8 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   }
 
   @Override
-  public void render(Context context, String value, SafeHtmlBuilder sb) {
-    if (context instanceof CellContext) {
-      renderHeader((CellContext) context, value, sb);
-    } else if (value != null) {
-      sb.appendEscaped(value);
-    }
+  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
+    renderHeader(context, value, sb);
   }
 
   public void renderHeader(CellContext context, String columnId, SafeHtmlBuilder sb) {
@@ -133,7 +121,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
       int size = (sortOrder == null) ? 0 : sortOrder.getSize();
 
       int sortIndex = (size > 0) ? sortOrder.getIndex(columnId) : BeeConst.UNDEF;
-      
+
       if (sortIndex >= 0) {
         boolean ascending = sortOrder.getColumns().get(sortIndex).isAscending();
         String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,

@@ -1,7 +1,6 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
-
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.DateTimeCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
@@ -19,7 +18,7 @@ public class DateTimeColumn extends DataColumn<DateTime> implements HasDateTimeF
     this(new DateTimeCell(format), cellSource);
   }
 
-  public DateTimeColumn(Cell<DateTime> cell, CellSource cellSource) {
+  public DateTimeColumn(AbstractCell<DateTime> cell, CellSource cellSource) {
     super(cell, cellSource);
   }
 

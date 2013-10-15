@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
@@ -32,12 +30,11 @@ public class SelectionHeader extends AbstractCell<String> {
   }
 
   @Override
-  public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
-      ValueUpdater<String> valueUpdater) {
+  public void onBrowserEvent(CellContext context, Element parent, String value, NativeEvent event) {
 
-    if (EventUtils.isClick(event) && context instanceof CellContext) {
+    if (EventUtils.isClick(event)) {
       setChecked(!isChecked());
-      CellGrid grid = ((CellContext) context).getGrid();
+      CellGrid grid = context.getGrid();
 
       if (grid != null && !BeeUtils.isEmpty(grid.getRowData())) {
         for (int i = 0; i < grid.getRowData().size(); i++) {
@@ -47,9 +44,6 @@ public class SelectionHeader extends AbstractCell<String> {
           }
         }
       }
-
-    } else {
-      super.onBrowserEvent(context, parent, value, event, valueUpdater);
     }
   }
 
@@ -65,10 +59,8 @@ public class SelectionHeader extends AbstractCell<String> {
   }
 
   @Override
-  public void render(Context context, String value, SafeHtmlBuilder sb) {
-    if (context instanceof CellContext) {
-      updateValue(((CellContext) context).getGrid());
-    }
+  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
+    updateValue(context.getGrid());
 
     INPUT.setChecked(isChecked());
     INPUT.setDefaultChecked(isChecked());

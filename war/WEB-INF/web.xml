@@ -26,6 +26,10 @@
     <servlet-name>TransportSelfService</servlet-name>
     <servlet-class>com.butent.bee.server.modules.transport.TransportSelfService</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>EcServlet</servlet-name>
+    <servlet-class>com.butent.bee.server.modules.ec.EcServlet</servlet-class>
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>BeeServlet</servlet-name>
@@ -48,8 +52,10 @@
 
   <servlet-mapping>
     <servlet-name>TransportSelfService</servlet-name>
-    <url-pattern>/tr</url-pattern>
-    <url-pattern>/trregister</url-pattern>
-    <url-pattern>/trrequest</url-pattern>
+    <url-pattern>/tr/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>EcServlet</servlet-name>
+    <url-pattern>/ec/*</url-pattern>
   </servlet-mapping>
 </web-app>

@@ -333,6 +333,8 @@ public final class EcConstants {
   public static final String COL_REGISTRATION_COUNTRY = "Country";
   public static final String COL_REGISTRATION_ACTIVITY = "Activity";
   public static final String COL_REGISTRATION_NOTES = "Notes";
+  public static final String COL_REGISTRATION_HOST = "Host";
+  public static final String COL_REGISTRATION_AGENT = "Agent";
 
   public static final String COL_REJECTION_REASON_NAME = "Name";
   public static final String COL_REJECTION_REASON_NOTES = "Notes";

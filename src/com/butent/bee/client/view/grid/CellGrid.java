@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -49,6 +48,7 @@ import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.HeaderCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
@@ -663,7 +663,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 800, 16, 28);
   }
 
-  private static boolean cellConsumesEventType(Cell<?> cell, String eventType) {
+  private static boolean cellConsumesEventType(AbstractCell<?> cell, String eventType) {
     Set<String> consumedEvents = cell.getConsumedEvents();
     return consumedEvents != null && consumedEvents.contains(eventType);
   }
@@ -1122,7 +1122,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-    CellContext context = new CellContext(0, col, null, this);
+    CellContext context = new CellContext(this, col);
     header.render(context, cellBuilder);
     SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
@@ -1606,14 +1606,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (targetType == TargetType.HEADER) {
       ColumnHeader header = getColumnInfo(col).getHeader();
       if (header != null && cellConsumesEventType(header.getCell(), eventType)) {
-        CellContext context = new CellContext(0, col, null, this);
+        CellContext context = new CellContext(this, col);
         header.onBrowserEvent(context, target, event);
       }
 
     } else if (targetType == TargetType.FOOTER) {
       ColumnFooter footer = getColumnInfo(col).getFooter();
       if (footer != null && cellConsumesEventType(footer.getCell(), eventType)) {
-        CellContext context = new CellContext(0, col, null, this);
+        CellContext context = new CellContext(this, col);
         footer.onBrowserEvent(context, target, event);
       }
 
@@ -1632,7 +1632,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
         } else if (isCellActive(row, col)) {
           if (columnInfo.isActionColumn()) {
-            fireEventToCell(row, col, event, eventType, target, rowValue);
+            fireEventToCell(col, event, eventType, target, rowValue);
           } else {
             startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
@@ -1640,7 +1640,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         } else {
           activateCell(row, col);
           if (columnInfo.isActionColumn()) {
-            fireEventToCell(row, col, event, eventType, target, rowValue);
+            fireEventToCell(col, event, eventType, target, rowValue);
           } else if (columnInfo.getColumn().instantKarma(rowValue)) {
             startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
@@ -1682,7 +1682,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         return;
       }
 
-      fireEventToCell(row, col, event, eventType, target, rowValue);
+      fireEventToCell(col, event, eventType, target, rowValue);
     }
   }
 
@@ -1852,7 +1852,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       AbstractColumn<?> column = getColumn(col);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-      CellContext context = new CellContext(row, col, rowValue, this);
+      CellContext context = new CellContext(this, rowValue, col);
       column.render(context, rowValue, cellBuilder);
       SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
@@ -2538,10 +2538,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  private int estimateBodyCellWidth(int rowIndex, int col, IsRow rowValue,
-      AbstractColumn<?> column, Font font) {
+  private int estimateBodyCellWidth(int col, IsRow rowValue, AbstractColumn<?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-    CellContext context = new CellContext(rowIndex, col, rowValue, this);
+    CellContext context = new CellContext(this, rowValue, col);
     column.render(context, rowValue, cellBuilder);
     SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
@@ -2571,7 +2570,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       if (rowValue == null) {
         continue;
       }
-      width = Math.max(width, estimateBodyCellWidth(i, col, rowValue, column, font));
+      width = Math.max(width, estimateBodyCellWidth(col, rowValue, column, font));
     }
 
     if (width > 0) {
@@ -2589,11 +2588,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     fireEvent(new DataRequestEvent(origin));
   }
 
-  private void fireEventToCell(int row, int col, Event event, String eventType,
-      Element parentElem, IsRow rowValue) {
+  private void fireEventToCell(int col, Event event, String eventType, Element parentElem,
+      IsRow rowValue) {
     AbstractColumn<?> column = getColumn(col);
     if (cellConsumesEventType(column.getCell(), eventType)) {
-      CellContext context = new CellContext(row, col, rowValue, this);
+      CellContext context = new CellContext(this, rowValue, col);
       column.onBrowserEvent(context, parentElem, rowValue, event);
     }
   }
@@ -3555,7 +3554,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private void refreshFooter(ColumnFooter footer, int col) {
-    CellContext context = new CellContext(0, col, null, this);
+    CellContext context = new CellContext(this, col);
     SafeHtmlBuilder builder = new SafeHtmlBuilder();
     footer.render(context, builder);
 
@@ -3563,7 +3562,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private void refreshHeader(ColumnHeader header, int col) {
-    CellContext context = new CellContext(0, col, null, this);
+    CellContext context = new CellContext(this, col);
     SafeHtmlBuilder builder = new SafeHtmlBuilder();
     header.render(context, builder);
 
@@ -3809,7 +3808,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           }
 
           SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-          CellContext context = new CellContext(i, col, rowValue, this);
+          CellContext context = new CellContext(this, rowValue, col);
           column.render(context, rowValue, cellBuilder);
           SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
@@ -3995,12 +3994,12 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       if (isHeader) {
         if (columnInfo.getHeader() != null) {
-          CellContext context = new CellContext(0, i, null, this);
+          CellContext context = new CellContext(this, i);
           columnInfo.getHeader().render(context, cellBuilder);
         }
 
       } else if (columnInfo.getFooter() != null) {
-        CellContext context = new CellContext(0, i, null, this);
+        CellContext context = new CellContext(this, i);
         columnInfo.getFooter().render(context, cellBuilder);
         hAlign = columnInfo.getFooter().getTextAlign();
       }
@@ -4072,7 +4071,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       IsRow rowValue = rows.get(r);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-      CellContext context = new CellContext(r, c, rowValue, this);
+      CellContext context = new CellContext(this, rowValue, c);
       getColumn(c).render(context, rowValue, cellBuilder);
 
       cell.setInnerHTML(cellBuilder.toSafeHtml().asString());
@@ -4694,7 +4693,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     AbstractColumn<?> column = getColumn(col);
 
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-    CellContext context = new CellContext(rowIndex, col, rowValue, this);
+    CellContext context = new CellContext(this, rowValue, col);
     column.render(context, rowValue, cellBuilder);
     SafeHtml cellHtml = cellBuilder.toSafeHtml();
 

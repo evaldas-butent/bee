@@ -677,18 +677,6 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="StringPicker" substitutionGroup="widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="editableWidget">
-          <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="item" type="xs:normalizedString" />
-          </xs:choice>
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
   <xs:complexType name="selectorType">
     <xs:complexContent>
       <xs:extension base="inputWidget">

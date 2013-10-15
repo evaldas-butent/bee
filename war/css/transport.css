@@ -410,6 +410,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.bee-tr-chart-actionRemoveFilter {
+  font-size: 17px;
+}
+.bee-tr-chart-actionRemoveFilter:hover {
+  color: red;
+  cursor: pointer;
+}
 
 .bee-tr-chart-filter-data-wrapper {
   overflow: auto;

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -32,6 +31,7 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.ActionCell;
 import com.butent.bee.client.grid.cell.CalculatedCell;
 import com.butent.bee.client.grid.cell.SelectionHeader;
@@ -458,7 +458,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         break;
 
       case CALCULATED:
-        Cell<String> cell =
+        AbstractCell<String> cell =
             (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
         CalculatedColumn calcColumn = new CalculatedColumn(cell, cd.getValueType(), renderer);
 

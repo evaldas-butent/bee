@@ -6,6 +6,8 @@ name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separato
 
   <Item name="EcClients" label="=ecClients" service="ensure_categories_and_open_grid" parameters="EcClients" />
 
+  <Item name="EcRegistrations" label="=ecRegistrations" service="grid" parameters="EcRegistrations" separator="true" />
+
   <Item name="EcManagers" label="=ecManagers" service="grid" parameters="EcManagers" separator="true" />
 
   <Item name="Branches" label="=branches" service="grid" parameters="Branches" separator="true" />

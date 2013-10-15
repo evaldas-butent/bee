@@ -1,8 +1,7 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
-
+import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.grid.cell.TextCell;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
@@ -12,7 +11,7 @@ public class StringColumn extends DataColumn<String> {
     this(new TextCell(), cellSource);
   }
 
-  public StringColumn(Cell<String> cell, CellSource cellSource) {
+  public StringColumn(AbstractCell<String> cell, CellSource cellSource) {
     super(cell, cellSource);
   }
 

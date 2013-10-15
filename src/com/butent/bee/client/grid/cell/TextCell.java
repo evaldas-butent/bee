@@ -8,13 +8,9 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Manages rendering of cells containing arbitrary html.
- */
+public class TextCell extends AbstractCell<String> {
 
-public class HtmlCell extends AbstractCell<String> {
-
-  public HtmlCell() {
+  public TextCell() {
     super();
   }
 
@@ -25,7 +21,7 @@ public class HtmlCell extends AbstractCell<String> {
   @Override
   public void render(CellContext context, String value, SafeHtmlBuilder sb) {
     if (!BeeUtils.isEmpty(value)) {
-      sb.append(SafeHtmlUtils.fromTrustedString(value));
+      sb.append(SafeHtmlUtils.fromString(value));
     }
   }
 }

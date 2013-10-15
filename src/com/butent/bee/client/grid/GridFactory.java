@@ -2,8 +2,6 @@ package com.butent.bee.client.grid;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -13,7 +11,9 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.HtmlCell;
+import com.butent.bee.client.grid.cell.TextCell;
 import com.butent.bee.client.grid.column.AreaColumn;
 import com.butent.bee.client.grid.column.BooleanColumn;
 import com.butent.bee.client.grid.column.CurrencyColumn;
@@ -109,7 +109,7 @@ public final class GridFactory {
     descriptionCache.clear();
   }
 
-  public static Cell<String> createCell(CellType cellType) {
+  public static AbstractCell<String> createCell(CellType cellType) {
     Assert.notNull(cellType);
 
     switch (cellType) {
@@ -223,7 +223,7 @@ public final class GridFactory {
 
   public static DataColumn<?> createRenderableColumn(AbstractCellRenderer renderer,
       CellSource cellSource, CellType cellType) {
-    Cell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
+    AbstractCell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
     return new RenderableColumn(cell, cellSource, renderer);
   }
 

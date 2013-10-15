@@ -23,7 +23,6 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
-import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.composite.VolumeSlider;
@@ -239,7 +238,6 @@ public enum FormWidget {
   SPAN_PANEL("SpanPanel", EnumSet.of(Type.HAS_CHILDREN)),
   SPLIT_PANEL("SplitPanel", EnumSet.of(Type.PANEL)),
   STACK_PANEL("StackPanel", EnumSet.of(Type.PANEL)),
-  STRING_PICKER("StringPicker", EnumSet.of(Type.EDITABLE)),
   SUMMARY("Summary", null),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
@@ -1018,10 +1016,6 @@ public enum FormWidget {
 
       case STACK_PANEL:
         widget = new Stack();
-        break;
-
-      case STRING_PICKER:
-        widget = new StringPicker();
         break;
 
       case SVG:

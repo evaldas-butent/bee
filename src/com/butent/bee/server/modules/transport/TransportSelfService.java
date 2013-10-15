@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings("serial")
 public class TransportSelfService extends HttpServlet {
 
-  private static final String PATH_REGISTER = "trregister";
-  private static final String PATH_REQUEST = "trrequest";
+  private static final String PATH_REGISTER = "tr/register";
+  private static final String PATH_REQUEST = "tr/request";
 
   private static BeeLogger logger = LogUtils.getLogger(TransportSelfService.class);
 
@@ -58,7 +58,7 @@ public class TransportSelfService extends HttpServlet {
 
     html.add("<h2>" + constants.trRegistrationFormCaption() + "</h2>");
 
-    html.add("<form method=\"post\" action=\"trregister?submit\">");
+    html.add("<form method=\"post\" action=\"tr/register?submit\">");
     html.add("<table style=\"border-collapse: collapse; margin-top: 2ex; margin-left: 1em;\">");
     html.add("<tbody>");
 
@@ -203,10 +203,9 @@ public class TransportSelfService extends HttpServlet {
   }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
-    String path = req.getServletPath();
-    logger.debug("trss", path);
+    String uri = req.getRequestURI();
 
-    if (!BeeUtils.containsAnySame(path, PATH_REGISTER, PATH_REQUEST)) {
+    if (!BeeUtils.containsAnySame(uri, PATH_REGISTER, PATH_REQUEST)) {
       String forwardPath = CommUtils.getPath(LoginServlet.URL,
           ImmutableMap.of(HttpConst.PARAM_UI, UserInterface.SELF_SERVICE.getShortName(),
               HttpConst.PARAM_REGISTER, PATH_REGISTER,
@@ -214,12 +213,9 @@ public class TransportSelfService extends HttpServlet {
 
       RequestDispatcher dispatcher = req.getRequestDispatcher(forwardPath);
 
-      boolean ok = false;
-
       if (dispatcher != null) {
         try {
           dispatcher.forward(req, resp);
-          ok = true;
 
         } catch (ServletException ex) {
           logger.error(ex);
@@ -227,8 +223,6 @@ public class TransportSelfService extends HttpServlet {
           logger.error(ex);
         }
       }
-
-      logger.debug("forward", ok);
       return;
     }
 
@@ -237,9 +231,8 @@ public class TransportSelfService extends HttpServlet {
 
     List<String> html;
 
-    if (BeeUtils.containsSame(path, PATH_REGISTER)) {
+    if (BeeUtils.containsSame(uri, PATH_REGISTER)) {
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
-      logger.debug("trss", path, parameters);
 
       if (parameters.size() > 3) {
         html = register(req, parameters, constants);

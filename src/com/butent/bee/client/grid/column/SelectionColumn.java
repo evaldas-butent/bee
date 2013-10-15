@@ -1,8 +1,8 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.dom.client.Element;
 
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.SelectionCell;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -31,7 +31,7 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   }
 
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     Boolean value = getValue(row);
     return (value == null) ? null : BeeUtils.toString(value);
   }

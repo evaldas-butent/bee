@@ -1,8 +1,8 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.NumberCell;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
@@ -41,7 +41,7 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
   }
 
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     if (row == null) {
       return null;
     }

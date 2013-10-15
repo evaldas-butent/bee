@@ -69,16 +69,6 @@
           </AbsolutePanel>
         </stack>
 
-        <stack headerSize="25">
-          <text>string picker</text>
-          <StringPicker>
-            <item>Item 1</item>
-            <item>Item 2 ; &lt;img src="images/logo.gif"&gt;</item>
-            <item>Item 3</item>
-            <item>Item 4 ; &lt;a href="http://www.zombo.com"&gt;zombo&lt;/a&gt;</item>
-          </StringPicker>
-        </stack>
-
         <stack headerSize="40">
           <html>header content footer</html>
           <HeaderContentFooter>

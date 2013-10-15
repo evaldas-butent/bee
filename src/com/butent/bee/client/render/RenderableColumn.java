@@ -1,7 +1,6 @@
 package com.butent.bee.client.render;
 
-import com.google.gwt.cell.client.Cell;
-
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.DataColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -11,7 +10,8 @@ public class RenderableColumn extends DataColumn<String> implements HasCellRende
 
   private AbstractCellRenderer renderer;
 
-  public RenderableColumn(Cell<String> cell, CellSource cellSource, AbstractCellRenderer renderer) {
+  public RenderableColumn(AbstractCell<String> cell, CellSource cellSource,
+      AbstractCellRenderer renderer) {
     super(cell, cellSource);
     this.renderer = renderer;
   }

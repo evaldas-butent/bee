@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -96,17 +94,16 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   }
 
   @Override
-  public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
-      ValueUpdater<String> valueUpdater) {
-    if (EventUtils.isClick(event) && context instanceof CellContext) {
-      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(),
-          ((CellContext) context).getRowValue(), Service.CELL_ACTION, getOptions()));
+  public void onBrowserEvent(CellContext context, Element parent, String value,
+      NativeEvent event) {
+    if (EventUtils.isClick(event)) {
+      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), context.getRowValue(),
+          Service.CELL_ACTION, getOptions()));
     }
-    super.onBrowserEvent(context, parent, value, event, valueUpdater);
   }
 
   @Override
-  public void render(Context context, String value, SafeHtmlBuilder sb) {
+  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
     if (!BeeUtils.isEmpty(value)) {
       sb.append(type.render(value));
     }

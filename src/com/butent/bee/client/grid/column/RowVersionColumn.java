@@ -1,7 +1,6 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell.Context;
-
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.DateTimeCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
@@ -42,7 +41,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
   }
 
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     if (row == null) {
       return null;
     }

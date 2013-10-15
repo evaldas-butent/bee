@@ -18,7 +18,7 @@
         <DataSelector source="CompanyPerson" style="&w2;" 
           renderColumns="FirstName LastName" choiceColumns="FirstName LastName CompanyName" />
 
-        <Label text="=vehicleGroupsShort" class="bee-required" style="&lbl;" />
+        <Label text="=driverGroupsShort" class="bee-required" style="&lbl;" />
         <ChildSelector viewName="TransportGroups" childTable="DriverGroups" required="true"
           label="=driverGroupsShort" />
       </FlowPanel>

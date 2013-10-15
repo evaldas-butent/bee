@@ -1,9 +1,7 @@
 package com.butent.bee.client.grid;
 
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.Header;
 
 import com.butent.bee.client.grid.cell.FooterCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -144,9 +142,9 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
   }
 
   @Override
-  public void render(Context context, SafeHtmlBuilder sb) {
-    if (getAggregate() != null && context instanceof CellContext) {
-      List<IsRow> data = ((CellContext) context).getGrid().getRowData();
+  public void render(CellContext context, SafeHtmlBuilder sb) {
+    if (getAggregate() != null) {
+      List<IsRow> data = context.getGrid().getRowData();
 
       if (!BeeUtils.isEmpty(data)) {
         Value value = calculate(data);
