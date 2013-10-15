@@ -16,6 +16,18 @@
         <DataSelector source="Position" style="width: 200px" />
       </row>
       <row>
+        <Label text="=personTabNo" />
+        <InputText source="TabNo" style="width: 200px" />
+        <Label text="=companyDepartment" />
+        <DataSelector source="Department" style="width: 200px" />
+      </row>
+      <row>
+        <Label text="=personAccountingCode" />
+        <InputText source="AccountingCode" style="width: 200px" />
+        <Label text="=personDateOfEmployment" />
+        <InputDate source="DateOfEmployment" style="width: 200px" />
+      </row>
+      <row>
         <cell colSpan="4">
           <xi:include href="widgets/ContactInfo.widget.xml" />
         </cell>

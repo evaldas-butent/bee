@@ -22,6 +22,8 @@
           <SimpleColumn name="FirstName" />
           <SimpleColumn name="LastName" />
         </SimpleJoin>
+
+        <SimpleColumn name="AccountingCode" />
       </SimpleJoin>
     </SimpleJoin>
    

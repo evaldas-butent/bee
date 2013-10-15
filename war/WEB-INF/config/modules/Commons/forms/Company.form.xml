@@ -37,7 +37,7 @@
       <InputText source="Code" style="width: 200px;" d:size="93" d:unit="px" />
       <Label text="=companyVATCode" style="&lbl1;" />
       <InputText source="VATCode" style="width: 120px;" upperCase="true" d:size="78" d:unit="px" />
-      <Label text="=exchangeCode" style="width: 100px; margin-right: 1em; text-align: right" />
+      <Label text="=code" style="width: 100px; margin-right: 1em; text-align: right" />
       <InputText source="ExchangeCode" style="width: 140px;" d:size="90" d:unit="px" />
     </row>
   </Table> 

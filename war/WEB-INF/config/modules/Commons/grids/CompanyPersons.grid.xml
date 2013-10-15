@@ -8,9 +8,12 @@
   >
   <g:columns>
     <RelColumn name="Person" editEnabled="true" visible="true" />
+    <DataColumn name="TabNo"/>
+    <DataColumn name="AccountingCode" />
+    <RelColumn name="Department" />    
     <RelColumn name="Position" />
     <DataColumn name="Phone" />
-
+ 
     <RelColumn name="EmailId">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />

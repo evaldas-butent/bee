@@ -8,7 +8,7 @@
   <Fields>
     <Relation name="Company" relation="Companies" notNull="true" label="=company"/>
     <Relation name="User" relation="Users" notNull="true" label="=companyResponsibleUser"/>
-    <Relation name="Responsibility" relation="Responsibilities" notNull="true" label="=responsibility"/>
+    <Relation name="Responsibility" relation="Responsibilities" notNull="false" label="=responsibility"/>
   </Fields>
 
   <Constraints>

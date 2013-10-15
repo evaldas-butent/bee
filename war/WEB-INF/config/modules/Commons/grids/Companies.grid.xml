@@ -10,7 +10,7 @@
     <DataColumn name="PriorityName" caption="=priority" />
     <DataColumn name="Code" />
     <DataColumn name="VATCode" visible="false" />
-    <DataColumn name="ExchangeCode" caption="=exchangeCode" visible="false" />
+    <DataColumn name="ExchangeCode" caption="=code" visible="false" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" caption="=fax" visible="false" />
