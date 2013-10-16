@@ -6,8 +6,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.mail.MailConstants.*;
-
+import static com.butent.bee.shared.modules.mail.MailConstants.COL_ACCOUNT_DEFAULT;
+import static com.butent.bee.shared.modules.mail.MailConstants.COL_ADDRESS;
+import static com.butent.bee.shared.modules.mail.MailConstants.COL_USER;
+import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ACCOUNTS;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
@@ -27,6 +29,7 @@ import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
@@ -57,6 +60,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.GridDescription;
@@ -72,7 +76,11 @@ import com.butent.bee.shared.utils.XmlHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -184,6 +192,10 @@ public class UiServiceBean {
     } else if (BeeUtils.same(svc, Service.GET_DECORATORS)) {
       response = getDecorators();
 
+    } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
+      response = importOsamaTiekejai(reqInfo);
+    } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_DARBUOTOJIAI)) {
+      response = importOsamaDarbuotojai(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
       logger.warning(msg);
@@ -507,6 +519,456 @@ public class UiServiceBean {
       return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName)));
     }
     return ResponseObject.error("Grid", gridName, "not found");
+  }
+
+  /*
+   * @Deprecated private ResponseObject importOsamaPrekSist(RequestInfo reqInfo) { String fileId =
+   * reqInfo.getContent();
+   * 
+   * SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path") .addFrom("Files")
+   * .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
+   * 
+   * logger.info("do query: ", select.getQuery());
+   * 
+   * SimpleRowSet fd = qs.getData(select);
+   * 
+   * String path = fd.getValue(0, fd.getColumnIndex("Path"));
+   * 
+   * select = new SqlSelect().addField(CommonsConstants.TBL_COMPANIES,
+   * sys.getIdName(CommonsConstants.TBL_COMPANIES), "oID") .addFrom(CommonsConstants.TBL_COMPANIES)
+   * .setWhere( SqlUtils.contains(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME,
+   * "Osama"));
+   * 
+   * logger.info("do query: ", select.getQuery());
+   * 
+   * SimpleRowSet osamaCompany = qs.getData(select);
+   * 
+   * if (osamaCompany.isEmpty()) { return ResponseObject.error("Osama company not found"); }
+   * 
+   * long osamaCompanyId = osamaCompany.getLong(0, 0);
+   * 
+   * try { FileInputStream fstream = new FileInputStream(path);
+   * 
+   * DataInputStream in = new DataInputStream(fstream); BufferedReader br = new BufferedReader(new
+   * InputStreamReader(in)); String strLine;
+   * 
+   * while ((strLine = br.readLine()) != null) { Splitter splitter = Splitter.on(';'); List<String>
+   * lst = Lists.newArrayList(splitter.split(strLine));
+   * 
+   * String[] data = ArrayUtils.toArray(lst); logger.info("Current data row", data);
+   * 
+   * } in.close(); } catch (Exception e) { logger.severe(e); }
+   * 
+   * return ResponseObject.info("Data imported"); }
+   */
+
+  @Deprecated
+  private ResponseObject importOsamaDarbuotojai(RequestInfo reqInfo) {
+    String fileId = reqInfo.getContent();
+
+    SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path")
+        .addFrom("Files")
+        .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
+
+    logger.info("do query: ", select.getQuery());
+
+    SimpleRowSet fd = qs.getData(select);
+
+    String path = fd.getValue(0, fd.getColumnIndex("Path"));
+
+    select = new SqlSelect().addField(CommonsConstants.TBL_COMPANIES,
+        sys.getIdName(CommonsConstants.TBL_COMPANIES), "oID")
+        .addFrom(CommonsConstants.TBL_COMPANIES)
+        .setWhere(
+            SqlUtils.contains(CommonsConstants.TBL_COMPANIES,
+                CommonsConstants.COL_COMPANY_NAME, "Osama"));
+
+    logger.info("do query: ", select.getQuery());
+
+    SimpleRowSet osamaCompany = qs.getData(select);
+
+    if (osamaCompany.isEmpty()) {
+      return ResponseObject.error("Osama company not found");
+    }
+
+    long osamaCompanyId = osamaCompany.getLong(0, 0);
+
+    try {
+
+      FileInputStream fstream = new FileInputStream(path);
+
+      DataInputStream in = new DataInputStream(fstream);
+      BufferedReader br = new BufferedReader(new InputStreamReader(in));
+      String strLine;
+
+      while ((strLine = br.readLine()) != null) {
+        Splitter splitter = Splitter.on(';');
+        List<String> lst = Lists.newArrayList(splitter.split(strLine));
+
+        String[] data = ArrayUtils.toArray(lst);
+        logger.info("Current data row", data);
+
+        select =
+            new SqlSelect().addField(CommonsConstants.TBL_PERSONS,
+                sys.getIdName(CommonsConstants.TBL_PERSONS), "personId")
+                .addFrom(CommonsConstants.TBL_PERSONS)
+                .setWhere(
+                    SqlUtils.and(
+                        SqlUtils.equals(CommonsConstants.TBL_PERSONS,
+                            CommonsConstants.COL_FIRST_NAME, data[2]),
+                        SqlUtils.equals(CommonsConstants.TBL_PERSONS,
+                            CommonsConstants.COL_LAST_NAME, data[3])));
+
+        logger.info("do query: ", select.getQuery());
+
+        SimpleRowSet person = qs.getData(select);
+
+        if (person.isEmpty()) {
+
+          SqlInsert insert = new SqlInsert(CommonsConstants.TBL_PERSONS)
+              .addFields(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME,
+                  "DateOfBirth")
+              .addValues(data[2], data[3], TimeUtils.parseDate(data[7]));
+
+          logger.info("do query: ", insert.getQuery());
+
+          long personId = qs.insertData(insert);
+          long contactid = -1;
+
+          if (!BeeUtils.isEmpty(data[11])) {
+            insert = new SqlInsert("Contacts")
+                .addFields("Phone", "Address")
+                .addValues(data[11], data[8]);
+
+            logger.info("do query: ", insert.getQuery());
+
+            contactid = qs.insertData(insert);
+
+          } else {
+
+            insert = new SqlInsert("Contacts")
+                .addFields("Address")
+                .addValues(data[8]);
+
+            logger.info("do query: ", insert.getQuery());
+
+            contactid = qs.insertData(insert);
+
+          }
+
+          if (!BeeUtils.isEmpty(data[10])) {
+
+            select = new SqlSelect().addField("Emails", sys.getIdName("Emails"), "email")
+                .addFrom("Emails")
+                .setWhere(SqlUtils.equals("Emails", "Email", data[10]));
+
+            logger.info("do query: ", select.getQuery());
+
+            SimpleRowSet email = qs.getData(select);
+
+            if (email.isEmpty()) {
+
+              insert = new SqlInsert("Emails")
+                  .addFields("Email", "Label")
+                  .addValues(data[10], data[2] + " " + data[3]);
+
+              logger.info("do query: ", insert.getQuery());
+
+              long emailId = qs.insertData(insert);
+
+              SqlUpdate update = new SqlUpdate("Contacts")
+                  .addConstant("Email", emailId)
+                  .setWhere(SqlUtils.equals("Contacts", sys.getIdName("Contacts"), contactid));
+
+              logger.info("do query: ", update.getQuery());
+
+              qs.updateData(update);
+            } else {
+              /*
+               * SqlUpdate update = new SqlUpdate("Contacts") .addConstant("Email", email.getLong(0,
+               * 0)) .setWhere(SqlUtils.equals("Contacts", sys.getIdName("Contacts"), contactid));
+               * 
+               * logger.info("do query: ", update.getQuery());
+               * 
+               * qs.updateData(update);
+               */
+            }
+          }
+
+          SqlUpdate update = new SqlUpdate("Persons")
+              .addConstant("Contact", contactid)
+              .setWhere(SqlUtils.equals("Persons", sys.getIdName("Persons"), personId));
+
+          logger.info("do query: ", update.getQuery());
+
+          qs.updateData(update);
+
+          select =
+              new SqlSelect().addField("CompanyDepartments",
+                  sys.getIdName("CompanyDepartments"), "depId").addFrom("CompanyDepartments")
+                  .setWhere(
+                      SqlUtils.and(SqlUtils.equals("CompanyDepartments", "Company", osamaCompanyId)
+                          , SqlUtils.equals("CompanyDepartments", "Name", data[6])));
+
+          logger.info("do query: ", select.getQuery());
+
+          SimpleRowSet department = qs.getData(select);
+          long departmentId = -1;
+
+          if (department.isEmpty()) {
+            insert = new SqlInsert("CompanyDepartments").addFields("Company", "Name")
+                .addValues(osamaCompanyId, data[6]);
+
+            logger.info("do query: ", insert.getQuery());
+
+            departmentId = qs.insertData(insert);
+
+          } else {
+            departmentId = department.getLong(0, 0);
+          }
+
+          select =
+              new SqlSelect().addField("Positions",
+                  sys.getIdName("Positions"), "posId").addFrom("Positions")
+                  .setWhere(
+                      SqlUtils.equals("Positions", "Name", data[4])
+                  );
+
+          logger.info("do query: ", select.getQuery());
+
+          SimpleRowSet position = qs.getData(select);
+          long positionId = -1;
+
+          if (position.isEmpty()) {
+            insert = new SqlInsert("Positions").addFields("Name")
+                .addValues(data[4]);
+
+            logger.info("do query: ", insert.getQuery());
+
+            positionId = qs.insertData(insert);
+
+          } else {
+            positionId = position.getLong(0, 0);
+          }
+
+          if (!BeeUtils.isEmpty(data[1])) {
+            insert = new SqlInsert("CompanyPersons")
+                .addFields("Company", "Department", "Person", "TabNo", "AccountingCode",
+                    "DateOfEmployment", "Position")
+                .addValues(osamaCompanyId, departmentId, personId, data[0], data[1],
+                    TimeUtils.parseDate(data[5]), positionId);
+
+            logger.info("do query: ", insert.getQuery());
+
+            qs.insertData(insert);
+          }
+
+        } else {
+          logger.warning("record", data, "allready exist!");
+        }
+
+      }
+      in.close();
+    } catch (Exception e) {
+      logger.severe(e);
+    }
+
+    return ResponseObject.info("Data imported");
+  }
+
+  @Deprecated
+  private ResponseObject importOsamaTiekejai(RequestInfo reqInfo) {
+    String fileId = reqInfo.getContent();
+
+    SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path")
+        .addFrom("Files")
+        .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
+
+    logger.info("do query: ", select.getQuery());
+
+    SimpleRowSet fd = qs.getData(select);
+
+    String path = fd.getValue(0, fd.getColumnIndex("Path"));
+
+    select = new SqlSelect().addField(CommonsConstants.TBL_COMPANIES,
+        sys.getIdName(CommonsConstants.TBL_COMPANIES), "oID")
+        .addFrom(CommonsConstants.TBL_COMPANIES)
+        .setWhere(
+            SqlUtils.contains(CommonsConstants.TBL_COMPANIES,
+                CommonsConstants.COL_COMPANY_NAME, "Osama"));
+
+    logger.info("do query: ", select.getQuery());
+
+    SimpleRowSet osamaCompany = qs.getData(select);
+
+    if (osamaCompany.isEmpty()) {
+      return ResponseObject.error("Osama company not found");
+    }
+
+    long osamaCompanyId = osamaCompany.getLong(0, 0);
+
+    try {
+
+      FileInputStream fstream = new FileInputStream(path);
+
+      DataInputStream in = new DataInputStream(fstream);
+      BufferedReader br = new BufferedReader(new InputStreamReader(in));
+      String strLine;
+
+      while ((strLine = br.readLine()) != null) {
+        Splitter splitter = Splitter.on(';');
+        List<String> lst = Lists.newArrayList(splitter.split(strLine));
+
+        String[] data = ArrayUtils.toArray(lst);
+
+        logger.info("Current data row", data);
+
+        SqlSelect check = new SqlSelect().addAllFields(CommonsConstants.TBL_COMPANIES)
+            .addFrom(CommonsConstants.TBL_COMPANIES)
+            .setWhere(SqlUtils.and(
+                SqlUtils.equals(CommonsConstants.TBL_COMPANIES,
+                    CommonsConstants.COL_COMPANY_CODE, data[0]),
+                SqlUtils.equals(CommonsConstants.TBL_COMPANIES,
+                    CommonsConstants.COL_COMPANY_NAME, data[1])
+                ));
+
+        logger.info("do sql", check.getQuery());
+
+        if (qs.getData(check).isEmpty()) {
+          SqlInsert insert = null;
+          if (!BeeUtils.isEmpty(data[0])) {
+            insert = new SqlInsert(CommonsConstants.TBL_COMPANIES)
+                .addFields(CommonsConstants.COL_COMPANY_CODE, CommonsConstants.COL_COMPANY_NAME)
+                .addValues(data[0], data[1]);
+          } else {
+            insert = new SqlInsert(CommonsConstants.TBL_COMPANIES)
+                .addFields(CommonsConstants.COL_COMPANY_NAME)
+                .addValues(data[1]);
+          }
+
+          logger.info("do sql", insert.getQuery());
+
+          long companyId = qs.insertData(insert);
+
+          if (!BeeUtils.isEmpty(data[2])) {
+            insert = new SqlInsert(CommonsConstants.TBL_CONTACTS)
+                .addFields(CommonsConstants.COL_ADDRESS)
+                .addValues(data[2]);
+
+            logger.info("do sql", insert.getQuery());
+
+            long contactId = qs.insertData(insert);
+
+            SqlUpdate update = new SqlUpdate(CommonsConstants.TBL_COMPANIES)
+                .addConstant(CommonsConstants.COL_CONTACT, contactId)
+                .setWhere(SqlUtils.equals(CommonsConstants.TBL_COMPANIES,
+                    sys.getIdName(CommonsConstants.TBL_COMPANIES), companyId));
+
+            logger.info("do sql", update.getQuery());
+
+            qs.updateData(update);
+          }
+
+          select = new SqlSelect().addField(CommonsConstants.TBL_PERSONS,
+              sys.getIdName(CommonsConstants.TBL_PERSONS), "personId")
+              .addFrom(CommonsConstants.TBL_PERSONS)
+              .setWhere(
+                  SqlUtils.and(
+                      SqlUtils.equals(CommonsConstants.TBL_PERSONS,
+                          CommonsConstants.COL_FIRST_NAME, data[4]),
+                      SqlUtils.equals(CommonsConstants.TBL_PERSONS,
+                          CommonsConstants.COL_LAST_NAME, data[5])));
+
+          logger.info("do sql", select.getQuery());
+
+          SimpleRowSet person = qs.getData(select);
+          long personId = -1;
+          long userId = -1;
+
+          if (person.isEmpty()) {
+            insert = new SqlInsert(CommonsConstants.TBL_PERSONS)
+                .addFields(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)
+                .addValues(data[4], data[5]);
+
+            logger.info("do sql", insert.getQuery());
+
+            personId = qs.insertData(insert);
+
+            insert = new SqlInsert(CommonsConstants.TBL_COMPANY_PERSONS)
+                .addFields(CommonsConstants.COL_COMPANY, CommonsConstants.COL_PERSON)
+                .addValues(osamaCompanyId, personId);
+
+            logger.info("do sql", insert.getQuery());
+
+            long compPersonId = qs.insertData(insert);
+
+            insert = new SqlInsert(CommonsConstants.TBL_USERS)
+                .addFields(CommonsConstants.COL_LOGIN, CommonsConstants.COL_COMPANY_PERSON)
+                .addValues((data[4] + data[5]).toLowerCase(), compPersonId);
+
+            logger.info("do sql", insert.getQuery());
+
+            userId = qs.insertData(insert);
+
+          } else {
+            select = new SqlSelect().addField(CommonsConstants.TBL_COMPANY_PERSONS,
+                sys.getIdName(CommonsConstants.TBL_COMPANY_PERSONS), "compPersonId")
+                .addFrom(CommonsConstants.TBL_COMPANY_PERSONS)
+                .setWhere(SqlUtils.and(
+                    SqlUtils.equals(CommonsConstants.TBL_COMPANY_PERSONS
+                        , CommonsConstants.COL_COMPANY, osamaCompanyId),
+                    SqlUtils.equals(CommonsConstants.TBL_COMPANY_PERSONS
+                        , CommonsConstants.COL_PERSON, person.getLong(0, 0))));
+
+            logger.info("do sql", select.getQuery());
+
+            SimpleRowSet compPerson = qs.getData(select);
+
+            select = new SqlSelect().addField(CommonsConstants.TBL_USERS,
+                sys.getIdName(CommonsConstants.TBL_USERS), "userId")
+                .addFrom(CommonsConstants.TBL_USERS)
+                .setWhere(
+                    SqlUtils.equals(CommonsConstants.TBL_USERS
+                        , CommonsConstants.COL_COMPANY_PERSON, compPerson.getLong(0, 0)));
+
+            logger.info("do sql", select.getQuery());
+
+            SimpleRowSet user = qs.getData(select);
+
+            if (user.isEmpty()) {
+
+              insert = new SqlInsert(CommonsConstants.TBL_USERS)
+                  .addFields(CommonsConstants.COL_LOGIN, CommonsConstants.COL_COMPANY_PERSON)
+                  .addValues((data[4] + data[5]).toLowerCase(), compPerson.getLong(0, 0));
+
+              logger.info("do sql", insert.getQuery());
+
+              userId = qs.insertData(insert);
+            }
+            else {
+              userId = user.getLong(0, 0);
+            }
+          }
+
+          insert = new SqlInsert("CompanyUsers")
+              .addFields(CommonsConstants.COL_COMPANY, CommonsConstants.COL_USER)
+              .addValues(companyId, userId);
+
+          logger.info("do sql", insert.getQuery());
+
+          userId = qs.insertData(insert);
+
+        } else {
+          logger.warning("record", data, "allready exist!");
+        }
+
+      }
+      in.close();
+    } catch (Exception e) {
+      logger.severe(e);
+    }
+
+    return ResponseObject.info("Data imported");
   }
 
   private ResponseObject getHistogram(RequestInfo reqInfo) {

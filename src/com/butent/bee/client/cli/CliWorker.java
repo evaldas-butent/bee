@@ -331,6 +331,9 @@ public final class CliWorker {
     } else if (z.startsWith("image")) {
       showImages(arr);
 
+    } else if ("import_cvs".equals(z)) {
+      importCvs(arr);
+
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
 
@@ -478,6 +481,7 @@ public final class CliWorker {
     }
     return true;
   }
+
 
   private static void animate(String[] arr) {
 
@@ -1400,6 +1404,66 @@ public final class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
+  @Deprecated
+  private static void importCvs(String[] arr) {
+    LogUtils.getRootLogger().debug((Object[]) arr);
+    if (arr.length < 2) {
+      return;
+    }
+
+    String servName = "";
+    if (BeeUtils.same(arr[1], "OsamaTiekejai")) {
+      servName = Service.IMPORT_OSAMA_TIEKEJAI;
+    } else if (BeeUtils.same(arr[1], "OsamaDarbuotojai")) {
+      servName = Service.IMPORT_OSAMA_DARBUOTOJIAI;
+    }
+
+    if (!BeeUtils.isEmpty(servName)) {
+      final String serviceName = servName;
+      LogUtils.getRootLogger().debug("do");
+      final Popup popup = new Popup(OutsideClick.CLOSE);
+
+      final InputFile widget = new InputFile(true);
+      widget.addChangeHandler(new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent event) {
+          popup.close();
+          List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
+
+          for (final NewFileInfo fi : files) {
+            logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
+            FileUtils.uploadFile(fi, new Callback<Long>() {
+              @Override
+              public void onSuccess(Long result) {
+                BeeKeeper.getRpc().sendText(serviceName,
+                    BeeUtils.toString(result),
+                    new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject response) {
+                        Assert.notNull(response);
+
+                        if (response.hasResponse(BeeRowSet.class)) {
+                          BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+
+                          if (rs.isEmpty()) {
+                            logger.debug("sql: RowSet is empty");
+                          } else {
+                            Global.showGrid(rs);
+                          }
+                        }
+                      }
+                    });
+              }
+            });
+          }
+        }
+      });
+
+      popup.setWidget(widget);
+      popup.center();
+    }
+  }
+  
   private static void inform(String... messages) {
     List<String> lst = Lists.newArrayList(messages);
     Global.showInfo(lst);
