@@ -1958,7 +1958,7 @@ public class EcModuleBean implements BeeModule {
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE)
         .addFrom(TBL_TCD_ARTICLE_CODES)
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, search),
+        .setWhere(SqlUtils.and(SqlUtils.contains(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, search),
             clause));
 
     List<EcItem> items = getItems(articleIdQuery, code);

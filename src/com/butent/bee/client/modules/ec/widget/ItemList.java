@@ -3,14 +3,23 @@ package com.butent.bee.client.modules.ec.widget;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -32,7 +41,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ItemList extends Flow {
+public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
 
   private static final String STYLE_PRIMARY = "ItemList";
   private static final String STYLE_WAREHOUSE = "warehouse";
@@ -121,18 +130,18 @@ public class ItemList extends Flow {
 
                   Simple analogPanel = new Simple(analogList);
                   analogPanel.addStyleName(STYLE_ITEM_ANALOGS + "-panel");
-                  
+
                   String caption = BeeUtils.joinWords(Localized.getConstants().ecItemAnalogs(),
                       item.getName(), item.getCode(), EcKeeper.getBrandName(item.getBrand()));
                   DialogBox dialog = DialogBox.create(caption, STYLE_ITEM_ANALOGS + "-dialog");
-                  
+
                   dialog.setWidget(analogPanel);
-                  
+
                   dialog.setAnimationEnabled(true);
                   dialog.setHideOnEscape(true);
 
                   dialog.center();
-                  
+
                 } else {
                   BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
                 }
@@ -230,6 +239,48 @@ public class ItemList extends Flow {
     this.secondaryStockLabel = EcKeeper.getSecondaryStockLabel();
   }
 
+  @Override
+  public void onKeyDown(KeyDownEvent event) {
+//    if (event.getSource() instanceof CartAccumulator && table.getRowCount() > 1) {
+//    }
+  }
+
+  @Override
+  public void onKeyPress(KeyPressEvent event) {
+    if (Character.isLetter(event.getCharCode())) {
+      List<String> selectors = Lists.newArrayList();
+
+      switch (event.getCharCode()) {
+        case 'b':
+        case 'B':
+          selectors.add(Selectors.classSelector(STYLE_LIST_PRICE));
+          selectors.add(Selectors.classSelector(STYLE_LIST_PRICE + STYLE_LABEL));
+          break;
+
+        case 'k':
+        case 'K':
+          selectors.add(Selectors.classSelector(STYLE_PRICE));
+          selectors.add(Selectors.classSelector(STYLE_PRICE + STYLE_LABEL));
+          break;
+      }
+
+      if (!selectors.isEmpty()) {
+        NodeList<Element> nodes = Selectors.getNodes(selectors);
+        
+        if (nodes != null) {
+          for (int i = 0; i < nodes.getLength(); i++) {
+            Element el = nodes.getItem(i);
+            if (UIObject.isVisible(el)) {
+              StyleUtils.hideDisplay(el);
+            } else {
+              StyleUtils.unhideDisplay(el);
+            }
+          }
+        }
+      }
+    }
+  }
+
   public void render(List<EcItem> items) {
     if (!table.isEmpty()) {
       table.clear();
@@ -277,11 +328,11 @@ public class ItemList extends Flow {
       }
 
       Label listPriceLabel = new Label(Localized.getConstants().ecListPrice());
-      EcStyles.add(listPriceLabel, STYLE_PRIMARY, STYLE_LIST_PRICE + STYLE_LABEL);
+      listPriceLabel.addStyleName(STYLE_LIST_PRICE + STYLE_LABEL);
       table.setWidget(row, col++, listPriceLabel);
 
       Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
-      EcStyles.add(priceLabel, STYLE_PRIMARY, STYLE_PRICE + STYLE_LABEL);
+      priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
       table.setWidget(row, col++, priceLabel);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
@@ -309,7 +360,36 @@ public class ItemList extends Flow {
       if (!pictureWidgets.isEmpty()) {
         EcKeeper.setBackgroundPictures(pictureWidgets);
       }
+
+      focusRow(1);
     }
+  }
+
+  private void focusRow(final int row) {
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        CartAccumulator cartAccumulator = getCartAccumulator(row);
+        if (cartAccumulator != null) {
+          cartAccumulator.focus();
+        }
+      }
+    });
+  }
+
+  private CartAccumulator getCartAccumulator(int row) {
+    if (row >= 0 && row < table.getRowCount()) {
+      int cc = table.getCellCount(row);
+
+      for (int col = 0; col < cc; col++) {
+        Widget widget = table.getWidget(row, col);
+
+        if (widget instanceof CartAccumulator) {
+          return (CartAccumulator) widget;
+        }
+      }
+    }
+    return null;
   }
 
   private boolean hasWarehouses() {
@@ -366,7 +446,12 @@ public class ItemList extends Flow {
     }
     col++;
 
-    Widget accumulator = new CartAccumulator(item, 1);
+    CartAccumulator accumulator = new CartAccumulator(item, 1);
+    accumulator.setIndex(row);
+
+    accumulator.addKeyDownHandler(this);
+    accumulator.addKeyPressHandler(this);
+
     table.setWidgetAndStyle(row, col++, accumulator, STYLE_QUANTITY);
 
     table.getRowFormatter().addStyleName(row, STYLE_ITEM_ROW);
@@ -397,6 +482,8 @@ public class ItemList extends Flow {
       if (!pictureWidgets.isEmpty()) {
         EcKeeper.setBackgroundPictures(pictureWidgets);
       }
+
+      focusRow(pageStart + 1);
     }
   }
 }

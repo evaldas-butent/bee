@@ -763,6 +763,12 @@
   width: 50px;
   height: 32px;
 }
+.bee-ec-cartAccumulator-input:focus {
+  border-color: red;
+  background-color: yellow;
+  box-shadow: none;
+  outline: none;
+}
 .bee-ec-cartAccumulator-spin {
   margin-left: 2px;
   margin-right: 1em;

@@ -944,8 +944,7 @@ public class UiServiceBean {
               logger.info("do sql", insert.getQuery());
 
               userId = qs.insertData(insert);
-            }
-            else {
+            } else {
               userId = user.getLong(0, 0);
             }
           }
