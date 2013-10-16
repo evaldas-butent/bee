@@ -7,6 +7,8 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -102,6 +104,16 @@ public final class EcUtils {
     }
   }
 
+  public static String renderStock(int stock) {
+    if (stock <= 0) {
+      return Localized.getConstants().ecStockAsk();
+    } else if (EcConstants.MAX_VISIBLE_STOCK > 0 && stock > EcConstants.MAX_VISIBLE_STOCK) {
+      return BeeConst.STRING_GT + EcConstants.MAX_VISIBLE_STOCK;
+    } else {
+      return BeeUtils.toString(stock);
+    }
+  }
+  
   public static String string(Double value) {
     return (value == null) ? null : BeeUtils.toString(value);
   }

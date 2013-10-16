@@ -255,11 +255,10 @@ public class ItemDetails extends Flow {
       for (String warehouse : as.getRemainders().keySet()) {
         Label warehouseWidget = new Label(warehouse);
         table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
-        double remainder = BeeUtils.toDouble(as.getRemainders().get(warehouse));
 
-        String remainderText = BeeUtils.isPositive(remainder)
-            ? BeeUtils.toString(remainder) : Localized.getConstants().ecStockAsk();
-        Label stockWidget = new Label(remainderText);
+        int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
+        Label stockWidget = new Label();
+        stockWidget.getElement().setInnerText(EcUtils.renderStock(remainder));
         table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
         row++;

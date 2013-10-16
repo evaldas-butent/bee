@@ -30,7 +30,6 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 public class ItemList extends Flow {
@@ -182,8 +181,8 @@ public class ItemList extends Flow {
   private static Widget renderStock(int stock, String unit) {
     Flow wrapper = new Flow(STYLE_STOCK_WRAPPER);
 
-    String text = (stock > 0) ? BeeUtils.toString(stock) : Localized.getConstants().ecStockAsk();
-    InlineLabel stockWidget = new InlineLabel(text);
+    InlineLabel stockWidget = new InlineLabel();
+    stockWidget.getElement().setInnerText(EcUtils.renderStock(stock));
     stockWidget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
     wrapper.add(stockWidget);
 
@@ -200,13 +199,9 @@ public class ItemList extends Flow {
   private final Button moreWidget;
 
   private final List<EcItem> data = Lists.newArrayList();
-  private final String primaryBranch;
 
-  private final String secondaryBranch;
-
-  private final Collection<String> primaryWarehouses;
-
-  private final Collection<String> secondaryWarehouses;
+  private final String primaryStockLabel;
+  private final String secondaryStockLabel;
 
   public ItemList(List<EcItem> items) {
     this();
@@ -231,11 +226,8 @@ public class ItemList extends Flow {
     });
     add(moreWidget);
 
-    this.primaryBranch = EcKeeper.getPrimaryBranch();
-    this.secondaryBranch = EcKeeper.getSecondaryBranch();
-
-    this.primaryWarehouses = EcKeeper.getWarehouses(primaryBranch);
-    this.secondaryWarehouses = EcKeeper.getWarehouses(secondaryBranch);
+    this.primaryStockLabel = EcKeeper.getPrimaryStockLabel();
+    this.secondaryStockLabel = EcKeeper.getSecondaryStockLabel();
   }
 
   public void render(List<EcItem> items) {
@@ -263,15 +255,15 @@ public class ItemList extends Flow {
       col += 2;
 
       if (hasWarehouses()) {
-        if (!primaryWarehouses.isEmpty()) {
-          Label wrh1 = new Label(primaryBranch);
+        if (!BeeUtils.isEmpty(primaryStockLabel)) {
+          Label wrh1 = new Label(primaryStockLabel);
           EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE);
           EcStyles.add(wrh1, STYLE_PRIMARY, STYLE_WAREHOUSE + "1");
           table.setWidget(row, col++, wrh1);
         }
 
-        if (!secondaryWarehouses.isEmpty()) {
-          Label wrh2 = new Label(secondaryBranch);
+        if (!BeeUtils.isEmpty(secondaryStockLabel)) {
+          Label wrh2 = new Label(secondaryStockLabel);
           EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE);
           EcStyles.add(wrh2, STYLE_PRIMARY, STYLE_WAREHOUSE + "2");
           table.setWidget(row, col++, wrh2);
@@ -321,7 +313,7 @@ public class ItemList extends Flow {
   }
 
   private boolean hasWarehouses() {
-    return !primaryWarehouses.isEmpty() || !secondaryWarehouses.isEmpty();
+    return !BeeUtils.allEmpty(primaryStockLabel, secondaryStockLabel);
   }
 
   private void renderItem(int row, EcItem item, Widget pictureWidget) {
@@ -338,15 +330,15 @@ public class ItemList extends Flow {
     col++;
 
     if (hasWarehouses()) {
-      if (!primaryWarehouses.isEmpty()) {
-        Widget stock1 = renderStock(item.getStock(primaryWarehouses), item.getUnit());
+      if (!BeeUtils.isEmpty(primaryStockLabel)) {
+        Widget stock1 = renderStock(item.getPrimaryStock(), item.getUnit());
         if (stock1 != null) {
           table.setWidgetAndStyle(row, col++, stock1, STYLE_STOCK_1);
         }
       }
 
-      if (!secondaryWarehouses.isEmpty()) {
-        Widget stock2 = renderStock(item.getStock(secondaryWarehouses), item.getUnit());
+      if (!BeeUtils.isEmpty(secondaryStockLabel)) {
+        Widget stock2 = renderStock(item.getSecondaryStock(), item.getUnit());
         if (stock2 != null) {
           table.setWidgetAndStyle(row, col++, stock2, STYLE_STOCK_2);
         }

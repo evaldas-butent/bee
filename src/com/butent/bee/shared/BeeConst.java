@@ -62,6 +62,8 @@ public final class BeeConst {
   public static final String STRING_LEFT_PARENTHESIS = "(";
   public static final String STRING_RIGHT_PARENTHESIS = ")";
   public static final String STRING_EQ = "=";
+  public static final String STRING_LT = "<";
+  public static final String STRING_GT = ">";
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";

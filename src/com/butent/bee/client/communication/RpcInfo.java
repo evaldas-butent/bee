@@ -175,7 +175,7 @@ public class RpcInfo {
     if (getStates().isEmpty()) {
       return false;
     }
-    return BeeUtils.containsAny(getStates(), filter);
+    return BeeUtils.intersects(getStates(), filter);
   }
 
   public String getCompletedTime() {

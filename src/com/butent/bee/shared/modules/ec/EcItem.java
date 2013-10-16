@@ -19,7 +19,7 @@ public class EcItem implements BeeSerializable {
 
   private enum Serial {
     ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
-    DESCRIPTION, NOVELTY, FEATURED, UNIT
+    DESCRIPTION, NOVELTY, FEATURED, UNIT, PRIMARY_STOCK, SECONDARY_STOCK
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -49,6 +49,9 @@ public class EcItem implements BeeSerializable {
   private boolean featured;
 
   private String unit;
+  
+  private int primaryStock;
+  private int secondaryStock;
 
   public EcItem(long articleId) {
     this.articleId = articleId;
@@ -126,6 +129,14 @@ public class EcItem implements BeeSerializable {
 
         case UNIT:
           setUnit(value);
+          break;
+          
+        case PRIMARY_STOCK:
+          setPrimaryStock(BeeUtils.toInt(value));
+          break;
+
+        case SECONDARY_STOCK:
+          setSecondaryStock(BeeUtils.toInt(value));
           break;
       }
     }
@@ -236,6 +247,10 @@ public class EcItem implements BeeSerializable {
     return price;
   }
 
+  public int getPrimaryStock() {
+    return primaryStock;
+  }
+
   public double getRealListPrice() {
     return listPrice / 100d;
   }
@@ -244,12 +259,8 @@ public class EcItem implements BeeSerializable {
     return price / 100d;
   }
 
-  public int getStock(Collection<String> warehouses) {
-    int stock = 0;
-    for (ArticleSupplier supplier : getSuppliers()) {
-      stock += supplier.getStock(warehouses);
-    }
-    return stock;
+  public int getSecondaryStock() {
+    return secondaryStock;
   }
 
   public Collection<ArticleSupplier> getSuppliers() {
@@ -338,6 +349,14 @@ public class EcItem implements BeeSerializable {
         case UNIT:
           arr[i++] = unit;
           break;
+          
+        case PRIMARY_STOCK:
+          arr[i++] = primaryStock;
+          break;
+
+        case SECONDARY_STOCK:
+          arr[i++] = secondaryStock;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -387,6 +406,14 @@ public class EcItem implements BeeSerializable {
     this.price = price;
   }
 
+  public void setPrimaryStock(int primaryStock) {
+    this.primaryStock = primaryStock;
+  }
+
+  public void setSecondaryStock(int secondaryStock) {
+    this.secondaryStock = secondaryStock;
+  }
+
   public void setSuppliers(Collection<ArticleSupplier> suppliers) {
     BeeUtils.overwrite(this.suppliers, suppliers);
   }
@@ -396,10 +423,6 @@ public class EcItem implements BeeSerializable {
   }
 
   public int totalStock() {
-    int stock = 0;
-    for (ArticleSupplier supplier : getSuppliers()) {
-      stock += supplier.totalStock();
-    }
-    return stock;
+    return getPrimaryStock() + getSecondaryStock();
   }
 }

@@ -5,7 +5,7 @@ import com.butent.bee.shared.html.builder.TestBuilder;
 import com.butent.bee.shared.testutils.TestArrayUtils;
 import com.butent.bee.shared.testutils.TestBeeConst;
 import com.butent.bee.shared.testutils.TestBeeUtilsTransform;
-import com.butent.bee.shared.testutils.TestBeeUtilscontaintAny;
+import com.butent.bee.shared.testutils.TestBeeUtilsIntersects;
 import com.butent.bee.shared.testutils.TestBooleanValue;
 import com.butent.bee.shared.testutils.TestCodec;
 import com.butent.bee.shared.testutils.TestDateTime;
@@ -44,7 +44,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * Contains the Test Suite.
  */
 @RunWith(value = org.junit.runners.Suite.class)
-@SuiteClasses(value = {TestBeeUtilscontaintAny.class,
+@SuiteClasses(value = {TestBeeUtilsIntersects.class,
     TestBeeUtilsTransform.class, TestArrayUtils.class, TestPropertyUtils.class,
     TestTimeUtils.class,
     TestCodec.class, TestIsExpression.class, TestIsCondition.class,

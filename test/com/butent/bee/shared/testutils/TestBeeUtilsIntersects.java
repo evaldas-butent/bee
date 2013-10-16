@@ -19,10 +19,10 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.BeeUtils#containsAny(Collection, Collection)}.
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#intersects(Collection, Collection)}.
  */
 @RunWith(value = Parameterized.class)
-public class TestBeeUtilscontaintAny extends TestCase {
+public class TestBeeUtilsIntersects extends TestCase {
 
   private static Set<ValueType> testc1 = Sets.newHashSet();
   private static Set<ValueType> testc2 = Sets.newHashSet();
@@ -46,7 +46,7 @@ public class TestBeeUtilscontaintAny extends TestCase {
   Set<ValueType> value1;
   Set<ValueType> value2;
 
-  public TestBeeUtilscontaintAny(boolean expected, Set<ValueType> value1, Set<ValueType> value2) {
+  public TestBeeUtilsIntersects(boolean expected, Set<ValueType> value1, Set<ValueType> value2) {
     this.expected = expected;
     this.value1 = value1;
     this.value2 = value2;
@@ -77,7 +77,7 @@ public class TestBeeUtilscontaintAny extends TestCase {
   }
 
   @Test
-  public void testContainsAny() {
-    assertEquals(expected, BeeUtils.containsAny(value1, value2));
+  public void testIntersects() {
+    assertEquals(expected, BeeUtils.intersects(value1, value2));
   }
 }

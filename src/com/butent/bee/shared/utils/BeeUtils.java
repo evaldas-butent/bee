@@ -361,44 +361,6 @@ public final class BeeUtils {
     }
   }
 
-  /**
-   * Checks is there are equal elements in the Collections.
-   * 
-   * @param c1 first Collection's elements to be compared
-   * @param c2 second Collection's elements to be compared
-   * @return true if one of the collections contain at least one equal element from the other
-   *         collection, otherwise false.
-   */
-  public static <T> boolean containsAny(Collection<T> c1, Collection<T> c2) {
-    boolean ok = false;
-
-    int n1 = size(c1);
-    if (n1 <= 0) {
-      return ok;
-    }
-    int n2 = size(c2);
-    if (n2 <= 0) {
-      return ok;
-    }
-
-    if (n1 <= n2) {
-      for (T el : c1) {
-        if (c2.contains(el)) {
-          ok = true;
-          break;
-        }
-      }
-    } else {
-      for (T el : c2) {
-        if (c1.contains(el)) {
-          ok = true;
-          break;
-        }
-      }
-    }
-    return ok;
-  }
-
   public static boolean containsAnySame(String x, String first, String second, String... rest) {
     if (isEmpty(x)) {
       return false;
@@ -689,7 +651,7 @@ public final class BeeUtils {
     int index = (s == null) ? BeeConst.UNDEF : s.lastIndexOf(BeeConst.CHAR_POINT);
     return (index >= 0) ? s.length() - index - 1 : 0;
   }
-  
+
   public static <K, V> Collection<V> getIfContains(Multimap<K, V> multimap, K key) {
     if (multimap != null && multimap.containsKey(key)) {
       return multimap.get(key);
@@ -697,7 +659,7 @@ public final class BeeUtils {
       return null;
     }
   }
-
+  
   public static <C extends Comparable<C>> C getLowerEndpoint(Range<C> range) {
     return (range != null && range.hasLowerBound()) ? range.lowerEndpoint() : null;
   }
@@ -918,6 +880,44 @@ public final class BeeUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * Checks is there are equal elements in the Collections.
+   * 
+   * @param c1 first Collection's elements to be compared
+   * @param c2 second Collection's elements to be compared
+   * @return true if one of the collections contain at least one equal element from the other
+   *         collection, otherwise false.
+   */
+  public static <T> boolean intersects(Collection<T> c1, Collection<T> c2) {
+    boolean ok = false;
+
+    int n1 = size(c1);
+    if (n1 <= 0) {
+      return ok;
+    }
+    int n2 = size(c2);
+    if (n2 <= 0) {
+      return ok;
+    }
+
+    if (n1 <= n2) {
+      for (T el : c1) {
+        if (c2.contains(el)) {
+          ok = true;
+          break;
+        }
+      }
+    } else {
+      for (T el : c2) {
+        if (c1.contains(el)) {
+          ok = true;
+          break;
+        }
+      }
+    }
+    return ok;
   }
 
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {

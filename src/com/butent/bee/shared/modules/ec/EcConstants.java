@@ -164,7 +164,7 @@ public final class EcConstants {
   public static final String SVC_GET_GROUP_FILTERS = "getGroupFilters";
   public static final String SVC_GET_GROUP_ITEMS = "getGroupItems";
 
-  public static final String SVC_GET_CLIENT_BRANCHES = "getClientBranches";
+  public static final String SVC_GET_CLIENT_STOCK_LABELS = "getClientStockLabels";
 
   public static final String SVC_ADD_TO_UNSUPPLIED_ITEMS = "addToUnsuppliedItems";
 
@@ -192,8 +192,10 @@ public final class EcConstants {
   public static final String TBL_MANAGERS = "EcManagers";
   public static final String TBL_ORDER_ITEMS = "EcOrderItems";
   public static final String TBL_ORDERS = "EcOrders";
+  public static final String TBL_PRIMARY_WAREHOUSES = "PrimaryWarehouses";
   public static final String TBL_REGISTRATIONS = "EcRegistrations";
   public static final String TBL_REJECTION_REASONS = "RejectionReasons";
+  public static final String TBL_SECONDARY_WAREHOUSES = "SecondaryWarehouses";
   public static final String TBL_SHOPPING_CARTS = "ShoppingCarts";
   public static final String TBL_UNSUPPLIED_ITEMS = "UnsuppliedItems";
 
@@ -419,6 +421,9 @@ public final class EcConstants {
   public static final String COL_TCD_GRAPHICS_TYPE = "Type";
   public static final String COL_TCD_GRAPHICS_RESOURCE = "Resource";
 
+  public static final String COL_CW_CLIENT = "Client";
+  public static final String COL_CW_WAREHOUSE = "Warehouse";
+  
   public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
   public static final String PRM_MOTONET_INTERVAL = "MotoprofilIntervalInMinutes";
 
@@ -433,6 +438,7 @@ public final class EcConstants {
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 
   public static final String CURRENCY = "Lt";
+  public static final int MAX_VISIBLE_STOCK = 5;
 
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
 

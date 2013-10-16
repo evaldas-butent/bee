@@ -155,9 +155,9 @@ public final class EcKeeper {
     data.ensureCategories(callback);
   }
 
-  public static void ensureCategoriesAndBrandsAndBranches(Consumer<Boolean> callback) {
+  public static void ensureCategoriesAndBrandsAndStockLabels(Consumer<Boolean> callback) {
     Assert.notNull(callback);
-    data.ensureCategoriesAndBrandsAndBranches(callback);
+    data.ensureCategoriesAndBrandsAndStockLabels(callback);
   }
 
   public static void finalizeRequest(EcRequest request, boolean remove) {
@@ -222,8 +222,8 @@ public final class EcKeeper {
     data.getItemBrands(callback);
   }
 
-  public static String getPrimaryBranch() {
-    return data.getPrimaryBranch();
+  public static String getPrimaryStockLabel() {
+    return data.getPrimaryStockLabel();
   }
 
   public static List<EcItem> getResponseItems(ResponseObject response) {
@@ -247,12 +247,8 @@ public final class EcKeeper {
     return items;
   }
 
-  public static String getSecondaryBranch() {
-    return data.getSecondaryBranch();
-  }
-
-  public static Collection<String> getWarehouses(String branch) {
-    return data.getWarehouses(branch);
+  public static String getSecondaryStockLabel() {
+    return data.getSecondaryStockLabel();
   }
 
   public static boolean isDebug() {
@@ -436,7 +432,7 @@ public final class EcKeeper {
     Assert.notNull(panel);
     Assert.notNull(items);
 
-    ensureCategoriesAndBrandsAndBranches(new Consumer<Boolean>() {
+    ensureCategoriesAndBrandsAndStockLabels(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {

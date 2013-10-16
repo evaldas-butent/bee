@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.ec;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -29,7 +28,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,8 +51,7 @@ class EcData {
 
   private final Map<String, String> configuration = Maps.newHashMap();
   
-  private final List<String> clientBranches = Lists.newArrayList();
-  private final Multimap<String, String> clientWarehousesByBranch = ArrayListMultimap.create();
+  private final List<String> clientStockLabels = Lists.newArrayList();
 
   EcData() {
     super();
@@ -141,8 +138,8 @@ class EcData {
     }
   }
 
-  void ensureCategoriesAndBrandsAndBranches(final Consumer<Boolean> callback) {
-    if (!categoryNames.isEmpty() && !itemBrands.isEmpty() && !clientBranches.isEmpty()) {
+  void ensureCategoriesAndBrandsAndStockLabels(final Consumer<Boolean> callback) {
+    if (!categoryNames.isEmpty() && !itemBrands.isEmpty() && !clientStockLabels.isEmpty()) {
       callback.accept(true);
     }
 
@@ -161,12 +158,12 @@ class EcData {
     
     ensureCategories(consumer);
     ensureBrands(consumer);
-    ensureClientBranches(consumer);
+    ensureClientStockLabels(consumer);
   }
 
-  void ensureClientBranches(final Consumer<Boolean> callback) {
-    if (clientBranches.isEmpty()) {
-      getClientBranches(new Consumer<Boolean>() {
+  void ensureClientStockLabels(final Consumer<Boolean> callback) {
+    if (clientStockLabels.isEmpty()) {
+      getClientStockLabels(new Consumer<Boolean>() {
         @Override
         public void accept(Boolean input) {
           callback.accept(true);
@@ -380,20 +377,12 @@ class EcData {
     }
   }
 
-  String getPrimaryBranch() {
-    return BeeUtils.getQuietly(clientBranches, 0);
+  String getPrimaryStockLabel() {
+    return BeeUtils.getQuietly(clientStockLabels, 0);
   }
   
-  String getSecondaryBranch() {
-    return BeeUtils.getQuietly(clientBranches, 1);
-  }
-
-  Collection<String> getWarehouses(String branch) {
-    if (branch != null && clientWarehousesByBranch.containsKey(branch)) {
-      return clientWarehousesByBranch.get(branch);
-    } else {
-      return Collections.emptyList();
-    }
+  String getSecondaryStockLabel() {
+    return BeeUtils.getQuietly(clientStockLabels, 1);
   }
 
   void saveConfiguration(final String key, final String value) {
@@ -437,9 +426,9 @@ class EcData {
     }
   }
 
-  private void getClientBranches(final Consumer<Boolean> callback) {
-    if (clientBranches.isEmpty()) {
-      ParameterList params = EcKeeper.createArgs(SVC_GET_CLIENT_BRANCHES);
+  private void getClientStockLabels(final Consumer<Boolean> callback) {
+    if (clientStockLabels.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_CLIENT_STOCK_LABELS);
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
@@ -447,24 +436,9 @@ class EcData {
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
           if (!ArrayUtils.isEmpty(arr)) {
-            clientBranches.clear();
-            clientWarehousesByBranch.clear();
-            
-            int pos = 0;
-            while (pos < arr.length) {
-              int cnt = BeeUtils.toInt(arr[pos]);
-              pos++;
-              
-              if (cnt <= 0) {
-                clientBranches.add(null);
-              } else {
-                String branch = arr[pos++];
-                clientBranches.add(branch);
-                
-                for (int i = 0; i < cnt - 1; i++) {
-                  clientWarehousesByBranch.put(branch, arr[pos++]);
-                }
-              }
+            clientStockLabels.clear();
+            for (String s : arr) {
+              clientStockLabels.add(s);
             }
 
             callback.accept(true);

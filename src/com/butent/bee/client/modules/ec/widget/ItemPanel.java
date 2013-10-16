@@ -189,7 +189,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     } else {
       List<EcItem> result = Lists.newArrayList();
       for (EcItem item : input) {
-        if (BeeUtils.containsAny(selectedCategories, item.getCategoryList())) {
+        if (BeeUtils.intersects(selectedCategories, item.getCategoryList())) {
           result.add(item);
         }
       }
