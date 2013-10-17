@@ -9,6 +9,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasKeyPressHandlers;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -82,6 +84,8 @@ public final class EcKeeper {
 
   private static final CartList cartList = new CartList();
 
+  private static final EcEventHandler eventHandler  = new EcEventHandler();
+
   private static final int SHIFT_POPUP_IN_PIXELS = 15;
 
   private static EcCommandWidget activeCommand;
@@ -99,6 +103,10 @@ public final class EcKeeper {
     cartList.addToCart(ecItem, quantity);
   }
 
+  public static HandlerRegistration bindKeyPress(HasKeyPressHandlers source) {
+    return source.addKeyPressHandler(eventHandler);
+  }
+  
   public static Tree buildCategoryTree(Collection<Long> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
@@ -617,7 +625,7 @@ public final class EcKeeper {
         Element element = nodes.getItem(i);
         int stock = BeeUtils.toInt(DomUtils.getDataProperty(element, DATA_ATTRIBUTE_STOCK));
         if (stock > MAX_VISIBLE_STOCK) {
-          element.setInnerText(EcUtils.renderStock(stock));
+          element.setInnerText(EcUtils.formatStock(stock));
         }
       }
     }

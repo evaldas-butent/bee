@@ -3,17 +3,14 @@ package com.butent.bee.client.modules.ec.widget;
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
@@ -115,7 +112,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   @Override
   public void onValueChange(ValueChangeEvent<Boolean> event) {
     if (BeeUtils.isTrue(event.getValue())) {
-      Integer newRow = getEventRow(event);
+      Integer newRow = getEventRow(event, false);
 
       if (newRow != null) {
         CartType newType = typesToRows.inverse().get(newRow);
@@ -174,20 +171,8 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     return activeCartType;
   }
 
-  private static Integer getEventRow(GwtEvent<?> event) {
-    if (event.getSource() instanceof Widget) {
-      TableRowElement rowElement =
-          DomUtils.getParentRow(((Widget) event.getSource()).getElement(), false);
-
-      if (rowElement != null) {
-        return rowElement.getRowIndex();
-      }
-    }
-    return null;
-  }
-
   private void onLabelClick(ClickEvent event) {
-    CartType type = typesToRows.inverse().get(getEventRow(event));
+    CartType type = typesToRows.inverse().get(getEventRow(event, false));
     if (type != null && !getCart(type).isEmpty()) {
       EcKeeper.openCart(type);
     }

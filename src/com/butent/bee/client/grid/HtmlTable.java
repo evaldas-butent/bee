@@ -3,6 +3,9 @@ package com.butent.bee.client.grid;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableElement;
+import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
@@ -322,6 +325,30 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     return columnFormatter;
   }
 
+  public Integer getEventRow(GwtEvent<?> event, boolean incl) {
+    Integer index = null;
+
+    if (event != null && event.getSource() instanceof Widget) {
+      TableRowElement rowElement =
+          DomUtils.getParentRow(((Widget) event.getSource()).getElement(), incl);
+      
+      while (rowElement != null) {
+        TableElement tableElement = DomUtils.getParentTable(rowElement, false);
+
+        if (tableElement == null) {
+          break;
+        } else if (getId().equals(tableElement.getId())) {
+          index = rowElement.getRowIndex();
+          break;
+        } else {
+          rowElement = DomUtils.getParentRow(tableElement, false);
+        }
+      }
+    }
+
+    return index;
+  }
+  
   @Override
   public String getId() {
     return DomUtils.getId(this);

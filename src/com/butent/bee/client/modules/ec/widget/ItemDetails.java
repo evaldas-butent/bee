@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -252,13 +251,7 @@ public class ItemDetails extends Flow {
         table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
 
         int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
-        Label stockWidget = new Label();
-        stockWidget.getElement().setInnerText(EcUtils.renderStock(remainder));
-       
-        DomUtils.setDataProperty(stockWidget.getElement(), EcConstants.DATA_ATTRIBUTE_STOCK,
-            remainder);
-        EcStyles.markStock(stockWidget);
-        
+        Widget stockWidget = EcUtils.createStockWidget(remainder);
         table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
         row++;

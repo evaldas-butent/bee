@@ -6,10 +6,9 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -17,6 +16,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -38,7 +38,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
+public class ItemList extends Flow implements KeyDownHandler {
 
   private static final String STYLE_PRIMARY = "ItemList";
   private static final String STYLE_WAREHOUSE = "warehouse";
@@ -187,12 +187,7 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
   private static Widget renderStock(int stock, String unit) {
     Flow wrapper = new Flow(STYLE_STOCK_WRAPPER);
 
-    InlineLabel stockWidget = new InlineLabel();
-    stockWidget.getElement().setInnerText(EcUtils.renderStock(stock));
-
-    DomUtils.setDataProperty(stockWidget.getElement(), EcConstants.DATA_ATTRIBUTE_STOCK, stock);
-    EcStyles.markStock(stockWidget);
-
+    Widget stockWidget = EcUtils.createStockWidget(stock);
     stockWidget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
 
     wrapper.add(stockWidget);
@@ -243,28 +238,79 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
 
   @Override
   public void onKeyDown(KeyDownEvent event) {
-//    if (event.getSource() instanceof CartAccumulator && table.getRowCount() > 1) {
-//    }
-  }
+    int keyCode = event.getNativeKeyCode();
 
-  @Override
-  public void onKeyPress(KeyPressEvent event) {
-    if (Character.isLetter(event.getCharCode())) {
-      switch (event.getCharCode()) {
-        case 'b':
-        case 'B':
-          EcKeeper.toggleListPriceVisibility();
+    if (BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_UP,
+        KeyCodes.KEY_PAGEDOWN, KeyCodes.KEY_PAGEUP, KeyCodes.KEY_END, KeyCodes.KEY_HOME) &&
+        table.getRowCount() > 2) {
+      
+      Integer eventRow = table.getEventRow(event, false);
+      if (eventRow == null) {
+        return;
+      }
+
+      boolean hasModifiers = EventUtils.hasModifierKey(event.getNativeEvent());
+
+      int min = 1;
+      int max = table.getRowCount() - 1;
+
+      int oldRow = BeeUtils.clamp(eventRow, min, max);
+      if (oldRow == max && moreWidget.isVisible() 
+          && BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_PAGEDOWN)) {
+        moreWidget.click();
+        return;
+      }
+      
+      int newRow = BeeConst.UNDEF;
+
+      switch (keyCode) {
+        case KeyCodes.KEY_DOWN:
+          newRow = hasModifiers ? max : BeeUtils.rotateForwardInclusive(oldRow, min, max);
           break;
 
-        case 'k':
-        case 'K':
-          EcKeeper.togglePriceVisibility();
+        case KeyCodes.KEY_UP:
+          newRow = hasModifiers ? min : BeeUtils.rotateBackwardInclusive(oldRow, min, max);
           break;
 
-        case 's':
-        case 'S':
-          EcKeeper.toggleStockLimited();
+        case KeyCodes.KEY_PAGEDOWN:
+          newRow = max;
+          if (!hasModifiers && oldRow < max - 1) {
+            for (int row = oldRow + 1; row < max; row++) {
+              if (!DomUtils.isInView(table.getRow(row))) {
+                newRow = row;
+                break;
+              }
+            }
+          }
           break;
+
+        case KeyCodes.KEY_PAGEUP:
+          newRow = min;
+          if (!hasModifiers && oldRow > min + 1) {
+            for (int row = oldRow - 1; row > min; row--) {
+              if (!DomUtils.isInView(table.getRow(row))) {
+                newRow = row;
+                break;
+              }
+            }
+          }
+          break;
+          
+        case KeyCodes.KEY_END:
+          if (hasModifiers) {
+            newRow = max;
+          }
+          break;
+
+        case KeyCodes.KEY_HOME:
+          if (hasModifiers) {
+            newRow = min;
+          }
+          break;
+      }
+      
+      if (!BeeConst.isUndef(newRow) && newRow != oldRow) {
+        focusRow(newRow);
       }
     }
   }
@@ -323,7 +369,7 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
       Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
       priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
       EcStyles.markPrice(priceLabel);
-      
+
       table.setWidget(row, col++, priceLabel);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
@@ -440,10 +486,7 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
     col++;
 
     CartAccumulator accumulator = new CartAccumulator(item, 1);
-    accumulator.setIndex(row);
-
     accumulator.addKeyDownHandler(this);
-    accumulator.addKeyPressHandler(this);
 
     table.setWidgetAndStyle(row, col++, accumulator, STYLE_QUANTITY);
 

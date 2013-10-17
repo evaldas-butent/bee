@@ -3,11 +3,9 @@ package com.butent.bee.client.modules.ec.widget;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
-import com.google.gwt.event.dom.client.HasKeyPressHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
@@ -19,16 +17,13 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputInteger;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.ec.EcItem;
 
-public class CartAccumulator extends Horizontal implements HasKeyDownHandlers, HasKeyPressHandlers {
+public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
 
   private static final String STYLE_PREFIX = EcStyles.name("cartAccumulator-");
 
   private final InputInteger input;
-
-  private int index = BeeConst.UNDEF;
 
   public CartAccumulator(final EcItem item, int quantity) {
     super();
@@ -50,6 +45,8 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers, H
         }
       }
     });
+    
+    EcKeeper.bindKeyPress(input);
 
     add(input);
 
@@ -101,23 +98,10 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers, H
 
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return null;
-  }
-
-  @Override
-  public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
-    return input.addKeyPressHandler(handler);
+    return input.addKeyDownHandler(handler);
   }
 
   public void focus() {
     input.setFocus(true);
-  }
-
-  public int getIndex() {
-    return index;
-  }
-
-  public void setIndex(int index) {
-    this.index = index;
   }
 }

@@ -1104,3 +1104,13 @@
 .bee-ec-Hidden {
   display: none;
 }
+
+.bee-ec-keyboard-shortcuts {
+  background-color: white;
+}
+.bee-ec-keyboard-shortcuts td {
+  padding: 5px;
+}
+.bee-ec-keyboard-shortcuts tr td:first-child {
+  font-weight: bold;
+}

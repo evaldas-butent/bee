@@ -3,8 +3,10 @@ package com.butent.bee.client.modules.ec;
 import com.google.common.collect.Range;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.CustomSpan;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
@@ -21,6 +23,27 @@ public final class EcUtils {
 
   private static final String IMAGE_DIR = "images/ec/";
   
+  public static Widget createStockWidget(int stock) {
+    InlineLabel widget = new InlineLabel();
+    widget.getElement().setInnerText(formatStock(stock));
+
+    DomUtils.setDataProperty(widget.getElement(), EcConstants.DATA_ATTRIBUTE_STOCK, stock);
+    EcStyles.markStock(widget);
+    
+    return widget;
+  }
+
+  public static String formatStock(int stock) {
+    if (stock <= 0) {
+      return Localized.getConstants().ecStockAsk();
+    } else if (EcKeeper.isStockLimited() && EcConstants.MAX_VISIBLE_STOCK > 0 
+        && stock > EcConstants.MAX_VISIBLE_STOCK) {
+      return BeeConst.STRING_GT + EcConstants.MAX_VISIBLE_STOCK;
+    } else {
+      return BeeUtils.toString(stock);
+    }
+  }
+
   public static String imageUrl(String name) {
     return IMAGE_DIR + name;
   }
@@ -54,7 +77,7 @@ public final class EcUtils {
       return null;
     }
   }
-
+  
   public static String renderCents(int cents) {
     if (cents >= 0) {
       String s = BeeUtils.toLeadingZeroes(cents, 3);
@@ -101,17 +124,6 @@ public final class EcUtils {
       return yearFrom.toString() + BeeConst.STRING_MINUS + yearTo.toString();
     } else {
       return yearFrom.toString();
-    }
-  }
-
-  public static String renderStock(int stock) {
-    if (stock <= 0) {
-      return Localized.getConstants().ecStockAsk();
-    } else if (EcKeeper.isStockLimited() && EcConstants.MAX_VISIBLE_STOCK > 0 
-        && stock > EcConstants.MAX_VISIBLE_STOCK) {
-      return BeeConst.STRING_GT + EcConstants.MAX_VISIBLE_STOCK;
-    } else {
-      return BeeUtils.toString(stock);
     }
   }
   

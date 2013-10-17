@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Focusable;
@@ -937,6 +938,15 @@ public final class DomUtils {
     }
   }
 
+  public static TableElement getParentTable(Element child, boolean incl) {
+    Element parent = getParentElement(child, TAG_TABLE, incl);
+    if (isTableElement(parent)) {
+      return TableElement.as(parent);
+    } else {
+      return null;
+    }
+  }
+  
   public static Widget getPhysicalChild(Widget root, String id) {
     Assert.notNull(root);
     return getChildByElement(root, getElement(id));

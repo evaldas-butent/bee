@@ -248,6 +248,12 @@ public interface LocalizableEcConstants {
 
   String ecSendToERPConfirm();
 
+  String ecToggleListPrice();
+  
+  String ecTogglePrice();
+
+  String ecToggleStockLimit();
+  
   String ecTotalOrdered();
 
   String ecTotalTaken();
