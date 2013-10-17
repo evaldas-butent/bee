@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -16,6 +17,7 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.HtmlList;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -101,7 +103,6 @@ public class ItemDetails extends Flow {
   }
   
   private static Widget renderAnalogItem(final EcItem item) {
-
     if (item == null) {
       return null;
     }
@@ -212,20 +213,14 @@ public class ItemDetails extends Flow {
     }
 
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "oeNumbers-");
+
+    HtmlList list = new HtmlList(true);
+    list.addStyleName(stylePrefix + "list");
+    
+    list.addItems(info.getOeNumbers());
+
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-
-    Flow wrapper = new Flow(stylePrefix + STYLE_WRAPPER);
-
-    String styleNumber = stylePrefix + "number";
-
-    for (String oen : info.getOeNumbers()) {
-      Label numberLabel = new Label(oen);
-      numberLabel.addStyleName(styleNumber);
-
-      wrapper.add(numberLabel);
-    }
-
-    container.add(wrapper);
+    container.add(list);
 
     return container;
   }
@@ -259,6 +254,11 @@ public class ItemDetails extends Flow {
         int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
         Label stockWidget = new Label();
         stockWidget.getElement().setInnerText(EcUtils.renderStock(remainder));
+       
+        DomUtils.setDataProperty(stockWidget.getElement(), EcConstants.DATA_ATTRIBUTE_STOCK,
+            remainder);
+        EcStyles.markStock(stockWidget);
+        
         table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
         row++;

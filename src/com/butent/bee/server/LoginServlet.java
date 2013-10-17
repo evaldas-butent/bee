@@ -1,16 +1,22 @@
 package com.butent.bee.server;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Strings;
 import com.google.common.net.MediaType;
+
+import static com.butent.bee.shared.html.builder.Factory.*;
 
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Form;
+import com.butent.bee.shared.html.builder.elements.Input.Type;
+import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.SupportedLocale;
-import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -37,209 +43,144 @@ public class LoginServlet extends HttpServlet {
 
   public static final String URL = "/index.html";
 
-  private static final String CSS_DIR = "css";
-  private static final String CSS_EXT = "css";
-
-  private static final String JS_DIR = "js";
-  private static final String JS_EXT = "js";
-
   private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
 
-  private static List<String> getBee(UserInterface ui, SupportedLocale locale) {
-    List<String> html = startHtml();
+  private static String getBee(UserInterface ui, SupportedLocale locale) {
+
+    Document doc = new Document();
+
+    doc.getHead().append(meta().encodingDeclarationUtf8());
 
     if (locale != null) {
-      html.add("<meta name=\"gwt:property\" content=\"locale=" + locale.getLanguage() + "\" />");
+      doc.getHead().append(meta().name("gwt:property").content("locale=" + locale.getLanguage()));
     }
 
-    Map<String, String> meta = ui.getMeta();
+    List<Meta> meta = ui.getMeta();
     if (!BeeUtils.isEmpty(meta)) {
-      for (Map.Entry<String, String> entry : meta.entrySet()) {
-        html.add("<meta name=\"" + entry.getKey() + "\" content=\"" + entry.getValue() + "\" />");
-      }
+      doc.getHead().append(meta);
     }
 
-    html.add("<title>" + ui.getTitle() + "</title>");
-    html.add("<base target=\"_blank\" />");
+    doc.getHead().append(
+        title().text(ui.getTitle()),
+        base().targetBlank());
 
     for (String styleSheet : ui.getStyleSheets()) {
-      html.add(getStyleSheetRef(styleSheet));
+      doc.getHead().append(link().styleSheet(HttpConst.getStyleSheetPath(styleSheet)));
     }
-
     for (String script : ui.getScripts()) {
-      html.add(getScriptRef(script));
+      doc.getHead().append(script().src(HttpConst.getScriptPath(script)));
     }
 
-    html.add(getScriptRef("bee/bee.nocache.js"));
+    doc.getHead().append(script().src("bee/bee.nocache.js"));
 
-    html.add("</head>");
-
-    html.add("<body>");
-    html.add("</body>");
-    html.add("</html>");
-
-    return html;
+    return doc.build();
   }
 
-  private static List<String> getForm(String userName, State state, Map<String, String> parameters,
+  private static String getForm(String userName, State state, Map<String, String> parameters,
       LocalizableConstants localizableConstants) {
 
-    List<String> html = startHtml();
-    html.add("<title>to BEE or not to BEE</title>");
+    Document doc = new Document();
 
-    html.add(getStyleSheetRef("login"));
-    html.add(getScriptRef("login"));
+    doc.getHead().append(
+        meta().encodingDeclarationUtf8(),
+        title().text("to BEE or not to BEE"),
+        link().styleSheet(HttpConst.getStyleSheetPath("login")),
+        script().src(HttpConst.getScriptPath("login")));
 
-    html.add("</head>");
-    html.add("<body>");
+    String stylePrefix = "bee-SignIn-";
 
-    html.add("<div class=\"bee-SignIn-Panel\">");
-    html.add("<form class=\"bee-SignIn-Form\" method=\"post\">");
+    Div panel = div().addClass(stylePrefix + "Panel");
+    doc.getBody().append(panel);
+
+    Form form = form().addClass(stylePrefix + "Form").methodPost();
 
     if (SupportedLocale.values().length > 1) {
-      html.add("<div class=\"bee-SignIn-Locale-container\">");
+      Div localeContainer = div().addClass(stylePrefix + "Locale-container");
 
       for (SupportedLocale locale : SupportedLocale.values()) {
-        html.add("<label><input type=\"radio\" name=\"" + HttpConst.PARAM_LOCALE
-            + "\" value=\"" + locale.getLanguage() + "\" />" + locale.getCaption() + "</label>");
+        localeContainer.append(
+            label().append(
+                input().type(Type.RADIO).name(HttpConst.PARAM_LOCALE).value(locale.getLanguage()))
+                .text(locale.getCaption()));
       }
 
-      html.add("</div>");
+      form.append(localeContainer);
     }
 
-    html.add("<div class=\"bee-SignIn-Logo-container\">");
-    html.add("<img class=\"bee-SignIn-Logo\" src=\"images/logo.png\" />");
-    html.add("</div>");
-
-    String text = (localizableConstants == null) ? "Prisijungimo vardas"
-        : localizableConstants.loginUserName();
-    html.add("<div class=\"bee-SignIn-Label bee-SignIn-Label-user\">" + text + "</div>");
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("<input type=\"text\" class=\"bee-SignIn-Input bee-SignIn-Input-user\" name=\"");
-    sb.append(HttpConst.PARAM_USER + "\" id=\"user\"");
-    if (!BeeUtils.isEmpty(userName)) {
-      sb.append(" value=\"" + BeeUtils.trim(userName) + "\"");
-    }
-    sb.append(" onkeydown=\"return goPswd(event)\" autofocus required />");
-    html.add(sb.toString());
-
-    text = (localizableConstants == null) ? "Slaptažodis" : localizableConstants.loginPassword();
-    html.add("<div class=\"bee-SignIn-Label bee-SignIn-Label-password\">" + text + "</div>");
-
-    html.add("<input type=\"password\" class=\"bee-SignIn-Input bee-SignIn-Input-password\""
-        + "name=\"" + HttpConst.PARAM_PASSWORD + "\" id=\"pswd\" required />");
+    form.append(
+        div().addClass(stylePrefix + "Logo-container").append(
+            img().addClass(stylePrefix + "Logo").src("images/logo.png").alt("logo")),
+        div().addClass(stylePrefix + "Label").addClass(stylePrefix + "Label-user")
+            .text(localizableConstants.loginUserName()),
+        input().addClass(stylePrefix + "Input").addClass(stylePrefix + "Input-user")
+            .name(HttpConst.PARAM_USER).id("user").value(Strings.emptyToNull(userName))
+            .onKeyDown("return goPswd(event)").autofocus().required(),
+        div().addClass(stylePrefix + "Label").addClass(stylePrefix + "Label-password")
+            .text(localizableConstants.loginPassword()),
+        input().addClass(stylePrefix + "Input").addClass(stylePrefix + "Input-password")
+            .type(Type.PASSWORD).name(HttpConst.PARAM_PASSWORD).id("pswd").required()
+        );
 
     String ui = parameters.get(HttpConst.PARAM_UI);
     if (!BeeUtils.isEmpty(ui)) {
-      html.add("<input type=\"hidden\" name=\"" + HttpConst.PARAM_UI + "\" value=\""
-          + BeeUtils.trim(ui) + "\" />");
+      form.append(input().type(Type.HIDDEN).name(HttpConst.PARAM_UI).value(ui));
     }
 
-    text = (localizableConstants == null) ? "Prisijungti" : localizableConstants.loginSubmit();
-    html.add("<input type=\"submit\" class=\"bee-SignIn-Button\" value=\"" + text + "\" />");
+    form.append(input().type(Type.SUBMIT).addClass(stylePrefix + "Button").value(
+        localizableConstants.loginSubmit()));
+
+    panel.append(form);
 
     if (state == State.FAIL) {
-      text = (localizableConstants == null) ? "Bandykite dar kartą"
-          : localizableConstants.loginFailed();
-      html.add("<div class=\"bee-SignIn-Error\">" + text + "</div>");
+      panel.append(div().addClass(stylePrefix + "Error").text(localizableConstants.loginFailed()));
     }
-    html.add("</form>");
 
     String commandRegister = parameters.get(HttpConst.PARAM_REGISTER);
     String commandQuery = parameters.get(HttpConst.PARAM_QUERY);
 
     if (!BeeUtils.allEmpty(commandRegister, commandQuery)) {
-      String styleName = "bee-SignIn-Command-container";
-      html.add("<div class=\"" + BeeUtils.joinWords(styleName,
-          BeeUtils.join(BeeConst.STRING_MINUS, styleName, commandRegister, commandQuery)) + "\">");
+      String styleName = stylePrefix + "Command-container";
+      Div commandContainer = div().addClass(BeeUtils.joinWords(styleName,
+          BeeUtils.join(BeeConst.STRING_MINUS, styleName, commandRegister, commandQuery)));
 
       if (!BeeUtils.isEmpty(commandRegister)) {
-        html.add("<form class=\"bee-SignIn-Command-Form-register\" method=\"post\" action=\""
-            + BeeUtils.trim(commandRegister) + "\">");
+        commandContainer.append(
+            form().addClass(stylePrefix + "Command-Form-register").methodPost()
+                .action(BeeUtils.trim(commandRegister)).append(
+                    input().type(Type.SUBMIT).addClass(stylePrefix + "Register")
+                        .value(localizableConstants.loginCommandRegister())));
 
-        text = (localizableConstants == null) ? "Registruotis"
-            : localizableConstants.loginCommandRegister();
-        html.add("<input type=\"submit\" class=\"bee-SignIn-Register\" value=\"" + text + "\" />");
-
-        html.add("</form>");
       }
 
       if (!BeeUtils.isEmpty(commandQuery)) {
-        html.add("<form class=\"bee-SignIn-Command-Form-query\" method=\"post\" action=\""
-            + BeeUtils.trim(commandQuery) + "\">");
-
-        text = (localizableConstants == null) ? "Pateikti užklausą"
-            : localizableConstants.loginCommandQuery();
-        html.add("<input type=\"submit\" class=\"bee-SignIn-Query\" value=\"" + text + "\" />");
-
-        html.add("</form>");
+        commandContainer.append(
+            form().addClass(stylePrefix + "Command-Form-query").methodPost()
+                .action(BeeUtils.trim(commandQuery)).append(
+                    input().type(Type.SUBMIT).addClass(stylePrefix + "Query")
+                        .value(localizableConstants.loginCommandQuery())));
       }
 
-      html.add("</div>");
+      panel.append(commandContainer);
     }
 
-    html.add("<div class=\"bee-SignIn-Caption\">");
-    html.add("<img class=\"bee-Copyright-logo\" src=\"images/logo.gif\" />");
-    html.add("<span>UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear() + "</span>");
-    html.add("</div>");
-    html.add("</div>");
+    panel.append(
+        div().addClass(stylePrefix + "Caption").append(
+            img().addClass("bee-Copyright-logo").src("images/logo.gif").alt("wtfpl"),
+            span().text("UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear())));
 
-    html.add("</body>");
-    html.add("</html>");
-
-    return html;
+    return doc.build(0, 2);
   }
 
-  private static String getScriptRef(String fileName) {
-    if (BeeUtils.isEmpty(fileName)) {
-      return null;
-    } else {
-      return "<script src=\"" + normalize(JS_DIR, fileName, JS_EXT) + "\"></script>";
-    }
-  }
+  private static String verboten() {
+    Document doc = new Document();
 
-  private static String getStyleSheetRef(String fileName) {
-    if (BeeUtils.isEmpty(fileName)) {
-      return null;
-    } else {
-      return "<link rel=\"stylesheet\" href=\"" + normalize(CSS_DIR, fileName, CSS_EXT) + "\" />";
-    }
-  }
+    doc.getHead().append(
+        meta().encodingDeclarationUtf8(),
+        title().text("Verboten"));
 
-  private static String normalize(String dir, String name, String ext) {
-    if (FileNameUtils.hasSeparator(name)) {
-      return FileNameUtils.defaultExtension(name, ext);
-    } else {
-      return dir + String.valueOf(FileNameUtils.UNIX_SEPARATOR)
-          + FileNameUtils.defaultExtension(name, ext);
-    }
-  }
+    doc.getBody().append(img().src("images/answer.jpg").alt("respect my authoritah"));
 
-  private static List<String> startHtml() {
-    List<String> html = Lists.newArrayList();
-
-    html.add("<!doctype html>");
-    html.add("<html>");
-    html.add("<head>");
-    html.add("<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\" />");
-
-    return html;
-  }
-
-  private static List<String> verboten() {
-    List<String> html = startHtml();
-    html.add("<title>Verboten</title>");
-
-    html.add("</head>");
-    html.add("<body>");
-
-    html.add("<img src=\"images/answer.jpg\" />");
-
-    html.add("</body>");
-    html.add("</html>");
-
-    return html;
+    return doc.build();
   }
 
   @EJB
@@ -294,7 +235,7 @@ public class LoginServlet extends HttpServlet {
       }
     }
 
-    final List<String> html;
+    final String html;
 
     if (state == State.BLOCK) {
       html = verboten();
@@ -339,7 +280,7 @@ public class LoginServlet extends HttpServlet {
     PrintWriter writer;
     try {
       writer = resp.getWriter();
-      writer.print(BeeUtils.buildLines(html));
+      writer.print(html);
       writer.flush();
     } catch (IOException ex) {
       logger.error(ex);

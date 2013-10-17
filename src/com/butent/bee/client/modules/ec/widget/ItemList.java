@@ -4,22 +4,19 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -192,7 +189,12 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
 
     InlineLabel stockWidget = new InlineLabel();
     stockWidget.getElement().setInnerText(EcUtils.renderStock(stock));
+
+    DomUtils.setDataProperty(stockWidget.getElement(), EcConstants.DATA_ATTRIBUTE_STOCK, stock);
+    EcStyles.markStock(stockWidget);
+
     stockWidget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
+
     wrapper.add(stockWidget);
 
     if (stock > 0 && unit != null) {
@@ -248,35 +250,21 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
   @Override
   public void onKeyPress(KeyPressEvent event) {
     if (Character.isLetter(event.getCharCode())) {
-      List<String> selectors = Lists.newArrayList();
-
       switch (event.getCharCode()) {
         case 'b':
         case 'B':
-          selectors.add(Selectors.classSelector(STYLE_LIST_PRICE));
-          selectors.add(Selectors.classSelector(STYLE_LIST_PRICE + STYLE_LABEL));
+          EcKeeper.toggleListPriceVisibility();
           break;
 
         case 'k':
         case 'K':
-          selectors.add(Selectors.classSelector(STYLE_PRICE));
-          selectors.add(Selectors.classSelector(STYLE_PRICE + STYLE_LABEL));
+          EcKeeper.togglePriceVisibility();
           break;
-      }
 
-      if (!selectors.isEmpty()) {
-        NodeList<Element> nodes = Selectors.getNodes(selectors);
-        
-        if (nodes != null) {
-          for (int i = 0; i < nodes.getLength(); i++) {
-            Element el = nodes.getItem(i);
-            if (UIObject.isVisible(el)) {
-              StyleUtils.hideDisplay(el);
-            } else {
-              StyleUtils.unhideDisplay(el);
-            }
-          }
-        }
+        case 's':
+        case 'S':
+          EcKeeper.toggleStockLimited();
+          break;
       }
     }
   }
@@ -329,10 +317,13 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
 
       Label listPriceLabel = new Label(Localized.getConstants().ecListPrice());
       listPriceLabel.addStyleName(STYLE_LIST_PRICE + STYLE_LABEL);
+      EcStyles.markListPrice(listPriceLabel);
       table.setWidget(row, col++, listPriceLabel);
 
       Label priceLabel = new Label(Localized.getConstants().ecClientPrice());
       priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
+      EcStyles.markPrice(priceLabel);
+      
       table.setWidget(row, col++, priceLabel);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
@@ -436,12 +427,14 @@ public class ItemList extends Flow implements KeyDownHandler, KeyPressHandler {
 
     if (listPrice > 0 && listPrice >= price) {
       Widget listPriceWidget = renderPrice(listPrice, STYLE_LIST_PRICE);
+      EcStyles.markListPrice(listPriceWidget);
       table.setWidgetAndStyle(row, col, listPriceWidget, STYLE_LIST_PRICE);
     }
     col++;
 
     if (price > 0) {
       Widget priceWidget = renderPrice(price, STYLE_PRICE);
+      EcStyles.markPrice(priceWidget);
       table.setWidgetAndStyle(row, col, priceWidget, STYLE_PRICE);
     }
     col++;

@@ -842,18 +842,30 @@
   font-size: medium;
 }
 
-.bee-ec-ItemDetails-remainders-label,
-.bee-ec-ItemDetails-oeNumbers-label,
-.bee-ec-ItemDetails-suppliers-label,
-.bee-ec-ItemDetails-carTypes-label {
-  font-weight: bolder;
-  margin-bottom: 1ex;
-}
-
 .bee-ec-ItemDetails-remainders-stock-cell {
   padding-left: 1em;
   text-align: right;
 }
+
+.bee-ec-ItemDetails-oeNumbers-list {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  height: 85%;
+}
+@supports not (flex-wrap: wrap) {
+  .bee-ec-ItemDetails-oeNumbers-list {
+    display: block;
+    height: auto;
+  }
+}
+
 .bee-ec-ItemDetails-suppliers-table td {
   padding-right: 3px;
 }
@@ -1087,4 +1099,8 @@
   max-height: 600px;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.bee-ec-Hidden {
+  display: none;
 }

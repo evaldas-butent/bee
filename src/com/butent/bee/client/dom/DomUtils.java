@@ -1290,6 +1290,31 @@ public final class DomUtils {
       return false;
     }
   }
+  
+  public static boolean isInView(Element el) {
+    if (el == null || !UIObject.isVisible(el)) {
+      return false;
+    }
+    
+    ClientRect rect = ClientRect.createBounding(el);
+
+    for (Element p = el.getParentElement(); p != null; p = p.getParentElement()) {
+      if (!UIObject.isVisible(p)) {
+        return false;
+      }
+      
+      ClientRect parentRect = ClientRect.createBounding(p);
+      if (rect != null && parentRect != null && !parentRect.contains(rect)) {
+        return false;
+      }
+      
+      if (BeeKeeper.getScreen().getScreenPanel().getId().equals(p.getId())) {
+        return true;
+      }
+    }
+
+    return true;
+  }
 
   public static boolean isInputElement(Element el) {
     if (el == null) {
@@ -1629,6 +1654,10 @@ public final class DomUtils {
   public static void setDataIndex(Element elem, long idx) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Long.toString(idx));
+  }
+
+  public static void setDataProperty(Element elem, String key, int value) {
+    setDataProperty(elem, key, Integer.toString(value));
   }
 
   public static void setDataProperty(Element elem, String key, String value) {

@@ -535,6 +535,9 @@ public final class UiHelper {
 
   public static void setHorizontalAlignment(Element elem, String text) {
     Assert.notNull(elem);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
 
     TextAlign align = StyleUtils.parseTextAlign(text);
     if (align != null) {
@@ -544,6 +547,9 @@ public final class UiHelper {
 
   public static void setHorizontalAlignment(HasTextAlign obj, String text) {
     Assert.notNull(obj);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
 
     TextAlign align = StyleUtils.parseTextAlign(text);
     if (align != null) {
@@ -565,6 +571,9 @@ public final class UiHelper {
 
   public static void setVerticalAlignment(HasVerticalAlign obj, String text) {
     Assert.notNull(obj);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
 
     VerticalAlign align = StyleUtils.parseVerticalAlign(text);
     if (align != null) {

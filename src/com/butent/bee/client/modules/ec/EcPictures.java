@@ -91,13 +91,17 @@ class EcPictures {
                 }
               }
 
-              logger.debug("picture cache", cache.size());
+              if (EcKeeper.isDebug()) {
+                logger.debug("picture cache", cache.size());
+              }
             }
           }
 
           if (!articles.isEmpty() && !response.hasErrors()) {
             noPicture.addAll(articles);
-            logger.debug("no picture", articles, noPicture.size());
+            if (EcKeeper.isDebug()) {
+              logger.debug("no picture", articles, noPicture.size());
+            }
           }
         }
       });

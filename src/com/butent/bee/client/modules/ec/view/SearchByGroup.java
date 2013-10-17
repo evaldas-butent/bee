@@ -143,8 +143,7 @@ class SearchByGroup extends EcView implements HasCaption {
 
   @Override
   public String getCaption() {
-    return moto ? Localized.getConstants().ecBikeItems()
-        : Localized.getConstants().ecGeneralItems();
+    return moto ? Localized.getConstants().ecBikeItems() : Localized.getConstants().ecGroups();
   }
 
   @Override

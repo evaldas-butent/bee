@@ -5,6 +5,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Panel;
@@ -19,6 +21,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.ec.render.CategoryFullNameRenderer;
 import com.butent.bee.client.modules.ec.view.EcView;
@@ -85,6 +89,11 @@ public final class EcKeeper {
   private static boolean debug;
 
   private static Set<EcRequest> pendingRequests = Sets.newHashSet();
+  
+  private static boolean listPriceVisible = true;
+  private static boolean priceVisible = true;
+
+  private static boolean stockLimited = true;
 
   public static void addToCart(EcItem ecItem, int quantity) {
     cartList.addToCart(ecItem, quantity);
@@ -253,6 +262,18 @@ public final class EcKeeper {
 
   public static boolean isDebug() {
     return debug;
+  }
+
+  public static boolean isListPriceVisible() {
+    return listPriceVisible;
+  }
+
+  public static boolean isPriceVisible() {
+    return priceVisible;
+  }
+
+  public static boolean isStockLimited() {
+    return stockLimited;
   }
 
   public static EcRequest maybeCreateRequest(String service, String label) {
@@ -543,6 +564,18 @@ public final class EcKeeper {
     pictures.setBackground(articleWidgets);
   }
 
+  public static void setListPriceVisible(boolean listPriceVisible) {
+    EcKeeper.listPriceVisible = listPriceVisible;
+  }
+
+  public static void setPriceVisible(boolean priceVisible) {
+    EcKeeper.priceVisible = priceVisible;
+  }
+
+  public static void setStockLimited(boolean stockLimited) {
+    EcKeeper.stockLimited = stockLimited;
+  }
+
   public static void showFeaturedAndNoveltyItems(final boolean checkView) {
     ParameterList params = createArgs(SVC_FEATURED_AND_NOVELTY);
 
@@ -565,6 +598,31 @@ public final class EcKeeper {
     return debug;
   }
 
+  public static void toggleListPriceVisibility() {
+    setListPriceVisible(!isListPriceVisible());
+    EcStyles.setVisible(Selectors.getNodes(EcStyles.getListPriceSelector()), isListPriceVisible());
+  }
+
+  public static void togglePriceVisibility() {
+    setPriceVisible(!isPriceVisible());
+    EcStyles.setVisible(Selectors.getNodes(EcStyles.getPriceSelector()), isPriceVisible());
+  }
+
+  public static void toggleStockLimited() {
+    setStockLimited(!isStockLimited());
+
+    NodeList<Element> nodes = Selectors.getNodes(EcStyles.getStockSelector());
+    if (nodes != null) {
+      for (int i = 0; i < nodes.getLength(); i++) {
+        Element element = nodes.getItem(i);
+        int stock = BeeUtils.toInt(DomUtils.getDataProperty(element, DATA_ATTRIBUTE_STOCK));
+        if (stock > MAX_VISIBLE_STOCK) {
+          element.setInnerText(EcUtils.renderStock(stock));
+        }
+      }
+    }
+  }
+  
   static void doCommand(EcCommandWidget commandWidget) {
     EcView ecView = EcView.create(commandWidget.getService());
     if (ecView != null) {

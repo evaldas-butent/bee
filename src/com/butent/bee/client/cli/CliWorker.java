@@ -59,6 +59,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.ClientRect;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Rulers;
@@ -391,6 +392,9 @@ public final class CliWorker {
     } else if ("rebuild".equals(z)) {
       rebuildSomething(args);
 
+    } else if (z.startsWith("rect") && arr.length >= 2) {
+      showRectangle(arr[1]);
+      
     } else if (z.startsWith("rot") || "scale".equals(z) || "skew".equals(z) || "tt".equals(z)) {
       animate(arr);
 
@@ -2900,6 +2904,31 @@ public final class CliWorker {
     showTable(v, table);
   }
 
+  private static void showRectangle(String id) {
+    Element el = Document.get().getElementById(id);
+    if (el == null) {
+      showError(id, "element not found");
+      return;
+    }
+    
+    ClientRect rect = ClientRect.createBounding(el);
+    if (rect == null) {
+      showError(id, "rectangle not available");
+    }
+    
+    List<Property> info = PropertyUtils.createProperties(
+        "left", rect.getLeft(),
+        "right", rect.getRight(),
+        "r - l", rect.getRight() - rect.getLeft(),
+        "width", rect.getWidth(),
+        "top", rect.getTop(),
+        "bottom", rect.getBottom(),
+        "b - t", rect.getBottom() - rect.getTop(),
+        "height", rect.getHeight());
+
+    showTable(id, new PropertiesData(info));
+  }
+  
   private static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");

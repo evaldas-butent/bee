@@ -74,10 +74,6 @@ public interface LocalizableEcConstants {
 
   String ecFoundItems();
 
-  String ecGeneralItems();
-
-  String ecGeneralItemsShort();
-
   String ecGlobalSearchPlaceholder();
 
   String ecGroups();
@@ -215,6 +211,8 @@ public interface LocalizableEcConstants {
   String ecSearchByCar();
 
   String ecSearchByItemCode();
+
+  String ecSearchByItemGroup();
 
   String ecSearchByOeNumber();
 

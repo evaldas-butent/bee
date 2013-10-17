@@ -438,7 +438,9 @@ public final class EcConstants {
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 
   public static final String CURRENCY = "Lt";
+
   public static final int MAX_VISIBLE_STOCK = 5;
+  public static final String DATA_ATTRIBUTE_STOCK = "stock";
 
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
 

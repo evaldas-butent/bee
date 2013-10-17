@@ -1,8 +1,8 @@
 package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
+import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -15,7 +15,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 
 public enum UserInterface implements HasCaption {
   DESKTOP {
@@ -25,8 +24,8 @@ public enum UserInterface implements HasCaption {
     }
 
     @Override
-    public Map<String, String> getMeta() {
-      return Maps.newHashMap();
+    public List<Meta> getMeta() {
+      return Lists.newArrayList();
     }
 
     @Override
@@ -38,7 +37,7 @@ public enum UserInterface implements HasCaption {
     public String getShortName() {
       return "desktop";
     }
-    
+
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
@@ -51,7 +50,7 @@ public enum UserInterface implements HasCaption {
       return TITLE;
     }
   },
-  
+
   TABLET {
     @Override
     public Collection<Component> getComponents() {
@@ -59,15 +58,11 @@ public enum UserInterface implements HasCaption {
     }
 
     @Override
-    public Map<String, String> getMeta() {
-      Map<String, String> meta = Maps.newHashMap();
-
-      meta.put("gwt:property", "screen=tablet");
-
-      meta.put("apple-mobile-web-app-capable", "yes");
-      meta.put("viewport", "width=device-width, user-scalable=yes");
-      
-      return meta;
+    public List<Meta> getMeta() {
+      return Lists.newArrayList(
+          new Meta().name("gwt:property").content("screen=tablet"),
+          new Meta().name("apple-mobile-web-app-capable").content("yes"),
+          new Meta().name("viewport").content("width=device-width, user-scalable=yes"));
     }
 
     @Override
@@ -79,7 +74,7 @@ public enum UserInterface implements HasCaption {
     public String getShortName() {
       return "tablet";
     }
-    
+
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
@@ -92,7 +87,7 @@ public enum UserInterface implements HasCaption {
       return "B-novo";
     }
   },
-  
+
   MOBILE {
     @Override
     public Collection<Component> getComponents() {
@@ -100,15 +95,11 @@ public enum UserInterface implements HasCaption {
     }
 
     @Override
-    public Map<String, String> getMeta() {
-      Map<String, String> meta = Maps.newHashMap();
-
-      meta.put("gwt:property", "screen=mobile");
-
-      meta.put("apple-mobile-web-app-capable", "yes");
-      meta.put("viewport", "width=device-width, user-scalable=yes");
-      
-      return meta;
+    public List<Meta> getMeta() {
+      return Lists.newArrayList(
+          new Meta().name("gwt:property").content("screen=mobile"),
+          new Meta().name("apple-mobile-web-app-capable").content("yes"),
+          new Meta().name("viewport").content("width=device-width, user-scalable=yes"));
     }
 
     @Override
@@ -120,8 +111,7 @@ public enum UserInterface implements HasCaption {
     public String getShortName() {
       return "mobile";
     }
-    
-    
+
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
@@ -134,7 +124,7 @@ public enum UserInterface implements HasCaption {
       return TITLE;
     }
   },
-  
+
   E_COMMERCE {
     @Override
     public Collection<Component> getComponents() {
@@ -142,10 +132,8 @@ public enum UserInterface implements HasCaption {
     }
 
     @Override
-    public Map<String, String> getMeta() {
-      Map<String, String> meta = Maps.newHashMap();
-      meta.put("gwt:property", "screen=ec");
-      return meta;
+    public List<Meta> getMeta() {
+      return Lists.newArrayList(new Meta().name("gwt:property").content("screen=ec"));
     }
 
     @Override
@@ -157,8 +145,7 @@ public enum UserInterface implements HasCaption {
     public String getShortName() {
       return "ec";
     }
-    
-    
+
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, EcConstants.CLIENT_STYLE_SHEET);
@@ -169,7 +156,7 @@ public enum UserInterface implements HasCaption {
       return TITLE;
     }
   },
-  
+
   SELF_SERVICE {
     @Override
     public Collection<Component> getComponents() {
@@ -178,10 +165,8 @@ public enum UserInterface implements HasCaption {
     }
 
     @Override
-    public Map<String, String> getMeta() {
-      Map<String, String> meta = Maps.newHashMap();
-      meta.put("gwt:property", "screen=trss");
-      return meta;
+    public List<Meta> getMeta() {
+      return Lists.newArrayList(new Meta().name("gwt:property").content("screen=trss"));
     }
 
     @Override
@@ -193,8 +178,7 @@ public enum UserInterface implements HasCaption {
     public String getShortName() {
       return "trss";
     }
-    
-    
+
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET);
@@ -205,15 +189,15 @@ public enum UserInterface implements HasCaption {
       return TITLE;
     }
   };
-  
+
   public enum Component {
     DATA_INFO, DICTIONARY, FAVORITES, FILTERS, DECORATORS, GRIDS, MENU;
-    
+
     public String key() {
       return name().toLowerCase();
     }
   }
-  
+
   public static final UserInterface DEFAULT = DESKTOP;
 
   public static final String MAIN_STYLE_SHEET = "bee";
@@ -235,19 +219,19 @@ public enum UserInterface implements HasCaption {
 
     return NameUtils.getEnumByName(UserInterface.class, input);
   }
-  
+
   public static UserInterface normalize(UserInterface ui) {
     return (ui == null) ? DEFAULT : ui;
   }
-  
+
   @Override
   public String getCaption() {
     return name();
   }
-  
+
   public abstract Collection<Component> getComponents();
-  
-  public abstract Map<String, String> getMeta();
+
+  public abstract List<Meta> getMeta();
 
   public abstract List<String> getScripts();
 

@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -24,9 +25,9 @@ import com.butent.bee.shared.modules.ec.EcItem;
 public class CartAccumulator extends Horizontal implements HasKeyDownHandlers, HasKeyPressHandlers {
 
   private static final String STYLE_PREFIX = EcStyles.name("cartAccumulator-");
-  
+
   private final InputInteger input;
-  
+
   private int index = BeeConst.UNDEF;
 
   public CartAccumulator(final EcItem item, int quantity) {
@@ -41,7 +42,8 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers, H
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
           int value = input.getIntValue();
-          if (value > 0) {
+
+          if (value > 0 && DomUtils.isInView(input.getElement())) {
             EcKeeper.addToCart(item, value);
             input.setValue(0);
           }
@@ -96,7 +98,7 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers, H
 
     add(cart);
   }
-  
+
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return null;

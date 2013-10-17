@@ -1193,7 +1193,6 @@ public final class StyleUtils {
 
   public static <E extends Enum<?> & HasCssName> E parseCssName(Class<E> clazz, String input) {
     Assert.notNull(clazz);
-    Assert.notEmpty(input);
 
     for (E constant : clazz.getEnumConstants()) {
       if (BeeUtils.same(constant.getCssName(), input)) {
