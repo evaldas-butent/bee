@@ -542,9 +542,9 @@ public class Search {
       }
 
       ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEARCH);
-      params.addPositionalHeader(value.trim());
+      params.addPositionalData(value.trim());
 
-      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
           String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());

@@ -90,7 +90,7 @@ public final class EcConstants {
   }
 
   public enum EcSupplier implements HasCaption {
-    EOLTAS("Eolt"), MOTOPROFIL("MotoProf");
+    EOLTAS("Eolt"), MOTOPROFIL("MP");
 
     private final String shortName;
 
@@ -450,6 +450,8 @@ public final class EcConstants {
   public static final String STYLE_SHEET = "ecommerce";
   public static final String CLIENT_STYLE_SHEET = "ec";
 
+  public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
+  
   public static String picture(String type, String text) {
     return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
   }

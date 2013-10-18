@@ -796,12 +796,6 @@
   overflow: auto;
 }
 
-.bee-ec-ItemDetails-itemAnalogs-info {
-  text-decoration: underline;
-  cursor: pointer;
-  line-height: 1.5;
-}
-
 .bee-ec-ItemDetails-info-itemCode {
   padding-left: 1em;
   font-weight: bold;
@@ -836,9 +830,11 @@
   color: #43494F;
 }
 
+.bee-ec-ItemDetails-addToCart-listPrice,
 .bee-ec-ItemDetails-addToCart-price {
   margin-top: 2ex;
-  margin-bottom: 2ex;
+  margin-right: 1em;
+  text-align: right;
   font-size: medium;
 }
 

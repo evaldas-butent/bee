@@ -62,6 +62,7 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcCriterion;
@@ -479,9 +480,14 @@ public class EcModuleBean implements BeeModule {
                   row.setProperty(COL_TCD_SUPPLIER_ID + supplierSuffix, supplierId);
                 }
 
-                double cost = articleSupplier.getRealPrice();
+                double cost = articleSupplier.getRealCost();
                 if (BeeUtils.isPositive(cost)) {
                   row.setProperty(COL_TCD_COST + supplierSuffix, BeeUtils.toString(cost));
+                }
+
+                double price = articleSupplier.getRealPrice();
+                if (BeeUtils.isPositive(price)) {
+                  row.setProperty(PRP_SUPPLIER_PRICE + supplierSuffix, BeeUtils.toString(price));
                 }
 
                 Map<String, String> remainders = articleSupplier.getRemainders();
@@ -653,7 +659,7 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, idName, COL_TCD_ARTICLE, COL_TCD_SUPPLIER,
-            COL_TCD_SUPPLIER_ID, COL_TCD_COST)
+            COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE)
         .addFields(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(TBL_TCD_ARTICLE_SUPPLIERS);
@@ -687,7 +693,7 @@ public class EcModuleBean implements BeeModule {
       if (!BeeUtils.same(id, lastId)) {
         supplier = new ArticleSupplier(NameUtils.getEnumByIndex(EcSupplier.class,
             row.getInt(COL_TCD_SUPPLIER)), row.getValue(COL_TCD_SUPPLIER_ID),
-            row.getDouble(COL_TCD_COST));
+            row.getDouble(COL_TCD_COST), row.getDouble(COL_TCD_PRICE));
 
         suppliers.put(row.getLong(COL_TCD_ARTICLE), supplier);
         lastId = id;
@@ -2150,6 +2156,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     SimpleRow clientInfo = getCurrentClientInfo(COL_CLIENT_DISPLAYED_PRICE);
+
     EcDisplayedPrice displayedPrice;
     if (clientInfo == null) {
       displayedPrice = null;
@@ -2159,6 +2166,12 @@ public class EcModuleBean implements BeeModule {
     }
 
     for (EcItem item : items) {
+      double supplierPrice = item.getSupplierPrice(displayedPrice);
+      if (BeeUtils.isPositive(supplierPrice)) {
+        item.setListPrice(supplierPrice);
+        continue;
+      }
+
       Double margin = getMarginPercent(item.getCategoryList(), catParents, catRoots, catMargins);
 
       double cost = item.getCost(displayedPrice);

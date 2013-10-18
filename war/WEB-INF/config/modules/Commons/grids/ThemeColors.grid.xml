@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Grid [
-  <!ENTITY dyn "<dynStyle><ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline></dynStyle>">
+  <!ENTITY dyn "<ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline>">
 ]>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
@@ -11,8 +11,12 @@
   <g:columns>
     <RelColumn name="ColorName" caption="=name" visible="true" />
 
-    <DataColumn name="Background" caption="=backgroundColor">&dyn;</DataColumn>
-    <DataColumn name="Foreground" caption="=foregroundColor">&dyn;</DataColumn>
+    <DataColumn name="Background" caption="=backgroundColor">
+      <dynStyle>&dyn;</dynStyle>
+    </DataColumn>
+    <DataColumn name="Foreground" caption="=foregroundColor">
+      <dynStyle>&dyn;</dynStyle>
+    </DataColumn>
   </g:columns>
 </g:Grid>
 

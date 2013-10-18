@@ -241,8 +241,8 @@ public class ItemList extends Flow implements KeyDownHandler {
     int keyCode = event.getNativeKeyCode();
 
     if (BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_UP,
-        KeyCodes.KEY_PAGEDOWN, KeyCodes.KEY_PAGEUP, KeyCodes.KEY_END, KeyCodes.KEY_HOME) &&
-        table.getRowCount() > 2) {
+        KeyCodes.KEY_PAGEDOWN, KeyCodes.KEY_PAGEUP, KeyCodes.KEY_END, KeyCodes.KEY_HOME)
+        && table.getRowCount() > 2) {
       
       Integer eventRow = table.getEventRow(event, false);
       if (eventRow == null) {
@@ -407,7 +407,7 @@ public class ItemList extends Flow implements KeyDownHandler {
       @Override
       public void execute() {
         CartAccumulator cartAccumulator = getCartAccumulator(row);
-        if (cartAccumulator != null) {
+        if (cartAccumulator != null && DomUtils.isVisible(cartAccumulator)) {
           cartAccumulator.focus();
         }
       }

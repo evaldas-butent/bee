@@ -207,8 +207,8 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable {
         final String digest = Codec.md5(v);
         
         ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
-        params.addHeaderItem(Service.RPC_VAR_URI, uri);
-        params.addHeaderItem(Service.RPC_VAR_MD5, digest);
+        params.addDataItem(Service.RPC_VAR_URI, uri);
+        params.addDataItem(Service.RPC_VAR_MD5, digest);
         
         BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v, new ResponseCallback() {
           @Override

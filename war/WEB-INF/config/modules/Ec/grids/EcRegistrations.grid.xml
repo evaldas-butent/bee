@@ -6,12 +6,12 @@
   <g:columns>
     <DataColumn name="Date" visible="true" />
 
+    <DataColumn name="Type" itemKey="EcClientType" visible="true" />
+    <RelColumn name="Branch" visible="true" />
+
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
 
-    <RelColumn name="Branch" visible="true" />
-
-    <DataColumn name="Type" itemKey="EcClientType" visible="true" />
     <DataColumn name="CompanyName" visible="true" />
     <DataColumn name="CompanyCode" />
     <DataColumn name="VatCode" />

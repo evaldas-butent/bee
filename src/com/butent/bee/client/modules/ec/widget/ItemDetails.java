@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.ec.widget;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -43,20 +41,34 @@ public class ItemDetails extends Flow {
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "addToCart-");
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
-    int price = item.getPrice();
-
     CartAccumulator accumulator = new CartAccumulator(item, 1);
     accumulator.addStyleName(stylePrefix + "cart");
 
     container.add(accumulator);
 
-    if (price > 0) {
-      String priceInfo = BeeUtils.joinWords(Localized.getConstants().ecItemPrice()
-          + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
-      Label itemPrice = new Label(priceInfo);
-      itemPrice.addStyleName(stylePrefix + "price");
+    int listPrice = item.getListPrice();
+    int price = item.getPrice();
 
-      container.add(itemPrice);
+    if (listPrice > 0 && listPrice >= price) {
+      String text = BeeUtils.joinWords(Localized.getConstants().ecListPrice()
+          + BeeConst.STRING_COLON, EcUtils.renderCents(listPrice), EcConstants.CURRENCY);
+      Label listPriceWidget = new Label(text);
+
+      listPriceWidget.addStyleName(stylePrefix + "listPrice");
+      EcStyles.markListPrice(listPriceWidget);
+
+      container.add(listPriceWidget);
+    }
+
+    if (price > 0) {
+      String text = BeeUtils.joinWords(Localized.getConstants().ecClientPrice()
+          + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
+      Label priceWidget = new Label(text);
+
+      priceWidget.addStyleName(stylePrefix + "price");
+      EcStyles.markPrice(priceWidget);
+
+      container.add(priceWidget);
     }
 
     return container;
@@ -71,62 +83,26 @@ public class ItemDetails extends Flow {
     params.addDataItem(EcConstants.COL_TCD_ARTICLE, item.getArticleId());
     params.addDataItem(EcConstants.COL_TCD_ARTICLE_NR, item.getCode());
     params.addDataItem(EcConstants.COL_TCD_BRAND, item.getBrand());
-    
-    String stylePrefix = EcStyles.name(STYLE_PRIMARY, "itemAnalogs-");
-    final Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-    final Flow wrapper = new Flow(stylePrefix + STYLE_WRAPPER);
-    
-    final String styleAnalogInfo = stylePrefix + "info";
+
+    final Flow container = new Flow(EcStyles.name(STYLE_PRIMARY, "analogs"));
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          return;
-        }
-        List<EcItem> items = EcKeeper.getResponseItems(response);
-        
-        for (EcItem analog : items) {
-          Widget infoLabel = renderAnalogItem(analog);
-          if (infoLabel != null) {
-            infoLabel.addStyleName(styleAnalogInfo);
-            wrapper.add(infoLabel);
+        EcKeeper.dispatchMessages(response);
+
+        if (!response.hasErrors()) {
+          List<EcItem> items = EcKeeper.getResponseItems(response);
+          if (!BeeUtils.isEmpty(items)) {
+            ItemList itemList = new ItemList(items);
+            container.clear();
+            container.add(itemList);
           }
         }
-
-        container.add(wrapper);
       }
     });
 
     return container;
-  }
-  
-  private static Widget renderAnalogItem(final EcItem item) {
-    if (item == null) {
-      return null;
-    }
-
-    String code = BeeUtils.isEmpty(item.getCode()) ? "" : item.getCode();
-    String name = BeeUtils.isEmpty(item.getName()) ? "" : item.getName();
-    String brand = EcKeeper.getBrandName(item.getBrand());
-    brand = BeeUtils.isEmpty(brand) ? "" : brand;
-    
-    String labelText = BeeUtils.join(" ", code, name, brand);
-
-    if (BeeUtils.isEmpty(labelText)) {
-      return null;
-    }
-
-    Label content = new Label(labelText);
-
-    content.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        EcKeeper.openItem(item, true);
-      }
-    });
-
-    return content;
   }
 
   private static Widget renderCarTypes(EcItemInfo info) {
@@ -172,7 +148,7 @@ public class ItemDetails extends Flow {
           container.add(brandWidget);
         }
       }
-      
+
       if (!BeeUtils.isEmpty(item.getDescription())) {
         CustomDiv descriptionWidget = new CustomDiv(stylePrefix + "description");
         descriptionWidget.setHtml(item.getDescription());
@@ -215,7 +191,7 @@ public class ItemDetails extends Flow {
 
     HtmlList list = new HtmlList(true);
     list.addStyleName(stylePrefix + "list");
-    
+
     list.addItems(info.getOeNumbers());
 
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
@@ -282,6 +258,7 @@ public class ItemDetails extends Flow {
     for (ArticleSupplier as : item.getSuppliers()) {
       col = 0;
 
+      table.setHtml(row, col++, BeeUtils.toString(as.getRealCost()));
       table.setHtml(row, col++, BeeUtils.toString(as.getRealPrice()));
 
       table.setHtml(row, col++, as.getSupplier().name());

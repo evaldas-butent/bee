@@ -15,7 +15,7 @@ import java.util.Map;
 public class ArticleSupplier implements BeeSerializable {
 
   private enum Serial {
-    SUPPLIER, SUPPLIER_ID, PRICE, REMAINDERS
+    SUPPLIER, SUPPLIER_ID, COST, PRICE, REMAINDERS
   }
 
   public static ArticleSupplier restore(String s) {
@@ -26,12 +26,17 @@ public class ArticleSupplier implements BeeSerializable {
 
   private EcSupplier supplier;
   private String supplierId;
+  
+  private int cost;
   private int price;
+
   private final Map<String, String> remainders = Maps.newHashMap();
 
-  public ArticleSupplier(EcSupplier supplier, String supplierId, Double price) {
+  public ArticleSupplier(EcSupplier supplier, String supplierId, Double cost, Double price) {
     this.supplier = supplier;
     this.supplierId = supplierId;
+
+    setCost(cost);
     setPrice(price);
   }
 
@@ -58,10 +63,6 @@ public class ArticleSupplier implements BeeSerializable {
       }
 
       switch (member) {
-        case PRICE:
-          setPrice(BeeUtils.toInt(value));
-          break;
-
         case SUPPLIER:
           setSupplier(NameUtils.getEnumByIndex(EcSupplier.class, BeeUtils.toIntOrNull(value)));
           break;
@@ -70,6 +71,14 @@ public class ArticleSupplier implements BeeSerializable {
           setSupplierId(value);
           break;
 
+        case COST:
+          setCost(BeeUtils.toInt(value));
+          break;
+
+        case PRICE:
+          setPrice(BeeUtils.toInt(value));
+          break;
+          
         case REMAINDERS:
           remainders.clear();
           remainders.putAll(Codec.beeDeserializeMap(value));
@@ -78,8 +87,16 @@ public class ArticleSupplier implements BeeSerializable {
     }
   }
 
+  public int getCost() {
+    return cost;
+  }
+
   public int getPrice() {
     return price;
+  }
+
+  public double getRealCost() {
+    return cost / 100d;
   }
 
   public double getRealPrice() {
@@ -120,10 +137,6 @@ public class ArticleSupplier implements BeeSerializable {
 
     for (Serial member : members) {
       switch (member) {
-        case PRICE:
-          arr[i++] = getPrice();
-          break;
-
         case SUPPLIER:
           arr[i++] = getSupplier().ordinal();
           break;
@@ -132,12 +145,28 @@ public class ArticleSupplier implements BeeSerializable {
           arr[i++] = getSupplierId();
           break;
 
+        case COST:
+          arr[i++] = getCost();
+          break;
+
+        case PRICE:
+          arr[i++] = getPrice();
+          break;
+
         case REMAINDERS:
           arr[i++] = getRemainders();
           break;
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setCost(Double cost) {
+    setCost(BeeUtils.isDouble(cost) ? BeeUtils.round(cost * 100) : 0);
+  }
+  
+  public void setCost(int cost) {
+    this.cost = cost;
   }
 
   public void setPrice(Double price) {

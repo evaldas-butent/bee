@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY area "width: 100&#37;; height: 40px;">
+  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="EcRegistration" viewName="EcRegistrations" caption="=ecRegistration"
+  >
+  <FlowPanel>
+
+    <Table style="border-collapse: collapse; margin-top: 2ex; margin-left: 1em;"
+        cellStyle="vertical-align: top; padding-bottom: 4px;">
+      <col index="0" cellStyle="&colLabel;" />
+      <col index="2" cellStyle="&colLabel;" />
+
+      <row>
+        <Label text="=ecClientType" class="bee-required" />
+        <ListBox source="Type" itemKey="EcClientType" />
+        <Label text="=ecBranchPrimary" class="bee-required" />
+        <DataSelector source="Branch" />
+      </row>
+
+      <row>
+        <Label text="=ecClientFirstName" class="bee-required" />
+        <InputText source="FirstName" />
+        <Label text="=ecClientLastName" class="bee-required" />
+        <InputText source="LastName" />
+      </row>
+
+      <row>
+        <Label text="=ecClientCompanyName" />
+        <InputText source="CompanyName" />
+        <Label text="=ecClientCompanyCode" />
+        <InputText source="CompanyCode" />
+      </row>
+
+      <row>
+        <Label text="=ecClientVatCode" />
+        <InputText source="VATCode" />
+        <Label text="=ecClientPersonCode" />
+        <InputText source="PersonCode" />
+      </row>
+
+      <row>
+        <Label text="=email" class="bee-required" />
+        <InputText source="Email" />
+        <Label text="=phone" class="bee-required" />
+        <InputText source="Phone" />
+      </row>
+
+      <row>
+        <Label text="=city" class="bee-required" />
+        <InputText source="City" />
+        <Label text="=country" />
+        <InputText source="Country" />
+      </row>
+
+      <row>
+        <Label text="=address" class="bee-required" />
+        <InputText source="Address" />
+        <Label text="=postIndex" class="bee-required" />
+        <InputText source="PostIndex" />
+      </row>
+
+      <row>
+        <Label text="=ecClientActivity" />
+        <InputArea source="Activity" style="&area;" />
+        <Label text="=notes" />
+        <InputArea source="Notes" style="&area;" />
+      </row>
+
+      <row>
+        <Label text="=remoteHost" />
+        <InputArea source="Host" style="&area;" />
+        <Label text="=userAgent" />
+        <InputArea source="Agent" style="&area;" />
+      </row>
+
+      <row>
+        <Label text="=ecClientRegistrationDate" class="bee-required" />
+        <InputDateTime source="Date" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

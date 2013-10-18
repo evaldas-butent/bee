@@ -180,7 +180,7 @@ public class EcItem implements BeeSerializable {
     double cost = BeeConst.DOUBLE_ZERO;
 
     for (ArticleSupplier articleSupplier : getSuppliers()) {
-      double supplierCost = articleSupplier.getRealPrice();
+      double supplierCost = articleSupplier.getRealCost();
 
       if (BeeUtils.isPositive(supplierCost)) {
         if (costSupplier != null && articleSupplier.getSupplier() == costSupplier) {
@@ -211,7 +211,7 @@ public class EcItem implements BeeSerializable {
     if (!BeeUtils.isPositive(cost)
         && (displayedPrice == EcDisplayedPrice.MIN || displayedPrice == EcDisplayedPrice.MAX)) {
       for (ArticleSupplier articleSupplier : getSuppliers()) {
-        double supplierCost = articleSupplier.getRealPrice();
+        double supplierCost = articleSupplier.getRealCost();
 
         if (BeeUtils.isPositive(supplierCost)) {
           if (displayedPrice == EcDisplayedPrice.MIN) {
@@ -234,7 +234,7 @@ public class EcItem implements BeeSerializable {
   public String getDescription() {
     return description;
   }
-
+  
   public int getListPrice() {
     return listPrice;
   }
@@ -261,6 +261,60 @@ public class EcItem implements BeeSerializable {
 
   public int getSecondaryStock() {
     return secondaryStock;
+  }
+
+  public double getSupplierPrice(EcDisplayedPrice displayedPrice) {
+    EcSupplier displayedSupplier = EcDisplayedPrice.getSupplier(displayedPrice);
+
+    double result = BeeConst.DOUBLE_ZERO;
+
+    for (ArticleSupplier articleSupplier : getSuppliers()) {
+      double supplierPrice = articleSupplier.getRealPrice();
+
+      if (BeeUtils.isPositive(supplierPrice)) {
+        if (displayedSupplier != null && articleSupplier.getSupplier() == displayedSupplier) {
+          result = supplierPrice;
+          break;
+        }
+
+        if (displayedPrice == EcDisplayedPrice.MIN) {
+          if (articleSupplier.totalStock() > 0) {
+            if (BeeUtils.isPositive(result)) {
+              result = Math.min(result, supplierPrice);
+            } else {
+              result = supplierPrice;
+            }
+          }
+
+        } else if (displayedPrice == EcDisplayedPrice.MAX) {
+          if (articleSupplier.totalStock() > 0) {
+            result = Math.max(result, supplierPrice);
+          }
+        }
+      }
+    }
+
+    if (!BeeUtils.isPositive(result)
+        && (displayedPrice == EcDisplayedPrice.MIN || displayedPrice == EcDisplayedPrice.MAX)) {
+      for (ArticleSupplier articleSupplier : getSuppliers()) {
+        double supplierPrice = articleSupplier.getRealPrice();
+
+        if (BeeUtils.isPositive(supplierPrice)) {
+          if (displayedPrice == EcDisplayedPrice.MIN) {
+            if (BeeUtils.isPositive(result)) {
+              result = Math.min(result, supplierPrice);
+            } else {
+              result = supplierPrice;
+            }
+
+          } else if (displayedPrice == EcDisplayedPrice.MAX) {
+            result = Math.max(result, supplierPrice);
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   public Collection<ArticleSupplier> getSuppliers() {
