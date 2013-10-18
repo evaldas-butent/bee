@@ -184,6 +184,10 @@ public interface LocalizableTransportConstants {
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
+  String trChildOrder();
+
+  String trChooseForwarder();
+
   String trCommandBlockIpAddress();
 
   String trCommandConvertToRequest();
@@ -193,10 +197,12 @@ public interface LocalizableTransportConstants {
   String trCommandCreateNewUser();
 
   String trCommandSaveRequestAsTemplate();
-  
+
   String trConfirmProforma();
 
   String trContractPrinting();
+
+  String trCreateTransportation();
 
   String trDriverName();
 
@@ -206,13 +212,15 @@ public interface LocalizableTransportConstants {
 
   String trDriverStartingDate();
 
-  String trChildOrder();
-
   String trEmptyKilometers();
 
   String trInvoice();
 
   String trLoadedKilometers();
+
+  String trLoadingAddress();
+
+  String trLoadingDate();
 
   String trNewExpedition();
 
@@ -239,7 +247,7 @@ public interface LocalizableTransportConstants {
   String trRegistrationAddress();
 
   String trRegistrationBank();
-  
+
   String trRegistrationBankAccount();
 
   String trRegistrationBankAddress();
@@ -291,15 +299,15 @@ public interface LocalizableTransportConstants {
   String trRequestStatusNew();
 
   String trRequestTemplates();
-  
+
   String trSelfServiceCommandHistory();
-  
+
   String trSelfServiceCommandNewRequest();
-  
+
   String trSelfServiceCommandRequests();
-  
+
   String trSelfServiceCommandTemplates();
-  
+
   String trSendToERP();
 
   String trSendToERPConfirm();
@@ -313,6 +321,10 @@ public interface LocalizableTransportConstants {
   String trTripStatusCompleted();
 
   String trTripStatusNew();
+
+  String trUnloadingAddress();
+
+  String trUnloadingDate();
 
   String trWriteEmail();
 

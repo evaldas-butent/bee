@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY form "AssessmentTransportation">
+  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY inline "display:inline-block;">
+  <!ENTITY labelLeft "&inline; width:140px; padding-top:1px;">
+  <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+
+  name="AssessmentTransportation" viewName="AssessmentTransportations" caption="=carrier"
+  >
+  <f:properties reports="PrintTransportation" />
+
+  <FlowPanel style="padding: 10px 2px 2px 10px;">
+    <css id="&form;">
+      .&form; table {border-collapse:collapse;}
+      .&form; tr:first-child {text-align:center; font-weight:bold;}
+      .&form; td {border:1px solid black; padding:2px;}
+    </css>
+    <FlowPanel style="&section;">
+      <Label text="=date" class="bee-required" style="&labelLeft;" />
+      <InputDateTime source="Date" required="true" style="&inline; width:110px;" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=carrier" class="bee-required" style="&labelLeft;" />
+      <DataSelector source="Forwarder" required="true" style="&inline; width:200px;" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=trExpeditionType" class="bee-required" style="&labelLeft;" />
+      <DataSelector source="Expedition" required="true" style="&inline; width:150px;"  />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=transport" style="&labelLeft;" />
+      <InputText source="ForwarderVehicle" style="&inline; width:200px;"  />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=vehicleDriver" style="&labelLeft;" />
+      <InputText source="ForwarderDriver" style="&inline; width:200px;"  />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=transportConditions" style="&labelLeft; vertical-align:top;" />
+      <InputArea source="Notes" style="width:400px;" />
+    </FlowPanel>
+    <hr/>
+    <Details style="&section;" open="true">
+      <Summary text="=totalOf"  style="&summary;" />
+      <FlowPanel name="Totals" class="&form;" />
+    </Details>
+    <hr/>
+    <Details style="&section;" open="true">
+      <Summary text="=cargos" style="&summary;" />
+      <FlowPanel name="Cargo" class="&form;" />
+    </Details>
+  </FlowPanel>
+</f:Form>

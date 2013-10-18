@@ -87,14 +87,17 @@ public class TecDocBean {
 
   private class RemoteItems {
     private final String supplierId;
+    private final Double cost;
     private final Double price;
     private final String brand;
     private final String articleNr;
 
-    public RemoteItems(String supplierId, String brand, String articleNr, Double price) {
+    public RemoteItems(String supplierId, String brand, String articleNr, Double cost,
+        Double price) {
       this.supplierId = supplierId;
       this.brand = brand;
       this.articleNr = articleNr;
+      this.cost = cost;
       this.price = price;
     }
   }
@@ -231,10 +234,10 @@ public class TecDocBean {
     String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
     ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT preke AS pr, savikaina AS kn, gam_art AS ga, gamintojas AS gam"
+        "SELECT preke AS pr, savikaina AS sv, pard_kaina as kn, gam_art AS ga, gamintojas AS gam"
             + " FROM prekes"
             + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL",
-        new String[] {"pr", "kn", "ga", "gam"});
+        new String[] {"pr", "sv", "kn", "ga", "gam"});
 
     if (response.hasErrors()) {
       logger.severe(supplier, response.getErrors());
@@ -247,7 +250,7 @@ public class TecDocBean {
 
       for (SimpleRow row : rows) {
         data.add(new RemoteItems(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
-            row.getDouble("kn")));
+            row.getDouble("sv"), row.getDouble("kn")));
       }
       importItems(supplier, data);
     }
@@ -315,7 +318,7 @@ public class TecDocBean {
               String supplierId = supplierBrand + values[1];
 
               items.add(new RemoteItems(supplierId, brand, values[1],
-                  BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
+                  BeeUtils.toDoubleOrNull(values[7].replace(',', '.')), null));
 
               remainders.add(new RemoteRemainders(supplierId, "MotoNet",
                   BeeUtils.toDoubleOrNull(values[3])));
@@ -874,7 +877,7 @@ public class TecDocBean {
 
     qs.sqlDropTemp(categ);
 
-    insertData(TBL_TCD_ARTICLE_CATEGORIES, new SqlSelect().setLimit(500000)
+    insertData(TBL_TCD_ARTICLE_CATEGORIES, new SqlSelect().setDistinctMode(true).setLimit(500000)
         .addFields(artCateg, COL_TCD_ARTICLE)
         .addFields(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY)
         .addFrom(artCateg)
@@ -1149,7 +1152,8 @@ public class TecDocBean {
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
         .addField(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, COL_TCD_SEARCH_NR)
-        .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID, COL_TCD_COST, idName)
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS,
+            COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE, idName)
         .addFields(TBL_TCD_ARTICLES, COL_TCD_BRAND)
         .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
         .addFrom(TBL_TCD_ARTICLES)
@@ -1174,7 +1178,7 @@ public class TecDocBean {
     }
     SqlInsert insert = new SqlInsert(tmp)
         .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND, COL_TCD_COST,
-            COL_TCD_SUPPLIER_ID);
+            COL_TCD_PRICE, COL_TCD_SUPPLIER_ID);
     int tot = 0;
 
     for (RemoteItems info : data) {
@@ -1183,7 +1187,7 @@ public class TecDocBean {
             .addConstant(COL_TCD_BRAND_NAME, info.brand)));
       }
       insert.addValues(EcModuleBean.normalizeCode(info.articleNr), info.brand,
-          brands.get(info.brand), info.price, info.supplierId);
+          brands.get(info.brand), info.cost, info.price, info.supplierId);
 
       if (++tot % 1e4 == 0) {
         qs.insertData(insert);
@@ -1210,12 +1214,18 @@ public class TecDocBean {
     qs.sqlIndex(tmp, idName);
     long time = System.currentTimeMillis();
 
+    qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
+        .addExpression(COL_TCD_PRICE, SqlUtils.field(tmp, COL_TCD_PRICE))
+        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, tmp, idName)));
+
     tot = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
         .addExpression(COL_TCD_UPDATED_COST, SqlUtils.field(tmp, COL_TCD_COST))
+        .addExpression(COL_TCD_PRICE, SqlUtils.field(tmp, COL_TCD_PRICE))
         .addConstant(COL_TCD_UPDATE_TIME, time)
         .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, tmp, idName))
-        .setWhere(SqlUtils.notEqual(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_UPDATED_COST,
-            SqlUtils.field(tmp, COL_TCD_COST))));
+        .setWhere(SqlUtils.notEqual(
+            SqlUtils.nvl(SqlUtils.field(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_UPDATED_COST), 0),
+            SqlUtils.nvl(SqlUtils.field(tmp, COL_TCD_COST), 0))));
 
     logger.info(log, "Updated", tot, "records");
 
@@ -1257,7 +1267,7 @@ public class TecDocBean {
 
     insertData(TBL_TCD_ARTICLE_SUPPLIERS, new SqlSelect().setLimit(100000)
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
-        .addFields(tmp, COL_TCD_COST, COL_TCD_SUPPLIER_ID)
+        .addFields(tmp, COL_TCD_COST, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID)
         .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)
         .addField(tmp, COL_TCD_COST, COL_TCD_UPDATED_COST)
         .addConstant(time, COL_TCD_UPDATE_TIME)

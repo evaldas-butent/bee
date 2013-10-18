@@ -102,17 +102,26 @@
       <row style="font-weight:bold; text-align:center;">
         <Label html="Commodity name" />
         <Label html="Quantity" />
-        <Label html="Weight kg" />
-        <Label html="Volume m3" />
+        <Label html="Weight" />
+        <Label html="Volume" />
         <Label html="Value" />
       </row>
       <row>
         <TextLabel source="Description" style="white-space:pre-wrap;" />
-        <DecimalLabel source="Quantity" />
-        <DecimalLabel source="Weight" scale="1" />
-        <DecimalLabel source="Volume" scale="3" />
-        <TextLabel source="Value">
-          <renderToken source="Value" suffix=" " format="#.00" />
+        <TextLabel source="Quantity" style="text-align:right;">
+          <renderToken source="Quantity" suffix=" " />
+          <renderToken source="QuantityUnitName" />
+        </TextLabel>
+        <TextLabel source="Weight" style="text-align:right;">
+          <renderToken source="Weight" suffix=" " format="0.0" />
+          <renderToken source="WeightUnitName" />
+        </TextLabel>
+        <TextLabel source="Volume" style="text-align:right;">
+          <renderToken source="Volume" suffix=" " format="0.000" />
+          <renderToken source="VolumeUnitName" />
+        </TextLabel>
+        <TextLabel source="Value" style="text-align:right;">
+          <renderToken source="Value" suffix=" " format="0.00" />
           <renderToken source="ValueCurrencyName" />
         </TextLabel>
       </row>

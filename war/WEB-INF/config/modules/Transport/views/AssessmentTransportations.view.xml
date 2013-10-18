@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AssessmentTransportations" source="Trips"
+  filter="!(Assessor)"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="TripNo" />
+    <SimpleColumn name="ForwarderVehicle" />
+    <SimpleColumn name="ForwarderDriver" />
+    <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Expedition" />
+    <SimpleJoin joinType="LEFT" name="Expedition">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Forwarder" />
+    <SimpleJoin joinType="LEFT" name="Forwarder">
+      <SimpleColumn name="Name" alias="ForwarderName" />
+    </SimpleJoin>
+    
+    <ExternalJoin name="Trip" source="CargoTrips" joinType="INNER">
+      <HiddenColumn name="Assessor" />
+      
+      <AggregateJoin name="Cargo" joinType="INNER">
+        <AggregateJoin name="Order" joinType="INNER">
+          <HiddenColumn name="OrderNo" />
+          <AggregateColumn name="OrderNo" alias="MinOrder" aggregate="MIN" />
+          <AggregateColumn name="OrderNo" alias="MaxOrder" aggregate="MAX" />
+          <AggregateColumn name="OrderNo" alias="CntOrder" aggregate="COUNT_DISTINCT" />
+        </AggregateJoin>
+      </AggregateJoin>
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

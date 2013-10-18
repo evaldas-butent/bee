@@ -102,7 +102,5 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return super.beforeAction(action, presenter);
   }
 
-  public FormInterceptor getPrintFormInterceptor() {
-    return null;
-  }
+  public abstract FormInterceptor getPrintFormInterceptor();
 }

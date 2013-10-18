@@ -19,7 +19,8 @@
     </css>
     <Image url="images/logo.gif" style="display:block; margin:auto;" />
     <TextLabel source="Number" style="text-align:center; &bold;">
-      <renderToken source="Number" prefix="Freight transportation contract No. " />
+      <renderToken source="Assessor" prefix="Freight transportation contract No. " />
+      <renderToken source="TripNo" prefix="-" />
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 

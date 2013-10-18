@@ -215,6 +215,9 @@ public class UserServiceBean {
   }
 
   public String getLanguage() {
+    if (getCurrentUserInfo() == null) {
+      return "en";
+    }
     return getCurrentUserInfo().getLanguage();
   }
 
@@ -543,7 +546,7 @@ public class UserServiceBean {
     qs.updateData(new SqlUpdate(TBL_USERS)
         .addConstant(COL_USER_LOCALE, locale.ordinal())
         .setWhere(sys.idEquals(TBL_USERS, userId)));
-    
+
     logger.info("user", user, "updated locale:", locale.getLanguage());
     return true;
   }

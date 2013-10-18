@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY inline "display:inline-block;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintTransportation">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  
+  name="&form;" caption="Pervežimas" disabledActions="save"
+  width="70" widthUnit="%" height="90" heightUnit="%"
+  >
+
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <css id="&form;">
+      .&form; table {border-collapse:collapse; width:100%}
+      .&form; tr:first-child {text-align:center; font-weight:bold;}
+      .&form; td {border:1px solid black; padding:2px;}
+    </css>
+    <Image url="images/logo.gif" style="display:block; margin:auto;" />
+    <TextLabel source="TripNo" style="text-align:center; &bold;">
+      <renderToken source="TripNo" prefix="Krovinio pervežimo sutartis Nr. " />
+    </TextLabel>
+    <DateLabel source="Date" style="text-align:center;" />
+
+    <FlowPanel name="Cargo" class="&form;" />
+
+    <HtmlPanel style="&section;">
+      <span style="white-space:pre-wrap; font-size:xx-small;">Šalių įsipareigojimai: 
+1. Pervežimas vykdomas CMR Konvencijos sąlygomis. Vežėjas šios Pervežimo sutarties vykdymo metu privalo turėti galiojantį vežėjo CMR draudimo polisą, licenijas ir leidimus, reikalingus teisėtam aukščiau nurodyto pervežimo vykdymui.
+2. Užsakovas įsipareigoja organizuoti pakrovimą ir muitinės įforminimą (esant būtinybei) per 24 val. (NVS 48 val.) nuo automobilio atvykimo į pakrovimo vietą momento, įskaitant krovinio tvirtinimo ir plombavimo darbus.
+3. Užsakovas įsipareigoja įvykdyti iškrovimą ir muitinės formalumus (esant būtinybei) per 24 val. (NVS 48 val.) nuo automobilio atvykimo į muitinės paskirties vietą arba pristatymo vietą momento.
+4. Jeigu 2-3 p. nurodyti terminai yra viršijami, Užsakovas apmoka Vežėjui prastovas - po 100 eur už kiekvieną darbo dieną.
+5. Vežėjas privalo nedelsiant pranešti Užsakovui apie visas pervežimo aplinkybes, kai įtaria grėsmę savalaikiam ir saugiam krovinio pristatymui.
+6. Vežėjas įsipareigoja pakrovimui/iškrovimui suteikti švarią, be šalutinių kvapų, geros techninės būklės transporto priemonę. Nepateikus transporto priemones pasikrovimui, Vežėjas sumoka bauda 20 % nuo pervežimo kainos. Vežėjas įsipareigoja turėti su savimi TIR Carnet (esant būtinybei), tarptautinį CMR važtaraštį, galiojantį CMR draudimo polisą, visus tarptautiniam pervežimui būtinus leidimus.
+7. Vežėjas įsipareigoja atvykti į iškrovimo/pakrovimo vietą nustatytu laiku. Vežėjas privalo kontroliuoti pakrovimą/iškrovimą. Krovinys turi atitikti CMR įrašus. Vežėjas atsako už sugadintą krovinį, neteisingą krovinio išdėstymą. Jeigu Vežėjas pavėluoja į pakrovimą, jis privalo sumokėti baudą 100 eur už kiekvieną darbo dieną.
+8. Vežėjas yra atsakingas už krovinį nuo jo priėmimo iki perdavimo momento, o taip pat krovinio pristatymo vėlavimą pagal CMR Konvencijos sąlygas. Vežėjas nėra atsakingas už krovinio kiekį, jeigu jis pristatytas su nepažeistomis plombomis, už vidinę būklę ir krovinio vienetų kiekį, jeigu krovinio įpakavimas nepažeistas.
+9. Užsakovas yra atsakingas už tinkamą krovinio pateikimą pakrovimui, pakrovimą, iškrovimą, transporto priemonės pažeidimą pakrovimo ar iškrovimo metu, muitinės ir kitų formalumų įvykdymą, dokumentų įforminimą, Vežėjo instruktavimą dėl krovinio savybių ir priemonių, užtikrinančių saugų krovinio transportavimą (krovinio tvirtinimas ir t.t.), Vežėjo darbo apmokėjimą ir t.t.
+10. Užsakovas turi teisę atšaukti užsakymą likus12 val. iki pasikrovimo. Kitu atveju už krovinio nepateikimą pakrovimui Užsakovas Vežėjui sumoka baudą 20 % nuo pervežimo kainos, jei nesutariama kitaip.
+11. Vežėjas neturi teisės vykdyti jokių apmokėjimų užsakovo vardu, negavęs įgaliojimo patvirtinančio fakso.
+      </span>
+      <span style="font-size:smaller; &bold; display:block;">
+Ši sutartis, Kliento pateikta Ekspeditoriui, bei abiejų pusių patvirtinta faksu ar elektroniniu būdu turi tokią pačią juridinę galią kaip ir 
+originalas.
+      </span>
+    </HtmlPanel>
+
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Užsakovas" />
+        <Label html="Vežėjas" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

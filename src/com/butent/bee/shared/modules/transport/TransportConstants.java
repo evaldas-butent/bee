@@ -249,6 +249,9 @@ public final class TransportConstants {
   public static final String VIEW_DRIVER_ABSENCE = "DriverAbsence";
   public static final String VIEW_ABSENCE_TYPES = "AbsenceTypes";
 
+  public static final String VIEW_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
+  public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
+
   public static final String COL_GROUP = "Group";
 
   public static final String COL_TRIP = "Trip";
@@ -482,6 +485,7 @@ public final class TransportConstants {
   public static final String FORM_CARGO = "OrderCargo";
   public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_ASSESSMENT = "Assessment";
+  public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
 
   public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
   public static final String FORM_NEW_CARGO_CREDIT_INVOICE = "NewCargoCreditInvoice";
@@ -530,7 +534,7 @@ public final class TransportConstants {
   public static final String DATA_TYPE_DRIVER = "Driver";
 
   public static final String STYLE_SHEET = "transport";
-  
+
   public static String defaultLoadingColumnAlias(String colName) {
     return "DefLoad" + colName;
   }

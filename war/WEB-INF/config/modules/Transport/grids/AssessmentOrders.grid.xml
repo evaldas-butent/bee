@@ -13,6 +13,7 @@
     </w:HorizontalPanel>
   </g:north>
   <g:columns>
+    <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" width="40" />
     <DataColumn name="Assessor" caption="PID" width="40" />
     <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />

@@ -20,4 +20,6 @@ name="Calendar" label="=calendar" order="70"
   <Item name="TimeZones" label="=timeZones" service="grid" parameters="TimeZones" separator="true" />
 
   <Item name="Configuration" label="=settings" service="grid" parameters="Configuration" separator="true" />
+
+  <Item name="CalendarParameters" label="=calParameters" service="parameters" parameters="Calendar" separator="true" />
 </Entry>

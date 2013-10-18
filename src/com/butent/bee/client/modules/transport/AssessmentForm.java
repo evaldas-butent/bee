@@ -215,7 +215,7 @@ public class AssessmentForm extends PrintFormInterceptor {
 
     @Override
     public void afterDeleteRow(long rowId) {
-      DataChangeEvent.fireRefresh("AssessmentForwarders");
+      DataChangeEvent.fireRefresh(VIEW_ASSESSMENT_FORWARDERS);
       refreshTotals();
     }
 
@@ -227,7 +227,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     @Override
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY)) {
-        DataChangeEvent.fireRefresh("AssessmentForwarders");
+        DataChangeEvent.fireRefresh(VIEW_ASSESSMENT_FORWARDERS);
         refreshTotals();
       }
     }
@@ -384,7 +384,7 @@ public class AssessmentForm extends PrintFormInterceptor {
       RowEditor.openRow(FORM_ASSESSMENT, Data.getDataInfo("Assessments"),
           event.getRowId(), false, null, null, null);
 
-    } else if (event.hasView("AssessmentForwarders")) {
+    } else if (event.hasView(VIEW_ASSESSMENT_FORWARDERS)) {
       Global.choice(Localized.getConstants().trContractPrinting(), Localized.getConstants()
           .chooseLanguage(),
           Lists.newArrayList("LT", "RU", "EN"),
@@ -496,7 +496,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     if (widget instanceof ChildGrid) {
       AssessmentGrid interceptor = null;
 
-      if (BeeUtils.same(name, "AssessmentForwarders")) {
+      if (BeeUtils.same(name, VIEW_ASSESSMENT_FORWARDERS)) {
         interceptor = new ForwardersGrid();
 
       } else if (BeeUtils.inListSame(name, TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES)) {

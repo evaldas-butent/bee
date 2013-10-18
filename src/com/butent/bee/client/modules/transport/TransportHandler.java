@@ -666,7 +666,7 @@ public final class TransportHandler {
     // GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
-    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentsGrid());
+    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICE_INCOMES, new CargoInvoiceIncomesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INCOMES, new CargoCreditIncomesGrid());
@@ -679,6 +679,9 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TRANSPORTATION,
+        new AssessmentTransportationForm());
+
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_CREDIT_INVOICE, new CargoCreditInvoiceForm());
 

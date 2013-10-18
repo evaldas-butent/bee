@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="AssessmentTransportations" viewName="AssessmentTransportations"
+  editForm="AssessmentTransportation" editShowId="true" disabledActions="add"
+  flexGrow="1"
+  >
+  <g:columns>
+    <IdColumn name="ID" />
+    <DataColumn name="Date" />
+    <DataColumn name="ForwarderName" caption="=carrier" />
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <CalcColumn name="Order" type="string" caption="=trOrder" maxWidth="300" searchBy="OrderNo">
+      <render>
+        <ui:function>
+          if (!row.MinOrder) {
+            return row.MaxOrder;
+          
+          } else if(!row.MaxOrder || row.MinOrder == row.MaxOrder) {
+            return row.MinOrder;
+          
+          } else {
+            return row.MinOrder + ", " + row.MaxOrder + (row.CntOrder > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

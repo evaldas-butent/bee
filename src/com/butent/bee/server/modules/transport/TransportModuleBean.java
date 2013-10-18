@@ -423,7 +423,7 @@ public class TransportModuleBean implements BeeModule {
     double totalAmount = 0;
 
     for (Double n : rs.getDoubleColumn(COL_AMOUNT)) {
-      totalAmount += n;
+      totalAmount += BeeUtils.unbox(n);
     }
     for (SimpleRow row : rs) {
       String xml = XmlUtils.createString("CreditInfo",

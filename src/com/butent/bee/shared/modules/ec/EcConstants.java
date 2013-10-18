@@ -48,7 +48,7 @@ public final class EcConstants {
 
   public enum EcDisplayedPrice implements HasCaption {
     EOLTAS, MOTOPROFIL, MIN, MAX;
-    
+
     public static EcSupplier getSupplier(EcDisplayedPrice displayedPrice) {
       if (displayedPrice != null && displayedPrice.ordinal() < EcSupplier.values().length) {
         return EcSupplier.values()[displayedPrice.ordinal()];
@@ -62,7 +62,7 @@ public final class EcConstants {
       return name();
     }
   }
-  
+
   public enum EcOrderStatus implements HasCaption {
     NEW(Localized.getConstants().ecOrderStatusNew()),
     ACTIVE(Localized.getConstants().ecOrderStatusActive()),
@@ -93,7 +93,7 @@ public final class EcConstants {
     EOLTAS("Eolt"), MOTOPROFIL("MotoProf");
 
     private final String shortName;
-    
+
     private EcSupplier(String shortName) {
       this.shortName = shortName;
     }
@@ -402,6 +402,7 @@ public final class EcConstants {
 
   public static final String COL_TCD_REMAINDER = "Remainder";
 
+  public static final String COL_TCD_PRICE = "Price";
   public static final String COL_TCD_COST = "Cost";
   public static final String COL_TCD_UPDATED_COST = "UpdatedCost";
   public static final String COL_TCD_UPDATE_TIME = "UpdateTime";
@@ -423,7 +424,7 @@ public final class EcConstants {
 
   public static final String COL_CW_CLIENT = "Client";
   public static final String COL_CW_WAREHOUSE = "Warehouse";
-  
+
   public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
   public static final String PRM_MOTONET_INTERVAL = "MotoprofilIntervalInMinutes";
 
@@ -448,7 +449,7 @@ public final class EcConstants {
 
   public static final String STYLE_SHEET = "ecommerce";
   public static final String CLIENT_STYLE_SHEET = "ec";
-  
+
   public static String picture(String type, String text) {
     return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
   }

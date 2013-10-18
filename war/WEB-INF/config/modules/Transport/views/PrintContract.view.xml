@@ -4,6 +4,7 @@
   name="PrintContract" source="CargoTrips" caption="=trContract"
   >
   <Columns>
+    <SimpleColumn name="Assessor" />
     <SimpleJoin joinType="LEFT" name="Assessor">
       <SimpleJoin name="Manager" joinType="INNER">
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -56,6 +57,7 @@
     </SimpleJoin>
 
     <SimpleJoin joinType="LEFT" name="Trip">
+      <SimpleColumn name="TripNo" />
       <SimpleColumn name="Forwarder" />
       <SimpleJoin joinType="LEFT" name="Forwarder">
         <SimpleColumn name="Name" alias="ForwarderName" />

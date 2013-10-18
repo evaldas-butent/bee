@@ -17,6 +17,7 @@
     <SimpleColumn name="Supplier" />
     <SimpleColumn name="SupplierID" />
 
+    <SimpleColumn name="Price" />
     <SimpleColumn name="Cost" />
     <SimpleColumn name="UpdatedCost" />
     <SimpleColumn name="UpdateTime" />
