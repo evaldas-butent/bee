@@ -333,7 +333,7 @@ public final class CliWorker {
       showImages(arr);
 
     } else if ("import_cvs".equals(z)) {
-      importCvs(arr);
+      importCSV(arr);
 
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
@@ -1409,7 +1409,7 @@ public final class CliWorker {
   }
 
   @Deprecated
-  private static void importCvs(String[] arr) {
+  private static void importCSV(String[] arr) {
     LogUtils.getRootLogger().debug((Object[]) arr);
     if (arr.length < 2) {
       return;
@@ -1420,6 +1420,8 @@ public final class CliWorker {
       servName = Service.IMPORT_OSAMA_TIEKEJAI;
     } else if (BeeUtils.same(arr[1], "OsamaDarbuotojai")) {
       servName = Service.IMPORT_OSAMA_DARBUOTOJIAI;
+    } else if (BeeUtils.same(arr[1], "OsamaPrekSist")) {
+      servName = Service.IMPORT_OSAMA_PREK_SIST;
     }
 
     if (!BeeUtils.isEmpty(servName)) {

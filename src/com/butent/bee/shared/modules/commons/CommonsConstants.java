@@ -105,6 +105,7 @@ public final class CommonsConstants {
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
+  public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_PERSONS = "Persons";
@@ -158,6 +159,7 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_NAME = "Name";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
+  public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
   public static final String COL_PERSON = "Person";
 
   public static final String COL_OBJECT_TYPE = "Type";

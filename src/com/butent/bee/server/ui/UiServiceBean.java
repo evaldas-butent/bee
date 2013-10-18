@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.mail.MailConstants.COL_ACCOUNT_DEFAU
 import static com.butent.bee.shared.modules.mail.MailConstants.COL_ADDRESS;
 import static com.butent.bee.shared.modules.mail.MailConstants.COL_USER;
 import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ACCOUNTS;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
@@ -196,6 +197,8 @@ public class UiServiceBean {
       response = importOsamaTiekejai(reqInfo);
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_DARBUOTOJIAI)) {
       response = importOsamaDarbuotojai(reqInfo);
+    } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_PREK_SIST)) {
+      response = importOsamaPrekSist(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
       logger.warning(msg);
@@ -521,46 +524,171 @@ public class UiServiceBean {
     return ResponseObject.error("Grid", gridName, "not found");
   }
 
-  /*
-   * @Deprecated private ResponseObject importOsamaPrekSist(RequestInfo reqInfo) { String fileId =
-   * reqInfo.getContent();
-   * 
-   * SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path") .addFrom("Files")
-   * .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
-   * 
-   * logger.info("do query: ", select.getQuery());
-   * 
-   * SimpleRowSet fd = qs.getData(select);
-   * 
-   * String path = fd.getValue(0, fd.getColumnIndex("Path"));
-   * 
-   * select = new SqlSelect().addField(CommonsConstants.TBL_COMPANIES,
-   * sys.getIdName(CommonsConstants.TBL_COMPANIES), "oID") .addFrom(CommonsConstants.TBL_COMPANIES)
-   * .setWhere( SqlUtils.contains(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME,
-   * "Osama"));
-   * 
-   * logger.info("do query: ", select.getQuery());
-   * 
-   * SimpleRowSet osamaCompany = qs.getData(select);
-   * 
-   * if (osamaCompany.isEmpty()) { return ResponseObject.error("Osama company not found"); }
-   * 
-   * long osamaCompanyId = osamaCompany.getLong(0, 0);
-   * 
-   * try { FileInputStream fstream = new FileInputStream(path);
-   * 
-   * DataInputStream in = new DataInputStream(fstream); BufferedReader br = new BufferedReader(new
-   * InputStreamReader(in)); String strLine;
-   * 
-   * while ((strLine = br.readLine()) != null) { Splitter splitter = Splitter.on(';'); List<String>
-   * lst = Lists.newArrayList(splitter.split(strLine));
-   * 
-   * String[] data = ArrayUtils.toArray(lst); logger.info("Current data row", data);
-   * 
-   * } in.close(); } catch (Exception e) { logger.severe(e); }
-   * 
-   * return ResponseObject.info("Data imported"); }
-   */
+  @Deprecated
+  private ResponseObject importOsamaPrekSist(RequestInfo reqInfo) {
+    String fileId =
+        reqInfo.getContent();
+
+    SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path").addFrom("Files")
+        .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
+
+    logger.info("do query: ", select.getQuery());
+
+    SimpleRowSet fd = qs.getData(select);
+
+    String path = fd.getValue(0, fd.getColumnIndex("Path"));
+
+    select =
+        new SqlSelect().addField(CommonsConstants.TBL_COMPANIES,
+            sys.getIdName(CommonsConstants.TBL_COMPANIES), "oID").addFrom(
+            CommonsConstants.TBL_COMPANIES)
+            .setWhere(
+                SqlUtils.contains(CommonsConstants.TBL_COMPANIES,
+                    CommonsConstants.COL_COMPANY_NAME,
+                    "Osama"));
+
+    logger.info("do query: ", select.getQuery());
+
+    SimpleRowSet osamaCompany = qs.getData(select);
+
+    if (osamaCompany.isEmpty()) {
+      return ResponseObject.error("Osama company not found");
+    }
+
+    long osamaCompanyId = osamaCompany.getLong(0, 0);
+
+    try {
+      FileInputStream fstream = new FileInputStream(path);
+
+      DataInputStream in = new DataInputStream(fstream);
+      BufferedReader br = new BufferedReader(new
+          InputStreamReader(in));
+      String strLine;
+
+      while ((strLine = br.readLine()) != null) {
+        Splitter splitter = Splitter.on(';');
+        List<String> lst = Lists.newArrayList(splitter.split(strLine));
+
+        String[] data = ArrayUtils.toArray(lst);
+        logger.info("Current data row", data);
+
+        select =
+            new SqlSelect()
+                .addField(CommonsConstants.TBL_COMPANIES,
+                    sys.getIdName(CommonsConstants.TBL_COMPANIES), "companyId")
+                .addFrom(CommonsConstants.TBL_COMPANIES)
+                .setWhere(
+                    SqlUtils.equals(CommonsConstants.TBL_COMPANIES,
+                        CommonsConstants.COL_COMPANY_NAME, data[1]));
+
+        logger.info("do query: ", select.getQuery());
+
+        SimpleRowSet company = qs.getData(select);
+        long companyId = -1;
+
+        if (company.isEmpty()) {
+          SqlInsert insert =
+              new SqlInsert(CommonsConstants.TBL_COMPANIES)
+                  .addFields(CommonsConstants.COL_COMPANY_NAME,
+                      CommonsConstants.COL_COMPANY_EXCHANGE_CODE)
+                  .addValues(data[1], data[0]);
+
+          logger.info("do query: ", insert.getQuery());
+
+          companyId = qs.insertData(insert);
+
+        } else {
+          companyId = company.getLong(0, 0);
+        }
+
+        long userId = -1;
+
+        if (!BeeUtils.isEmpty(data[2])) {
+          select =
+              new SqlSelect()
+                  .addField(CommonsConstants.TBL_COMPANY_PERSONS,
+                      sys.getIdName(CommonsConstants.TBL_COMPANY_PERSONS), "CompanyPersonId")
+                  .addField(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_PERSON,
+                      "PersonID")
+                  .addField(CommonsConstants.TBL_PERSONS,
+                      CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_FIRST_NAME)
+                  .addField(CommonsConstants.TBL_PERSONS,
+                      CommonsConstants.COL_LAST_NAME, CommonsConstants.COL_LAST_NAME)
+                  .addFrom(CommonsConstants.TBL_COMPANY_PERSONS)
+                  .addFromLeft(
+                      CommonsConstants.TBL_PERSONS,
+                      sys.joinTables(CommonsConstants.TBL_PERSONS,
+                          CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_PERSON))
+                  .setWhere(
+                      SqlUtils.and(SqlUtils.equals(CommonsConstants.TBL_COMPANY_PERSONS,
+                          CommonsConstants.COL_COMPANY, osamaCompanyId),
+                          SqlUtils.equals(CommonsConstants.TBL_COMPANY_PERSONS, "AccountingCode",
+                              data[2])));
+
+          logger.info("do query: ", select.getQuery());
+
+          SimpleRowSet companyPerson = qs.getData(select);
+          
+          if (!companyPerson.isEmpty()) {
+            long companyPersonId =
+                companyPerson.getLong(0, companyPerson.getColumnIndex("CompanyPersonId"));
+
+            select =
+                new SqlSelect()
+                    .addField(CommonsConstants.TBL_USERS,
+                        sys.getIdName(CommonsConstants.TBL_USERS), "userId")
+                    .addFrom(CommonsConstants.TBL_USERS)
+                    .setWhere(
+                        SqlUtils.equals(CommonsConstants.TBL_USERS,
+                            CommonsConstants.COL_COMPANY_PERSON, companyPersonId));
+
+            logger.info("do query: ", select.getQuery());
+
+            SimpleRowSet user = qs.getData(select);
+            
+            if (user.isEmpty()) {
+              String userLogin = (companyPerson.getValue(0, CommonsConstants.COL_FIRST_NAME)
+                  + companyPerson.getValue(0, CommonsConstants.COL_LAST_NAME)).toLowerCase();
+              
+              SqlInsert insert = new SqlInsert(CommonsConstants.TBL_USERS)
+                  .addFields(CommonsConstants.COL_LOGIN, CommonsConstants.COL_COMPANY_PERSON)
+                  .addValues(userLogin, companyPersonId);
+
+              logger.info("do query: ", insert.getQuery());
+
+              userId = qs.insertData(insert);
+
+            } else {
+              userId = user.getLong(0, 0);
+            }
+          }
+
+        }
+
+        if (userId > 0 && companyId > 0) {
+          SqlInsert insert = new SqlInsert(CommonsConstants.TBL_COMPANY_USERS)
+              .addFields(CommonsConstants.COL_COMPANY, CommonsConstants.COL_USER)
+              .addValues(companyId, userId);
+
+          logger.info("do query: ", insert.getQuery());
+          try {
+          qs.insertData(insert);
+          } catch (Exception sqlerr) {
+            logger.warning("record exists");
+          }
+        } else {
+          logger.warning("No user or company found (created)");
+        }
+
+      }
+      in.close();
+    } catch (Exception e) {
+      logger.severe(e);
+      return ResponseObject.error(e);
+    }
+
+    return ResponseObject.info("Data imported");
+  }
 
   @Deprecated
   private ResponseObject importOsamaDarbuotojai(RequestInfo reqInfo) {
@@ -607,7 +735,7 @@ public class UiServiceBean {
 
         String[] data = ArrayUtils.toArray(lst);
         logger.info("Current data row", data);
-
+        /* Check person is exist */
         select =
             new SqlSelect().addField(CommonsConstants.TBL_PERSONS,
                 sys.getIdName(CommonsConstants.TBL_PERSONS), "personId")
@@ -624,7 +752,7 @@ public class UiServiceBean {
         SimpleRowSet person = qs.getData(select);
 
         if (person.isEmpty()) {
-
+          /* Person not exists */
           SqlInsert insert = new SqlInsert(CommonsConstants.TBL_PERSONS)
               .addFields(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME,
                   "DateOfBirth")
@@ -635,66 +763,15 @@ public class UiServiceBean {
           long personId = qs.insertData(insert);
           long contactid = -1;
 
-          if (!BeeUtils.isEmpty(data[11])) {
-            insert = new SqlInsert("Contacts")
-                .addFields("Phone", "Address")
-                .addValues(data[11], data[8]);
+          insert = new SqlInsert("Contacts")
+              .addFields("Address")
+              .addValues(data[8]);
 
-            logger.info("do query: ", insert.getQuery());
+          logger.info("do query: ", insert.getQuery());
 
-            contactid = qs.insertData(insert);
+          contactid = qs.insertData(insert);
 
-          } else {
-
-            insert = new SqlInsert("Contacts")
-                .addFields("Address")
-                .addValues(data[8]);
-
-            logger.info("do query: ", insert.getQuery());
-
-            contactid = qs.insertData(insert);
-
-          }
-
-          if (!BeeUtils.isEmpty(data[10])) {
-
-            select = new SqlSelect().addField("Emails", sys.getIdName("Emails"), "email")
-                .addFrom("Emails")
-                .setWhere(SqlUtils.equals("Emails", "Email", data[10]));
-
-            logger.info("do query: ", select.getQuery());
-
-            SimpleRowSet email = qs.getData(select);
-
-            if (email.isEmpty()) {
-
-              insert = new SqlInsert("Emails")
-                  .addFields("Email", "Label")
-                  .addValues(data[10], data[2] + " " + data[3]);
-
-              logger.info("do query: ", insert.getQuery());
-
-              long emailId = qs.insertData(insert);
-
-              SqlUpdate update = new SqlUpdate("Contacts")
-                  .addConstant("Email", emailId)
-                  .setWhere(SqlUtils.equals("Contacts", sys.getIdName("Contacts"), contactid));
-
-              logger.info("do query: ", update.getQuery());
-
-              qs.updateData(update);
-            } else {
-              /*
-               * SqlUpdate update = new SqlUpdate("Contacts") .addConstant("Email", email.getLong(0,
-               * 0)) .setWhere(SqlUtils.equals("Contacts", sys.getIdName("Contacts"), contactid));
-               * 
-               * logger.info("do query: ", update.getQuery());
-               * 
-               * qs.updateData(update);
-               */
-            }
-          }
-
+          /* adding contact id to person */
           SqlUpdate update = new SqlUpdate("Persons")
               .addConstant("Contact", contactid)
               .setWhere(SqlUtils.equals("Persons", sys.getIdName("Persons"), personId));
@@ -703,6 +780,7 @@ public class UiServiceBean {
 
           qs.updateData(update);
 
+          /* check department */
           select =
               new SqlSelect().addField("CompanyDepartments",
                   sys.getIdName("CompanyDepartments"), "depId").addFrom("CompanyDepartments")
@@ -716,6 +794,7 @@ public class UiServiceBean {
           long departmentId = -1;
 
           if (department.isEmpty()) {
+            /* department not exists */
             insert = new SqlInsert("CompanyDepartments").addFields("Company", "Name")
                 .addValues(osamaCompanyId, data[6]);
 
@@ -726,6 +805,8 @@ public class UiServiceBean {
           } else {
             departmentId = department.getLong(0, 0);
           }
+
+          /* checking positions */
 
           select =
               new SqlSelect().addField("Positions",
@@ -740,6 +821,7 @@ public class UiServiceBean {
           long positionId = -1;
 
           if (position.isEmpty()) {
+            /* position not found */
             insert = new SqlInsert("Positions").addFields("Name")
                 .addValues(data[4]);
 
@@ -751,17 +833,56 @@ public class UiServiceBean {
             positionId = position.getLong(0, 0);
           }
 
-          if (!BeeUtils.isEmpty(data[1])) {
-            insert = new SqlInsert("CompanyPersons")
-                .addFields("Company", "Department", "Person", "TabNo", "AccountingCode",
-                    "DateOfEmployment", "Position")
-                .addValues(osamaCompanyId, departmentId, personId, data[0], data[1],
-                    TimeUtils.parseDate(data[5]), positionId);
+          /* inserting company person contact */
+          long cpcontId = -1;
+
+          /* inserting company person */
+          if (!BeeUtils.isEmpty(data[10]) || !BeeUtils.isEmpty(data[11])) {
+            long emailId = -1;
+
+            if (!BeeUtils.isEmpty(data[10])) {
+              select =
+                  new SqlSelect().addField(CommonsConstants.TBL_EMAILS,
+                      sys.getIdName(CommonsConstants.TBL_EMAILS), "emailId")
+                      .addFrom(CommonsConstants.TBL_EMAILS)
+                      .setWhere(
+                          SqlUtils.equals(CommonsConstants.TBL_EMAILS, CommonsConstants.COL_EMAIL,
+                              data[10]));
+              logger.info("do query: ", select.getQuery());
+
+              SimpleRowSet email = qs.getData(select);
+
+              if (email.isEmpty()) {
+                insert = new SqlInsert(CommonsConstants.TBL_EMAILS)
+                    .addFields(CommonsConstants.COL_EMAIL)
+                    .addValues(data[10]);
+
+                logger.info("do query: ", insert.getQuery());
+
+                emailId = qs.insertData(insert);
+              }
+            }
+
+            insert = new SqlInsert(CommonsConstants.TBL_CONTACTS)
+                .addFields(CommonsConstants.COL_PHONE, CommonsConstants.COL_EMAIL)
+                .addValues(data[11], emailId > 0 ? emailId : null);
 
             logger.info("do query: ", insert.getQuery());
 
-            qs.insertData(insert);
+            cpcontId = qs.insertData(insert);
+
           }
+
+          insert = new SqlInsert("CompanyPersons")
+              .addFields("Company", "Department", "Person", "TabNo", "AccountingCode",
+                  "DateOfEmployment", "Position", "Contact")
+              .addValues(osamaCompanyId, departmentId, personId, data[0],
+                  BeeUtils.isEmpty(data[1]) ? null : data[1],
+                  TimeUtils.parseDate(data[5]), positionId, cpcontId > 0 ? cpcontId : null);
+
+          logger.info("do query: ", insert.getQuery());
+
+          qs.insertData(insert);
 
         } else {
           logger.warning("record", data, "allready exist!");
@@ -771,6 +892,7 @@ public class UiServiceBean {
       in.close();
     } catch (Exception e) {
       logger.severe(e);
+      return ResponseObject.error(e);
     }
 
     return ResponseObject.info("Data imported");
