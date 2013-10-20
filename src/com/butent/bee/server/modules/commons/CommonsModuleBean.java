@@ -188,15 +188,9 @@ public class CommonsModuleBean implements BeeModule {
       }
 
       @Subscribe
-      public void refreshRoleCache(TableModifyEvent event) {
-        if (usr.isRoleTable(event.getTargetName()) && event.isAfter()) {
-          usr.initUsers();
-        }
-      }
-
-      @Subscribe
-      public void refreshUserCache(ViewModifyEvent event) {
-        if (usr.isUserTable(event.getTargetName()) && event.isAfter()) {
+      public void refreshUsersCache(TableModifyEvent event) {
+        if ((usr.isRoleTable(event.getTargetName()) || usr.isUserTable(event.getTargetName()))
+            && event.isAfter()) {
           usr.initUsers();
         }
       }

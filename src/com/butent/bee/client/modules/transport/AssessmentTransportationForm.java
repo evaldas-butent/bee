@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -114,7 +115,9 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
               }
               for (Integer idx : map.keySet()) {
                 if (BeeUtils.inList(idx, colLoadingDate, colUnloadingDate)) {
-                  cargoInfo.setHtml(c, map.get(idx).getA(), r.getDateTime(idx).toCompactString());
+                  DateTime dt = r.getDateTime(idx);
+                  cargoInfo.setHtml(c, map.get(idx).getA(),
+                      dt == null ? null : dt.toCompactString());
 
                 } else if (Objects.equal(idx, colLoadingAddress)) {
                   cargoInfo.setHtml(c, map.get(idx).getA(),
@@ -131,9 +134,8 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
 
               for (int i = 0; i < 3; i++) {
                 int r = 0;
-                table.setHtml(r++, i, (i == 0) ? Localized.getConstants().weight()
-                    : ((i == 1) ? Localized.getConstants().trdQuantity()
-                        : Localized.getConstants().volume()));
+                table.setHtml(r++, i, (i == 0) ? loc.weight()
+                    : ((i == 1) ? loc.trdQuantity() : loc.volume()));
 
                 Map<String, Double> m = (i == 0) ? weight : ((i == 1) ? quantity : volume);
 

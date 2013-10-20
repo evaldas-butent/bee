@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings("serial")
 public class LoginServlet extends HttpServlet {
 
-  private enum State {
+  public enum State {
     EMPTY, SUCCES, FAIL, BLOCK
   }
 
@@ -76,7 +76,7 @@ public class LoginServlet extends HttpServlet {
     return doc.build();
   }
 
-  private static String getForm(String userName, State state, Map<String, String> parameters,
+  public static String getForm(String userName, State state, Map<String, String> parameters,
       LocalizableConstants localizableConstants) {
 
     Document doc = new Document();
@@ -199,56 +199,30 @@ public class LoginServlet extends HttpServlet {
   }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
-    Map<String, String> parameters = HttpUtils.getParameters(req, false);
-    logger.debug("login", parameters, req.getSession().getId());
-
-    String userName = BeeUtils.trim(parameters.get(HttpConst.PARAM_USER));
-    String password = BeeUtils.trim(parameters.get(HttpConst.PARAM_PASSWORD));
-
-    State state;
-
-    if (BeeUtils.anyEmpty(userName, password)) {
-      state = State.EMPTY;
-
-    } else if (isBlocked(userName)) {
-      state = State.BLOCK;
-
-    } else {
-      try {
-        String remoteUser = req.getRemoteUser();
-        if (remoteUser != null) {
-          req.logout();
-          logger.info("logout", remoteUser);
-        }
-
-        req.login(userName, password);
-        remoteUser = req.getRemoteUser();
-
-        logger.debug("login", remoteUser);
-        state = (remoteUser == null) ? State.FAIL : State.SUCCES;
-
-      } catch (ServletException ex) {
-        logger.severe("login", userName, password);
-        logger.error(ex);
-
-        state = State.FAIL;
-      }
-    }
+    String remoteUser = req.getRemoteUser();
+    State state = (remoteUser == null) ? State.FAIL : State.SUCCES;
 
     final String html;
 
-    if (state == State.BLOCK) {
+    if (isBlocked(remoteUser)) {
+      try {
+        req.logout();
+      } catch (ServletException e) {
+        logger.error(e);
+      }
       html = verboten();
 
     } else {
+      Map<String, String> parameters = HttpUtils.getParameters(req, false);
+
       String language = BeeUtils.trim(parameters.get(HttpConst.PARAM_LOCALE));
-      SupportedLocale userLocale = getUserLocale(userName);
+      SupportedLocale userLocale = getUserLocale(remoteUser);
 
       if (state == State.SUCCES) {
         if (!BeeUtils.isEmpty(language)) {
           SupportedLocale loginLocale = SupportedLocale.getByLanguage(language);
           if (loginLocale != null && loginLocale != userLocale) {
-            userService.updateUserLocale(userName, loginLocale);
+            userService.updateUserLocale(remoteUser, loginLocale);
             userLocale = loginLocale;
           }
         }
@@ -260,7 +234,7 @@ public class LoginServlet extends HttpServlet {
           userInterface = UserInterface.getByShortName(ui);
         }
         if (userInterface == null) {
-          userInterface = BeeUtils.nvl(getUserInterface(userName), UserInterface.DEFAULT);
+          userInterface = BeeUtils.nvl(getUserInterface(remoteUser), UserInterface.DEFAULT);
         }
 
         html = getBee(userInterface, userLocale);
@@ -271,7 +245,7 @@ public class LoginServlet extends HttpServlet {
         }
         LocalizableConstants localizableConstants = Localizations.getPreferredConstants(language);
 
-        html = getForm(userName, state, parameters, localizableConstants);
+        html = getForm(remoteUser, state, parameters, localizableConstants);
       }
     }
 

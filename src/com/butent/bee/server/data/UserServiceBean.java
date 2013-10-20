@@ -45,6 +45,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -66,6 +67,7 @@ public class UserServiceBean {
 
   private final class UserInfo {
     private final UserData userData;
+    private final String password;
     private Collection<Long> userRoles;
 
     private SupportedLocale userLocale = SupportedLocale.DEFAULT;
@@ -76,8 +78,9 @@ public class UserServiceBean {
 
     private boolean online;
 
-    private UserInfo(UserData userData) {
+    private UserInfo(UserData userData, String password) {
       this.userData = userData;
+      this.password = password;
     }
 
     private DateTime getBlockAfter() {
@@ -90,6 +93,10 @@ public class UserServiceBean {
 
     private String getLanguage() {
       return (getUserLocale() == null) ? null : getUserLocale().getLanguage();
+    }
+
+    private String getPassword() {
+      return password;
     }
 
     private Collection<Long> getRoles() {
@@ -194,6 +201,11 @@ public class UserServiceBean {
 
   private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache =
       Maps.newHashMap();
+
+  public boolean authenticateUser(String user, String password) {
+    UserInfo info = getUserInfo(getUserId(user));
+    return info != null && Objects.equals(password, info.getPassword());
+  }
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
@@ -405,8 +417,9 @@ public class UserServiceBean {
     }
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_COMPANY_PERSON, COL_USER_PROPERTIES,
-            COL_USER_LOCALE, COL_USER_INTERFACE, COL_USER_BLOCK_AFTER, COL_USER_BLOCK_BEFORE)
+        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_PASSWORD, COL_COMPANY_PERSON,
+            COL_USER_PROPERTIES, COL_USER_LOCALE, COL_USER_INTERFACE, COL_USER_BLOCK_AFTER,
+            COL_USER_BLOCK_BEFORE)
         .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
         .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
@@ -427,7 +440,7 @@ public class UserServiceBean {
           row.getValue(COL_LAST_NAME), row.getValue(COL_PHOTO), row.getValue(ALS_COMPANY_NAME),
           row.getLong(COL_COMPANY_PERSON), row.getLong(COL_COMPANY), row.getLong(COL_PERSON));
 
-      UserInfo user = new UserInfo(userData)
+      UserInfo user = new UserInfo(userData, row.getValue(COL_PASSWORD))
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_USER_PROPERTIES))
           .setUserLocale(NameUtils.getEnumByIndex(SupportedLocale.class,
