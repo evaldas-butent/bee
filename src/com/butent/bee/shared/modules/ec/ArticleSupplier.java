@@ -91,6 +91,16 @@ public class ArticleSupplier implements BeeSerializable {
     return cost;
   }
 
+  public int getListPrice(Double marginPercent) {
+    if (getPrice() > 0) {
+      return getPrice();
+    } else if (marginPercent == null || getCost() <= 0) {
+      return getCost();
+    } else {
+      return BeeUtils.plusPercent(getCost(), marginPercent);
+    }
+  }
+
   public int getPrice() {
     return price;
   }
@@ -160,11 +170,11 @@ public class ArticleSupplier implements BeeSerializable {
     }
     return Codec.beeSerialize(arr);
   }
-
+  
   public void setCost(Double cost) {
     setCost(BeeUtils.isDouble(cost) ? BeeUtils.round(cost * 100) : 0);
   }
-  
+
   public void setCost(int cost) {
     this.cost = cost;
   }
@@ -176,7 +186,7 @@ public class ArticleSupplier implements BeeSerializable {
   public void setPrice(int price) {
     this.price = price;
   }
-
+  
   public int totalStock() {
     int stock = 0;
 

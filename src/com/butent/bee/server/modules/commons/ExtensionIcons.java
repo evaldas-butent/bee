@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.io.FileNameUtils;
-import com.butent.bee.shared.io.IoConstants;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -34,7 +34,7 @@ public final class ExtensionIcons {
       return;
     }
     
-    File dir = new File(Config.IMAGES_DIR, IoConstants.FILE_ICON_DIR);
+    File dir = new File(Config.IMAGE_DIR, Paths.FILE_ICON_DIR);
     File[] files = dir.listFiles();
     
     if (files != null) {

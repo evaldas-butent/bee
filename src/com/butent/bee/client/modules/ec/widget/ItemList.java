@@ -101,8 +101,10 @@ public class ItemList extends Flow implements KeyDownHandler {
       codeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
     }
 
-    if (item.hasAnalogs()) {
-      InternalLink analogs = new InternalLink(Localized.getConstants().ecItemAnalogs());
+    if (item.getAnalogCount() > 1) {
+      String analogLabel = BeeUtils.joinWords(Localized.getConstants().ecItemAnalogs(),
+          BeeUtils.parenthesize(item.getAnalogCount()));
+      InternalLink analogs = new InternalLink(analogLabel);
       analogs.addStyleName(STYLE_ITEM_ANALOGS);
       panel.add(analogs);
 
@@ -276,7 +278,11 @@ public class ItemList extends Flow implements KeyDownHandler {
           newRow = max;
           if (!hasModifiers && oldRow < max - 1) {
             for (int row = oldRow + 1; row < max; row++) {
-              if (!DomUtils.isInView(table.getRow(row))) {
+              CartAccumulator accumulator = getCartAccumulator(row);
+              if (accumulator == null) {
+                break;
+
+              } else if (!DomUtils.isInView(accumulator.getInput())) {
                 newRow = row;
                 break;
               }
@@ -288,7 +294,11 @@ public class ItemList extends Flow implements KeyDownHandler {
           newRow = min;
           if (!hasModifiers && oldRow > min + 1) {
             for (int row = oldRow - 1; row > min; row--) {
-              if (!DomUtils.isInView(table.getRow(row))) {
+              CartAccumulator accumulator = getCartAccumulator(row);
+              if (accumulator == null) {
+                break;
+
+              } else if (!DomUtils.isInView(accumulator.getInput())) {
                 newRow = row;
                 break;
               }

@@ -61,6 +61,16 @@ public final class CommonsKeeper {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_USERS), event.getRow(),
             Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
             BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_COMPANIES)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
+            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_PERSONS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS, 
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
       }
     }
   }

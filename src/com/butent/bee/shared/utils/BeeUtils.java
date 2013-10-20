@@ -1668,6 +1668,14 @@ public final class BeeUtils {
     return null;
   }
 
+  public static int plusPercent(int x, Double p) {
+    if (x != 0 && isDouble(p)) {
+      return x + round(x * p / 100d);
+    } else {
+      return x;
+    }
+  }
+
   public static Double plusPercent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
       return d + d * p / 100d;

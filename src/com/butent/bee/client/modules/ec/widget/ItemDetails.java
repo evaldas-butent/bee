@@ -75,7 +75,7 @@ public class ItemDetails extends Flow {
   }
 
   private static Widget renderAnalogs(EcItem item) {
-    if (!item.hasAnalogs()) {
+    if (item.getAnalogCount() <= 0) {
       return null;
     }
 
@@ -281,41 +281,29 @@ public class ItemDetails extends Flow {
     }
 
     TabbedPages widget = new TabbedPages();
+
     Widget remainders = renderRemainders(item);
-    Widget oeNumbers = renderOeNumbers(info);
-    Widget suppliers = renderSuppliers(item);
-    Widget carTypes = renderCarTypes(info);
-    Widget analogs = renderAnalogs(item);
-
     if (remainders != null) {
-      StyleUtils.makeAbsolute(remainders);
-      StyleUtils.setLeft(remainders, 0);
-
       widget.add(remainders, Localized.getConstants().ecItemDetailsRemainders());
     }
 
+    Widget oeNumbers = renderOeNumbers(info);
     if (oeNumbers != null) {
-      StyleUtils.makeAbsolute(oeNumbers);
-
       widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers());
     }
 
+    Widget suppliers = renderSuppliers(item);
     if (suppliers != null) {
-      StyleUtils.makeAbsolute(suppliers);
-      StyleUtils.setLeft(suppliers, 0);
-
       widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers());
     }
 
+    Widget carTypes = renderCarTypes(info);
     if (carTypes != null) {
-      StyleUtils.makeAbsolute(carTypes);
-
       widget.add(carTypes, Localized.getConstants().ecItemDetailsCarTypes());
     }
+    Widget analogs = renderAnalogs(item);
 
     if (analogs != null) {
-      StyleUtils.makeAbsolute(analogs);
-
       widget.add(analogs, Localized.getConstants().ecItemAnalogs());
     }
 
@@ -369,11 +357,8 @@ public class ItemDetails extends Flow {
 
     Widget itemDataTabs = renderTabbedPages(item, info);
 
-    int top2 = rowHeight + heightMargin;
-
     if (itemDataTabs != null) {
-
-      StyleUtils.setTop(itemDataTabs, top2);
+      StyleUtils.setTop(itemDataTabs, rowHeight + heightMargin);
       StyleUtils.setHeight(itemDataTabs, rowHeight);
 
       add(itemDataTabs);

@@ -5,10 +5,9 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.io.IoConstants;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -46,7 +45,7 @@ public class PhotoRenderer extends AbstractCellRenderer {
   }
   
   private static String getPath(String fileName) {
-    return CommUtils.buildPath(IoConstants.PATH_IMAGES, IoConstants.PHOTO_DIR, fileName);
+    return Paths.buildPath(Paths.IMAGE_DIR, Paths.PHOTO_DIR, fileName);
   }
 
   public PhotoRenderer(CellSource cellSource) {

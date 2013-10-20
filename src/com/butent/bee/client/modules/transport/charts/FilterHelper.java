@@ -312,7 +312,7 @@ final class FilterHelper {
     dialog.addCloseHandler(new CloseEvent.Handler() {
       @Override
       public void onClose(CloseEvent event) {
-        if (event.isUserCaused()) {
+        if (event.userCaused()) {
           for (ChartData data : filterData) {
             data.restoreState();
           }

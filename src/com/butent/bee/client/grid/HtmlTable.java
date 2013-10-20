@@ -98,7 +98,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     public void setStyleName(int row, int column, String styleName) {
       ensureElement(row, column).setClassName(styleName);
     }
-    
+
     public void setStyleName(int row, int column, String styleName, boolean add) {
       if (add) {
         addStyleName(row, column, styleName);
@@ -227,7 +227,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
         removeStyleName(row, styleName);
       }
     }
-    
+
     public void setVerticalAlign(int row, VerticalAlign align) {
       StyleUtils.setVerticalAlign(ensureElement(row), align);
     }
@@ -248,24 +248,25 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
-  
+
   private static Element createRow() {
     return DOM.createTR();
   }
-  private final Element tableElem;
 
+  private final Element tableElem;
   private final Element bodyElem;
 
   private final ElementMapperImpl<Widget> widgetMap;
+
   private final CellFormatter cellFormatter;
   private final ColumnFormatter columnFormatter;
 
   private final RowFormatter rowFormatter;
-  private String defaultCellClasses;
-  
-  private String defaultCellStyles;
-  private final Map<Integer, String> columnCellClases = Maps.newHashMap();
 
+  private String defaultCellClasses;
+  private String defaultCellStyles;
+
+  private final Map<Integer, String> columnCellClases = Maps.newHashMap();
   private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
 
   public HtmlTable() {
@@ -284,7 +285,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
     init();
   }
-  
+
   public HtmlTable(String styleName) {
     this();
     if (!BeeUtils.isEmpty(styleName)) {
@@ -331,7 +332,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     if (event != null && event.getSource() instanceof Widget) {
       TableRowElement rowElement =
           DomUtils.getParentRow(((Widget) event.getSource()).getElement(), incl);
-      
+
       while (rowElement != null) {
         TableElement tableElement = DomUtils.getParentTable(rowElement, false);
 
@@ -348,7 +349,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
     return index;
   }
-  
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -370,7 +371,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   public RowFormatter getRowFormatter() {
     return rowFormatter;
   }
-  
+
   public Widget getWidget(int row, int column) {
     checkCellBounds(row, column);
     return getWidgetImpl(row, column);
@@ -449,7 +450,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
     return true;
   }
-  
+
   public void removeRow(int row) {
     int columnCount = getCellCount(row);
     for (int column = 0; column < columnCount; ++column) {
@@ -471,7 +472,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       columnCellClases.put(column, classes);
     }
   }
-  
+
   public void setColumnCellStyles(int column, String styles) {
     Assert.nonNegative(column);
     if (BeeUtils.isEmpty(styles)) {
@@ -503,7 +504,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     setHtml(row, column, html);
     getCellFormatter().addStyleName(row, column, cellStyleName);
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
@@ -523,7 +524,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       adopt(widget);
     }
   }
-  
+
   public void setWidget(int row, int column, Widget widget, String cellStyleName) {
     setWidget(row, column, widget);
     getCellFormatter().addStyleName(row, column, cellStyleName);
@@ -571,7 +572,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   private String getColumnCellStyles(int column) {
     return columnCellStyles.get(column);
   }
-  
+
   private String getDefaultCellClasses() {
     return defaultCellClasses;
   }

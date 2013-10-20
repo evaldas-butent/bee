@@ -96,17 +96,18 @@ public class BeeServerAuthModule implements ServerAuthModule {
 
     if (!BeeUtils.anyEmpty(userName, password)) {
       String mod = UserServiceBean.class.getSimpleName();
+      String name = "java:global" + BeeUtils.join("/",
+          request.getServletContext().getContextPath(), mod);
+
       UserServiceBean usr;
 
       try {
-        usr = (UserServiceBean) InitialContext.doLookup("java:global"
-            + BeeUtils.join("/", request.getServletContext().getContextPath(), mod));
-
+        usr = (UserServiceBean) InitialContext.doLookup(name);
         ok = usr.authenticateUser(userName, Codec.md5(BeeUtils.trim(password)));
       } catch (NamingException ex) {
-        logger.severe("Module not found:", BeeUtils.bracket(mod));
+        logger.severe("Module not found:", BeeUtils.bracket(name));
       } catch (ClassCastException ex) {
-        logger.severe("Not a module:", BeeUtils.bracket(mod));
+        logger.severe("Not a module:", BeeUtils.bracket(name));
       }
     }
     if (!ok) {

@@ -386,7 +386,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     childMenu = null;
     popup = null;
 
-    if (event.isUserCaused() && parentMenu == null) {
+    if (event.userCaused() && parentMenu == null) {
       selectItem(null);
     }
   }

@@ -205,8 +205,7 @@ public final class FileNameUtils {
     if (filename == null) {
       return false;
     }
-    return filename.lastIndexOf(UNIX_SEPARATOR) >= 0
-        || filename.lastIndexOf(WINDOWS_SEPARATOR) >= 0;
+    return filename.indexOf(UNIX_SEPARATOR) >= 0 || filename.indexOf(WINDOWS_SEPARATOR) >= 0;
   }
 
   public static int indexOfExtension(String filename) {

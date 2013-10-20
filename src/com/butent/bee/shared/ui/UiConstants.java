@@ -1,5 +1,8 @@
 package com.butent.bee.shared.ui;
 
+import com.butent.bee.shared.io.Paths;
+import com.butent.bee.shared.time.TimeUtils;
+
 public final class UiConstants {
 
   public static final String ATTR_NAME = "name";
@@ -50,6 +53,19 @@ public final class UiConstants {
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";
+
+  public static String wtfplLabel() {
+    return "UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear();
+  }
+
+  public static String wtfplLogo() {
+    return Paths.buildPath(Paths.IMAGE_DIR, "butent_arrow.png");
+  }
+
+  public static String wtfplUrl() {
+    return "http://www.butent.com";
+//    return "http://www.wtfpl.net";
+  }
   
   private UiConstants() {
   }

@@ -197,6 +197,12 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR, SupplierAction.CANCEL);
   }
 
+  @Override
+  protected void onDialogCancel() {
+    inputFrom.setValue(oldValue.getA());
+    inputTo.setValue(oldValue.getB());
+  }
+  
   private Filter buildFilter(String lower, String upper) {
     if (BeeUtils.allEmpty(lower, upper)) {
       return null;

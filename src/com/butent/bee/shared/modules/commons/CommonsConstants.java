@@ -238,6 +238,9 @@ public final class CommonsConstants {
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 
+  public static final String ALS_CITY_NAME = "CityName";
+  public static final String ALS_COUNTRY_NAME = "CountryName";
+  
   public static final String FORM_NEW_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 
@@ -251,6 +254,8 @@ public final class CommonsConstants {
 
   public static final String PROP_CATEGORIES = "CategList";
 
+  public static final String STYLE_SHEET = "commons";
+  
   private CommonsConstants() {
   }
 }

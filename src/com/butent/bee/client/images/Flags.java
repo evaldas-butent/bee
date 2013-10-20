@@ -10,9 +10,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.io.IoConstants;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -92,7 +91,7 @@ public final class Flags {
   
   public static String getPath(String countryCode) {
     Assert.notEmpty(countryCode);
-    return CommUtils.buildPath(IoConstants.PATH_IMAGES, IoConstants.FLAG_DIR,
+    return Paths.buildPath(Paths.IMAGE_DIR, Paths.FLAG_DIR,
         countryCode.trim().toLowerCase() + ".png");
   }
   

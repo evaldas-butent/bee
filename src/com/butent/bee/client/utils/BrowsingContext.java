@@ -2,6 +2,7 @@ package com.butent.bee.client.utils;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -9,31 +10,18 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 
 import elemental.js.html.JsPerformance;
-
 import elemental.dom.Element;
-
 import elemental.dom.Document;
-
 import elemental.client.Browser.Info;
-
 import elemental.html.PerformanceTiming;
-
 import elemental.html.PerformanceNavigation;
-
 import elemental.html.Window;
-
 import elemental.html.DOMMimeType;
-
 import elemental.html.DOMMimeTypeArray;
-
 import elemental.html.Screen;
-
 import elemental.html.MemoryInfo;
-
 import elemental.html.Navigator;
-
 import elemental.html.Location;
-
 import elemental.js.JsBrowser;
 
 /**
@@ -249,6 +237,10 @@ public final class BrowsingContext {
 
   public static boolean isChrome() {
     return BeeUtils.containsSame(JsBrowser.getWindow().getNavigator().getUserAgent(), "chrome");
+  }
+  
+  public static Window open(String url) {
+    return JsBrowser.getWindow().open(url, Keywords.BROWSING_CONTEXT_BLANK);
   }
 
   private static String toString(Element element) {

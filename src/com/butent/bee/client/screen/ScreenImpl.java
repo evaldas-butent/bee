@@ -5,7 +5,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
@@ -30,11 +29,12 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
-import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Progress;
@@ -46,7 +46,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -376,29 +376,21 @@ public class ScreenImpl implements Screen {
     Flow copyright = new Flow();
     copyright.addStyleName(stylePrefix + "Copyright");
 
-    Image logo = new Image("images/logo.gif");
+    Image logo = new Image(UiConstants.wtfplLogo());
     logo.addStyleName(stylePrefix + "Copyright-logo");
     copyright.add(logo);
 
-    Label company = new Label("UAB \"Būtenta\"");
-    company.addStyleName(stylePrefix + "Copyright-company");
-    copyright.add(company);
+    Label label = new Label(UiConstants.wtfplLabel());
+    label.addStyleName(stylePrefix + "Copyright-label");
+    copyright.add(label);
 
-    Label copySign = new Label("\u00A9"); /* © */
-    copySign.addStyleName(stylePrefix + "Copyright-sign");
-    copyright.add(copySign);
-
-    Label timePeriod = new Label("2010 - " + TimeUtils.today().getYear());
-    timePeriod.addStyleName(stylePrefix + "Copyright-timePeriod");
-    copyright.add(timePeriod);
-
-    final String url = "http://www.butent.com";
+    final String url = UiConstants.wtfplUrl();
     copyright.setTitle(url);
 
     copyright.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Window.open(url, "_blank", null);
+        BrowsingContext.open(url);
       }
     });
 
@@ -435,7 +427,7 @@ public class ScreenImpl implements Screen {
       widget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Window.open(openUrl, "_blank", null);
+          BrowsingContext.open(openUrl);
         }
       });
     }
@@ -510,7 +502,7 @@ public class ScreenImpl implements Screen {
               public void onConfirm() {
                 Bee.exit();
               }
-            }, null, Font.getClassName(FontSize.MEDIUM), null);
+            }, null, StyleUtils.className(FontSize.MEDIUM), null);
       }
     });
     exit.addStyleName("bee-UserExit");

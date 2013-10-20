@@ -25,13 +25,13 @@
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=company" class="bee-companyInfo-label" style="&lbl;" />
+        <Label text="=company" class="bee-co-companyInfo-label" style="&lbl;" />
         <TextLabel source="CompanyName" />
       </FlowPanel>
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=driverPosition" class="bee-companyInfo-label" style="&lbl;" />
+        <Label text="=driverPosition" class="bee-co-companyInfo-label" style="&lbl;" />
         <TextLabel source="PositionName" style="&w2;" />
 
         <Label text="=trDriverExperience" style="&lbl;" />
@@ -42,7 +42,7 @@
       &separator;
         
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=phones" class="bee-companyInfo-label" style="&lbl;" />
+        <Label text="=phones" class="bee-co-companyInfo-label" style="&lbl;" />
         <TextLabel source="Phone" style="&w2;" />
 
 
@@ -54,7 +54,7 @@
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <Label text="=email" class="bee-companyInfo-label" style="&lbl;" />
+        <Label text="=email" class="bee-co-companyInfo-label" style="&lbl;" />
         <TextLabel style="&w2;">
           <renderToken source="Label" suffix=" " />
           <renderToken source="Email" prefix="&lt;" suffix="&gt;" />

@@ -1,7 +1,5 @@
 package com.butent.bee.shared.communication;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -9,8 +7,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,8 +27,6 @@ public final class CommUtils {
   public static final String CONTENT_TYPE_HEADER = "content-type";
   public static final String CONTENT_LENGTH_HEADER = "content-length";
 
-  public static final String PATH_SEGMENT_SEPARATOR = "/";
-  
   public static final ContentType DEFAULT_REQUEST_CONTENT_TYPE = ContentType.XML;
   public static final ContentType DEFAULT_RESPONSE_CONTENT_TYPE = ContentType.TEXT;
 
@@ -63,14 +57,6 @@ public final class CommUtils {
     } else {
       return type.trim() + ";charset=" + encoding.trim();
     }
-  }
-  
-  public static String buildPath(String first, String second, String... rest) {
-    List<String> segments = Lists.newArrayList(first, second);
-    if (rest != null) {
-      segments.addAll(Arrays.asList(rest));
-    }
-    return BeeUtils.join(PATH_SEGMENT_SEPARATOR, segments);
   }
   
   public static String buildQueryString(Map<String, String> parameters, boolean encode) {

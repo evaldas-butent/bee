@@ -26,7 +26,7 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
-import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -131,7 +131,7 @@ public class Global implements Module {
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
     msgBoxen.confirm(caption, icon, messages, callback, null,
-        Font.getClassName(FontSize.LARGE), Font.getClassName(FontSize.MEDIUM));
+        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM));
   }
 
   public static void debug(String s) {

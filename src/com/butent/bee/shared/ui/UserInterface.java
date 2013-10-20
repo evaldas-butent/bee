@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
@@ -41,8 +42,8 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET, MailConstants.STYLE_SHEET,
-          TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
+          CommonsConstants.STYLE_SHEET, CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
     }
 
     @Override
@@ -78,8 +79,8 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET, MailConstants.STYLE_SHEET,
-          TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
+          CommonsConstants.STYLE_SHEET, CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
     }
 
     @Override
@@ -115,8 +116,8 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET, MailConstants.STYLE_SHEET,
-          TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
+          CommonsConstants.STYLE_SHEET, CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
     }
 
     @Override

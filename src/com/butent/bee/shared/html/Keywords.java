@@ -1,4 +1,4 @@
-package com.butent.bee.shared.html.builder;
+package com.butent.bee.shared.html;
 
 public final class Keywords {
   

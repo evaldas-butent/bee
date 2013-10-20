@@ -1,8 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.builder.Attribute;
 import com.butent.bee.shared.html.builder.Element;
-import com.butent.bee.shared.html.builder.Keywords;
 
 public class Img extends Element {
 

@@ -41,6 +41,11 @@ public class Div extends FertileElement {
     return this;
   }
 
+  public Div onClick(String onClick) {
+    setOnClick(onClick);
+    return this;
+  }
+
   public Div remove(Node child) {
     super.removeChild(child);
     return this;

@@ -431,7 +431,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       } else if (isModal()) {
         event.cancel();
       } else {
-        hide(CloseEvent.Cause.MOUSE, target, true);
+        hide(CloseEvent.Cause.MOUSE_OUTSIDE, target, true);
       }
 
     } else if (EventUtils.isKeyEvent(type)) {
@@ -440,7 +440,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
           if (hideOnEscape()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD, target, true);
+            hide(CloseEvent.Cause.KEYBOARD_ESCAPE, target, true);
           }
           if (getOnEscape() != null) {
             getOnEscape().accept(event);
@@ -449,7 +449,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         } else if (UiHelper.isSave(nativeEvent)) {
           if (hideOnSave()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD, target, true);
+            hide(CloseEvent.Cause.KEYBOARD_SAVE, target, true);
           }
           if (getOnSave() != null) {
             getOnSave().accept(event);

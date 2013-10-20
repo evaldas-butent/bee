@@ -1,9 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  font-size: 12px;
-  line-height: 1.5;
-  background-color: white;
-  color: #43494F;
+  font-size: 13px;
 }
 
 .bee-SignIn-Panel {
@@ -46,7 +43,6 @@ body {
   border: 1px solid #d9d9d9;
   border-top: 1px solid silver;
   box-shadow: inset 3px 3px 10px silver;
-  color: #43494F;
 }
 
 .bee-SignIn-Input:focus {
@@ -119,16 +115,19 @@ body {
   cursor: pointer;
 }
 
-.bee-SignIn-Caption {
+.bee-SignIn-Copyright {
   position: absolute;
-  left: 105px;
+  left: 100px;
   bottom: 20px;
+  cursor: pointer;
 }
-
-.bee-Copyright-logo {
+.bee-SignIn-Copyright-logo {
   max-height: 16px;
   max-width: 16px;
-  width: auto;
-  height: auto;
-  margin-bottom: -4px;
+  position: relative;
+  top: 1px;
+}
+.bee-SignIn-Copyright-label {
+  font-size: 12px;
+  padding-left: 2px;
 }

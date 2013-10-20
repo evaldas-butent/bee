@@ -143,7 +143,7 @@ public class DialogBox extends Popup implements Printable {
     Image close = new Image(imageResource, new ScheduledCommand() {
       @Override
       public void execute() {
-        hide(CloseEvent.Cause.MOUSE, null, true);
+        hide(CloseEvent.Cause.MOUSE_CLOSE_BOX, null, true);
       }
     });
 

@@ -487,7 +487,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
       public void onClose(CloseEvent event) {
-        if (event.isMouse()) {
+        if (event.mouseEvent()) {
           if (event.isTarget(getElement())) {
             setPickerState(State.CLOSING);
           } else {
@@ -495,7 +495,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
             DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputDate.this);
           }
 
-        } else if (event.isKeyboard()) {
+        } else if (event.keyboardEvent()) {
           setPickerState(State.CLOSING);
           setFocus(true);
           selectAll();

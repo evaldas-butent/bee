@@ -176,6 +176,11 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     }
   }
 
+  @Override
+  protected void onDialogCancel() {
+    editor.setValue(getOldValue());
+  }
+
   private Filter buildComparison(Operator operator, String value) {
     if (searchBy.size() <= 1) {
       return ColumnValueFilter.compareWithValue(getColumn(), operator, value);

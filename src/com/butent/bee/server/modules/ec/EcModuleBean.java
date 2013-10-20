@@ -205,17 +205,14 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CAR_MANUFACTURERS)) {
       response = getCarManufacturers();
-      log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_CAR_MODELS)) {
       query = reqInfo.getParameter(VAR_MANUFACTURER);
       response = getCarModels(query);
-      log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_CAR_TYPES)) {
       query = reqInfo.getParameter(VAR_MODEL);
       response = getCarTypes(BeeUtils.toLongOrNull(query));
-      log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_CAR_TYPE)) {
       response = getItemsByCarType(reqInfo);
@@ -257,8 +254,6 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_PICTURES)) {
       Set<Long> articles = DataUtils.parseIdSet(reqInfo.getParameter(COL_TCD_ARTICLE));
       response = getPictures(articles);
-      query = BeeUtils.toString(articles.size());
-      log = true;
 
     } else if (BeeUtils.same(svc, SVC_UPDATE_COSTS)) {
       Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(COL_TCD_ARTICLE));
@@ -275,17 +270,15 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_FINANCIAL_INFORMATION)) {
       response = getFinancialInformation(getCurrentClientId());
-      log = true;
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_GROUPS)) {
       boolean moto = reqInfo.hasParameter(COL_GROUP_MOTO);
-      query = moto ? SVC_BIKE_ITEMS : SVC_GENERAL_ITEMS;
       response = getItemGroups(moto);
-      log = true;
+
     } else if (BeeUtils.same(svc, SVC_GET_GROUP_FILTERS)) {
       query = reqInfo.getParameter(COL_GROUP);
       response = getGroupFilters(BeeUtils.toLongOrNull(query));
-      log = true;
+
     } else if (BeeUtils.same(svc, SVC_GET_GROUP_ITEMS)) {
       query = reqInfo.getParameter(COL_GROUP);
       response = getGroupItems(reqInfo, BeeUtils.toLongOrNull(query));
@@ -574,6 +567,43 @@ public class EcModuleBean implements BeeModule {
       logger.severe(message);
       return ResponseObject.error(message);
     }
+  }
+
+  private Map<Long, Integer> countAnalogs(String tempArticleIds) {
+    Map<Long, Integer> result = Maps.newHashMap();
+
+    String countName = "cnt" + SqlUtils.uniqueName();
+
+    String articlesAlias = "art" + SqlUtils.uniqueName();
+    String articleId = sys.getIdName(TBL_TCD_ARTICLES);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tempArticleIds, COL_TCD_ARTICLE)
+        .addCountDistinct(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, countName)
+        .addFrom(tempArticleIds)
+        .addFromInner(TBL_TCD_ARTICLES,
+            sys.joinTables(TBL_TCD_ARTICLES, tempArticleIds, COL_TCD_ARTICLE))
+        .addFromInner(TBL_TCD_ARTICLE_CODES,
+            SqlUtils.and(
+                SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR,
+                    TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR),
+                SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_BRAND,
+                    TBL_TCD_ARTICLES, COL_TCD_BRAND),
+                SqlUtils.joinNotEqual(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE,
+                    tempArticleIds, COL_TCD_ARTICLE)))
+        .addFromInner(TBL_TCD_ARTICLES, articlesAlias,
+            SqlUtils.join(articlesAlias, articleId, TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE))
+        .setWhere(SqlUtils.notNull(articlesAlias, COL_TCD_ARTICLE_VISIBLE))
+        .addGroup(tempArticleIds, COL_TCD_ARTICLE);
+
+    SimpleRowSet data = qs.getData(query);
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getLong(COL_TCD_ARTICLE), row.getInt(countName));
+      }
+    }
+
+    return result;
   }
 
   private String createTempArticleIds(SqlSelect query) {
@@ -968,7 +998,7 @@ public class EcModuleBean implements BeeModule {
     } else {
       secondaryLabel = getBranchLabel(branch);
     }
-    
+
     result.add(primaryLabel);
     result.add(secondaryLabel);
 
@@ -1676,16 +1706,18 @@ public class EcModuleBean implements BeeModule {
       Pair<Set<String>, Set<String>> clientWarehouses = getClientWarehouses();
       Set<String> primaryWarehouses = clientWarehouses.getA();
       Set<String> secondaryWarehouses = clientWarehouses.getB();
-      
+
+      Map<Long, Integer> analogCount = countAnalogs(tempArticleIds);
+
       for (EcItem item : items) {
         Collection<ArticleSupplier> itemSuppliers = articleSuppliers.get(item.getArticleId());
-        
+
         if (!itemSuppliers.isEmpty()) {
           item.setSuppliers(itemSuppliers);
-          
+
           int primaryStock = 0;
           int secondaryStock = 0;
-          
+
           for (ArticleSupplier itemSupplier : itemSuppliers) {
             if (!primaryWarehouses.isEmpty()) {
               primaryStock += itemSupplier.getStock(primaryWarehouses);
@@ -1694,15 +1726,20 @@ public class EcModuleBean implements BeeModule {
               secondaryStock += itemSupplier.getStock(secondaryWarehouses);
             }
           }
-          
+
           item.setPrimaryStock(primaryStock);
           item.setSecondaryStock(secondaryStock);
+        }
+
+        Integer ac = analogCount.get(item.getArticleId());
+        if (ac != null) {
+          item.setAnalogCount(ac);
         }
       }
 
       setListPrice(items);
       setPrice(items);
-      
+
       if (items.size() > 1) {
         Collections.sort(items, new EcItemComparator(usr.getLocale(), code));
       }
@@ -2048,6 +2085,7 @@ public class EcModuleBean implements BeeModule {
             break;
           }
         }
+
         if (BeeUtils.isEmpty(id)) {
           String brandName = qs.getValue(new SqlSelect()
               .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
@@ -2064,9 +2102,14 @@ public class EcModuleBean implements BeeModule {
             id = resp.getResponseAsString();
 
             if (!BeeUtils.isEmpty(id)) {
+              double cost = BeeConst.DOUBLE_ZERO;
+              for (ArticleSupplier supplier : item.getSuppliers()) {
+                cost = Math.max(cost, supplier.getRealCost());
+              }
+
               qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
                   .addConstant(COL_TCD_ARTICLE, item.getArticleId())
-                  .addConstant(COL_TCD_COST, item.getCost(null))
+                  .addConstant(COL_TCD_COST, cost)
                   .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
                   .addConstant(COL_TCD_SUPPLIER_ID, id));
             }
@@ -2166,26 +2209,13 @@ public class EcModuleBean implements BeeModule {
     }
 
     for (EcItem item : items) {
-      double supplierPrice = item.getSupplierPrice(displayedPrice);
-      if (BeeUtils.isPositive(supplierPrice)) {
-        item.setListPrice(supplierPrice);
-        continue;
+      Double marginPercent = getMarginPercent(item.getCategoryList(), catParents, catRoots,
+          catMargins);
+      if (marginPercent == null) {
+        marginPercent = defMargin;
       }
 
-      Double margin = getMarginPercent(item.getCategoryList(), catParents, catRoots, catMargins);
-
-      double cost = item.getCost(displayedPrice);
-      Double listPrice;
-
-      if (margin != null) {
-        listPrice = BeeUtils.plusPercent(cost, margin);
-      } else if (defMargin == null) {
-        listPrice = cost;
-      } else {
-        listPrice = BeeUtils.plusPercent(cost, defMargin);
-      }
-
-      item.setListPrice(listPrice);
+      item.setListPrice(item.getSupplierPrice(displayedPrice, marginPercent));
     }
 
     logger.debug("list price", items.size(), catMargins.size(), TimeUtils.elapsedMillis(start));

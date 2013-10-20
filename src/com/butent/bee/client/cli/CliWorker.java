@@ -29,7 +29,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -1378,7 +1377,7 @@ public final class CliWorker {
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      Window.open(FileUtils.getUrl(arr[1], null), "_blank", null);
+      BrowsingContext.open(FileUtils.getUrl(arr[1], null));
       return;
     }
 
@@ -2913,22 +2912,52 @@ public final class CliWorker {
       return;
     }
     
-    ClientRect rect = ClientRect.createBounding(el);
-    if (rect == null) {
+    ClientRect startRect = ClientRect.createBounding(el);
+    if (startRect == null) {
       showError(id, "rectangle not available");
     }
     
-    List<Property> info = PropertyUtils.createProperties(
-        "left", rect.getLeft(),
-        "right", rect.getRight(),
-        "r - l", rect.getRight() - rect.getLeft(),
-        "width", rect.getWidth(),
-        "top", rect.getTop(),
-        "bottom", rect.getBottom(),
-        "b - t", rect.getBottom() - rect.getTop(),
-        "height", rect.getHeight());
+    String center = StyleUtils.className(TextAlign.CENTER);
+    String right = StyleUtils.className(TextAlign.RIGHT);
+    
+    HtmlTable table = new HtmlTable();
+    
+    int row = 0;
+    int col = 0;
+    
+    table.setHtml(row, col++, "tag");
+    table.setHtml(row, col++, "id");
+    table.setHtml(row, col++, "left");
+    table.setHtml(row, col++, "right");
+    table.setHtml(row, col++, "top");
+    table.setHtml(row, col++, "bottom");
+    table.setHtml(row, col++, "width");
+    table.setHtml(row, col++, "height");
+    table.setHtml(row, col++, "contains");
+    table.setHtml(row, col++, "intersects");
+    
+    for (Element p = el; p != null; p = p.getParentElement()) {
+      ClientRect rect = id.equals(p.getId()) ? startRect : ClientRect.createBounding(p);
+      if (rect == null) {
+        break;
+      }
 
-    showTable(id, new PropertiesData(info));
+      row++;
+      col = 0;
+
+      table.setHtml(row, col++, p.getTagName());
+      table.setHtml(row, col++, p.getId());
+      table.setHtml(row, col++, BeeUtils.toString(rect.getLeft()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getRight()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getTop()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getBottom()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getWidth()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getHeight()), right);
+      table.setHtml(row, col++, rect.contains(startRect) ? "x" : "", center);
+      table.setHtml(row, col++, rect.intersects(startRect) ? "x" : "", center);
+    }
+    
+    Global.showModalWidget(table);
   }
   
   private static void showRpc() {

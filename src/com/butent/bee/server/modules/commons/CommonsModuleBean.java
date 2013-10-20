@@ -98,12 +98,11 @@ public class CommonsModuleBean implements BeeModule {
     List<SearchResult> companiesSr =
         qs.getSearchResults(VIEW_COMPANIES,
             Filter.anyContains(Sets.newHashSet(COL_NAME, COL_COMPANY_CODE, COL_PHONE,
-                COL_EMAIL_ADDRESS,
-                COL_ADDRESS, COL_CITY + COL_NAME, COL_COUNTRY + COL_NAME), query));
+                COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
 
     List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
         Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
-            COL_EMAIL_ADDRESS, COL_ADDRESS, COL_CITY + COL_NAME, COL_COUNTRY + COL_NAME), query));
+            COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
 
     List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
         Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));

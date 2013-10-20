@@ -66,10 +66,19 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
   }
-
+  
   @Override
   public void setFilterValue(FilterValue filterValue) {
     editor.setValue((filterValue == null) ? null : filterValue.getValue());
+  }
+
+  @Override
+  protected void onDialogCancel() {
+    if (getOldValue() == null) {
+      editor.clearValue();
+    } else {
+      editor.setValue(BeeUtils.toString(getOldValue()));
+    }
   }
   
   private String getEditorValue() {

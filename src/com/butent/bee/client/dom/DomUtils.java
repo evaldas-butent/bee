@@ -1326,6 +1326,10 @@ public final class DomUtils {
     return true;
   }
 
+  public static boolean isInView(UIObject obj) {
+    return obj != null && isInView(obj.getElement());
+  }
+  
   public static boolean isInputElement(Element el) {
     if (el == null) {
       return false;

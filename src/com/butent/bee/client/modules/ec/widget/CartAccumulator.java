@@ -104,4 +104,8 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
   public void focus() {
     input.setFocus(true);
   }
+
+  public InputInteger getInput() {
+    return input;
+  }
 }

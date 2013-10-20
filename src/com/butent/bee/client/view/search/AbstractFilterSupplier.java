@@ -468,6 +468,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected String messageOneValue(String value, String count) {
     return Localized.getMessages().allValuesIdentical(getColumnLabel(), value, count);
   }
+  
+  protected void onDialogCancel() {
+  }
 
   protected void openDialog(Element target, Widget widget,
       final Scheduler.ScheduledCommand onChange) {
@@ -480,7 +483,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
       public void onClose(CloseEvent event) {
-        if (filterChanged()) {
+        if (event.actionCancel()) {
+          onDialogCancel();
+        } else if (filterChanged()) {
           onChange.execute();
         }
       }

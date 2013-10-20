@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 public final class CommonsUtils {
 
-  private static final String STYLE_COMPANY = "companyInfo";
+  private static final String STYLE_COMPANY = "bee-co-companyInfo";
   private static final String STYLE_COMPANY_ITEM = STYLE_COMPANY + "-item";
   private static final String STYLE_COMPANY_LABEL = STYLE_COMPANY + "-label";
 

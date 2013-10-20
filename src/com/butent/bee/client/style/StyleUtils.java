@@ -59,10 +59,12 @@ public final class StyleUtils {
   public enum ScrollBars {
     NONE, HORIZONTAL, VERTICAL, BOTH
   }
+  
+  public static final String CLASS_NAME_PREFIX = "bee-";
 
-  public static final String DND_SOURCE = "bee-dndSource";
-  public static final String DND_OVER = "bee-dndOver";
-  public static final String DROP_AREA = "bee-dropArea";
+  public static final String DND_SOURCE = CLASS_NAME_PREFIX + "dndSource";
+  public static final String DND_OVER = CLASS_NAME_PREFIX + "dndOver";
+  public static final String DROP_AREA = CLASS_NAME_PREFIX + "dropArea";
 
   public static final String STYLE_WIDTH = "width";
   public static final String STYLE_MIN_WIDTH = "minWidth";
@@ -162,14 +164,11 @@ public final class StyleUtils {
   public static final String NAME_FLEXIBLE = "flexible";
   public static final String NAME_OCCUPY = "occupy";
 
-  public static final String NAME_ERROR = "bee-error";
-  public static final String NAME_REQUIRED = "bee-required";
-  public static final String NAME_HAS_DEFAULTS = "bee-hasDefaults";
-  public static final String NAME_RESIZABLE = "bee-resizable";
-  public static final String NAME_FOCUSABLE = "bee-focusable";
-
-  public static final String NAME_BOLD = "bee-font-bold";
-  public static final String NAME_ITALIC = "bee-font-italic";
+  public static final String NAME_ERROR = CLASS_NAME_PREFIX + "error";
+  public static final String NAME_REQUIRED = CLASS_NAME_PREFIX + "required";
+  public static final String NAME_HAS_DEFAULTS = CLASS_NAME_PREFIX + "hasDefaults";
+  public static final String NAME_RESIZABLE = CLASS_NAME_PREFIX + "resizable";
+  public static final String NAME_FOCUSABLE = CLASS_NAME_PREFIX + "focusable";
 
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
@@ -477,6 +476,12 @@ public final class StyleUtils {
 
   public static SafeStyles buildZIndex(int value) {
     return buildStyle(CssProperty.Z_INDEX, value);
+  }
+  
+  public static <E extends Enum<?> & HasCssName> String className(E value) {
+    Assert.notNull(value);
+    return CLASS_NAME_PREFIX + NameUtils.getClassName(value.getDeclaringClass()) + NAME_DELIMITER
+        + value.getCssName().replace(BeeConst.CHAR_SPACE, NAME_DELIMITER);
   }
 
   public static void clearClip(Element el) {

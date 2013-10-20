@@ -17,12 +17,15 @@ import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -65,15 +68,15 @@ public class LoginServlet extends HttpServlet {
         base().targetBlank());
 
     for (String styleSheet : ui.getStyleSheets()) {
-      doc.getHead().append(link().styleSheet(HttpConst.getStyleSheetPath(styleSheet)));
+      doc.getHead().append(link().styleSheet(resource(Paths.getStyleSheetPath(styleSheet))));
     }
     for (String script : ui.getScripts()) {
-      doc.getHead().append(script().src(HttpConst.getScriptPath(script)));
+      doc.getHead().append(script().src(resource(Paths.getScriptPath(script))));
     }
 
-    doc.getHead().append(script().src("bee/bee.nocache.js"));
+    doc.getHead().append(script().src(resource("bee/bee.nocache.js")));
 
-    return doc.build();
+    return doc.build(0, 0);
   }
 
   public static String getForm(String userName, State state, Map<String, String> parameters,
@@ -84,8 +87,8 @@ public class LoginServlet extends HttpServlet {
     doc.getHead().append(
         meta().encodingDeclarationUtf8(),
         title().text("to BEE or not to BEE"),
-        link().styleSheet(HttpConst.getStyleSheetPath("login")),
-        script().src(HttpConst.getScriptPath("login")));
+        link().styleSheet(resource(Paths.getStyleSheetPath("login"))),
+        script().src(resource(Paths.getScriptPath("login"))));
 
     String stylePrefix = "bee-SignIn-";
 
@@ -163,12 +166,34 @@ public class LoginServlet extends HttpServlet {
       panel.append(commandContainer);
     }
 
+    String wtfplUrl = UiConstants.wtfplUrl();
+
     panel.append(
-        div().addClass(stylePrefix + "Caption").append(
-            img().addClass("bee-Copyright-logo").src("images/logo.gif").alt("wtfpl"),
-            span().text("UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear())));
+        div().addClass(stylePrefix + "Copyright").title(wtfplUrl)
+            .onClick("window.open('" + wtfplUrl + "')")
+            .append(
+                img().addClass(stylePrefix + "Copyright-logo").src(UiConstants.wtfplLogo())
+                    .alt("wtfpl"),
+                span().addClass(stylePrefix + "Copyright-label").text(UiConstants.wtfplLabel())));
 
     return doc.build(0, 2);
+  }
+
+  private static String resource(String path) {
+    File file = new File(path);
+    if (!file.exists()) {
+      file = new File(Config.WAR_DIR, path);
+      if (!file.exists()) {
+        return path;
+      }
+    }
+
+    long time = file.lastModified();
+    if (time > 0) {
+      return path + "?v=" + new DateTime(time).toTimeStamp();
+    } else {
+      return path;
+    }
   }
 
   private static String verboten() {

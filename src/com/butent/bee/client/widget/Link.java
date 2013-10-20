@@ -9,6 +9,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
+import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -16,8 +17,6 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class Link extends FocusWidget implements IdentifiableWidget, HasHtml {
-
-  private static final String DEFAULT_TARGET = "_blank";
 
   public Link() {
     super(Document.get().createAnchorElement());
@@ -105,6 +104,6 @@ public class Link extends FocusWidget implements IdentifiableWidget, HasHtml {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Link");
 
-    setTarget(DEFAULT_TARGET);
+    setTarget(Keywords.BROWSING_CONTEXT_BLANK);
   }
 }

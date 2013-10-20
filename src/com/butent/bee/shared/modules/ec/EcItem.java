@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
@@ -19,7 +18,7 @@ public class EcItem implements BeeSerializable {
 
   private enum Serial {
     ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
-    DESCRIPTION, NOVELTY, FEATURED, UNIT, PRIMARY_STOCK, SECONDARY_STOCK
+    DESCRIPTION, NOVELTY, FEATURED, UNIT, PRIMARY_STOCK, SECONDARY_STOCK, ANALOG_COUNT
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -52,6 +51,8 @@ public class EcItem implements BeeSerializable {
   
   private int primaryStock;
   private int secondaryStock;
+  
+  private int analogCount;
 
   public EcItem(long articleId) {
     this.articleId = articleId;
@@ -138,6 +139,10 @@ public class EcItem implements BeeSerializable {
         case SECONDARY_STOCK:
           setSecondaryStock(BeeUtils.toInt(value));
           break;
+
+        case ANALOG_COUNT:
+          setAnalogCount(BeeUtils.toInt(value));
+          break;
       }
     }
   }
@@ -145,6 +150,10 @@ public class EcItem implements BeeSerializable {
   @Override
   public boolean equals(Object obj) {
     return (obj instanceof EcItem) && articleId == ((EcItem) obj).articleId;
+  }
+
+  public int getAnalogCount() {
+    return analogCount;
   }
 
   public long getArticleId() {
@@ -172,63 +181,6 @@ public class EcItem implements BeeSerializable {
 
   public String getCode() {
     return code;
-  }
-
-  public double getCost(EcDisplayedPrice displayedPrice) {
-    EcSupplier costSupplier = EcDisplayedPrice.getSupplier(displayedPrice);
-
-    double cost = BeeConst.DOUBLE_ZERO;
-
-    for (ArticleSupplier articleSupplier : getSuppliers()) {
-      double supplierCost = articleSupplier.getRealCost();
-
-      if (BeeUtils.isPositive(supplierCost)) {
-        if (costSupplier != null && articleSupplier.getSupplier() == costSupplier) {
-          cost = supplierCost;
-          break;
-        }
-
-        if (displayedPrice == EcDisplayedPrice.MIN) {
-          if (articleSupplier.totalStock() > 0) {
-            if (BeeUtils.isPositive(cost)) {
-              cost = Math.min(cost, supplierCost);
-            } else {
-              cost = supplierCost;
-            }
-          }
-
-        } else if (displayedPrice == EcDisplayedPrice.MAX) {
-          if (articleSupplier.totalStock() > 0) {
-            cost = Math.max(cost, supplierCost);
-          }
-
-        } else {
-          cost = Math.max(cost, supplierCost);
-        }
-      }
-    }
-
-    if (!BeeUtils.isPositive(cost)
-        && (displayedPrice == EcDisplayedPrice.MIN || displayedPrice == EcDisplayedPrice.MAX)) {
-      for (ArticleSupplier articleSupplier : getSuppliers()) {
-        double supplierCost = articleSupplier.getRealCost();
-
-        if (BeeUtils.isPositive(supplierCost)) {
-          if (displayedPrice == EcDisplayedPrice.MIN) {
-            if (BeeUtils.isPositive(cost)) {
-              cost = Math.min(cost, supplierCost);
-            } else {
-              cost = supplierCost;
-            }
-
-          } else if (displayedPrice == EcDisplayedPrice.MAX) {
-            cost = Math.max(cost, supplierCost);
-          }
-        }
-      }
-    }
-
-    return cost;
   }
 
   public String getDescription() {
@@ -263,15 +215,16 @@ public class EcItem implements BeeSerializable {
     return secondaryStock;
   }
 
-  public double getSupplierPrice(EcDisplayedPrice displayedPrice) {
+  public int getSupplierPrice(EcDisplayedPrice displayedPrice, Double marginPercent) {
     EcSupplier displayedSupplier = EcDisplayedPrice.getSupplier(displayedPrice);
 
-    double result = BeeConst.DOUBLE_ZERO;
+    int result = 0;
+    int aggregate = 0;
 
     for (ArticleSupplier articleSupplier : getSuppliers()) {
-      double supplierPrice = articleSupplier.getRealPrice();
+      int supplierPrice = articleSupplier.getListPrice(marginPercent);
 
-      if (BeeUtils.isPositive(supplierPrice)) {
+      if (supplierPrice > 0) {
         if (displayedSupplier != null && articleSupplier.getSupplier() == displayedSupplier) {
           result = supplierPrice;
           break;
@@ -279,42 +232,38 @@ public class EcItem implements BeeSerializable {
 
         if (displayedPrice == EcDisplayedPrice.MIN) {
           if (articleSupplier.totalStock() > 0) {
-            if (BeeUtils.isPositive(result)) {
+            if (result > 0) {
               result = Math.min(result, supplierPrice);
             } else {
               result = supplierPrice;
+            }
+
+          } else {
+            if (aggregate > 0) {
+              aggregate = Math.min(aggregate, supplierPrice);
+            } else {
+              aggregate = supplierPrice;
             }
           }
 
         } else if (displayedPrice == EcDisplayedPrice.MAX) {
           if (articleSupplier.totalStock() > 0) {
             result = Math.max(result, supplierPrice);
+          } else {
+            aggregate = Math.max(aggregate, supplierPrice);
           }
+
+        } else {
+          result = Math.max(result, supplierPrice);
         }
       }
     }
 
-    if (!BeeUtils.isPositive(result)
-        && (displayedPrice == EcDisplayedPrice.MIN || displayedPrice == EcDisplayedPrice.MAX)) {
-      for (ArticleSupplier articleSupplier : getSuppliers()) {
-        double supplierPrice = articleSupplier.getRealPrice();
-
-        if (BeeUtils.isPositive(supplierPrice)) {
-          if (displayedPrice == EcDisplayedPrice.MIN) {
-            if (BeeUtils.isPositive(result)) {
-              result = Math.min(result, supplierPrice);
-            } else {
-              result = supplierPrice;
-            }
-
-          } else if (displayedPrice == EcDisplayedPrice.MAX) {
-            result = Math.max(result, supplierPrice);
-          }
-        }
-      }
+    if (result <= 0 && aggregate > 0) {
+      return aggregate;
+    } else {
+      return result;
     }
-
-    return result;
   }
 
   public Collection<ArticleSupplier> getSuppliers() {
@@ -323,10 +272,6 @@ public class EcItem implements BeeSerializable {
 
   public String getUnit() {
     return unit;
-  }
-
-  public boolean hasAnalogs() {
-    return true;
   }
 
   public boolean hasCategory(long category) {
@@ -411,9 +356,17 @@ public class EcItem implements BeeSerializable {
         case SECONDARY_STOCK:
           arr[i++] = secondaryStock;
           break;
+
+        case ANALOG_COUNT:
+          arr[i++] = analogCount;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setAnalogCount(int analogCount) {
+    this.analogCount = analogCount;
   }
 
   public void setBrand(Long brand) {
