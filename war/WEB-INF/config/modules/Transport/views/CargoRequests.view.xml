@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:x="http://www.butent.com/expression"
 
-  name="CargoRequests" source="CargoRequests"
+  name="CargoRequests" source="CargoRequests" caption="=trRequestsShort"
   newRowForm="NewCargoRequest" editForm="CargoRequest"
   newRowCaption="=trRequestNew"
   >

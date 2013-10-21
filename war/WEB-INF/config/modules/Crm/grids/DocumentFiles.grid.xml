@@ -17,7 +17,7 @@
     <DataColumn name="FileSize" readOnly="true" horizontalAlignment="right" width="60" />
 
     <PropColumn name="Icon" caption="-" type="string" cellType="html" horizontalAlignment="center"
-      width="20">
+      width="20" label="=fileIcon" >
       <renderer type="fileIcon" />
     </PropColumn>
 

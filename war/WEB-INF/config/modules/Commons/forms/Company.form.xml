@@ -68,7 +68,7 @@
           	   <Label text="=companyActivities" style="margin-right: 5px" />
           	   <cell colSpan="3">
                  <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
-                   label="companieActivities" style="width: 338px;" />
+                   label="=companyActivities" style="width: 338px;" />
           	   </cell>
           	 </row>
           	 <row>
