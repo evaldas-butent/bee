@@ -346,6 +346,10 @@ public final class DataUtils {
     return row.getDate(getColumnIndex(columnId, rowSet.getColumns()));
   }
 
+  public static DateTime getDateTime(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getDateTime(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+
   public static int getDefaultAsyncThreshold() {
     return defaultAsyncThreshold;
   }

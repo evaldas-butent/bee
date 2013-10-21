@@ -180,6 +180,7 @@ public final class EcConstants {
 
   public static final String VAR_CART = VAR_PREFIX + "cart";
   public static final String VAR_FILTER = VAR_PREFIX + "filter";
+  public static final String VAR_MAIL = VAR_PREFIX + "mail";
 
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
   public static final String TBL_CLIENTS = "EcClients";
@@ -439,6 +440,7 @@ public final class EcConstants {
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 
   public static final String CURRENCY = "Lt";
+  public static final String WEIGHT_UNIT = "kg";
 
   public static final int MAX_VISIBLE_STOCK = 5;
   public static final String DATA_ATTRIBUTE_STOCK = "stock";

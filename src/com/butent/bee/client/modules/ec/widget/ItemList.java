@@ -33,6 +33,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcHelper;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -175,7 +176,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     Flow panel = new Flow();
 
-    InlineLabel value = new InlineLabel(EcUtils.renderCents(price));
+    InlineLabel value = new InlineLabel(EcHelper.renderCents(price));
     value.addStyleName(stylePrefix + "value");
     panel.add(value);
 

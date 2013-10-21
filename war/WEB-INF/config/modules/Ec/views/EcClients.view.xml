@@ -19,6 +19,35 @@
         <SimpleJoin name="Company" joinType="LEFT">
           <SimpleColumn alias="CompanyName" name="Name" />
         </SimpleJoin>
+
+	    <SimpleJoin name="Contact" joinType="LEFT">
+	      <SimpleColumn name="Phone" editable="true" />
+	      <SimpleColumn name="Mobile" editable="true" />
+	      <SimpleColumn name="Fax" editable="true" />
+	
+	      <SimpleColumn name="Email" alias="EmailId" editable="true" />
+	      <SimpleJoin name="Email" joinType="LEFT">
+	        <SimpleColumn name="Email" />
+	        <SimpleColumn name="Label" />
+	      </SimpleJoin>
+	
+	      <SimpleColumn name="Address" editable="true" />
+	      <SimpleColumn name="PostIndex" editable="true" />
+	      <SimpleColumn name="Website" editable="true" />
+	
+	      <SimpleColumn name="City" editable="true" />
+	      <SimpleJoin name="City" joinType="LEFT">
+	        <SimpleColumn alias="CityName" name="Name" />
+	      </SimpleJoin>
+	
+	      <SimpleColumn name="Country" editable="true" />
+	      <SimpleJoin name="Country" joinType="LEFT">
+	        <SimpleColumn alias="CountryName" name="Name" />
+	        <SimpleColumn alias="CountryCode" name="Code" />
+	      </SimpleJoin>
+	
+	      <SimpleColumn name="SocialContacts" editable="true" /> 
+	    </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

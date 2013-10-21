@@ -10,7 +10,38 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.primitives.Longs;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.html.builder.Factory.div;
+import static com.butent.bee.shared.html.builder.Factory.meta;
+import static com.butent.bee.shared.html.builder.Factory.table;
+import static com.butent.bee.shared.html.builder.Factory.tbody;
+import static com.butent.bee.shared.html.builder.Factory.td;
+import static com.butent.bee.shared.html.builder.Factory.title;
+import static com.butent.bee.shared.html.builder.Factory.tr;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_ADDRESS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_CITY;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_CITY_NAME;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COMPANY;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COMPANY_CODE;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COMPANY_NAME;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COMPANY_VAT_CODE;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COUNTRY;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_COUNTRY_NAME;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_POST_INDEX;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_UNIT_NAME;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COMMONS_MODULE;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.PRM_ERP_ADDRESS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.PRM_ERP_LOGIN;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.PRM_ERP_PASSWORD;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.PRM_VAT_PERCENT;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_CITIES;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_COMPANIES;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_COMPANY_PERSONS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_CONTACTS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_COUNTRIES;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_UNITS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_USERS;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
@@ -49,6 +80,10 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -69,6 +104,7 @@ import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;
 import com.butent.bee.shared.modules.ec.EcGroupFilters;
+import com.butent.bee.shared.modules.ec.EcHelper;
 import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
@@ -2255,6 +2291,8 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_SUBMIT_ORDER, VAR_CART);
     }
 
+    boolean copyByMail = reqInfo.hasParameter(VAR_MAIL);
+
     Cart cart = Cart.restore(serializedCart);
     if (cart == null || cart.isEmpty()) {
       String message = BeeUtils.joinWords(SVC_SUBMIT_ORDER, "cart deserialization failed");
@@ -2327,7 +2365,185 @@ public class EcModuleBean implements BeeModule {
               COL_SHOPPING_CART_TYPE, cartType)));
     }
 
+    if (copyByMail) {
+      mailOrder(orderId);
+    }
+
     return response;
+  }
+
+  private void mailOrder(long orderId) {
+    if (orderId > 0) {
+      return;
+    }
+    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, ComparisonFilter.compareId(orderId));
+    if (DataUtils.isEmpty(orderData)) {
+      logger.warning("order not found:", orderId);
+    }
+
+    BeeRow orderRow = orderData.getRow(0);
+
+    DateTime date = DataUtils.getDateTime(orderData, orderRow, COL_ORDER_DATE);
+    EcOrderStatus status = NameUtils.getEnumByIndex(EcOrderStatus.class,
+        DataUtils.getInteger(orderData, orderRow, COL_ORDER_STATUS));
+
+    String mf = DataUtils.getString(orderData, orderRow, ALS_ORDER_MANAGER_FIRST_NAME);
+    String ml = DataUtils.getString(orderData, orderRow, ALS_ORDER_MANAGER_LAST_NAME);
+
+    String da = DataUtils.getString(orderData, orderRow, COL_ORDER_DELIVERY_ADDRESS);
+    String dm = DataUtils.getString(orderData, orderRow, ALS_ORDER_DELIVERY_METHOD_NAME);
+
+    String comment = DataUtils.getString(orderData, orderRow, COL_ORDER_CLIENT_COMMENT);
+//    String rr = DataUtils.getString(orderData, orderRow, ALS_ORDER_REJECTION_REASON_NAME);
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_ORDER_ITEM_QUANTITY_ORDERED,
+            COL_ORDER_ITEM_PRICE)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR,
+            COL_TCD_ARTICLE_WEIGHT)
+        .addFields(TBL_UNITS, COL_UNIT_NAME)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromInner(TBL_TCD_ARTICLES,
+            sys.joinTables(TBL_TCD_ARTICLES, TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE))
+        .addFromLeft(TBL_UNITS,
+            sys.joinTables(TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
+        .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER, orderId));
+
+    SimpleRowSet itemData = qs.getData(itemQuery);
+
+    double totalAmount = BeeConst.DOUBLE_ZERO;
+    double totalWeight = BeeConst.DOUBLE_ZERO;
+
+    if (!DataUtils.isEmpty(itemData)) {
+      for (SimpleRow itemRow : itemData) {
+        Integer quantity = itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED);
+        Double price = itemRow.getDouble(COL_ORDER_ITEM_PRICE);
+        Double weight = itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT);
+
+        totalAmount += BeeUtils.unbox(quantity) * BeeUtils.unbox(price);
+        totalWeight += BeeUtils.unbox(quantity) * BeeUtils.unbox(weight);
+
+        EcOrderItem item = new EcOrderItem();
+
+        item.setArticleId(itemRow.getLong(COL_ORDER_ITEM_ARTICLE));
+
+        item.setName(itemRow.getValue(COL_TCD_ARTICLE_NAME));
+        item.setCode(itemRow.getValue(COL_TCD_ARTICLE_NR));
+
+        item.setPrice(itemRow.getDouble(COL_ORDER_ITEM_PRICE));
+
+        item.setUnit(itemRow.getValue(COL_UNIT_NAME));
+        item.setWeight(itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT));
+      }
+    }
+
+    Document doc = new Document();
+
+    doc.getHead().append(
+        meta().encodingDeclarationUtf8(),
+        title().text(Localized.getConstants().ecOrder()));
+
+    Div panel = div();
+    Tbody tbody = tbody();
+
+    doc.getBody().append(panel);
+    panel.append(table().append(tbody));
+
+    tbody.append(
+        tr().append(
+            td().text(Localized.getConstants().ecOrderSubmissionDate()),
+            td().text(TimeUtils.renderCompact(date)),
+            td().text(Localized.getConstants().ecOrderNumber()),
+            td().text(BeeUtils.toString(orderRow.getId()))),
+        tr().append(
+            td().text(Localized.getConstants().ecDeliveryMethod()),
+            td().text(dm),
+            td().text(Localized.getConstants().ecDeliveryAddress()),
+            td().text(da)),
+        tr().append(
+            td().text(Localized.getConstants().ecOrderStatus()),
+            td().text((status == null) ? null : status.getCaption()),
+            td().text(Localized.getConstants().ecManager()),
+            td().text(BeeUtils.joinWords(mf, ml))),
+        tr().append(
+            td().text(BeeUtils.joinWords(Localized.getConstants().ecOrderAmount(), CURRENCY)),
+            td().text(EcHelper.renderCents(BeeUtils.round(totalAmount * 100))),
+            td().text(BeeUtils.joinWords(Localized.getConstants().weight(), WEIGHT_UNIT)),
+            td().text(BeeUtils.toString(totalWeight))),
+        tr().append(
+            td().text(Localized.getConstants().comment()),
+            td().text(comment),
+            td().text(Localized.getConstants().ecOrderSubmissionDate()),
+            td().text(TimeUtils.renderCompact(date)))
+
+        );
+
+//    Tr tr = tr().append(
+//        td().text(Localized.getConstants().comment()),
+//        td().text(comment));
+    
+    // if (EcOrderStatus.REJECTED == status) {
+    // stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "rr";
+    // label = renderOrderDetailLabel(Localized.getConstants().ecRejectionReason());
+    // orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
+    //
+    // value = renderOrderDetailValue(order.getRejectionReason());
+    // orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
+    // }
+    //
+    // panel.add(orderTable);
+    //
+    // Label itemCaption = new Label(Localized.getConstants().ecOrderItems());
+    // itemCaption.addStyleName(STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_CAPTION);
+    // panel.add(itemCaption);
+    //
+    // HtmlTable itemTable = new HtmlTable(STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_TABLE);
+    // row = 0;
+    //
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_NAME_COL,
+    // renderOrderItemHeader(Localized.getConstants().ecItemName()),
+    // STYLE_ORDER_ITEM_NAME + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_CODE_COL,
+    // renderOrderItemHeader(Localized.getConstants().ecItemCode()),
+    // STYLE_ORDER_ITEM_CODE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
+    //
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_QUANTITY_COL,
+    // renderOrderItemHeader(Localized.getConstants().ecItemQuantity()),
+    // STYLE_ORDER_ITEM_QUANTITY + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL,
+    // renderOrderItemHeader(Localized.getConstants().ecItemPrice()),
+    // STYLE_ORDER_ITEM_PRICE + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
+    //
+    // itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_HEADER);
+    // row++;
+
+    // for (EcOrderItem item : order.getItems()) {
+    // ItemPicture pictureWidget = new ItemPicture();
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_PICTURE_COL, pictureWidget,
+    // STYLE_ORDER_ITEM_PICTURE);
+    // pictureWidgets.put(item.getArticleId(), pictureWidget);
+    //
+    // if (item.getName() != null) {
+    // widget = new Label(item.getName());
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_NAME_COL, widget, STYLE_ORDER_ITEM_NAME);
+    // }
+    //
+    // if (item.getCode() != null) {
+    // widget = new Label(item.getCode());
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_CODE_COL, widget, STYLE_ORDER_ITEM_CODE);
+    // }
+    //
+    // widget = new Label(BeeUtils.toString(BeeUtils.unbox(item.getQuantity())));
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_QUANTITY_COL, widget, STYLE_ORDER_ITEM_QUANTITY);
+    //
+    // int cents = BeeUtils.round(BeeUtils.unbox(item.getPrice()) * 100);
+    // widget = new Label(EcUtils.renderCents(cents));
+    // itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL, widget, STYLE_ORDER_ITEM_PRICE);
+    //
+    // itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_DATA);
+    // row++;
+    // }
+
   }
 
   private boolean updateConfiguration(String column, String value) {

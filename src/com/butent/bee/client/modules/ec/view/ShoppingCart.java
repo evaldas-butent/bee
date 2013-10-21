@@ -27,6 +27,7 @@ import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
@@ -39,6 +40,7 @@ import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
+import com.butent.bee.shared.modules.ec.EcHelper;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -55,6 +57,7 @@ public class ShoppingCart extends Split {
   private static final String STYLE_DELIVERY_ADDRESS = STYLE_PRIMARY + "-address";
   private static final String STYLE_DELIVERY_METHOD = STYLE_PRIMARY + "-method";
   private static final String STYLE_COMMENT = STYLE_PRIMARY + "-comment";
+  private static final String STYLE_COPY_BY_MAIL = STYLE_PRIMARY + "-copyByMail";
 
   private static final String STYLE_PICTURE = STYLE_ITEM + "-picture";
   private static final String STYLE_NAME = STYLE_ITEM + "-name";
@@ -121,7 +124,7 @@ public class ShoppingCart extends Split {
     });
   }
 
-  private void doSubmit() {
+  private void doSubmit(boolean copyByMail) {
     Cart cart = EcKeeper.getCart(cartType);
     if (cart == null || cart.isEmpty()) {
       return;
@@ -132,10 +135,13 @@ public class ShoppingCart extends Split {
       return;
     }
 
-    final String amount = EcUtils.renderCents(cart.totalCents());
+    final String amount = EcHelper.renderCents(cart.totalCents());
 
     ParameterList params = EcKeeper.createArgs(EcConstants.SVC_SUBMIT_ORDER);
     params.addQueryItem(EcConstants.COL_SHOPPING_CART_TYPE, cartType.ordinal());
+    if (copyByMail) {
+      params.addQueryItem(EcConstants.VAR_MAIL, 1);
+    }
     params.addDataItem(EcConstants.VAR_CART, cart.serialize());
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -194,13 +200,17 @@ public class ShoppingCart extends Split {
       if (commentWidget != null) {
         panel.add(commentWidget);
       }
+      
+      final CheckBox copyByMail = new CheckBox(Localized.getConstants().ecOrderCopyByMail());
+      copyByMail.addStyleName(STYLE_COPY_BY_MAIL);
+      panel.add(copyByMail);
 
       Button submitWidget = new Button(Localized.getConstants().ecShoppingCartSubmit());
       submitWidget.addStyleName(STYLE_PRIMARY + "-submit");
       submitWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          doSubmit();
+          doSubmit(copyByMail.getValue());
         }
       });
       panel.add(submitWidget);
@@ -414,7 +424,7 @@ public class ShoppingCart extends Split {
   }
 
   private static Widget renderPrice(CartItem item) {
-    return new Label(EcUtils.renderCents(item.getEcItem().getPrice()));
+    return new Label(EcHelper.renderCents(item.getEcItem().getPrice()));
   }
 
   private Widget renderQuantity(final CartItem item) {
@@ -511,7 +521,7 @@ public class ShoppingCart extends Split {
 
   private static String renderTotal(Cart cart) {
     return BeeUtils.joinWords(Localized.getConstants().ecShoppingCartTotal(),
-        EcUtils.renderCents(cart.totalCents()), EcConstants.CURRENCY);
+        EcHelper.renderCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
   private static void setInt(HasHtml widget, int value) {

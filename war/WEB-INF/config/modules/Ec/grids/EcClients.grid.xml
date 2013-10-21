@@ -18,6 +18,25 @@
 
     <RelColumn name="Manager" visible="true" />
 
+    <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
+    <DataColumn name="Fax" caption="=fax" visible="false" />
+    <RelColumn name="EmailId">
+      <renderToken source="Label" suffix=" " />
+      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    </RelColumn>
+
+    <DataColumn name="Address" />
+    <DataColumn name="PostIndex" visible="false" />
+
+    <DataColumn name="CityName" caption="=city" />
+    <DataColumn name="CountryName" caption="=country" visible="false" />
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-" visible="false">
+      <renderer type="flag" />
+    </CalcColumn>
+
     <DataColumn name="CreditLimitWarning" visible="false" />
     <DataColumn name="Registered" visible="false" />
     <DataColumn name="PersonCode" visible="false" />

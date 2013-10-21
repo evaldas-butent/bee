@@ -168,6 +168,8 @@ public interface LocalizableEcConstants {
 
   String ecOrderAmount();
 
+  String ecOrderCopyByMail();
+
   String ecOrderDate();
 
   String ecOrderItems();

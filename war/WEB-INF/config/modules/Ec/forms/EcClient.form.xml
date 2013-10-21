@@ -4,7 +4,10 @@
   <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
   <!ENTITY inp "width: 200px;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+<f:Form xmlns="http://www.butent.com/widget" 
+    xmlns:f="http://www.butent.com/form"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    
     name="EcClient" viewName="EcClients" caption="=ecClient">
 
   <FlowPanel class="flexBox-vertical">
@@ -27,6 +30,9 @@
         <Label text="=ecClientType" class="bee-required" style="&lbl;" />
         <ListBox source="Type" itemKey="EcClientType" />
       </FlowPanel>
+      &separator;
+
+      <xi:include href="../../Commons/forms/widgets/ContactInfo.widget.xml" />  
       &separator;
 
       <FlowPanel class="flexBox-horizontal">

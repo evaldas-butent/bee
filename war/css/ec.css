@@ -720,6 +720,12 @@
   color: #43494F
 }
 
+.bee-ec-shoppingCart-copyByMail {
+  position: absolute;
+  left: 2em;
+  top: 150px;
+}
+
 .bee-ec-shoppingCart-submit {
   position: absolute;
   top: 140px;

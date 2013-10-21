@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginServlet extends HttpServlet {
 
   public enum State {
-    EMPTY, SUCCES, FAIL, BLOCK
+    EMPTY, SUCCESS, FAIL, BLOCK
   }
 
   public static final String URL = "/index.html";
@@ -225,7 +225,7 @@ public class LoginServlet extends HttpServlet {
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
     String remoteUser = req.getRemoteUser();
-    State state = (remoteUser == null) ? State.FAIL : State.SUCCES;
+    State state = (remoteUser == null) ? State.FAIL : State.SUCCESS;
 
     final String html;
 
@@ -243,7 +243,7 @@ public class LoginServlet extends HttpServlet {
       String language = BeeUtils.trim(parameters.get(HttpConst.PARAM_LOCALE));
       SupportedLocale userLocale = getUserLocale(remoteUser);
 
-      if (state == State.SUCCES) {
+      if (state == State.SUCCESS) {
         if (!BeeUtils.isEmpty(language)) {
           SupportedLocale loginLocale = SupportedLocale.getByLanguage(language);
           if (loginLocale != null && loginLocale != userLocale) {

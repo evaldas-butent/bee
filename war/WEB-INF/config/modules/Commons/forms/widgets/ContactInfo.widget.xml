@@ -7,7 +7,7 @@
 <Disclosure xmlns="http://www.butent.com/widget"
   xmlns:d="http://www.butent.com/decorator"
   xmlns:ui="http://www.butent.com/ui"
-  open="true">
+  open="false">
   
   <Label text="=contactInfo" style="text-transform: uppercase; " />
 

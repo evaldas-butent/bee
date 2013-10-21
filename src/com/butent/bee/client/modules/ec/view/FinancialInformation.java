@@ -40,6 +40,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
+import com.butent.bee.shared.modules.ec.EcHelper;
 import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcOrder;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
@@ -225,11 +226,12 @@ class FinancialInformation extends EcView {
         CURRENCY));
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
-    value = renderOrderDetailValue(EcUtils.renderCents(BeeUtils.round(order.getAmount() * 100)));
+    value = renderOrderDetailValue(EcHelper.renderCents(BeeUtils.round(order.getAmount() * 100)));
     orderTable.setWidgetAndStyle(row, col++, value, stylePrefix + STYLE_SUFFIX_VALUE);
 
     stylePrefix = STYLE_PREFIX_ORDER_DETAILS + "weight";
-    label = renderOrderDetailLabel(BeeUtils.joinWords(Localized.getConstants().weight(), "kg"));
+    label = renderOrderDetailLabel(BeeUtils.joinWords(Localized.getConstants().weight(),
+        WEIGHT_UNIT));
     orderTable.setWidgetAndStyle(row, col++, label, stylePrefix + STYLE_SUFFIX_LABEL);
 
     value = renderOrderDetailValue(BeeUtils.toString(order.getWeight()));
@@ -303,7 +305,7 @@ class FinancialInformation extends EcView {
       itemTable.setWidgetAndStyle(row, ORDER_ITEM_QUANTITY_COL, widget, STYLE_ORDER_ITEM_QUANTITY);
 
       int cents = BeeUtils.round(BeeUtils.unbox(item.getPrice()) * 100);
-      widget = new Label(EcUtils.renderCents(cents));
+      widget = new Label(EcHelper.renderCents(cents));
       itemTable.setWidgetAndStyle(row, ORDER_ITEM_PRICE_COL, widget, STYLE_ORDER_ITEM_PRICE);
 
       itemTable.getRowFormatter().addStyleName(row, STYLE_PREFIX_ORDER_ITEM + STYLE_SUFFIX_DATA);
@@ -407,7 +409,7 @@ class FinancialInformation extends EcView {
 
     int cents = (amount == null) ? 0 : BeeUtils.round(amount * 100);
     String text = (cents == 0) ? BeeConst.STRING_ZERO
-        : BeeUtils.joinWords(EcUtils.renderCents(cents), CURRENCY);
+        : BeeUtils.joinWords(EcHelper.renderCents(cents), CURRENCY);
 
     widget.setHtml(text);
     return widget;
@@ -502,13 +504,13 @@ class FinancialInformation extends EcView {
       }
 
       if (invoice.getAmount() != null) {
-        widget = new Label(EcUtils.renderCents(BeeUtils.round(invoice.getAmount() * 100)));
+        widget = new Label(EcHelper.renderCents(BeeUtils.round(invoice.getAmount() * 100)));
         table.setWidgetAndStyle(row, INVOICE_AMOUNT_COL, widget, STYLE_INVOICE_AMOUNT);
       }
 
       widget = new Label();
       if (invoice.getDebt() != null) {
-        String text = EcUtils.renderCents(BeeUtils.round(invoice.getDebt() * 100));
+        String text = EcHelper.renderCents(BeeUtils.round(invoice.getDebt() * 100));
         widget.getElement().setInnerText(text);
       }
       table.setWidgetAndStyle(row, INVOICE_DEBT_COL, widget, STYLE_INVOICE_DEBT);
@@ -612,7 +614,7 @@ class FinancialInformation extends EcView {
 
       table.setWidgetAndStyle(row, ORDER_NUMBER_COL, numberWidget, STYLE_ORDER_NUMBER);
 
-      widget = new Label(EcUtils.renderCents(BeeUtils.round(order.getAmount() * 100)));
+      widget = new Label(EcHelper.renderCents(BeeUtils.round(order.getAmount() * 100)));
       table.setWidgetAndStyle(row, ORDER_AMOUNT_COL, widget, STYLE_ORDER_AMOUNT);
 
       if (order.getComment() != null) {
@@ -731,7 +733,7 @@ class FinancialInformation extends EcView {
       table.setWidgetAndStyle(row, UNSUPPLIED_QUANTITY_COL, widget, STYLE_UNSUPPLIED_QUANTITY);
 
       int cents = EcUtils.toCents(dataRow.getDouble(priceIndex));
-      widget = new Label(EcUtils.renderCents(cents));
+      widget = new Label(EcHelper.renderCents(cents));
       table.setWidgetAndStyle(row, UNSUPPLIED_PRICE_COL, widget, STYLE_UNSUPPLIED_PRICE);
 
       final Image remove = new Image(Global.getImages().silverDelete());

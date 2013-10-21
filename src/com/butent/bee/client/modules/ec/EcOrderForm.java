@@ -55,6 +55,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
+import com.butent.bee.shared.modules.ec.EcHelper;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -477,7 +478,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       table.setWidgetAndStyle(row, col++, qtyWidget, STYLE_UNSUPPLIED_QUANTITY);
       
       int cents = EcUtils.toCents(dataRow.getDouble(priceIndex));
-      Label priceWidget = new Label(EcUtils.renderCents(cents));
+      Label priceWidget = new Label(EcHelper.renderCents(cents));
       table.setWidgetAndStyle(row, col++, priceWidget, STYLE_UNSUPPLIED_PRICE);
       
       table.getRowFormatter().addStyleName(row, STYLE_UNSUPPLIED_ROW);

@@ -78,16 +78,6 @@ public final class EcUtils {
     }
   }
   
-  public static String renderCents(int cents) {
-    if (cents >= 0) {
-      String s = BeeUtils.toLeadingZeroes(cents, 3);
-      int len = s.length();
-      return s.substring(0, len - 2) + BeeConst.STRING_POINT + s.substring(len - 2);
-    } else {
-      return BeeConst.STRING_MINUS + renderCents(-cents);
-    }
-  }
-
   public static Widget renderField(String label, String value, String styleName) {
     if (BeeUtils.isEmpty(value)) {
       return null;
