@@ -252,7 +252,7 @@ public final class TransportHandler {
           });
           container.setWidget(0, 1, selector);
           dialog.setWidget(container);
-          dialog.showOnTop(form.getElement(), 1);
+          dialog.showOnTop(form.getElement());
         }
       });
     }

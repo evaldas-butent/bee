@@ -1,7 +1,6 @@
 package com.butent.bee.client;
 
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.LayoutPanel;
 
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.screen.Domain;
@@ -54,8 +53,6 @@ public interface Screen extends Module, NotificationListener {
   void onLoad();
 
   boolean removeDomainEntry(Domain domain, Long key);
-  
-  void setRootPanel(LayoutPanel rootPanel);
   
   void showInfo();
 

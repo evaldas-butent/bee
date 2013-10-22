@@ -33,6 +33,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
@@ -1854,8 +1855,7 @@ public final class DomUtils {
   private static void calculateCheckBoxSize() {
     Element elem = DOM.createInputCheck();
 
-    Element body = Document.get().getBody();
-    body.appendChild(elem);
+    BodyPanel.conceal(elem);
 
     checkBoxOffsetWidth = elem.getOffsetWidth();
     checkBoxOffsetHeight = elem.getOffsetHeight();
@@ -1863,7 +1863,7 @@ public final class DomUtils {
     checkBoxClientWidth = elem.getClientWidth();
     checkBoxClientHeight = elem.getClientHeight();
 
-    body.removeChild(elem);
+    elem.removeFromParent();
   }
 
   private static void calculateScrollBarSize() {
@@ -1878,8 +1878,7 @@ public final class DomUtils {
 
     elem.getStyle().setOverflow(Overflow.SCROLL);
 
-    Element body = Document.get().getBody();
-    body.appendChild(elem);
+    BodyPanel.conceal(elem);
 
     int w1 = elem.getOffsetWidth();
     int h1 = elem.getOffsetHeight();
@@ -1887,7 +1886,7 @@ public final class DomUtils {
     int w2 = elem.getClientWidth();
     int h2 = elem.getClientHeight();
 
-    body.removeChild(elem);
+    elem.removeFromParent();
 
     scrollBarWidth = w1 - w2;
     scrollBarHeight = h1 - h2;
@@ -1896,8 +1895,7 @@ public final class DomUtils {
   private static void calculateTextBoxSize() {
     Element elem = DOM.createInputText();
 
-    Element body = Document.get().getBody();
-    body.appendChild(elem);
+    BodyPanel.conceal(elem);
 
     textBoxOffsetWidth = elem.getOffsetWidth();
     textBoxOffsetHeight = elem.getOffsetHeight();
@@ -1905,7 +1903,7 @@ public final class DomUtils {
     textBoxClientWidth = elem.getClientWidth();
     textBoxClientHeight = elem.getClientHeight();
 
-    body.removeChild(elem);
+    elem.removeFromParent();
   }
 
   private static native void setType(InputElement el, String tp) /*-{

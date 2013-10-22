@@ -19,7 +19,6 @@ import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -45,6 +44,7 @@ import com.butent.bee.client.modules.crm.RequestBuilder;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
@@ -356,7 +356,7 @@ public class MailPanel extends AbstractFormInterceptor {
             ids.clear();
           }
           dummy.add(dragLabel);
-          RootPanel.get().add(dummy);
+          BodyPanel.get().add(dummy);
           dragLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
           dragLabel.getElement().getStyle().setBackgroundColor("whiteSmoke");
 
@@ -372,7 +372,7 @@ public class MailPanel extends AbstractFormInterceptor {
         @Override
         public void onDragEnd(DragEndEvent event) {
           dummy.clear();
-          RootPanel.get().remove(dummy);
+          BodyPanel.get().remove(dummy);
           DndHelper.reset();
         }
       });

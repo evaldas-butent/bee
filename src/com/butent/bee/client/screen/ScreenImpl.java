@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -59,7 +58,6 @@ public class ScreenImpl implements Screen {
 
   private static final BeeLogger logger = LogUtils.getLogger(ScreenImpl.class);
 
-  private LayoutPanel rootPanel;
   private Split screenPanel;
 
   private CentralScrutinizer centralScrutinizer;
@@ -264,7 +262,6 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void onExit() {
-    getRootPanel().clear();
   }
 
   @Override
@@ -275,11 +272,6 @@ public class ScreenImpl implements Screen {
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return getCentralScrutinizer().remove(domain, key);
-  }
-
-  @Override
-  public void setRootPanel(LayoutPanel rootPanel) {
-    this.rootPanel = rootPanel;
   }
 
   @Override
@@ -437,6 +429,7 @@ public class ScreenImpl implements Screen {
 
   protected void createUi() {
     Split p = new Split(0);
+    StyleUtils.occupy(p);
     p.addStyleName(getScreenStyle());
 
     Pair<? extends IdentifiableWidget, Integer> north = initNorth();
@@ -464,7 +457,7 @@ public class ScreenImpl implements Screen {
       p.add(center);
     }
 
-    getRootPanel().add(p);
+    BodyPanel.get().add(p);
     setScreenPanel(p);
   }
 
@@ -515,10 +508,6 @@ public class ScreenImpl implements Screen {
 
   protected Notification getNotification() {
     return notification;
-  }
-
-  protected LayoutPanel getRootPanel() {
-    return rootPanel;
   }
 
   protected String getScreenStyle() {

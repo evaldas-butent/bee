@@ -13,7 +13,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
@@ -99,7 +98,7 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
         }
       }));
       dialog.setWidget(container);
-      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
+      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
     }
 
     private void addTrip(long tripId) {

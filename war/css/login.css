@@ -1,103 +1,106 @@
 body {
   font-family: Arial, sans-serif;
   font-size: 13px;
+  background-color: #fbfbfb;  
+  color: #222;
+  overflow: hidden;
 }
 
 .bee-SignIn-Panel {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: 400px;
-  height: 400px;
-  margin-top: -240px;
+  top: 5%;
+  width: 500px;
+  height: 90%;
   margin-left: -200px;
+  overflow: auto;
 }
 
 .bee-SignIn-Logo-container {
-  position: absolute;
-  top: -25px;
-  left: 25%;
-  width: 185px;
+  width: 400px;
+  text-align: center;
 }
 .bee-SignIn-Logo {
-  width: 100%;
+  text-align: center;
 }
 
 .bee-SignIn-Locale-container {
-  position: absolute;
-  top: 40px;
-  right: -100px;
+  margin-top: 2ex;
+  height: 40px;
+  text-align: right;
+}
+.bee-SignIn-Locale-input {
+  visibility: hidden;
+}
+.bee-SignIn-Locale-input:checked + img {
+  width: 48px;
+}
+.bee-SignIn-Locale-flag {
+  cursor: pointer;
+  width: 32px;
+  transition: width 500ms;
 }
 
 .bee-SignIn-Label {
-  position: absolute;
+  position: relative;
   left: 100px;
+  width: 200px;
+  margin-bottom: 3px;
 }
 
 .bee-SignIn-Input {
-  position: absolute;
+  position: relative;
   left: 100px;
-  width: 175px;
+  width: 200px;
   height: 32px;
   padding-left: 8px;
-  border: 1px solid #d9d9d9;
-  border-top: 1px solid silver;
-  box-shadow: inset 3px 3px 10px silver;
-}
+  font-size: 15px;
+  color: black;
+  box-sizing: border-box;
+}  
 
 .bee-SignIn-Input:focus {
-  background-color: whitesmoke;
+  outline: #80c4f9 solid 1px;
 }
 
 .bee-SignIn-Label-user {
-  top: 90px;
-}
-
-.bee-SignIn-Input-user {
-  top: 110px;
+  margin-top: 10%;
 }
 
 .bee-SignIn-Label-password {
-  top: 148px;
+  margin-top: 1ex;
 }
 
-.bee-SignIn-Input-password {
-  top: 168px;
+.bee-SignIn-Error {
+  width: 400px;
+  text-align: center;
+  margin-top: 2ex;
+  color: red;
 }
 
 .bee-SignIn-Button {
-  position: absolute;
-  left: 130px;
-  top: 220px;
+  display: block;
+  position: relative;
+  left: 140px;
+  width: 120px;
   height: 40px;
-  width: 125px;
+  margin-top: 8%;
   padding-left: 8px;
   padding-right: 8px;
   background-color: #43494F;
   color: white;
   font-weight: bold;
-  border: 2px solid #43494F;
+  border: 1px solid transparent;
   border-radius: 3px;
+  box-sizing: border-box;
   cursor: pointer;
 }
 
-.bee-SignIn-Input:focus,
-.bee-SignIn-Button:focus {
-  outline: #80c4f9 solid 1px;
-}
-
-.bee-SignIn-Error {
-  position: absolute;
-  left: 100px;
-  bottom: 100px;
-  color: red;
-}
-
 .bee-SignIn-Command-container {
-  position: absolute;
+  position: relative;
   left: 50px;
   width: 300px;
-  bottom: 70px;
+  margin-top: 3ex;
 }
 .bee-SignIn-Command-Form-query {
   position: absolute;
@@ -116,9 +119,9 @@ body {
 }
 
 .bee-SignIn-Copyright {
-  position: absolute;
-  left: 100px;
-  bottom: 20px;
+  width: 400px;
+  text-align: center;
+  margin-top: 10%;
   cursor: pointer;
 }
 .bee-SignIn-Copyright-logo {

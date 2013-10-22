@@ -2,7 +2,6 @@ package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.LayoutPanel;
 
 import com.butent.bee.shared.Pair;
 
@@ -47,9 +46,8 @@ public class BeeKeeper {
 
   private Module[] modules;
 
-  BeeKeeper(LayoutPanel root) {
+  BeeKeeper() {
     screen = GWT.create(Screen.class);
-    screen.setRootPanel(root);
 
     bus = new EventManager();
     rpc = new RpcFactory();

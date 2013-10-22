@@ -2,7 +2,9 @@ package com.butent.bee.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -11,6 +13,7 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.shared.BeeConst;
@@ -39,6 +42,7 @@ public class Bee implements EntryPoint {
   public static void exit() {
     Bee.keeper.exit();
     BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
+    BodyPanel.get().clear();
   }
 
   @Override
@@ -54,7 +58,7 @@ public class Bee implements EntryPoint {
       DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
     }
 
-    Bee.keeper = new BeeKeeper(RootLayoutPanel.get());
+    Bee.keeper = new BeeKeeper();
 
     Bee.keeper.init();
     Bee.keeper.start();
@@ -62,7 +66,14 @@ public class Bee implements EntryPoint {
     if (GWT.isProdMode()) {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());
     }
+
     BeeKeeper.getScreen().start();
+    Window.addResizeHandler(new ResizeHandler() {
+      @Override
+      public void onResize(ResizeEvent event) {
+        BeeKeeper.getScreen().getScreenPanel().onResize();
+      }
+    });
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGIN);
     params.addQueryItem(Service.VAR_UI, BeeKeeper.getScreen().getUserInterface().getShortName());

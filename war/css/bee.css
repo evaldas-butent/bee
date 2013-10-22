@@ -1,7 +1,8 @@
-body {
+.bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
   color: black;
+  overflow: hidden;
 }
 
 [draggable] {
@@ -632,6 +633,10 @@ body {
   align-items: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
+}
+.bee-Body > div.bee-DialogBox:last-of-type .bee-Dialog-header,
+.bee-Body > div.bee-ModalForm:last-of-type > .bee-ModalForm-content > .bee-Header-container {
+  background-image: linear-gradient(to bottom, #feffff, #d2ebf9);
 }
 
 .bee-Dialog-caption {

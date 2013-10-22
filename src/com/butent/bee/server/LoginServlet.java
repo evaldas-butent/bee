@@ -97,22 +97,26 @@ public class LoginServlet extends HttpServlet {
 
     Form form = form().addClass(stylePrefix + "Form").methodPost();
 
+    form.append(
+        div().addClass(stylePrefix + "Logo-container").append(
+            img().addClass(stylePrefix + "Logo").src("images/logo.png").alt("logo")));
+
     if (SupportedLocale.values().length > 1) {
       Div localeContainer = div().addClass(stylePrefix + "Locale-container");
 
       for (SupportedLocale locale : SupportedLocale.values()) {
         localeContainer.append(
-            label().append(
-                input().type(Type.RADIO).name(HttpConst.PARAM_LOCALE).value(locale.getLanguage()))
-                .text(locale.getCaption()));
+            label().addClass(stylePrefix + "Locale-label").append(
+                input().addClass(stylePrefix + "Locale-input").type(Type.RADIO)
+                    .name(HttpConst.PARAM_LOCALE).value(locale.getLanguage()),
+                img().addClass(stylePrefix + "Locale-flag").title(locale.getCaption())
+                    .src(Paths.getLangIconPath(locale.getIconName())).alt(locale.getCaption())));
       }
 
       form.append(localeContainer);
     }
 
     form.append(
-        div().addClass(stylePrefix + "Logo-container").append(
-            img().addClass(stylePrefix + "Logo").src("images/logo.png").alt("logo")),
         div().addClass(stylePrefix + "Label").addClass(stylePrefix + "Label-user")
             .text(localizableConstants.loginUserName()),
         input().addClass(stylePrefix + "Input").addClass(stylePrefix + "Input-user")
@@ -129,14 +133,14 @@ public class LoginServlet extends HttpServlet {
       form.append(input().type(Type.HIDDEN).name(HttpConst.PARAM_UI).value(ui));
     }
 
+    if (state == State.FAIL) {
+      form.append(div().addClass(stylePrefix + "Error").text(localizableConstants.loginFailed()));
+    }
+
     form.append(input().type(Type.SUBMIT).addClass(stylePrefix + "Button").value(
         localizableConstants.loginSubmit()));
 
     panel.append(form);
-
-    if (state == State.FAIL) {
-      panel.append(div().addClass(stylePrefix + "Error").text(localizableConstants.loginFailed()));
-    }
 
     String commandRegister = parameters.get(HttpConst.PARAM_REGISTER);
     String commandQuery = parameters.get(HttpConst.PARAM_QUERY);

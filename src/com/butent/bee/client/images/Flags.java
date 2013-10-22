@@ -91,8 +91,7 @@ public final class Flags {
   
   public static String getPath(String countryCode) {
     Assert.notEmpty(countryCode);
-    return Paths.buildPath(Paths.IMAGE_DIR, Paths.FLAG_DIR,
-        countryCode.trim().toLowerCase() + ".png");
+    return Paths.getFlagPath(countryCode.trim().toLowerCase());
   }
   
   public static boolean isEmpty() {

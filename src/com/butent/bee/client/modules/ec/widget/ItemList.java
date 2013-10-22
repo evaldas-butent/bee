@@ -140,7 +140,7 @@ public class ItemList extends Flow implements KeyDownHandler {
                   dialog.setAnimationEnabled(true);
                   dialog.setHideOnEscape(true);
 
-                  dialog.center();
+                  dialog.cascade();
 
                 } else {
                   BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());

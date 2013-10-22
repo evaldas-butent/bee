@@ -4,9 +4,8 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Position;
 
+import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
@@ -44,51 +43,33 @@ public final class Rulers {
     DomUtils.createId(lineRuler, idPrefix);
     lineRuler.setInnerHTML(BeeConst.HTML_NBSP);
 
-    Style style = lineRuler.getStyle();
-    style.setPosition(Position.ABSOLUTE);
-    style.setZIndex(-100);
-    StyleUtils.setTop(style, -100);
-
-    Document.get().getBody().appendChild(lineRuler);
+    StyleUtils.makeAbsolute(lineRuler);
+    BodyPanel.conceal(lineRuler);
 
     areaRuler = Document.get().createDivElement();
     DomUtils.createId(areaRuler, idPrefix);
     areaRuler.setInnerHTML(BeeConst.HTML_NBSP);
 
-    style = areaRuler.getStyle();
-    style.setPosition(Position.ABSOLUTE);
-    style.setZIndex(-200);
-    StyleUtils.setTop(style, -200);
-
-    Document.get().getBody().appendChild(areaRuler);
+    StyleUtils.makeAbsolute(areaRuler);
+    BodyPanel.conceal(areaRuler);
 
     fixedUnitRuler = Document.get().createDivElement();
     DomUtils.createId(fixedUnitRuler, idPrefix);
     fixedUnitRuler.setInnerHTML(BeeConst.HTML_NBSP);
 
-    style = fixedUnitRuler.getStyle();
-    style.setPosition(Position.ABSOLUTE);
-    style.setZIndex(-300);
-    StyleUtils.setTop(style, -300);
+    StyleUtils.setWidth(fixedUnitRuler, unitRulerScale, CssUnit.CM);
+    StyleUtils.setHeight(fixedUnitRuler, unitRulerScale, CssUnit.CM);
 
-    StyleUtils.setWidth(style, unitRulerScale, CssUnit.CM);
-    StyleUtils.setHeight(style, unitRulerScale, CssUnit.CM);
-
-    Document.get().getBody().appendChild(fixedUnitRuler);
+    BodyPanel.conceal(fixedUnitRuler);
 
     relativeUnitRuler = Document.get().createDivElement();
     DomUtils.createId(relativeUnitRuler, idPrefix);
     relativeUnitRuler.setInnerHTML(BeeConst.HTML_NBSP);
 
-    style = relativeUnitRuler.getStyle();
-    style.setPosition(Position.ABSOLUTE);
-    style.setZIndex(-400);
-    StyleUtils.setTop(style, -400);
+    StyleUtils.setWidth(relativeUnitRuler, unitRulerScale, CssUnit.EM);
+    StyleUtils.setHeight(relativeUnitRuler, unitRulerScale, CssUnit.EX);
 
-    StyleUtils.setWidth(style, unitRulerScale, CssUnit.EM);
-    StyleUtils.setHeight(style, unitRulerScale, CssUnit.EX);
-
-    Document.get().getBody().appendChild(relativeUnitRuler);
+    BodyPanel.conceal(relativeUnitRuler);
   }
 
   public static int getAreaHeight(Font font, String content, boolean asHtml) {

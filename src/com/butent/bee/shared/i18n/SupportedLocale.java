@@ -11,6 +11,11 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
+    public String getIconName() {
+      return "lithuanian";
+    }
+
+    @Override
     public String getLanguage() {
       return "lt";
     }
@@ -22,6 +27,11 @@ public enum SupportedLocale implements HasCaption {
       return "English";
     }
 
+    @Override
+    public String getIconName() {
+      return "english";
+    }
+    
     @Override
     public String getLanguage() {
       return "en";
@@ -38,6 +48,8 @@ public enum SupportedLocale implements HasCaption {
     }
     return null;
   }
+
+  public abstract String getIconName();
 
   public abstract String getLanguage();
 }

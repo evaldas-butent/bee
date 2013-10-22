@@ -494,7 +494,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     setDialog(popup);
     setFilterChanged(false);
 
-    popup.showOnTop(target, 5);
+    popup.showOnTop(target);
   }
 
   protected void select(Integer item) {

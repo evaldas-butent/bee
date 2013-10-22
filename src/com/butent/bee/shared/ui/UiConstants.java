@@ -63,8 +63,7 @@ public final class UiConstants {
   }
 
   public static String wtfplUrl() {
-    return "http://www.butent.com";
-//    return "http://www.wtfpl.net";
+    return "http://www.wtfpl.net";
   }
   
   private UiConstants() {

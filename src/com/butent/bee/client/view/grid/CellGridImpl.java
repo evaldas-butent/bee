@@ -2348,7 +2348,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
           if (!newRowFormState.contains(State.INITIALIZED)) {
             amendGeneratedSize(popup, form);
           }
-          popup.showAt(getAbsoluteLeft(), getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
+          popup.showAt(getAbsoluteLeft(), getAbsoluteTop());
         } else {
           popup.center();
         }
