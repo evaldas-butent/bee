@@ -115,9 +115,10 @@ body {
 
 .bee-Logo {
   position: absolute;
-  left: -2em;
-  top: -2ex;
-  max-width: 150px;
+  left: 1ex;
+  top: 3ex;
+  max-width: 100px;
+  max-height: 57px;
 }
 
 .bee-NorthContainer > div {
