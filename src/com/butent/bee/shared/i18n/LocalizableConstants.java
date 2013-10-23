@@ -406,6 +406,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String tooLittleData();
 
+  String total();
+
   String totalOf();
 
   String type();

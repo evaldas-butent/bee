@@ -154,6 +154,7 @@ public final class EcConstants {
   public static final String SVC_UPDATE_COSTS = "updateCosts";
 
   public static final String SVC_SEND_TO_ERP = "sendToERP";
+  public static final String SVC_MAIL_ORDER = "mailOrder";
 
   public static final String SVC_MERGE_CATEGORY = "mergeCategory";
 
@@ -180,6 +181,8 @@ public final class EcConstants {
 
   public static final String VAR_CART = VAR_PREFIX + "cart";
   public static final String VAR_FILTER = VAR_PREFIX + "filter";
+
+  public static final String VAR_ORDER = VAR_PREFIX + "order";
   public static final String VAR_MAIL = VAR_PREFIX + "mail";
 
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
@@ -318,6 +321,7 @@ public final class EcConstants {
   public static final String ALS_ORDER_MANAGER_LAST_NAME = "ManagerLastName";
   public static final String ALS_ORDER_DELIVERY_METHOD_NAME = "DeliveryMethodName";
   public static final String ALS_ORDER_REJECTION_REASON_NAME = "RejectionReasonName";
+  public static final String ALS_ORDER_CLIENT_USER = "ClientUser";
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_TYPE = "Type";

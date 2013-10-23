@@ -23,6 +23,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -55,7 +56,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
-import com.butent.bee.shared.modules.ec.EcHelper;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -67,7 +68,7 @@ import java.util.Set;
 class EcOrderForm extends AbstractFormInterceptor {
 
   private static final String STYLE_UNSUPPLIED = EcStyles.name("Order-UnsuppliedItems-");
-  
+
   private static final String STYLE_UNSUPPLIED_SELECTION = STYLE_UNSUPPLIED + "selection";
   private static final String STYLE_UNSUPPLIED_DATE = STYLE_UNSUPPLIED + "date";
   private static final String STYLE_UNSUPPLIED_NAME = STYLE_UNSUPPLIED + "name";
@@ -81,10 +82,10 @@ class EcOrderForm extends AbstractFormInterceptor {
 
   private static final String STYLE_SUFFIX_LABEL = "-label";
   private static final String STYLE_SUFFIX_INPUT = "-input";
-  
+
   private static void addToUnsuppliedItems(long orderId) {
     ParameterList params = EcKeeper.createArgs(SVC_ADD_TO_UNSUPPLIED_ITEMS);
-    params.addQueryItem(COL_ORDER_ITEM_ORDER, orderId);
+    params.addQueryItem(VAR_ORDER, orderId);
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
@@ -97,6 +98,7 @@ class EcOrderForm extends AbstractFormInterceptor {
   private Button unsupplied;
   private Button send;
   private Button reject;
+  private Button mail;
 
   EcOrderForm() {
     super();
@@ -149,6 +151,16 @@ class EcOrderForm extends AbstractFormInterceptor {
       header.addCommandItem(this.reject);
     }
 
+    if (this.mail == null) {
+      this.mail = new Button(Localized.getConstants().ecOrderMailCommand(), new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          mailOrder();
+        }
+      });
+    }
+    header.addCommandItem(this.mail);
+
     form.setEnabled(status == EcOrderStatus.NEW);
 
     return true;
@@ -156,42 +168,42 @@ class EcOrderForm extends AbstractFormInterceptor {
 
   private void appendUnsuppliedItems(BeeRowSet rowSet, final Set<Long> selectedIds) {
     long orderId = getFormView().getActiveRow().getId();
-    
-    int articleIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_ARTICLE); 
-    int qtyIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_QUANTITY); 
-    int priceIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_PRICE); 
+
+    int articleIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_ARTICLE);
+    int qtyIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_QUANTITY);
+    int priceIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_PRICE);
     int noteIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_NOTE);
-    
+
     List<String> colNames = Lists.newArrayList(COL_ORDER_ITEM_ORDER, COL_ORDER_ITEM_ARTICLE,
         COL_ORDER_ITEM_QUANTITY_ORDERED, COL_ORDER_ITEM_QUANTITY_SUBMIT,
         COL_ORDER_ITEM_PRICE, COL_ORDER_ITEM_NOTE);
     List<BeeColumn> columns = Data.getColumns(VIEW_ORDER_ITEMS, colNames);
-    
+
     final Holder<Integer> latch = Holder.of(0);
     RowInsertCallback insertCallback = new RowInsertCallback(VIEW_ORDER_ITEMS) {
       @Override
       public void onSuccess(BeeRow result) {
         super.onSuccess(result);
-        
+
         latch.set(latch.get() + 1);
         if (BeeUtils.unbox(latch.get()) == selectedIds.size()) {
           DataChangeEvent.fireRefresh(VIEW_ORDER_ITEMS);
         }
       }
     };
-    
+
     final Set<RowInfo> delete = Sets.newHashSet();
-    
+
     for (Long id : selectedIds) {
       BeeRow row = rowSet.getRowById(id);
-      
+
       List<String> values = Queries.asList(orderId, row.getString(articleIndex),
           0, row.getString(qtyIndex), row.getString(priceIndex), row.getString(noteIndex));
       Queries.insert(VIEW_ORDER_ITEMS, columns, values, null, insertCallback);
-      
+
       delete.add(new RowInfo(row, true));
     }
-    
+
     if (!delete.isEmpty()) {
       Queries.deleteRows(VIEW_UNSUPPLIED_ITEMS, delete, new Queries.IntCallback() {
         @Override
@@ -201,12 +213,12 @@ class EcOrderForm extends AbstractFormInterceptor {
       });
     }
   }
-  
+
   private void getUnsuppliedItems() {
     int index = getFormView().getDataIndex(COL_ORDER_CLIENT);
     Long client = getFormView().getActiveRow().getLong(index);
     Assert.notNull(client);
-    
+
     Filter filter = ComparisonFilter.isEqual(COL_UNSUPPLIED_ITEM_CLIENT, new LongValue(client));
     Queries.getRowSet(VIEW_UNSUPPLIED_ITEMS, null, filter, new Queries.RowSetCallback() {
       @Override
@@ -216,6 +228,24 @@ class EcOrderForm extends AbstractFormInterceptor {
         } else {
           showUnsuppliedItems(result);
         }
+      }
+    });
+  }
+
+  private void mailOrder() {
+    List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderCopyByMail());
+    Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        ParameterList args = EcKeeper.createArgs(SVC_MAIL_ORDER);
+        args.addQueryItem(VAR_ORDER, getFormView().getActiveRow().getId());
+
+        BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(getFormView());
+          }
+        });
       }
     });
   }
@@ -329,8 +359,11 @@ class EcOrderForm extends AbstractFormInterceptor {
     if (reject != null) {
       header.addCommandItem(reject);
     }
+    if (mail != null) {
+      header.addCommandItem(mail);
+    }
   }
-  
+
   private void sendToErp() {
     Global.confirm(Localized.getConstants().ecSendToERPConfirm(), new ConfirmationCallback() {
       @Override
@@ -343,7 +376,7 @@ class EcOrderForm extends AbstractFormInterceptor {
         header.addCommandItem(new Image(Global.getImages().loading()));
 
         ParameterList args = EcKeeper.createArgs(SVC_SEND_TO_ERP);
-        args.addDataItem(COL_ORDER_ITEM_ORDER, rowId);
+        args.addDataItem(VAR_ORDER, rowId);
 
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
@@ -356,7 +389,7 @@ class EcOrderForm extends AbstractFormInterceptor {
 
             } else {
               DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
-              
+
               Queries.getRow(form.getViewName(), rowId, new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow result) {
@@ -373,7 +406,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       }
     });
   }
-  
+
   private void showUnsuppliedItems(final BeeRowSet rowSet) {
     int dateIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_DATE);
 
@@ -383,9 +416,9 @@ class EcOrderForm extends AbstractFormInterceptor {
 
     int qtyIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_QUANTITY);
     int priceIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_PRICE);
-    
-    final Set<Long> selectedIds = Sets.newHashSet(); 
-    
+
+    final Set<Long> selectedIds = Sets.newHashSet();
+
     Flow container = new Flow(STYLE_UNSUPPLIED + "container");
 
     final HtmlTable table = new HtmlTable();
@@ -406,8 +439,8 @@ class EcOrderForm extends AbstractFormInterceptor {
             selectedIds.add(dataRow.getId());
           }
         }
-        
-        Collection<Widget> children = 
+
+        Collection<Widget> children =
             UiHelper.getChildrenByStyleName(table, Sets.newHashSet(STYLE_UNSUPPLIED_SELECTION));
         for (Widget child : children) {
           if (child instanceof SimpleCheckBox) {
@@ -417,7 +450,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       }
     });
     table.setWidgetAndStyle(row, col++, selectAll, STYLE_UNSUPPLIED + "selectAll");
-    
+
     Label dateLabel = new Label(Localized.getConstants().ecOrderDate());
     table.setWidgetAndStyle(row, col++, dateLabel, STYLE_UNSUPPLIED_DATE + STYLE_SUFFIX_LABEL);
 
@@ -438,12 +471,12 @@ class EcOrderForm extends AbstractFormInterceptor {
 
     table.getRowFormatter().addStyleName(row, STYLE_UNSUPPLIED + "header");
     row++;
-    
+
     for (BeeRow dataRow : rowSet.getRows()) {
       final long id = dataRow.getId();
 
       col = 0;
-      
+
       final SimpleCheckBox selection = new SimpleCheckBox();
       selection.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
         @Override
@@ -461,7 +494,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       });
 
       table.setWidgetAndStyle(row, col++, selection, STYLE_UNSUPPLIED_SELECTION);
-      
+
       Label dateWidget = new Label(TimeUtils.renderCompact(dataRow.getDateTime(dateIndex)));
       table.setWidgetAndStyle(row, col++, dateWidget, STYLE_UNSUPPLIED_DATE);
 
@@ -476,21 +509,21 @@ class EcOrderForm extends AbstractFormInterceptor {
 
       Label qtyWidget = new Label(dataRow.getString(qtyIndex));
       table.setWidgetAndStyle(row, col++, qtyWidget, STYLE_UNSUPPLIED_QUANTITY);
-      
+
       int cents = EcUtils.toCents(dataRow.getDouble(priceIndex));
-      Label priceWidget = new Label(EcHelper.renderCents(cents));
+      Label priceWidget = new Label(EcUtils.renderCents(cents));
       table.setWidgetAndStyle(row, col++, priceWidget, STYLE_UNSUPPLIED_PRICE);
-      
+
       table.getRowFormatter().addStyleName(row, STYLE_UNSUPPLIED_ROW);
-      
+
       row++;
     }
-    
+
     Simple wrapper = new Simple(table);
     wrapper.addStyleName(STYLE_UNSUPPLIED + "wrapper");
-    
+
     container.add(wrapper);
-    
+
     Button append = new Button(Localized.getConstants().ecUnsuppliedItemsAppend());
     append.addStyleName(STYLE_UNSUPPLIED + "append");
     container.add(append);
@@ -503,7 +536,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     dialog.setHideOnEscape(true);
 
     dialog.center();
-    
+
     append.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {

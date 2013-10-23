@@ -124,6 +124,8 @@ public interface LocalizableEcConstants {
 
   String ecItemName();
 
+  String ecItemNote();
+
   String ecItemOeNumber();
 
   String ecItemOriginalNumber();
@@ -131,6 +133,10 @@ public interface LocalizableEcConstants {
   String ecItemPrice();
 
   String ecItemQuantity();
+
+  String ecItemQuantityOrdered();
+
+  String ecItemQuantitySubmit();
 
   String ecItemSeason();
 
@@ -145,6 +151,8 @@ public interface LocalizableEcConstants {
   String ecItemViscosity();
 
   String ecItemVoltage();
+
+  String ecItemWeight();
 
   String ecItemWidth();
 
@@ -173,6 +181,8 @@ public interface LocalizableEcConstants {
   String ecOrderDate();
 
   String ecOrderItems();
+  
+  String ecOrderMailCommand();
 
   String ecOrderNumber();
 

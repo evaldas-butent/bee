@@ -2,7 +2,6 @@ package com.butent.bee.shared.modules.ec;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
-import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;

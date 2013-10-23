@@ -23,7 +23,7 @@ import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
-import com.butent.bee.shared.modules.ec.EcHelper;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -195,12 +195,12 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
         int quantity = item.getQuantity();
         int price = item.getEcItem().getPrice();
 
-        sb.append(quantity).append(" x ").append(EcHelper.renderCents(price));
+        sb.append(quantity).append(" x ").append(EcUtils.renderCents(price));
         sb.append(BeeConst.CHAR_EOL);
       }
 
       sb.append(Localized.getConstants().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
-      sb.append(EcHelper.renderCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
+      sb.append(EcUtils.renderCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
       sb.append(EcConstants.CURRENCY);
 
       return sb.toString();

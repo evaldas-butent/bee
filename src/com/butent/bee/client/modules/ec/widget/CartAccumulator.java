@@ -14,9 +14,9 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputInteger;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 
 public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {

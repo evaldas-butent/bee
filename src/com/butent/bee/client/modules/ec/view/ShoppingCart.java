@@ -23,7 +23,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Button;
@@ -40,7 +39,7 @@ import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
-import com.butent.bee.shared.modules.ec.EcHelper;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -135,7 +134,7 @@ public class ShoppingCart extends Split {
       return;
     }
 
-    final String amount = EcHelper.renderCents(cart.totalCents());
+    final String amount = EcUtils.renderCents(cart.totalCents());
 
     ParameterList params = EcKeeper.createArgs(EcConstants.SVC_SUBMIT_ORDER);
     params.addQueryItem(EcConstants.COL_SHOPPING_CART_TYPE, cartType.ordinal());
@@ -424,7 +423,7 @@ public class ShoppingCart extends Split {
   }
 
   private static Widget renderPrice(CartItem item) {
-    return new Label(EcHelper.renderCents(item.getEcItem().getPrice()));
+    return new Label(EcUtils.renderCents(item.getEcItem().getPrice()));
   }
 
   private Widget renderQuantity(final CartItem item) {
@@ -521,7 +520,7 @@ public class ShoppingCart extends Split {
 
   private static String renderTotal(Cart cart) {
     return BeeUtils.joinWords(Localized.getConstants().ecShoppingCartTotal(),
-        EcHelper.renderCents(cart.totalCents()), EcConstants.CURRENCY);
+        EcUtils.renderCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
   private static void setInt(HasHtml widget, int value) {

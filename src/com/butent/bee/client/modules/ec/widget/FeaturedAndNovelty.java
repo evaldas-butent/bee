@@ -15,7 +15,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcHelper;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -128,7 +128,7 @@ public class FeaturedAndNovelty extends Flow {
     int price = item.getPrice();
     if (price > 0) {
       String priceInfo = BeeUtils.joinWords(Localized.getConstants().ecItemPrice() 
-          + BeeConst.STRING_COLON, EcHelper.renderCents(price), EcConstants.CURRENCY);
+          + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
       Label itemPrice = new Label(priceInfo);
       EcStyles.add(itemPrice, primaryStyle, STYLE_PRICE);
       panel.add(itemPrice);

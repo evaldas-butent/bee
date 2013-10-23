@@ -22,7 +22,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.modules.ec.EcUtils;
+import com.butent.bee.client.modules.ec.EcWidgetFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -33,7 +33,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcHelper;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -96,7 +96,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     String code = item.getCode();
     if (!BeeUtils.isEmpty(code)) {
-      Widget codeWidget = EcUtils.renderField(Localized.getConstants().ecItemCode(), code,
+      Widget codeWidget = EcWidgetFactory.renderField(Localized.getConstants().ecItemCode(), code,
           STYLE_ITEM_CODE);
       panel.add(codeWidget);
       codeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
@@ -154,7 +154,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     Long brand = item.getBrand();
     if (brand != null) {
-      Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
+      Widget brandWidget = EcWidgetFactory.renderField(Localized.getConstants().ecItemBrand(),
           EcKeeper.getBrandName(brand), STYLE_ITEM_BRAND);
       if (brandWidget != null) {
         panel.add(brandWidget);
@@ -176,7 +176,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     Flow panel = new Flow();
 
-    InlineLabel value = new InlineLabel(EcHelper.renderCents(price));
+    InlineLabel value = new InlineLabel(EcUtils.renderCents(price));
     value.addStyleName(stylePrefix + "value");
     panel.add(value);
 
@@ -190,7 +190,7 @@ public class ItemList extends Flow implements KeyDownHandler {
   private static Widget renderStock(int stock, String unit) {
     Flow wrapper = new Flow(STYLE_STOCK_WRAPPER);
 
-    Widget stockWidget = EcUtils.createStockWidget(stock);
+    Widget stockWidget = EcWidgetFactory.createStockWidget(stock);
     stockWidget.addStyleName((stock > 0) ? STYLE_HAS_STOCK : STYLE_NO_STOCK);
 
     wrapper.add(stockWidget);

@@ -40,6 +40,7 @@ import com.butent.bee.client.view.HtmlEditor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -183,6 +184,16 @@ public final class EcKeeper {
     }
   }
 
+  public static String formatStock(int stock) {
+    if (stock <= 0) {
+      return Localized.getConstants().ecStockAsk();
+    } else if (isStockLimited() && MAX_VISIBLE_STOCK > 0 && stock > MAX_VISIBLE_STOCK) {
+      return BeeConst.STRING_GT + MAX_VISIBLE_STOCK;
+    } else {
+      return BeeUtils.toString(stock);
+    }
+  }
+  
   public static String getBrandName(Long brand) {
     Assert.notNull(brand);
     return data.getBrandName(brand);
@@ -611,7 +622,7 @@ public final class EcKeeper {
         Element element = nodes.getItem(i);
         int stock = BeeUtils.toInt(DomUtils.getDataProperty(element, DATA_ATTRIBUTE_STOCK));
         if (stock > MAX_VISIBLE_STOCK) {
-          element.setInnerText(EcUtils.formatStock(stock));
+          element.setInnerText(formatStock(stock));
         }
       }
     }

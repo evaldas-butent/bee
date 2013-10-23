@@ -1,5 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -26,6 +28,11 @@ public class Tr extends FertileElement {
     return this;
   }
 
+  public Tr fontWeight(FontWeight fontWeight) {
+    setFontWeight(fontWeight);
+    return this;
+  }
+  
   public Tr id(String value) {
     setId(value);
     return this;
@@ -51,6 +58,11 @@ public class Tr extends FertileElement {
     return this;
   }
 
+  public Tr textAlign(TextAlign textAlign) {
+    setTextAlign(textAlign);
+    return this;
+  }
+  
   public Tr title(String value) {
     setTitle(value);
     return this;

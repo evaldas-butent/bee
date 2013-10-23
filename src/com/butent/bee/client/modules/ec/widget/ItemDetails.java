@@ -11,7 +11,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.modules.ec.EcUtils;
+import com.butent.bee.client.modules.ec.EcWidgetFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.HtmlList;
@@ -23,7 +23,7 @@ import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcHelper;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -52,7 +52,7 @@ public class ItemDetails extends Flow {
 
     if (listPrice > 0 && listPrice >= price) {
       String text = BeeUtils.joinWords(Localized.getConstants().ecListPrice()
-          + BeeConst.STRING_COLON, EcHelper.renderCents(listPrice), EcConstants.CURRENCY);
+          + BeeConst.STRING_COLON, EcUtils.renderCents(listPrice), EcConstants.CURRENCY);
       Label listPriceWidget = new Label(text);
 
       listPriceWidget.addStyleName(stylePrefix + "listPrice");
@@ -63,7 +63,7 @@ public class ItemDetails extends Flow {
 
     if (price > 0) {
       String text = BeeUtils.joinWords(Localized.getConstants().ecClientPrice()
-          + BeeConst.STRING_COLON, EcHelper.renderCents(price), EcConstants.CURRENCY);
+          + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
       Label priceWidget = new Label(text);
 
       priceWidget.addStyleName(stylePrefix + "price");
@@ -135,7 +135,7 @@ public class ItemDetails extends Flow {
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
     if (item != null) {
-      Widget itemCodeWidget = EcUtils.renderField(Localized.getConstants().ecItemCode(),
+      Widget itemCodeWidget = EcWidgetFactory.renderField(Localized.getConstants().ecItemCode(),
           item.getCode(), stylePrefix + "itemCode");
       if (itemCodeWidget != null) {
         container.add(itemCodeWidget);
@@ -143,7 +143,7 @@ public class ItemDetails extends Flow {
       }
 
       if (item.getBrand() != null) {
-        Widget brandWidget = EcUtils.renderField(Localized.getConstants().ecItemBrand(),
+        Widget brandWidget = EcWidgetFactory.renderField(Localized.getConstants().ecItemBrand(),
             EcKeeper.getBrandName(item.getBrand()), stylePrefix + "brand");
         if (brandWidget != null) {
           container.add(brandWidget);
@@ -228,7 +228,7 @@ public class ItemDetails extends Flow {
         table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
 
         int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
-        Widget stockWidget = EcUtils.createStockWidget(remainder);
+        Widget stockWidget = EcWidgetFactory.createStockWidget(remainder);
         table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
         row++;
