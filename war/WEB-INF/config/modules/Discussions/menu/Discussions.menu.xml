@@ -3,5 +3,6 @@
 
 name="Discussions" label="=discussions" order="110"
 >
- <Item name="DiscussisonParameters" label="=discussParameters" service="parameters" parameters="Discussions" separator="true" />
+ <Item name="AllDiscussions" label="=discussAll" service="discuss_list" parameters="all" separator="true" /> 
+ 
 </Entry>
