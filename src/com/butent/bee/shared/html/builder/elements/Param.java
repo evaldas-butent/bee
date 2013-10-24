@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Param extends Element {
@@ -25,7 +25,7 @@ public class Param extends Element {
   }
 
   public Param name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
@@ -35,7 +35,7 @@ public class Param extends Element {
   }
 
   public Param value(String value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 }

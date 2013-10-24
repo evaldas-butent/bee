@@ -14,10 +14,9 @@
             d:size="80" d:unit="px" />
           <TextLabel source="CompanyPhone" caption="=phone" inline="true"
             d:size="80" d:unit="px" />
-          <TextLabel source="CompanyEmail" caption="=email" inline="true"
-            d:size="80" d:unit="px">
-            <renderToken source="CompanyLabel" suffix=" " />
-            <renderToken source="CompanyEmail" prefix="&lt;" suffix="&gt;" />
+          <TextLabel caption="=email" inline="true" d:size="80" d:unit="px"
+             renderColumns="CompanyLabel CompanyEmail">
+            <renderer type="mail" />
           </TextLabel>
           <br/>  
 

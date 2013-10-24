@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -54,12 +54,12 @@ public class Ol extends FertileElement {
   }
 
   public Ol reversed() {
-    setAttribute(Attribute.REVERSED, true);
+    setAttribute(Attributes.REVERSED, true);
     return this;
   }
 
   public Ol start(int value) {
-    setAttribute(Attribute.START, value);
+    setAttribute(Attributes.START, value);
     return this;
   }
 
@@ -74,7 +74,7 @@ public class Ol extends FertileElement {
   }
 
   public Ol type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 

@@ -2,7 +2,7 @@ package com.butent.bee.shared.html.builder.elements;
 
 import com.google.common.net.MediaType;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Meta extends Element {
@@ -35,12 +35,12 @@ public class Meta extends Element {
   }
 
   public Meta charset(String value) {
-    setAttribute(Attribute.CHARSET, value);
+    setAttribute(Attributes.CHARSET, value);
     return this;
   }
 
   public Meta content(String value) {
-    setAttribute(Attribute.CONTENT, value);
+    setAttribute(Attributes.CONTENT, value);
     return this;
   }
 
@@ -50,9 +50,9 @@ public class Meta extends Element {
 
   public Meta httpEquiv(HttpEquiv httpEquiv) {
     if (httpEquiv == null) { 
-      removeAttribute(Attribute.HTTP_EQUIV);
+      removeAttribute(Attributes.HTTP_EQUIV);
     } else {
-      setAttribute(Attribute.HTTP_EQUIV, httpEquiv.getKeyword());
+      setAttribute(Attributes.HTTP_EQUIV, httpEquiv.getKeyword());
     }
     return this;
   }
@@ -68,7 +68,7 @@ public class Meta extends Element {
   }
 
   public Meta name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 

@@ -23,7 +23,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.css.CssAngle;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.values.BorderCollapse;
 import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.css.values.Display;
@@ -308,7 +308,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderBottomWidth(String value) {
-    return buildStyle(CssProperty.BORDER_BOTTOM_WIDTH, value);
+    return buildStyle(CssProperties.BORDER_BOTTOM_WIDTH, value);
   }
 
   public static SafeStyles buildBorderLeftWidth(double value, CssUnit unit) {
@@ -320,7 +320,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderLeftWidth(String value) {
-    return buildStyle(CssProperty.BORDER_LEFT_WIDTH, value);
+    return buildStyle(CssProperties.BORDER_LEFT_WIDTH, value);
   }
 
   public static SafeStyles buildBorderRightWidth(double value, CssUnit unit) {
@@ -332,7 +332,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderRightWidth(String value) {
-    return buildStyle(CssProperty.BORDER_RIGHT_WIDTH, value);
+    return buildStyle(CssProperties.BORDER_RIGHT_WIDTH, value);
   }
 
   public static SafeStyles buildBorderTopWidth(double value, CssUnit unit) {
@@ -344,7 +344,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderTopWidth(String value) {
-    return buildStyle(CssProperty.BORDER_TOP_WIDTH, value);
+    return buildStyle(CssProperties.BORDER_TOP_WIDTH, value);
   }
 
   public static SafeStyles buildBorderWidth(double value, CssUnit unit) {
@@ -356,7 +356,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildBorderWidth(String value) {
-    return buildStyle(CssProperty.BORDER_WIDTH, value);
+    return buildStyle(CssProperties.BORDER_WIDTH, value);
   }
 
   public static String buildClasses(Collection<String> styleNames) {
@@ -369,32 +369,32 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildFontFamily(String family) {
-    return buildStyle(CssProperty.FONT_FAMILY, family);
+    return buildStyle(CssProperties.FONT_FAMILY, family);
   }
 
   public static SafeStyles buildFontSize(double size, CssUnit unit) {
     Assert.isPositive(size);
-    return buildStyle(CssProperty.FONT_SIZE, toCssLength(size, normalizeUnit(unit)));
+    return buildStyle(CssProperties.FONT_SIZE, toCssLength(size, normalizeUnit(unit)));
   }
 
   public static SafeStyles buildFontSize(FontSize size) {
     Assert.notNull(size);
-    return buildStyle(CssProperty.FONT_SIZE, size.getCssName());
+    return buildStyle(CssProperties.FONT_SIZE, size.getCssName());
   }
 
   public static SafeStyles buildFontStyle(FontStyle style) {
     Assert.notNull(style);
-    return buildStyle(CssProperty.FONT_STYLE, style.getCssName());
+    return buildStyle(CssProperties.FONT_STYLE, style.getCssName());
   }
 
   public static SafeStyles buildFontVariant(FontVariant variant) {
     Assert.notNull(variant);
-    return buildStyle(CssProperty.FONT_VARIANT, variant.getCssName());
+    return buildStyle(CssProperties.FONT_VARIANT, variant.getCssName());
   }
 
   public static SafeStyles buildFontWeight(FontWeight weight) {
     Assert.notNull(weight);
-    return buildStyle(CssProperty.FONT_WEIGHT, weight.getCssName());
+    return buildStyle(CssProperties.FONT_WEIGHT, weight.getCssName());
   }
 
   public static SafeStyles buildHeight(double value, CssUnit unit) {
@@ -414,11 +414,11 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildLetterSpacing(String value) {
-    return buildStyle(CssProperty.LETTER_SPACING, value);
+    return buildStyle(CssProperties.LETTER_SPACING, value);
   }
 
   public static SafeStyles buildLineHeight(String value) {
-    return buildStyle(CssProperty.LINE_HEIGHT, value);
+    return buildStyle(CssProperties.LINE_HEIGHT, value);
   }
 
   public static SafeStyles buildMargin(String value) {
@@ -455,7 +455,7 @@ public final class StyleUtils {
 
   public static SafeStyles buildTextTransform(TextTransform textTransform) {
     Assert.notNull(textTransform);
-    return buildStyle(CssProperty.TEXT_TRANSFORM, textTransform.getCssName());
+    return buildStyle(CssProperties.TEXT_TRANSFORM, textTransform.getCssName());
   }
 
   public static SafeStyles buildTop(double value, CssUnit unit) {
@@ -475,7 +475,7 @@ public final class StyleUtils {
   }
 
   public static SafeStyles buildZIndex(int value) {
-    return buildStyle(CssProperty.Z_INDEX, value);
+    return buildStyle(CssProperties.Z_INDEX, value);
   }
   
   public static <E extends Enum<?> & HasCssName> String className(E value) {
@@ -1001,7 +1001,7 @@ public final class StyleUtils {
 
   public static void hideDisplay(Element el) {
     Assert.notNull(el);
-    setProperty(el.getStyle(), CssProperty.DISPLAY, Display.NONE);
+    setProperty(el.getStyle(), CssProperties.DISPLAY, Display.NONE);
   }
 
   public static void hideDisplay(String id) {
@@ -1126,7 +1126,7 @@ public final class StyleUtils {
 
   public static void makeAbsolute(Element el) {
     Assert.notNull(el);
-    setProperty(el.getStyle(), CssProperty.POSITION, Position.ABSOLUTE);
+    setProperty(el.getStyle(), CssProperties.POSITION, Position.ABSOLUTE);
   }
 
   public static void makeAbsolute(UIObject obj) {
@@ -1146,7 +1146,7 @@ public final class StyleUtils {
 
   public static void makeRelative(Element el) {
     Assert.notNull(el);
-    setProperty(el.getStyle(), CssProperty.POSITION, Position.RELATIVE);
+    setProperty(el.getStyle(), CssProperties.POSITION, Position.RELATIVE);
   }
 
   public static void makeRelative(UIObject obj) {
@@ -1161,7 +1161,7 @@ public final class StyleUtils {
 
   public static void occupy(Style st) {
     Assert.notNull(st);
-    setProperty(st, CssProperty.POSITION, Position.ABSOLUTE);
+    setProperty(st, CssProperties.POSITION, Position.ABSOLUTE);
 
     setLeft(st, 0, CssUnit.PX);
     setRight(st, 0, CssUnit.PX);
@@ -1477,7 +1477,7 @@ public final class StyleUtils {
 
   public static void setDisplay(Element el, Display value) {
     Assert.notNull(el);
-    setProperty(el.getStyle(), CssProperty.DISPLAY, value);
+    setProperty(el.getStyle(), CssProperties.DISPLAY, value);
   }
 
   public static void setDisplay(UIObject obj, Display value) {
@@ -2183,7 +2183,7 @@ public final class StyleUtils {
       if (visible) {
         el.getStyle().clearDisplay();
       } else {
-        setProperty(el.getStyle(), CssProperty.DISPLAY, Display.NONE);
+        setProperty(el.getStyle(), CssProperties.DISPLAY, Display.NONE);
       }
     }
   }

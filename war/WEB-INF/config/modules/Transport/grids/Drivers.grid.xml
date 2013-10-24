@@ -13,9 +13,8 @@
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
 
-    <RelColumn name="Email" caption="=email">
-      <renderToken source="Label" suffix=" " />
-      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    <RelColumn name="Email" caption="=email" renderColumns="Label Email">
+      <renderer type="mail" />
     </RelColumn>
 
     <DataColumn name="Experience" caption="=trDriverExperience" width="88" />

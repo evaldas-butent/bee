@@ -32,7 +32,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
@@ -565,7 +565,7 @@ public final class UiHelper {
 
     VerticalAlign align = StyleUtils.parseVerticalAlign(text);
     if (align != null) {
-      StyleUtils.setProperty(elem.getStyle(), CssProperty.VERTICAL_ALIGN, align);
+      StyleUtils.setProperty(elem.getStyle(), CssProperties.VERTICAL_ALIGN, align);
     }
   }
 

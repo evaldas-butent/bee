@@ -195,12 +195,12 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
         int quantity = item.getQuantity();
         int price = item.getEcItem().getPrice();
 
-        sb.append(quantity).append(" x ").append(EcUtils.renderCents(price));
+        sb.append(quantity).append(" x ").append(EcUtils.formatCents(price));
         sb.append(BeeConst.CHAR_EOL);
       }
 
       sb.append(Localized.getConstants().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
-      sb.append(EcUtils.renderCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
+      sb.append(EcUtils.formatCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
       sb.append(EcConstants.CURRENCY);
 
       return sb.toString();

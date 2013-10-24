@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -34,17 +34,17 @@ public class A extends FertileElement {
   }
 
   public A download(String value) {
-    setAttribute(Attribute.DOWNLOAD, value);
+    setAttribute(Attributes.DOWNLOAD, value);
     return this;
   }
 
   public A href(String value) {
-    setAttribute(Attribute.HREF, value);
+    setAttribute(Attributes.HREF, value);
     return this;
   }
 
   public A hrefLang(String value) {
-    setAttribute(Attribute.HREF_LANG, value);
+    setAttribute(Attributes.HREF_LANG, value);
     return this;
   }
 
@@ -64,7 +64,7 @@ public class A extends FertileElement {
   }
 
   public A rel(String value) {
-    setAttribute(Attribute.REL, value);
+    setAttribute(Attributes.REL, value);
     return this;
   }
 
@@ -79,27 +79,27 @@ public class A extends FertileElement {
   }
 
   public A target(String value) {
-    setAttribute(Attribute.TARGET, value);
+    setAttribute(Attributes.TARGET, value);
     return this;
   }
 
   public A targetBlank() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
 
   public A targetParent() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public A targetSelf() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
 
   public A targetTop() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
 
@@ -114,7 +114,7 @@ public class A extends FertileElement {
   }
 
   public A type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 }

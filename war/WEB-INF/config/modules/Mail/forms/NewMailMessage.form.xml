@@ -11,10 +11,9 @@
     <ListBox name="Accounts" style="margin-bottom:5px;" />
 
     <FlowPanel class="bee-mail-Envelope">
-      <MultiSelector name="To" viewName="Emails"
+      <MultiSelector name="To" viewName="Emails" renderColumns="Label Email"
          caption="=mailTo" d:size="40" d:unit="px" style="display:inline-block; width:600px;">
-        <renderToken source="Label" suffix=" " />
-        <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+        <renderer type="mail" />
       </MultiSelector>
 
       <Disclosure style="display: inline-block;">
@@ -23,16 +22,16 @@
           <Table>
             <row>
               <Label text="=mailCc" horizontalAlignment="right" />
-              <MultiSelector name="Cc" viewName="Emails" style="width:600px">
-                <renderToken source="Label" suffix=" " />
-                <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+              <MultiSelector name="Cc" viewName="Emails" style="width:600px"
+                 renderColumns="Label Email">
+                <renderer type="mail" />
               </MultiSelector>
             </row>
             <row>
               <Label text="=mailBcc" horizontalAlignment="right" />
-              <MultiSelector name="Bcc" viewName="Emails" style="width:600px;">
-                <renderToken source="Label" suffix=" " />
-                <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+              <MultiSelector name="Bcc" viewName="Emails" style="width:600px;"
+                 renderColumns="Label Email">
+                <renderer type="mail" />
               </MultiSelector>
             </row>
           </Table>

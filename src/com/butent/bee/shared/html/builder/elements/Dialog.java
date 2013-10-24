@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,7 +28,7 @@ public class Dialog extends FertileElement {
   }
 
   public Dialog closed() {
-    setAttribute(Attribute.OPEN, false);
+    setAttribute(Attributes.OPEN, false);
     return this;
   }
 
@@ -48,7 +48,7 @@ public class Dialog extends FertileElement {
   }
 
   public Dialog open() {
-    setAttribute(Attribute.OPEN, true);
+    setAttribute(Attributes.OPEN, true);
     return this;
   }
 

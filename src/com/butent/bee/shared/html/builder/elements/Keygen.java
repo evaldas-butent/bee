@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Keygen extends Element {
@@ -17,27 +17,27 @@ public class Keygen extends Element {
   }
 
   public Keygen autofocus() {
-    setAttribute(Attribute.AUTOFOCUS, true);
+    setAttribute(Attributes.AUTOFOCUS, true);
     return this;
   }
 
   public Keygen challenge(String value) {
-    setAttribute(Attribute.CHALLENGE, value);
+    setAttribute(Attributes.CHALLENGE, value);
     return this;
   }
 
   public Keygen disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Keygen enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
   public Keygen form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
@@ -47,7 +47,7 @@ public class Keygen extends Element {
   }
 
   public Keygen keyTypeRsa() {
-    setAttribute(Attribute.KEY_TYPE, KEY_TYPE_RSA);
+    setAttribute(Attributes.KEY_TYPE, KEY_TYPE_RSA);
     return this;
   }
 
@@ -57,7 +57,7 @@ public class Keygen extends Element {
   }
 
   public Keygen name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 

@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -34,82 +34,82 @@ public class Button extends FertileElement {
   }
 
   public Button autofocus() {
-    setAttribute(Attribute.AUTOFOCUS, true);
+    setAttribute(Attributes.AUTOFOCUS, true);
     return this;
   }
 
   public Button disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Button enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
   public Button form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
   public Button formAction(String value) {
-    setAttribute(Attribute.FORM_ACTION, value);
+    setAttribute(Attributes.FORM_ACTION, value);
     return this;
   }
 
   public Button formEncTypeMultipart() {
-    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    setAttribute(Attributes.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
 
   public Button formEncTypeText() {
-    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    setAttribute(Attributes.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
   }
 
   public Button formEncTypeUrl() {
-    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    setAttribute(Attributes.FORM_ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
     return this;
   }
 
   public Button formMethodGet() {
-    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_GET);
+    setAttribute(Attributes.FORM_METHOD, Keywords.METHOD_GET);
     return this;
   }
 
   public Button formMethodPost() {
-    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_POST);
+    setAttribute(Attributes.FORM_METHOD, Keywords.METHOD_POST);
     return this;
   }
 
   public Button formNoValidate() {
-    setAttribute(Attribute.FORM_NO_VALIDATE, true);
+    setAttribute(Attributes.FORM_NO_VALIDATE, true);
     return this;
   }
 
   public Button formTarget(String value) {
-    setAttribute(Attribute.FORM_TARGET, value);
+    setAttribute(Attributes.FORM_TARGET, value);
     return this;
   }
 
   public Button formTargetBlank() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
 
   public Button formTargetParent() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public Button formTargetSelf() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
 
   public Button formTargetTop() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
 
@@ -129,12 +129,12 @@ public class Button extends FertileElement {
   }
 
   public Button menu(String value) {
-    setAttribute(Attribute.MENU, value);
+    setAttribute(Attributes.MENU, value);
     return this;
   }
 
   public Button name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
@@ -154,27 +154,27 @@ public class Button extends FertileElement {
   }
 
   public Button typeButton() {
-    setAttribute(Attribute.TYPE, TYPE_BUTTON);
+    setAttribute(Attributes.TYPE, TYPE_BUTTON);
     return this;
   }
 
   public Button typeMenu() {
-    setAttribute(Attribute.TYPE, TYPE_MENU);
+    setAttribute(Attributes.TYPE, TYPE_MENU);
     return this;
   }
 
   public Button typeReset() {
-    setAttribute(Attribute.TYPE, TYPE_RESET);
+    setAttribute(Attributes.TYPE, TYPE_RESET);
     return this;
   }
 
   public Button typeSubmit() {
-    setAttribute(Attribute.TYPE, TYPE_SUBMIT);
+    setAttribute(Attributes.TYPE, TYPE_SUBMIT);
     return this;
   }
 
   public Button value(String value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 }

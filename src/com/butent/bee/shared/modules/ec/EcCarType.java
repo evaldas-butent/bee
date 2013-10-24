@@ -179,7 +179,7 @@ public class EcCarType implements BeeSerializable {
   
   public String getInfo() {
     return BeeUtils.joinItems(getManufacturer(), getModelName(), getTypeName(),
-        EcUtils.renderProduced(getProducedFrom(), getProducedTo()), getPower());
+        EcUtils.formatProduced(getProducedFrom(), getProducedTo()), getPower());
   }
 
   public Integer getKwFrom() {

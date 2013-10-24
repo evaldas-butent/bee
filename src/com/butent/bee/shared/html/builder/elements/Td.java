@@ -3,7 +3,7 @@ package com.butent.bee.shared.html.builder.elements;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -31,12 +31,12 @@ public class Td extends FertileElement {
   }
 
   public Td colSpan(int value) {
-    setAttribute(Attribute.COL_SPAN, value);
+    setAttribute(Attributes.COL_SPAN, value);
     return this;
   }
 
   public Td headers(String value) {
-    setAttribute(Attribute.HEADERS, value);
+    setAttribute(Attributes.HEADERS, value);
     return this;
   }
 
@@ -81,7 +81,7 @@ public class Td extends FertileElement {
   }
 
   public Td rowSpan(int value) {
-    setAttribute(Attribute.ROW_SPAN, value);
+    setAttribute(Attributes.ROW_SPAN, value);
     return this;
   }
 

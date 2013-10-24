@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -22,11 +23,11 @@ public class InputInteger extends InputNumber {
     super(element);
   }
 
-  public InputInteger(String type, int min, int max) {
+  public InputInteger(Input.Type type, int min, int max) {
     this(type, min, max, 1);
   }
 
-  public InputInteger(String type, int min, int max, int step) {
+  public InputInteger(Input.Type type, int min, int max, int step) {
     initAttributes(type, min, max, step);
   }
 
@@ -35,11 +36,11 @@ public class InputInteger extends InputNumber {
     setValue(value);
   }
 
-  public InputInteger(int value, String type, int min, int max) {
+  public InputInteger(int value, Input.Type type, int min, int max) {
     this(value, type, min, max, 1);
   }
 
-  public InputInteger(int value, String type, int min, int max, int step) {
+  public InputInteger(int value, Input.Type type, int min, int max, int step) {
     this(value);
     initAttributes(type, min, max, step);
   }
@@ -104,8 +105,8 @@ public class InputInteger extends InputNumber {
     return InputNumber.INT_CHAR_MATCHER;
   }
   
-  protected void initAttributes(String type, int min, int max, int step) {
-    if (!BeeUtils.isEmpty(type)) {
+  protected void initAttributes(Input.Type type, int min, int max, int step) {
+    if (type != null) {
       DomUtils.setInputType(this, type);
     }
     if (min < max) {

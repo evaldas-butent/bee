@@ -13,6 +13,42 @@ public final class EcUtils {
 
   private static final String IMAGE_DIR = "ec";
 
+  public static String format(Double value) {
+    return (value == null) ? null : BeeUtils.toString(value);
+  }
+
+  public static String format(Integer value) {
+    return (value == null) ? null : value.toString();
+  }
+
+  public static String formatCents(int cents) {
+    if (cents >= 0) {
+      String s = BeeUtils.toLeadingZeroes(cents, 3);
+      int len = s.length();
+      return s.substring(0, len - 2) + BeeConst.STRING_POINT + s.substring(len - 2);
+    } else {
+      return BeeConst.STRING_MINUS + formatCents(-cents);
+    }
+  }
+
+  public static String formatProduced(Integer producedFrom, Integer producedTo) {
+    Integer yearFrom = normalizeYear(producedFrom);
+    if (yearFrom == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    Integer yearTo = normalizeYear(producedTo);
+    if (yearTo == null) {
+      yearTo = currentYear;
+    }
+
+    if (yearTo > yearFrom) {
+      return yearFrom.toString() + BeeConst.STRING_MINUS + yearTo.toString();
+    } else {
+      return yearFrom.toString();
+    }
+  }
+  
   public static String imageUrl(String name) {
     return Paths.buildPath(Paths.IMAGE_DIR, IMAGE_DIR, name);
   }
@@ -47,40 +83,8 @@ public final class EcUtils {
     }
   }
 
-  public static String renderCents(int cents) {
-    if (cents >= 0) {
-      String s = BeeUtils.toLeadingZeroes(cents, 3);
-      int len = s.length();
-      return s.substring(0, len - 2) + BeeConst.STRING_POINT + s.substring(len - 2);
-    } else {
-      return BeeConst.STRING_MINUS + renderCents(-cents);
-    }
-  }
-
-  public static String renderProduced(Integer producedFrom, Integer producedTo) {
-    Integer yearFrom = normalizeYear(producedFrom);
-    if (yearFrom == null) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    Integer yearTo = normalizeYear(producedTo);
-    if (yearTo == null) {
-      yearTo = currentYear;
-    }
-
-    if (yearTo > yearFrom) {
-      return yearFrom.toString() + BeeConst.STRING_MINUS + yearTo.toString();
-    } else {
-      return yearFrom.toString();
-    }
-  }
-
-  public static String string(Double value) {
-    return (value == null) ? null : BeeUtils.toString(value);
-  }
-
-  public static String string(Integer value) {
-    return (value == null) ? null : value.toString();
+  public static String picture(String type, String text) {
+    return EcConstants.PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
   }
 
   public static int toCents(Double d) {

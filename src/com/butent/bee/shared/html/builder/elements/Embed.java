@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Embed extends Element {
@@ -20,7 +20,7 @@ public class Embed extends Element {
   }
 
   public Embed height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -35,7 +35,7 @@ public class Embed extends Element {
   }
 
   public Embed src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
@@ -45,12 +45,12 @@ public class Embed extends Element {
   }
 
   public Embed type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 
   public Embed width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 }

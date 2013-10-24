@@ -32,9 +32,8 @@
 
       <TextLabel source="CompanyEmail" caption="=email" inline="true"
         style="&display; width: 200px;" d:size="80" d:unit="px"
-        d:rootStyle="&absolute; left: 460px; top: 30px;">
-        <renderToken source="CompanyLabel" suffix=" " />
-        <renderToken source="CompanyEmail" prefix="&lt;" suffix="&gt;" />
+        d:rootStyle="&absolute; left: 460px; top: 30px;" renderColumns="CompanyLabel CompanyEmail">
+        <renderer type="mail" />
       </TextLabel>
     </FlowPanel>
 

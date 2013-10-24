@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -43,67 +43,67 @@ public class Body extends FertileElement {
   }
 
   public Body onAfterPrint(String value) {
-    setAttribute(Attribute.ON_AFTER_PRINT, value);
+    setAttribute(Attributes.ON_AFTER_PRINT, value);
     return this;
   }
 
   public Body onBeforePrint(String value) {
-    setAttribute(Attribute.ON_BEFORE_PRINT, value);
+    setAttribute(Attributes.ON_BEFORE_PRINT, value);
     return this;
   }
 
   public Body onBeforeUnload(String value) {
-    setAttribute(Attribute.ON_BEFORE_UNLOAD, value);
+    setAttribute(Attributes.ON_BEFORE_UNLOAD, value);
     return this;
   }
 
   public Body onHashChange(String value) {
-    setAttribute(Attribute.ON_HASH_CHANGE, value);
+    setAttribute(Attributes.ON_HASH_CHANGE, value);
     return this;
   }
 
   public Body onMessage(String value) {
-    setAttribute(Attribute.ON_MESSAGE, value);
+    setAttribute(Attributes.ON_MESSAGE, value);
     return this;
   }
 
   public Body onOffline(String value) {
-    setAttribute(Attribute.ON_OFFLINE, value);
+    setAttribute(Attributes.ON_OFFLINE, value);
     return this;
   }
 
   public Body onOnline(String value) {
-    setAttribute(Attribute.ON_ONLINE, value);
+    setAttribute(Attributes.ON_ONLINE, value);
     return this;
   }
 
   public Body onPageHide(String value) {
-    setAttribute(Attribute.ON_PAGE_HIDE, value);
+    setAttribute(Attributes.ON_PAGE_HIDE, value);
     return this;
   }
 
   public Body onPageShow(String value) {
-    setAttribute(Attribute.ON_PAGE_SHOW, value);
+    setAttribute(Attributes.ON_PAGE_SHOW, value);
     return this;
   }
 
   public Body onPopState(String value) {
-    setAttribute(Attribute.ON_POP_STATE, value);
+    setAttribute(Attributes.ON_POP_STATE, value);
     return this;
   }
 
   public Body onResize(String value) {
-    setAttribute(Attribute.ON_RESIZE, value);
+    setAttribute(Attributes.ON_RESIZE, value);
     return this;
   }
 
   public Body onStorage(String value) {
-    setAttribute(Attribute.ON_STORAGE, value);
+    setAttribute(Attributes.ON_STORAGE, value);
     return this;
   }
 
   public Body onUnload(String value) {
-    setAttribute(Attribute.ON_UNLOAD, value);
+    setAttribute(Attributes.ON_UNLOAD, value);
     return this;
   }
 

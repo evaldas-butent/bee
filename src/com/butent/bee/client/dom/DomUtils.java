@@ -39,6 +39,9 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -56,64 +59,16 @@ import java.util.Map;
  */
 public final class DomUtils {
 
-  public static final String TAG_ASIDE = "aside";
-  public static final String TAG_AUDIO = "audio";
-  public static final String TAG_BUTTON = "button";
-  public static final String TAG_CANVAS = "canvas";
-  public static final String TAG_DIV = "div";
-  public static final String TAG_HEAD = "head";
-  public static final String TAG_IMG = "img";
-  public static final String TAG_INPUT = "input";
-  public static final String TAG_LABEL = "label";
-  public static final String TAG_METER = "meter";
-  public static final String TAG_OPTION = "option";
-  public static final String TAG_PROGRESS = "progress";
-  public static final String TAG_SELECT = "select";
-  public static final String TAG_SPAN = "span";
-  public static final String TAG_SUMMARY = "summary";
-  public static final String TAG_SVG = "svg";
-  public static final String TAG_TABLE = "table";
-  public static final String TAG_TD = "td";
-  public static final String TAG_TEXT_AREA = "textarea";
-  public static final String TAG_TH = "th";
-  public static final String TAG_TR = "tr";
-  public static final String TAG_VIDEO = "video";
-
-  public static final String DEFAULT_ID_PREFIX = "bee";
-
-  public static final String ATTRIBUTE_CHECKED = "checked";
-  public static final String ATTRIBUTE_COL_SPAN = "colSpan";
-  public static final String ATTRIBUTE_DEFAULT_CHECKED = "defaultChecked";
-  public static final String ATTRIBUTE_DRAGGABLE = "draggable";
-  public static final String ATTRIBUTE_HIGH = "high";
-  public static final String ATTRIBUTE_LOW = "low";
-  public static final String ATTRIBUTE_MIN = "min";
-  public static final String ATTRIBUTE_MAX = "max";
-  public static final String ATTRIBUTE_OPTIMUM = "optimum";
-  public static final String ATTRIBUTE_PLACEHOLDER = "placeholder";
-  public static final String ATTRIBUTE_POSITION = "position";
-  public static final String ATTRIBUTE_ROW_SPAN = "rowSpan";
-  public static final String ATTRIBUTE_STEP = "step";
-  public static final String ATTRIBUTE_VALUE = "value";
-
-  public static final String DATA_ATTRIBUTE_PREFIX = "data-";
-
-  public static final String ATTRIBUTE_DATA_INDEX = DATA_ATTRIBUTE_PREFIX + "idx";
-  public static final String ATTRIBUTE_DATA_COLUMN = DATA_ATTRIBUTE_PREFIX + "col";
-  public static final String ATTRIBUTE_DATA_ROW = DATA_ATTRIBUTE_PREFIX + "row";
-  public static final String ATTRIBUTE_ROLE = DATA_ATTRIBUTE_PREFIX + "role";
-
-  public static final String TYPE_SEARCH = "search";
+  public static final String ATTRIBUTE_DATA_INDEX = Attributes.DATA_PREFIX + "idx";
+  public static final String ATTRIBUTE_DATA_COLUMN = Attributes.DATA_PREFIX + "col";
+  public static final String ATTRIBUTE_DATA_ROW = Attributes.DATA_PREFIX + "row";
+  public static final String ATTRIBUTE_ROLE = Attributes.DATA_PREFIX + "role";
 
   public static final String VALUE_TRUE = "true";
 
   public static final int MAX_GENERATIONS = 1000;
 
   public static final String ALL_TAGS = "*";
-
-  private static final String DEFAULT_NAME_PREFIX = "b";
-
-  private static final String ID_SEPARATOR = "-";
 
   private static int idCounter;
 
@@ -132,7 +87,7 @@ public final class DomUtils {
 
   private static final String SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-  private static final Collection<String> TABLE_CELL_TAGS = Sets.newHashSet(TAG_TD, TAG_TH);
+  private static final Collection<String> TABLE_CELL_TAGS = Sets.newHashSet(Tags.TD, Tags.TH);
 
   public static void allowSelection(Element elem) {
     Assert.notNull(elem);
@@ -304,17 +259,9 @@ public final class DomUtils {
     return rowElement;
   }
 
-  public static String createUniqueId() {
-    return createUniqueId(DEFAULT_ID_PREFIX);
-  }
-
   public static String createUniqueId(String prefix) {
     idCounter++;
-    return prefix.trim() + ID_SEPARATOR + idCounter;
-  }
-
-  public static String createUniqueName() {
-    return NameUtils.createUniqueName(DEFAULT_NAME_PREFIX);
+    return prefix.trim() + idCounter;
   }
 
   public static void enableChildren(HasWidgets parent, boolean enabled) {
@@ -331,7 +278,7 @@ public final class DomUtils {
 
     String id = elem.getId();
     if (BeeUtils.isEmpty(id)) {
-      id = createId(elem, BeeUtils.notEmpty(prefix, DEFAULT_ID_PREFIX));
+      id = createId(elem, prefix);
     }
     return id;
   }
@@ -556,7 +503,7 @@ public final class DomUtils {
 
   public static int getColSpan(Element elem) {
     if (isTableCellElement(elem)) {
-      return elem.getPropertyInt(ATTRIBUTE_COL_SPAN);
+      return elem.getPropertyInt(Attributes.COL_SPAN);
     } else {
       return 0;
     }
@@ -577,7 +524,7 @@ public final class DomUtils {
   }
   public static String getDataProperty(Element elem, String key) {
     return (elem == null || BeeUtils.isEmpty(key)) ? null 
-        : elem.getAttribute(DATA_ATTRIBUTE_PREFIX + key.trim());
+        : elem.getAttribute(Attributes.DATA_PREFIX + key.trim());
   }
 
   public static String getDataRow(Element elem) {
@@ -692,7 +639,7 @@ public final class DomUtils {
   }
 
   public static HeadElement getHead() {
-    NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
+    NodeList<Element> nodes = Document.get().getElementsByTagName(Tags.HEAD);
     if (nodes != null && nodes.getLength() > 0) {
       return HeadElement.as(nodes.getItem(0));
     }
@@ -749,7 +696,7 @@ public final class DomUtils {
     if (isInputElement(elem)) {
       input = elem.cast();
     } else {
-      NodeList<Element> lst = elem.getElementsByTagName(TAG_INPUT);
+      NodeList<Element> lst = elem.getElementsByTagName(Tags.INPUT);
       if (lst.getLength() == 1) {
         input = lst.getItem(0).cast();
       } else {
@@ -931,7 +878,7 @@ public final class DomUtils {
   }
 
   public static TableRowElement getParentRow(Element child, boolean incl) {
-    Element parent = getParentElement(child, TAG_TR, incl);
+    Element parent = getParentElement(child, Tags.TR, incl);
     if (isTableRowElement(parent)) {
       return TableRowElement.as(parent);
     } else {
@@ -940,7 +887,7 @@ public final class DomUtils {
   }
 
   public static TableElement getParentTable(Element child, boolean incl) {
-    Element parent = getParentElement(child, TAG_TABLE, incl);
+    Element parent = getParentElement(child, Tags.TABLE, incl);
     if (isTableElement(parent)) {
       return TableElement.as(parent);
     } else {
@@ -999,7 +946,7 @@ public final class DomUtils {
 
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
-      return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);
+      return elem.getPropertyInt(Attributes.ROW_SPAN);
     } else {
       return 0;
     }
@@ -1122,18 +1069,18 @@ public final class DomUtils {
 
   public static String getValue(Element elem) {
     Assert.notNull(elem);
-    return elem.getPropertyString(ATTRIBUTE_VALUE);
+    return elem.getPropertyString(Attributes.VALUE);
   }
 
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
-    return elem.getPropertyInt(ATTRIBUTE_VALUE);
+    return elem.getPropertyInt(Attributes.VALUE);
   }
 
   public static int getValueInt(String id) {
     Element elem = getElement(id);
 
-    if (JsUtils.hasProperty(elem, ATTRIBUTE_VALUE)) {
+    if (JsUtils.hasProperty(elem, Attributes.VALUE)) {
       return getValueInt(elem);
     }
 
@@ -1144,7 +1091,7 @@ public final class DomUtils {
     int len = (children == null) ? 0 : children.getLength();
     for (int i = 0; i < len; i++) {
       Node nd = children.getItem(i);
-      if (Element.is(nd) && JsUtils.hasProperty(nd, ATTRIBUTE_VALUE)) {
+      if (Element.is(nd) && JsUtils.hasProperty(nd, Attributes.VALUE)) {
         value = getValueInt(Element.as(nd));
         found = true;
         break;
@@ -1257,7 +1204,7 @@ public final class DomUtils {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_BUTTON);
+    return el.getTagName().equalsIgnoreCase(Tags.BUTTON);
   }
 
   public static boolean isChecked(Element elem) {
@@ -1265,7 +1212,7 @@ public final class DomUtils {
     InputElement input = getInputElement(elem);
     Assert.notNull(input, "input element not found");
 
-    return input.getPropertyBoolean(ATTRIBUTE_CHECKED);
+    return input.getPropertyBoolean(Attributes.CHECKED);
   }
 
   public static boolean isChecked(String id) {
@@ -1296,7 +1243,7 @@ public final class DomUtils {
 
   public static boolean isImageElement(JavaScriptObject obj) {
     if (obj != null && Element.is(obj)) {
-      return Element.as(obj).getTagName().equalsIgnoreCase(TAG_IMG);
+      return Element.as(obj).getTagName().equalsIgnoreCase(Tags.IMG);
     } else {
       return false;
     }
@@ -1335,14 +1282,14 @@ public final class DomUtils {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_INPUT);
+    return el.getTagName().equalsIgnoreCase(Tags.INPUT);
   }
 
   public static boolean isLabelElement(Element el) {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_LABEL);
+    return el.getTagName().equalsIgnoreCase(Tags.LABEL);
   }
 
   public static boolean isOrHasAncestor(Element el, String id) {
@@ -1359,7 +1306,7 @@ public final class DomUtils {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_SELECT);
+    return el.getTagName().equalsIgnoreCase(Tags.SELECT);
   }
 
   public static boolean isTableCellElement(Element el) {
@@ -1370,35 +1317,35 @@ public final class DomUtils {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_TABLE);
+    return el.getTagName().equalsIgnoreCase(Tags.TABLE);
   }
 
   public static boolean isTableRowElement(Element el) {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_TR);
+    return el.getTagName().equalsIgnoreCase(Tags.TR);
   }
 
   public static boolean isTdElement(Element el) {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_TD);
+    return el.getTagName().equalsIgnoreCase(Tags.TD);
   }
 
   public static boolean isTextAreaElement(Element el) {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_TEXT_AREA);
+    return el.getTagName().equalsIgnoreCase(Tags.TEXT_AREA);
   }
 
   public static boolean isThElement(Element el) {
     if (el == null) {
       return false;
     }
-    return el.getTagName().equalsIgnoreCase(TAG_TH);
+    return el.getTagName().equalsIgnoreCase(Tags.TH);
   }
 
   public static boolean isVisible(Element el) {
@@ -1528,15 +1475,15 @@ public final class DomUtils {
   }
 
   public static void removeMax(UIObject obj) {
-    removeAttribute(obj, ATTRIBUTE_MAX);
+    removeAttribute(obj, Attributes.MAX);
   }
 
   public static void removeMin(UIObject obj) {
-    removeAttribute(obj, ATTRIBUTE_MIN);
+    removeAttribute(obj, Attributes.MIN);
   }
 
   public static void removeStep(UIObject obj) {
-    removeAttribute(obj, ATTRIBUTE_STEP);
+    removeAttribute(obj, Attributes.STEP);
   }
 
   public static void resizeBy(Element el, int dw, int dh) {
@@ -1680,9 +1627,9 @@ public final class DomUtils {
     Assert.notEmpty(key);
     
     if (value == null) {
-      elem.removeAttribute(DATA_ATTRIBUTE_PREFIX + key.trim());
+      elem.removeAttribute(Attributes.DATA_PREFIX + key.trim());
     } else {
-      elem.setAttribute(DATA_ATTRIBUTE_PREFIX + key.trim(), value);
+      elem.setAttribute(Attributes.DATA_PREFIX + key.trim(), value);
     }
   }
 
@@ -1699,7 +1646,7 @@ public final class DomUtils {
 
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
-    elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);
+    elem.setAttribute(Attributes.DRAGGABLE, VALUE_TRUE);
   }
 
   public static void setDraggable(UIObject obj) {
@@ -1734,35 +1681,35 @@ public final class DomUtils {
     obj.getElement().setId(s);
   }
 
-  public static boolean setInputType(Element elem, String type) {
+  public static boolean setInputType(Element elem, Input.Type type) {
     assertInputElement(elem);
-    Assert.notEmpty(type);
+    Assert.notNull(type);
 
-    if (Features.supportsInputType(type)) {
-      setType(InputElement.as(elem), type);
+    if (Features.supportsInputType(type.getKeyword())) {
+      setType(InputElement.as(elem), type.getKeyword());
       return true;
     } else {
       return false;
     }
   }
 
-  public static boolean setInputType(UIObject obj, String type) {
+  public static boolean setInputType(UIObject obj, Input.Type type) {
     Assert.notNull(obj);
     return setInputType(obj.getElement(), type);
   }
 
   public static void setMax(UIObject obj, int max) {
-    setAttribute(obj, ATTRIBUTE_MAX, max);
+    setAttribute(obj, Attributes.MAX, max);
   }
 
   public static void setMin(UIObject obj, int min) {
-    setAttribute(obj, ATTRIBUTE_MIN, min);
+    setAttribute(obj, Attributes.MIN, min);
   }
 
   public static boolean setPlaceholder(Element elem, String value) {
     if ((isInputElement(elem) || isTextAreaElement(elem))
         && Features.supportsAttributePlaceholder()) {
-      elem.setAttribute(ATTRIBUTE_PLACEHOLDER, Localized.maybeTranslate(value));
+      elem.setAttribute(Attributes.PLACEHOLDER, Localized.maybeTranslate(value));
       return true;
     } else {
       return false;
@@ -1782,7 +1729,7 @@ public final class DomUtils {
   }
 
   public static boolean setSearch(Element elem) {
-    return setInputType(elem, TYPE_SEARCH);
+    return setInputType(elem, Input.Type.SEARCH);
   }
 
   public static boolean setSearch(UIObject obj) {
@@ -1798,7 +1745,7 @@ public final class DomUtils {
   }
 
   public static void setStep(UIObject obj, int step) {
-    setAttribute(obj, ATTRIBUTE_STEP, step);
+    setAttribute(obj, Attributes.STEP, step);
   }
 
   public static void setTabIndex(Widget w, int idx) {

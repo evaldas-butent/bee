@@ -52,7 +52,7 @@ public class ItemDetails extends Flow {
 
     if (listPrice > 0 && listPrice >= price) {
       String text = BeeUtils.joinWords(Localized.getConstants().ecListPrice()
-          + BeeConst.STRING_COLON, EcUtils.renderCents(listPrice), EcConstants.CURRENCY);
+          + BeeConst.STRING_COLON, EcUtils.formatCents(listPrice), EcConstants.CURRENCY);
       Label listPriceWidget = new Label(text);
 
       listPriceWidget.addStyleName(stylePrefix + "listPrice");
@@ -63,7 +63,7 @@ public class ItemDetails extends Flow {
 
     if (price > 0) {
       String text = BeeUtils.joinWords(Localized.getConstants().ecClientPrice()
-          + BeeConst.STRING_COLON, EcUtils.renderCents(price), EcConstants.CURRENCY);
+          + BeeConst.STRING_COLON, EcUtils.formatCents(price), EcConstants.CURRENCY);
       Label priceWidget = new Label(text);
 
       priceWidget.addStyleName(stylePrefix + "price");

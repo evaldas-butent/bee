@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Input extends Element {
@@ -49,7 +49,7 @@ public class Input extends Element {
   }
 
   public Input accept(String value) {
-    setAttribute(Attribute.ACCEPT, value);
+    setAttribute(Attributes.ACCEPT, value);
     return this;
   }
 
@@ -59,117 +59,117 @@ public class Input extends Element {
   }
 
   public Input alt(String value) {
-    setAttribute(Attribute.ALT, value);
+    setAttribute(Attributes.ALT, value);
     return this;
   }
 
   public Input autocomplete(String value) {
-    setAttribute(Attribute.AUTOCOMPLETE, value);
+    setAttribute(Attributes.AUTOCOMPLETE, value);
     return this;
   }
 
   public Input autocompleteOff() {
-    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
+    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
     return this;
   }
 
   public Input autocompleteOn() {
-    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
+    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
     return this;
   }
 
   public Input autofocus() {
-    setAttribute(Attribute.AUTOFOCUS, true);
+    setAttribute(Attributes.AUTOFOCUS, true);
     return this;
   }
 
   public Input checked() {
-    setAttribute(Attribute.CHECKED, true);
+    setAttribute(Attributes.CHECKED, true);
     return this;
   }
 
   public Input dirName(String value) {
-    setAttribute(Attribute.DIR_NAME, value);
+    setAttribute(Attributes.DIR_NAME, value);
     return this;
   }
 
   public Input disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Input enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
   public Input form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
   public Input formAction(String value) {
-    setAttribute(Attribute.FORM_ACTION, value);
+    setAttribute(Attributes.FORM_ACTION, value);
     return this;
   }
 
   public Input formEncTypeMultipart() {
-    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    setAttribute(Attributes.FORM_ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
 
   public Input formEncTypeText() {
-    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    setAttribute(Attributes.FORM_ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
   }
 
   public Input formEncTypeUrl() {
-    setAttribute(Attribute.FORM_ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    setAttribute(Attributes.FORM_ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
     return this;
   }
 
   public Input formMethodGet() {
-    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_GET);
+    setAttribute(Attributes.FORM_METHOD, Keywords.METHOD_GET);
     return this;
   }
 
   public Input formMethodPost() {
-    setAttribute(Attribute.FORM_METHOD, Keywords.METHOD_POST);
+    setAttribute(Attributes.FORM_METHOD, Keywords.METHOD_POST);
     return this;
   }
 
   public Input formNoValidate() {
-    setAttribute(Attribute.FORM_NO_VALIDATE, true);
+    setAttribute(Attributes.FORM_NO_VALIDATE, true);
     return this;
   }
 
   public Input formTarget(String value) {
-    setAttribute(Attribute.FORM_TARGET, value);
+    setAttribute(Attributes.FORM_TARGET, value);
     return this;
   }
 
   public Input formTargetBlank() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
 
   public Input formTargetParent() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public Input formTargetSelf() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
 
   public Input formTargetTop() {
-    setAttribute(Attribute.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attributes.FORM_TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
 
   public Input height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -179,57 +179,57 @@ public class Input extends Element {
   }
 
   public Input inputModeEmail() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_EMAIL);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_EMAIL);
     return this;
   }
 
   public Input inputModeFullWidthLatin() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_FULL_WIDTH_LATIN);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_FULL_WIDTH_LATIN);
     return this;
   }
 
   public Input inputModeKana() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_KANA);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_KANA);
     return this;
   }
 
   public Input inputModeKatakana() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_KATAKANA);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_KATAKANA);
     return this;
   }
 
   public Input inputModeLatin() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_LATIN);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_LATIN);
     return this;
   }
 
   public Input inputModeLatinName() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_LATIN_NAME);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_LATIN_NAME);
     return this;
   }
 
   public Input inputModeLatinProse() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_LATIN_PROSE);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_LATIN_PROSE);
     return this;
   }
 
   public Input inputModeNumeric() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_NUMERIC);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_NUMERIC);
     return this;
   }
 
   public Input inputModeTel() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_TEL);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_TEL);
     return this;
   }
 
   public Input inputModeUrl() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_URL);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_URL);
     return this;
   }
 
   public Input inputModeVerbatim() {
-    setAttribute(Attribute.INPUT_MODE, Keywords.INPUT_MODE_VERBATIM);
+    setAttribute(Attributes.INPUT_MODE, Keywords.INPUT_MODE_VERBATIM);
     return this;
   }
 
@@ -239,47 +239,47 @@ public class Input extends Element {
   }
 
   public Input list(String value) {
-    setAttribute(Attribute.LIST, value);
+    setAttribute(Attributes.LIST, value);
     return this;
   }
 
   public Input max(int value) {
-    setAttribute(Attribute.MAX, value);
+    setAttribute(Attributes.MAX, value);
     return this;
   }
 
   public Input max(String value) {
-    setAttribute(Attribute.MAX, value);
+    setAttribute(Attributes.MAX, value);
     return this;
   }
 
   public Input maxLength(int value) {
-    setAttribute(Attribute.MAX_LENGTH, value);
+    setAttribute(Attributes.MAX_LENGTH, value);
     return this;
   }
 
   public Input min(int value) {
-    setAttribute(Attribute.MIN, value);
+    setAttribute(Attributes.MIN, value);
     return this;
   }
 
   public Input min(String value) {
-    setAttribute(Attribute.MIN, value);
+    setAttribute(Attributes.MIN, value);
     return this;
   }
 
   public Input minLength(int value) {
-    setAttribute(Attribute.MIN_LENGTH, value);
+    setAttribute(Attributes.MIN_LENGTH, value);
     return this;
   }
 
   public Input multiple() {
-    setAttribute(Attribute.MULTIPLE, true);
+    setAttribute(Attributes.MULTIPLE, true);
     return this;
   }
 
   public Input name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
@@ -299,52 +299,52 @@ public class Input extends Element {
   }
 
   public Input pattern(String value) {
-    setAttribute(Attribute.PATTERN, value);
+    setAttribute(Attributes.PATTERN, value);
     return this;
   }
 
   public Input placeholder(String value) {
-    setAttribute(Attribute.PLACEHOLDER, value);
+    setAttribute(Attributes.PLACEHOLDER, value);
     return this;
   }
 
   public Input readOnly() {
-    setAttribute(Attribute.READ_ONLY, true);
+    setAttribute(Attributes.READ_ONLY, true);
     return this;
   }
 
   public Input required() {
-    setAttribute(Attribute.REQUIRED, true);
+    setAttribute(Attributes.REQUIRED, true);
     return this;
   }
 
   public Input required(boolean value) {
-    setAttribute(Attribute.REQUIRED, value);
+    setAttribute(Attributes.REQUIRED, value);
     return this;
   }
 
   public Input size(int value) {
-    setAttribute(Attribute.SIZE, value);
+    setAttribute(Attributes.SIZE, value);
     return this;
   }
 
   public Input src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
   public Input step(double value) {
-    setAttribute(Attribute.STEP, value);
+    setAttribute(Attributes.STEP, value);
     return this;
   }
 
   public Input step(int value) {
-    setAttribute(Attribute.STEP, value);
+    setAttribute(Attributes.STEP, value);
     return this;
   }
 
   public Input stepAny() {
-    setAttribute(Attribute.STEP, STEP_ANY);
+    setAttribute(Attributes.STEP, STEP_ANY);
     return this;
   }
 
@@ -355,20 +355,20 @@ public class Input extends Element {
 
   public Input type(Type type) {
     if (type == null) {
-      removeAttribute(Attribute.TYPE);
+      removeAttribute(Attributes.TYPE);
     } else {
-      setAttribute(Attribute.TYPE, type.getKeyword());
+      setAttribute(Attributes.TYPE, type.getKeyword());
     }
     return this;
   }
 
   public Input value(String value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 
   public Input width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 }

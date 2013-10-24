@@ -176,7 +176,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
     Flow panel = new Flow();
 
-    InlineLabel value = new InlineLabel(EcUtils.renderCents(price));
+    InlineLabel value = new InlineLabel(EcUtils.formatCents(price));
     value.addStyleName(stylePrefix + "value");
     panel.add(value);
 

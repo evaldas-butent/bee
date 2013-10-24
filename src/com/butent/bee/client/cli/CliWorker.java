@@ -137,6 +137,9 @@ import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -2582,36 +2585,32 @@ public final class CliWorker {
     HtmlTable table = new HtmlTable();
     table.setBorderSpacing(3);
 
-    String[] types = new String[] {
-        "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
-        "datetime-local", "number", "range", "color"};
     TextBox widget;
 
     int row = 0;
-    for (String type : types) {
-      table.setWidget(row, 0, new Label(type));
+    for (Input.Type type : Input.Type.values()) {
+      table.setWidget(row, 0, new Label(type.getKeyword()));
 
-      if (Features.supportsInputType(type)) {
+      if (Features.supportsInputType(type.getKeyword())) {
         widget = new TextBox();
         DomUtils.setInputType(widget, type);
 
-        if ("search".equals(type)) {
+        if (Input.Type.SEARCH.equals(type)) {
           if (Features.supportsAttributePlaceholder()) {
-            widget.getElement().setAttribute("placeholder", "Search...");
-            widget.getElement().setAttribute("results", "0");
+            widget.getElement().setAttribute(Attributes.PLACEHOLDER, "Search...");
           }
 
-        } else if ("number".equals(type)) {
-          widget.getElement().setAttribute("min", "0");
-          widget.getElement().setAttribute("max", "20");
-          widget.getElement().setAttribute("step", "2");
-          widget.getElement().setAttribute("value", "4");
+        } else if (Input.Type.NUMBER.equals(type)) {
+          widget.getElement().setAttribute(Attributes.MIN, "0");
+          widget.getElement().setAttribute(Attributes.MAX, "20");
+          widget.getElement().setAttribute(Attributes.STEP, "2");
+          widget.getElement().setAttribute(Attributes.VALUE, "4");
 
-        } else if ("range".equals(type)) {
-          widget.getElement().setAttribute("min", "0");
-          widget.getElement().setAttribute("max", "50");
-          widget.getElement().setAttribute("step", "5");
-          widget.getElement().setAttribute("value", "30");
+        } else if (Input.Type.RANGE.equals(type)) {
+          widget.getElement().setAttribute(Attributes.MIN, "0");
+          widget.getElement().setAttribute(Attributes.MAX, "50");
+          widget.getElement().setAttribute(Attributes.STEP, "5");
+          widget.getElement().setAttribute(Attributes.VALUE, "30");
         }
 
         table.setWidget(row, 1, widget);
@@ -3641,19 +3640,19 @@ public final class CliWorker {
       logger.info("Translate", codeFrom, codeTo);
       List<Element> elements = Lists.newArrayList();
 
-      NodeList<Element> nodes = Document.get().getElementsByTagName(DomUtils.TAG_BUTTON);
+      NodeList<Element> nodes = Document.get().getElementsByTagName(Tags.BUTTON);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      nodes = Document.get().getElementsByTagName(DomUtils.TAG_TH);
+      nodes = Document.get().getElementsByTagName(Tags.TH);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      nodes = Document.get().getElementsByTagName(DomUtils.TAG_LABEL);
+      nodes = Document.get().getElementsByTagName(Tags.LABEL);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      nodes = Document.get().getElementsByTagName(DomUtils.TAG_OPTION);
+      nodes = Document.get().getElementsByTagName(Tags.OPTION);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }

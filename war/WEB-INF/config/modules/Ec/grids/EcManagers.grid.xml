@@ -13,8 +13,6 @@
 
     <DataColumn name="TabNr" visible="true" />
 
-    <RelColumn name="ReportOrder" />
-
     <DataColumn name="Notes" />
   </g:columns>
 </g:Grid>

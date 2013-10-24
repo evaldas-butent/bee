@@ -219,9 +219,14 @@ public final class RendererFactory {
       case PHOTO:
         renderer = new PhotoRenderer(source);
         break;
-
-      default:
+        
+      case MAIL:
+        renderer = new MailAddressRenderer(dataColumns, renderColumns);
+        break;
+        
+      case TOKEN:
         logger.severe("renderer", type.name(), "not supported");
+        break;
     }
 
     if (renderer instanceof HasValueStartIndex && description.getValueStartIndex() != null) {

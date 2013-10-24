@@ -70,7 +70,6 @@ import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
-import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
@@ -78,12 +77,12 @@ import com.butent.bee.shared.modules.ec.EcCriterion;
 import com.butent.bee.shared.modules.ec.EcFinInfo;
 import com.butent.bee.shared.modules.ec.EcGroup;
 import com.butent.bee.shared.modules.ec.EcGroupFilters;
-import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.modules.ec.EcOrder;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -400,7 +399,7 @@ public class EcModuleBean implements BeeModule {
                 for (int i = fullName.size() - 1; i >= 0; i--) {
                   sb.append(fullName.get(i));
                   if (i > 0) {
-                    sb.append(EcConstants.CATEGORY_NAME_SEPARATOR);
+                    sb.append(CATEGORY_NAME_SEPARATOR);
                   }
                 }
                 row.setValue(fullNameIndex, sb.toString());
@@ -1849,7 +1848,7 @@ public class EcModuleBean implements BeeModule {
 
     for (SimpleRow row : graphicsData) {
       pictures.put(row.getLong(COL_TCD_ARTICLE),
-          EcConstants.picture(row.getValue(COL_TCD_GRAPHICS_TYPE),
+          EcUtils.picture(row.getValue(COL_TCD_GRAPHICS_TYPE),
               row.getValue(COL_TCD_GRAPHICS_RESOURCE)));
     }
     return ResponseObject.response(pictures).setSize(pictures.size());
@@ -2063,8 +2062,7 @@ public class EcModuleBean implements BeeModule {
             td().text(BeeUtils.joinWords(managerFirstName, managerLastName))),
         tr().append(
             td().text(BeeUtils.joinWords(Localized.getConstants().ecOrderAmount(), CURRENCY)),
-            td().text(EcUtils.renderCents(BeeUtils.round(totalAmount * 100)))
-                .textAlign(TextAlign.RIGHT),
+            td().text(EcUtils.formatCents(EcUtils.toCents(totalAmount))).textAlign(TextAlign.RIGHT),
             td().text(BeeUtils.joinWords(Localized.getConstants().weight(), WEIGHT_UNIT)),
             td().text(BeeUtils.toString(totalWeight))).textAlign(TextAlign.RIGHT));
 
@@ -2104,10 +2102,10 @@ public class EcModuleBean implements BeeModule {
             td().text(itemRow.getValue(COL_TCD_BRAND_NAME)),
             td().text(itemRow.getValue(COL_TCD_ARTICLE_NR)),
             td().text(itemRow.getValue(COL_TCD_ARTICLE_WEIGHT)).textAlign(TextAlign.RIGHT),
-            td().text(EcUtils.string(quantity)).textAlign(TextAlign.RIGHT),
+            td().text(EcUtils.format(quantity)).textAlign(TextAlign.RIGHT),
             td().text(itemRow.getValue(COL_ORDER_ITEM_QUANTITY_SUBMIT)).textAlign(TextAlign.RIGHT),
-            td().text(EcUtils.renderCents(BeeUtils.round(price * 100))).textAlign(TextAlign.RIGHT),
-            td().text(EcUtils.renderCents(BeeUtils.round(quantity * price * 100)))
+            td().text(EcUtils.formatCents(EcUtils.toCents(price))).textAlign(TextAlign.RIGHT),
+            td().text(EcUtils.formatCents(EcUtils.toCents(quantity * price)))
                 .textAlign(TextAlign.RIGHT),
             td().text(itemRow.getValue(COL_ORDER_ITEM_NOTE))));
       }

@@ -14,9 +14,8 @@
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" caption="=fax" visible="false" />
-    <RelColumn name="EmailId">
-      <renderToken source="Label" suffix=" " />
-      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    <RelColumn name="EmailId" renderColumns="Label Email">
+      <renderer type="mail" />
     </RelColumn>
 
     <DataColumn name="Address" />

@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -29,22 +29,22 @@ public class Audio extends FertileElement {
   }
 
   public Audio autoplay() {
-    setAttribute(Attribute.AUTOPLAY, true);
+    setAttribute(Attributes.AUTOPLAY, true);
     return this;
   }
 
   public Audio controls() {
-    setAttribute(Attribute.CONTROLS, true);
+    setAttribute(Attributes.CONTROLS, true);
     return this;
   }
 
   public Audio crossoriginAnonymous() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Audio crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
@@ -64,52 +64,52 @@ public class Audio extends FertileElement {
   }
 
   public Audio loop() {
-    setAttribute(Attribute.LOOP, true);
+    setAttribute(Attributes.LOOP, true);
     return this;
   }
 
   public Audio mediaGroup(String value) {
-    setAttribute(Attribute.MEDIA_GROUP, value);
+    setAttribute(Attributes.MEDIA_GROUP, value);
     return this;
   }
 
   public Audio muted() {
-    setAttribute(Attribute.MUTED, true);
+    setAttribute(Attributes.MUTED, true);
     return this;
   }
 
   public Audio noAutoplay() {
-    setAttribute(Attribute.AUTOPLAY, false);
+    setAttribute(Attributes.AUTOPLAY, false);
     return this;
   }
 
   public Audio noControls() {
-    setAttribute(Attribute.CONTROLS, false);
+    setAttribute(Attributes.CONTROLS, false);
     return this;
   }
 
   public Audio noLoop() {
-    setAttribute(Attribute.LOOP, false);
+    setAttribute(Attributes.LOOP, false);
     return this;
   }
 
   public Audio notMuted() {
-    setAttribute(Attribute.MUTED, false);
+    setAttribute(Attributes.MUTED, false);
     return this;
   }
 
   public Audio preloadAuto() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_AUTO);
+    setAttribute(Attributes.PRELOAD, Keywords.PRELOAD_AUTO);
     return this;
   }
 
   public Audio preloadMetaData() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_META_DATA);
+    setAttribute(Attributes.PRELOAD, Keywords.PRELOAD_META_DATA);
     return this;
   }
 
   public Audio preloadNone() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_NONE);
+    setAttribute(Attributes.PRELOAD, Keywords.PRELOAD_NONE);
     return this;
   }
 
@@ -119,7 +119,7 @@ public class Audio extends FertileElement {
   }
 
   public Audio src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 

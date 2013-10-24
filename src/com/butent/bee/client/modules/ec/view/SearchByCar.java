@@ -530,7 +530,7 @@ class SearchByCar extends EcView {
 
   private static String renderModel(EcCarModel model) {
     return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, model.getModelName(),
-        EcUtils.renderProduced(model.getProducedFrom(), model.getProducedTo()));
+        EcUtils.formatProduced(model.getProducedFrom(), model.getProducedTo()));
   }
 
   private List<String> renderModels() {
@@ -584,13 +584,13 @@ class SearchByCar extends EcView {
       col = 0;
 
       table.setHtml(row, col++,
-          EcUtils.renderProduced(type.getProducedFrom(), type.getProducedTo()));
+          EcUtils.formatProduced(type.getProducedFrom(), type.getProducedTo()));
       table.setHtml(row, col++, type.getTypeName());
       table.setHtml(row, col++, type.getPower());
 
-      table.setHtml(row, col++, EcUtils.string(type.getCcm()));
-      table.setHtml(row, col++, EcUtils.string(type.getCylinders()));
-      table.setHtml(row, col++, EcUtils.string(type.getMaxWeight()));
+      table.setHtml(row, col++, EcUtils.format(type.getCcm()));
+      table.setHtml(row, col++, EcUtils.format(type.getCylinders()));
+      table.setHtml(row, col++, EcUtils.format(type.getMaxWeight()));
 
       table.setHtml(row, col++, type.getEngine());
       table.setHtml(row, col++, type.getFuel());

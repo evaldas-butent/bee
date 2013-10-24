@@ -1,6 +1,6 @@
 package com.butent.bee.shared.css;
 
-public final class CssProperty {
+public final class CssProperties {
 
   public static final String ALIGN_CONTENT = "align-content";
   public static final String ALIGN_ITEMS = "align-items";
@@ -313,7 +313,7 @@ public final class CssProperty {
   public static final String WORD_WRAP = "word-wrap";
   public static final String Z_INDEX = "z-index";
 
-  private CssProperty() {
+  private CssProperties() {
     super();
   }
 }

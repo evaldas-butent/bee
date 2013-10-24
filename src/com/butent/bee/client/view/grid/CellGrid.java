@@ -63,7 +63,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
@@ -3890,10 +3890,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     if (hAlign != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.TEXT_ALIGN, hAlign.getCssName()));
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperties.TEXT_ALIGN, hAlign.getCssName()));
     }
     if (whiteSpace != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(CssProperty.WHITE_SPACE, whiteSpace.getCssName()));
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperties.WHITE_SPACE,
+          whiteSpace.getCssName()));
     }
 
     stylesBuilder.append(StyleUtils.buildLeft(left));

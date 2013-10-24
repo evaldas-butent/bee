@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,17 +28,17 @@ public class Object extends FertileElement {
   }
 
   public Object data(String value) {
-    setAttribute(Attribute.DATA, value);
+    setAttribute(Attributes.DATA, value);
     return this;
   }
 
   public Object form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
   public Object height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -58,7 +58,7 @@ public class Object extends FertileElement {
   }
 
   public Object name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
@@ -78,22 +78,22 @@ public class Object extends FertileElement {
   }
 
   public Object type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 
   public Object typeMustMatch() {
-    setAttribute(Attribute.TYPE_MUST_MATCH, true);
+    setAttribute(Attributes.TYPE_MUST_MATCH, true);
     return this;
   }
 
   public Object useMap(String value) {
-    setAttribute(Attribute.USE_MAP, value);
+    setAttribute(Attributes.USE_MAP, value);
     return this;
   }
 
   public Object width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 

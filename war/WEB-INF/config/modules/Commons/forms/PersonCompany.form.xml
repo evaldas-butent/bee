@@ -5,9 +5,9 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="PersonCompany" viewName="CompaniesAndPersons" caption="=personCompany"
-  height="300" width="800"
+  height="300" width="850"
   >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <Table style="border-spacing: 10px;">
       <row>
         <Label text="=company" class="bee-required" />
@@ -15,11 +15,8 @@
         <Label text="=personPosition" />
         <DataSelector source="Position" style="width: 200px" />
       </row>
-      <row>
-        <cell colSpan="4">
-          <xi:include href="widgets/ContactInfo.widget.xml" />
-        </cell>
-      </row>
     </Table>
+
+    <xi:include href="widgets/ContactInfo.widget.xml" />
   </FlowPanel>
 </f:Form>  

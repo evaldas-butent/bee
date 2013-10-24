@@ -10,9 +10,8 @@
   <g:columns>
     <DataColumn name="Description" caption="=mailName" />
     <DataColumn name="Main" caption="=mailDefaultShort" />
-    <RelColumn name="Address" caption="=email">
-      <renderToken source="Label" suffix=" " />
-      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    <RelColumn name="Address" caption="=email" renderColumns="Label Email">
+      <renderer type="mail" />
     </RelColumn>
     <DataColumn name="StoreType" caption="=mailType" />
   </g:columns>

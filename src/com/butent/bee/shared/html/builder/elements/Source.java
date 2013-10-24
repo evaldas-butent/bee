@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Source extends Element {
@@ -25,12 +25,12 @@ public class Source extends Element {
   }
 
   public Source media(String value) {
-    setAttribute(Attribute.MEDIA, value);
+    setAttribute(Attributes.MEDIA, value);
     return this;
   }
 
   public Source src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
@@ -40,7 +40,7 @@ public class Source extends Element {
   }
 
   public Source type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 }

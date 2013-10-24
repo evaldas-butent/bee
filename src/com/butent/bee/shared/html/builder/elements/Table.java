@@ -2,7 +2,7 @@ package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.BorderCollapse;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -32,7 +32,7 @@ public class Table extends FertileElement {
   }
 
   public Table border() {
-    setAttribute(Attribute.BORDER, BORDER);
+    setAttribute(Attributes.BORDER, BORDER);
     return this;
   }
 
@@ -87,7 +87,7 @@ public class Table extends FertileElement {
   }
 
   public Table sortable() {
-    setAttribute(Attribute.SORTABLE, true);
+    setAttribute(Attributes.SORTABLE, true);
     return this;
   }
 

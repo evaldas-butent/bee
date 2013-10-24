@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,7 +28,7 @@ public class Canvas extends FertileElement {
   }
 
   public Canvas height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -63,7 +63,7 @@ public class Canvas extends FertileElement {
   }
 
   public Canvas width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 }

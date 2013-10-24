@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,12 +28,12 @@ public class Del extends FertileElement {
   }
 
   public Del cite(String value) {
-    setAttribute(Attribute.CITE, value);
+    setAttribute(Attributes.CITE, value);
     return this;
   }
 
   public Del dateTime(String value) {
-    setAttribute(Attribute.DATE_TIME, value);
+    setAttribute(Attributes.DATE_TIME, value);
     return this;
   }
 

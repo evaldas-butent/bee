@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,12 +28,12 @@ public class Meter extends FertileElement {
   }
 
   public Meter high(double value) {
-    setAttribute(Attribute.HIGH, value);
+    setAttribute(Attributes.HIGH, value);
     return this;
   }
 
   public Meter high(int value) {
-    setAttribute(Attribute.HIGH, value);
+    setAttribute(Attributes.HIGH, value);
     return this;
   }
 
@@ -53,42 +53,42 @@ public class Meter extends FertileElement {
   }
 
   public Meter low(double value) {
-    setAttribute(Attribute.LOW, value);
+    setAttribute(Attributes.LOW, value);
     return this;
   }
 
   public Meter low(int value) {
-    setAttribute(Attribute.LOW, value);
+    setAttribute(Attributes.LOW, value);
     return this;
   }
 
   public Meter max(double value) {
-    setAttribute(Attribute.MAX, value);
+    setAttribute(Attributes.MAX, value);
     return this;
   }
 
   public Meter max(int value) {
-    setAttribute(Attribute.MAX, value);
+    setAttribute(Attributes.MAX, value);
     return this;
   }
 
   public Meter min(double value) {
-    setAttribute(Attribute.MIN, value);
+    setAttribute(Attributes.MIN, value);
     return this;
   }
 
   public Meter min(int value) {
-    setAttribute(Attribute.MIN, value);
+    setAttribute(Attributes.MIN, value);
     return this;
   }
 
   public Meter optimum(double value) {
-    setAttribute(Attribute.OPTIMUM, value);
+    setAttribute(Attributes.OPTIMUM, value);
     return this;
   }
 
   public Meter optimum(int value) {
-    setAttribute(Attribute.OPTIMUM, value);
+    setAttribute(Attributes.OPTIMUM, value);
     return this;
   }
 
@@ -108,12 +108,12 @@ public class Meter extends FertileElement {
   }
 
   public Meter value(double value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 
   public Meter value(int value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 }

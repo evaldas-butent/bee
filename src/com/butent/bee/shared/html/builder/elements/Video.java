@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -29,27 +29,27 @@ public class Video extends FertileElement {
   }
 
   public Video autoplay() {
-    setAttribute(Attribute.AUTOPLAY, true);
+    setAttribute(Attributes.AUTOPLAY, true);
     return this;
   }
 
   public Video controls() {
-    setAttribute(Attribute.CONTROLS, true);
+    setAttribute(Attributes.CONTROLS, true);
     return this;
   }
 
   public Video crossoriginAnonymous() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Video crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
   public Video height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -69,57 +69,57 @@ public class Video extends FertileElement {
   }
 
   public Video loop() {
-    setAttribute(Attribute.LOOP, true);
+    setAttribute(Attributes.LOOP, true);
     return this;
   }
 
   public Video mediaGroup(String value) {
-    setAttribute(Attribute.MEDIA_GROUP, value);
+    setAttribute(Attributes.MEDIA_GROUP, value);
     return this;
   }
 
   public Video muted() {
-    setAttribute(Attribute.MUTED, true);
+    setAttribute(Attributes.MUTED, true);
     return this;
   }
 
   public Video noAutoplay() {
-    setAttribute(Attribute.AUTOPLAY, false);
+    setAttribute(Attributes.AUTOPLAY, false);
     return this;
   }
 
   public Video noControls() {
-    setAttribute(Attribute.CONTROLS, false);
+    setAttribute(Attributes.CONTROLS, false);
     return this;
   }
 
   public Video noLoop() {
-    setAttribute(Attribute.LOOP, false);
+    setAttribute(Attributes.LOOP, false);
     return this;
   }
 
   public Video notMuted() {
-    setAttribute(Attribute.MUTED, false);
+    setAttribute(Attributes.MUTED, false);
     return this;
   }
 
   public Video poster(String value) {
-    setAttribute(Attribute.POSTER, value);
+    setAttribute(Attributes.POSTER, value);
     return this;
   }
 
   public Video preloadAuto() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_AUTO);
+    setAttribute(Attributes.PRELOAD, Keywords.PRELOAD_AUTO);
     return this;
   }
 
   public Video preloadMetaData() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_META_DATA);
+    setAttribute(Attributes.PRELOAD, Keywords.PRELOAD_META_DATA);
     return this;
   }
 
   public Video preloadNone() {
-    setAttribute(Attribute.PRELOAD, Keywords.PRELOAD_NONE);
+    setAttribute(Attributes.PRELOAD, Keywords.PRELOAD_NONE);
     return this;
   }
 
@@ -129,7 +129,7 @@ public class Video extends FertileElement {
   }
 
   public Video src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
@@ -144,7 +144,7 @@ public class Video extends FertileElement {
   }
 
   public Video width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 }

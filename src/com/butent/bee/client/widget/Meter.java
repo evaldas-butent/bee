@@ -4,6 +4,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Tags;
 
 /**
  * Implements a meter user interface component for gauging actual values against the target ones.
@@ -13,7 +15,7 @@ public class Meter extends Widget implements IdentifiableWidget {
 
   public Meter() {
     super();
-    setElement(DomUtils.createElement(DomUtils.TAG_METER));
+    setElement(DomUtils.createElement(Tags.METER));
     init();
   }
 
@@ -35,7 +37,7 @@ public class Meter extends Widget implements IdentifiableWidget {
   }
 
   public double getHigh() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_HIGH);
+    return getElement().getPropertyDouble(Attributes.HIGH);
   }
 
   @Override
@@ -49,27 +51,27 @@ public class Meter extends Widget implements IdentifiableWidget {
   }
 
   public double getLow() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_LOW);
+    return getElement().getPropertyDouble(Attributes.LOW);
   }
 
   public double getMax() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_MAX);
+    return getElement().getPropertyDouble(Attributes.MAX);
   }
 
   public double getMin() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_MIN);
+    return getElement().getPropertyDouble(Attributes.MIN);
   }
 
   public double getOptimum() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_OPTIMUM);
+    return getElement().getPropertyDouble(Attributes.OPTIMUM);
   }
 
   public double getValue() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_VALUE);
+    return getElement().getPropertyDouble(Attributes.VALUE);
   }
 
   public void setHigh(double high) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_HIGH, high);
+    getElement().setPropertyDouble(Attributes.HIGH, high);
   }
 
   @Override
@@ -78,23 +80,23 @@ public class Meter extends Widget implements IdentifiableWidget {
   }
 
   public void setLow(double low) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_LOW, low);
+    getElement().setPropertyDouble(Attributes.LOW, low);
   }
 
   public void setMax(double max) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_MAX, max);
+    getElement().setPropertyDouble(Attributes.MAX, max);
   }
 
   public void setMin(double min) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_MIN, min);
+    getElement().setPropertyDouble(Attributes.MIN, min);
   }
 
   public void setOptimum(double optimum) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_OPTIMUM, optimum);
+    getElement().setPropertyDouble(Attributes.OPTIMUM, optimum);
   }
 
   public void setValue(double value) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_VALUE, value);
+    getElement().setPropertyDouble(Attributes.VALUE, value);
   }
 
   private void init() {

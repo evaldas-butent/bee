@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 
 public class Option extends FertileElement {
@@ -15,12 +15,12 @@ public class Option extends FertileElement {
   }
 
   public Option disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Option enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
@@ -30,7 +30,7 @@ public class Option extends FertileElement {
   }
 
   public Option label(String value) {
-    setAttribute(Attribute.LABEL, value);
+    setAttribute(Attributes.LABEL, value);
     return this;
   }
 
@@ -40,7 +40,7 @@ public class Option extends FertileElement {
   }
 
   public Option selected() {
-    setAttribute(Attribute.SELECTED, true);
+    setAttribute(Attributes.SELECTED, true);
     return this;
   }
 
@@ -55,7 +55,7 @@ public class Option extends FertileElement {
   }
 
   public Option value(String value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 }

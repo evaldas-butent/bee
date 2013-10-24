@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Img extends Element {
@@ -16,22 +16,22 @@ public class Img extends Element {
   }
 
   public Img alt(String value) {
-    setAttribute(Attribute.ALT, value);
+    setAttribute(Attributes.ALT, value);
     return this;
   }
 
   public Img crossoriginAnonymous() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Img crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
   public Img height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -41,7 +41,7 @@ public class Img extends Element {
   }
 
   public Img isMap(boolean value) {
-    setAttribute(Attribute.IS_MAP, value);
+    setAttribute(Attributes.IS_MAP, value);
     return this;
   }
 
@@ -51,7 +51,7 @@ public class Img extends Element {
   }
 
   public Img src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
@@ -61,12 +61,12 @@ public class Img extends Element {
   }
 
   public Img useMap(String value) {
-    setAttribute(Attribute.USE_MAP, value);
+    setAttribute(Attributes.USE_MAP, value);
     return this;
   }
 
   public Img width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 }

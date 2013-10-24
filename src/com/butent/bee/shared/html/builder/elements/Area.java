@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Area extends Element {
@@ -31,27 +31,27 @@ public class Area extends Element {
   }
 
   public Area alt(String value) {
-    setAttribute(Attribute.ALT, value);
+    setAttribute(Attributes.ALT, value);
     return this;
   }
 
   public Area coords(String value) {
-    setAttribute(Attribute.COORDS, value);
+    setAttribute(Attributes.COORDS, value);
     return this;
   }
 
   public Area download(String value) {
-    setAttribute(Attribute.DOWNLOAD, value);
+    setAttribute(Attributes.DOWNLOAD, value);
     return this;
   }
 
   public Area href(String value) {
-    setAttribute(Attribute.HREF, value);
+    setAttribute(Attributes.HREF, value);
     return this;
   }
 
   public Area hrefLang(String value) {
-    setAttribute(Attribute.HREF_LANG, value);
+    setAttribute(Attributes.HREF_LANG, value);
     return this;
   }
 
@@ -66,7 +66,7 @@ public class Area extends Element {
   }
 
   public Area rel(String value) {
-    setAttribute(Attribute.REL, value);
+    setAttribute(Attributes.REL, value);
     return this;
   }
 
@@ -92,27 +92,27 @@ public class Area extends Element {
   }
 
   public Area target(String value) {
-    setAttribute(Attribute.TARGET, value);
+    setAttribute(Attributes.TARGET, value);
     return this;
   }
 
   public Area targetBlank() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
 
   public Area targetParent() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public Area targetSelf() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
 
   public Area targetTop() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
 
@@ -122,12 +122,12 @@ public class Area extends Element {
   }
 
   public Area type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 
   private Area setShape(String value) {
-    setAttribute(Attribute.SHAPE, value);
+    setAttribute(Attributes.SHAPE, value);
     return this;
   }
 }

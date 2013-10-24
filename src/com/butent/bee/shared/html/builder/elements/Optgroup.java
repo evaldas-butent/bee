@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,12 +28,12 @@ public class Optgroup extends FertileElement {
   }
 
   public Optgroup disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Optgroup enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
@@ -48,7 +48,7 @@ public class Optgroup extends FertileElement {
   }
 
   public Optgroup label(String value) {
-    setAttribute(Attribute.LABEL, value);
+    setAttribute(Attributes.LABEL, value);
     return this;
   }
 

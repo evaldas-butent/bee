@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -18,7 +18,7 @@ public class Th extends FertileElement {
   }
 
   public Th abbr(String value) {
-    setAttribute(Attribute.ABBR, value);
+    setAttribute(Attributes.ABBR, value);
     return this;
   }
 
@@ -38,12 +38,12 @@ public class Th extends FertileElement {
   }
 
   public Th colSpan(int value) {
-    setAttribute(Attribute.COL_SPAN, value);
+    setAttribute(Attributes.COL_SPAN, value);
     return this;
   }
 
   public Th headers(String value) {
-    setAttribute(Attribute.HEADERS, value);
+    setAttribute(Attributes.HEADERS, value);
     return this;
   }
 
@@ -68,37 +68,37 @@ public class Th extends FertileElement {
   }
 
   public Th rowSpan(int value) {
-    setAttribute(Attribute.ROW_SPAN, value);
+    setAttribute(Attributes.ROW_SPAN, value);
     return this;
   }
 
   public Th scopeCol() {
-    setAttribute(Attribute.SCOPE, SCOPE_COL);
+    setAttribute(Attributes.SCOPE, SCOPE_COL);
     return this;
   }
 
   public Th scopeColGroup() {
-    setAttribute(Attribute.SCOPE, SCOPE_COL_GROUP);
+    setAttribute(Attributes.SCOPE, SCOPE_COL_GROUP);
     return this;
   }
 
   public Th scopeRow() {
-    setAttribute(Attribute.SCOPE, SCOPE_ROW);
+    setAttribute(Attributes.SCOPE, SCOPE_ROW);
     return this;
   }
 
   public Th scopeRowGroup() {
-    setAttribute(Attribute.SCOPE, SCOPE_ROW_GROUP);
+    setAttribute(Attributes.SCOPE, SCOPE_ROW_GROUP);
     return this;
   }
 
   public Th sorted(int value) {
-    setAttribute(Attribute.SORTED, value);
+    setAttribute(Attributes.SORTED, value);
     return this;
   }
 
   public Th sorted(String value) {
-    setAttribute(Attribute.SORTED, value);
+    setAttribute(Attributes.SORTED, value);
     return this;
   }
 

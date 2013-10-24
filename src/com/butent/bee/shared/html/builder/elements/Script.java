@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 
 public class Script extends FertileElement {
@@ -16,27 +16,27 @@ public class Script extends FertileElement {
   }
 
   public Script async() {
-    setAttribute(Attribute.ASYNC, true);
+    setAttribute(Attributes.ASYNC, true);
     return this;
   }
 
   public Script charset(String value) {
-    setAttribute(Attribute.CHARSET, value);
+    setAttribute(Attributes.CHARSET, value);
     return this;
   }
 
   public Script crossoriginAnonymous() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Script crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
   public Script defer() {
-    setAttribute(Attribute.DEFER, true);
+    setAttribute(Attributes.DEFER, true);
     return this;
   }
 
@@ -51,7 +51,7 @@ public class Script extends FertileElement {
   }
 
   public Script src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
@@ -66,7 +66,7 @@ public class Script extends FertileElement {
   }
 
   public Script type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 }

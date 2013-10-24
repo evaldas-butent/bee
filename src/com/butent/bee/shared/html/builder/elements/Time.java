@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,7 +28,7 @@ public class Time extends FertileElement {
   }
 
   public Time dateTime(String value) {
-    setAttribute(Attribute.DATE_TIME, value);
+    setAttribute(Attributes.DATE_TIME, value);
     return this;
   }
 

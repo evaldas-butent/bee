@@ -12,5 +12,8 @@
 
     <String name="ContactsUrl" precision="200" />
     <Text name="ContactsHtml" />
+    
+    <Relation name="MailAccount" relation="Accounts" cascade="SET_NULL" label="=ecMailAccount" />
+    <Relation name="IncomingMail" relation="Emails" cascade="SET_NULL" label="=ecMailIncoming" />
   </Fields>
 </Table>

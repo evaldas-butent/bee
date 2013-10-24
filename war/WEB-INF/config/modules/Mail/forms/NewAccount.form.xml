@@ -18,9 +18,8 @@
         </row>
         <row>
           <Label text="=email" horizontalAlignment="right" class="bee-required" />
-          <DataSelector source="Address" style="width:200px">
-            <renderToken source="Label" suffix=" " />
-            <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+          <DataSelector source="Address" style="width:200px" renderColumns="Label Email">
+            <renderer type="mail" />
           </DataSelector>
         </row>
       </Table>

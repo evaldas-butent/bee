@@ -611,21 +611,44 @@ public final class DataUtils {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
-  public static String join(DataInfo dataInfo, IsRow row, List<String> colNames, String separator) {
-    Assert.notNull(dataInfo);
+  public static String join(IsRow row, List<Integer> indexes) {
+    return join(row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
+  }
+
+  public static String join(IsRow row, List<Integer> indexes, String separator) {
     Assert.notNull(row);
-    Assert.notEmpty(colNames);
+    Assert.notEmpty(indexes);
 
     StringBuilder sb = new StringBuilder();
     String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
+    for (int index : indexes) {
+      String value = render(row, index, null);
+      if (!BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(value.trim());
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String join(DataInfo dataInfo, IsRow row, List<String> colNames, String separator) {
+    Assert.notNull(dataInfo);
+    Assert.notNull(row);
+    Assert.notEmpty(colNames);
+    
+    StringBuilder sb = new StringBuilder();
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
+    
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
       if (BeeConst.isUndef(i)) {
         logger.warning(dataInfo.getViewName(), "column not found:", colName);
         continue;
       }
-
+      
       String value = render(row, i, dataInfo.getColumnType(i));
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {

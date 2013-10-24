@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -12,7 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputSlider extends InputInteger {
 
-  private static String inputType = "range";
+  private static Input.Type inputType = Input.Type.RANGE;
 
   public InputSlider() {
     super();

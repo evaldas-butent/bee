@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 
 public class Style extends FertileElement {
@@ -25,12 +25,12 @@ public class Style extends FertileElement {
   }
 
   public Style media(String value) {
-    setAttribute(Attribute.MEDIA, value);
+    setAttribute(Attributes.MEDIA, value);
     return this;
   }
 
   public Style scoped() {
-    setAttribute(Attribute.SCOPED, true);
+    setAttribute(Attributes.SCOPED, true);
     return this;
   }
 
@@ -45,7 +45,7 @@ public class Style extends FertileElement {
   }
 
   public Style type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 }

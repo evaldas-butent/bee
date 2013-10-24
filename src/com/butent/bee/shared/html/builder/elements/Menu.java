@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -41,7 +41,7 @@ public class Menu extends FertileElement {
   }
 
   public Menu label(String value) {
-    setAttribute(Attribute.LABEL, value);
+    setAttribute(Attributes.LABEL, value);
     return this;
   }
 
@@ -66,12 +66,12 @@ public class Menu extends FertileElement {
   }
 
   public Menu typePopup() {
-    setAttribute(Attribute.TYPE, TYPE_POPUP);
+    setAttribute(Attributes.TYPE, TYPE_POPUP);
     return this;
   }
 
   public Menu typeToolbar() {
-    setAttribute(Attribute.TYPE, TYPE_TOOLBAR);
+    setAttribute(Attributes.TYPE, TYPE_TOOLBAR);
     return this;
   }
 }

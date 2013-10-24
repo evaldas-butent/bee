@@ -14,6 +14,7 @@ import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
+import com.butent.bee.shared.html.builder.elements.Link.Rel;
 import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.SupportedLocale;
@@ -65,6 +66,7 @@ public class LoginServlet extends HttpServlet {
 
     doc.getHead().append(
         title().text(ui.getTitle()),
+        link().rel(Rel.ICON).href("images/favicon.ico"),
         base().targetBlank());
 
     for (String styleSheet : ui.getStyleSheets()) {
@@ -87,6 +89,7 @@ public class LoginServlet extends HttpServlet {
     doc.getHead().append(
         meta().encodingDeclarationUtf8(),
         title().text("to BEE or not to BEE"),
+        link().rel(Rel.ICON).href("images/favicon.ico"),
         link().styleSheet(resource(Paths.getStyleSheetPath("login"))),
         script().src(resource(Paths.getScriptPath("login"))));
 

@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -43,12 +43,12 @@ public class Progress extends FertileElement {
   }
 
   public Progress max(double value) {
-    setAttribute(Attribute.MAX, value);
+    setAttribute(Attributes.MAX, value);
     return this;
   }
 
   public Progress max(int value) {
-    setAttribute(Attribute.MAX, value);
+    setAttribute(Attributes.MAX, value);
     return this;
   }
 
@@ -68,12 +68,12 @@ public class Progress extends FertileElement {
   }
 
   public Progress value(double value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 
   public Progress value(int value) {
-    setAttribute(Attribute.VALUE, value);
+    setAttribute(Attributes.VALUE, value);
     return this;
   }
 }

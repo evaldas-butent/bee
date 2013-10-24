@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -43,7 +43,7 @@ public class Html extends FertileElement {
   }
 
   public Html manifest(String value) {
-    setAttribute(Attribute.MANIFEST, value);
+    setAttribute(Attributes.MANIFEST, value);
     return this;
   }
 

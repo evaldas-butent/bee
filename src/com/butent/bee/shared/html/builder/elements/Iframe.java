@@ -3,7 +3,7 @@ package com.butent.bee.shared.html.builder.elements;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -43,7 +43,7 @@ public class Iframe extends FertileElement {
   }
 
   public Iframe allowFullScreen() {
-    setAttribute(Attribute.ALLOW_FULL_SCREEN, true);
+    setAttribute(Attributes.ALLOW_FULL_SCREEN, true);
     return this;
   }
 
@@ -58,7 +58,7 @@ public class Iframe extends FertileElement {
   }
 
   public Iframe height(int value) {
-    setAttribute(Attribute.HEIGHT, value);
+    setAttribute(Attributes.HEIGHT, value);
     return this;
   }
 
@@ -78,7 +78,7 @@ public class Iframe extends FertileElement {
   }
 
   public Iframe name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
@@ -99,26 +99,26 @@ public class Iframe extends FertileElement {
     }
 
     if (kwds.isEmpty()) {
-      removeAttribute(Attribute.SANDBOX);
+      removeAttribute(Attributes.SANDBOX);
     } else {
-      setAttribute(Attribute.SANDBOX, BeeUtils.join(BeeConst.STRING_SPACE, kwds));
+      setAttribute(Attributes.SANDBOX, BeeUtils.join(BeeConst.STRING_SPACE, kwds));
     }
 
     return this;
   }
 
   public Iframe seamless() {
-    setAttribute(Attribute.SEAMLESS, true);
+    setAttribute(Attributes.SEAMLESS, true);
     return this;
   }
 
   public Iframe src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
   public Iframe srcDoc(String value) {
-    setAttribute(Attribute.SRC_DOC, value);
+    setAttribute(Attributes.SRC_DOC, value);
     return this;
   }
 
@@ -133,7 +133,7 @@ public class Iframe extends FertileElement {
   }
 
   public Iframe width(int value) {
-    setAttribute(Attribute.WIDTH, value);
+    setAttribute(Attributes.WIDTH, value);
     return this;
   }
 }

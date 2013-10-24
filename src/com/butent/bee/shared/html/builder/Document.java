@@ -4,6 +4,8 @@ import com.butent.bee.shared.html.builder.elements.Body;
 import com.butent.bee.shared.html.builder.elements.Head;
 import com.butent.bee.shared.html.builder.elements.Html;
 
+import java.util.List;
+
 public class Document extends Node {
 
   private static final String DOC_TYPE = "<!doctype html>";
@@ -45,5 +47,9 @@ public class Document extends Node {
 
   public Head getHead() {
     return head;
+  }
+  
+  public List<Element> queryTag(String tagName) {
+    return html.queryTag(tagName);
   }
 }

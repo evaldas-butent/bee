@@ -13,7 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.RangeMap;
-import com.butent.bee.shared.css.CssProperty;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.FontStyle;
@@ -329,13 +329,13 @@ public final class Font implements HasInfo {
     Assert.notNull(st);
 
     if (getStyle() != null) {
-      StyleUtils.setProperty(st, CssProperty.FONT_STYLE, getStyle());
+      StyleUtils.setProperty(st, CssProperties.FONT_STYLE, getStyle());
     }
     if (getVariant() != null) {
       StyleUtils.setFontVariant(st, getVariant());
     }
     if (getWeight() != null) {
-      StyleUtils.setProperty(st, CssProperty.FONT_WEIGHT, getWeight());
+      StyleUtils.setProperty(st, CssProperties.FONT_WEIGHT, getWeight());
     }
 
     if (getSizeValue() > 0 && getSizeCssUnit() != null) {
@@ -354,7 +354,7 @@ public final class Font implements HasInfo {
       StyleUtils.setLineHeight(st, getLineHeight());
     }
     if (getTextTransform() != null) {
-      StyleUtils.setProperty(st, CssProperty.TEXT_TRANSFORM, getTextTransform());
+      StyleUtils.setProperty(st, CssProperties.TEXT_TRANSFORM, getTextTransform());
     }
     if (!BeeUtils.isEmpty(getLetterSpacing())) {
       StyleUtils.setLetterSpacing(st, getLetterSpacing());

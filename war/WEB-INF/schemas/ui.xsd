@@ -370,6 +370,7 @@
       <xs:enumeration value="star" />
       <xs:enumeration value="fileIcon" />
       <xs:enumeration value="photo" />
+      <xs:enumeration value="mail" />
     </xs:restriction>
   </xs:simpleType>
   

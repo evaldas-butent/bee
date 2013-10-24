@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -42,7 +43,7 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
       if (row == null) {
         return null;
       }
-      String picture = EcConstants.picture(row.getString(typeIdx), row.getString(resourceIdx));
+      String picture = EcUtils.picture(row.getString(typeIdx), row.getString(resourceIdx));
 
       if (picture == null) {
         return null;

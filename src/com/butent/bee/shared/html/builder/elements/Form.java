@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -14,12 +14,12 @@ public class Form extends FertileElement {
   }
 
   public Form acceptCharset(String value) {
-    setAttribute(Attribute.ACCEPT_CHARSET, value);
+    setAttribute(Attributes.ACCEPT_CHARSET, value);
     return this;
   }
 
   public Form action(String value) {
-    setAttribute(Attribute.ACTION, value);
+    setAttribute(Attributes.ACTION, value);
     return this;
   }
 
@@ -39,27 +39,27 @@ public class Form extends FertileElement {
   }
 
   public Form autocompleteOff() {
-    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
+    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
     return this;
   }
 
   public Form autocompleteOn() {
-    setAttribute(Attribute.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
+    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
     return this;
   }
 
   public Form encTypeMultipart() {
-    setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
+    setAttribute(Attributes.ENC_TYPE, Keywords.ENC_TYPE_MULTIPART_DATA);
     return this;
   }
 
   public Form encTypeText() {
-    setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
+    setAttribute(Attributes.ENC_TYPE, Keywords.ENC_TYPE_TEXT_PLAIN);
     return this;
   }
 
   public Form encTypeUrl() {
-    setAttribute(Attribute.ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
+    setAttribute(Attributes.ENC_TYPE, Keywords.ENC_TYPE_URL_ENCODED);
     return this;
   }
 
@@ -79,22 +79,22 @@ public class Form extends FertileElement {
   }
 
   public Form methodGet() {
-    setAttribute(Attribute.METHOD, Keywords.METHOD_GET);
+    setAttribute(Attributes.METHOD, Keywords.METHOD_GET);
     return this;
   }
 
   public Form methodPost() {
-    setAttribute(Attribute.METHOD, Keywords.METHOD_POST);
+    setAttribute(Attributes.METHOD, Keywords.METHOD_POST);
     return this;
   }
 
   public Form name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
   public Form noValidate() {
-    setAttribute(Attribute.NO_VALIDATE, true);
+    setAttribute(Attributes.NO_VALIDATE, true);
     return this;
   }
 
@@ -104,27 +104,27 @@ public class Form extends FertileElement {
   }
 
   public Form target(String value) {
-    setAttribute(Attribute.TARGET, value);
+    setAttribute(Attributes.TARGET, value);
     return this;
   }
 
   public Form targetBlank() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_BLANK);
     return this;
   }
 
   public Form targetParent() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_PARENT);
     return this;
   }
 
   public Form targetSelf() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_SELF);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_SELF);
     return this;
   }
 
   public Form targetTop() {
-    setAttribute(Attribute.TARGET, Keywords.BROWSING_CONTEXT_TOP);
+    setAttribute(Attributes.TARGET, Keywords.BROWSING_CONTEXT_TOP);
     return this;
   }
 

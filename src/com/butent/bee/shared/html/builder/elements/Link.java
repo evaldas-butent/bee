@@ -1,7 +1,7 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.html.Keywords;
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Link extends Element {
@@ -43,22 +43,22 @@ public class Link extends Element {
   }
 
   public Link crossoriginAnonymous() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_ANONYMOUS);
     return this;
   }
 
   public Link crossoriginUseCredentials() {
-    setAttribute(Attribute.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
+    setAttribute(Attributes.CROSS_ORIGIN, Keywords.CORS_SETTINGS_USE_CREDENTIALS);
     return this;
   }
 
   public Link href(String value) {
-    setAttribute(Attribute.HREF, value);
+    setAttribute(Attributes.HREF, value);
     return this;
   }
 
   public Link hrefLang(String value) {
-    setAttribute(Attribute.HREF_LANG, value);
+    setAttribute(Attributes.HREF_LANG, value);
     return this;
   }
 
@@ -73,21 +73,21 @@ public class Link extends Element {
   }
 
   public Link media(String value) {
-    setAttribute(Attribute.MEDIA, value);
+    setAttribute(Attributes.MEDIA, value);
     return this;
   }
 
   public Link rel(Rel rel) {
     if (rel == null) {
-      removeAttribute(Attribute.REL);
+      removeAttribute(Attributes.REL);
     } else {
-      setAttribute(Attribute.REL, rel.getKeyword());
+      setAttribute(Attributes.REL, rel.getKeyword());
     }
     return this;
   }
 
   public Link sizes(String value) {
-    setAttribute(Attribute.SIZES, value);
+    setAttribute(Attributes.SIZES, value);
     return this;
   }
 
@@ -101,7 +101,7 @@ public class Link extends Element {
   }
 
   public Link type(String value) {
-    setAttribute(Attribute.TYPE, value);
+    setAttribute(Attributes.TYPE, value);
     return this;
   }
 }

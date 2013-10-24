@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Menuitem extends Element {
@@ -19,32 +19,32 @@ public class Menuitem extends Element {
   }
 
   public Menuitem checked() {
-    setAttribute(Attribute.CHECKED, true);
+    setAttribute(Attributes.CHECKED, true);
     return this;
   }
 
   public Menuitem command(String value) {
-    setAttribute(Attribute.COMMAND, value);
+    setAttribute(Attributes.COMMAND, value);
     return this;
   }
 
   public Menuitem disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Menuitem enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
   public Menuitem htmlDefault() {
-    setAttribute(Attribute.DEFAULT, true);
+    setAttribute(Attributes.DEFAULT, true);
     return this;
   }
 
   public Menuitem icon(String value) {
-    setAttribute(Attribute.ICON, value);
+    setAttribute(Attributes.ICON, value);
     return this;
   }
 
@@ -54,7 +54,7 @@ public class Menuitem extends Element {
   }
 
   public Menuitem label(String value) {
-    setAttribute(Attribute.LABEL, value);
+    setAttribute(Attributes.LABEL, value);
     return this;
   }
 
@@ -64,7 +64,7 @@ public class Menuitem extends Element {
   }
 
   public Menuitem radioGroup(String value) {
-    setAttribute(Attribute.RADIO_GROUP, value);
+    setAttribute(Attributes.RADIO_GROUP, value);
     return this;
   }
 
@@ -74,17 +74,17 @@ public class Menuitem extends Element {
   }
 
   public Menuitem typeCheckBox() {
-    setAttribute(Attribute.TYPE, TYPE_CHECK_BOX);
+    setAttribute(Attributes.TYPE, TYPE_CHECK_BOX);
     return this;
   }
 
   public Menuitem typeCommand() {
-    setAttribute(Attribute.TYPE, TYPE_COMMAND);
+    setAttribute(Attributes.TYPE, TYPE_COMMAND);
     return this;
   }
 
   public Menuitem typeRadio() {
-    setAttribute(Attribute.TYPE, TYPE_RADIO);
+    setAttribute(Attributes.TYPE, TYPE_RADIO);
     return this;
   }
 }

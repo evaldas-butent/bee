@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,17 +28,17 @@ public class Fieldset extends FertileElement {
   }
 
   public Fieldset disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Fieldset enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
   public Fieldset form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
@@ -58,7 +58,7 @@ public class Fieldset extends FertileElement {
   }
 
   public Fieldset name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 

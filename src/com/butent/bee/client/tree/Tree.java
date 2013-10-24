@@ -71,6 +71,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -268,8 +269,8 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     if (elem == null) {
       return false;
     }
-    return BeeUtils.inList(elem.getTagName(), DomUtils.TAG_SELECT, DomUtils.TAG_INPUT,
-        DomUtils.TAG_TEXT_AREA, DomUtils.TAG_OPTION, DomUtils.TAG_BUTTON, DomUtils.TAG_LABEL);
+    return BeeUtils.inList(elem.getTagName(), Tags.SELECT, Tags.INPUT, Tags.TEXT_AREA, Tags.OPTION,
+        Tags.BUTTON, Tags.LABEL);
   }
 
   private final Map<Widget, TreeItem> childWidgets = new HashMap<Widget, TreeItem>();

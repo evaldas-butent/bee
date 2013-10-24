@@ -12,7 +12,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -30,6 +29,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -264,7 +264,7 @@ public class GridFilterManager {
                   for (Widget widget : contentPanel) {
                     if (StyleUtils.hasClassName(widget.getElement(), STYLE_FILTER_PANEL)) {
                       NodeList<Element> nodes =
-                          widget.getElement().getElementsByTagName(DomUtils.TAG_TR);
+                          widget.getElement().getElementsByTagName(Tags.TR);
                       if (nodes != null && nodes.getLength() > 1) {
                         nodes.getItem(nodes.getLength() - 1).scrollIntoView();
                       }

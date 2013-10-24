@@ -134,7 +134,7 @@ public class ShoppingCart extends Split {
       return;
     }
 
-    final String amount = EcUtils.renderCents(cart.totalCents());
+    final String amount = EcUtils.formatCents(cart.totalCents());
 
     ParameterList params = EcKeeper.createArgs(EcConstants.SVC_SUBMIT_ORDER);
     params.addQueryItem(EcConstants.COL_SHOPPING_CART_TYPE, cartType.ordinal());
@@ -423,7 +423,7 @@ public class ShoppingCart extends Split {
   }
 
   private static Widget renderPrice(CartItem item) {
-    return new Label(EcUtils.renderCents(item.getEcItem().getPrice()));
+    return new Label(EcUtils.formatCents(item.getEcItem().getPrice()));
   }
 
   private Widget renderQuantity(final CartItem item) {
@@ -520,7 +520,7 @@ public class ShoppingCart extends Split {
 
   private static String renderTotal(Cart cart) {
     return BeeUtils.joinWords(Localized.getConstants().ecShoppingCartTotal(),
-        EcUtils.renderCents(cart.totalCents()), EcConstants.CURRENCY);
+        EcUtils.formatCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
   private static void setInt(HasHtml widget, int value) {

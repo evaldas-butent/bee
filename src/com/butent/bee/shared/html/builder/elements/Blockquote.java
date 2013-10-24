@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,7 +28,7 @@ public class Blockquote extends FertileElement {
   }
 
   public Blockquote cite(String value) {
-    setAttribute(Attribute.CITE, value);
+    setAttribute(Attributes.CITE, value);
     return this;
   }
 

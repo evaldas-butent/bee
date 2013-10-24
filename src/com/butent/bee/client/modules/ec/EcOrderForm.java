@@ -511,7 +511,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       table.setWidgetAndStyle(row, col++, qtyWidget, STYLE_UNSUPPLIED_QUANTITY);
 
       int cents = EcUtils.toCents(dataRow.getDouble(priceIndex));
-      Label priceWidget = new Label(EcUtils.renderCents(cents));
+      Label priceWidget = new Label(EcUtils.formatCents(cents));
       table.setWidgetAndStyle(row, col++, priceWidget, STYLE_UNSUPPLIED_PRICE);
 
       table.getRowFormatter().addStyleName(row, STYLE_UNSUPPLIED_ROW);

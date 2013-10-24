@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
 
 public class Track extends Element {
@@ -21,7 +21,7 @@ public class Track extends Element {
   }
 
   public Track htmlDefault() {
-    setAttribute(Attribute.DEFAULT, true);
+    setAttribute(Attributes.DEFAULT, true);
     return this;
   }
 
@@ -31,32 +31,32 @@ public class Track extends Element {
   }
 
   public Track kindCaptions() {
-    setAttribute(Attribute.KIND, KIND_CAPTIONS);
+    setAttribute(Attributes.KIND, KIND_CAPTIONS);
     return this;
   }
 
   public Track kindChapters() {
-    setAttribute(Attribute.KIND, KIND_CHAPTERS);
+    setAttribute(Attributes.KIND, KIND_CHAPTERS);
     return this;
   }
 
   public Track kindDescriptions() {
-    setAttribute(Attribute.KIND, KIND_DESCRIPTIONS);
+    setAttribute(Attributes.KIND, KIND_DESCRIPTIONS);
     return this;
   }
 
   public Track kindMetaData() {
-    setAttribute(Attribute.KIND, KIND_META_DATA);
+    setAttribute(Attributes.KIND, KIND_META_DATA);
     return this;
   }
 
   public Track kindSubtitles() {
-    setAttribute(Attribute.KIND, KIND_SUBTITLES);
+    setAttribute(Attributes.KIND, KIND_SUBTITLES);
     return this;
   }
 
   public Track label(String value) {
-    setAttribute(Attribute.LABEL, value);
+    setAttribute(Attributes.LABEL, value);
     return this;
   }
 
@@ -66,12 +66,12 @@ public class Track extends Element {
   }
 
   public Track src(String value) {
-    setAttribute(Attribute.SRC, value);
+    setAttribute(Attributes.SRC, value);
     return this;
   }
 
   public Track srcLang(String value) {
-    setAttribute(Attribute.SRC_LANG, value);
+    setAttribute(Attributes.SRC_LANG, value);
     return this;
   }
 

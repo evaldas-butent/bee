@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,12 +28,12 @@ public class Output extends FertileElement {
   }
 
   public Output form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
   public Output htmlFor(String value) {
-    setAttribute(Attribute.FOR, value);
+    setAttribute(Attributes.FOR, value);
     return this;
   }
 
@@ -53,7 +53,7 @@ public class Output extends FertileElement {
   }
 
   public Output name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 

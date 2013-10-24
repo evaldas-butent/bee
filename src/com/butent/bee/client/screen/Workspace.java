@@ -34,6 +34,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -167,7 +168,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     insertEmptyPanel(0);
 
-    CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(DomUtils.TAG_ASIDE),
+    CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(Tags.ASIDE),
         getStylePrefix() + "newTab");
     newTab.setHtml(BeeConst.STRING_PLUS);
     newTab.setTitle(Localized.getConstants().newTab());

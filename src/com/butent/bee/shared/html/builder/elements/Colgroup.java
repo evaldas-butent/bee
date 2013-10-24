@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -48,7 +48,7 @@ public class Colgroup extends FertileElement {
   }
 
   public Colgroup span(int value) {
-    setAttribute(Attribute.SPAN, value);
+    setAttribute(Attributes.SPAN, value);
     return this;
   }
 

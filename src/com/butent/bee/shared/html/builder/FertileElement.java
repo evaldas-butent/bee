@@ -116,6 +116,23 @@ public class FertileElement extends Element {
     child.setParent(this);
     children.add(index, child);
   }
+  
+  public List<Element> queryTag(String tagName) {
+    List<Element> result = Lists.newArrayList();
+    if (getTag().equals(tagName)) {
+      result.add(this);
+    }
+
+    for (Node child : children) {
+      if (child instanceof FertileElement) {
+        result.addAll(((FertileElement) child).queryTag(tagName));
+      } else if (child instanceof Element && ((Element) child).getTag().equals(tagName)) {
+        result.add((Element) child);
+      }
+    }
+    
+    return result;
+  }
 
   public void removeChild(Node child) {
     children.remove(child);

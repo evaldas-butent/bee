@@ -1,6 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
-import com.butent.bee.shared.html.builder.Attribute;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -28,22 +28,22 @@ public class Select extends FertileElement {
   }
 
   public Select autofocus() {
-    setAttribute(Attribute.AUTOFOCUS, true);
+    setAttribute(Attributes.AUTOFOCUS, true);
     return this;
   }
 
   public Select disabled() {
-    setAttribute(Attribute.DISABLED, true);
+    setAttribute(Attributes.DISABLED, true);
     return this;
   }
 
   public Select enabled() {
-    setAttribute(Attribute.DISABLED, false);
+    setAttribute(Attributes.DISABLED, false);
     return this;
   }
 
   public Select form(String value) {
-    setAttribute(Attribute.FORM, value);
+    setAttribute(Attributes.FORM, value);
     return this;
   }
 
@@ -63,12 +63,12 @@ public class Select extends FertileElement {
   }
 
   public Select multiple() {
-    setAttribute(Attribute.MULTIPLE, true);
+    setAttribute(Attributes.MULTIPLE, true);
     return this;
   }
 
   public Select name(String value) {
-    setAttribute(Attribute.NAME, value);
+    setAttribute(Attributes.NAME, value);
     return this;
   }
 
@@ -78,12 +78,12 @@ public class Select extends FertileElement {
   }
 
   public Select required() {
-    setAttribute(Attribute.REQUIRED, true);
+    setAttribute(Attributes.REQUIRED, true);
     return this;
   }
 
   public Select size(int value) {
-    setAttribute(Attribute.SIZE, value);
+    setAttribute(Attributes.SIZE, value);
     return this;
   }
 

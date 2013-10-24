@@ -294,7 +294,6 @@ public final class EcConstants {
 
   public static final String COL_MANAGER_USER = "User";
   public static final String COL_MANAGER_TAB_NR = "TabNr";
-  public static final String COL_MANAGER_REPORT_ORDER = "ReportOrder";
   public static final String COL_MANAGER_NOTES = "Notes";
 
   public static final String COL_ORDER_ITEM_ORDER = "Order";
@@ -458,10 +457,6 @@ public final class EcConstants {
 
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
   
-  public static String picture(String type, String text) {
-    return PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
-  }
-
   private EcConstants() {
   }
 }
