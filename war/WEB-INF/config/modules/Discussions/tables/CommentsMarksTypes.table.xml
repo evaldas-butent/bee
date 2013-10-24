@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CommentsMarksTypes"
+  idName="CommentMarkTypeID"
+  >
+  <Fields>        
+    <String name="Name" precision="100" unique="true" label="=discussCommentMarkName"/>
+    <String name="ImageResourceName" precision="128" label="=discussCommentMarkImageName" />
+  </Fields>
+</Table>
