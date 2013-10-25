@@ -37,7 +37,7 @@
       </row>
     </Table> 
     
-    <xi:include href="widgets/ContactInfo.widget.xml" />
+    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
 
     <TabbedPages class="flexible" style="margin-top: 15px;">
       <page>

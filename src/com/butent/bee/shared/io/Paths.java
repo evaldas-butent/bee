@@ -44,6 +44,14 @@ public final class Paths {
     }
   }
 
+  public static String getImagePath(String fileName) {
+    if (BeeUtils.isEmpty(fileName)) {
+      return null;
+    } else {
+      return buildPath(IMAGE_DIR, fileName);
+    }
+  }
+  
   public static String getLangIconPath(String fileName) {
     if (BeeUtils.isEmpty(fileName)) {
       return null;

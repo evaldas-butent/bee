@@ -47,6 +47,9 @@ public class LoginServlet extends HttpServlet {
 
   public static final String URL = "/index.html";
 
+  private static final String FAV_ICON = "favicon.ico";
+  private static final String LOGO = "logo.png";
+
   private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
 
   private static String getBee(UserInterface ui, SupportedLocale locale) {
@@ -66,7 +69,7 @@ public class LoginServlet extends HttpServlet {
 
     doc.getHead().append(
         title().text(ui.getTitle()),
-        link().rel(Rel.ICON).href("images/favicon.ico"),
+        link().rel(Rel.SHORTCUT_ICON).href(resource(Paths.getImagePath(FAV_ICON))),
         base().targetBlank());
 
     for (String styleSheet : ui.getStyleSheets()) {
@@ -89,7 +92,7 @@ public class LoginServlet extends HttpServlet {
     doc.getHead().append(
         meta().encodingDeclarationUtf8(),
         title().text("to BEE or not to BEE"),
-        link().rel(Rel.ICON).href("images/favicon.ico"),
+        link().rel(Rel.SHORTCUT_ICON).href(resource(Paths.getImagePath(FAV_ICON))),
         link().styleSheet(resource(Paths.getStyleSheetPath("login"))),
         script().src(resource(Paths.getScriptPath("login"))));
 
@@ -102,7 +105,8 @@ public class LoginServlet extends HttpServlet {
 
     form.append(
         div().addClass(stylePrefix + "Logo-container").append(
-            img().addClass(stylePrefix + "Logo").src("images/logo.png").alt("logo")));
+            img().addClass(stylePrefix + "Logo").src(resource(Paths.getImagePath(LOGO)))
+                .alt("logo")));
 
     if (SupportedLocale.values().length > 1) {
       Div localeContainer = div().addClass(stylePrefix + "Locale-container");
@@ -210,7 +214,8 @@ public class LoginServlet extends HttpServlet {
         meta().encodingDeclarationUtf8(),
         title().text("Verboten"));
 
-    doc.getBody().append(img().src("images/answer.jpg").alt("respect my authoritah"));
+    doc.getBody().append(img().src(resource(Paths.getImagePath("answer.jpg")))
+        .alt("respect my authoritah"));
 
     return doc.build();
   }

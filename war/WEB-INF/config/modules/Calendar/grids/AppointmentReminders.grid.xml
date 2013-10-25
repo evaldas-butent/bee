@@ -10,9 +10,9 @@
       <renderToken source="CompanyName" prefix=", " />
     </RelColumn>
     <DataColumn name="Mobile" />
-    <RelColumn name="Email" renderColumns="Label Email">
+    <DataColumn name="Email" renderColumns="Label Email">
       <renderer type="mail" />
-    </RelColumn>
+    </DataColumn>
 
     <RelColumn name="TypeName" caption="=type" newRowEnabled="false" />
     <DataColumn name="Method" caption="=reminderMethod" itemKey="ReminderMethod" />

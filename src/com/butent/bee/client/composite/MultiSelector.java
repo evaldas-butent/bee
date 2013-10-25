@@ -69,7 +69,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
       addStyleName(STYLE_CHOICE);
 
-      InlineLabel label = new InlineLabel(caption);
+      InlineLabel label = new InlineLabel();
+      label.getElement().setInnerText(caption);
       label.addStyleName(STYLE_LABEL);
 
       if (MultiSelector.this.isEditEnabled()) {

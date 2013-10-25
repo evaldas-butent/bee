@@ -378,7 +378,15 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="TextLabel" type="valueLabel" substitutionGroup="widget" />
+  <xs:element name="TextLabel" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="valueLabel">
+          <xs:attribute name="textOnly" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:element name="IntegerLabel" type="valueLabel" substitutionGroup="widget" />
   <xs:element name="LongLabel" type="valueLabel" substitutionGroup="widget" />

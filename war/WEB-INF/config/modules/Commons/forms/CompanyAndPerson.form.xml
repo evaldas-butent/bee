@@ -23,7 +23,7 @@
       </row>
       <row>
         <cell colSpan="4">
-          <xi:include href="widgets/ContactInfo.widget.xml" />
+          <xi:include href="widgets/ContactInfoOpen.widget.xml" />
         </cell>
       </row>
     </Table>

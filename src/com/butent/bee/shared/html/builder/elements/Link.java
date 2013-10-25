@@ -19,6 +19,7 @@ public class Link extends Element {
     PREFETCH("prefetch"),
     PREV("prev"),
     SEARCH("search"),
+    SHORTCUT_ICON("shortcut icon"),
     STYLE_SHEET("stylesheet"),
     TAG("tag");
 

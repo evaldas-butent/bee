@@ -55,7 +55,7 @@
 
       <FlowPanel class="flexBox-horizontal">
         <Label text="=email" class="bee-co-companyInfo-label" style="&lbl;" />
-        <TextLabel style="&w2;" renderColumns="Label Email">
+        <TextLabel style="&w2;" textOnly="true" renderColumns="Label Email">
           <renderer type="mail" />
         </TextLabel>
 

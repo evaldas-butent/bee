@@ -14,11 +14,11 @@
             d:size="80" d:unit="px" />
           <TextLabel source="CompanyPhone" caption="=phone" inline="true"
             d:size="80" d:unit="px" />
-          <TextLabel caption="=email" inline="true" d:size="80" d:unit="px"
+          <TextLabel caption="=email" inline="true" textOnly="true" d:size="80" d:unit="px"
              renderColumns="CompanyLabel CompanyEmail">
             <renderer type="mail" />
           </TextLabel>
-          <br/>  
+          <br/>
 
           <InputText source="Summary" caption="=summary"
             style="width: 222px;" decorator="caption-top" />

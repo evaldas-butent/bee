@@ -405,6 +405,8 @@ public enum FormWidget {
   private static final String ATTR_VISIBLE_COLUMNS = "visibleColumns";
   private static final String ATTR_EDITABLE_COLUMNS = "editableColumns";
 
+  private static final String ATTR_TEXT_ONLY = "textOnly";
+
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -1047,6 +1049,9 @@ public enum FormWidget {
 
       case TEXT_LABEL:
         widget = new TextLabel(BeeUtils.toBoolean(attributes.get(ATTR_INLINE)));
+        if (BeeConst.isTrue(attributes.get(ATTR_TEXT_ONLY))) {
+          ((TextLabel) widget).setTextOnly(true);
+        }
         break;
 
       case TOGGLE:
