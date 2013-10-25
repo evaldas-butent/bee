@@ -197,6 +197,8 @@ public interface LocalizableEcConstants {
   String ecOrderStatus();
 
   String ecOrderStatusActive();
+  
+  String ecOrderStatusFinished();
 
   String ecOrderStatusNew();
 

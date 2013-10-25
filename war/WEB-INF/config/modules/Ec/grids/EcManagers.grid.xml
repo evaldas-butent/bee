@@ -2,16 +2,25 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcManagers" viewName="EcManagers" caption="=ecManagers"
+  autoFit="true"
   >
   <g:columns>
-    <RelColumn name="User" renderColumns="Login" editEnabled="true"
+    <RelColumn name="User" renderColumns="Login" editEnabled="true" editSource="CompanyPerson"
       choiceColumns="Login FirstName LastName CompanyName" visible="true" />
 
     <DataColumn name="FirstName" />
     <DataColumn name="LastName" />
     <DataColumn name="CompanyName" caption="=company" />
 
-    <DataColumn name="TabNr" visible="true" />
+    <DataColumn name="TabNr" />
+
+    <RelColumn name="MailAccount" renderColumns="AccountDescription AccountEmail">
+      <renderer type="mail" />
+    </RelColumn>
+
+    <RelColumn name="IncomingMail" renderColumns="IncomingLabel IncomingEmail">
+      <renderer type="mail" />
+    </RelColumn>
 
     <DataColumn name="Notes" />
   </g:columns>

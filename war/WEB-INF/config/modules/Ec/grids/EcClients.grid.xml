@@ -4,7 +4,7 @@
   name="EcClients" viewName="EcClients" caption="=ecClients"
   >
   <g:columns>
-    <RelColumn name="User" renderColumns="Login" editEnabled="true"
+    <RelColumn name="User" renderColumns="Login"
       choiceColumns="Login FirstName LastName CompanyName" visible="true" />
 
     <DataColumn name="FirstName" visible="true" />

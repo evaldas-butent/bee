@@ -87,6 +87,10 @@
         <ChildGrid name="EcOrderItems" relColumn="Order" />
       </page>
       <page>
+        <text>=ecOrderEvents</text>
+        <ChildGrid name="EcOrderEvents" relColumn="Order" />
+      </page>
+      <page>
         <text>=notes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" disablable="false" />

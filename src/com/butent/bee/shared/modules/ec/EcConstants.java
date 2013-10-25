@@ -66,7 +66,8 @@ public final class EcConstants {
   public enum EcOrderStatus implements HasCaption {
     NEW(Localized.getConstants().ecOrderStatusNew()),
     ACTIVE(Localized.getConstants().ecOrderStatusActive()),
-    REJECTED(Localized.getConstants().ecOrderStatusRejected());
+    REJECTED(Localized.getConstants().ecOrderStatusRejected()),
+    FINISHED(Localized.getConstants().ecOrderStatusFinished());
 
     public static boolean in(int status, EcOrderStatus... statuses) {
       for (EcOrderStatus st : statuses) {
@@ -194,6 +195,7 @@ public final class EcConstants {
   public static final String TBL_GROUPS = "EcGroups";
   public static final String TBL_HISTORY = "EcHistory";
   public static final String TBL_MANAGERS = "EcManagers";
+  public static final String TBL_ORDER_EVENTS = "EcOrderEvents";
   public static final String TBL_ORDER_ITEMS = "EcOrderItems";
   public static final String TBL_ORDERS = "EcOrders";
   public static final String TBL_PRIMARY_WAREHOUSES = "PrimaryWarehouses";
@@ -265,6 +267,8 @@ public final class EcConstants {
   public static final String COL_CONFIG_TOD_HTML = "TodHtml";
   public static final String COL_CONFIG_CONTACTS_URL = "ContactsUrl";
   public static final String COL_CONFIG_CONTACTS_HTML = "ContactsHtml";
+  public static final String COL_CONFIG_MAIL_ACCOUNT = "MailAccount";
+  public static final String COL_CONFIG_INCOMING_MAIL = "IncomingMail";
 
   public static final String COL_DISCOUNT_CLIENT = "Client";
   public static final String COL_DISCOUNT_DATE_FROM = "DateFrom";
@@ -294,7 +298,14 @@ public final class EcConstants {
 
   public static final String COL_MANAGER_USER = "User";
   public static final String COL_MANAGER_TAB_NR = "TabNr";
+  public static final String COL_MANAGER_MAIL_ACCOUNT = "MailAccount";
+  public static final String COL_MANAGER_INCOMING_MAIL = "IncomingMail";
   public static final String COL_MANAGER_NOTES = "Notes";
+
+  public static final String COL_ORDER_EVENT_ORDER = "Order";
+  public static final String COL_ORDER_EVENT_DATE = "Date";
+  public static final String COL_ORDER_EVENT_STATUS = "Status";
+  public static final String COL_ORDER_EVENT_USER = "User";
 
   public static final String COL_ORDER_ITEM_ORDER = "Order";
   public static final String COL_ORDER_ITEM_ARTICLE = "Article";

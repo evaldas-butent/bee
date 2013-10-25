@@ -16,7 +16,7 @@
     <SimpleJoin name="MailAccount" joinType="LEFT">
       <SimpleColumn name="Description" alias="AccountDescription" />
       <SimpleColumn name="Address" alias="AccountAddress" />
-      <SimpleJoin name="Address" joinType="INNER">
+      <SimpleJoin name="Address" joinType="LEFT">
         <SimpleColumn name="Email" alias="AccountEmail" />
         <SimpleColumn name="Label" alias="AccountLabel" />
       </SimpleJoin>
