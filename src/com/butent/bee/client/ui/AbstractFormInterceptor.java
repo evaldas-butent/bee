@@ -9,11 +9,13 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -66,6 +68,16 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public IsRow getActiveRow() {
+    return (getFormView() == null) ? null : getFormView().getActiveRow();
+  }
+
+  @Override
+  public long getActiveRowId() {
+    return (getFormView() == null) ? BeeConst.UNDEF : getFormView().getActiveRowId();
+  }
+
+  @Override
   public Domain getDomain() {
     return null;
   }
@@ -85,6 +97,12 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public HeaderView getHeaderView() {
+    return (getFormView() == null || getFormView().getViewPresenter() == null) ? null 
+        : getFormView().getViewPresenter().getHeader();
+  }
+
+  @Override
   public abstract FormInterceptor getInstance();
 
   @Override
@@ -100,6 +118,11 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   @Override
   public String getSupplierKey() {
     return null;
+  }
+
+  @Override
+  public String getViewName() {
+    return (getFormView() == null) ? null : getFormView().getViewName();
   }
 
   @Override

@@ -156,6 +156,7 @@ public final class EcConstants {
 
   public static final String SVC_SEND_TO_ERP = "sendToERP";
   public static final String SVC_MAIL_ORDER = "mailOrder";
+  public static final String SVC_UPDATE_ORDER_STATUS = "updateOrderStatus";
 
   public static final String SVC_MERGE_CATEGORY = "mergeCategory";
 
@@ -184,6 +185,7 @@ public final class EcConstants {
   public static final String VAR_FILTER = VAR_PREFIX + "filter";
 
   public static final String VAR_ORDER = VAR_PREFIX + "order";
+  public static final String VAR_STATUS = VAR_PREFIX + "status";
   public static final String VAR_MAIL = VAR_PREFIX + "mail";
 
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";

@@ -11,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
@@ -21,6 +22,7 @@ import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HasGridView;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -35,6 +37,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -57,7 +60,8 @@ import java.util.Map;
 public final class FormFactory {
 
   public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
-      HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain {
+      HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain, HasActiveRow,
+      HasViewName {
 
     void afterAction(Action action, Presenter presenter);
 
@@ -70,8 +74,12 @@ public final class FormFactory {
     boolean beforeAction(Action action, Presenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
+    
+    long getActiveRowId();    
 
     FormView getFormView();
+
+    HeaderView getHeaderView();
 
     FormInterceptor getInstance();
 

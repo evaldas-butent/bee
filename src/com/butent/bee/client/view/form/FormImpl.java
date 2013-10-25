@@ -588,6 +588,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public long getActiveRowId() {
+    return (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
+  }
+
+  @Override
   public String getCaption() {
     return caption;
   }
@@ -685,13 +690,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public Map<String, String> getProperties() {
-    return properties;
+  public String getProperty(String key) {
+    return properties.get(key);
   }
 
   @Override
-  public String getProperty(String key) {
-    return properties.get(key);
+  public Map<String, String> getProperties() {
+    return properties;
   }
 
   @Override
@@ -1593,10 +1598,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private int getActiveEditableIndex() {
     return activeEditableIndex;
-  }
-
-  private long getActiveRowId() {
-    return (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
   }
 
   private DataObserver getDataObserver() {

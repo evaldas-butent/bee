@@ -175,29 +175,41 @@ public interface LocalizableEcConstants {
   String ecOrder();
 
   String ecOrderAmount();
+  
+  String ecOrderCommandFinish();
+  
+  String ecOrderCommandMail();
+  
+  String ecOrderCommandReject();
+  
+  String ecOrderCommandSendToERP();
+  
+  String ecOrderCommandUnsuppliedItems();
 
   String ecOrderCopyByMail();
 
   String ecOrderDate();
 
+  String ecOrderFinishConfirm();
+
   String ecOrderItems();
-  
-  String ecOrderMailCommand();
+
+  String ecOrderMailConfirm();
 
   String ecOrderNumber();
 
   String ecOrderRejectCaption();
 
-  String ecOrderRejectCommand();
-  
   String ecOrderRejectConfirm();
+
+  String ecOrderSendToERPConfirm();
 
   String ecOrdersSubmitted();
 
   String ecOrderStatus();
 
   String ecOrderStatusActive();
-  
+
   String ecOrderStatusFinished();
 
   String ecOrderStatusNew();
@@ -258,16 +270,12 @@ public interface LocalizableEcConstants {
 
   String ecTermsOfDelivery();
 
-  String ecSendToERP();
-
-  String ecSendToERPConfirm();
-
   String ecToggleListPrice();
-  
+
   String ecTogglePrice();
 
   String ecToggleStockLimit();
-  
+
   String ecTotalOrdered();
 
   String ecTotalTaken();

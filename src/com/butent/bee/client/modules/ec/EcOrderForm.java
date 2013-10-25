@@ -46,8 +46,10 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -83,6 +85,8 @@ class EcOrderForm extends AbstractFormInterceptor {
   private static final String STYLE_SUFFIX_LABEL = "-label";
   private static final String STYLE_SUFFIX_INPUT = "-input";
 
+  private static final String STYLE_COMMAND = EcStyles.name("Order-Command-");
+
   private static void addToUnsuppliedItems(long orderId) {
     ParameterList params = EcKeeper.createArgs(SVC_ADD_TO_UNSUPPLIED_ITEMS);
     params.addQueryItem(VAR_ORDER, orderId);
@@ -96,9 +100,10 @@ class EcOrderForm extends AbstractFormInterceptor {
   }
 
   private Button unsupplied;
-  private Button send;
-  private Button reject;
   private Button mail;
+  private Button erp;
+  private Button reject;
+  private Button finish;
 
   EcOrderForm() {
     super();
@@ -111,55 +116,10 @@ class EcOrderForm extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    HeaderView header = form.getViewPresenter().getHeader();
-    header.clearCommandPanel();
-
     EcOrderStatus status = NameUtils.getEnumByIndex(EcOrderStatus.class,
         Data.getInteger(form.getViewName(), row, COL_ORDER_STATUS));
 
-    if (status == EcOrderStatus.NEW) {
-      if (this.unsupplied == null) {
-        this.unsupplied = new Button(Localized.getConstants().ecUnsuppliedItems(),
-            new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                getUnsuppliedItems();
-              }
-            });
-      }
-      header.addCommandItem(this.unsupplied);
-
-      if (this.send == null) {
-        this.send = new Button(Localized.getConstants().ecSendToERP(), new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            sendToErp();
-          }
-        });
-      }
-      header.addCommandItem(this.send);
-
-      if (this.reject == null) {
-        this.reject = new Button(Localized.getConstants().ecOrderRejectCommand(),
-            new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                rejectOrder();
-              }
-            });
-      }
-      header.addCommandItem(this.reject);
-    }
-
-    if (this.mail == null) {
-      this.mail = new Button(Localized.getConstants().ecOrderMailCommand(), new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          mailOrder();
-        }
-      });
-    }
-    header.addCommandItem(this.mail);
+    updateCommands(status);
 
     form.setEnabled(status == EcOrderStatus.NEW);
 
@@ -214,6 +174,52 @@ class EcOrderForm extends AbstractFormInterceptor {
     }
   }
 
+  private void finishOrder() {
+    List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderFinishConfirm());
+    Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        final long rowId = startRequest();
+
+        ParameterList args = EcKeeper.createArgs(SVC_UPDATE_ORDER_STATUS);
+        args.addQueryItem(VAR_ORDER, getActiveRowId());
+        args.addQueryItem(VAR_STATUS, EcOrderStatus.FINISHED.ordinal());
+
+        BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(getFormView());
+
+            if (response.hasResponse(Long.class) && getActiveRowId() == rowId) {
+              int index = getFormView().getDataIndex(COL_ORDER_STATUS);
+
+              long version = BeeUtils.toLong(response.getResponseAsString());
+              CellSource source = CellSource.forColumn(getFormView().getDataColumns().get(index),
+                  index);
+              String value = BeeUtils.toString(EcOrderStatus.FINISHED.ordinal());
+
+              CellUpdateEvent event = new CellUpdateEvent(getViewName(), rowId, version, source,
+                  value);
+              
+              event.applyTo(getActiveRow());
+              BeeKeeper.getBus().fireEvent(event);
+              
+              getFormView().refresh();
+            }
+
+            updateCommands(getOrderStatus());
+          }
+        });
+      }
+    });
+  }
+
+  private EcOrderStatus getOrderStatus() {
+    FormView form = getFormView();
+    return NameUtils.getEnumByIndex(EcOrderStatus.class,
+        Data.getInteger(form.getViewName(), form.getActiveRow(), COL_ORDER_STATUS));
+  }
+
   private void getUnsuppliedItems() {
     int index = getFormView().getDataIndex(COL_ORDER_CLIENT);
     Long client = getFormView().getActiveRow().getLong(index);
@@ -233,7 +239,7 @@ class EcOrderForm extends AbstractFormInterceptor {
   }
 
   private void mailOrder() {
-    List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderCopyByMail());
+    List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderMailConfirm());
     Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
       public void onConfirm() {
@@ -349,31 +355,11 @@ class EcOrderForm extends AbstractFormInterceptor {
     });
   }
 
-  private void restoreCommandPanel(HeaderView header) {
-    if (unsupplied != null) {
-      header.addCommandItem(unsupplied);
-    }
-    if (send != null) {
-      header.addCommandItem(send);
-    }
-    if (reject != null) {
-      header.addCommandItem(reject);
-    }
-    if (mail != null) {
-      header.addCommandItem(mail);
-    }
-  }
-
   private void sendToErp() {
-    Global.confirm(Localized.getConstants().ecSendToERPConfirm(), new ConfirmationCallback() {
+    Global.confirm(Localized.getConstants().ecOrderSendToERPConfirm(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        final FormView form = getFormView();
-        final HeaderView header = form.getViewPresenter().getHeader();
-        final long rowId = form.getActiveRow().getId();
-
-        header.clearCommandPanel();
-        header.addCommandItem(new Image(Global.getImages().loading()));
+        final long rowId = startRequest();
 
         ParameterList args = EcKeeper.createArgs(SVC_SEND_TO_ERP);
         args.addDataItem(VAR_ORDER, rowId);
@@ -381,23 +367,22 @@ class EcOrderForm extends AbstractFormInterceptor {
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            header.clearCommandPanel();
             response.notify(getFormView());
 
             if (response.hasErrors()) {
-              restoreCommandPanel(header);
+              updateCommands(getOrderStatus());
 
             } else {
               DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
 
-              Queries.getRow(form.getViewName(), rowId, new RowCallback() {
+              Queries.getRow(getViewName(), rowId, new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow result) {
-                  if (rowId == form.getActiveRow().getId()) {
-                    form.updateRow(result, false);
-                    form.setEnabled(false);
+                  if (rowId == getActiveRowId()) {
+                    getFormView().updateRow(result, false);
+                    getFormView().setEnabled(false);
                   }
-                  BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
+                  BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
                 }
               });
             }
@@ -548,5 +533,86 @@ class EcOrderForm extends AbstractFormInterceptor {
         }
       }
     });
+  }
+
+  private long startRequest() {
+    HeaderView header = getHeaderView();
+    if (header != null) {
+      header.clearCommandPanel();
+      header.addCommandItem(new Image(Global.getImages().loading()));
+    }
+
+    return getActiveRowId();
+  }
+
+  private void updateCommands(EcOrderStatus status) {
+    HeaderView header = getHeaderView();
+    header.clearCommandPanel();
+
+    if (status == EcOrderStatus.NEW) {
+      if (this.unsupplied == null) {
+        this.unsupplied = new Button(Localized.getConstants().ecOrderCommandUnsuppliedItems(),
+            new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                getUnsuppliedItems();
+              }
+            });
+        this.unsupplied.addStyleName(STYLE_COMMAND + "unsupplied");
+      }
+      header.addCommandItem(this.unsupplied);
+    }
+
+    if (this.mail == null) {
+      this.mail = new Button(Localized.getConstants().ecOrderCommandMail(),
+          new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              mailOrder();
+            }
+          });
+      this.mail.addStyleName(STYLE_COMMAND + "mail");
+    }
+    header.addCommandItem(this.mail);
+
+    if (status == EcOrderStatus.NEW) {
+      if (this.erp == null) {
+        this.erp = new Button(Localized.getConstants().ecOrderCommandSendToERP(),
+            new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                sendToErp();
+              }
+            });
+        this.erp.addStyleName(STYLE_COMMAND + "erp");
+      }
+      header.addCommandItem(this.erp);
+
+      if (this.reject == null) {
+        this.reject = new Button(Localized.getConstants().ecOrderCommandReject(),
+            new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                rejectOrder();
+              }
+            });
+        this.reject.addStyleName(STYLE_COMMAND + "reject");
+      }
+      header.addCommandItem(this.reject);
+    }
+
+    if (status == EcOrderStatus.ACTIVE) {
+      if (this.finish == null) {
+        this.finish = new Button(Localized.getConstants().ecOrderCommandFinish(),
+            new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                finishOrder();
+              }
+            });
+        this.finish.addStyleName(STYLE_COMMAND + "finish");
+      }
+      header.addCommandItem(this.finish);
+    }
   }
 }

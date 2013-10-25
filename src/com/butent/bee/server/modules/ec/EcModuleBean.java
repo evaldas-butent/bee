@@ -307,6 +307,11 @@ public class EcModuleBean implements BeeModule {
       Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
       response = mailOrder(orderId);
 
+//    } else if (BeeUtils.same(svc, SVC_UPDATE_ORDER_STATUS)) {
+//      Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
+//      Integer status = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_STATUS));
+//      response = updateOrderStatus(orderId, status);
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -1972,6 +1977,10 @@ public class EcModuleBean implements BeeModule {
     qs.insertData(ins);
   }
 
+//  private ResponseObject updateOrderStatus(Long orderId, Integer status) {
+//    return null;
+//  }
+  
   private ResponseObject mailOrder(Long orderId) {
     if (!DataUtils.isId(orderId)) {
       return ResponseObject.parameterNotFound(SVC_ADD_TO_UNSUPPLIED_ITEMS, VAR_ORDER);

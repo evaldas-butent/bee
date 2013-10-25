@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="EcMailParameters" viewName="EcConfiguration" caption="=ecMailParameters"
+  minNumberOfRows="1" maxNumberOfRows="1" flexGrow="1" flexShrink="1" flexBasis="100"
+  disabledActions="filter"
+  >
+  <g:columns>
+    <RelColumn name="MailAccount" renderColumns="AccountDescription AccountEmail" visible="true"
+      sortable="false">
+      <renderer type="mail" />
+    </RelColumn>
+
+    <RelColumn name="IncomingMail" renderColumns="IncomingLabel IncomingEmail" visible="true"
+      sortable="false">
+      <renderer type="mail" />
+    </RelColumn>
+  </g:columns>
+</g:Grid>

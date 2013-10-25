@@ -2,11 +2,11 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="Configuration" viewName="Configuration" caption="=settings"
-  minNumberOfRows="1" maxNumberOfRows="1" flexGrow="1" flexShrink="1"
+  minNumberOfRows="1" maxNumberOfRows="1" flexGrow="1" flexShrink="1" disabledActions="filter"
   >
   <g:columns>
-    <RelColumn name="Company" caption="=company" visible="true" />
-    <RelColumn name="AppointmentType" caption="=appointmentType" visible="true" />
-    <RelColumn name="TimeZone" caption="=timeZone" />
+    <RelColumn name="Company" caption="=company" sortable="false" visible="true" />
+    <RelColumn name="AppointmentType" caption="=appointmentType" sortable="false" visible="true" />
+    <RelColumn name="TimeZone" caption="=timeZone" sortable="false" />
   </g:columns>
 </g:Grid>
