@@ -77,6 +77,8 @@ public final class FormFactory {
     
     long getActiveRowId();    
 
+    int getDataIndex(String source);
+    
     FormView getFormView();
 
     HeaderView getHeaderView();

@@ -1,5 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
 
@@ -26,6 +29,21 @@ public class Div extends FertileElement {
     return this;
   }
 
+  public Div backgroundColor(String backgroundColor) {
+    setBackgroundColor(backgroundColor);
+    return this;
+  }
+  
+  public Div fontSize(FontSize fontSize) {
+    setFontSize(fontSize);
+    return this;
+  }
+
+  public Div fontWeight(FontWeight fontWeight) {
+    setFontWeight(fontWeight);
+    return this;
+  }
+  
   public Div id(String value) {
     setId(value);
     return this;
@@ -38,6 +56,26 @@ public class Div extends FertileElement {
 
   public Div lang(String value) {
     setLang(value);
+    return this;
+  }
+  
+  public Div marginBottom(int value, CssUnit unit) {
+    setMarginBottom(value, unit);
+    return this;
+  }
+
+  public Div marginLeft(int value, CssUnit unit) {
+    setMarginLeft(value, unit);
+    return this;
+  }
+  
+  public Div marginRight(int value, CssUnit unit) {
+    setMarginRight(value, unit);
+    return this;
+  }
+
+  public Div marginTop(int value, CssUnit unit) {
+    setMarginTop(value, unit);
     return this;
   }
 

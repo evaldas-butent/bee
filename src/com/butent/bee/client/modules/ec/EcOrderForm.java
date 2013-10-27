@@ -46,10 +46,8 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -61,7 +59,6 @@ import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -94,7 +91,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        DataChangeEvent.fireRefresh(TBL_UNSUPPLIED_ITEMS);
+        DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
       }
     });
   }
@@ -116,18 +113,16 @@ class EcOrderForm extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    EcOrderStatus status = NameUtils.getEnumByIndex(EcOrderStatus.class,
-        Data.getInteger(form.getViewName(), row, COL_ORDER_STATUS));
+    EcOrderStatus status = EcOrderStatus.get(Data.getInteger(getViewName(), row, COL_ORDER_STATUS));
 
     updateCommands(status);
-
-    form.setEnabled(status == EcOrderStatus.NEW);
+    reenable(status);
 
     return true;
   }
 
   private void appendUnsuppliedItems(BeeRowSet rowSet, final Set<Long> selectedIds) {
-    long orderId = getFormView().getActiveRow().getId();
+    long orderId = getActiveRowId();
 
     int articleIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_ARTICLE);
     int qtyIndex = rowSet.getColumnIndex(COL_UNSUPPLIED_ITEM_QUANTITY);
@@ -174,55 +169,42 @@ class EcOrderForm extends AbstractFormInterceptor {
     }
   }
 
+  private void deliverTheLetter() {
+    ParameterList args = EcKeeper.createArgs(SVC_MAIL_ORDER);
+    args.addQueryItem(VAR_ORDER, getActiveRowId());
+
+    BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getFormView());
+      }
+    });
+  }
+
+  private void endRequest() {
+    EcOrderStatus status = getOrderStatus();
+
+    updateCommands(status);
+    reenable(status);
+  }
+
   private void finishOrder() {
     List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderFinishConfirm());
     Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        final long rowId = startRequest();
-
-        ParameterList args = EcKeeper.createArgs(SVC_UPDATE_ORDER_STATUS);
-        args.addQueryItem(VAR_ORDER, getActiveRowId());
-        args.addQueryItem(VAR_STATUS, EcOrderStatus.FINISHED.ordinal());
-
-        BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getFormView());
-
-            if (response.hasResponse(Long.class) && getActiveRowId() == rowId) {
-              int index = getFormView().getDataIndex(COL_ORDER_STATUS);
-
-              long version = BeeUtils.toLong(response.getResponseAsString());
-              CellSource source = CellSource.forColumn(getFormView().getDataColumns().get(index),
-                  index);
-              String value = BeeUtils.toString(EcOrderStatus.FINISHED.ordinal());
-
-              CellUpdateEvent event = new CellUpdateEvent(getViewName(), rowId, version, source,
-                  value);
-              
-              event.applyTo(getActiveRow());
-              BeeKeeper.getBus().fireEvent(event);
-              
-              getFormView().refresh();
-            }
-
-            updateCommands(getOrderStatus());
-          }
-        });
+        updateStatus(EcOrderStatus.FINISHED);
       }
     });
   }
 
   private EcOrderStatus getOrderStatus() {
-    FormView form = getFormView();
-    return NameUtils.getEnumByIndex(EcOrderStatus.class,
-        Data.getInteger(form.getViewName(), form.getActiveRow(), COL_ORDER_STATUS));
+    return EcOrderStatus.get(Data.getInteger(getViewName(), getActiveRow(), COL_ORDER_STATUS));
   }
 
   private void getUnsuppliedItems() {
-    int index = getFormView().getDataIndex(COL_ORDER_CLIENT);
-    Long client = getFormView().getActiveRow().getLong(index);
+    int index = getDataIndex(COL_ORDER_CLIENT);
+    Long client = getActiveRow().getLong(index);
     Assert.notNull(client);
 
     Filter filter = ComparisonFilter.isEqual(COL_UNSUPPLIED_ITEM_CLIENT, new LongValue(client));
@@ -238,20 +220,40 @@ class EcOrderForm extends AbstractFormInterceptor {
     });
   }
 
-  private void mailOrder() {
+  private void pleaseMisterPostman() {
+    IsRow row = getActiveRow();
+    String caption = EcUtils.formatPerson(row.getString(getDataIndex(ALS_ORDER_CLIENT_FIRST_NAME)),
+        row.getString(getDataIndex(ALS_ORDER_CLIENT_LAST_NAME)),
+        row.getString(getDataIndex(ALS_ORDER_CLIENT_COMPANY_NAME)));
     List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderMailConfirm());
-    Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
+
+    Global.confirm(caption, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        ParameterList args = EcKeeper.createArgs(SVC_MAIL_ORDER);
-        args.addQueryItem(VAR_ORDER, getFormView().getActiveRow().getId());
+        deliverTheLetter();
+      }
+    });
+  }
 
-        BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getFormView());
-          }
-        });
+  private void reenable(EcOrderStatus status) {
+    boolean enabled = status == EcOrderStatus.NEW;
+    if (getFormView() != null && getFormView().isEnabled() != enabled) {
+      getFormView().setEnabled(enabled);
+    }
+  }
+
+  private void registerOrderEvent(Long orderId, EcOrderStatus status) {
+    ParameterList args = EcKeeper.createArgs(SVC_REGISTER_ORDER_EVENT);
+    args.addQueryItem(VAR_ORDER, orderId);
+    args.addQueryItem(VAR_STATUS, status.ordinal());
+
+    BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getFormView());
+        if (!response.hasErrors()) {
+          DataChangeEvent.fireRefresh(VIEW_ORDER_EVENTS);
+        }
       }
     });
   }
@@ -312,77 +314,59 @@ class EcOrderForm extends AbstractFormInterceptor {
       @Override
       public void onClick(ClickEvent event) {
         Long rrId = selector.getRelatedId();
-        if (!DataUtils.isId(rrId)) {
+
+        if (DataUtils.isId(rrId)) {
+          dialog.close();
+          updateStatus(EcOrderStatus.REJECTED, rrId, inputArea.getValue(), true);
+        } else {
           getFormView().notifySevere(Localized.getConstants().ecRejectionReasonRequired());
           selector.setFocus(true);
-          return;
         }
-
-        BeeRow orderRow = DataUtils.cloneRow(getFormView().getActiveRow());
-        orderRow.setValue(getFormView().getDataIndex(COL_ORDER_STATUS),
-            EcOrderStatus.REJECTED.ordinal());
-
-        orderRow.setValue(getFormView().getDataIndex(COL_ORDER_REJECTION_REASON), rrId);
-
-        int commentIndex = getFormView().getDataIndex(COL_ORDER_MANAGER_COMMENT);
-        if (!BeeUtils.equalsTrim(orderRow.getString(commentIndex), inputArea.getValue())) {
-          orderRow.setValue(commentIndex, inputArea.getValue());
-        }
-
-        Queries.update(getFormView().getViewName(), getFormView().getDataColumns(),
-            getFormView().getOldRow(), orderRow, getFormView().getChildrenForUpdate(),
-            new RowCallback() {
-              @Override
-              public void onFailure(String... reason) {
-                getFormView().notifySevere(reason);
-              }
-
-              @Override
-              public void onSuccess(BeeRow result) {
-                getFormView().updateRow(result, false);
-                getFormView().setEnabled(false);
-
-                getFormView().getViewPresenter().getHeader().clearCommandPanel();
-
-                dialog.close();
-
-                BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getFormView().getViewName(),
-                    result));
-                addToUnsuppliedItems(result.getId());
-              }
-            });
       }
     });
   }
 
   private void sendToErp() {
-    Global.confirm(Localized.getConstants().ecOrderSendToERPConfirm(), new ConfirmationCallback() {
+    List<String> messages = Lists.newArrayList(Localized.getConstants().ecOrderSendToERPConfirm());
+    Global.confirm(null, Icon.QUESTION, messages, new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        final long rowId = startRequest();
+        final long rowId = getActiveRowId();
+        startRequest();
 
         ParameterList args = EcKeeper.createArgs(SVC_SEND_TO_ERP);
-        args.addDataItem(VAR_ORDER, rowId);
+        args.addQueryItem(VAR_ORDER, getActiveRowId());
+        if (waitingALongLongTime()) {
+          args.addQueryItem(VAR_MAIL, 1);
+        }
 
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
             response.notify(getFormView());
 
             if (response.hasErrors()) {
-              updateCommands(getOrderStatus());
+              endRequest();
 
             } else {
               DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
+              DataChangeEvent.fireRefresh(VIEW_ORDER_EVENTS);
 
               Queries.getRow(getViewName(), rowId, new RowCallback() {
                 @Override
+                public void onFailure(String... reason) {
+                  endRequest();
+                  getFormView().notifySevere(reason);
+                }
+
+                @Override
                 public void onSuccess(BeeRow result) {
-                  if (rowId == getActiveRowId()) {
+                  if (rowId == getActiveRowId() && !getFormView().observesData()) {
                     getFormView().updateRow(result, false);
-                    getFormView().setEnabled(false);
                   }
                   BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
+
+                  endRequest();
                 }
               });
             }
@@ -535,14 +519,12 @@ class EcOrderForm extends AbstractFormInterceptor {
     });
   }
 
-  private long startRequest() {
+  private void startRequest() {
     HeaderView header = getHeaderView();
     if (header != null) {
       header.clearCommandPanel();
       header.addCommandItem(new Image(Global.getImages().loading()));
     }
-
-    return getActiveRowId();
   }
 
   private void updateCommands(EcOrderStatus status) {
@@ -568,7 +550,7 @@ class EcOrderForm extends AbstractFormInterceptor {
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              mailOrder();
+              pleaseMisterPostman();
             }
           });
       this.mail.addStyleName(STYLE_COMMAND + "mail");
@@ -614,5 +596,62 @@ class EcOrderForm extends AbstractFormInterceptor {
       }
       header.addCommandItem(this.finish);
     }
+  }
+
+  private void updateStatus(EcOrderStatus status) {
+    updateStatus(status, null, null, false);
+  }
+
+  private void updateStatus(final EcOrderStatus status, Long rejectionReason, String comment,
+      final boolean addToUnsupplied) {
+
+    startRequest();
+
+    BeeRow orderRow = DataUtils.cloneRow(getActiveRow());
+    orderRow.setValue(getDataIndex(COL_ORDER_STATUS), status.ordinal());
+
+    if (rejectionReason != null) {
+      orderRow.setValue(getDataIndex(COL_ORDER_REJECTION_REASON), rejectionReason);
+    }
+
+    if (comment != null) {
+      int commentIndex = getDataIndex(COL_ORDER_MANAGER_COMMENT);
+      if (!BeeUtils.equalsTrim(orderRow.getString(commentIndex), comment)) {
+        orderRow.setValue(commentIndex, comment.trim());
+      }
+    }
+
+    Queries.update(getViewName(), getFormView().getDataColumns(), getFormView().getOldRow(),
+        orderRow, getFormView().getChildrenForUpdate(), new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            endRequest();
+            getFormView().notifySevere(reason);
+          }
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (DataUtils.sameId(result, getActiveRow()) && !getFormView().observesData()) {
+              getFormView().updateRow(result, false);
+            }
+            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
+
+            registerOrderEvent(result.getId(), status);
+            if (addToUnsupplied) {
+              addToUnsuppliedItems(result.getId());
+            }
+
+            if (waitingALongLongTime()) {
+              deliverTheLetter();
+            }
+
+            endRequest();
+          }
+        });
+  }
+
+  private boolean waitingALongLongTime() {
+    IsRow row = getActiveRow();
+    return row != null && BeeUtils.isTrue(row.getBoolean(getDataIndex(COL_ORDER_COPY_BY_MAIL)));
   }
 }

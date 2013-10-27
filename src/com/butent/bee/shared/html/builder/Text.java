@@ -1,8 +1,10 @@
 package com.butent.bee.shared.html.builder;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class Text extends Node {
 
-  private final String text;
+  private String text;
 
   public Text(String text) {
     super();
@@ -16,5 +18,13 @@ public class Text extends Node {
 
   public String getText() {
     return text;
+  }
+  
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(getText());
+  }
+
+  public void setText(String text) {
+    this.text = text;
   }
 }

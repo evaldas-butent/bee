@@ -940,7 +940,7 @@
 }
 .bee-ec-finInfo-order-amount-cell {
   text-align: right;
-}  
+}
 .bee-ec-finInfo-order-comment,
 .bee-ec-finInfo-order-da {
   white-space: pre-line;
@@ -966,9 +966,10 @@
 }
 
 .bee-ec-finInfo-order-details-panel {
-  max-width: 800px;
+  width: calc(100% - 15px);
   max-height: 600px;
   overflow: auto;
+  margin-right: 20px;
 }
 
 .bee-ec-finInfo-order-details-table {
@@ -977,20 +978,38 @@
 .bee-ec-finInfo-order-details-table td {
   padding: 3px 10px;
 }
+.bee-ec-finInfo-order-details-label {
+  text-align: right;
+}
 .bee-ec-finInfo-order-details-value {
-  width: 200px;
+  min-width: 120px;
+  max-width: 200px;
   border: 1px solid #ccc;
   padding: 2px 5px;
   white-space: pre-line;
+  background-color: #fafafa;
+}
+.bee-ec-finInfo-order-details-empty:before {
+  content: "-";
+}
+
+.bee-ec-finInfo-order-details-amount-value {
+  font-weight: bold;
+  font-size: larger;
+}
+
+.bee-ec-finInfo-order-details-amount-value,
+.bee-ec-finInfo-order-details-weight-value {
+  text-align: right;
 }
 
 .bee-ec-finInfo-order-item-caption {
-  margin-top: 1ex;
+  margin-top: 2ex;
   font-weight: bold;
 }
   
 .bee-ec-finInfo-order-item-table {
-  margin-left: 3em;
+  margin-left: 1em;
   border-collapse: collapse;
 }
 .bee-ec-finInfo-order-item-header td {
@@ -1010,9 +1029,21 @@
   width: 50px;
   height: 50px;
 }
+.bee-ec-finInfo-order-item-ordered-cell,
 .bee-ec-finInfo-order-item-quantity-cell,
 .bee-ec-finInfo-order-item-price-cell {
   text-align: right;
+}
+
+.bee-ec-finInfo-order-item-quantity {
+  font-weight: bolder;
+}
+.bee-ec-finInfo-order-item-quantity-incr {
+  color: green;
+  font-size: larger;
+}
+.bee-ec-finInfo-order-item-quantity-decr {
+  color: red;
 }
 
 .bee-ec-searchByGroup {

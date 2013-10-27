@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -83,13 +84,17 @@ public class FertileElement extends Element {
   }
 
   public Node getChild(int index) {
-    return children.get(index);
+    return BeeUtils.getQuietly(children, index);
   }
-
+  
   public List<Node> getChildren() {
     return children;
   }
 
+  public Node getFirstChild() {
+    return getChild(0);
+  }
+  
   public boolean hasComment() {
     for (Node child : children) {
       if (child instanceof Comment) {
@@ -106,6 +111,10 @@ public class FertileElement extends Element {
       }
     }
     return false;
+  }
+
+  public int indexOf(Node child) {
+    return children.indexOf(child);
   }
 
   public void insertChild(int index, Node child) {
@@ -138,6 +147,10 @@ public class FertileElement extends Element {
     children.remove(child);
   }
 
+  public int size() {
+    return children.size();
+  }
+  
   @Override
   protected String buildEnd() {
     StringBuilder sb = new StringBuilder("</");

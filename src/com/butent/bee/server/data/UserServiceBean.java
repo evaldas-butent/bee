@@ -66,6 +66,7 @@ import javax.ejb.Singleton;
 public class UserServiceBean {
 
   private final class UserInfo {
+
     private final UserData userData;
     private final String password;
     private Collection<Long> userRoles;
@@ -91,12 +92,24 @@ public class UserServiceBean {
       return blockBefore;
     }
 
+    private Long getCompany() {
+      return userData.getCompany();
+    }
+
+    private Long getCompanyPerson() {
+      return userData.getCompanyPerson();
+    }
+
     private String getLanguage() {
-      return (getUserLocale() == null) ? null : getUserLocale().getLanguage();
+      return getUserLocale().getLanguage();
     }
 
     private String getPassword() {
       return password;
+    }
+
+    private Long getPerson() {
+      return userData.getPerson();
     }
 
     private Collection<Long> getRoles() {
@@ -226,23 +239,82 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
-  public String getLanguage() {
-    if (getCurrentUserInfo() == null) {
-      return "en";
+  public Long getEmailId(Long userId) {
+    if (userId == null) {
+      return null;
     }
-    return getCurrentUserInfo().getLanguage();
+
+    UserInfo userInfo = getUserInfo(userId);
+    if (userInfo == null) {
+      return null;
+    }
+
+    if (DataUtils.isId(userInfo.getCompanyPerson())) {
+      Long id =
+          qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
+              .addFrom(TBL_CONTACTS)
+              .addFromLeft(TBL_COMPANY_PERSONS,
+                  sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+              .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, userInfo.getCompanyPerson())));
+
+      if (DataUtils.isId(id)) {
+        return id;
+      }
+    }
+
+    if (DataUtils.isId(userInfo.getPerson())) {
+      Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
+          .addFrom(TBL_CONTACTS)
+          .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT))
+          .setWhere(sys.idEquals(TBL_PERSONS, userInfo.getPerson())));
+
+      if (DataUtils.isId(id)) {
+        return id;
+      }
+    }
+
+    if (DataUtils.isId(userInfo.getCompany())) {
+      Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
+          .addFrom(TBL_CONTACTS)
+          .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .setWhere(sys.idEquals(TBL_COMPANIES, userInfo.getCompany())));
+
+      if (DataUtils.isId(id)) {
+        return id;
+      }
+    }
+
+    return null;
+  }
+
+  public String getLanguage() {
+    return getLanguage(getCurrentUserId());
+  }
+  
+  public String getLanguage(Long userId) {
+    UserInfo userInfo = (userId == null) ? null : getUserInfo(userId);
+    return (userInfo == null) ? SupportedLocale.DEFAULT.getLanguage() : userInfo.getLanguage();
   }
 
   public Locale getLocale() {
-    return BeeUtils.nvl(I18nUtils.toLocale(getLanguage()), Localizations.getDefaultLocale());
+    return BeeUtils.nvl(I18nUtils.toLocale(getLanguage(getCurrentUserId())),
+        Localizations.getDefaultLocale());
   }
 
   public LocalizableConstants getLocalizableConstants() {
-    return Localizations.getPreferredConstants(getLanguage());
+    return getLocalizableConstants(getCurrentUserId());
+  }
+
+  public LocalizableConstants getLocalizableConstants(Long userId) {
+    return Localizations.getPreferredConstants(getLanguage(userId));
   }
 
   public LocalizableMessages getLocalizableMesssages() {
-    return Localizations.getPreferredMessages(getLanguage());
+    return getLocalizableMesssages(getCurrentUserId());
+  }
+
+  public LocalizableMessages getLocalizableMesssages(Long userId) {
+    return Localizations.getPreferredMessages(getLanguage(userId));
   }
 
   public String getRoleName(Long roleId) {

@@ -30,6 +30,10 @@ public final class EcUtils {
       return BeeConst.STRING_MINUS + formatCents(-cents);
     }
   }
+  
+  public static String formatPerson(String firstName, String lastName, String company) {
+    return BeeUtils.joinItems(BeeUtils.joinWords(firstName, lastName), company);
+  }
 
   public static String formatProduced(Integer producedFrom, Integer producedTo) {
     Integer yearFrom = normalizeYear(producedFrom);

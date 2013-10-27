@@ -380,6 +380,16 @@ public class MailModuleBean implements BeeModule {
     return ResponseObject.info("Mail sent");
   }
 
+  public ResponseObject sendMail(Long from, Set<Long> to, String subject, String content) {
+    try {
+      sendMail(from, to, null, null, subject, content, null);
+    } catch (MessagingException ex) {
+      logger.error(ex);
+      return ResponseObject.error(ex);
+    }
+    return ResponseObject.emptyResponse();
+  }
+
   public void sendMail(Long from, Set<Long> to, Set<Long> cc,
       Set<Long> bcc, String subject, String content, Set<Long> attachments)
       throws MessagingException {

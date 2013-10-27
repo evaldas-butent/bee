@@ -27,6 +27,14 @@ public abstract class Node {
   }
   
   public abstract String build(int indentStart, int indentStep);
+  
+  public int index() {
+    if (getParent() instanceof FertileElement) {
+      return ((FertileElement) getParent()).indexOf(this);
+    } else {
+      return BeeConst.UNDEF;
+    }
+  }
 
   public int getLevel() {
     return (getParent() == null) ? 0 : getParent().getLevel() + 1;

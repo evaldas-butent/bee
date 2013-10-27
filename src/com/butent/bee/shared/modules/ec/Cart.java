@@ -13,7 +13,7 @@ import java.util.List;
 public class Cart implements BeeSerializable {
 
   private enum Serial {
-    DELIVERY_ADDRESS, DELIVERY_METHOD, COPY_BY_MAIL, COMMENT, ITEMS
+    DELIVERY_ADDRESS, DELIVERY_METHOD, COMMENT, ITEMS
   }
 
   public static Cart restore(String s) {
@@ -24,8 +24,6 @@ public class Cart implements BeeSerializable {
 
   private String deliveryAddress;
   private Long deliveryMethod;
-
-  private Boolean copyByMail;
 
   private String comment;
 
@@ -71,10 +69,6 @@ public class Cart implements BeeSerializable {
           setDeliveryMethod(BeeUtils.toLongOrNull(value));
           break;
 
-        case COPY_BY_MAIL:
-          setCopyByMail(BeeUtils.toBooleanOrNull(value));
-          break;
-
         case COMMENT:
           setComment(value);
           break;
@@ -94,10 +88,6 @@ public class Cart implements BeeSerializable {
 
   public String getComment() {
     return comment;
-  }
-
-  public Boolean getCopyByMail() {
-    return copyByMail;
   }
 
   public String getDeliveryAddress() {
@@ -149,10 +139,6 @@ public class Cart implements BeeSerializable {
           arr[i++] = getDeliveryMethod();
           break;
 
-        case COPY_BY_MAIL:
-          arr[i++] = getCopyByMail();
-          break;
-
         case COMMENT:
           arr[i++] = getComment();
           break;
@@ -167,10 +153,6 @@ public class Cart implements BeeSerializable {
 
   public void setComment(String comment) {
     this.comment = comment;
-  }
-
-  public void setCopyByMail(Boolean copyByMail) {
-    this.copyByMail = copyByMail;
   }
 
   public void setDeliveryAddress(String deliveryAddress) {

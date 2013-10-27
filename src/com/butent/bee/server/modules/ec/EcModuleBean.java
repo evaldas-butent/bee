@@ -39,8 +39,13 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.SelectableValue;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -49,15 +54,17 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.Text;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
-import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -81,6 +88,7 @@ import com.butent.bee.shared.modules.ec.EcInvoice;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.modules.ec.EcOrder;
+import com.butent.bee.shared.modules.ec.EcOrderEvent;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
@@ -245,8 +253,7 @@ public class EcModuleBean implements BeeModule {
       response = submitOrder(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
-      Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
-      response = sendToERP(orderId);
+      response = sendToERP(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CONFIGURATION)) {
       response = getConfiguration();
@@ -305,12 +312,10 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_MAIL_ORDER)) {
       Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
-      response = mailOrder(orderId);
+      response = mailOrder(orderId, false);
 
-//    } else if (BeeUtils.same(svc, SVC_UPDATE_ORDER_STATUS)) {
-//      Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
-//      Integer status = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_STATUS));
-//      response = updateOrderStatus(orderId, status);
+    } else if (BeeUtils.same(svc, SVC_REGISTER_ORDER_EVENT)) {
+      response = registerOrderEvent(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -1147,19 +1152,10 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(deliveryMethods);
   }
 
-  private Long getEmail(Long userId) {
-    if (DataUtils.isId(userId)) {
-      SqlSelect query = new SqlSelect()
-          .addFields(TBL_CONTACTS, COL_EMAIL)
-          .addFrom(TBL_USERS)
-          .addFromLeft(TBL_COMPANY_PERSONS,
-              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-          .addFromLeft(TBL_CONTACTS,
-              sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-          .setWhere(sys.idEquals(TBL_USERS, userId));
-
-      return qs.getLong(query);
-  
+  private String getEmailAddress(Long emailId) {
+    if (DataUtils.isId(emailId)) {
+      return qs.getValue(new SqlSelect().addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_EMAILS).setWhere(sys.idEquals(TBL_EMAILS, emailId)));
     } else {
       return null;
     }
@@ -1179,17 +1175,16 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getFinancialInformation(Long client) {
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
-
     EcFinInfo finInfo = new EcFinInfo();
-
     if (!DataUtils.isId(client)) {
       return ResponseObject.response(finInfo);
     }
 
-    if (client != null) {
+    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+
+    if (!BeeUtils.same(remoteAddress, BeeConst.STRING_MINUS)) {
       SimpleRow companyInfo = qs.getRow(new SqlSelect()
           .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE)
           .addFrom(TBL_CLIENTS)
@@ -1201,8 +1196,8 @@ public class EcModuleBean implements BeeModule {
           .setWhere(sys.idEquals(TBL_CLIENTS, client)));
 
       String company = null;
-      String wh = "LOWER(klientas) = '"
-          + companyInfo.getValue(COL_COMPANY_NAME).toLowerCase() + "'";
+      String wh =
+          "LOWER(klientas) = '" + companyInfo.getValue(COL_COMPANY_NAME).toLowerCase() + "'";
 
       ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
           "SELECT klientas, max_skola, dienos"
@@ -1216,13 +1211,13 @@ public class EcModuleBean implements BeeModule {
         logger.severe((Object[]) response.getErrors());
       } else {
         SimpleRow row = ((SimpleRowSet) response.getResponse()).getRow(0);
-
         if (row != null) {
           finInfo.setCreditLimit(row.getDouble("max_skola"));
           finInfo.setDaysForPayment(row.getInt("dienos"));
           company = row.getValue("klientas");
         }
       }
+
       if (!BeeUtils.isEmpty(company)) {
         response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
             "SELECT SUM(kiekis * kaina) AS suma"
@@ -1236,11 +1231,11 @@ public class EcModuleBean implements BeeModule {
           logger.severe((Object[]) response.getErrors());
         } else {
           SimpleRow row = ((SimpleRowSet) response.getResponse()).getRow(0);
-
           if (row != null) {
             finInfo.setTotalTaken(row.getDouble("suma"));
           }
         }
+
         response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
             "SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
                 + " FROM apyvarta"
@@ -1281,6 +1276,7 @@ public class EcModuleBean implements BeeModule {
             invoice.setTerm(term);
             finInfo.getInvoices().add(invoice);
           }
+
           finInfo.setDebt(totalDebt);
           finInfo.setMaxedOut(timedOutDebt);
         }
@@ -1288,9 +1284,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
-        Filter.and(ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
-            ComparisonFilter.isNotEqual(COL_ORDER_STATUS,
-                new IntegerValue(EcOrderStatus.ACTIVE.ordinal()))),
+        ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
         new Order(COL_ORDER_DATE, false));
 
     if (!DataUtils.isEmpty(orderData)) {
@@ -1308,7 +1302,7 @@ public class EcModuleBean implements BeeModule {
 
       SqlSelect itemQuery = new SqlSelect()
           .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_ORDER_ITEM_QUANTITY_ORDERED,
-              COL_ORDER_ITEM_PRICE)
+              COL_ORDER_ITEM_QUANTITY_SUBMIT, COL_ORDER_ITEM_PRICE)
           .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR,
               COL_TCD_ARTICLE_WEIGHT)
           .addFields(TBL_UNITS, COL_UNIT_NAME)
@@ -1348,13 +1342,33 @@ public class EcModuleBean implements BeeModule {
             item.setName(itemRow.getValue(COL_TCD_ARTICLE_NAME));
             item.setCode(itemRow.getValue(COL_TCD_ARTICLE_NR));
 
-            item.setQuantity(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED));
+            item.setQuantityOrdered(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED));
+            item.setQuantitySubmit(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_SUBMIT));
+
             item.setPrice(itemRow.getDouble(COL_ORDER_ITEM_PRICE));
 
             item.setUnit(itemRow.getValue(COL_UNIT_NAME));
             item.setWeight(itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT));
 
             order.getItems().add(item);
+          }
+        }
+
+        BeeRowSet eventData = qs.getViewData(VIEW_ORDER_EVENTS,
+            ComparisonFilter.isEqual(COL_ORDER_EVENT_ORDER, new LongValue(orderRow.getId())),
+            new Order(COL_ORDER_EVENT_DATE, true));
+
+        if (!DataUtils.isEmpty(eventData)) {
+          for (BeeRow eventRow : eventData.getRows()) {
+            DateTime date = DataUtils.getDateTime(eventData, eventRow, COL_ORDER_EVENT_DATE);
+            Integer status = DataUtils.getInteger(eventData, eventRow, COL_ORDER_EVENT_STATUS);
+
+            String firstName = DataUtils.getString(eventData, eventRow, COL_FIRST_NAME);
+            String lastName = DataUtils.getString(eventData, eventRow, COL_LAST_NAME);
+
+            EcOrderEvent event = new EcOrderEvent(date, status,
+                BeeUtils.joinWords(firstName, lastName));
+            order.getEvents().add(event);
           }
         }
 
@@ -1533,6 +1547,30 @@ public class EcModuleBean implements BeeModule {
           .setWhere(SqlUtils.equals(TBL_GROUPS, sys.getIdName(TBL_GROUPS), groupId))));
     } else {
       return ResponseObject.response(items).setSize(items.size());
+    }
+  }
+
+  private Long getIncomingEmailId(Long manager) {
+    if (DataUtils.isId(manager)) {
+      Long emailId = qs.getLong(new SqlSelect()
+          .addFields(TBL_MANAGERS, COL_MANAGER_INCOMING_MAIL)
+          .addFrom(TBL_MANAGERS)
+          .setWhere(sys.idEquals(TBL_MANAGERS, manager)));
+
+      if (DataUtils.isId(emailId)) {
+        return emailId;
+      }
+    }
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_CONFIGURATION, COL_CONFIG_INCOMING_MAIL)
+        .addFrom(TBL_CONFIGURATION)
+        .setWhere(SqlUtils.notNull(TBL_CONFIGURATION, COL_CONFIG_INCOMING_MAIL)));
+
+    if (DataUtils.isEmpty(data)) {
+      return null;
+    } else {
+      return data.getLong(0, COL_CONFIG_INCOMING_MAIL);
     }
   }
 
@@ -1859,6 +1897,35 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(pictures).setSize(pictures.size());
   }
 
+  private Long getSenderEmailId(Long manager) {
+    if (DataUtils.isId(manager)) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
+          .addFrom(MailConstants.TBL_ACCOUNTS)
+          .addFromInner(TBL_MANAGERS, sys.joinTables(MailConstants.TBL_ACCOUNTS, TBL_MANAGERS,
+              COL_MANAGER_MAIL_ACCOUNT))
+          .setWhere(sys.idEquals(TBL_MANAGERS, manager)));
+
+      if (!DataUtils.isEmpty(data)) {
+        return data.getLong(0, MailConstants.COL_ADDRESS);
+      }
+    }
+
+    SimpleRowSet data =
+        qs.getData(new SqlSelect()
+            .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
+            .addFrom(MailConstants.TBL_ACCOUNTS)
+            .addFromInner(TBL_CONFIGURATION,
+                sys.joinTables(MailConstants.TBL_ACCOUNTS, TBL_CONFIGURATION,
+                    COL_CONFIG_MAIL_ACCOUNT)));
+
+    if (DataUtils.isEmpty(data)) {
+      return null;
+    } else {
+      return data.getLong(0, MailConstants.COL_ADDRESS);
+    }
+  }
+
   private ResponseObject getShoppingCarts() {
     Long client = getCurrentClientId();
     if (client == null) {
@@ -1908,29 +1975,25 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject isValidFinancialInfo(Long orderId) {
-    SimpleRow order = qs.getRow(new SqlSelect()
-        .addField(TBL_ORDERS, COL_CLIENT, COL_CLIENT)
-        .addField(TBL_ORDERS, COL_ORDER_MANAGER_COMMENT, COL_ORDER_MANAGER_COMMENT)
-        .addField(TBL_ORDERS, COL_ORDER_MANAGER, COL_ORDER_MANAGER)
+    SimpleRow orderRow = qs.getRow(new SqlSelect()
+        .addFields(TBL_ORDERS, COL_CLIENT, COL_ORDER_MANAGER, COL_ORDER_MANAGER_COMMENT)
         .addFrom(TBL_ORDERS)
         .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
-    ResponseObject finInfoResp = getFinancialInformation(order.getLong(COL_CLIENT));
-
+    ResponseObject finInfoResp = getFinancialInformation(orderRow.getLong(COL_CLIENT));
     if (finInfoResp.hasErrors()) {
       return finInfoResp;
     }
 
     if (finInfoResp.hasResponse(EcFinInfo.class)) {
-
       EcFinInfo ecFinInfo = (EcFinInfo) finInfoResp.getResponse();
 
-      Double orderTotal = new Double(0.0);
+      double orderTotal = BeeConst.DOUBLE_ZERO;
 
-      for (EcOrder orders : ecFinInfo.getOrders()) {
-        if (EcOrderStatus.in(orders.getStatus(), EcOrderStatus.NEW, EcOrderStatus.ACTIVE)
-            && (orders.getOrderId() == orderId)) {
-          orderTotal += orders.getAmount();
+      for (EcOrder order : ecFinInfo.getOrders()) {
+        if (EcOrderStatus.in(order.getStatus(), EcOrderStatus.NEW, EcOrderStatus.ACTIVE)
+            && Objects.equal(order.getOrderId(), orderId)) {
+          orderTotal += order.getAmount();
         }
       }
 
@@ -1941,13 +2004,12 @@ public class EcModuleBean implements BeeModule {
 
       double totalDept = creditLimit - (totalTaken + dept + maxedOut + orderTotal);
 
-      if (totalDept < 0.0) {
-
-        if (BeeUtils.isEmpty(order.getValue(COL_ORDER_MANAGER_COMMENT)
-            ) && !DataUtils.isId(order.getLong(COL_ORDER_MANAGER))) {
+      if (BeeUtils.isNegative(totalDept)) {
+        String comment = orderRow.getValue(COL_ORDER_MANAGER_COMMENT);
+        if (BeeUtils.isEmpty(comment) && !DataUtils.isId(orderRow.getLong(COL_ORDER_MANAGER))) {
           return ResponseObject.error(usr.getLocalizableConstants().ecExceededCreditLimit());
         } else {
-          return ResponseObject.info(order.getValue(COL_ORDER_MANAGER_COMMENT));
+          return ResponseObject.info(comment);
         }
 
       } else {
@@ -1977,169 +2039,91 @@ public class EcModuleBean implements BeeModule {
     qs.insertData(ins);
   }
 
-//  private ResponseObject updateOrderStatus(Long orderId, Integer status) {
-//    return null;
-//  }
-  
-  private ResponseObject mailOrder(Long orderId) {
+  private ResponseObject mailOrder(Long orderId, boolean isClient) {
     if (!DataUtils.isId(orderId)) {
-      return ResponseObject.parameterNotFound(SVC_ADD_TO_UNSUPPLIED_ITEMS, VAR_ORDER);
+      return ResponseObject.parameterNotFound(SVC_MAIL_ORDER, VAR_ORDER);
     }
 
     BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, ComparisonFilter.compareId(orderId));
     if (DataUtils.isEmpty(orderData)) {
-      String msg = BeeUtils.joinWords("e-commerce order not found:", orderId);
-      logger.warning(msg);
+      String msg = BeeUtils.joinWords(SVC_MAIL_ORDER, "order not found:", orderId);
+      logger.severe(msg);
       return ResponseObject.error(msg);
     }
 
     BeeRow orderRow = orderData.getRow(0);
 
-    DateTime date = DataUtils.getDateTime(orderData, orderRow, COL_ORDER_DATE);
-    EcOrderStatus status = NameUtils.getEnumByIndex(EcOrderStatus.class,
-        DataUtils.getInteger(orderData, orderRow, COL_ORDER_STATUS));
+    EcOrderStatus status = EcOrderStatus.get(DataUtils.getInteger(orderData, orderRow,
+        COL_ORDER_STATUS));
+    Assert.notNull(status);
 
-    String managerFirstName = DataUtils.getString(orderData, orderRow,
-        ALS_ORDER_MANAGER_FIRST_NAME);
-    String managerLastName = DataUtils.getString(orderData, orderRow, ALS_ORDER_MANAGER_LAST_NAME);
+    Long clientUser = DataUtils.getLong(orderData, orderRow, ALS_ORDER_CLIENT_USER);
+    Assert.notNull(clientUser);
 
-    String deliveryAddress = DataUtils.getString(orderData, orderRow, COL_ORDER_DELIVERY_ADDRESS);
-    String deliveryMethod = DataUtils.getString(orderData, orderRow,
-        ALS_ORDER_DELIVERY_METHOD_NAME);
+    Long manager = DataUtils.getLong(orderData, orderRow, COL_ORDER_MANAGER);
 
-    String clientComment = DataUtils.getString(orderData, orderRow, COL_ORDER_CLIENT_COMMENT);
-    String rejectionReason = DataUtils.getString(orderData, orderRow,
-        ALS_ORDER_REJECTION_REASON_NAME);
-
-    SqlSelect itemQuery = new SqlSelect()
-        .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_ORDER_ITEM_QUANTITY_ORDERED,
-            COL_ORDER_ITEM_QUANTITY_SUBMIT, COL_ORDER_ITEM_PRICE, COL_ORDER_ITEM_NOTE)
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR,
-            COL_TCD_ARTICLE_WEIGHT)
-        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
-        .addFields(TBL_UNITS, COL_UNIT_NAME)
-        .addFrom(TBL_ORDER_ITEMS)
-        .addFromInner(TBL_TCD_ARTICLES,
-            sys.joinTables(TBL_TCD_ARTICLES, TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE))
-        .addFromLeft(TBL_TCD_BRANDS,
-            sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLES, COL_TCD_BRAND))
-        .addFromLeft(TBL_UNITS,
-            sys.joinTables(TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
-        .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER, orderId))
-        .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
-
-    SimpleRowSet itemData = qs.getData(itemQuery);
-
-    double totalAmount = BeeConst.DOUBLE_ZERO;
-    double totalWeight = BeeConst.DOUBLE_ZERO;
-
-    if (!DataUtils.isEmpty(itemData)) {
-      for (SimpleRow itemRow : itemData) {
-        Integer quantity = itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED);
-        Double price = itemRow.getDouble(COL_ORDER_ITEM_PRICE);
-        Double weight = itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT);
-
-        totalAmount += BeeUtils.unbox(quantity) * BeeUtils.unbox(price);
-        totalWeight += BeeUtils.unbox(quantity) * BeeUtils.unbox(weight);
-      }
-    }
-
-    Document doc = new Document();
-
-    doc.getHead().append(
-        meta().encodingDeclarationUtf8(),
-        title().text(Localized.getConstants().ecOrder()));
-
-    Div panel = div();
-    doc.getBody().append(panel);
-
-    Tbody tbody = tbody().append(
-        tr().append(
-            td().text(Localized.getConstants().ecOrderSubmissionDate()),
-            td().text(TimeUtils.renderCompact(date)),
-            td().text(Localized.getConstants().ecOrderNumber()),
-            td().text(BeeUtils.toString(orderRow.getId()))),
-        tr().append(
-            td().text(Localized.getConstants().ecDeliveryMethod()),
-            td().text(deliveryMethod),
-            td().text(Localized.getConstants().ecDeliveryAddress()),
-            td().text(deliveryAddress)),
-        tr().append(
-            td().text(Localized.getConstants().ecOrderStatus()),
-            td().text((status == null) ? null : status.getCaption()),
-            td().text(Localized.getConstants().ecManager()),
-            td().text(BeeUtils.joinWords(managerFirstName, managerLastName))),
-        tr().append(
-            td().text(BeeUtils.joinWords(Localized.getConstants().ecOrderAmount(), CURRENCY)),
-            td().text(EcUtils.formatCents(EcUtils.toCents(totalAmount))).textAlign(TextAlign.RIGHT),
-            td().text(BeeUtils.joinWords(Localized.getConstants().weight(), WEIGHT_UNIT)),
-            td().text(BeeUtils.toString(totalWeight))).textAlign(TextAlign.RIGHT));
-
-    Tr tr = tr().append(
-        td().text(Localized.getConstants().comment()),
-        td().text(clientComment));
-
-    if (EcOrderStatus.REJECTED == status) {
-      tr.append(td().text(Localized.getConstants().ecRejectionReason()),
-          td().text(rejectionReason));
-    }
-    tbody.append(tr);
-
-    panel.append(table().append(tbody));
-
-    if (!DataUtils.isEmpty(itemData)) {
-      panel.append(div().text(Localized.getConstants().ecOrderItems()));
-
-      Tbody items = tbody().append(tr().textAlign(TextAlign.CENTER).fontWeight(FontWeight.BOLD)
-          .append(
-              td().text(Localized.getConstants().ecItemName()),
-              td().text(Localized.getConstants().ecItemBrand()),
-              td().text(Localized.getConstants().ecItemCode()),
-              td().text(Localized.getConstants().ecItemWeight()),
-              td().text(Localized.getConstants().ecItemQuantityOrdered()),
-              td().text(Localized.getConstants().ecItemQuantitySubmit()),
-              td().text(Localized.getConstants().ecItemPrice()),
-              td().text(Localized.getConstants().total()),
-              td().text(Localized.getConstants().ecItemNote())));
-
-      for (SimpleRow itemRow : itemData) {
-        int quantity = BeeUtils.unbox(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED));
-        double price = BeeUtils.unbox(itemRow.getDouble(COL_ORDER_ITEM_PRICE));
-
-        items.append(tr().append(
-            td().text(itemRow.getValue(COL_TCD_ARTICLE_NAME)),
-            td().text(itemRow.getValue(COL_TCD_BRAND_NAME)),
-            td().text(itemRow.getValue(COL_TCD_ARTICLE_NR)),
-            td().text(itemRow.getValue(COL_TCD_ARTICLE_WEIGHT)).textAlign(TextAlign.RIGHT),
-            td().text(EcUtils.format(quantity)).textAlign(TextAlign.RIGHT),
-            td().text(itemRow.getValue(COL_ORDER_ITEM_QUANTITY_SUBMIT)).textAlign(TextAlign.RIGHT),
-            td().text(EcUtils.formatCents(EcUtils.toCents(price))).textAlign(TextAlign.RIGHT),
-            td().text(EcUtils.formatCents(EcUtils.toCents(quantity * price)))
-                .textAlign(TextAlign.RIGHT),
-            td().text(itemRow.getValue(COL_ORDER_ITEM_NOTE))));
-      }
-
-      panel.append(table().borderCollapse().border().append(items));
-    }
-
-    Long sender = qs.getLong(new SqlSelect()
-        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
-        .addFrom(MailConstants.TBL_ACCOUNTS)
-        .setWhere(SqlUtils.and(
-            SqlUtils.equals(MailConstants.TBL_ACCOUNTS, MailConstants.COL_USER,
-                usr.getCurrentUserId()),
-            SqlUtils.notNull(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ACCOUNT_DEFAULT))));
-
+    Long sender = getSenderEmailId(manager);
     if (!DataUtils.isId(sender)) {
-      return ResponseObject.error("No default mail account for user:", usr.getCurrentUser());
+      return ResponseObject.warning(usr.getLocalizableConstants().ecMailAccountNotFound());
     }
-    
-    Long recipient = getEmail(DataUtils.getLong(orderData, orderRow, ALS_ORDER_CLIENT_USER));
-    if (!DataUtils.isId(recipient)) {
-      return ResponseObject.error("Recipient email not found");
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    Set<Long> recipients = Sets.newHashSet();
+
+    Long clientEmailId = usr.getEmailId(clientUser);
+    if (DataUtils.isId(clientEmailId)) {
+      recipients.add(clientEmailId);
+    } else {
+      response.addWarning(usr.getLocalizableConstants().ecMailClientAddressNotFound());
     }
+
+    Long incomingEmailId = null;
+    if (status == EcOrderStatus.NEW) {
+      incomingEmailId = getIncomingEmailId(manager);
+      if (DataUtils.isId(incomingEmailId)) {
+        recipients.add(incomingEmailId);
+      }
+    }
+
+    if (recipients.isEmpty()) {
+      return response;
+    }
+
+    LocalizableConstants constants = usr.getLocalizableConstants(clientUser);
+    Assert.notNull(constants);
+
+    Document document = orderToHtml(orderData.getColumns(), orderRow, constants);
+    String content = document.build(0, 2);
     
-    return mail.sendMail(sender, recipient, Localized.getConstants().ecOrder(), doc.build());
+    ResponseObject mailResponse = mail.sendMail(sender, recipients, status.getSubject(constants),
+        content);
+    if (mailResponse.hasErrors()) {
+      if (isClient) {
+        return ResponseObject.warning(usr.getLocalizableConstants().ecMailFailed());
+      } else {
+        return mailResponse;
+      }
+    }
+
+    String clientAddress = getEmailAddress(clientEmailId);
+    String incomingAddress = getEmailAddress(incomingEmailId);
+
+    logger.info(SVC_MAIL_ORDER, orderId, "sent to", clientAddress, incomingAddress);
+
+    if (isClient && !DataUtils.isId(clientEmailId)) {
+      return response;
+    }
+
+    response.addInfo(usr.getLocalizableConstants().ecMailSent());
+    if (!BeeUtils.isEmpty(clientAddress)) {
+      response.addInfo(clientAddress);
+    }
+    if (!isClient && !BeeUtils.isEmpty(incomingAddress)) {
+      response.addInfo(incomingAddress);
+    }
+
+    return response;
   }
 
   private ResponseObject mergeCategory(Long categoryId, Long parentCategoryId) {
@@ -2168,6 +2152,258 @@ public class EcModuleBean implements BeeModule {
     }
     return qs.updateDataWithResponse(new SqlDelete(TBL_TCD_CATEGORIES)
         .setWhere(sys.idEquals(TBL_TCD_CATEGORIES, categoryId)));
+  }
+
+  private Document orderToHtml(List<BeeColumn> orderColumns, BeeRow orderRow,
+      LocalizableConstants constants) {
+
+    String clientFirstName = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_CLIENT_FIRST_NAME, orderColumns));
+    String clientLastName = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_CLIENT_LAST_NAME, orderColumns));
+    String clientCompanyName = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_CLIENT_COMPANY_NAME, orderColumns));
+
+    DateTime date = orderRow.getDateTime(DataUtils.getColumnIndex(COL_ORDER_DATE, orderColumns));
+    EcOrderStatus status = EcOrderStatus.get(orderRow.getInteger(DataUtils.getColumnIndex(
+        COL_ORDER_STATUS, orderColumns)));
+
+    String managerFirstName = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_MANAGER_FIRST_NAME, orderColumns));
+    String managerLastName = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_MANAGER_LAST_NAME, orderColumns));
+
+    String deliveryAddress = orderRow.getString(DataUtils.getColumnIndex(
+        COL_ORDER_DELIVERY_ADDRESS, orderColumns));
+    String deliveryMethod = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_DELIVERY_METHOD_NAME, orderColumns));
+
+    String clientComment = orderRow.getString(DataUtils.getColumnIndex(
+        COL_ORDER_CLIENT_COMMENT, orderColumns));
+    String rejectionReason = orderRow.getString(DataUtils.getColumnIndex(
+        ALS_ORDER_REJECTION_REASON_NAME, orderColumns));
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE, COL_ORDER_ITEM_QUANTITY_ORDERED,
+            COL_ORDER_ITEM_QUANTITY_SUBMIT, COL_ORDER_ITEM_PRICE, COL_ORDER_ITEM_NOTE)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR,
+            COL_TCD_ARTICLE_WEIGHT)
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addFields(TBL_UNITS, COL_UNIT_NAME)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromInner(TBL_TCD_ARTICLES,
+            sys.joinTables(TBL_TCD_ARTICLES, TBL_ORDER_ITEMS, COL_ORDER_ITEM_ARTICLE))
+        .addFromLeft(TBL_TCD_BRANDS,
+            sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ARTICLES, COL_TCD_BRAND))
+        .addFromLeft(TBL_UNITS,
+            sys.joinTables(TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
+        .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER_ITEM_ORDER, orderRow.getId()))
+        .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+    SimpleRowSet itemData = qs.getData(itemQuery);
+
+    double totalAmount = BeeConst.DOUBLE_ZERO;
+    double totalWeight = BeeConst.DOUBLE_ZERO;
+
+    if (!DataUtils.isEmpty(itemData)) {
+      for (SimpleRow itemRow : itemData) {
+        Integer quantity = itemRow.getInt(COL_ORDER_ITEM_QUANTITY_SUBMIT);
+        Double price = itemRow.getDouble(COL_ORDER_ITEM_PRICE);
+        Double weight = itemRow.getDouble(COL_TCD_ARTICLE_WEIGHT);
+
+        totalAmount += BeeUtils.unbox(quantity) * BeeUtils.unbox(price);
+        totalWeight += BeeUtils.unbox(quantity) * BeeUtils.unbox(weight);
+      }
+    }
+
+    BeeRowSet eventData = qs.getViewData(VIEW_ORDER_EVENTS,
+        ComparisonFilter.isEqual(COL_ORDER_EVENT_ORDER, new LongValue(orderRow.getId())),
+        new Order(COL_ORDER_EVENT_DATE, true));
+
+    Document doc = new Document();
+
+    doc.getHead().append(
+        meta().encodingDeclarationUtf8(),
+        title().text(constants.ecOrder()));
+
+    Div panel = div().backgroundColor(Colors.WHITESMOKE);
+    doc.getBody().append(panel);
+
+    String customer = EcUtils.formatPerson(clientFirstName, clientLastName, clientCompanyName);
+    panel.append(h3().text(customer));
+
+    Tbody fields = tbody().append(
+        tr().append(
+            td().text(constants.ecOrderSubmissionDate()),
+            td().text(TimeUtils.renderCompact(date)),
+            td().text(constants.ecOrderNumber()),
+            td().text(BeeUtils.toString(orderRow.getId()))));
+
+    Tr tr = tr().append(
+        td().text(constants.ecOrderStatus()),
+        td().text((status == null) ? null : status.getCaption(constants)));
+    if (EcOrderStatus.REJECTED == status) {
+      tr.append(td().text(constants.ecRejectionReason()),
+          td().text(rejectionReason));
+    }
+    fields.append(tr);
+
+    if (!DataUtils.isEmpty(eventData)) {
+      for (BeeRow eventRow : eventData.getRows()) {
+        EcOrderStatus eventStatus = EcOrderStatus.get(DataUtils.getInteger(eventData, eventRow,
+            COL_ORDER_EVENT_STATUS));
+        DateTime eventDate = DataUtils.getDateTime(eventData, eventRow, COL_ORDER_EVENT_DATE);
+
+        if (eventStatus != null && eventDate != null) {
+          fields.append(tr().append(
+              td().text(eventStatus.getCaption(constants)),
+              td().text(TimeUtils.renderCompact(eventDate))));
+        }
+      }
+    }
+
+    fields.append(
+        tr().append(
+            td().text(constants.ecDeliveryMethod()),
+            td().text(deliveryMethod),
+            td().text(constants.ecDeliveryAddress()),
+            td().text(deliveryAddress)),
+        tr().append(
+            td().text(constants.ecManager()),
+            td().text(BeeUtils.joinWords(managerFirstName, managerLastName)),
+            td().text(constants.comment()),
+            td().text(clientComment)),
+        tr().append(
+            td().text(BeeUtils.joinWords(constants.ecOrderAmount(), CURRENCY)),
+            td().text(EcUtils.formatCents(EcUtils.toCents(totalAmount))).alignRight()
+                .fontWeight(FontWeight.BOLD).fontSize(FontSize.LARGER),
+            td().text(BeeUtils.joinWords(constants.weight(), WEIGHT_UNIT)),
+            td().text(BeeUtils.toString(totalWeight, WEIGHT_SCALE)).alignRight()));
+
+    List<Element> cells = fields.queryTag(Tags.TD);
+    for (Element cell : cells) {
+      cell.setPaddingLeft(10, CssUnit.PX);
+      cell.setPaddingRight(10, CssUnit.PX);
+
+      cell.setPaddingTop(3, CssUnit.PX);
+      cell.setPaddingBottom(3, CssUnit.PX);
+
+      int index = cell.index();
+      if (index % 2 == 0) {
+        cell.setTextAlign(TextAlign.RIGHT);
+
+      } else {
+        cell.setMinWidth(120, CssUnit.PX);
+        cell.setMaxWidth(200, CssUnit.PX);
+
+        cell.setBorderWidth(1, CssUnit.PX);
+        cell.setBorderStyle(BorderStyle.SOLID);
+        cell.setBorderColor("#ccc");
+
+        cell.setWhiteSpace(WhiteSpace.PRE_LINE);
+        cell.setBackground("#fafafa");
+
+        Td td = (Td) cell;
+        if (td.size() == 1 && td.hasText()) {
+          Text textNode = (Text) td.getFirstChild();
+          if (textNode.isEmpty()) {
+            textNode.setText(BeeConst.STRING_MINUS);
+          }
+        }
+      }
+    }
+
+    panel.append(table().append(fields));
+
+    if (!DataUtils.isEmpty(itemData)) {
+      panel.append(div().fontWeight(FontWeight.BOLDER).marginTop(2, CssUnit.EX)
+          .text(BeeUtils.joinWords(constants.ecOrderItems(),
+              BeeUtils.bracket(itemData.getNumberOfRows()))));
+
+      Tbody items = tbody().append(tr().textAlign(TextAlign.CENTER).fontWeight(FontWeight.BOLDER)
+          .append(
+              td().text(constants.ecItemName()),
+              td().text(constants.ecItemBrand()),
+              td().text(constants.ecItemCode()),
+              td().text(constants.ecItemWeight()),
+              td().text(constants.ecItemQuantityOrdered()),
+              td().text(constants.ecItemQuantity()),
+              td().text(constants.ecItemPrice()),
+              td().text(constants.total()),
+              td().text(constants.ecItemNote())));
+
+      int i = 0;
+      for (SimpleRow itemRow : itemData) {
+        String rowBackground = (i % 2 == 1) ? "#f5f5f5" : "#ebebeb";
+
+        int ordered = BeeUtils.unbox(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_ORDERED));
+        int quantity = BeeUtils.unbox(itemRow.getInt(COL_ORDER_ITEM_QUANTITY_SUBMIT));
+        double price = BeeUtils.unbox(itemRow.getDouble(COL_ORDER_ITEM_PRICE));
+
+        String quantityColor;
+        if (quantity > ordered) {
+          quantityColor = Colors.GREEN;
+        } else if (quantity < ordered) {
+          quantityColor = Colors.RED;
+        } else {
+          quantityColor = null;
+        }
+
+        items.append(tr().backgroundColor(rowBackground).append(
+            td().text(itemRow.getValue(COL_TCD_ARTICLE_NAME)),
+            td().text(itemRow.getValue(COL_TCD_BRAND_NAME)),
+            td().text(itemRow.getValue(COL_TCD_ARTICLE_NR)),
+            td().text(itemRow.getValue(COL_TCD_ARTICLE_WEIGHT)).alignRight(),
+            td().text(EcUtils.format(ordered)).alignRight(),
+            td().text(EcUtils.format(quantity)).alignRight()
+                .fontWeight(FontWeight.BOLDER).color(quantityColor),
+            td().text(EcUtils.formatCents(EcUtils.toCents(price))).alignRight(),
+            td().text(EcUtils.formatCents(EcUtils.toCents(quantity * price))).alignRight(),
+            td().text(itemRow.getValue(COL_ORDER_ITEM_NOTE))));
+
+        i++;
+      }
+
+      cells = items.queryTag(Tags.TD);
+      for (Element cell : cells) {
+        cell.setPaddingLeft(10, CssUnit.PX);
+        cell.setPaddingRight(10, CssUnit.PX);
+
+        cell.setPaddingTop(3, CssUnit.PX);
+        cell.setPaddingBottom(3, CssUnit.PX);
+
+        cell.setBorderWidth(1, CssUnit.PX);
+        cell.setBorderStyle(BorderStyle.SOLID);
+        cell.setBorderColor("#ddd");
+      }
+
+      panel.append(table().borderCollapse().marginLeft(1, CssUnit.EM).append(items));
+    }
+
+    return doc;
+  }
+
+  private ResponseObject registerOrderEvent(Long orderId, EcOrderStatus status) {
+    return qs.insertDataWithResponse(new SqlInsert(TBL_ORDER_EVENTS)
+        .addConstant(COL_ORDER_EVENT_ORDER, orderId)
+        .addConstant(COL_ORDER_EVENT_DATE, TimeUtils.nowMinutes().getTime())
+        .addConstant(COL_ORDER_EVENT_STATUS, status.ordinal())
+        .addConstant(COL_ORDER_EVENT_USER, usr.getCurrentUserId()));
+  }
+
+  private ResponseObject registerOrderEvent(RequestInfo reqInfo) {
+    Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
+    EcOrderStatus status =
+        EcOrderStatus.get(BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_STATUS)));
+
+    if (!DataUtils.isId(orderId)) {
+      return ResponseObject.parameterNotFound(SVC_REGISTER_ORDER_EVENT, VAR_ORDER);
+    }
+    if (status == null) {
+      return ResponseObject.parameterNotFound(SVC_REGISTER_ORDER_EVENT, VAR_STATUS);
+    }
+
+    return registerOrderEvent(orderId, status);
   }
 
   private ResponseObject saveConfiguration(RequestInfo reqInfo) {
@@ -2223,8 +2459,13 @@ public class EcModuleBean implements BeeModule {
     return searchByItemCode(code, oeNumberCondition);
   }
 
-  private ResponseObject sendToERP(Long orderId) {
-    Assert.notNull(orderId);
+  private ResponseObject sendToERP(RequestInfo reqInfo) {
+    Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_ORDER));
+    if (!DataUtils.isId(orderId)) {
+      return ResponseObject.parameterNotFound(SVC_SEND_TO_ERP, VAR_ORDER);
+    }
+
+    boolean sendMail = reqInfo.hasParameter(VAR_MAIL);
 
     ResponseObject finResp = isValidFinancialInfo(orderId);
     if (finResp.hasErrors()) {
@@ -2241,112 +2482,128 @@ public class EcModuleBean implements BeeModule {
         .addGroup(TBL_ORDER_ITEMS, COL_TCD_ARTICLE);
 
     List<EcItem> items = getItems(query, null);
-
     if (items.isEmpty()) {
       return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
     }
+
     String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
     String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
-    SimpleRow order = qs.getRow(new SqlSelect()
-        .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
-        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
-        .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-        .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
-        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-        .addFrom(TBL_ORDERS)
-        .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
-        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_CLIENTS, COL_CLIENT_USER))
-        .addFromLeft(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-        .addFromLeft(TBL_COMPANIES,
-            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
-        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-        .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
+    ResponseObject response;
 
-    ResponseObject response = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
-        order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
-        order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
-        order.getValue(COL_POST_INDEX), order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
+    if (BeeUtils.same(remoteAddress, BeeConst.STRING_MINUS)) {
+      response = ResponseObject.emptyResponse();
 
-    if (!response.hasErrors()) {
-      WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
-          prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(),
-          prm.getText(COMMONS_MODULE, "ERPWarehouse"));
+    } else {
+      SimpleRow order = qs.getRow(new SqlSelect()
+          .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
+          .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
+          .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+          .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+          .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+          .addFrom(TBL_ORDERS)
+          .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
+          .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_CLIENTS, COL_CLIENT_USER))
+          .addFromLeft(TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+          .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+          .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
-      SimpleRowSet data = qs.getData(query);
+      response = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
+          order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
+          order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
+          order.getValue(COL_POST_INDEX), order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
 
-      for (EcItem item : items) {
-        String id = null;
+      if (!response.hasErrors()) {
+        WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
+            prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(),
+            prm.getText(COMMONS_MODULE, "ERPWarehouse"));
 
-        for (ArticleSupplier supplier : item.getSuppliers()) {
-          if (EcSupplier.EOLTAS == supplier.getSupplier()) {
-            id = supplier.getSupplierId();
-            break;
-          }
-        }
+        SimpleRowSet data = qs.getData(query);
 
-        if (BeeUtils.isEmpty(id)) {
-          String brandName = qs.getValue(new SqlSelect()
-              .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
-              .addFrom(TBL_TCD_BRANDS)
-              .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
+        for (EcItem item : items) {
+          String id = null;
 
-          ResponseObject resp = ButentWS.importItem(remoteAddress, remoteLogin, remotePassword,
-              item.getName(), brandName, item.getCode());
-
-          if (resp.hasErrors()) {
-            response.addErrorsFrom(resp);
-            break;
-          } else {
-            id = resp.getResponseAsString();
-
-            if (!BeeUtils.isEmpty(id)) {
-              double cost = BeeConst.DOUBLE_ZERO;
-              for (ArticleSupplier supplier : item.getSuppliers()) {
-                cost = Math.max(cost, supplier.getRealCost());
-              }
-
-              qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
-                  .addConstant(COL_TCD_ARTICLE, item.getArticleId())
-                  .addConstant(COL_TCD_COST, cost)
-                  .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
-                  .addConstant(COL_TCD_SUPPLIER_ID, id));
+          for (ArticleSupplier supplier : item.getSuppliers()) {
+            if (EcSupplier.EOLTAS == supplier.getSupplier()) {
+              id = supplier.getSupplierId();
+              break;
             }
           }
-        }
-        if (!BeeUtils.isEmpty(id)) {
-          String article = BeeUtils.toString(item.getArticleId());
 
-          WSDocumentItem docItem = doc.addItem(id,
-              data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
+          if (BeeUtils.isEmpty(id)) {
+            String brandName = qs.getValue(new SqlSelect()
+                .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+                .addFrom(TBL_TCD_BRANDS)
+                .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
 
-          docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-          docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, true);
+            ResponseObject resp = ButentWS.importItem(remoteAddress, remoteLogin, remotePassword,
+                item.getName(), brandName, item.getCode());
+
+            if (resp.hasErrors()) {
+              response.addErrorsFrom(resp);
+              break;
+            } else {
+              id = resp.getResponseAsString();
+
+              if (!BeeUtils.isEmpty(id)) {
+                double cost = BeeConst.DOUBLE_ZERO;
+                for (ArticleSupplier supplier : item.getSuppliers()) {
+                  cost = Math.max(cost, supplier.getRealCost());
+                }
+
+                qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+                    .addConstant(COL_TCD_ARTICLE, item.getArticleId())
+                    .addConstant(COL_TCD_COST, cost)
+                    .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
+                    .addConstant(COL_TCD_SUPPLIER_ID, id));
+              }
+            }
+          }
+          if (!BeeUtils.isEmpty(id)) {
+            String article = BeeUtils.toString(item.getArticleId());
+
+            WSDocumentItem docItem = doc.addItem(id,
+                data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
+
+            docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
+            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, true);
+          }
         }
-      }
-      if (!response.hasErrors()) {
-        response = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
+        if (!response.hasErrors()) {
+          response = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
+        }
       }
     }
+
     if (response.hasErrors()) {
       response.log(logger);
+
     } else {
+      if (finResp.hasNotifications()) {
+        response.addInfo(usr.getLocalizableConstants().ecExceededCreditLimitSend());
+        response.addMessagesFrom(finResp);
+      }
+
       qs.updateData(new SqlUpdate(TBL_ORDERS)
           .addConstant(COL_ORDER_STATUS, EcOrderStatus.ACTIVE.ordinal())
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
+      registerOrderEvent(orderId, EcOrderStatus.ACTIVE);
       addToUnsuppliedItems(orderId);
 
-      if (finResp.hasNotifications()) {
-        response.addInfo(usr.getLocalizableConstants().ecExceededCreditLimitSend(),
-            finResp.getNotifications());
+      if (sendMail) {
+        ResponseObject mailResponse = mailOrder(orderId, false);
+        response.addMessagesFrom(mailResponse);
       }
     }
+
     return response;
   }
 
@@ -2493,8 +2750,8 @@ public class EcModuleBean implements BeeModule {
       insOrder.addConstant(COL_ORDER_DELIVERY_ADDRESS, cart.getDeliveryAddress());
     }
 
-    if (!BeeUtils.isTrue(cart.getCopyByMail())) {
-      insOrder.addConstant(COL_ORDER_COPY_BY_MAIL, cart.getCopyByMail());
+    if (copyByMail) {
+      insOrder.addConstant(COL_ORDER_COPY_BY_MAIL, copyByMail);
     }
 
     if (!BeeUtils.isEmpty(cart.getComment())) {
@@ -2534,7 +2791,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     if (copyByMail) {
-      ResponseObject mailResponse = mailOrder(orderId);
+      ResponseObject mailResponse = mailOrder(orderId, true);
       response.addMessagesFrom(mailResponse);
     }
 

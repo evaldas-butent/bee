@@ -1,6 +1,8 @@
 package com.butent.bee.shared.html.builder.elements;
 
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.html.Attributes;
@@ -24,9 +26,18 @@ public class Td extends FertileElement {
     super.appendChildren(nodes);
     return this;
   }
+  
+  public Td alignRight() {
+    return textAlign(TextAlign.RIGHT);
+  }
 
   public Td append(Node... nodes) {
     super.appendChildren(nodes);
+    return this;
+  }
+  
+  public Td backgroundColor(String backgroundColor) {
+    setBackgroundColor(backgroundColor);
     return this;
   }
 
@@ -34,7 +45,22 @@ public class Td extends FertileElement {
     setAttribute(Attributes.COL_SPAN, value);
     return this;
   }
+  
+  public Td color(String color) {
+    setColor(color);
+    return this;
+  }
 
+  public Td fontSize(FontSize fontSize) {
+    setFontSize(fontSize);
+    return this;
+  }
+
+  public Td fontWeight(FontWeight fontWeight) {
+    setFontWeight(fontWeight);
+    return this;
+  }
+  
   public Td headers(String value) {
     setAttribute(Attributes.HEADERS, value);
     return this;

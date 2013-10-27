@@ -158,6 +158,14 @@ public interface LocalizableEcConstants {
 
   String ecListPrice();
 
+  String ecMailAccountNotFound();
+  
+  String ecMailClientAddressNotFound();
+
+  String ecMailFailed();
+
+  String ecMailSent();
+
   String ecManager();
 
   String ecMarginDefaultPercent();
@@ -210,11 +218,19 @@ public interface LocalizableEcConstants {
 
   String ecOrderStatusActive();
 
+  String ecOrderStatusActiveSubject();
+
   String ecOrderStatusFinished();
+
+  String ecOrderStatusFinishedSubject();
 
   String ecOrderStatusNew();
 
+  String ecOrderStatusNewSubject();
+
   String ecOrderStatusRejected();
+
+  String ecOrderStatusRejectedSubject();
 
   String ecOrderSubmissionDate();
 

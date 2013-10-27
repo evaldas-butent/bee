@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.Codec;
 public class EcOrderItem implements BeeSerializable {
 
   private enum Serial {
-    ARTICLE_ID, NAME, CODE, QUANTITY, PRICE, UNIT, WEIGHT
+    ARTICLE_ID, NAME, CODE, QUANTITY_ORDERED, QUANTITY_SUBMIT, PRICE, UNIT, WEIGHT
   }
 
   public static EcOrderItem restore(String s) {
@@ -22,7 +22,9 @@ public class EcOrderItem implements BeeSerializable {
   private String name;
   private String code;
 
-  private Integer quantity;
+  private Integer quantityOrdered;
+  private Integer quantitySubmit;
+
   private Double price;
 
   private String unit;
@@ -55,8 +57,12 @@ public class EcOrderItem implements BeeSerializable {
           setCode(value);
           break;
 
-        case QUANTITY:
-          setQuantity(BeeUtils.toIntOrNull(value));
+        case QUANTITY_ORDERED:
+          setQuantityOrdered(BeeUtils.toIntOrNull(value));
+          break;
+
+        case QUANTITY_SUBMIT:
+          setQuantitySubmit(BeeUtils.toIntOrNull(value));
           break;
 
         case PRICE:
@@ -79,7 +85,7 @@ public class EcOrderItem implements BeeSerializable {
   }
   
   public double getAmount() {
-    return BeeUtils.unbox(getQuantity()) * BeeUtils.unbox(getPrice());
+    return BeeUtils.unbox(getQuantitySubmit()) * BeeUtils.unbox(getPrice());
   }
 
   public String getCode() {
@@ -92,10 +98,6 @@ public class EcOrderItem implements BeeSerializable {
 
   public Double getPrice() {
     return price;
-  }
-
-  public Integer getQuantity() {
-    return quantity;
   }
 
   public String getUnit() {
@@ -126,8 +128,12 @@ public class EcOrderItem implements BeeSerializable {
           arr[i++] = getCode();
           break;
 
-        case QUANTITY:
-          arr[i++] = getQuantity();
+        case QUANTITY_ORDERED:
+          arr[i++] = getQuantityOrdered();
+          break;
+
+        case QUANTITY_SUBMIT:
+          arr[i++] = getQuantitySubmit();
           break;
 
         case PRICE:
@@ -162,15 +168,27 @@ public class EcOrderItem implements BeeSerializable {
     this.price = price;
   }
 
-  public void setQuantity(Integer quantity) {
-    this.quantity = quantity;
-  }
-
   public void setUnit(String unit) {
     this.unit = unit;
   }
 
   public void setWeight(Double weight) {
     this.weight = weight;
+  }
+
+  public Integer getQuantityOrdered() {
+    return quantityOrdered;
+  }
+
+  public void setQuantityOrdered(Integer quantityOrdered) {
+    this.quantityOrdered = quantityOrdered;
+  }
+
+  public Integer getQuantitySubmit() {
+    return quantitySubmit;
+  }
+
+  public void setQuantitySubmit(Integer quantitySubmit) {
+    this.quantitySubmit = quantitySubmit;
   }
 }

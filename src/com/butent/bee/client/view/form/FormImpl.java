@@ -851,6 +851,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       setDataObserver(new DataObserver());
     }
   }
+  
+  @Override
+  public boolean observesData() {
+    return getDataObserver() != null;
+  }
 
   @Override
   public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {

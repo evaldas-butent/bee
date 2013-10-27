@@ -5,6 +5,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 
 class DiscussionsGridHandler extends AbstractGridInterceptor {
 
+  @SuppressWarnings("unused")
   private final ListType type;
 
   public DiscussionsGridHandler(ListType type) {

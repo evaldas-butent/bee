@@ -14,7 +14,7 @@ public class EcOrder implements BeeSerializable {
 
   private enum Serial {
     ORDER_ID, DATE, STATUS, MANAGER, DELIVERY_ADDRESS, DELIVERY_METHOD, COMMENT, REJECTION_REASON,
-    ITEMS
+    ITEMS, EVENTS
   }
 
   public static EcOrder restore(String s) {
@@ -37,6 +37,7 @@ public class EcOrder implements BeeSerializable {
   private String rejectionReason;
 
   private final List<EcOrderItem> items = Lists.newArrayList();
+  private final List<EcOrderEvent> events = Lists.newArrayList();
 
   public EcOrder() {
     super();
@@ -49,10 +50,12 @@ public class EcOrder implements BeeSerializable {
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      Serial member = members[i];
       String value = arr[i];
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
 
-      switch (member) {
+      switch (members[i]) {
         case ORDER_ID:
           setOrderId(BeeUtils.toLong(value));
           break;
@@ -94,6 +97,16 @@ public class EcOrder implements BeeSerializable {
             }
           }
           break;
+
+        case EVENTS:
+          events.clear();
+          String[] eventArr = Codec.beeDeserializeCollection(value);
+          if (eventArr != null) {
+            for (String ev : eventArr) {
+              events.add(EcOrderEvent.restore(ev));
+            }
+          }
+          break;
       }
     }
   }
@@ -122,6 +135,10 @@ public class EcOrder implements BeeSerializable {
     return deliveryMethod;
   }
 
+  public List<EcOrderEvent> getEvents() {
+    return events;
+  }
+
   public List<EcOrderItem> getItems() {
     return items;
   }
@@ -145,7 +162,7 @@ public class EcOrder implements BeeSerializable {
   public double getWeight() {
     double total = 0;
     for (EcOrderItem item : items) {
-      total += BeeUtils.unbox(item.getQuantity()) * BeeUtils.unbox(item.getWeight());
+      total += BeeUtils.unbox(item.getQuantitySubmit()) * BeeUtils.unbox(item.getWeight());
     }
     return total;
   }
@@ -192,6 +209,10 @@ public class EcOrder implements BeeSerializable {
 
         case ITEMS:
           arr[i++] = getItems();
+          break;
+
+        case EVENTS:
+          arr[i++] = getEvents();
           break;
       }
     }

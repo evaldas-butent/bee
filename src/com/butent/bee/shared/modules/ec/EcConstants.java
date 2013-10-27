@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
@@ -64,10 +65,61 @@ public final class EcConstants {
   }
 
   public enum EcOrderStatus implements HasCaption {
-    NEW(Localized.getConstants().ecOrderStatusNew()),
-    ACTIVE(Localized.getConstants().ecOrderStatusActive()),
-    REJECTED(Localized.getConstants().ecOrderStatusRejected()),
-    FINISHED(Localized.getConstants().ecOrderStatusFinished());
+    NEW {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ecOrderStatusNew();
+      }
+
+      @Override
+      public String getSubject(LocalizableConstants constants) {
+        return constants.ecOrderStatusNewSubject();
+      }
+    },
+    
+    ACTIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ecOrderStatusActive();
+      }
+
+      @Override
+      public String getSubject(LocalizableConstants constants) {
+        return constants.ecOrderStatusActiveSubject();
+      }
+    },
+
+    REJECTED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ecOrderStatusRejected();
+      }
+
+      @Override
+      public String getSubject(LocalizableConstants constants) {
+        return constants.ecOrderStatusRejectedSubject();
+      }
+    },
+
+    FINISHED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ecOrderStatusFinished();
+      }
+
+      @Override
+      public String getSubject(LocalizableConstants constants) {
+        return constants.ecOrderStatusFinishedSubject();
+      }
+    };
+
+    public static EcOrderStatus get(Integer status) {
+      if (status != null && status >= 0 && status < values().length) {
+        return values()[status];
+      } else {
+        return null;
+      }
+    }
 
     public static boolean in(int status, EcOrderStatus... statuses) {
       for (EcOrderStatus st : statuses) {
@@ -78,16 +130,14 @@ public final class EcConstants {
       return false;
     }
 
-    private final String caption;
-
-    private EcOrderStatus(String caption) {
-      this.caption = caption;
-    }
-
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
+    
+    public abstract String getCaption(LocalizableConstants constants);
+
+    public abstract String getSubject(LocalizableConstants constants);
   }
 
   public enum EcSupplier implements HasCaption {
@@ -156,7 +206,7 @@ public final class EcConstants {
 
   public static final String SVC_SEND_TO_ERP = "sendToERP";
   public static final String SVC_MAIL_ORDER = "mailOrder";
-  public static final String SVC_UPDATE_ORDER_STATUS = "updateOrderStatus";
+  public static final String SVC_REGISTER_ORDER_EVENT = "registerOrderEvent";
 
   public static final String SVC_MERGE_CATEGORY = "mergeCategory";
 
@@ -238,6 +288,7 @@ public final class EcConstants {
   public static final String VIEW_GROUP_CRITERIA = "EcGroupCriteria";
   public static final String VIEW_HISTORY = "EcHistory";
   public static final String VIEW_MANAGERS = "EcManagers";
+  public static final String VIEW_ORDER_EVENTS = "EcOrderEvents";
   public static final String VIEW_ORDER_ITEMS = "EcOrderItems";
   public static final String VIEW_ORDERS = "EcOrders";
   public static final String VIEW_REGISTRATIONS = "EcRegistrations";
@@ -334,6 +385,9 @@ public final class EcConstants {
   public static final String ALS_ORDER_DELIVERY_METHOD_NAME = "DeliveryMethodName";
   public static final String ALS_ORDER_REJECTION_REASON_NAME = "RejectionReasonName";
   public static final String ALS_ORDER_CLIENT_USER = "ClientUser";
+  public static final String ALS_ORDER_CLIENT_FIRST_NAME = "ClientFirstName";
+  public static final String ALS_ORDER_CLIENT_LAST_NAME = "ClientLastName";
+  public static final String ALS_ORDER_CLIENT_COMPANY_NAME = "ClientCompanyName";
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_TYPE = "Type";
@@ -456,7 +510,9 @@ public final class EcConstants {
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 
   public static final String CURRENCY = "Lt";
+
   public static final String WEIGHT_UNIT = "kg";
+  public static final int WEIGHT_SCALE = 3;
 
   public static final int MAX_VISIBLE_STOCK = 5;
   public static final String DATA_ATTRIBUTE_STOCK = "stock";

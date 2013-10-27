@@ -82,6 +82,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   
   void observeData();
 
+  boolean observesData();
+
   void onClose(CloseCallback closeCallback);
 
   void prepareForInsert();

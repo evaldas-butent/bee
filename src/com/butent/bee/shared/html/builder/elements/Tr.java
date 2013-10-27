@@ -28,6 +28,11 @@ public class Tr extends FertileElement {
     return this;
   }
 
+  public Tr backgroundColor(String backgroundColor) {
+    setBackgroundColor(backgroundColor);
+    return this;
+  }
+  
   public Tr fontWeight(FontWeight fontWeight) {
     setFontWeight(fontWeight);
     return this;
