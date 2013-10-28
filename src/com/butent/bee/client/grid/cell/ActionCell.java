@@ -2,15 +2,16 @@ package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.HasViewName;
@@ -94,12 +95,16 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   }
 
   @Override
-  public void onBrowserEvent(CellContext context, Element parent, String value,
-      NativeEvent event) {
-    if (EventUtils.isClick(event)) {
+  public EventState onBrowserEvent(CellContext context, Element parent, String value, Event event) {
+    EventState state = super.onBrowserEvent(context, parent, value, event);
+
+    if (state.proceed() && EventUtils.isClick(event)) {
       BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), context.getRowValue(),
           Service.CELL_ACTION, getOptions()));
+      state = EventState.CONSUMED;
     }
+
+    return state; 
   }
 
   @Override

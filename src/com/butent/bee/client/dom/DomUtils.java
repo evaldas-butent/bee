@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.HeadElement;
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.dom.client.LabelElement;
@@ -656,6 +657,24 @@ public final class DomUtils {
     return obj.getElement().getId();
   }
 
+  public static ImageElement getImageElement(Element elem) {
+    Assert.notNull(elem);
+    ImageElement image;
+
+    if (isImageElement(elem)) {
+      image = elem.cast();
+    } else {
+      NodeList<Element> lst = elem.getElementsByTagName(Tags.IMG);
+      if (lst.getLength() == 1) {
+        image = lst.getItem(0).cast();
+      } else {
+        image = null;
+      }
+    }
+
+    return image;
+  }
+  
   public static List<ExtendedProperty> getInfo(Object obj, String prefix, int depth) {
     Assert.notNull(obj);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
@@ -1279,17 +1298,11 @@ public final class DomUtils {
   }
   
   public static boolean isInputElement(Element el) {
-    if (el == null) {
-      return false;
-    }
-    return el.getTagName().equalsIgnoreCase(Tags.INPUT);
+    return (el != null) && el.getTagName().equalsIgnoreCase(Tags.INPUT);
   }
 
   public static boolean isLabelElement(Element el) {
-    if (el == null) {
-      return false;
-    }
-    return el.getTagName().equalsIgnoreCase(Tags.LABEL);
+    return (el != null) && el.getTagName().equalsIgnoreCase(Tags.LABEL);
   }
 
   public static boolean isOrHasAncestor(Element el, String id) {

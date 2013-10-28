@@ -2,22 +2,37 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
@@ -79,7 +94,33 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
 
   ArticleGraphicsHandler() {
   }
+  
+  @Override
+  public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+    
+    if (BeeUtils.same(columnName, COL_TCD_GRAPHICS_RESOURCE)) {
+      column.getCell().addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          showPicture(event);
+        }
+      });
 
+      column.getCell().addKeyDownHandler(new KeyDownHandler() {
+        @Override
+        public void onKeyDown(KeyDownEvent event) {
+          if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            showPicture(event);
+          }
+        }
+      });
+    }
+    
+    return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
+  }
+  
   @Override
   public boolean beforeAction(Action action, final GridPresenter presenter) {
     if (action == Action.ADD) {
@@ -208,5 +249,26 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
         }
       });
     }
+  }
+
+  private void showPicture(DomEvent<?> event) {
+    Element cellElement = event.getRelativeElement();
+    if (cellElement == null) {
+      return;
+    }
+    
+    ImageElement imageElement = DomUtils.getImageElement(cellElement);
+    if (imageElement == null) {
+      return;
+    }
+    
+    if (event.getSource() instanceof AbstractCell) {
+      ((AbstractCell<?>) event.getSource()).setEventCanceled(true);
+    }
+    
+    Image image = new Image(imageElement.getSrc());
+    EcStyles.add(image, getViewName(), "picture");
+
+    Global.showModalWidget(image);
   }
 }

@@ -2,11 +2,11 @@ package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -14,6 +14,7 @@ import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -71,37 +72,36 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   }
 
   @Override
-  public void onBrowserEvent(CellContext context, Element parent, String value, NativeEvent event) {
-    CellGrid grid = context.getGrid();
-    if (grid == null) {
-      return;
-    }
+  public EventState onBrowserEvent(CellContext context, Element parent, String value, Event event) {
+    EventState state = super.onBrowserEvent(context, parent, value, event);
 
-    if (EventUtils.isClick(event)) {
+    if (state.proceed() && EventUtils.isClick(event) && context.getGrid() != null) {
+      event.preventDefault();
       int col = context.getColumnIndex();
 
       if (EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
-        event.preventDefault();
-        grid.updateOrder(col, event);
+        context.getGrid().updateOrder(col, event);
 
       } else if (parent != null && EventUtils.hasModifierKey(event)) {
-        event.preventDefault();
-        int headerWidth = grid.estimateHeaderWidth(col, false);
+        int headerWidth = context.getGrid().estimateHeaderWidth(col, false);
 
         Element sortElement = DomUtils.getChildById(parent, sortInfoId);
         if (sortElement != null) {
           headerWidth += Math.max(sortElement.getOffsetWidth(), SORT_INFO_WIDTH);
         }
 
-        if (headerWidth > grid.getColumnWidth(col)) {
-          grid.resizeColumn(col, headerWidth);
+        if (headerWidth > context.getGrid().getColumnWidth(col)) {
+          context.getGrid().resizeColumn(col, headerWidth);
         }
 
       } else {
-        event.preventDefault();
-        grid.autoFitColumn(col);
+        context.getGrid().autoFitColumn(col);
       }
+      
+      state = EventState.CONSUMED;
     }
+    
+    return state;
   }
 
   @Override

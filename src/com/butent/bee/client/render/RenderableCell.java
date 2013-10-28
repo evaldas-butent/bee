@@ -1,7 +1,5 @@
 package com.butent.bee.client.render;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.CellContext;
@@ -12,10 +10,6 @@ public class RenderableCell extends AbstractCell<String> {
 
   public RenderableCell() {
     super();
-  }
-
-  @Override
-  public void onBrowserEvent(CellContext context, Element parent, String value, NativeEvent event) {
   }
 
   @Override

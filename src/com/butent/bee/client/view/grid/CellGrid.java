@@ -48,7 +48,6 @@ import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.HeaderCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
@@ -63,6 +62,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -661,11 +661,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public static int getDefaultHeaderCellHeight() {
     return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 800, 16, 28);
-  }
-
-  private static boolean cellConsumesEventType(AbstractCell<?> cell, String eventType) {
-    Set<String> consumedEvents = cell.getConsumedEvents();
-    return consumedEvents != null && consumedEvents.contains(eventType);
   }
 
   private static String getBodyCellSelector(int row, int col) {
@@ -1605,14 +1600,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (targetType == TargetType.HEADER) {
       ColumnHeader header = getColumnInfo(col).getHeader();
-      if (header != null && cellConsumesEventType(header.getCell(), eventType)) {
+      if (header != null && header.getCell().consumesEvent(eventType)) {
         CellContext context = new CellContext(this, col);
         header.onBrowserEvent(context, target, event);
       }
 
     } else if (targetType == TargetType.FOOTER) {
       ColumnFooter footer = getColumnInfo(col).getFooter();
-      if (footer != null && cellConsumesEventType(footer.getCell(), eventType)) {
+      if (footer != null && footer.getCell().consumesEvent(eventType)) {
         CellContext context = new CellContext(this, col);
         footer.onBrowserEvent(context, target, event);
       }
@@ -1621,6 +1616,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       IsRow rowValue = getDataItem(row);
       ColumnInfo columnInfo = getColumnInfo(col);
 
+      EventState eventState = fireEventToCell(columnInfo, col, event, eventType, target, rowValue);
+      if (!eventState.proceed()) {
+        return;
+      }
+      
       if (EventUtils.isClick(eventType)) {
         if (EventUtils.hasModifierKey(event) || columnInfo.isSelection()) {
           if (event.getShiftKey()) {
@@ -1631,21 +1631,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activateCell(row, col);
 
         } else if (isCellActive(row, col)) {
-          if (columnInfo.isActionColumn()) {
-            fireEventToCell(col, event, eventType, target, rowValue);
-          } else {
-            startEditing(rowValue, col, target, EditStartEvent.CLICK);
-          }
+          startEditing(rowValue, col, target, EditStartEvent.CLICK);
 
         } else {
           activateCell(row, col);
-          if (columnInfo.isActionColumn()) {
-            fireEventToCell(col, event, eventType, target, rowValue);
-          } else if (columnInfo.getColumn().instantKarma(rowValue)) {
+          if (columnInfo.getColumn().instantKarma(rowValue)) {
             startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
         }
-        return;
 
       } else if (EventUtils.isKeyDown(eventType)) {
         if (!isCellActive(row, col)) {
@@ -1668,7 +1661,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
             startEditing(rowValue, col, target, EditStartEvent.getStartKey(keyCode));
           }
         }
-        return;
 
       } else if (EventUtils.isKeyPress(eventType)) {
         int charCode = event.getCharCode();
@@ -1679,10 +1671,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         } else if (charCode > BeeConst.CHAR_SPACE) {
           startEditing(rowValue, col, target, charCode);
         }
-        return;
       }
-
-      fireEventToCell(col, event, eventType, target, rowValue);
     }
   }
 
@@ -2588,12 +2577,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     fireEvent(new DataRequestEvent(origin));
   }
 
-  private void fireEventToCell(int col, Event event, String eventType, Element parentElem,
-      IsRow rowValue) {
-    AbstractColumn<?> column = getColumn(col);
-    if (cellConsumesEventType(column.getCell(), eventType)) {
+  private EventState fireEventToCell(ColumnInfo columnInfo, int col, Event event, String eventType,
+      Element parentElem, IsRow rowValue) {
+    if (columnInfo.getColumn().getCell().consumesEvent(eventType)) {
       CellContext context = new CellContext(this, rowValue, col);
-      column.onBrowserEvent(context, parentElem, rowValue, event);
+      return columnInfo.getColumn().onBrowserEvent(context, parentElem, rowValue, event);
+    } else {
+      return EventState.PROCESSING;
     }
   }
 

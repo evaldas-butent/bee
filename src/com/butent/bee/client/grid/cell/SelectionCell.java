@@ -3,7 +3,6 @@ package com.butent.bee.client.grid.cell;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
@@ -22,11 +21,6 @@ public class SelectionCell extends AbstractCell<Boolean> {
 
   public SelectionCell() {
     super();
-  }
-
-  @Override
-  public void onBrowserEvent(CellContext context, Element parent, Boolean value,
-      NativeEvent event) {
   }
 
   @Override

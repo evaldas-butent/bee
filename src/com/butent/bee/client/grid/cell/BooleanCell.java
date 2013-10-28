@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.CellContext;
@@ -41,11 +39,6 @@ public class BooleanCell extends AbstractCell<Boolean> {
 
   public Character getTrueChar() {
     return trueChar;
-  }
-
-  @Override
-  public void onBrowserEvent(CellContext context, Element parent, Boolean value,
-      NativeEvent event) {
   }
 
   @Override

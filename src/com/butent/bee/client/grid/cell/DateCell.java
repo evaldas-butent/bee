@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.CellContext;
@@ -29,11 +27,6 @@ public class DateCell extends AbstractCell<JustDate> implements HasDateTimeForma
   @Override
   public DateTimeFormat getDateTimeFormat() {
     return format;
-  }
-
-  @Override
-  public void onBrowserEvent(CellContext context, Element parent, JustDate value,
-      NativeEvent event) {
   }
 
   @Override

@@ -2,13 +2,14 @@ package com.butent.bee.client.grid.column;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasWhiteSpace;
+import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
@@ -99,8 +100,8 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     return isSortable;
   }
 
-  public void onBrowserEvent(CellContext context, Element elem, IsRow row, NativeEvent event) {
-    cell.onBrowserEvent(context, elem, getValue(row), event);
+  public EventState onBrowserEvent(CellContext context, Element elem, IsRow row, Event event) {
+    return cell.onBrowserEvent(context, elem, getValue(row), event);
   }
 
   public void render(CellContext context, IsRow row, SafeHtmlBuilder sb) {

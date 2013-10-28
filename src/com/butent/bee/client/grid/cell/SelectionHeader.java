@@ -3,14 +3,15 @@ package com.butent.bee.client.grid.cell;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -30,9 +31,10 @@ public class SelectionHeader extends AbstractCell<String> {
   }
 
   @Override
-  public void onBrowserEvent(CellContext context, Element parent, String value, NativeEvent event) {
+  public EventState onBrowserEvent(CellContext context, Element parent, String value, Event event) {
+    EventState state = super.onBrowserEvent(context, parent, value, event);
 
-    if (EventUtils.isClick(event)) {
+    if (state.proceed() && EventUtils.isClick(event)) {
       setChecked(!isChecked());
       CellGrid grid = context.getGrid();
 
@@ -44,7 +46,11 @@ public class SelectionHeader extends AbstractCell<String> {
           }
         }
       }
+      
+      state = EventState.CONSUMED;
     }
+    
+    return state;
   }
 
   public void refresh(CellGrid grid, Element cellElement) {
