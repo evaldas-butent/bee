@@ -88,7 +88,11 @@ public final class EcUtils {
   }
 
   public static String picture(String type, String text) {
-    return EcConstants.PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
+    if (BeeUtils.isEmpty(type)) {
+      return text;
+    } else {
+      return EcConstants.PICTURE_PREFIX + type.toLowerCase() + ";base64," + text;
+    }
   }
 
   public static int toCents(Double d) {

@@ -877,6 +877,7 @@
       <xs:complexContent>
         <xs:extension base="widgetType">
           <xs:attribute name="multiple" type="xs:boolean" />
+          <xs:attribute name="accept" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -909,6 +910,7 @@
           <xs:sequence>
             <xs:element name="face" type="buttonFace" minOccurs="0" maxOccurs="1" />
           </xs:sequence>
+          <xs:attribute name="accept" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

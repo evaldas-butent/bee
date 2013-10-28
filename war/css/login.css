@@ -38,7 +38,7 @@ body {
 .bee-SignIn-Locale-flag {
   cursor: pointer;
   width: 32px;
-  transition: width 500ms;
+  transition: width 200ms;
 }
 
 .bee-SignIn-Label {

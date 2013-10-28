@@ -7,7 +7,7 @@
   idChunk="100"
   >
   <Fields>
-    <String name="Type" precision="3" notNull="true" />
+    <String name="Type" precision="3" />
     <Text name="Resource" notNull="true" />
     <Long name="TecDocID" unique="true" />
   </Fields>

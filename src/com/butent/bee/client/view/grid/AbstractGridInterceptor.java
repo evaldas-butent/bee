@@ -18,6 +18,7 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
@@ -160,6 +161,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public int getDataIndex(String source) {
+    return (getGridView() == null) ? BeeConst.UNDEF : getGridView().getDataIndex(source);
+  }
+
+  @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode) {
     return defMode;
@@ -194,6 +200,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public GridPresenter getGridPresenter() {
     return gridPresenter;
+  }
+  
+  @Override
+  public GridView getGridView() {
+    return (getGridPresenter() == null) ? null : getGridPresenter().getGridView();
   }
 
   @Override
@@ -235,6 +246,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public String getSupplierKey() {
     return null;
+  }
+
+  @Override
+  public String getViewName() {
+    return (getGridPresenter() == null) ? null : getGridPresenter().getViewName();
   }
 
   @Override

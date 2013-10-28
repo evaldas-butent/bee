@@ -395,6 +395,7 @@ public enum FormWidget {
 
   private static final String ATTR_CHECKED = "checked";
   private static final String ATTR_MULTIPLE = "multiple";
+  private static final String ATTR_ACCEPT = "accept";
 
   private static final String ATTR_DECORATOR = "decorator";
   private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
@@ -486,6 +487,7 @@ public enum FormWidget {
     boolean inline;
     String stylePrefix;
     BeeColumn column;
+    String accept;
 
     Relation relation = null;
     IdentifiableWidget widget = null;
@@ -668,6 +670,11 @@ public enum FormWidget {
         widget = new FileCollector(face,
             FileCollector.parseColumns(attributes.get(ATTR_VISIBLE_COLUMNS)),
             FileCollector.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
+        
+        accept = attributes.get(ATTR_ACCEPT);
+        if (!BeeUtils.isEmpty(accept)) {
+          ((FileCollector) widget).setAccept(accept);
+        }
         break;
 
       case FILE_GROUP:
@@ -800,6 +807,10 @@ public enum FormWidget {
         widget = new InputFile(BeeConst.isTrue(attributes.get(ATTR_MULTIPLE)));
         if (!BeeUtils.isEmpty(name)) {
           ((InputFile) widget).setName(name.trim());
+        }
+        accept = attributes.get(ATTR_ACCEPT);
+        if (!BeeUtils.isEmpty(accept)) {
+          ((InputFile) widget).setAccept(accept);
         }
         break;
 

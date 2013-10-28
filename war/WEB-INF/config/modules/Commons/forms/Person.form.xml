@@ -30,7 +30,7 @@
         <Table>
           <row>       
             <Label text="=photo" horizontalAlignment="right" />
-            <FileCollector name="PhotoFile" editableColumns="none" >
+            <FileCollector name="PhotoFile" editableColumns="none" accept="image/*">
               <face resource="attachment" />
             </FileCollector>              
           </row>

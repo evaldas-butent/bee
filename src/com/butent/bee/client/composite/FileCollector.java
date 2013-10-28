@@ -553,6 +553,10 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     addFiles(FileUtils.getNewFileInfos(FileUtils.getFiles(event.getNativeEvent())));
   }
 
+  public void setAccept(String accept) {
+    inputFile.setAccept(accept);
+  }
+  
   @Override
   public void setOptions(String options) {
     this.options = options;

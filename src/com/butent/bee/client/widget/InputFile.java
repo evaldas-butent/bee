@@ -14,9 +14,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.BeeConst;
 
 import elemental.html.InputElement;
-
 import elemental.html.FileList;
-
 import elemental.js.html.JsInputElement;
 
 public class InputFile extends Widget implements HasName, HasChangeHandlers, HasEnabled,
@@ -78,6 +76,10 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
     return !getInputElement().isDisabled();
   }
 
+  public void setAccept(String accept) {
+    getInputElement().setAccept(accept);
+  }
+  
   @Override
   public void setEnabled(boolean enabled) {
     getInputElement().setDisabled(!enabled);

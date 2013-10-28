@@ -317,6 +317,9 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_REGISTER_ORDER_EVENT)) {
       response = registerOrderEvent(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_UPLOAD_GRAPHICS)) {
+      response = uploadGraphics(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -2095,7 +2098,7 @@ public class EcModuleBean implements BeeModule {
 
     Document document = orderToHtml(orderData.getColumns(), orderRow, constants);
     String content = document.build(0, 2);
-    
+
     ResponseObject mailResponse = mail.sendMail(sender, recipients, status.getSubject(constants),
         content);
     if (mailResponse.hasErrors()) {
@@ -2301,7 +2304,7 @@ public class EcModuleBean implements BeeModule {
         cell.setBorderColor("#ccc");
 
         cell.setWhiteSpace(WhiteSpace.PRE_LINE);
-        cell.setBackground("#fafafa");
+        cell.setBackground(Colors.WHITE);
 
         Td td = (Td) cell;
         if (td.size() == 1 && td.hasText()) {
@@ -2880,5 +2883,33 @@ public class EcModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(article);
+  }
+
+  private ResponseObject uploadGraphics(RequestInfo reqInfo) {
+    Long article = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
+    Integer sort = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_TCD_SORT));
+
+    String resource = reqInfo.getParameter(COL_TCD_GRAPHICS_RESOURCE);
+
+    if (!DataUtils.isId(article)) {
+      return ResponseObject.parameterNotFound(SVC_UPLOAD_GRAPHICS, COL_TCD_ARTICLE);
+    }
+    if (sort == null) {
+      return ResponseObject.parameterNotFound(SVC_UPLOAD_GRAPHICS, COL_TCD_SORT);
+    }
+    if (BeeUtils.isEmpty(resource)) {
+      return ResponseObject.parameterNotFound(SVC_UPLOAD_GRAPHICS, COL_TCD_GRAPHICS_RESOURCE);
+    }
+
+    ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_TCD_GRAPHICS)
+        .addConstant(COL_TCD_GRAPHICS_RESOURCE, resource));
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    return qs.insertDataWithResponse(new SqlInsert(TBL_TCD_ARTICLE_GRAPHICS)
+        .addConstant(COL_TCD_ARTICLE, article)
+        .addConstant(COL_TCD_SORT, sort)
+        .addConstant(COL_TCD_GRAPHICS, response.getResponse()));
   }
 }

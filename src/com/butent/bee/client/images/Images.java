@@ -278,6 +278,8 @@ public final class Images {
     ImageResource yellowSmall();
   }
 
+  public static final long MAX_SIZE_FOR_DATA_URL = 1258292L; /* ~1.2 MB */
+  
   private static final Map<String, ImageResource> map = Maps.newHashMap();
 
   private static final ImageElement imageElement = Document.get().createImageElement();

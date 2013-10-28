@@ -221,6 +221,8 @@ public final class EcConstants {
 
   public static final String SVC_ADD_TO_UNSUPPLIED_ITEMS = "addToUnsuppliedItems";
 
+  public static final String SVC_UPLOAD_GRAPHICS = "uploadGraphics";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";

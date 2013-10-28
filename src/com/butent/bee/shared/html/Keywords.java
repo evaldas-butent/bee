@@ -52,6 +52,10 @@ public final class Keywords {
   public static final String DIR_RTL = "rtl";
   public static final String DIR_AUTO = "auto";
 
+  public static final String ACCEPT_AUDIO = "audio/*";
+  public static final String ACCEPT_VIDEO = "video/*";
+  public static final String ACCEPT_IMAGE = "image/*";
+
   private Keywords() {
   }
 }
