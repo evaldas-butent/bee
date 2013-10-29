@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY header "font-style: italic;">
+  <!ENTITY separator "<hr/>">
+
+  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 8px; min-height: 20px; max-height: 20px; padding-top: 1px;">
+  <!ENTITY top1 "text-align: right; padding-right: 8px; max-width: 128px; padding-top: 1px;">
+  <!ENTITY inp2x "&inline; width: 540px;">
+ 
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="NewDiscussion" caption="=discussNew" width="650" height="520">
+
+  <FlowPanel style="padding: 10px 2px 2px 10px;"> 
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=discussSubject" class="bee-required" style="&lbl1;min-width:70px;" />
+      <InputText source="Subject" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=discussDescription" style="&top1; padding-right:12px;" />
+      <RichTextEditor name="Description" source="Description" style="width: 540px; height: 200px;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=discussFiles" style="&top1; min-width:70px;" />
+      <FileCollector name="Files" editableColumns="name">
+        <face resource="attachment" />
+      </FileCollector>
+    </FlowPanel>
+
+    &separator;
+    <!--  TODO: Check box is public -->
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=discussMembers" style="&top1; min-width:70px; padding-right:18px;" />
+      <MultiSelector viewName="Users" property="Members" renderColumns="FirstName LastName"
+        editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="=discussMembers" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=relatedTo" style="&header;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=companies" style="&top1;min-width:70px; padding-right:18px;" />
+      <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+        editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=persons" style="&top1;min-width:70px; padding-right:18px;" />
+      <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+        editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=appointments" style="&top1;min-width:70px; padding-right:18px;" />
+      <MultiSelector viewName="Appointments" property="Appointments"
+        renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+        newRowEnabled="false" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=tasks" style="&top1;min-width:70px; padding-right:18px;" />
+      <MultiSelector viewName="Tasks" property="Tasks" 
+        renderColumns="Summary ExecutorFirstName ExecutorLastName"
+        choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+        newRowEnabled="false" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=documents" style="&top1;min-width:70px; padding-right:18px;" />
+      <MultiSelector viewName="Documents" property="Documents" 
+        renderColumns="Name DocumentDate Number"
+        choiceColumns="Name DocumentDate Number"
+        newRowEnabled="false" editPopup="true" style="&inp2x;" />
+    </FlowPanel>
+
+  </FlowPanel>
+</f:Form>  

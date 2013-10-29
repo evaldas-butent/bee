@@ -50,7 +50,7 @@ final class DiscussionsList {
     if (list == null) {
       Global.showError(Lists.newArrayList(GRID_DISCUSSIONS, "Type not recognized:", arg));
     } else {
-      GridFactory.openGrid(GRID_DISCUSSIONS);
+      GridFactory.openGrid(GRID_DISCUSSIONS, new DiscussionsGridHandler(list));
     }
   }
 

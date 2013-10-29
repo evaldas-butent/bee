@@ -4,6 +4,8 @@ public interface LocalizableDiscussionsConstants {
 
   String discussAll();
 
+  String discussFilterStarred();
+
   String discussStatusActive();
 
   String discussStatusClosed();
