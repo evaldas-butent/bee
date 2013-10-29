@@ -57,9 +57,9 @@ public class YearMonth implements Comparable<YearMonth>, BeeSerializable, HasYea
   
   @Override
   public int compareTo(YearMonth other) {
-    int result = BeeUtils.compare(getYear(), other.getYear());
+    int result = BeeUtils.compareNullsFirst(getYear(), other.getYear());
     if (result == BeeConst.COMPARE_EQUAL) {
-      result = BeeUtils.compare(getMonth(), other.getMonth());
+      result = BeeUtils.compareNullsFirst(getMonth(), other.getMonth());
     }
     return result;
   }

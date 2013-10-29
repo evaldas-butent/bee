@@ -106,7 +106,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (o == null) {
       return BeeConst.COMPARE_MORE;
     }
-    return BeeUtils.compare(getViewName(), o.getViewName());
+    return BeeUtils.compareNullsFirst(getViewName(), o.getViewName());
   }
 
   public boolean containsAllViewColumns(Collection<String> columnNames) {

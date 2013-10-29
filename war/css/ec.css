@@ -192,11 +192,27 @@
   top: 0px;
 }
 
-.bee-ec-FeaturedAndNovelty {
+.bee-ec-Promo {
   margin-left: 1em;
   margin-right: 1em;
   overflow: auto;
 }
+
+.bee-ec-Banner-container {
+  margin-top: 1ex;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  align-items: center;
+  -webkit-align-items: center;
+}
+.bee-ec-Banner-noLink {
+  cursor: default;
+}
+
 .bee-ec-Featured-label,
 .bee-ec-Novelty-label {
   font-size: large;

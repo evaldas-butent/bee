@@ -69,37 +69,37 @@ public class RowOrdering<R extends IsRow> implements Comparator<R> {
 
       switch (index) {
         case DataUtils.ID_INDEX:
-          z = BeeUtils.compare(row1.getId(), row2.getId());
+          z = BeeUtils.compareNullsFirst(row1.getId(), row2.getId());
           break;
         case DataUtils.VERSION_INDEX:
-          z = BeeUtils.compare(row1.getVersion(), row2.getVersion());
+          z = BeeUtils.compareNullsFirst(row1.getVersion(), row2.getVersion());
           break;
 
         default:
           switch (types.get(i)) {
             case BOOLEAN:
-              z = BeeUtils.compare(row1.getBoolean(index), row2.getBoolean(index));
+              z = BeeUtils.compareNullsFirst(row1.getBoolean(index), row2.getBoolean(index));
               break;
             case DATE:
-              z = BeeUtils.compare(row1.getDate(index), row2.getDate(index));
+              z = BeeUtils.compareNullsFirst(row1.getDate(index), row2.getDate(index));
               break;
             case DATE_TIME:
-              z = BeeUtils.compare(row1.getDateTime(index), row2.getDateTime(index));
+              z = BeeUtils.compareNullsFirst(row1.getDateTime(index), row2.getDateTime(index));
               break;
             case NUMBER:
-              z = BeeUtils.compare(row1.getDouble(index), row2.getDouble(index));
+              z = BeeUtils.compareNullsFirst(row1.getDouble(index), row2.getDouble(index));
               break;
             case INTEGER:
-              z = BeeUtils.compare(row1.getInteger(index), row2.getInteger(index));
+              z = BeeUtils.compareNullsFirst(row1.getInteger(index), row2.getInteger(index));
               break;
             case LONG:
-              z = BeeUtils.compare(row1.getLong(index), row2.getLong(index));
+              z = BeeUtils.compareNullsFirst(row1.getLong(index), row2.getLong(index));
               break;
             case DECIMAL:
-              z = BeeUtils.compare(row1.getDecimal(index), row2.getDecimal(index));
+              z = BeeUtils.compareNullsFirst(row1.getDecimal(index), row2.getDecimal(index));
               break;
             default:
-              z = BeeUtils.compare(row1.getString(index), row2.getString(index));
+              z = BeeUtils.compareNullsFirst(row1.getString(index), row2.getString(index));
           }
       }
 

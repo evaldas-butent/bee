@@ -224,6 +224,10 @@ public final class RendererFactory {
         renderer = new MailAddressRenderer(dataColumns, renderColumns);
         break;
         
+      case URL:
+        renderer = new UrlRenderer(source);
+        break;
+        
       case TOKEN:
         logger.severe("renderer", type.name(), "not supported");
         break;

@@ -114,28 +114,28 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     testc2.add(2);
     testc2.add(10);
 
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare("", ""));
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare("Compare", "Compare"));
-    assertEquals(true, BeeUtils.compare("Aompare", "Compare") < 0);
-    assertEquals(true, BeeUtils.compare("Compare", "Aompare") > 0);
-    assertEquals(true, BeeUtils.compare(null, "Aompare") < 0);
-    assertEquals(true, BeeUtils.compare("Compare", null) > 0);
-    assertEquals(true, BeeUtils.compare(7, 6) > 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(6, 6));
-    assertEquals(true, BeeUtils.compare(5, 6) < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst("", ""));
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst("Compare", "Compare"));
+    assertEquals(true, BeeUtils.compareNullsFirst("Aompare", "Compare") < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst("Compare", "Aompare") > 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(null, "Aompare") < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst("Compare", null) > 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(7, 6) > 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(6, 6));
+    assertEquals(true, BeeUtils.compareNullsFirst(5, 6) < 0);
 
-    assertEquals(true, BeeUtils.compare('a', 'c') < 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare('c', 'c'));
-    assertEquals(false, BeeUtils.compare('c', 'a') < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst('a', 'c') < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst('c', 'c'));
+    assertEquals(false, BeeUtils.compareNullsFirst('c', 'a') < 0);
 
-    assertEquals(true, BeeUtils.compare(true, false) > 0);
-    assertEquals(true, BeeUtils.compare(false, true) < 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(true, true));
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(false, false));
+    assertEquals(true, BeeUtils.compareNullsFirst(true, false) > 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(false, true) < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(true, true));
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(false, false));
 
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(5.0, 5.0));
-    assertEquals(true, BeeUtils.compare(-2.0, 5.69) < 0);
-    assertEquals(true, BeeUtils.compare(5.11, 3.0) > 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(5.0, 5.0));
+    assertEquals(true, BeeUtils.compareNullsFirst(-2.0, 5.69) < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(5.11, 3.0) > 0);
   }
 
   @Test

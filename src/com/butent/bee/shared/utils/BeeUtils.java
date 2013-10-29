@@ -331,7 +331,7 @@ public final class BeeUtils {
    * @param x2 second value to compare
    * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
    */
-  public static <T extends Comparable<T>> int compare(T x1, T x2) {
+  public static <T extends Comparable<T>> int compareNullsFirst(T x1, T x2) {
     if (x1 == null) {
       if (x2 == null) {
         return BeeConst.COMPARE_EQUAL;
@@ -345,6 +345,20 @@ public final class BeeUtils {
     }
   }
 
+  public static <T extends Comparable<T>> int compareNullsLast(T x1, T x2) {
+    if (x1 == null) {
+      if (x2 == null) {
+        return BeeConst.COMPARE_EQUAL;
+      } else {
+        return BeeConst.COMPARE_MORE;
+      }
+    } else if (x2 == null) {
+      return BeeConst.COMPARE_LESS;
+    } else {
+      return x1.compareTo(x2);
+    }
+  }
+  
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -1151,11 +1165,11 @@ public final class BeeUtils {
   }
 
   public static <T extends Comparable<T>> boolean isLeq(T x1, T x2) {
-    return compare(x1, x2) <= 0;
+    return compareNullsFirst(x1, x2) <= 0;
   }
 
   public static <T extends Comparable<T>> boolean isLess(T x1, T x2) {
-    return compare(x1, x2) < 0;
+    return compareNullsFirst(x1, x2) < 0;
   }
 
   /**
@@ -1184,11 +1198,11 @@ public final class BeeUtils {
   }
 
   public static <T extends Comparable<T>> boolean isMeq(T x1, T x2) {
-    return compare(x1, x2) >= 0;
+    return compareNullsFirst(x1, x2) >= 0;
   }
 
   public static <T extends Comparable<T>> boolean isMore(T x1, T x2) {
-    return compare(x1, x2) > 0;
+    return compareNullsFirst(x1, x2) > 0;
   }
 
   public static boolean isNegative(Double d) {

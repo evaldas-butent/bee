@@ -162,7 +162,7 @@ public final class EcConstants {
   public static final String EC_MODULE = "Ec";
   public static final String EC_METHOD = EC_MODULE + "Method";
 
-  public static final String SVC_FEATURED_AND_NOVELTY = "featuredAndNovelty";
+  public static final String SVC_GET_PROMO = "getPromo";
 
   public static final String SVC_FINANCIAL_INFORMATION = "financialInformation";
   public static final String SVC_SHOW_TERMS_OF_DELIVERY = "showTermsOfDelivery";
@@ -222,6 +222,7 @@ public final class EcConstants {
   public static final String SVC_ADD_TO_UNSUPPLIED_ITEMS = "addToUnsuppliedItems";
 
   public static final String SVC_UPLOAD_GRAPHICS = "uploadGraphics";
+  public static final String SVC_UPLOAD_BANNERS = "uploadBanners";
 
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
@@ -240,6 +241,9 @@ public final class EcConstants {
   public static final String VAR_STATUS = VAR_PREFIX + "status";
   public static final String VAR_MAIL = VAR_PREFIX + "mail";
 
+  public static final String VAR_BANNERS = VAR_PREFIX + "banners";
+
+  public static final String TBL_BANNERS = "EcBanners";
   public static final String TBL_DELIVERY_METHODS = "DeliveryMethods";
   public static final String TBL_CLIENTS = "EcClients";
   public static final String TBL_CONFIGURATION = "EcConfiguration";
@@ -282,6 +286,7 @@ public final class EcConstants {
   public static final String TBL_TCD_CRITERIA = "TcdCriteria";
   public static final String TBL_TCD_ARTICLE_CRITERIA = "TcdArticleCriteria";
 
+  public static final String VIEW_BANNERS = "EcBanners";
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
   public static final String VIEW_CATALOG = "EcCatalog";
   public static final String VIEW_CATEGORIES = "TcdCategories";
@@ -296,6 +301,14 @@ public final class EcConstants {
   public static final String VIEW_REGISTRATIONS = "EcRegistrations";
   public static final String VIEW_REJECTION_REASONS = "RejectionReasons";
   public static final String VIEW_UNSUPPLIED_ITEMS = "UnsuppliedItems";
+
+  public static final String COL_BANNER_SORT = "Sort";
+  public static final String COL_BANNER_PICTURE = "Picture";
+  public static final String COL_BANNER_WIDTH = "Width";
+  public static final String COL_BANNER_HEIGHT = "Height";
+  public static final String COL_BANNER_LINK = "Link";
+  public static final String COL_BANNER_SHOW_AFTER = "ShowAfter";
+  public static final String COL_BANNER_SHOW_BEFORE = "ShowBefore";
 
   public static final String COL_DELIVERY_METHOD_ID = "DeliveryMethodID";
   public static final String COL_DELIVERY_METHOD_NAME = "Name";

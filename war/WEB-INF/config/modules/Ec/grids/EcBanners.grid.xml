@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="EcBanners" viewName="EcBanners" caption="=ecBanners" flexGrow="1"
+  >
+  <g:body height="80" /> 
+  <g:columns>
+    <DataColumn name="Sort" maxWidth="100" />
+    <CalcColumn name="Picture" type="string" cellType="html" minWidth="100" maxWidth="240"
+      caption="-" visible="true" />
+
+    <DataColumn name="Width" maxWidth="100" />
+    <DataColumn name="Height" maxWidth="100" />
+
+    <DataColumn name="Link" cellType="html" minWidth="120">
+      <renderer type="url" />
+    </DataColumn>
+
+    <DataColumn name="ShowAfter" maxWidth="120" />
+    <DataColumn name="ShowBefore" maxWidth="120" />
+  </g:columns>
+</g:Grid>

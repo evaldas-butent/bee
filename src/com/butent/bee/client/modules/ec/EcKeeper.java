@@ -24,11 +24,12 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.modules.ec.render.CategoryFullNameRenderer;
 import com.butent.bee.client.modules.ec.view.EcView;
 import com.butent.bee.client.modules.ec.view.ShoppingCart;
 import com.butent.bee.client.modules.ec.widget.CartList;
-import com.butent.bee.client.modules.ec.widget.FeaturedAndNovelty;
+import com.butent.bee.client.modules.ec.widget.Promo;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
@@ -43,7 +44,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -82,18 +87,23 @@ public final class EcKeeper {
 
   private static final CartList cartList = new CartList();
 
-  private static final EcEventHandler eventHandler  = new EcEventHandler();
+  private static final EcEventHandler eventHandler = new EcEventHandler();
 
   private static EcCommandWidget activeCommand;
 
   private static boolean debug;
 
   private static Set<EcRequest> pendingRequests = Sets.newHashSet();
-  
+
   private static boolean listPriceVisible = true;
   private static boolean priceVisible = true;
 
   private static boolean stockLimited = true;
+
+  public static void addPictureCellHandlers(AbstractCell<?> cell, String primaryStyle) {
+    Assert.notNull(cell);
+    pictures.addCellHandlers(cell, primaryStyle);
+  }
 
   public static void addToCart(EcItem ecItem, int quantity) {
     cartList.addToCart(ecItem, quantity);
@@ -102,7 +112,7 @@ public final class EcKeeper {
   public static HandlerRegistration bindKeyPress(HasKeyPressHandlers source) {
     return source.addKeyPressHandler(eventHandler);
   }
-  
+
   public static Tree buildCategoryTree(Collection<Long> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
@@ -123,7 +133,7 @@ public final class EcKeeper {
 
   public static void closeView(IdentifiableWidget view) {
     BeeKeeper.getScreen().closeWidget(view);
-    showFeaturedAndNoveltyItems(true);
+    showPromo(true);
   }
 
   public static ParameterList createArgs(String method) {
@@ -193,7 +203,7 @@ public final class EcKeeper {
       return BeeUtils.toString(stock);
     }
   }
-  
+
   public static String getBrandName(Long brand) {
     Assert.notNull(brand);
     return data.getBrandName(brand);
@@ -250,12 +260,20 @@ public final class EcKeeper {
   }
 
   public static List<EcItem> getResponseItems(ResponseObject response) {
+    if (response == null) {
+      return Lists.newArrayList();
+    } else {
+      return deserializeItems(response.getResponseAsString());
+    }
+  }
+
+  private static List<EcItem> deserializeItems(String serialized) {
     List<EcItem> items = Lists.newArrayList();
 
-    if (response != null) {
+    if (serialized != null) {
       long millis = System.currentTimeMillis();
 
-      String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+      String[] arr = Codec.beeDeserializeCollection(serialized);
       if (arr != null) {
         for (String s : arr) {
           items.add(EcItem.restore(s));
@@ -371,7 +389,7 @@ public final class EcKeeper {
 
               dialog.setHideOnEscape(true);
               dialog.setAnimationEnabled(true);
-              
+
               dialog.cascade();
             }
           }
@@ -442,6 +460,7 @@ public final class EcKeeper {
     GridFactory.registerGridInterceptor("EcCostChanges", new EcCostChangesHandler());
 
     GridFactory.registerGridInterceptor(GRID_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
+    GridFactory.registerGridInterceptor("EcBanners", new BannerGridInterceptor());
 
     FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());
     FormFactory.registerFormInterceptor(FORM_CATEGORIES, new EcCategoriesForm());
@@ -581,18 +600,46 @@ public final class EcKeeper {
     EcKeeper.stockLimited = stockLimited;
   }
 
-  public static void showFeaturedAndNoveltyItems(final boolean checkView) {
-    ParameterList params = createArgs(SVC_FEATURED_AND_NOVELTY);
+  public static void showPromo(final boolean checkView) {
+    ParameterList params = createArgs(SVC_GET_PROMO);
 
-    requestItems(SVC_FEATURED_AND_NOVELTY, null, params, new Consumer<List<EcItem>>() {
+    List<RowInfo> cachedBannerInfo = pictures.getCachedBannerInfo();
+    if (!BeeUtils.isEmpty(cachedBannerInfo)) {
+      params.addDataItem(VAR_BANNERS, Codec.beeSerialize(cachedBannerInfo));
+    }
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
-      public void accept(List<EcItem> items) {
+      public void onResponse(ResponseObject response) {
+        dispatchMessages(response);
+
+        List<EcItem> items = null;
+
+        if (response.hasResponse(Pair.class)) {
+          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+          if (!BeeUtils.isEmpty(pair.getA())) {
+            pictures.setBanners(BeeRowSet.restore(pair.getA()));
+          }
+
+          if (!BeeUtils.isEmpty(pair.getB())) {
+            items = deserializeItems(pair.getB());
+          }
+        }
+
         if (checkView && BeeKeeper.getScreen().getActiveWidget() instanceof Panel) {
           return;
         }
+        if (DataUtils.isEmpty(pictures.getBanners()) && BeeUtils.isEmpty(items)) {
+          return;
+        }
+        
         resetActiveCommand();
+        
+        if (items == null) {
+          items = Lists.newArrayList();
+        }
+        Promo widget = new Promo(pictures.getBanners(), items);
 
-        FeaturedAndNovelty widget = new FeaturedAndNovelty(items);
         BeeKeeper.getScreen().updateActivePanel(widget);
       }
     });
@@ -627,7 +674,7 @@ public final class EcKeeper {
       }
     }
   }
-  
+
   static void doCommand(EcCommandWidget commandWidget) {
     EcView ecView = EcView.create(commandWidget.getService());
     if (ecView != null) {

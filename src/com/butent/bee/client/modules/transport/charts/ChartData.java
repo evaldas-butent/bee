@@ -34,7 +34,7 @@ class ChartData {
 
     @Override
     public int compareTo(Item o) {
-      return BeeUtils.compare(name, o.name);
+      return BeeUtils.compareNullsFirst(name, o.name);
     }
 
     @Override

@@ -29,6 +29,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
 
+  @SuppressWarnings("unused")
   private final ListType type;
   private final Long userId;
 

@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.ec;
 
-import static com.butent.bee.shared.modules.ec.EcConstants.*;
+import static com.butent.bee.shared.modules.ec.EcConstants.COL_BANNER_PICTURE;
+import static com.butent.bee.shared.modules.ec.EcConstants.SVC_UPLOAD_BANNERS;
+import static com.butent.bee.shared.modules.ec.EcConstants.TBL_BANNERS;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -24,7 +26,6 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.ui.Action;
@@ -35,11 +36,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class ArticleGraphicsHandler extends AbstractGridInterceptor {
+class BannerGridInterceptor extends AbstractGridInterceptor {
 
   private FileCollector collector;
 
-  ArticleGraphicsHandler() {
+  BannerGridInterceptor() {
   }
   
   @Override
@@ -47,8 +48,8 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
     
-    if (BeeUtils.same(columnName, COL_TCD_GRAPHICS_RESOURCE)) {
-      EcKeeper.addPictureCellHandlers(column.getCell(), TBL_TCD_GRAPHICS);
+    if (BeeUtils.same(columnName, COL_BANNER_PICTURE)) {
+      EcKeeper.addPictureCellHandlers(column.getCell(), TBL_BANNERS);
     }
     
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
@@ -67,16 +68,15 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return new ArticleGraphicsHandler();
+    return new BannerGridInterceptor();
   }
 
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription) {
 
-    if (BeeUtils.same(columnName, COL_TCD_GRAPHICS_RESOURCE)) {
-      return new PictureRenderer(DataUtils.getColumnIndex(COL_TCD_GRAPHICS_TYPE, dataColumns),
-          DataUtils.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE, dataColumns));
+    if (BeeUtils.same(columnName, COL_BANNER_PICTURE)) {
+      return new PictureRenderer(DataUtils.getColumnIndex(COL_BANNER_PICTURE, dataColumns));
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription);
     }
@@ -97,10 +97,8 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
         @Override
         public void accept(Collection<NewFileInfo> input) {
           Collection<NewFileInfo> files = Images.sanitizeInput(input, getGridView());
-          Long articleId = getGridView().getRelId();
-
-          if (!files.isEmpty() && DataUtils.isId(articleId)) {
-            uploadGraphics(articleId, files);
+          if (!files.isEmpty()) {
+            uploadBanners(files);
           }
         }
       });
@@ -112,36 +110,16 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
     return collector;
   }
 
-  private int getMaxSort() {
-    int result = 0;
-
-    List<? extends IsRow> data = getGridView().getRowData();
-    if (!BeeUtils.isEmpty(data)) {
-      int index = getDataIndex(COL_TCD_SORT);
-      for (IsRow row : data) {
-        result = Math.max(result, BeeUtils.unbox(row.getInteger(index)));
-      }
-    }
-
-    return result;
-  }
-
-  private void uploadGraphics(final Long articleId, Collection<NewFileInfo> files) {
+  private void uploadBanners(Collection<NewFileInfo> files) {
     final Holder<Integer> latch = Holder.of(files.size());
-    final Holder<Integer> sort = Holder.of(getMaxSort());
 
     for (NewFileInfo fileInfo : files) {
       FileUtils.readAsDataURL(fileInfo.getFile(), new Consumer<String>() {
 
         @Override
         public void accept(String input) {
-          sort.set(sort.get() + 1);
-
-          ParameterList params = EcKeeper.createArgs(SVC_UPLOAD_GRAPHICS);
-          params.addQueryItem(COL_TCD_ARTICLE, articleId);
-          params.addQueryItem(COL_TCD_SORT, sort.get());
-
-          params.addDataItem(COL_TCD_GRAPHICS_RESOURCE, input);
+          ParameterList params = EcKeeper.createArgs(SVC_UPLOAD_BANNERS);
+          params.addDataItem(COL_BANNER_PICTURE, input);
 
           BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
             @Override

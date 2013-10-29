@@ -611,6 +611,10 @@ public final class DataUtils {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
+  public static boolean isNull(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.isNull(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+  
   public static String join(IsRow row, List<Integer> indexes) {
     return join(row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
   }

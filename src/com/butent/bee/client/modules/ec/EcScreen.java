@@ -91,7 +91,7 @@ public class EcScreen extends ScreenImpl {
   public void onLoad() {
     EcKeeper.getSearchBox().setFocus(true);
 
-    EcKeeper.showFeaturedAndNoveltyItems(true);
+    EcKeeper.showPromo(true);
     EcKeeper.restoreShoppingCarts();
   }
 
@@ -147,7 +147,7 @@ public class EcScreen extends ScreenImpl {
     Widget logo = createLogo(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        EcKeeper.showFeaturedAndNoveltyItems(false);
+        EcKeeper.showPromo(false);
       }
     });
 

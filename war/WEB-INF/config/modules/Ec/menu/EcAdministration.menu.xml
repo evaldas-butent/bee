@@ -20,10 +20,12 @@ name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separato
     separator="true" />
   <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
 
-  <Item name="EcMailParameters" label="=ecMailParameters" service="grid" parameters="EcMailParameters"
+  <Item name="EcBanners" label="=ecBanners" service="grid" parameters="EcBanners"
     separator="true" />
 
-  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec"
-    separator="true" />
+  <Item name="EcMailParameters" label="=ecMailParameters" service="grid"
+    parameters="EcMailParameters" separator="true" />
+
+  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec" />
 
 </Entry>

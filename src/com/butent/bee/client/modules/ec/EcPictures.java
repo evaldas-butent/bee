@@ -2,15 +2,31 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -18,6 +34,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 class EcPictures {
@@ -46,7 +63,66 @@ class EcPictures {
   private final Cache<Long, String> cache = CacheBuilder.newBuilder().maximumSize(2000).build();
   private final Set<Long> noPicture = Sets.newHashSet();
 
+  private BeeRowSet banners;
+
   EcPictures() {
+  }
+
+  void addCellHandlers(AbstractCell<?> cell, final String primaryStyle) {
+    cell.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        onCellEvent(event, primaryStyle);
+      }
+    });
+
+    cell.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          onCellEvent(event, primaryStyle);
+        }
+      }
+    });
+  }
+
+  BeeRowSet getBanners() {
+    return banners;
+  }
+
+  List<RowInfo> getCachedBannerInfo() {
+    List<RowInfo> result = Lists.newArrayList();
+
+    if (!DataUtils.isEmpty(getBanners())) {
+      for (BeeRow row : getBanners().getRows()) {
+        result.add(new RowInfo(row, false));
+      }
+    }
+
+    return result;
+  }
+
+  void onCellEvent(DomEvent<?> event, String primaryStyle) {
+    Element cellElement = event.getRelativeElement();
+    if (cellElement == null) {
+      return;
+    }
+
+    ImageElement imageElement = DomUtils.getImageElement(cellElement);
+    if (imageElement == null) {
+      return;
+    }
+
+    if (event.getSource() instanceof AbstractCell) {
+      ((AbstractCell<?>) event.getSource()).setEventCanceled(true);
+    }
+
+    Image image = new Image(imageElement.getSrc());
+    if (!BeeUtils.isEmpty(primaryStyle)) {
+      EcStyles.add(image, primaryStyle, "picture");
+    }
+
+    Global.showModalWidget(image);
   }
 
   void setBackground(final Multimap<Long, ItemPicture> articleWidgets) {
@@ -106,5 +182,9 @@ class EcPictures {
         }
       });
     }
+  }
+
+  void setBanners(BeeRowSet banners) {
+    this.banners = banners;
   }
 }

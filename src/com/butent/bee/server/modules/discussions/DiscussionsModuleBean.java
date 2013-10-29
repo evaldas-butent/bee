@@ -43,6 +43,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private static final int MAX_NUMBERS_OF_ROWS = 100;
 
+  @SuppressWarnings("unused")
   private static BeeLogger logger = LogUtils.getLogger(DiscussionsModuleBean.class);
 
   @EJB
