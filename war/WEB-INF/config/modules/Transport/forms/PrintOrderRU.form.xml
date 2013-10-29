@@ -33,7 +33,7 @@
           <DateTimeLabel source="OrderDate" format="DATE_SHORT" />
         </row>
       </Table>
-      <Image  url="images/logo.gif" />
+      <Image  url="images/logo.png" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">

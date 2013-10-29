@@ -1,11 +1,7 @@
 <?xml version="1.0"?>
 <jboss-web>
-  <security-domain>DBPolicy</security-domain>
-  <valve>
-    <class-name>org.apache.catalina.authenticator.FormAuthenticator</class-name>
-    <param>
-      <param-name>characterEncoding</param-name>
-      <param-value>UTF-8</param-value>
-    </param>
-  </valve>
+    <security-domain>other</security-domain>
+    <valve>
+        <class-name>org.jboss.as.web.security.jaspi.WebJASPIAuthenticator</class-name>
+    </valve>
 </jboss-web>

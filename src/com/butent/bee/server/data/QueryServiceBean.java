@@ -801,7 +801,7 @@ public class QueryServiceBean {
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
             values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
             break;
-          
+
           case NUMBER:
           case DECIMAL:
             Double d = rs.getDouble(colIndex);
@@ -813,7 +813,7 @@ public class QueryServiceBean {
               values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
             }
             break;
-          
+
           default:
             values[i] = rs.getString(colIndex);
         }

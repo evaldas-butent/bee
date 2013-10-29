@@ -13,7 +13,7 @@
   >
   <FlowPanel style="padding: 10px; background-color: white;">
     <HorizontalPanel>
-      <Image  url="images/logo.gif" />
+      <Image  url="images/logo.png" />
       <cell width="100" widthUnit="%">
         <FlowPanel style="text-align:center;">
           <Label html="PVM Sąskaita-faktūra" style="&bold;" />

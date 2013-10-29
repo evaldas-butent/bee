@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
  * Implements upload servlet functionality.
  */
 
+@WebServlet(urlPatterns = "/upload")
 @SuppressWarnings("serial")
 @MultipartConfig
 public class UploadServlet extends HttpServlet {
@@ -34,7 +36,7 @@ public class UploadServlet extends HttpServlet {
 
   @EJB
   FileStorageBean fs;
-  
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
@@ -49,7 +51,7 @@ public class UploadServlet extends HttpServlet {
     parameters.putAll(HttpUtils.getParameters(req, true));
 
     String response;
-    
+
     String service = parameters.get(Service.RPC_VAR_SVC);
     if (BeeUtils.same(service, Service.UPLOAD_FILE)) {
       response = uploadFile(req, parameters);
@@ -82,7 +84,7 @@ public class UploadServlet extends HttpServlet {
       String message = "photo file name not specified";
       logger.severe(message);
       return message;
-    
+
     } else if (fs.photoExists(fileName)) {
       boolean deleted = fs.deletePhoto(fileName);
 
@@ -105,13 +107,13 @@ public class UploadServlet extends HttpServlet {
   private String uploadFile(HttpServletRequest req, Map<String, String> parameters) {
     long start = System.currentTimeMillis();
     String prefix = "file upload:";
-    
+
     String fileName = parameters.get(Service.VAR_FILE_NAME);
     String mimeType = parameters.get(Service.VAR_FILE_TYPE);
     Long fileSize = BeeUtils.toLongOrNull(parameters.get(Service.VAR_FILE_SIZE));
-    
+
     String response;
-    
+
     if (BeeUtils.isEmpty(fileName)) {
       response = BeeUtils.joinWords(prefix, "file name not specified");
       logger.severe(response);
@@ -137,10 +139,10 @@ public class UploadServlet extends HttpServlet {
         response = prefix + BeeUtils.notEmpty(ex.getMessage(), ex.getClass().getSimpleName());
       }
     }
-    
+
     return response;
   }
-  
+
   private String uploadPhoto(HttpServletRequest req, Map<String, String> parameters) {
     String fileName = parameters.get(Service.VAR_FILE_NAME);
     if (BeeUtils.isEmpty(fileName)) {
@@ -158,7 +160,7 @@ public class UploadServlet extends HttpServlet {
         logger.warning("cannot delete old photo:", oldPhoto);
       }
     }
-    
+
     if (fs.photoExists(fileName)) {
       boolean deleted = fs.deletePhoto(fileName);
       if (deleted) {
@@ -169,10 +171,10 @@ public class UploadServlet extends HttpServlet {
         return message;
       }
     }
-    
+
     long start = System.currentTimeMillis();
     String response;
-    
+
     try {
       boolean stored = fs.storePhoto(req.getInputStream(), fileName);
       if (stored) {
@@ -186,7 +188,7 @@ public class UploadServlet extends HttpServlet {
       logger.error(ex);
       response = BeeUtils.notEmpty(ex.getMessage(), ex.getClass().getSimpleName());
     }
-    
+
     return response;
   }
 }

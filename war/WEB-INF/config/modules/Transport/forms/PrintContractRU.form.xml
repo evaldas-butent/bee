@@ -17,7 +17,7 @@
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
     </css>
-    <Image url="images/logo.gif" style="display:block; margin:auto;" />
+    <Image url="images/logo.png" style="display:block; margin:auto;" />
     <TextLabel source="Number" style="text-align:center; &bold;">
       <renderToken source="Assessor" prefix="Договор перевозки Но. " />
       <renderToken source="TripNo" prefix="-" />

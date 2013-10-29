@@ -19,7 +19,7 @@
       .&form; tr:first-child {text-align:center; font-weight:bold;}
       .&form; td {border:1px solid black; padding:2px;}
     </css>
-    <Image url="images/logo.gif" style="display:block; margin:auto;" />
+    <Image url="images/logo.png" style="display:block; margin:auto;" />
     <TextLabel source="TripNo" style="text-align:center; &bold;">
       <renderToken source="TripNo" prefix="Krovinio pervežimo sutartis Nr. " />
     </TextLabel>

@@ -31,19 +31,21 @@ import java.util.List;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})
 @SuppressWarnings("serial")
-public abstract class LoginServlet extends HttpServlet {
+public class LoginServlet extends HttpServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
 
-  protected static final String FAV_ICON = "favicon.ico";
+  private static final String FAV_ICON = "favicon.ico";
   private static final String LOGO = "logo.png";
 
-  private static String process(String contextPath, UserInterface ui, SupportedLocale locale) {
+  private static String render(String contextPath, UserInterface ui, SupportedLocale locale) {
     Document doc = new Document();
 
     doc.getHead().append(meta().encodingDeclarationUtf8());
@@ -192,7 +194,23 @@ public abstract class LoginServlet extends HttpServlet {
     return doc.build(0, 2);
   }
 
-  protected String doDefault(HttpServletRequest req, UserInterface ui) {
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
+    doService(req, resp);
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
+    doService(req, resp);
+  }
+
+  protected void doService(HttpServletRequest req, HttpServletResponse resp) {
+    HttpUtils.sendResponse(resp, getInitialPage(req, null));
+  }
+
+  protected String getInitialPage(HttpServletRequest req, UserInterface ui) {
     String remoteUser = req.getRemoteUser();
     String contextPath = req.getServletContext().getContextPath();
     final String html;
@@ -217,26 +235,12 @@ public abstract class LoginServlet extends HttpServlet {
           userLocale = loginLocale;
         }
       }
-      html = process(contextPath, ui == null
+      html = render(contextPath, ui == null
           ? BeeUtils.nvl(userService.getUserInterface(remoteUser), UserInterface.DEFAULT)
           : ui, userLocale);
     }
     return html;
   }
-
-  @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  protected abstract void doService(HttpServletRequest req, HttpServletResponse resp);
 
   @SuppressWarnings("unused")
   protected Node getLoginExtension(HttpServletRequest req,

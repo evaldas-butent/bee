@@ -26,9 +26,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Map;
 
 import javax.ejb.EJB;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@WebServlet(urlPatterns = "/ec/*")
 @SuppressWarnings("serial")
 public class EcServlet extends LoginServlet {
 
@@ -147,7 +149,10 @@ public class EcServlet extends LoginServlet {
     String html;
     String path = req.getPathInfo();
 
-    if (BeeUtils.same(path, PATH_REGISTER)) {
+    if (BeeUtils.isEmpty(path)) {
+      html = getInitialPage(req, UserInterface.E_COMMERCE);
+
+    } else if (BeeUtils.same(path, PATH_REGISTER)) {
       String language = HttpUtils.getLanguage(req);
       LocalizableConstants constants = Localizations.getPreferredConstants(language);
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
@@ -157,8 +162,6 @@ public class EcServlet extends LoginServlet {
       } else {
         html = getRegistrationForm(constants);
       }
-    } else if (BeeUtils.isEmpty(path)) {
-      html = doDefault(req, UserInterface.E_COMMERCE);
     } else {
       HttpUtils.sendError(resp, HttpServletResponse.SC_NOT_FOUND, path);
       return;

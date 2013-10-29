@@ -55,30 +55,30 @@ public class TestBuilder {
     html.add(Pair.of(indent + 1, "</td>"));
   }
 
-  private String userNameLabel = "Prisijungimo vardas";
+  private final String userNameLabel = "Prisijungimo vardas";
 
-  private String passwordLabel = "Slaptažodis";
-  private String loginLabel = "Prisijungti";
+  private final String passwordLabel = "Slaptažodis";
+  private final String loginLabel = "Prisijungti";
 
-  private boolean failed = true;
-  private String failedLabel = "Bandykite dar kartą";
+  private final boolean failed = true;
+  private final String failedLabel = "Bandykite dar kartą";
 
-  private String userName = "user";
-  private String ui = "ec";
+  private final String userName = "user";
+  private final String ui = "ec";
 
-  private String commandRegister = "trregister";
-  private String commandQuery = "trquery";
+  private final String commandRegister = "trregister";
+  private final String commandQuery = "trquery";
 
-  private String labelRegister = "Registruotis";
+  private final String labelRegister = "Registruotis";
 
-  private String labelQuery = "Pateikti užklausą";
-  private List<String> loginHtml = Lists.newArrayList();
+  private final String labelQuery = "Pateikti užklausą";
+  private final List<String> loginHtml = Lists.newArrayList();
 
-  private String registrationTitle = "Registration Title";
+  private final String registrationTitle = "Registration Title";
 
-  private String registrationCaption = "Registration Caption";
+  private final String registrationCaption = "Registration Caption";
 
-  private List<Pair<Integer, String>> registerHtml = Lists.newArrayList();
+  private final List<Pair<Integer, String>> registerHtml = Lists.newArrayList();
 
   @Before
   public void setUpLogin() {
@@ -176,7 +176,7 @@ public class TestBuilder {
     }
 
     html.add("<div class=\"bee-SignIn-Caption\">");
-    html.add("<img class=\"bee-Copyright-logo\" src=\"images/logo.gif\" />");
+    html.add("<img class=\"bee-Copyright-logo\" src=\"images/butent.gif\" />");
     html.add("<span>UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear() + "</span>");
     html.add("</div>");
     html.add("</div>");
@@ -393,7 +393,7 @@ public class TestBuilder {
 
     container.append(
         div().addClass("bee-SignIn-Caption").append(
-            img().addClass("bee-Copyright-logo").src("images/logo.gif"),
+            img().addClass("bee-Copyright-logo").src("images/butent_arrow.png"),
             span().text("UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear())));
 
     doc.getBody().append(container);

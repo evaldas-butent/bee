@@ -14,6 +14,7 @@ import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
@@ -215,7 +216,24 @@ public class UserServiceBean {
   private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache =
       Maps.newHashMap();
 
+  @Lock(LockType.WRITE)
   public boolean authenticateUser(String user, String password) {
+    if (BeeUtils.isEmpty(userCache)) {
+      long company = qs.insertData(new SqlInsert(TBL_COMPANIES)
+          .addConstant(COL_COMPANY_NAME, user));
+
+      long person = qs.insertData(new SqlInsert(TBL_PERSONS)
+          .addConstant(COL_FIRST_NAME, user));
+
+      long companyPerson = qs.insertData(new SqlInsert(TBL_COMPANY_PERSONS)
+          .addConstant(COL_COMPANY, company)
+          .addConstant(COL_PERSON, person));
+
+      qs.insertData(new SqlInsert(TBL_USERS)
+          .addConstant(COL_LOGIN, user)
+          .addConstant(COL_PASSWORD, password)
+          .addConstant(COL_COMPANY_PERSON, companyPerson));
+    }
     UserInfo info = getUserInfo(getUserId(user));
     return info != null && Objects.equals(password, info.getPassword());
   }
