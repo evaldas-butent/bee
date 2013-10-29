@@ -16,6 +16,7 @@
       <url-pattern>/css/*</url-pattern>
       <url-pattern>/js/*</url-pattern>
       <url-pattern>/images/*</url-pattern>
+      <url-pattern>/ec/register</url-pattern>
     </web-resource-collection>
   </security-constraint>
 
@@ -36,8 +37,8 @@
     <servlet-class>com.butent.bee.server.UploadServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>LoginServlet</servlet-name>
-    <servlet-class>com.butent.bee.server.LoginServlet</servlet-class>
+    <servlet-name>RootServlet</servlet-name>
+    <servlet-class>com.butent.bee.server.RootServlet</servlet-class>
   </servlet>
 
   <servlet>
@@ -62,7 +63,7 @@
     <url-pattern>/upload</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>LoginServlet</servlet-name>
+    <servlet-name>RootServlet</servlet-name>
     <url-pattern>/index.html</url-pattern>
     <url-pattern>/index.htm</url-pattern>
     <url-pattern>/index.jsp</url-pattern>

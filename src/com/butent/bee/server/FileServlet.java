@@ -68,15 +68,6 @@ public class FileServlet extends HttpServlet {
     }
   }
 
-  private static void doError(HttpServletResponse resp, String err) {
-    try {
-      logger.severe(err);
-      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
-    } catch (IOException e) {
-      logger.error(e);
-    }
-  }
-
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
     Map<String, String> parameters = HttpUtils.getHeaders(req, false);
     parameters.putAll(HttpUtils.getParameters(req, true));
@@ -102,13 +93,15 @@ public class FileServlet extends HttpServlet {
       fileName = new File(fileName).getName();
     }
     if (path == null) {
-      doError(resp, BeeUtils.joinWords("File not found:", fileName));
+      HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          BeeUtils.joinWords("File not found:", fileName));
       return;
     }
     File file = new File(path);
 
     if (!FileUtils.isInputFile(file)) {
-      doError(resp, BeeUtils.joinWords("File was removed:", fileName));
+      HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          BeeUtils.joinWords("File was removed:", fileName));
       return;
     }
 

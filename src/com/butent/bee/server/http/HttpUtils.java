@@ -1,5 +1,7 @@
 package com.butent.bee.server.http;
 
+import com.google.common.net.MediaType;
+
 import com.butent.bee.server.concurrency.Counter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
@@ -15,6 +17,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +35,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
@@ -87,7 +91,7 @@ public final class HttpUtils {
 
     return info;
   }
-  
+
   public static Collection<ExtendedProperty> getCookieInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
@@ -168,7 +172,7 @@ public final class HttpUtils {
       if (BeeUtils.isEmpty(nm)) {
         continue;
       }
-      
+
       Enumeration<String> values = req.getHeaders(nm);
       if (values != null && values.hasMoreElements()) {
         v = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, Collections.list(values));
@@ -182,7 +186,7 @@ public final class HttpUtils {
     }
     return headers;
   }
-  
+
   public static String getLanguage(HttpServletRequest req) {
     if (req == null) {
       return null;
@@ -239,7 +243,7 @@ public final class HttpUtils {
     }
     return info;
   }
-  
+
   public static Collection<ExtendedProperty> getParameterInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
@@ -266,7 +270,7 @@ public final class HttpUtils {
     }
     return info;
   }
-  
+
   public static Map<String, String> getParameters(HttpServletRequest req, boolean decode) {
     Map<String, String> params = new HashMap<String, String>();
     if (req == null) {
@@ -397,7 +401,7 @@ public final class HttpUtils {
 
     return info;
   }
-  
+
   public static Collection<ExtendedProperty> getSessionInfo(HttpSession hs) {
     if (hs == null) {
       return null;
@@ -505,6 +509,28 @@ public final class HttpUtils {
       logger.error(ex);
     }
     return content;
+  }
+
+  public static void sendError(HttpServletResponse resp, int errorCode, String err) {
+    try {
+      logger.severe(err);
+      resp.sendError(errorCode, err);
+    } catch (IOException e) {
+      logger.error(e);
+    }
+  }
+
+  public static void sendResponse(HttpServletResponse resp, String html) {
+    resp.setContentType(MediaType.HTML_UTF_8.toString());
+    PrintWriter writer;
+
+    try {
+      writer = resp.getWriter();
+      writer.print(html);
+      writer.flush();
+    } catch (IOException ex) {
+      logger.error(ex);
+    }
   }
 
   private static String[] splitValue(String s) {

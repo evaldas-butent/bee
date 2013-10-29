@@ -1,49 +1,38 @@
 package com.butent.bee.server.modules.ec;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
-import com.google.common.net.MediaType;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
-import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
-public class EcServlet extends HttpServlet {
+public class EcServlet extends LoginServlet {
 
-  private static final String PATH_REGISTER = "ec/register";
-
-  private static BeeLogger logger = LogUtils.getLogger(EcServlet.class);
+  private static final String PATH_REGISTER = "/register";
 
   private static String getRegistrationForm(LocalizableConstants constants) {
     String classRequired = "bee-required";
@@ -71,7 +60,7 @@ public class EcServlet extends HttpServlet {
 
     doc.getBody().append(
         h2().text(constants.ecRegistrationNew()),
-        form().methodPost().action("ec/register?submit").append(
+        form().methodPost().append(
             table().borderCollapse().marginTop(2, CssUnit.EX).marginLeft(1, CssUnit.EM).append(
                 tbody().append(
                     tr().append(
@@ -154,63 +143,45 @@ public class EcServlet extends HttpServlet {
   ProxyBean proxy;
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
+  protected void doService(HttpServletRequest req, HttpServletResponse resp) {
+    String html;
+    String path = req.getPathInfo();
+
+    if (BeeUtils.same(path, PATH_REGISTER)) {
+      String language = HttpUtils.getLanguage(req);
+      LocalizableConstants constants = Localizations.getPreferredConstants(language);
+      Map<String, String> parameters = HttpUtils.getParameters(req, false);
+
+      if (parameters.size() > 3) {
+        html = register(req, parameters, constants);
+      } else {
+        html = getRegistrationForm(constants);
+      }
+    } else if (BeeUtils.isEmpty(path)) {
+      html = doDefault(req, UserInterface.E_COMMERCE);
+    } else {
+      HttpUtils.sendError(resp, HttpServletResponse.SC_NOT_FOUND, path);
+      return;
+    }
+    HttpUtils.sendResponse(resp, html);
   }
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
+  protected Node getLoginExtension(HttpServletRequest req,
+      LocalizableConstants localizableConstants) {
 
-  private void doService(HttpServletRequest req, HttpServletResponse resp) {
-    String uri = req.getRequestURI();
+    String stylePrefix = "bee-SignIn-";
+    String styleName = stylePrefix + "Command-container";
+    Div commandContainer = div().addClass(styleName);
 
-    if (!BeeUtils.containsSame(uri, PATH_REGISTER)) {
-      String forwardPath = CommUtils.getPath(LoginServlet.URL,
-          ImmutableMap.of(HttpConst.PARAM_UI, UserInterface.E_COMMERCE.getShortName(),
-              HttpConst.PARAM_REGISTER, PATH_REGISTER), false);
+    commandContainer.append(form()
+        .addClass(stylePrefix + "Command-Form-register")
+        .methodPost()
+        .action(req.getServletContext().getContextPath() + req.getServletPath() + PATH_REGISTER)
+        .append(input().type(Type.SUBMIT).addClass(stylePrefix + "Register")
+            .value(localizableConstants.loginCommandRegister())));
 
-      RequestDispatcher dispatcher = req.getRequestDispatcher(forwardPath);
-
-      if (dispatcher != null) {
-        try {
-          dispatcher.forward(req, resp);
-
-        } catch (ServletException ex) {
-          logger.error(ex);
-        } catch (IOException ex) {
-          logger.error(ex);
-        }
-      }
-
-      return;
-    }
-
-    String language = HttpUtils.getLanguage(req);
-    LocalizableConstants constants = Localizations.getPreferredConstants(language);
-
-    Map<String, String> parameters = HttpUtils.getParameters(req, false);
-
-    String html;
-    if (parameters.size() > 3) {
-      html = register(req, parameters, constants);
-    } else {
-      html = getRegistrationForm(constants);
-    }
-
-    resp.setContentType(MediaType.HTML_UTF_8.toString());
-
-    PrintWriter writer;
-    try {
-      writer = resp.getWriter();
-      writer.print(html);
-      writer.flush();
-    } catch (IOException ex) {
-      logger.error(ex);
-    }
+    return commandContainer;
   }
 
   private String register(HttpServletRequest req, Map<String, String> parameters,

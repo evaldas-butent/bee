@@ -7,7 +7,6 @@ import com.google.common.net.MediaType;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
@@ -52,7 +51,7 @@ public class TransportSelfService extends HttpServlet {
 
     return html;
   }
-  
+
   private static List<String> getRegistrationForm(LocalizableConstants constants) {
     List<String> html = startHtml(constants.trRegistrationNew());
 
@@ -206,7 +205,7 @@ public class TransportSelfService extends HttpServlet {
     String uri = req.getRequestURI();
 
     if (!BeeUtils.containsAnySame(uri, PATH_REGISTER, PATH_REQUEST)) {
-      String forwardPath = CommUtils.getPath(LoginServlet.URL,
+      String forwardPath = CommUtils.getPath("/index.html",
           ImmutableMap.of(HttpConst.PARAM_UI, UserInterface.SELF_SERVICE.getShortName(),
               HttpConst.PARAM_REGISTER, PATH_REGISTER,
               HttpConst.PARAM_QUERY, PATH_REQUEST), false);
@@ -267,18 +266,18 @@ public class TransportSelfService extends HttpServlet {
       html.add(BeeUtils.toString(++cnt) + "  "
           + BeeUtils.join(": ", entry.getKey(), entry.getValue()));
       html.add("<br/>");
-      
+
       if (!BeeUtils.isEmpty(entry.getValue())) {
         si.addConstant(entry.getKey(), entry.getValue());
       }
     }
 
     html.add("<hr/>");
-    
+
     si.addConstant(COL_REGISTRATION_DATE, TimeUtils.nowMinutes());
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
     si.addConstant(COL_REGISTRATION_AGENT, req.getHeader(HttpHeaders.USER_AGENT));
-    
+
     ResponseObject response = transactionService.insert(si);
     if (response.hasErrors()) {
       for (String message : response.getErrors()) {

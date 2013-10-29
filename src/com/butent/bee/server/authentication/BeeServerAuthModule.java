@@ -1,20 +1,15 @@
 package com.butent.bee.server.authentication;
 
-import com.google.common.net.MediaType;
-
 import com.butent.bee.server.LoginServlet;
-import com.butent.bee.server.LoginServlet.State;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
-import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.security.Principal;
 import java.util.Map;
 
@@ -31,6 +26,7 @@ import javax.security.auth.message.MessagePolicy;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.callback.GroupPrincipalCallback;
 import javax.security.auth.message.module.ServerAuthModule;
+import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,11 +34,44 @@ public class BeeServerAuthModule implements ServerAuthModule {
 
   private static BeeLogger logger = LogUtils.getLogger(BeeServerAuthModule.class);
 
-  private static final String POLICY = MessagePolicy.class.getName() + ".isMandatory";
+  private static final String IS_MANDATORY = MessagePolicy.class.getName() + ".isMandatory";
 
   private CallbackHandler callbackHandler;
   private final Class<?>[] supportedMessageTypes = new Class[] {HttpServletRequest.class,
       HttpServletResponse.class};
+
+  private static boolean isProtectedResource(MessageInfo messageInfo) {
+    return Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY));
+  }
+
+  private static LoginServlet locateServlet(HttpServletRequest request) {
+    String servletPath = request.getServletPath();
+    String servletPath2 = servletPath + "/*";
+    String className = null;
+
+    for (ServletRegistration r : request.getServletContext().getServletRegistrations().values()) {
+      for (String mapping : r.getMappings()) {
+        if (BeeUtils.inList(mapping, servletPath, servletPath2)) {
+          className = r.getClassName();
+          break;
+        }
+      }
+    }
+    LoginServlet root = null;
+
+    if (!BeeUtils.isEmpty(className)) {
+      try {
+        Class<?> clazz = Class.forName(className);
+
+        if (LoginServlet.class.isAssignableFrom(clazz)) {
+          root = (LoginServlet) clazz.newInstance();
+        }
+      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        logger.error(e);
+      }
+    }
+    return root;
+  }
 
   @Override
   public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
@@ -72,7 +101,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
   public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject,
       Subject serviceSubject) throws AuthException {
 
-    if (!Boolean.parseBoolean((String) messageInfo.getMap().get(POLICY))) {
+    if (!isProtectedResource(messageInfo)) {
       CallerPrincipalCallback callerPrincipalCallback =
           new CallerPrincipalCallback(clientSubject, (Principal) null);
 
@@ -95,36 +124,30 @@ public class BeeServerAuthModule implements ServerAuthModule {
     boolean ok = false;
 
     if (!BeeUtils.anyEmpty(userName, password)) {
-      String mod = UserServiceBean.class.getSimpleName();
-      String name = "java:global" + BeeUtils.join("/",
-          request.getServletContext().getContextPath(), mod);
-
       UserServiceBean usr;
 
       try {
-        usr = (UserServiceBean) InitialContext.doLookup(name);
+        usr = (UserServiceBean) InitialContext.doLookup("java:global" + BeeUtils.join("/",
+            request.getServletContext().getContextPath(), UserServiceBean.class.getSimpleName()));
+
         ok = usr.authenticateUser(userName, Codec.md5(BeeUtils.trim(password)));
-      } catch (NamingException ex) {
-        logger.severe("Module not found:", BeeUtils.bracket(name));
-      } catch (ClassCastException ex) {
-        logger.severe("Not a module:", BeeUtils.bracket(name));
+      } catch (NamingException | ClassCastException ex) {
+        logger.error(ex);
       }
     }
     if (!ok) {
-      String html = LoginServlet.getForm(userName, BeeUtils.isEmpty(userName) ? null : State.FAIL,
-          parameters, Localizations.getPreferredConstants(HttpUtils.getLanguage(request)));
-
       HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
-      response.setContentType(MediaType.HTML_UTF_8.toString());
+      LoginServlet servlet = locateServlet(request);
 
-      PrintWriter writer;
-      try {
-        writer = response.getWriter();
-        writer.print(html);
-        writer.flush();
-      } catch (IOException ex) {
-        logger.error(ex);
+      if (servlet == null) {
+        HttpUtils.sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            "Servlet, processing protected request " + request.getServletPath()
+                + ", does not extend " + LoginServlet.class.getName());
+
+        return AuthStatus.FAILURE;
       }
+      HttpUtils.sendResponse(response, servlet.getLoginForm(request, userName));
+
       return AuthStatus.SEND_CONTINUE;
     }
     // Tell container to register an authentication session.

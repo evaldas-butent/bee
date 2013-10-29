@@ -290,7 +290,7 @@ public class UserServiceBean {
   public String getLanguage() {
     return getLanguage(getCurrentUserId());
   }
-  
+
   public String getLanguage(Long userId) {
     UserInfo userInfo = (userId == null) ? null : getUserInfo(userId);
     return (userInfo == null) ? SupportedLocale.DEFAULT.getLanguage() : userInfo.getLanguage();
@@ -611,6 +611,7 @@ public class UserServiceBean {
     }
   }
 
+  @Lock(LockType.WRITE)
   public boolean updateUserLocale(String user, SupportedLocale locale) {
     if (!isUser(user) || locale == null) {
       return false;
