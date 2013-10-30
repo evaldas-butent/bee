@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputCallback;
@@ -32,7 +31,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -138,7 +136,7 @@ public final class GridSettings {
             }
           }
 
-          saveGridSetting(key, GridConfig.columnsIndex, NameUtils.join(names));
+          saveGridSetting(key, GridConfig.getColumnsIndex(), NameUtils.join(names));
         }
       }
     }, STYLE_DIALOG, target);
@@ -154,23 +152,23 @@ public final class GridSettings {
 
     if (!BeeUtils.isEmpty(serializedGridSettings)) {
       BeeRowSet gridRowSet = BeeRowSet.restore(serializedGridSettings);
-      GridConfig.ensureIndexes(gridRowSet.getColumns());
+      GridConfig.ensureFields(gridRowSet.getColumns());
 
       for (BeeRow gridRow : gridRowSet.getRows()) {
-        grids.put(gridRow.getString(GridConfig.keyIndex), new GridConfig(gridRow));
+        grids.put(gridRow.getString(GridConfig.getKeyIndex()), new GridConfig(gridRow));
       }
 
       logger.info("grid settings", grids.size());
 
       if (!BeeUtils.isEmpty(serializedColumnSettings)) {
         BeeRowSet columnRowSet = BeeRowSet.restore(serializedColumnSettings);
-        ColumnConfig.ensureIndexes(columnRowSet.getColumns());
+        ColumnConfig.ensureFields(columnRowSet.getColumns());
 
         GridConfig gridConfig = null;
         int cc = 0;
 
         for (BeeRow columnRow : columnRowSet.getRows()) {
-          Long gridId = columnRow.getLong(ColumnConfig.gridIndex);
+          Long gridId = columnRow.getLong(ColumnConfig.getGridIndex());
           if (gridConfig == null || !gridId.equals(gridConfig.row.getId())) {
             gridConfig = findGridByRowId(BeeUtils.unbox(gridId));
           }
@@ -188,20 +186,18 @@ public final class GridSettings {
   
   public static void onSettingsChange(String key, SettingsChangeEvent event) {
     if (HasDimensions.ATTR_HEIGHT.equals(event.getAttribute())) {
-      ensureGridIndexes();
-
       int index = BeeConst.UNDEF;
 
       if (event.getComponentType() != null) {
         switch (event.getComponentType()) {
           case HEADER:
-            index = GridConfig.headerHeightIndex;
+            index = GridConfig.getHeaderHeightIndex();
             break;
           case BODY:
-            index = GridConfig.rowHeightIndex;
+            index = GridConfig.getRowHeightIndex();
             break;
           case FOOTER:
-            index = GridConfig.footerHeightIndex;
+            index = GridConfig.getFooterHeightIndex();
             break;
         }
       }
@@ -211,9 +207,9 @@ public final class GridSettings {
       }
 
     } else if (HasDimensions.ATTR_WIDTH.equals(event.getAttribute())) {
-      ensureColumnIndexes();
       if (!BeeUtils.isEmpty(event.getColumnName())) {
-        saveColumnSetting(key, event.getColumnName(), ColumnConfig.widthIndex, event.getValue());
+        saveColumnSetting(key, event.getColumnName(), ColumnConfig.getWidthIndex(),
+            event.getValue());
       }
 
     } else {
@@ -223,8 +219,7 @@ public final class GridSettings {
   }
 
   public static void saveSortOrder(String key, Order order) {
-    ensureGridIndexes();
-    saveGridSetting(key, GridConfig.orderIndex,
+    saveGridSetting(key, GridConfig.getOrderIndex(),
         (order == null || order.isEmpty()) ? null : order.serialize());
   }
 
@@ -243,19 +238,6 @@ public final class GridSettings {
     DndHelper.makeSource(widget, DND_CONTENT_TYPE, index, STYLE_DRAG);
 
     return widget;
-  }
-
-  private static void ensureColumnIndexes() {
-    ensureGridIndexes();
-    if (ColumnConfig.getDataColumns().isEmpty()) {
-      ColumnConfig.ensureIndexes(Data.getColumns(ColumnDescription.VIEW_COLUMN_SETTINGS));
-    }
-  }
-
-  private static void ensureGridIndexes() {
-    if (GridConfig.getDataColumns().isEmpty()) {
-      GridConfig.ensureIndexes(Data.getColumns(GridDescription.VIEW_GRID_SETTINGS));
-    }
   }
 
   private static GridConfig findGridByRowId(long id) {
@@ -375,8 +357,8 @@ public final class GridSettings {
 
     } else if (!BeeUtils.isEmpty(value)) {
       List<BeeColumn> columns = Lists.newArrayList();
-      columns.add(GridConfig.getDataColumns().get(GridConfig.userIndex));
-      columns.add(GridConfig.getDataColumns().get(GridConfig.keyIndex));
+      columns.add(GridConfig.getDataColumns().get(GridConfig.getUserIndex()));
+      columns.add(GridConfig.getDataColumns().get(GridConfig.getKeyIndex()));
 
       List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key);
 
@@ -404,8 +386,8 @@ public final class GridSettings {
     if (gridConfig == null) {
       if (newValue != null) {
         List<BeeColumn> columns = Lists.newArrayList();
-        columns.add(GridConfig.getDataColumns().get(GridConfig.userIndex));
-        columns.add(GridConfig.getDataColumns().get(GridConfig.keyIndex));
+        columns.add(GridConfig.getDataColumns().get(GridConfig.getUserIndex()));
+        columns.add(GridConfig.getDataColumns().get(GridConfig.getKeyIndex()));
         columns.add(dataColumn);
 
         List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key, newValue);
