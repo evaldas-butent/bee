@@ -6,6 +6,6 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="50" notNull="true" unique="true" label="Grupė" />
+    <String name="Name" precision="50" notNull="true" unique="true" label="=trGroup" />
   </Fields>
 </Table>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="TransportInvoices" label="=trInvoices" parent="Transport" order="3" separator="true" 
+>
+  <Item name="CargoInvoiceIncomes" label="=trCargoIncomes" service="grid" parameters="CargoInvoiceIncomes" />
+  <Item name="CargoCreditIncomes" label="=trCreditIncomes" service="grid" parameters="CargoCreditIncomes" />
+  <Item name="CargoExpenseList" label="=transportTripCosts" service="grid" parameters="CargoExpenseList" />
+  <Item name="CargoProformaInvoices" label="=trProformaInvoices" service="grid" parameters="CargoProformaInvoices" separator="true" />
+  <Item name="CargoInvoices" label="=trInvoices" service="grid" parameters="CargoInvoices" />
+  <Item name="CargoCreditInvoices" label="=trCreditInvoices" service="grid" parameters="CargoCreditInvoices" />
+</Entry>

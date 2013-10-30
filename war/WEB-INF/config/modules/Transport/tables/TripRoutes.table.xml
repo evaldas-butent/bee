@@ -6,18 +6,18 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
-    <Date name="Date" notNull="true" />
-    <Relation name="Country" relation="Countries" />
-    <String name="Route" precision="100" />
-    <Double name="SpeedometerFrom" />
-    <Double name="SpeedometerTo" />
-    <Double name="Kilometers" />
-    <Numeric name="MotoHours" precision="7" scale="2" />
-    <Numeric name="CargoWeight" precision="7" scale="3" />
-    <Numeric name="Season" precision="1" notNull="true" defValue="0" />
-    <Numeric name="Temperature" precision="3" scale="0" />
-    <Double name="Consumption" />
-    <Relation name="Item" relation="Items" />
+    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip" />
+    <Date name="Date" notNull="true" label="=date" />
+    <Relation name="Country" relation="Countries" label="=country" />
+    <String name="Route" precision="100" label="=route" />
+    <Double name="SpeedometerFrom" label="=trSpeedometerFrom"/>
+    <Double name="SpeedometerTo" label="=trSpeedometerAfter" />
+    <Double name="Kilometers" label="=unitKilometers" />
+    <Numeric name="MotoHours" precision="7" scale="2" label="=trMotoHourShort"/>
+    <Numeric name="CargoWeight" precision="7" scale="3" label="=weight" />
+    <Numeric name="Season" precision="1" notNull="true" defValue="0" label="=trSeason" />
+    <Numeric name="Temperature" precision="3" scale="0" label="=trTemperatureShort" />
+    <Double name="Consumption" label="=trFuelConsumptions" />
+    <Relation name="Item" relation="Items" label="=trProductService" />
   </Fields>
 </Table>

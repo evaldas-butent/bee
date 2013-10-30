@@ -8,21 +8,40 @@ public final class TradeConstants {
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
 
-  public static final String PRM_VAT_PERCENT = "DefaultVatPercent";
-
+  public static final String TBL_PURCHASES = "Purchases";
+  public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
 
-  public static final String COL_SALE = "Sale";
-  public static final String COL_QUANTITY = "Quantity";
-  public static final String COL_PRICE = "Price";
-  public static final String COL_VAT = "Vat";
-  public static final String COL_VAT_PERC = "VatPercent";
-  public static final String COL_VAT_INCL = "VatIncluded";
-  public static final String COL_AMOUNT = "Amount";
-  public static final String COL_INVOICE_PREFIX = "InvoicePrefix";
-  public static final String COL_INVOICE_NO = "InvoiceNo";
+  public static final String COL_PURCHASE = "Purchase";
+  public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
 
+  public static final String COL_SALE = "Sale";
+  public static final String COL_SALE_PROFORMA = "Proforma";
+  public static final String COL_SALE_PAYER = "Payer";
+
+  public static final String COL_TRADE_DATE = "Date";
+  public static final String COL_TRADE_NUMBER = "Number";
+  public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
+  public static final String COL_TRADE_VAT_INCL = "VatIncluded";
+  public static final String COL_TRADE_AMOUNT = "Amount";
+  public static final String COL_TRADE_PAYMENT_TIME = "PaymentTime";
+  public static final String COL_TRADE_PAID = "Paid";
+  public static final String COL_TRADE_WAREHOUSE_FROM = "WarehouseFrom";
+  public static final String COL_TRADE_SUPPLIER = "Supplier";
+  public static final String COL_TRADE_CUSTOMER = "Customer";
+  public static final String COL_TRADE_TERM = "Term";
+  public static final String COL_TRADE_NOTES = "Notes";
+
+  public static final String COL_TRADE_ITEM_QUANTITY = "Quantity";
+  public static final String COL_TRADE_ITEM_PRICE = "Price";
+  public static final String COL_TRADE_ITEM_VAT = "Vat";
+  public static final String COL_TRADE_ITEM_VAT_PERC = "VatPercent";
+  public static final String COL_TRADE_ITEM_NOTE = "Note";
+
+  public static final String STYLE_SHEET = "trade";
+  
   private TradeConstants() {
   }
 }

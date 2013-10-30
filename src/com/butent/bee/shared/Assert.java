@@ -100,6 +100,8 @@ public final class Assert {
   }
 
   public static int isIndex(int idx, int size) {
+    nonNegative(idx);
+
     if (size <= 0) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
           + " references empty object");
@@ -243,7 +245,7 @@ public final class Assert {
   public static <T extends Map<?, ?>> T notEmpty(T map) {
     return notEmpty(map, IS_EMPTY);
   }
-  
+
   public static String notEmpty(String s) {
     return notEmpty(s, IS_EMPTY);
   }

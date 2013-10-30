@@ -1,5 +1,7 @@
 package com.butent.bee.server;
 
+import com.google.common.net.HttpHeaders;
+
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
@@ -19,6 +21,7 @@ import java.io.PrintWriter;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +32,7 @@ import javax.servlet.http.HttpSession;
  * functionality.
  */
 
+@WebServlet(urlPatterns = "/bee")
 @SuppressWarnings("serial")
 public class BeeServlet extends HttpServlet {
 
@@ -51,6 +55,9 @@ public class BeeServlet extends HttpServlet {
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
+
+    HttpSession session = req.getSession();
+    String sessionId = session.getId();
 
     RequestInfo reqInfo = new RequestInfo(req);
 
@@ -81,31 +88,30 @@ public class BeeServlet extends HttpServlet {
     ResponseBuffer buff = new ResponseBuffer(sep);
 
     String reqSid = reqInfo.getParameter(Service.RPC_VAR_SID);
-    HttpSession session = req.getSession();
 
     boolean doLogin = false;
     boolean doLogout = false;
 
     if (BeeUtils.same(svc, Service.LOGIN)) {
-      doLogin = true;
-    
+      doLogin = session.getAttribute(Service.VAR_USER) == null;
+      doLogout = !doLogin;
+
     } else if (BeeUtils.same(svc, Service.LOGOUT)) {
       doLogout = true;
 
     } else if (BeeUtils.isEmpty(reqSid)) {
       doLogout = session.getAttribute(Service.VAR_USER) != null;
 
-    } else if (!BeeUtils.same(reqSid, session.getId())) {
+    } else if (!BeeUtils.same(reqSid, sessionId)) {
       doLogout = true;
-      logger.severe("session id:", "request =", reqSid, "current =", session.getId());
+      logger.severe("session id:", "request =", reqSid, "current =", sessionId);
     }
 
     if (doLogin) {
       try {
-        response = dispatcher.doLogin(reqInfo.getLocale(), req.getRemoteAddr(),
-            req.getHeader("user-agent"));
-      } catch (EJBException e) {
-        response = ResponseObject.error(e);
+        response = dispatcher.doLogin(reqInfo);
+      } catch (EJBException ex) {
+        response = ResponseObject.error(ex);
       }
 
       if (response.hasErrors()) {
@@ -114,29 +120,30 @@ public class BeeServlet extends HttpServlet {
 
       } else {
         session.setAttribute(Service.VAR_USER, req.getRemoteUser());
-        
-        resp.setHeader(Service.RPC_VAR_SID, session.getId());
+
+        resp.setHeader(Service.RPC_VAR_SID, sessionId);
         resp.setHeader(Service.RPC_VAR_QID, rid);
 
-        logger.info("session id:", session.getId());
+        logger.info("session id:", sessionId);
       }
 
     } else if (doLogout) {
-      response = logout(req, session);
+      logout(req, session);
+      return;
 
     } else {
       try {
         response = dispatcher.doService(svc, reqInfo, buff);
-      } catch (EJBException e) {
-        response = ResponseObject.error(e);
+      } catch (EJBException ex) {
+        response = ResponseObject.error(ex);
       }
 
       resp.setHeader(Service.RPC_VAR_QID, rid);
     }
 
-    resp.setHeader("Cache-Control", "no-cache");
-    resp.setHeader("Pragma", "no-cache");
-    resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
+    resp.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+    resp.setHeader(HttpHeaders.PRAGMA, "no-cache");
+    resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
 
     String s;
 
@@ -218,17 +225,13 @@ public class BeeServlet extends HttpServlet {
     }
   }
 
-  private static ResponseObject logout(HttpServletRequest req, HttpSession session) {
-    ResponseObject response = new ResponseObject();
-
+  private static void logout(HttpServletRequest req, HttpSession session) {
     try {
       req.logout();
       session.invalidate();
-      response.addInfo("Logout successful");
-    } catch (ServletException e) {
-      response.addError(e);
+      logger.info("logout successful");
+    } catch (ServletException ex) {
+      logger.warning("logout", ex);
     }
-
-    return response;
   }
 }

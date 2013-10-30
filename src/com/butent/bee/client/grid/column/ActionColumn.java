@@ -1,9 +1,8 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.ActionCell;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
@@ -20,7 +19,7 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
     this(new ActionCell(), renderer);
   }
 
-  public ActionColumn(Cell<String> cell, AbstractCellRenderer renderer) {
+  public ActionColumn(ActionCell cell, AbstractCellRenderer renderer) {
     super(cell);
     this.renderer = renderer;
   }
@@ -36,7 +35,7 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
   }
 
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     return getValue(row);
   }
 
@@ -62,7 +61,7 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
   }
 
   @Override
-  public void render(Context context, IsRow rowValue, SafeHtmlBuilder sb) {
+  public void render(CellContext context, IsRow rowValue, SafeHtmlBuilder sb) {
     String value = getString(context, rowValue);
     if (BeeUtils.isEmpty(value)) {
       return;

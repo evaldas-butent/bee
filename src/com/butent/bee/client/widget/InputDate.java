@@ -23,6 +23,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -222,7 +223,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (isEmpty()) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite datą");
+        messages.add(Localized.getConstants().enterDate());
       }
       return messages;
     }
@@ -230,11 +231,11 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     String v = BeeUtils.trim(getValue());
     if (getDateTimeFormat() == null) {
       if (!willParse(v)) {
-        messages.add(BeeUtils.joinWords("Neteisinga data:", v));
+        messages.add(BeeUtils.joinWords(Localized.getConstants().invalidDate(), v));
       }
     } else {
       if (getDateTimeFormat().parseQuietly(v) == null) {
-        messages.add("Neteisingas datos formatas:");
+        messages.add(Localized.getConstants().invalidDateFormat());
         messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getDateTimeFormat().getPattern())));
       }
     }
@@ -255,7 +256,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     if (BeeUtils.isEmpty(normalizedValue)) {
       if (checkForNull && !isNullable()) {
-        messages.add("Įveskite datą");
+        messages.add(Localized.getConstants().enterDate());
       }
       return messages;
     }
@@ -486,7 +487,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
       public void onClose(CloseEvent event) {
-        if (event.isMouse()) {
+        if (event.mouseEvent()) {
           if (event.isTarget(getElement())) {
             setPickerState(State.CLOSING);
           } else {
@@ -494,7 +495,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
             DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputDate.this);
           }
 
-        } else if (event.isKeyboard()) {
+        } else if (event.keyboardEvent()) {
           setPickerState(State.CLOSING);
           setFocus(true);
           selectAll();

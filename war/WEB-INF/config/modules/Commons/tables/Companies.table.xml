@@ -7,33 +7,33 @@
   >
   <Fields>
     <Relation name="Owner" relation="Companies" />
-    <String name="Name" precision="100" notNull="true" unique="true" label="Pavadinimas" />
-    <String name="Code" precision="30" unique="true" label="Įmonės kodas" />
-    <String name="VATCode" precision="30" label="PVM kodas" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=companyName" />
+    <String name="Code" precision="30" unique="true" label="=companyCode" />
+    <String name="VATCode" precision="30" label="=companyVATCode" />
 
-    <Relation name="CompanyType" relation="CompanyTypes" label="Tipas" />
-    <Relation name="CompanyGroup" relation="CompanyGroups" label="Grupė" />
-    <Relation name="CompanyPriority" relation="CompanyPriorities" label="Prioritetas" />
+    <Relation name="CompanyType" relation="CompanyTypes" label="=companyStatus" />
+    <Relation name="CompanyGroup" relation="CompanyGroups" label="=group" />
+    <Relation name="CompanyPriority" relation="CompanyPriorities" label="=priority" />
 
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
 
-    <Relation name="CompanySize" relation="CompanySizes" label="Įmonės dydis" />
-    <Relation name="InformationSource" relation="InformationSources" label="Informacijos šaltinis" />
+    <Relation name="CompanySize" relation="CompanySizes" label="=companySize" />
+    <Relation name="InformationSource" relation="InformationSources" label="=informationSource" />
 
-    <String name="Rating" precision="100" label="Reitingas" />
+    <String name="Rating" precision="100" label="=companyRating" />
 
-    <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="Sąryšis" />
-    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="Sąryšio būsena" />
+    <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="=companyRelation" />
+    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="=companyRelationState" />
 
-    <String name="ExchangeCode" precision="30" label="Biržos kodas" />
+    <String name="ExchangeCode" precision="30" label="=exchangeCode" />
 
-    <Numeric name="CreditLimit1" precision="10" label="Kredito limitas 1" />
-    <Numeric name="CreditLimit2" precision="10" label="Kredito limitas 2" />
-    <Relation name="LimitCurrency" relation="Currencies" label="Limito valiuta" />
-    <Integer name="CreditDays" label="Kredito dienos" />
+    <Numeric name="CreditLimit1" precision="10" label="=companyCreditLimit1" />
+    <Numeric name="CreditLimit2" precision="10" label="=companyCreditLimit2" />
+    <Relation name="LimitCurrency" relation="Currencies" label="=companyCreditLimitCurrency" />
+    <Integer name="CreditDays" label="=companyCreditLimitDays" />
     
-    <Relation name="FinancialState" relation="FinancialStates" label="Mokumas" />
+    <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
 
-    <Text name="Notes" label="Pastabos" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

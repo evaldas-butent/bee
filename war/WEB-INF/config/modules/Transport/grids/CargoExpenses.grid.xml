@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoExpenses" viewName="CargoExpenses"
-  flexGrow="1" flexShrink="1"
-  newRowCaption="Naujos išlaidos"
+  flexGrow="1"
+  newRowCaption="=trNewCargoExpense"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Date" />
+
     <RelColumn name="Service" />
     <DataColumn name="Amount" format="#.00">
       <style>
@@ -16,8 +17,13 @@
       </style>
     </DataColumn>
     <RelColumn name="Currency" flexGrow="0" />
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
+
     <RelColumn name="Supplier" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

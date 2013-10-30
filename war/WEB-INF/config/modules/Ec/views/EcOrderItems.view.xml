@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcOrderItems" source="EcOrderItems"
+  name="EcOrderItems" source="EcOrderItems" newRowCaption="=ecItemNew"
   >
   <Columns>
     <SimpleColumn name="Order" />
-    <SimpleColumn name="Item" />
+
+    <SimpleColumn name="Article" />
+    <SimpleJoin name="Article" joinType="LEFT">
+      <SimpleColumn name="ArticleName" />
+      <SimpleColumn name="ArticleNr" />
+
+      <SimpleJoin name="Brand" joinType="LEFT">
+        <SimpleColumn name="BrandName" />
+      </SimpleJoin>
+      
+      <SimpleColumn name="Weight" />
+    </SimpleJoin>
 
     <SimpleColumn name="QuantityOrdered" />
     <SimpleColumn name="QuantitySubmit" />

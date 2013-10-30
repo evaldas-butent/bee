@@ -857,7 +857,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     }
 
     DndDiv label = new DndDiv(STYLE_NUMBER_LABEL);
-    label.setText(vehicle.getNumber());
+    label.setHtml(vehicle.getNumber());
 
     UiHelper.maybeSetTitle(label, vehicle.getTitle());
 

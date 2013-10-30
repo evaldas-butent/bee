@@ -1,6 +1,7 @@
 package com.butent.bee.client.utils;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
@@ -15,8 +16,11 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implements management of an old and new values for cells in user interface.
@@ -36,7 +40,7 @@ public final class Evaluator extends Calculation {
     private double rowId;
     private JsDate rowVersion;
     private double rowIndex;
-
+    
     private final String colName;
     private double colIndex;
 
@@ -46,6 +50,8 @@ public final class Evaluator extends Calculation {
     private String lastCellValue;
     private String lastOldValue;
     private String lastNewValue;
+
+    private final Set<String> lastRowPropertyNames = Sets.newHashSet();
 
     {
       cellValues = JavaScriptObject.createObject();
@@ -195,6 +201,25 @@ public final class Evaluator extends Calculation {
       setRowVersion(JsDate.create(row.getVersion()));
 
       EvalHelper.toJso(dataColumns, row, rowValues);
+      
+      if (!lastRowPropertyNames.isEmpty()) {
+        for (String name : lastRowPropertyNames) {
+          JsUtils.setPropertyToNull(rowValues, name);
+        }
+        lastRowPropertyNames.clear();
+      }
+      
+      if (!BeeUtils.isEmpty(row.getProperties())) {
+        for (Map.Entry<String, String> entry : row.getProperties().entrySet()) {
+          String name = entry.getKey();
+          String value = entry.getValue();
+          
+          if (NameUtils.isIdentifier(name) && !BeeUtils.isEmpty(value)) {
+            JsUtils.setProperty(rowValues, name, value);
+            lastRowPropertyNames.add(value);
+          }
+        }
+      }
     }
 
     private void setLastCellValue(String lastCellValue) {
@@ -274,25 +299,6 @@ public final class Evaluator extends Calculation {
 
   private static final BeeLogger logger = LogUtils.getLogger(Evaluator.class);
   
-  public static final String CELL_OBJECT = "cell";
-  public static final String ROW_OBJECT = "row";
-  public static final String PROPERTY_VALUE = "value";
-
-  public static final String PROPERTY_OLD_VALUE = "oldValue";
-  public static final String PROPERTY_NEW_VALUE = "newValue";
-  public static final String VAR_COL_ID = "colName";
-
-  public static final String VAR_ROW_ID = "rowId";
-  public static final String VAR_ROW_VERSION = "rowVersion";
-
-  public static final String VAR_ROW_INDEX = "rowIndex";
-
-  public static final String VAR_COL_INDEX = "colIndex";
-
-  public static final String DEFAULT_REPLACE_PREFIX = "[";
-  public static final String DEFAULT_REPLACE_SUFFIX = "]";
-  public static final String PROPERTY_SEPARATOR = ".";
-
   public static Evaluator create(Calculation calc, String colName,
       List<? extends IsColumn> dataColumns) {
     if (calc == null) {

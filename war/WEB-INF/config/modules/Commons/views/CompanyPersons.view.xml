@@ -3,7 +3,7 @@
   xmlns:xpr="http://www.butent.com/expression"
   
   name="CompanyPersons" source="CompanyPersons"
-  newRowForm="CompanyAndPerson" newRowCaption="Naujas įmonės asmuo"
+  newRowForm="CompanyAndPerson" newRowCaption="=newCompanyPerson"
   editForm="CompanyAndPerson"
   >
   <Columns>

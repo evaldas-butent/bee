@@ -8,104 +8,178 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
   
-  name="&form;" viewName="&form;" caption="Sąskaitos spausdinimas" disabledActions="save"
+  name="&form;" caption="=trInvoice" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
-
   <FlowPanel style="padding: 10px; background-color: white;">
-    <css id="&form;">
-      .&form; .itemsInfo-table {width:100%;}
-    </css>
     <HorizontalPanel>
-      <Table>
-        <row>
-          <Label html="Užsakymų Nr.:" style="text-align:right; &bold;" />
-          <TextLabel source="Number" />
-        </row>
-        <row>
-          <Label html="PVM sąskaita-faktūra:" style="text-align:right; &bold;" />
+      <Image  url="images/logo.png" />
+      <cell width="100" widthUnit="%">
+        <FlowPanel style="text-align:center;">
+          <Label html="PVM Sąskaita-faktūra" style="&bold;" />
           <TextLabel source="InvoiceNo">
             <renderToken source="InvoicePrefix" prefix="Serija " suffix=" " />
             <renderToken source="InvoiceNo" prefix="Nr. " />
           </TextLabel>
-        </row>
-        <row>
-          <Label html="Data:" style="text-align:right; &bold;" />
-          <DateTimeLabel source="Date" format="DATE_SHORT" />
-        </row>
-      </Table>
-      <Image  url="images/logo.gif" />
+        </FlowPanel>
+      </cell>
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
       <Table style="width:100%;">
         <row>
+          <cell rowSpan="2" style="vertical-align:top;">
+            <Label html="Siuntėjas:" />
+          </cell>
+          <cell rowSpan="2" style="vertical-align:top; width:50%;">
+            <FlowPanel name="Supplier" />
+          </cell>
           <cell style="vertical-align:top;">
-            <Label html="Tiekėjas:" />
+            <Label html="Gavėjas:" horizontalAlignment="right" />
           </cell>
           <cell style="vertical-align:top; width:50%;">
-            <FlowPanel name="SupplierInfo" />
+            <FlowPanel name="Customer" />
+          </cell>
+        </row>
+        <row>
+          <cell style="vertical-align:top;">
+            <TextLabel horizontalAlignment="right">
+              <render>
+                <ui:expression>row.Payer ? "Mokėtojas:" : null</ui:expression>
+              </render>
+            </TextLabel>
           </cell>
           <cell style="vertical-align:top;">
-            <Label html="Pirkėjas:" />
-          </cell>
-          <cell style="vertical-align:top; width:50%;">
-            <FlowPanel name="CustomerInfo" />
+            <FlowPanel name="Payer" />
           </cell>
         </row>
       </Table>
     </FlowPanel>
-    
-    <FlowPanel name="InvoiceDetails" class="&form;" style="&section;" />
 
-    <Table style="&section;">
+    <DateTimeLabel source="Date" format="DATE_LONG" horizontalAlignment="right" />
+
+    <Table name="InvoiceDetails" style="&section; width:100%">
+      <properties rateCurrency="EUR" />
       <row>
-        <Label html="Suma žodžiais:" />
-        <FlowPanel name="TotalInWords" />
+        <cell rowSpan="2">
+          <Label text="Paslauga">
+            <properties name="Name" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Užsakymo Nr.">
+            <properties name="OrderNo" />
+          </Label>
+        </cell>
+        <Label text="Pakrovimas">
+          <properties name="LoadingPlace" />
+        </Label>
+        <Label text="Vairuotojas">
+          <properties name="Driver" />
+        </Label>
+        <cell rowSpan="2">
+          <Label text="=trdAmountWoVat">
+            <properties name="Amount" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="=trdVat" horizontalAlignment="right">
+            <properties name="Vat" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <FlowPanel>
+            <properties name="RateAmount" />
+            <InlineLabel text="=trdAmount" />
+            <InlineLabel html="EUR" style="padding-left:3px;" />
+          </FlowPanel>
+        </cell>
       </row>
       <row>
-        <Label html="Total in words:" />
-        <FlowPanel name="TotalInWords2" options="en" />
+        <Label text="Iškrovimas">
+          <properties name="UnloadingPlace" />
+        </Label>
+        <Label text="Transporto valst.Nr.">
+          <properties name="Vehicle" />
+        </Label>
       </row>
       <row>
-        <Label html="Całkowita ilość:" />
-        <FlowPanel name="TotalInWords3" options="pl" />
+        <cell colSpan="4">
+          <FlowPanel style="text-align:right;">
+            <Label text="Bendra suma:" />
+            <Label text="PVM suma:" />
+            <Label text="VISO:" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel>
+          <Label>
+            <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="VatTotal" />
+          </Label>
+          <Label>
+            <properties name="Total" />
+          </Label>
+         </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="RateAmountTotal" />
+          </Label>
+          <Label>
+            <properties name="RateVatTotal" />
+          </Label>
+          <Label>
+            <properties name="RateTotal" />
+          </Label>
+        </FlowPanel>
       </row>
     </Table>
 
     <HorizontalPanel style="&section;">
-      <cell style="vertical-align:top;">
-        <Label html="Papildoma informacija:" style="&bold;" />
-      </cell>
-      <TextLabel source="Notes" style="white-space:pre-wrap;" />
+      <Label html="Suma žodžiais:" />
+      <Label name="TotalInWords" />
     </HorizontalPanel>
+
+    <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
+    </TextLabel>
 
     <HtmlPanel style="&section;">
       <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
-Pastaba: Šios nuorodos negalioja sąskaitoms su 21% PVM
-0% PVM tarifais: pagal PVM įst. 45 str.
+Pastaba:
+Šios nuorodos negalioja sąskaitoms su 21 % PVM 
+0 % PVM tarifas: pagal PVM 1 sr. 45 str.
 Be PVM: Pagal PVM įst. 13 (1) str.
-Without VAT: "Reverse Charge Regime" - according Directive 2006/112/EB
       </span>
       <span style="font-size:smaller; display:block; white-space:pre-wrap;">
-Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. /
-After the due period of payment the fine of 0.2% will be calculated for each day.
-Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
-Please fax teh copy of Your banking documents after the transaction will be made.
+Pagal LR CK 6.210 (1) straipsnį: „Terminą įvykdyti piniginę prievolę praleidęs skolininkas privalo mokėti 0,02 procentų dydžio delspinigius per dieną už sumą, kurią sumokėti praleistas terminas, jeigu įstatymai ar sutartis nenustato kitokio delspinigių dydžio“.
       </span>
     </HtmlPanel>
 
+    <TextLabel source="Notes" style="white-space:pre-wrap;" />
+
     <Table style="width:100%; margin-top:10px;">
       <row style="&bold;">
-        <Label html="Sąskaitą priėmė" />
-        <Label html="Sąskaitą išrašė" />
+        <Label html="Išdavė" />
+        <Label html="Priėmė" />
       </row>
       <row style="font-size:xx-small;">
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
       </row>
       <row>
-        <FlowPanel />
         <TextLabel source="Manager" style="margin-top:5px;">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />

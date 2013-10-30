@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentHistory" viewName="AppointmentHistory"
   >
-  <columns>
-    <DataColumn name="PublishTime" caption="Laikas" />
-    <RelColumn name="Publisher" caption="Vartotojas" renderColumns="FirstName LastName" />
+  <g:columns>
+    <DataColumn name="PublishTime" caption="=calPublishTime" />
+    <RelColumn name="Publisher" caption="=user" renderColumns="FirstName LastName" />
 
-    <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
-    <DataColumn name="Hours" caption="Valandos" />
-    <DataColumn name="Minutes" caption="Minutės" />
+    <DataColumn name="Status" caption="=calAppointmentStatus" itemKey="AppointmentStatus" />
+    <DataColumn name="Hours" caption="=unitHours" />
+    <DataColumn name="Minutes" caption="=unitMinutes" />
     
-    <DataColumn name="Comment" caption="Komentaras" />
-  </columns>
-</Grid>
+    <DataColumn name="Comment" caption="=calComment" />
+  </g:columns>
+</g:Grid>
  

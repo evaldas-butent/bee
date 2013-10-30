@@ -5,7 +5,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.logging.Level;
 
 public enum LogLevel {
-  ERROR(Level.SEVERE), WARNING(Level.WARNING), INFO(Level.INFO), DEBUG(Level.CONFIG);
+  DEBUG(Level.CONFIG), INFO(Level.INFO), WARNING(Level.WARNING), ERROR(Level.SEVERE);
   
   public static LogLevel parse(String input) {
     for (LogLevel lvl : LogLevel.values()) {

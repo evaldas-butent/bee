@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="PurchaseItems" viewName="PurchaseItems"
+  flexGrow="1"
+  newRowCaption="=newItem"
+  >
+  <g:columns>
+    <RelColumn name="Item" renderColumns="ItemName" />
+    <DataColumn name="Article" />
+    <DataColumn name="Quantity" />
+    <DataColumn name="UnitName" flexGrow="0" />
+    <DataColumn name="Price" />
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
+    <CalcColumn name="Amount" type="decimal" caption="=trdAmount" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.Quantity * row.Price</ui:expression>
+      </render>
+    </CalcColumn>
+    <DataColumn name="Note" maxWidth="300" visible="false" />
+  </g:columns>
+</g:Grid>

@@ -6,15 +6,15 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
-    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
+    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip"/>
+    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE"  label="=trAssessor"/>
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoLoadingPlace" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoUnloadingPlace" />
     <Numeric name="TripPercent" precision="3" scale="0" />
     <Numeric name="CargoPercent" precision="3" scale="0" />
     <Numeric name="CargoOrder" precision="2" scale="0" />
-    <Relation name="CargoExpense" relation="CargoExpenses" cascade="SET_NULL" />
+    <Relation name="CargoExpense" relation="CargoExpenses" cascade="DELETE" editable="true" />
   </Fields>
 
   <Constraints>

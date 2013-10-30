@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcOrders" viewName="EcOrders" caption="=ecOrders"
-  editForm="EcOrder"
-  flexGrow="1" flexShrink="1"
+  newRowColumns="Date Client Manager DeliveryMethod"
+  order="Date desc" cacheData="false" asyncThreshold="-1"
+  flexGrow="1"
   >
-  <columns>
-    <IdColumn name="ID" />
-    <DataColumn name="Date" visible="true" />
-    <DataColumn name="Number" visible="false" />
+  <g:columns>
+    <IdColumn name="ID" caption="=ecOrderNumber" maxWidth="80" />
+    <DataColumn name="Date" visible="true" maxWidth="120" />
 
-    <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" />
+    <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" maxWidth="80" />
 
     <RelColumn name="Client" visible="true">
       <renderToken source="ClientFirstName" />
@@ -34,5 +34,5 @@
     <RelColumn name="RejectionReason" visible="false" />
 
     <DataColumn name="Notes" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Users"
-  idName="UserID"
-  x="245" y="42"
+  name="Users" idName="UserID"
   >
   <Fields>
-    <String name="Login" precision="30" notNull="true" unique="true" />
+    <String name="Login" precision="100" notNull="true" unique="true" label="=userLogin"/>
     <String name="Password" precision="64" label="=password" />
-    <Text name="Properties" />
-    <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true" />
-    <Text name="Host" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true"
+      label="=companyPerson" />
+    
+    <Integer name="Locale" label="=userLocale" />
+    <Integer name="Interface" label="=userInterface" />
+    
+    <DateTime name="BlockAfter" label="=blockAfter" />
+    <DateTime name="BlockBefore" label="=blockBefore" />
+      
+    <Text name="Properties" label="=userProperties" />
+    <Text name="Host" label="=remoteHost" />
+    <Text name="Agent" label="=userAgent" />
   </Fields>
 </Table>

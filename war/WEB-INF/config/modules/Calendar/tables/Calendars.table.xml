@@ -5,37 +5,37 @@
   idName="CalendarID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
-    <Text name="Description" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=calName"/>
+    <Text name="Description" label="=calDescription" />
 
-    <String name="Location" precision="100" />
-    <Relation name="TimeZone" relation="TimeZones" />
+    <String name="Location" precision="100" label="=location"/>
+    <Relation name="TimeZone" relation="TimeZones" label="=timeZone"/>
 
-    <Boolean name="ReadOnly" />
-    <Integer name="Visibility" />
+    <Boolean name="ReadOnly" label="=calReadOnly" />
+    <Integer name="Visibility" label="=calVisibility" />
 
-    <Integer name="Transparency" />
+    <Integer name="Transparency" label="=calTransparency" />
 
-    <Integer name="DefaultDisplayedDays" defValue="3" />
+    <Integer name="DefaultDisplayedDays" defValue="3" label="=calDefaultDisplayedDays" />
 
-    <Integer name="PixelsPerInterval" defValue="24" />
-    <Integer name="IntervalsPerHour" defValue="2" />
+    <Integer name="PixelsPerInterval" defValue="24" label="=calPixelsPerInterval" />
+    <Integer name="IntervalsPerHour" defValue="2" label="=calIntervalsPerHour" />
 
-    <Integer name="WorkingHourStart" defValue="8" />
-    <Integer name="WorkingHourEnd" defValue="17" />
-    <Integer name="ScrollToHour" defValue="8" />
+    <Integer name="WorkingHourStart" defValue="8" label="=calWorkingHourStart" />
+    <Integer name="WorkingHourEnd" defValue="17" label="=calWorkingHourEnd" />
+    <Integer name="ScrollToHour" defValue="8" label="=calScrollToHour"/>
 
-    <Integer name="TimeBlockClickNumber" defValue="1" />
+    <Integer name="TimeBlockClickNumber" defValue="1" label="=calTimeBlockClickNumber" />
 
-    <Boolean name="SeparateAttendees" />
+    <Boolean name="SeparateAttendees" label="=calSeparateAttendees" />
 
-    <Boolean name="DayView" defValue="true" />
-    <Boolean name="DaysView" defValue="true" />
-    <Boolean name="WorkWeekView" defValue="true" />
-    <Boolean name="WeekView" defValue="true" />
-    <Boolean name="MonthView" defValue="true" />
-    <Boolean name="ResourceView" defValue="true" />
+    <Boolean name="DayView" defValue="true" label="=calDayView" />
+    <Boolean name="DaysView" defValue="true" label="=calDaysView" />
+    <Boolean name="WorkWeekView" defValue="true" label="=calWorkWeekView" />
+    <Boolean name="WeekView" defValue="true" label="=calWeekView" />
+    <Boolean name="MonthView" defValue="true" label="=calMonthView"/>
+    <Boolean name="ResourceView" defValue="true" label="=calResourceView"/>
     
-    <Relation name="Owner" relation="Users" defExpr="CURRENT_USER" />
+    <Relation name="Owner" relation="Users" defExpr="CURRENT_USER" label="=owner" />
   </Fields>
 </Table>

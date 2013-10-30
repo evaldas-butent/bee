@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="Discussions" label="=discussions" order="110"
+>
+ <Item name="AllDiscussions" label="=discussAll" service="discuss_list" parameters="all" separator="true" /> 
+ 
+</Entry>

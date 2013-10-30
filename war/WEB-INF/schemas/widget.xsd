@@ -34,6 +34,8 @@
     <xs:complexContent>
       <xs:extension base="widgetBase">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="properties" type="type:customProperties" />
+
           <xs:element name="css">
             <xs:complexType>
               <xs:simpleContent>
@@ -366,8 +368,6 @@
   <xs:element name="Label" type="labelType" substitutionGroup="widget" />
   <xs:element name="InlineLabel" type="labelType" substitutionGroup="widget" />
 
-  <xs:element name="HtmlLabel" type="display" substitutionGroup="widget" />
-
   <xs:complexType name="valueLabel">
     <xs:complexContent>
       <xs:extension base="display">
@@ -378,7 +378,15 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="TextLabel" type="valueLabel" substitutionGroup="widget" />
+  <xs:element name="TextLabel" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="valueLabel">
+          <xs:attribute name="textOnly" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:element name="IntegerLabel" type="valueLabel" substitutionGroup="widget" />
   <xs:element name="LongLabel" type="valueLabel" substitutionGroup="widget" />
@@ -495,6 +503,7 @@
                 <xs:attribute name="width" type="type:positiveDecimal" />
                 <xs:attribute name="widthUnit" type="ui:cssUnit" />
                 <xs:attributeGroup ref="ui:appearance" />
+                <xs:attributeGroup ref="ui:cellAppearance" />
               </xs:complexType>
             </xs:element>
 
@@ -671,18 +680,6 @@
           <xs:attribute name="step" type="xs:double" use="required" />
           <xs:attribute name="numLabels" type="xs:nonNegativeInteger" />
           <xs:attribute name="numTicks" type="xs:nonNegativeInteger" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:element name="StringPicker" substitutionGroup="widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="editableWidget">
-          <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="item" type="xs:normalizedString" />
-          </xs:choice>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -880,6 +877,7 @@
       <xs:complexContent>
         <xs:extension base="widgetType">
           <xs:attribute name="multiple" type="xs:boolean" />
+          <xs:attribute name="accept" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -912,6 +910,7 @@
           <xs:sequence>
             <xs:element name="face" type="buttonFace" minOccurs="0" maxOccurs="1" />
           </xs:sequence>
+          <xs:attribute name="accept" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -977,5 +976,22 @@
   </xs:element>
   
   <xs:element name="div" type="widgetType" substitutionGroup="widget" />
+
+  <xs:element name="FieldSet" type="hasChildren" substitutionGroup="widget" />
+  <xs:element name="Legend" type="widgetType" substitutionGroup="widget" />
+
+  <xs:element name="RowIdLabel" type="valueLabel" substitutionGroup="widget" />
+
+  <xs:element name="Details" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="hasChildren">
+          <xs:attribute name="open" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Summary" type="widgetType" substitutionGroup="widget" />
 
 </xs:schema>

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcOrders" source="EcOrders" caption="=ecOrders"
-  >
+  name="EcOrders" source="EcOrders" caption="=ecOrders" editForm="EcOrder"
+  newRowCaption="=ecOrderNew" rowCaption="OrderID ClientFirstName ClientLastName">
+
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
@@ -23,6 +24,11 @@
   
           <SimpleJoin name="Company" joinType="LEFT">
             <SimpleColumn alias="ClientCompanyName" name="Name" />
+            <SimpleColumn alias="ClientCreditLimit" name="CreditLimit1" />
+            <SimpleColumn alias="ClientCreditDays" name="CreditDays" />
+            <SimpleJoin name="LimitCurrency" joinType="LEFT">
+              <SimpleColumn alias="ClientLimitCurrency" name="Name"/>
+            </SimpleJoin>
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>

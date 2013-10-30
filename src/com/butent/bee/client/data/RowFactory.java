@@ -14,7 +14,6 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
@@ -33,10 +32,14 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -57,8 +60,10 @@ public final class RowFactory {
 
   private static final int GENERATED_AREA_HEIGHT = 60;
 
-  private static final String DEFAULT_CAPTION = "Naujas";
+  private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
 
+  private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
+  
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
     if (defaults) {
@@ -214,7 +219,7 @@ public final class RowFactory {
 
       Element label = doc.createElement(FormWidget.LABEL.getTagName());
       label.setAttribute(UiConstants.ATTR_HTML,
-          BeeUtils.notEmpty(LocaleUtils.getLabel(column), column.getId()));
+          BeeUtils.notEmpty(Localized.getLabel(column), column.getId()));
 
       String labelClass;
       if (column.hasDefaults()) {
@@ -271,7 +276,7 @@ public final class RowFactory {
 
     List<String> colNames = Lists.newArrayList();
     if (!BeeUtils.isEmpty(specified)) {
-      List<String> list = DataUtils.parseColumns(specified, dataInfo.getColumns(), null, null);
+      List<String> list = DataUtils.parseColumns(specified, dataInfo.getColumns());
       if (list != null) {
         colNames.addAll(list);
       }
@@ -366,10 +371,30 @@ public final class RowFactory {
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
-        if (Action.CLOSE.equals(action)) {
-          formView.onClose(close);
-        } else if (Action.SAVE.equals(action)) {
-          close.onSave();
+        FormInterceptor interceptor = formView.getFormInterceptor();
+        if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
+          return;
+        }
+        
+        switch (action) {
+          case CANCEL:
+            close.onClose();
+            break;
+            
+          case CLOSE:
+            formView.onClose(close);
+            break;
+            
+          case SAVE:
+            close.onSave();
+            break;
+
+          default:
+            logger.warning(NameUtils.getName(this), action, "not implemented");
+        }
+        
+        if (interceptor != null) {
+          interceptor.afterAction(action, presenter);
         }
       }
     });

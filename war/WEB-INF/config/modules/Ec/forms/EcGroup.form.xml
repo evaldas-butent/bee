@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator '<div style="height: 1ex;"></div>'>
+  <!ENTITY lbl "width: 120px; margin-right: 10px; text-align: right;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+    name="EcGroup" viewName="EcGroups" caption="=ecGroup">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=name" class="bee-required" style="&lbl;" />
+        <InputText source="GroupName" style="width: 300px;" />
+
+        <CheckBox text="=ecGroupMoto" source="Moto" style="margin-left: 50px;" />
+
+        <Label text="=ordinal" style="&lbl;" />
+        <InputSpinner source="Ordinal" style="width: 60px;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=notes" style="&lbl;" />
+        <InputArea source="Notes" style="width: 300px; height: 60px;" />
+      </FlowPanel>
+
+      <FlowPanel>
+        <CheckBox text="=ecGroupBrandSelection" source="BrandSelection" style="margin-left: 70%;" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <FlowPanel class="flexible" style="position: relative;">
+      <ChildGrid name="EcGroupCategories" relColumn="Group" 
+        style="position: absolute; left: 0; right: 55%; top: 0; bottom: 0;" />
+
+      <ChildGrid name="EcGroupCriteria" relColumn="Group"
+        style="position: absolute; left: 55%; right: 0; top: 0; bottom: 0;" />
+    </FlowPanel>
+  </FlowPanel>
+</f:Form>

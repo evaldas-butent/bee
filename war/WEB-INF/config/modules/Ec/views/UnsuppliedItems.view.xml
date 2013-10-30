@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="UnsuppliedItems" source="UnsuppliedItems" newRowCaption="=ecUnsuppliedItemNew"
+  >
+  <Columns>
+    <SimpleColumn name="Client" />
+    <SimpleJoin name="Client" joinType="LEFT">
+      <SimpleColumn name="User" />
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleColumn name="CompanyPerson" />
+
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" />
+            <SimpleColumn name="LastName" />
+          </SimpleJoin>
+  
+          <SimpleJoin name="Company" joinType="LEFT">
+            <SimpleColumn name="Name" alias="CompanyName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Order" />
+
+    <SimpleColumn name="Article" />
+    <SimpleJoin name="Article" joinType="LEFT">
+      <SimpleColumn name="ArticleName" />
+      <SimpleColumn name="ArticleNr" />
+
+      <SimpleJoin name="Brand" joinType="LEFT">
+        <SimpleColumn name="BrandName" />
+      </SimpleJoin>
+      
+      <SimpleColumn name="Weight" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+
+    <SimpleColumn name="Note" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" />
+  </Order>  
+</View>

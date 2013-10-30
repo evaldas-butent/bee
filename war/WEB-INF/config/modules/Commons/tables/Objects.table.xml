@@ -6,8 +6,8 @@
   x="0" y="0"
   >
   <Fields>
-    <Integer name="Type" notNull="true" label="Tipas" />
-    <String name="Name" precision="100" notNull="true" label="Objektas" />
+    <Integer name="Type" notNull="true" label="=objectType" />
+    <String name="Name" precision="100" notNull="true" label="=object" />
   </Fields>
 
   <Constraints>

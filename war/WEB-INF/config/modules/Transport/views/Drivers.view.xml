@@ -4,7 +4,7 @@
 
   name="Drivers" source="Drivers"
   editForm="Driver" newRowForm="Driver"
-  caption="=drivers" newRowCaption="Naujas vairuotojas"
+  caption="=drivers" newRowCaption="=trNewDriver"
   >
   <Columns>
     <SimpleColumn name="CompanyPerson" />

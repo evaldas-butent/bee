@@ -3,7 +3,7 @@
   xmlns:xpr="http://www.butent.com/expression"
 
   name="Vehicles" source="Vehicles" caption="=vehicles"
-  editForm="Vehicle" newRowForm="Vehicle" newRowCaption="Nauja transporto priemonė"
+  editForm="Vehicle" newRowForm="Vehicle" newRowCaption="=trNewVehicle"
   rowCaption="Number"
   >
   <Columns>

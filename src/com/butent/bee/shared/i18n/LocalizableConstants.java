@@ -4,23 +4,89 @@ import com.google.gwt.i18n.client.Constants;
 
 import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
 import com.butent.bee.shared.modules.crm.LocalizableCrmConstants;
+import com.butent.bee.shared.modules.discussions.LocalizableDiscussionsConstants;
 import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
+import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
-    LocalizableTransportConstants, LocalizableTradeConstants, LocalizableCrmConstants,
-    LocalizableEcConstants {
+    LocalizableMailConstants, LocalizableTransportConstants, LocalizableTradeConstants,
+    LocalizableCrmConstants, LocalizableEcConstants, LocalizableDiscussionsConstants {
 
-  String actionCanNotExecuted();
+  String actionAdd();
+
+  String actionAppend();
+
+  String actionBookmark();
+
+  String actionCancel();
+
+  String actionCanNotBeExecuted();
+
+  String actionClose();
+
+  String actionConfigure();
+
+  String actionDelete();
+
+  String actionDeleteFilter();
+
+  String actionEdit();
+
+  String actionFilter();
+
+  String actionNew();
+
+  String actionNew1();
+
+  String actionNotAllowed();
+
+  String actionPrint();
+
+  String actionRefresh();
+
+  String actionRemove();
+
+  String actionRemoveFilter();
+
+  String actionRename();
+
+  String actionRenameFilter();
+
+  String actionSave();
+
+  String actionWorkspaceEnlargeDown();
+
+  String actionWorkspaceEnlargeToLeft();
+
+  String actionWorkspaceEnlargeToRight();
+
+  String actionWorkspaceEnlargeUp();
+
+  String actionWorkspaceMaxSize();
+
+  String actionWorkspaceNewBottom();
+
+  String actionWorkspaceNewLeft();
+
+  String actionWorkspaceNewRight();
+
+  String actionWorkspaceNewTab();
+
+  String actionWorkspaceNewTop();
+
+  String actionWorkspaceRestoreSize();
 
   String additionalInfo();
-  
+
   String address();
 
   String allowPhotoSize();
 
   String article();
+
+  String bookmarkName();
 
   String branch();
 
@@ -33,6 +99,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String chief();
 
   String chooseFiles();
+
+  String chooseLanguage();
+
+  String choosePrintingForm();
 
   String city();
 
@@ -49,15 +119,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String code();
 
   String color();
-  
+
   String colorDescription();
 
   String colorIsInvalid();
-    
+
   String colorTheme();
-  
+
   String colorTitle();
-  
+
   String comment();
 
   String companies();
@@ -75,21 +145,39 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String companyVATCode();
 
   String contact();
-  
+
   String contacts();
+
+  String continueQuestion();
 
   String country();
 
   String createNewRow();
 
   String creator();
-  
+
   String dangerous();
 
   String date();
-  
+
+  String dateFromShort();
+
+  String dateToShort();
+
   String defaultColor();
 
+  String delete();
+
+  String deleteActiveRow(); 
+  
+  String deleteQuestion(); 
+  
+  String deleteRecordQuestion(); 
+  
+  String deleteRowQuestion(); 
+  
+  String deleteSelectedRow(); 
+  
   String description();
 
   String deselectAll();
@@ -97,30 +185,34 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String doFilter();
 
   String email();
-  
-  String emailLoginName();
-  
-  String emailPassword();
-  
-  String emailServerAddress();
-  
-  String emailServerPort();
-  
-  String emailServerSettings();
-  
-  String emailType();
+
+  String enterColor();
+
+  String enterDate();
+ 
+  String enterTime();
 
   String ended();
+
+  String error();
 
   String exchangeCode();
 
   String fax();
+
+  String fileDataCorrection();
+
+  String fileDescription();
+
+  String fileName();
 
   String fileOriginalName();
 
   String fileSize();
 
   String fileType();
+
+  String fileVersion();
 
   String filter();
 
@@ -130,33 +222,72 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String filterNullLabel();
 
+  String filterRemove();
+
+  String goods();
+
+
   String group();
-  
+
   String height();
 
   String imageUploadFailed();
-  
+
   String initialFilter();
 
+  String invalidDate();
+
+  String invalidDateFormat();
+
+  String invalidIdValue();
+
+  String invalidNumber();
+
+  String invalidNumberFormat();
+
+  String invalidRange();
+
+  String invalidTime();
+
   String item();
-  
+
   String length();
 
   String location();
+
+  String loginCommandQuery();
+
+  String loginCommandRegister();
+
+  String loginFailed();
+
+  String loginPassword();
+  
+  String loginSubmit();
+  
+  String loginUserName();
   
   String mainEmail();
+
+  String maxValue();
+
+  String minValue();
 
   String mobile();
 
   String name();
 
   String newEmailAccount();
-  
+
+  String newItem();
+
   String newPassword();
 
   String newPasswordIsRequired();
 
   String newPasswordsDoesNotMatch();
+
+  String newService();
 
   String newTab();
 
@@ -165,11 +296,23 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String no();
 
   String noData();
-  
+
+  String notANumber();
+
   String notes();
 
   String nothingFound();
 
+  String objectEvent();
+  
+  String objectGrid();
+  
+  String objectForm();
+  
+  String objectMenu();
+
+  String objectModule();
+  
   String ok();
 
   String oldPassword();
@@ -179,19 +322,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String oldPasswordIsRequired();
 
   String ordinal();
-  
+
   String outsized();
 
   String owner();
-  
+
   String pallets();
-  
+
   String partial();
 
   String period();
-  
+
   String personContact();
-  
+
   String personContacts();
 
   String persons();
@@ -199,7 +342,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String phone();
 
   String postIndex();
-  
+
   String print();
 
   String priority();
@@ -207,20 +350,26 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String questionLogout();
 
   String registered();
-  
+
   String relatedTo();
 
   String removeFilter();
 
   String repeatNewPassword();
 
+  String reports();
+
   String resource();
-  
+
   String responsibilities();
 
   String responsibleEmployee();
 
   String responsiblePerson();
+  
+  String rightStateAmendable();
+
+  String rightStateVisible();
 
   String saveChanges();
 
@@ -236,9 +385,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String selectAll();
 
+  String selectAtLeastOneRow();
+
+  String services();
+
   String settings();
-  
-  String smtpServerSettings();
 
   String sorry();
 
@@ -252,7 +403,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String tabControl();
 
+  String time();
+
   String tooLittleData();
+
+  String total();
 
   String totalOf();
 
@@ -260,18 +415,26 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String unit();
 
+  String unitDays();
+
+  String unitDayShort();
+
+  String unitDaysShort();
+
+  String unitWeekShort();
+
   String userFullName();
-  
+
   String value();
 
   String valueRequired();
-  
+
   String volume();
-  
+
   String warehouse();
 
   String weight();
-  
+
   String width();
 
   String yes();

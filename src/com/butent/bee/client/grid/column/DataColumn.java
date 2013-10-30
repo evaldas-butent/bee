@@ -1,8 +1,7 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.Cell.Context;
-
+import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
@@ -12,7 +11,7 @@ public abstract class DataColumn<C> extends AbstractColumn<C> {
 
   private final CellSource cellSource;
 
-  public DataColumn(Cell<C> cell, CellSource cellSource) {
+  public DataColumn(AbstractCell<C> cell, CellSource cellSource) {
     super(cell);
     this.cellSource = cellSource;
   }
@@ -23,7 +22,7 @@ public abstract class DataColumn<C> extends AbstractColumn<C> {
   }
   
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     if (row == null) {
       return null;
     }

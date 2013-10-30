@@ -11,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
@@ -21,6 +22,7 @@ import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.HasGridView;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -35,6 +37,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -57,21 +60,28 @@ import java.util.Map;
 public final class FormFactory {
 
   public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
-      HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain {
+      HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain, HasActiveRow,
+      HasViewName {
 
     void afterAction(Action action, Presenter presenter);
 
     void afterCreate(FormView form);
 
-    void afterCreateEditableWidget(EditableWidget editableWidget);
+    void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
 
     void afterRefresh(FormView form, IsRow row);
 
     boolean beforeAction(Action action, Presenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
+    
+    long getActiveRowId();    
 
+    int getDataIndex(String source);
+    
     FormView getFormView();
+
+    HeaderView getHeaderView();
 
     FormInterceptor getInstance();
 
@@ -119,8 +129,8 @@ public final class FormFactory {
   private static final String ATTR_TYPE = "type";
 
   private static final Map<String, FormDescription> descriptionCache = Maps.newHashMap();
-  private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors = Maps
-      .newHashMap();
+  private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors =
+      Maps.newHashMap();
 
   public static void clearDescriptionCache() {
     descriptionCache.clear();
@@ -233,7 +243,7 @@ public final class FormFactory {
     }
 
     EditorDescription editor = new EditorDescription(editorType);
-    editor.setAttributes(XmlUtils.getAttributes(element, false));
+    editor.setAttributes(XmlUtils.getAttributes(element));
 
     List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
     if (!BeeUtils.isEmpty(items)) {
@@ -244,6 +254,37 @@ public final class FormFactory {
 
   public static FormDescription getFormDescription(String formName) {
     return descriptionCache.get(getFormKey(Assert.notEmpty(formName)));
+  }
+
+  public static void getFormDescription(final String formName,
+      final Callback<FormDescription> callback) {
+    Assert.notEmpty(formName);
+    Assert.notNull(callback);
+
+    final String key = getFormKey(formName);
+    if (descriptionCache.containsKey(key)) {
+      callback.onSuccess(descriptionCache.get(key));
+      return;
+    }
+
+    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(formName), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(String.class)) {
+          FormDescription fd = parseFormDescription((String) response.getResponse());
+          if (fd == null) {
+            callback.onFailure("form", formName, "decription not created");
+          } else {
+            if (fd.cacheDescription()) {
+              descriptionCache.put(key, fd);
+            }
+            callback.onSuccess(fd);
+          }
+        } else {
+          callback.onFailure("get form description", formName, "response not a string");
+        }
+      }
+    });
   }
 
   public static FormInterceptor getFormInterceptor(String formName) {
@@ -420,37 +461,6 @@ public final class FormFactory {
   public static void registerFormInterceptor(String formName, FormInterceptor interceptor) {
     Assert.notEmpty(formName);
     formInterceptors.put(getFormKey(formName), Pair.of(interceptor, 0));
-  }
-
-  private static void getFormDescription(final String formName,
-      final Callback<FormDescription> callback) {
-    Assert.notEmpty(formName);
-    Assert.notNull(callback);
-
-    final String key = getFormKey(formName);
-    if (descriptionCache.containsKey(key)) {
-      callback.onSuccess(descriptionCache.get(key));
-      return;
-    }
-
-    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(formName), new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(String.class)) {
-          FormDescription fd = parseFormDescription((String) response.getResponse());
-          if (fd == null) {
-            callback.onFailure("form", formName, "decription not created");
-          } else {
-            if (fd.cacheDescription()) {
-              descriptionCache.put(key, fd);
-            }
-            callback.onSuccess(fd);
-          }
-        } else {
-          callback.onFailure("get form description", formName, "response not a string");
-        }
-      }
-    });
   }
 
   private static String getFormKey(String formName) {

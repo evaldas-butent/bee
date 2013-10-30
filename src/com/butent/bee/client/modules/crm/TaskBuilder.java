@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -83,22 +84,22 @@ class TaskBuilder extends AbstractFormInterceptor {
     DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
 
     if (end == null) {
-      event.getCallback().onFailure("Įveskite pabaigos laiką arba",
-          "pradžios laiką ir numatomą trukmę");
+      event.getCallback()
+          .onFailure(Localized.getConstants().crmEnterFinishOrStartOrEstimatedTime());
       return;
     }
     if (start != null && TimeUtils.isLeq(end, start)) {
-      event.getCallback().onFailure("Pabaigos laikas turi būti didesnis už pradžios laiką");
+      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustGreaterThanStart());
       return;
     }
 
     if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
-      event.getCallback().onFailure("Įveskite temą");
+      event.getCallback().onFailure(Localized.getConstants().crmEnterSubject());
       return;
     }
 
     if (BeeUtils.isEmpty(activeRow.getProperty(PROP_EXECUTORS))) {
-      event.getCallback().onFailure("Pasirinkite vykdytoją");
+      event.getCallback().onFailure(Localized.getConstants().crmSelectExecutor());
       return;
     }
 
@@ -139,7 +140,8 @@ class TaskBuilder extends AbstractFormInterceptor {
 
           event.getCallback().onSuccess(null);
           
-          String message = BeeUtils.joinWords("Sukurta naujų užduočių:", tasks.size());
+          String message =
+              BeeUtils.joinWords(Localized.getConstants().crmCreatedNewTasks(), ":", tasks.size());
           GridView gridView = getGridView();
           if (gridView != null) {
             gridView.notifyInfo(message);

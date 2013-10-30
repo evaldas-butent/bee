@@ -13,7 +13,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
@@ -31,6 +30,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -51,18 +51,19 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
       this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());
       this.tripIndex = DataUtils.getColumnIndex(COL_TRIP, gridView.getDataColumns());
 
-      this.dialog = DialogBox.create("Priskirti reisą");
+      this.dialog = DialogBox.create(Localized.getConstants().trCargoTripsAssignTrip());
       dialog.setHideOnEscape(true);
 
       HtmlTable container = new HtmlTable();
       container.setBorderSpacing(5);
 
-      container.setText(0, 0, "Pasirinkite reisą");
+      container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
 
       Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
           Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
               "ExpeditionType", "ForwarderName"));
       relation.disableNewRow();
+      relation.setCaching(Relation.Caching.QUERY);
 
       CompoundFilter filter = Filter.and();
 
@@ -82,20 +83,22 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
         }
       });
       container.setWidget(0, 1, selector);
-      container.setWidget(1, 0, new Button("Naujas reisas", new ClickHandler() {
+      container.setWidget(1, 0, new Button(Localized.getConstants().trNewTrip(),
+          new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           createNewTrip(VIEW_TRIPS);
         }
       }));
-      container.setWidget(1, 1, new Button("Nauja ekspedicija", new ClickHandler() {
+      container.setWidget(1, 1, new Button(Localized.getConstants().trNewExpedition(),
+          new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           createNewTrip(VIEW_EXPEDITION_TRIPS);
         }
       }));
       dialog.setWidget(container);
-      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
+      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
     }
 
     private void addTrip(long tripId) {

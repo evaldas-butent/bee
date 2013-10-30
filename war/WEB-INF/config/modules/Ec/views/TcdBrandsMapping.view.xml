@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdBrandsMapping" source="TcdBrandsMapping"
+  >
+  <Columns>
+    <SimpleColumn name="Supplier" />
+    <SimpleColumn name="SupplierBrand" />
+    <SimpleColumn name="Brand" />
+    <SimpleJoin name="Brand" joinType="LEFT">
+      <SimpleColumn name="BrandName" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="Supplier" />
+    <OrderBy column="SupplierBrand" />
+  </Order>
+</View>
+ 

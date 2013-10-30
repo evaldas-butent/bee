@@ -19,7 +19,6 @@ import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -45,6 +44,7 @@ import com.butent.bee.client.modules.crm.RequestBuilder;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
@@ -261,7 +261,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
       }
-      sender.setText(address);
+      sender.setHtml(address);
       fp.add(sender);
 
       Integer att = row.getInteger(attachmentCount);
@@ -274,7 +274,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (att > 1) {
           TextLabel attachments = new TextLabel(false);
           attachments.setStyleName("bee-mail-AttachmentCount");
-          attachments.setText(BeeUtils.toString(att));
+          attachments.setHtml(BeeUtils.toString(att));
           fp.add(attachments);
         }
       }
@@ -287,7 +287,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
       TextLabel subject = new TextLabel(false);
       subject.setStyleName("bee-mail-HeaderSubject");
-      subject.setText(row.getString(subjectIdx));
+      subject.setHtml(row.getString(subjectIdx));
       fp.add(subject);
 
       return fp.toString();
@@ -356,7 +356,7 @@ public class MailPanel extends AbstractFormInterceptor {
             ids.clear();
           }
           dummy.add(dragLabel);
-          RootPanel.get().add(dummy);
+          BodyPanel.get().add(dummy);
           dragLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
           dragLabel.getElement().getStyle().setBackgroundColor("whiteSmoke");
 
@@ -372,7 +372,7 @@ public class MailPanel extends AbstractFormInterceptor {
         @Override
         public void onDragEnd(DragEndEvent event) {
           dummy.clear();
-          RootPanel.get().remove(dummy);
+          BodyPanel.get().remove(dummy);
           DndHelper.reset();
         }
       });
@@ -516,7 +516,7 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
-    header.addCommandItem(new Button("Užklausimas", new ClickHandler() {
+    header.addCommandItem(new Button(Localized.getConstants().crmRequest(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         createRequest(currentMessage != null
@@ -803,12 +803,12 @@ public class MailPanel extends AbstractFormInterceptor {
     if (currentMessage == null) {
       return;
     }
-    final List<String> options = Lists.newArrayList("Aktyvų laišką");
+    final List<String> options = Lists.newArrayList(Localized.getConstants().mailCurrentMessage());
     final Collection<RowInfo> rows = messages.getGridPresenter().getGridView()
         .getSelectedRows(SelectedRows.ALL);
 
     if (!BeeUtils.isEmpty(rows)) {
-      options.add(BeeUtils.joinWords("Pažymėtus", rows.size(), "laiškus"));
+      options.add(Localized.getMessages().mailSelectedMessages(rows.size()));
     }
     final AccountInfo account = getCurrentAccount();
     final Long folderId = getCurrentFolderId();
@@ -817,7 +817,9 @@ public class MailPanel extends AbstractFormInterceptor {
     options.add(Localized.getConstants().cancel());
     Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
-    Global.messageBox(purge ? "Pašalinti" : "Perkelti į šiukšlinę", icon, null, options,
+    Global.messageBox(purge ? Localized.getConstants().actionDelete() : Localized.getConstants()
+        .mailActionMoveToTrash(),
+        icon, null, options,
         options.size() - 1, new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
@@ -847,8 +849,10 @@ public class MailPanel extends AbstractFormInterceptor {
                 response.notify(getFormView());
 
                 if (!response.hasErrors() && Objects.equal(folderId, getCurrentFolderId())) {
-                  getFormView().notifyInfo(purge ? "Pašalinta" : "Perkelta į šiukšlinę",
-                      (String) response.getResponse(), "laiškų");
+                  getFormView().notifyInfo(
+                      purge ? Localized.getMessages().mailDeletedMessages(
+                          (String) response.getResponse()) : Localized.getMessages()
+                          .mailMovedMessagesToTrash((String) response.getResponse()));
                   refresh(null);
                 }
               }

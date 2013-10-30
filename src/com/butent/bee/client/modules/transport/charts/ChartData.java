@@ -34,7 +34,7 @@ class ChartData {
 
     @Override
     public int compareTo(Item o) {
-      return BeeUtils.compare(name, o.name);
+      return BeeUtils.compareNullsFirst(name, o.name);
     }
 
     @Override
@@ -105,7 +105,7 @@ class ChartData {
     UNLOADING(Localized.getConstants().cargoUnloading()),
     VEHICLE_GROUP(Localized.getConstants().vehicleGroupsShort()),
     VEHICLE_MODEL(Localized.getConstants().vehicleModelsShort()),
-    VEHICLE_TYPE(Localized.getConstants().vehicleTypesShort());
+    VEHICLE_TYPE(Localized.getConstants().trVehicleTypesShort());
 
     private final String caption;
 

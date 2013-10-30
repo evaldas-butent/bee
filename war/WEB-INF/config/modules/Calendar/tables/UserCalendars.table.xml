@@ -5,30 +5,30 @@
   idName="UserCalendarID"
   >
   <Fields>
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
-    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user"/>
+    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" label="=calendar" />
 
-    <Integer name="DefaultDisplayedDays" />
+    <Integer name="DefaultDisplayedDays" label="=calDefaultDisplayedDays"/>
 
-    <Integer name="PixelsPerInterval" />
-    <Integer name="IntervalsPerHour" />
+    <Integer name="PixelsPerInterval" label="=calPixelsPerInterval" />
+    <Integer name="IntervalsPerHour" label="=calIntervalsPerHour"/>
 
-    <Integer name="WorkingHourStart" />
-    <Integer name="WorkingHourEnd" />
-    <Integer name="ScrollToHour" />
+    <Integer name="WorkingHourStart" label="=calWorkingHourStart" />
+    <Integer name="WorkingHourEnd" label="=calWorkingHourEnd"/>
+    <Integer name="ScrollToHour" label="=calScrollToHour" />
 
-    <Integer name="TimeBlockClickNumber" />
+    <Integer name="TimeBlockClickNumber" label="=calTimeBlockClickNumber" />
     
-    <Boolean name="SeparateAttendees" />
+    <Boolean name="SeparateAttendees" label="=calSeparateAttendees" />
 
-    <Boolean name="DayView" defValue="true" />
-    <Boolean name="DaysView" defValue="true" />
-    <Boolean name="WorkWeekView" defValue="true" />
-    <Boolean name="WeekView" defValue="true" />
-    <Boolean name="MonthView" defValue="true" />
-    <Boolean name="ResourceView" defValue="true" />
+    <Boolean name="DayView" defValue="true" label="=calDayView"/>
+    <Boolean name="DaysView" defValue="true" label="=calDaysView" />
+    <Boolean name="WorkWeekView" defValue="true" label="=calWorkWeekView" />
+    <Boolean name="WeekView" defValue="true" label="=calWeekView" />
+    <Boolean name="MonthView" defValue="true" label="=calMonthView" />
+    <Boolean name="ResourceView" defValue="true" label="=calResourceView" />
 
-    <Integer name="ActiveView" />
+    <Integer name="ActiveView" label="=calActiveView" />
   </Fields>
 
   <Constraints>

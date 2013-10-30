@@ -98,7 +98,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    VERSION("version", "Versija", false, false) {
+    VERSION("version", Localized.getConstants().fileVersion(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -114,7 +114,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(sf.getFileVersion()));
+          ((Label) widget).setHtml(BeeUtils.trim(sf.getFileVersion()));
         }
       }
 
@@ -131,7 +131,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    NAME("name", "Pavadinimas", true, false) {
+    NAME("name", Localized.getConstants().fileName(), true, false) {
       @Override
       Widget createDisplay() {
         return new Link();
@@ -147,9 +147,9 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Link) {
-          ((Link) widget).setHref(FileUtils
-              .getUrl(BeeUtils.notEmpty(sf.getCaption(), sf.getName()), sf.getFileId()));
-          ((Link) widget).setText(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
+          ((Link) widget).setHref(FileUtils.getUrl(BeeUtils.notEmpty(sf.getCaption(),
+              sf.getName()), sf.getFileId()));
+          ((Link) widget).setHtml(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
         }
       }
 
@@ -171,7 +171,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    DESCRIPTION("description", "Aprašymas", false, false) {
+    DESCRIPTION("description", Localized.getConstants().fileDescription(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -187,7 +187,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(sf.getDescription()));
+          ((Label) widget).setHtml(BeeUtils.trim(sf.getDescription()));
         }
       }
 
@@ -204,7 +204,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    SIZE("size", "Dydis", false, true) {
+    SIZE("size", Localized.getConstants().fileSize(), false, true) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -218,7 +218,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(FileUtils.sizeToText(sf.getSize()));
+          ((Label) widget).setHtml(FileUtils.sizeToText(sf.getSize()));
         }
       }
 
@@ -228,7 +228,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    TYPE("type", "Tipas", false, false) {
+    TYPE("type", Localized.getConstants().fileType(), false, false) {
       @Override
       Widget createDisplay() {
         return new Label();
@@ -244,7 +244,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       @Override
       void refresh(Widget widget, StoredFile sf) {
         if (widget instanceof Label) {
-          ((Label) widget).setText(BeeUtils.trim(sf.getType()));
+          ((Label) widget).setHtml(BeeUtils.trim(sf.getType()));
         }
       }
 
@@ -261,7 +261,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    EDIT("edit", "Koreguoti", false, true) {
+    EDIT("edit", Localized.getConstants().actionEdit(), false, true) {
       @Override
       Widget createDisplay() {
         Image widget = new Image(Global.getImages().silverEdit());
@@ -284,7 +284,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       }
     },
 
-    DELETE("delete", "Pašalinti", false, true) {
+    DELETE("delete", Localized.getConstants().actionRemove(), false, true) {
       @Override
       Widget createDisplay() {
         Image widget = new Image(Global.getImages().silverMinus());
@@ -557,7 +557,7 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       row++;
     }
 
-    Global.inputWidget("Bylos duomenų koregavimas", panel, new InputCallback() {
+    Global.inputWidget(Localized.getConstants().fileDataCorrection(), panel, new InputCallback() {
       @Override
       public void onCancel() {
         getRowFormatter().removeStyleName(index, STYLE_PREFIX + STYLE_EDITING);

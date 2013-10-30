@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Administration" label="Administravimas" order="1000"
+name="Administration" label="=administration" order="1000"
 >
-  <Item name="Users" label="Vartotojai" service="grid" parameters="Users" />
+  <Item name="Users" label="=users" service="grid" parameters="Users" />
 
-  <Item name="Roles" label="Rolės" service="form" parameters="Roles" separator="true" />
-  <Item name="Objects" label="Objektai" service="form" parameters="Objects" />
+  <Item name="Roles" label="=roles" service="form" parameters="Roles" separator="true" />
+  <Item name="Objects" label="=objects" service="form" parameters="Objects" />
 
-  <Item name="Parameters" label="Sistemos parametrai" service="system_parameters" parameters="Commons"  separator="true" />
+  <Item name="Parameters" label="=systemParameters" service="parameters" parameters="Commons"
+    separator="true" />
 
-  <Item name="ReminderTypes" label="Priminimų tipai" service="grid" parameters="ReminderTypes" separator="true" />
+  <Item name="IpFilters" label="=ipFilters" service="grid" parameters="IpFilters"
+    separator="true" />
+
+  <Item name="ReminderTypes" label="=reminderTypes" service="grid" parameters="ReminderTypes"
+    separator="true" />
 </Entry>

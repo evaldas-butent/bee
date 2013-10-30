@@ -1,0 +1,136 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  background-color: #fbfbfb;  
+  color: #222;
+  overflow: hidden;
+}
+
+.bee-SignIn-Panel {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  width: 500px;
+  height: 90%;
+  margin-left: -200px;
+  overflow: auto;
+}
+
+.bee-SignIn-Logo-container {
+  width: 400px;
+  text-align: center;
+}
+.bee-SignIn-Logo {
+  text-align: center;
+}
+
+.bee-SignIn-Locale-container {
+  margin-top: 2ex;
+  height: 40px;
+  text-align: right;
+}
+.bee-SignIn-Locale-input {
+  visibility: hidden;
+}
+.bee-SignIn-Locale-input:checked + img {
+  width: 48px;
+}
+.bee-SignIn-Locale-flag {
+  cursor: pointer;
+  width: 32px;
+  transition: width 200ms;
+}
+
+.bee-SignIn-Label {
+  position: relative;
+  left: 100px;
+  width: 200px;
+  margin-bottom: 3px;
+}
+
+.bee-SignIn-Input {
+  position: relative;
+  left: 100px;
+  width: 200px;
+  height: 32px;
+  padding-left: 8px;
+  font-size: 15px;
+  color: black;
+  box-sizing: border-box;
+}  
+
+.bee-SignIn-Input:focus {
+  outline: #80c4f9 solid 1px;
+}
+
+.bee-SignIn-Label-user {
+  margin-top: 10%;
+}
+
+.bee-SignIn-Label-password {
+  margin-top: 1ex;
+}
+
+.bee-SignIn-Error {
+  width: 400px;
+  text-align: center;
+  margin-top: 2ex;
+  color: red;
+}
+
+.bee-SignIn-Button {
+  display: block;
+  position: relative;
+  left: 140px;
+  width: 120px;
+  height: 40px;
+  margin-top: 8%;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: #43494F;
+  color: white;
+  font-weight: bold;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.bee-SignIn-Command-container {
+  position: relative;
+  left: 50px;
+  width: 300px;
+  margin-top: 3ex;
+}
+.bee-SignIn-Command-Form-query {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.bee-SignIn-Register,
+.bee-SignIn-Query {
+  font-size: medium;
+  color: #00e;
+  text-decoration: underline;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.bee-SignIn-Copyright {
+  width: 400px;
+  text-align: center;
+  margin-top: 10%;
+  cursor: pointer;
+}
+.bee-SignIn-Copyright-logo {
+  max-height: 16px;
+  max-width: 16px;
+  position: relative;
+  top: 1px;
+}
+.bee-SignIn-Copyright-label {
+  font-size: 12px;
+  padding-left: 2px;
+}

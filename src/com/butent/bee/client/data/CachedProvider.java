@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -46,23 +47,30 @@ public class CachedProvider extends Provider {
   private final Set<Long> filteredRowIds = Sets.newHashSet();
   private final List<BeeRow> viewRows = Lists.newArrayList();
 
-  public CachedProvider(HasDataTable display, NotificationListener notificationListener,
+  public CachedProvider(HasDataTable display, HandlesActions actionHandler,
+      NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, BeeRowSet table) {
-    this(display, notificationListener, viewName, columns, null, null, null, table, null, null);
+    this(display, actionHandler, notificationListener,
+        viewName, columns, null, null,
+        null, table, null, null);
   }
 
-  public CachedProvider(HasDataTable display, NotificationListener notificationListener,
+  public CachedProvider(HasDataTable display, HandlesActions actionHandler,
+      NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
       Map<String, Filter> parentFilters, Filter userFilter) {
-    this(display, notificationListener, viewName, columns, null, null, immutableFilter, table,
-        parentFilters, userFilter);
+    this(display, actionHandler, notificationListener,
+        viewName, columns, null, null,
+        immutableFilter, table, parentFilters, userFilter);
   }
 
-  public CachedProvider(HasDataTable display, NotificationListener notificationListener,
+  public CachedProvider(HasDataTable display, HandlesActions actionHandler,
+      NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters,
       Filter userFilter) {
-    super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
+    super(display, actionHandler, notificationListener,
+        viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 
     Assert.notNull(table);

@@ -23,11 +23,13 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.Captions;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class CommonsKeeper {
@@ -59,6 +61,16 @@ public final class CommonsKeeper {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_USERS), event.getRow(),
             Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
             BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_COMPANIES)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
+            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_PERSONS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS, 
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
       }
     }
   }
@@ -77,13 +89,6 @@ public final class CommonsKeeper {
 
     FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 
-    BeeKeeper.getMenu().registerMenuCallback("system_parameters", new MenuManager.MenuCallback() {
-      @Override
-      public void onSelection(String parameters) {
-        GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
-      }
-    });
-
     SelectorEvent.register(new CommonsSelectorHandler());
 
     Captions.register(RightsObjectType.class);
@@ -92,6 +97,12 @@ public final class CommonsKeeper {
 
     String key = Captions.register(ReminderMethod.class);
     Captions.registerColumn(VIEW_REMINDER_TYPES, COL_REMINDER_METHOD, key);
+
+    key = Captions.register(SupportedLocale.class);
+    Captions.registerColumn(VIEW_USERS, COL_USER_LOCALE, key);
+
+    key = Captions.register(UserInterface.class);
+    Captions.registerColumn(VIEW_USERS, COL_USER_INTERFACE, key);
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }

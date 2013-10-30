@@ -5,22 +5,22 @@
   idName="AppointmentTypeID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" />
-    <Text name="Description" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=calAppointmentTypeName"/>
+    <Text name="Description" label="=description"/>
 
-    <Relation name="Theme" relation="Themes" />
-    <Relation name="Style" relation="AppointmentStyles" />
+    <Relation name="Theme" relation="Themes" label="=calTheme" />
+    <Relation name="Style" relation="AppointmentStyles" label="=calAppointmentStyle" />
 
-    <String name="AppointmentCreator" precision="30" />
-    <String name="AppointmentEditor" precision="30" />
+    <String name="AppointmentCreator" precision="30" label="=appointmentCreator" />
+    <String name="AppointmentEditor" precision="30" label="=appointmentEditor" />
 
-    <Text name="SimpleHeader" />
-    <Text name="SimpleBody" />
+    <Text name="SimpleHeader" label="=appointmentRenderSimpleHeader" />
+    <Text name="SimpleBody" label="=appointmentRenderSimpleBody" />
 
-    <Text name="MultiHeader" />
-    <Text name="MultiBody" />
+    <Text name="MultiHeader" label="=appointmentRenderMultiHeader" />
+    <Text name="MultiBody" label="=appointmentRenderMultiBody" />
 
-    <Text name="AppointmentCompact" />
-    <Text name="AppointmentTitle" />
+    <Text name="AppointmentCompact" label="=calCompactForm" />
+    <Text name="AppointmentTitle" label="=calAppointmentTitle" />
   </Fields>
 </Table>

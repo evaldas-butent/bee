@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdTypes"
+  idName="TypeID"
+  audit="false"
+  >
+  <Fields>
+    <Relation name="Model" relation="TcdModels" notNull="true" cascade="DELETE" label="=ecCarModel" />
+    <String name="TypeName" precision="50" notNull="true" label="=ecCarEngine" />
+    
+    <Integer name="ProducedFrom" label="=ecCarProducedFrom" />
+    <Integer name="ProducedTo" label="=ecCarProducedTo" />
+    <Integer name="Ccm" label="=ecCarVolume" />
+    <Numeric name="KwFrom" precision="3" label="=ecCarPowerFrom" />
+    <Numeric name="KwTo" precision="3" label="=ecCarPowerTo" />
+    <Numeric name="Cylinders" precision="2" label="=ecCarCylinders" />
+    <Numeric name="MaxWeight" precision="6" scale="2" label="=ecCarMaxWeight" />
+    <String name="Engine" precision="50" />
+    <String name="Fuel" precision="50" />
+    <String name="Body" precision="50" />
+    <String name="Axle" precision="50" />
+
+    <Boolean name="Visible" label="=ecCarTypeVisible" defValue="true" />
+    
+    <Long name="TecDocID" unique="true" />
+  </Fields>
+</Table>

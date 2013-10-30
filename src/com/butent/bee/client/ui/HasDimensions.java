@@ -1,6 +1,6 @@
 package com.butent.bee.client.ui;
 
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 
 public interface HasDimensions {
 

@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.event.DndWidget;
-import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
@@ -37,8 +36,8 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState, DndWidget,
-    EditEndEvent.Handler, SaveChangesEvent.Handler, RequiresResize, Printable {
+    HasDimensions, HasState, DndWidget, EditEndEvent.Handler, SaveChangesEvent.Handler,
+    RequiresResize, Printable {
 
   void applyOptions(String options);
 
@@ -53,6 +52,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   
   boolean focus(String source);
 
+  long getActiveRowId();
+  
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();
@@ -78,6 +79,10 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   Widget getWidgetBySource(String source);
 
   boolean isRowEditable(boolean warn);
+  
+  void observeData();
+
+  boolean observesData();
 
   void onClose(CloseCallback closeCallback);
 

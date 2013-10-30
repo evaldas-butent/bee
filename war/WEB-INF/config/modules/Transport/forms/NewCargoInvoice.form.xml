@@ -4,60 +4,68 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:d="http://www.butent.com/decorator"
   
-  name="NewCargoInvoice" viewName="Sales" caption="Nauja sąskaita"
-  width="600" height="400"
+  name="NewCargoInvoice" viewName="CargoInvoices" caption="=trNewCargoInvoice"
+  width="700" height="250"
   >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <Table>
       <row>
-        <Label html="Data" class="bee-required" style="&lbl;" />
+        <cell colSpan="4">
+          <CheckBox source="Proforma" text="=trdProformaInvoice" style="float:right;" />
+        </cell>
+      </row>
+      <row>
+        <Label text="=trdDate" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="width:110px;" />
 
-        <Label html="Numeris" style="&lbl;" />
+        <Label text="=orderNumber" style="&lbl;" />
         <InputText source="Number" />
       </row>
       <row>
-        <Label html="Valiuta" class="bee-required" style="&lbl;" />
+        <Label text="=currency" class="bee-required" style="&lbl;" />
         <HorizontalPanel>
           <DataSelector source="CurrencyName" style="width:40px; margin-right:5px;" editEnabled="false" />
-          <CheckBox source="VatIncluded" html="PVM tame sk." />
+          <CheckBox source="VatIncluded" text="=trdVatIncluded" />
         </HorizontalPanel>
 
-        <Label html="Sąskaita" style="&lbl;" />
+        <Label text="=trdInvoicePrefix" style="&lbl;" />
         <FlowPanel>
-          <InputText source="InvoicePrefix" upperCase="true" required="true" style="width:50px;"
-          caption="Ser." d:style="width:30px; text-align:right;" />
-          <InputText source="InvoiceNo" caption="Nr." d:style="width:30px; text-align:right;" />
+          <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
+          <InlineLabel text="=trdInvoiceNo" style="margin-left:5px;" />
+          <InputText source="InvoiceNo" />
         </FlowPanel>
       </row>
       <row>
-        <Label html="Klientas" class="bee-required" style="&lbl;" />
+        <Label text="=trdSupplier" style="&lbl;" />
+        <DataSelector source="Supplier" />
+        <Label text="=trdCustomer" class="bee-required" style="&lbl;" />
         <DataSelector source="Customer" required="true" />
-        <Label html="Terminas" style="&lbl;" />
-        <InputDate source="Term" style="width:70px;" />
       </row>
       <row>
-        <Label html="Tiekėjas" style="&lbl;" />
-        <DataSelector source="Supplier" />
-        <Label html="Vadybininkas" style="&lbl;" />
+        <Label text="=trdManager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
+        <Label text="=trdPayer" style="&lbl;" />
+        <DataSelector source="Payer" />
       </row>
       <row>
         <cell colSpan="3">
-          <Label name="MainItemCaption" html="Suminė apskaitos prekė" style="&lbl;" />
+          <Label text="=trdTerm" style="&lbl; text-align:right;" />
         </cell>
-        <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" 
-          label="Suminė apskaitos prekė" />
+        <InputDate source="Term" style="width:70px;" />
+      </row>
+      <row>
+        <Label text="=trdVehicle" style="&lbl;" />
+        <InputText source="Vehicle" />
+        <Label text="=trdDriver" style="&lbl;" />
+        <InputText source="Driver" />
+      </row>
+      <row>
+        <cell colSpan="3">
+          <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl;" />
+        </cell>
+        <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" />
       </row>
     </Table>
-
-    <TabbedPages class="flexible">
-      <page>
-        <text>Pastabos</text>
-        <InputArea source="Notes" />
-      </page>
-    </TabbedPages>
   </FlowPanel>
 </f:Form>

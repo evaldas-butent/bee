@@ -6,14 +6,14 @@
   x="741" y="101"
   >
   <Fields>
-    <Integer name="Status" notNull="true" label="Būsena" defValue="0" />
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="Data" />
-    <String name="OrderNo" precision="20" unique="true" notNull="true" label="Užsakymo Nr."
+    <Integer name="Status" notNull="true" label="=status" defValue="0" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <String name="OrderNo" precision="20" unique="true" notNull="true" label="=orderNumber"
       defExpr="NEXT_NUMBER" defValue="U/" />
-    <Relation name="Customer" relation="Companies" notNull="true" label="Užsakovas" />
-    <Relation name="CustomerPerson" relation="CompanyPersons" label="Kontaktas" />
-    <Relation name="Payer" relation="Companies" label="Mokėtojas" />
-    <Relation name="Manager" relation="Users" label="Vadybininkas" />
-    <Text name="Notes" label="Pastabos" />
+    <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
+    <Relation name="CustomerPerson" relation="CompanyPersons" label="=contact" />
+    <Relation name="Payer" relation="Companies" label="=payer" />
+    <Relation name="Manager" relation="Users" label="=manager" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

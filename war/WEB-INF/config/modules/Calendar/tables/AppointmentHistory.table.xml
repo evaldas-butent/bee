@@ -5,14 +5,14 @@
   idName="AppointmentHistoryID"
   >
   <Fields>
-    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" />
-    <Relation name="Publisher" notNull="true" relation="Users" defExpr="CURRENT_USER" />
-    <DateTime name="PublishTime" notNull="true" defExpr="CURRENT_TIME" />
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" label="=calAppointment" />
+    <Relation name="Publisher" notNull="true" relation="Users" defExpr="CURRENT_USER" label="=user" />
+    <DateTime name="PublishTime" notNull="true" defExpr="CURRENT_TIME" label="=calPublishTime" />
 
-    <Integer name="Status" />
-    <Integer name="Hours" />
-    <Integer name="Minutes" />
+    <Integer name="Status" label="=calAppointmentStatus" />
+    <Integer name="Hours" label="=unitHours" />
+    <Integer name="Minutes" label="=unitMinutes" />
 
-    <Text name="Comment" />
+    <Text name="Comment" label="=calComment" />
   </Fields>
 </Table>

@@ -3,24 +3,23 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="NewAccount" viewName="Accounts" caption="Nauja paskyra" height="250"
+  name="NewAccount" viewName="Accounts" caption="=mailNewAccount" height="250"
   >
   <FlowPanel>
     <FlowPanel class="flexBox-vertical-center">
       <Table>
         <row>
-          <Label html="Pavadinimas" horizontalAlignment="right" class="bee-required" />
+          <Label text="=mailName" horizontalAlignment="right" class="bee-required" />
           <InputText source="Description" style="width:200px" />
 
           <cell rowSpan="2" verticalAlignment="middle">
-            <CheckBox source="Main" html="Pagrindinis" />
+            <CheckBox source="Main" text="=mailDefault" />
           </cell>
         </row>
         <row>
-          <Label html="El.paštas" horizontalAlignment="right" class="bee-required" />
-          <DataSelector source="Address" style="width:200px">
-            <renderToken source="Label" suffix=" " />
-            <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+          <Label text="=email" horizontalAlignment="right" class="bee-required" />
+          <DataSelector source="Address" style="width:200px" renderColumns="Label Email">
+            <renderer type="mail" />
           </DataSelector>
         </row>
       </Table>
@@ -33,31 +32,31 @@
         <Table>
           <row>
             <cell colSpan="2">
-              <Label html="Pašto serverio parametrai" style="font-weight:bold; text-align:center;" />
+              <Label text="=mailServerSettings" style="font-weight:bold; text-align:center;" />
             </cell>
           </row>
           <row>
-            <Label html="Tipas" horizontalAlignment="right" class="bee-required" />
+            <Label text="=mailType" horizontalAlignment="right" class="bee-required" />
             <ListBox source="StoreType">
               <item>POP3</item>
               <item>IMAP</item>
             </ListBox>
           </row>
           <row>
-            <Label html="Adresas" horizontalAlignment="right" />
+            <Label text="=mailAddress" horizontalAlignment="right" />
             <InputText source="StoreServer" />
           </row>
           <row>
-            <Label html="Prievadas" horizontalAlignment="right" />
+            <Label text="=mailPort" horizontalAlignment="right" />
             <InputInteger source="StorePort" style="width:50px;" />
           </row>
           <row>
-            <Label html="Prisijungimo vardas" horizontalAlignment="right" />
+            <Label text="=mailAccountLogin" horizontalAlignment="right" />
             <InputText source="StoreLogin" />
           </row>
           <row>
-            <CheckBox source="StoreSSL" html="SSL" style="float:right" />
-            <Button html="Slaptažodis" name="StorePassword" style="float:right" />
+            <CheckBox source="StoreSSL" text="=mailSSL" style="float:right" />
+            <Button text="=mailAccountPassword" name="StorePassword" style="float:right" />
           </row>
         </Table>
       </FlowPanel>
@@ -66,24 +65,24 @@
         <Table>
           <row>
             <cell colSpan="2">
-              <Label html="SMTP serverio parametrai" style="font-weight:bold; text-align:center;" />
+              <Label text="=mailSMTPServerSettings" style="font-weight:bold; text-align:center;" />
             </cell>
           </row>
           <row>
-            <Label html="Adresas" horizontalAlignment="right" />
+            <Label text="=mailAddress" horizontalAlignment="right" />
             <InputText source="TransportServer" />
           </row>
           <row>
-            <Label html="Prievadas" horizontalAlignment="right" />
+            <Label text="=mailPort" horizontalAlignment="right" />
             <InputInteger source="TransportPort" style="width:50px;" />
           </row>
           <row>
-            <Label html="Prisijungimo vardas" horizontalAlignment="right" />
+            <Label text="=mailAccountLogin" horizontalAlignment="right" />
             <InputText source="TransportLogin" />
           </row>
           <row>
-            <CheckBox source="TransportSSL" html="SSL" style="float:right" />
-            <Button html="Slaptažodis" name="TransportPassword" style="float:right" />
+            <CheckBox source="TransportSSL" text="=mailSSL" style="float:right" />
+            <Button text="=mailAccountPassword" name="TransportPassword" style="float:right" />
           </row>
         </Table>
       </FlowPanel>

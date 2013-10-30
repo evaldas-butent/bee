@@ -1,64 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:w="http://www.butent.com/widget"
 
-  name="AssessmentOrders" viewName="Assessments" caption="Vertinimo užsakymai"
-  flexGrow="1" flexShrink="1" disabledActions="add" order="AssessorID desc"
+  name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
+  flexGrow="1" disabledActions="add" order="AssessorID desc"
   >
-  <north size="40">
+  <g:north size="40">
     <w:HorizontalPanel>
-      <w:CheckBox name="Active" html="Vykdomi" checked="true" />
-      <w:CheckBox name="Completed" html="Įvykdyti" />
-      <w:CheckBox name="Canceled" html="Atšaukti" checked="true" />
+      <w:CheckBox name="Active" text="=trOrdersStatusActive" checked="true" />
+      <w:CheckBox name="Completed" text="=trOrdersStatusCompleted" />
+      <w:CheckBox name="Canceled" text="=trOrdersStatusCanceled" checked="true" />
     </w:HorizontalPanel>
-  </north>
-  <columns>
+  </g:north>
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" width="40" />
     <DataColumn name="Assessor" caption="PID" width="40" />
+    <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />
     <DataColumn name="Status" itemKey="AssessmentStatus" width="70" />
-    <DataColumn name="OrderNo" caption="Užsakymo Nr." width="70" />
-    <DataColumn name="LoadingDate" caption="Krov.data" width="70" format="DATE_SHORT" />
+    <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
+    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     
-    <DataColumn name="CustomerName" caption="Užsakovas" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="CustomerName" caption="=customer" minWidth="100" whiteSpace="nowrap" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="Iš" horizontalAlignment="center">
+      caption="=from" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
 
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="Į" horizontalAlignment="center">
+      caption="=to" horizontalAlignment="center">
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="Maršrutas" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
-
-    <DataColumn name="Description" caption="Krovinys" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
 
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
 
-    <DataColumn name="Number" caption="Ref numeris" width="70" />
+    <DataColumn name="Number" caption="=refNumber" width="70" />
     <DataColumn name="Cmr" caption="CMR" width="70" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

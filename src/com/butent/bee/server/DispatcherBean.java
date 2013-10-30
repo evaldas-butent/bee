@@ -7,20 +7,24 @@ import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
-import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -33,6 +37,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class DispatcherBean {
+
   private static BeeLogger logger = LogUtils.getLogger(DispatcherBean.class);
 
   @EJB
@@ -52,50 +57,86 @@ public class DispatcherBean {
   @EJB
   SystemBean system;
 
-  public ResponseObject doLogin(String locale, String host, String agent) {
-    if (BeeUtils.isEmpty(SqlBuilderFactory.getDsn())) {
-      return ResponseObject.error("DSN not specified");
-    }
-    
+  public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
     Map<String, Object> data = Maps.newHashMap();
-    
-    ResponseObject userData = userService.login(locale, host, agent);
+
+    ResponseObject userData = userService.login(reqInfo.getRemoteAddr(), reqInfo.getUserAgent());
     response.addMessagesFrom(userData);
     if (userData.hasErrors()) {
       return response;
     }
-    data.put(Service.LOGIN, userData.getResponse());
-    
-    ResponseObject menuData = uiHolder.getMenu();
-    response.addMessagesFrom(menuData);
-    if (menuData.hasErrors()) {
-      return response;
+    data.put(Service.VAR_USER, userData.getResponse());
+
+    UserInterface userInterface = null;
+
+    String ui = reqInfo.getParameter(Service.VAR_UI);
+    if (!BeeUtils.isEmpty(ui)) {
+      userInterface = UserInterface.getByShortName(ui);
     }
-    data.put(Service.LOAD_MENU, menuData.getResponse());
-    
-    data.put(Service.GET_DATA_INFO, system.getDataInfo());
-    
-    BeeRowSet favorites = uiService.getFavorites();
-    data.put(favorites.getViewName(), favorites);
-    
-    BeeRowSet filters = uiService.getFilters();
-    data.put(filters.getViewName(), filters);
-    
-    ResponseObject decorators = uiService.getDecorators();
-    response.addMessagesFrom(decorators);
-    if (decorators.hasErrors()) {
-      return response;
+    if (userInterface == null) {
+      userInterface = userService.getUserInterface(reqInfo.getRemoteUser());
     }
-    data.put(Service.GET_DECORATORS, decorators.getResponse());
-    
-    List<BeeRowSet> settings = uiService.getUserSettings();
-    for (BeeRowSet rowSet : settings) {
-      data.put(rowSet.getViewName(), rowSet);
+
+    Collection<Component> components = UserInterface.normalize(userInterface).getComponents();
+
+    if (!BeeUtils.isEmpty(components)) {
+      for (Component component : components) {
+        switch (component) {
+          case DATA_INFO:
+            data.put(component.key(), system.getDataInfo());
+            break;
+
+          case DICTIONARY:
+            data.put(component.key(),
+                Localizations.getPreferredDictionary(userService.getLanguage()));
+            break;
+
+          case DECORATORS:
+            ResponseObject decorators = uiService.getDecorators();
+            if (decorators != null) {
+              response.addMessagesFrom(decorators);
+              if (!decorators.hasErrors() && decorators.hasResponse()) {
+                data.put(component.key(), decorators.getResponse());
+              }
+            }
+            break;
+
+          case FAVORITES:
+            BeeRowSet favorites = uiService.getFavorites();
+            if (!DataUtils.isEmpty(favorites)) {
+              data.put(component.key(), favorites);
+            }
+            break;
+
+          case FILTERS:
+            BeeRowSet filters = uiService.getFilters();
+            if (!DataUtils.isEmpty(filters)) {
+              data.put(component.key(), filters);
+            }
+            break;
+
+          case GRIDS:
+            Pair<BeeRowSet, BeeRowSet> settings = uiService.getGridAndColumnSettings();
+            if (settings != null && !settings.isNull()) {
+              data.put(component.key(), settings);
+            }
+            break;
+
+          case MENU:
+            ResponseObject menuData = uiHolder.getMenu();
+            if (menuData != null) {
+              response.addMessagesFrom(menuData);
+              if (!menuData.hasErrors() && menuData.hasResponse()) {
+                data.put(component.key(), menuData.getResponse());
+              }
+            }
+            break;
+        }
+      }
     }
-    
-    response.setResponse(data);
-    return response;
+
+    return response.setResponse(data);
   }
 
   public void doLogout(String user) {

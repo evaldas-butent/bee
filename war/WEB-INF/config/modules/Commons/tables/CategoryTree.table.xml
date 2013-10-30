@@ -5,8 +5,8 @@
   idName="CategoryID"
   >
   <Fields>
-    <String name="Name" precision="60" notNull="true" />
-    <Relation name="Parent" relation="CategoryTree" />
+    <String name="Name" precision="60" notNull="true" label="=name"/>
+    <Relation name="Parent" relation="CategoryTree" label="=category" />
   </Fields>
 
   <Constraints>

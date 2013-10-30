@@ -5,10 +5,10 @@
   idName="DriverAbsenceID"
   >
   <Fields>
-    <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" label="Vairuotojas" />
-    <Date name="DateFrom" label="Data nuo" notNull="true" />
-    <Date name="DateTo" label="Data iki" notNull="true" />
-    <Relation name="Absence" relation="AbsenceTypes" notNull="true" label="Priežastis" />
-    <Text name="Notes" label="Pastabos" />
+    <Relation name="Driver" notNull="true" relation="Drivers" cascade="DELETE" label="=vehicleDriver" />
+    <Date name="DateFrom" label="=trAbsenceDateFrom" notNull="true" />
+    <Date name="DateTo" label="=trAbsenceDateTo" notNull="true" />
+    <Relation name="Absence" relation="AbsenceTypes" notNull="true" label="=trAbsenceReason" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

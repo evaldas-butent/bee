@@ -69,6 +69,7 @@ public final class CommonsConstants {
 
   public static final String COMMONS_PARAMETERS_PREFIX = "parameters_";
 
+  public static final String SVC_GET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
   public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
   public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
@@ -82,7 +83,7 @@ public final class CommonsConstants {
   public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
   public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
-  
+
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
@@ -104,6 +105,7 @@ public final class CommonsConstants {
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
+  public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_PERSONS = "Persons";
@@ -115,6 +117,9 @@ public final class CommonsConstants {
   public static final String TBL_RELATIONS = "Relations";
   public static final String TBL_FAVORITES = "Favorites";
   public static final String TBL_FILTERS = "Filters";
+
+  public static final String TBL_BRANCHES = "Branches";
+  public static final String TBL_WAREHOUSES = "Warehouses";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -138,15 +143,23 @@ public final class CommonsConstants {
 
   public static final String COL_LOGIN = "Login";
   public static final String COL_PASSWORD = "Password";
-  public static final String COL_PROPERTIES = "Properties";
-  public static final String COL_HOST = "Host";
+  public static final String COL_USER_PROPERTIES = "Properties";
+  public static final String COL_USER_LOCALE = "Locale";
+  public static final String COL_USER_INTERFACE = "Interface";
+  public static final String COL_USER_BLOCK_AFTER = "BlockAfter";
+  public static final String COL_USER_BLOCK_BEFORE = "BlockBefore";
+  public static final String COL_REMOTE_HOST = "Host";
+  public static final String COL_USER_AGENT = "Agent";
+
   public static final String COL_ROLE_NAME = "Name";
   public static final String COL_USER = "User";
   public static final String COL_ROLE = "Role";
 
   public static final String COL_COMPANY = "Company";
+  public static final String COL_COMPANY_NAME = "Name";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
+  public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
   public static final String COL_PERSON = "Person";
 
   public static final String COL_OBJECT_TYPE = "Type";
@@ -168,16 +181,20 @@ public final class CommonsConstants {
   public static final String COL_PHOTO = "Photo";
 
   public static final String COL_NAME = "Name";
-  public static final String COL_ITEM = "Item";
   public static final String COL_CATEGORY = "Category";
-  public static final String COL_SERVICE = "IsService";
+
+  public static final String COL_ITEM = "Item";
+  public static final String COL_ITEM_NAME = "Name";
+  public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_BARCODE = "Barcode";
+  public static final String COL_ITEM_IS_SERVICE = "IsService";
+  public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
 
   public static final String COL_UNIT = "Unit";
-  public static final String COL_ARTICLE = "Article";
-  public static final String COL_BARCODE = "Barcode";
+  public static final String COL_UNIT_NAME = "Name";
 
-  public static final String COL_CODE = "Code";
-  public static final String COL_VAT_CODE = "VATCode";
+  public static final String COL_COMPANY_CODE = "Code";
+  public static final String COL_COMPANY_VAT_CODE = "VATCode";
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
@@ -188,7 +205,10 @@ public final class CommonsConstants {
   public static final String COL_POST_INDEX = "PostIndex";
 
   public static final String COL_CITY = "City";
+  public static final String COL_CITY_NAME = "Name";
   public static final String COL_COUNTRY = "Country";
+  public static final String COL_COUNTRY_NAME = "Name";
+  public static final String COL_COUNTRY_CODE = "Code";
 
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
@@ -206,18 +226,36 @@ public final class CommonsConstants {
   public static final String COL_FILTER_USER = "User";
   public static final String COL_FILTER_KEY = "Key";
   public static final String COL_FILTER_ORDINAL = "Ordinal";
-  
+
+  public static final String COL_BRANCH_NAME = "Name";
+  public static final String COL_BRANCH_CODE = "Code";
+
+  public static final String COL_WAREHOUSE = "Warehouse";
+  public static final String COL_WAREHOUSE_CODE = "Code";
+  public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
+  public static final String COL_WAREHOUSE_BRANCH = "Branch";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 
+  public static final String ALS_CITY_NAME = "CityName";
+  public static final String ALS_COUNTRY_NAME = "CountryName";
+  
   public static final String FORM_NEW_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
   public static final String PRM_AUDIT_OFF = "DisableAuditing";
+  public static final String PRM_VAT_PERCENT = "VATPercent";
+
+  public static final String PRM_ERP_ADDRESS = "ERPAddress";
+  public static final String PRM_ERP_LOGIN = "ERPLogin";
+  public static final String PRM_ERP_PASSWORD = "ERPPassword";
 
   public static final String PROP_CATEGORIES = "CategList";
 
+  public static final String STYLE_SHEET = "commons";
+  
   private CommonsConstants() {
   }
 }

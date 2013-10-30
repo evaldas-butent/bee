@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  name="Cities" source="Cities" newRowCaption="Naujas miestas"
+  name="Cities" source="Cities" newRowCaption="=newCity"
   >
   <Columns>
     <SimpleColumn name="Name" />

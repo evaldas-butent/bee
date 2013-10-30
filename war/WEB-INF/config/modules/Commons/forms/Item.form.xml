@@ -42,7 +42,7 @@
     <FlowPanel class="flexBox-horizontal">
       <Label text="=itemCategories" style="&lbl1;" />
       <MultiSelector viewName="CategoryTree" property="CategList" renderColumns="ParentName Name"
-        style="width: 500px;" />
+        style="width: 500px;" label="=categories" />
     </FlowPanel>
   </FlowPanel>
 </f:Form>  

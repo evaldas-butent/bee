@@ -12,6 +12,7 @@
 
   <xs:complexType name="form">
     <xs:sequence>
+      <xs:element name="properties" type="type:customProperties" minOccurs="0" />
       <xs:element ref="widget:widget" />
       <xs:element name="rowMessage" type="ui:calcType" minOccurs="0" />
       <xs:element name="rowEditable" type="ui:calcType" minOccurs="0" />

@@ -3,11 +3,11 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewVehicleModel" viewName="VehicleModels" caption="Naujas modelis" width="300" height="110"
+  name="NewVehicleModel" viewName="VehicleModels" caption="=trNewVehicleModel" width="300" height="110"
   >
   <FlowPanel class="flexBox-vertical" style="margin: 10px">
-    <InputText source="Name" caption="Modelis" decorator="flex-left" d:size="50" />
-    <DataSelector source="Parent" caption="Markė" newRowEnabled="false" filter="!(parent)"
+    <InputText source="Name" caption="=vehicleModel" decorator="flex-left" d:size="50" />
+    <DataSelector source="Parent" caption="=trVehicleMake" newRowEnabled="false" filter="!(parent)"
       required="true" decorator="flex-left" d:size="50" d:rootStyle="margin-top: 10px" />
   </FlowPanel>
 </f:Form>

@@ -36,10 +36,10 @@ public final class ValidationHelper {
     List<String> result = Lists.newArrayList();
 
     if (!BeeUtils.isEmpty(minValue)) {
-      result.add(BeeUtils.joinWords("Min reikšmė:", minValue));
+      result.add(BeeUtils.joinWords(Localized.getConstants().minValue(), minValue));
     }
     if (!BeeUtils.isEmpty(maxValue)) {
-      result.add(BeeUtils.joinWords("Max reikšmė:", maxValue));
+      result.add(BeeUtils.joinWords(Localized.getConstants().maxValue(), maxValue));
     }
     
     return result;

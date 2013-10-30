@@ -2,25 +2,27 @@ package com.butent.bee.shared.modules.trade;
 
 public interface LocalizableTradeConstants {
 
-  String amount();
-  
+  String trdAmount();
+
+  String trdAmountWoVat();
+
   String barcode();
-  
+
   String itemCategories();
-  
+
   String itemCategoryTree();
 
   String itemUnits();
 
-  String price();
+  String trdPrice();
 
-  String quantity();
-  
+  String trdQuantity();
+
   String sellingPrice();
 
-  String total();
+  String trdTotal();
 
-  String vat();
+  String trdVat();
 
   String vatSum();
 }

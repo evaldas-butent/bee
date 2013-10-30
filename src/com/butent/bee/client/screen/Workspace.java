@@ -17,22 +17,24 @@ import com.butent.bee.client.Historian;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
 import com.butent.bee.client.layout.Direction;
-import com.butent.bee.client.layout.Span;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.widget.CustomHasHtml;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -48,26 +50,34 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
 
   private enum TabAction {
-    CREATE(new Image(Global.getImages().silverPlus()), null, null, "Naujas skirtukas"),
+    CREATE(new Image(Global.getImages().silverPlus()), null, null, Localized.getConstants()
+        .actionWorkspaceNewTab()),
 
-    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, "Nauja sritis viršuje"),
-    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, "Nauja sritis apačioje"),
-    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT, "Nauja sritis kairėje"),
-    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT, "Nauja sritis dešinėje"),
+    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewTop()),
+    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewBottom()),
+    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewLeft()),
+    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT, Localized.getConstants()
+        .actionWorkspaceNewRight()),
 
-    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, "Max dydis"),
-    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, "Atstatyti dydį"),
+    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE, Localized
+        .getConstants().actionWorkspaceMaxSize()),
+    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE, Localized
+        .getConstants().actionWorkspaceRestoreSize()),
 
     UP(new Image(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
-        "Didinti aukštyn"),
+        Localized.getConstants().actionWorkspaceEnlargeUp()),
     DOWN(new Image(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
-        "Didinti žemyn"),
+        Localized.getConstants().actionWorkspaceEnlargeDown()),
     LEFT(new Image(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
-        "Didinti į kairę"),
+        Localized.getConstants().actionWorkspaceEnlargeToLeft()),
     RIGHT(new Image(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
-        "Didinti į dešinę"),
+        Localized.getConstants().actionWorkspaceEnlargeToRight()),
 
-    CLOSE(new Image(Global.getImages().silverMinus()), null, null, "Uždaryti");
+    CLOSE(new Image(Global.getImages().silverMinus()), null, null, Localized.getConstants()
+        .actionClose());
 
     private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
 
@@ -95,16 +105,13 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
-  private final class TabWidget extends Span implements HasCaption {
+  private final class TabWidget extends Flow implements HasCaption {
 
-    private InlineLabel closeTab;
-    private Image newTab;
+    private TabWidget(String caption) {
+      super(getStylePrefix() + "tabWrapper");
 
-    private TabWidget(String caption, boolean setClose) {
-      super();
-
-      InlineLabel dropDown = new InlineLabel(String.valueOf(BeeConst.DROP_DOWN));
-      dropDown.addStyleName(getStylePrefix() + "dropDown");
+      CustomDiv dropDown = new CustomDiv(getStylePrefix() + "dropDown");
+      dropDown.setHtml(String.valueOf(BeeConst.DROP_DOWN));
       dropDown.setTitle(Localized.getConstants().tabControl());
       add(dropDown);
 
@@ -116,62 +123,34 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
       });
 
-      InlineLabel label = new InlineLabel(caption);
-      label.addStyleName(getStylePrefix() + "caption");
+      CustomDiv label = new CustomDiv(getStylePrefix() + "caption");
+      label.setHtml(caption);
       add(label);
 
-      closeTab = new InlineLabel();
-      closeTab.addStyleName(getStylePrefix() + "closeTab");
+      CustomDiv closeTab = new CustomDiv(getStylePrefix() + "closeTab");
+      closeTab.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
       closeTab.setTitle(Localized.getConstants().closeTab());
-      closeTab.setVisible(setClose);
       add(closeTab);
 
       closeTab.addClickHandler(new ClickHandler() {
-
         @Override
         public void onClick(ClickEvent event) {
           doAction(TabAction.CLOSE, getTabIndex(TabWidget.this.getId()));
         }
       });
-
-      newTab = new Image(Global.getImages().silverAdd());
-      newTab.addStyleName(getStylePrefix() + "newTab");
-      newTab.setTitle(Localized.getConstants().newTab());
-      add(newTab);
-      
-      newTab.addClickHandler(new ClickHandler() {
-        
-        @Override
-        public void onClick(ClickEvent event) {
-          doAction(TabAction.CREATE, getTabIndex(TabWidget.this.getId()));
-          TabWidget.this.setNewTab(false);
-        }
-      });
-    }
-
-    private TabWidget(String caption) {
-      this(caption, true);
     }
 
     @Override
     public String getCaption() {
-      return getCaptionWidget().getText();
+      return getCaptionWidget().getHtml();
     }
 
-    public void setClose(boolean visible) {
-      closeTab.setVisible(visible);
-    }
-
-    public void setNewTab(boolean visible) {
-      newTab.setVisible(visible);
-    }
-
-    private InlineLabel getCaptionWidget() {
-      return (InlineLabel) getWidget(1);
+    private CustomDiv getCaptionWidget() {
+      return (CustomDiv) getWidget(1);
     }
 
     private void setCaption(String caption) {
-      getCaptionWidget().setText(caption);
+      getCaptionWidget().setHtml(caption);
     }
   }
 
@@ -186,7 +165,22 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   Workspace() {
     super(STYLE_PREFIX);
+
     insertEmptyPanel(0);
+
+    CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(Tags.ASIDE),
+        getStylePrefix() + "newTab");
+    newTab.setHtml(BeeConst.STRING_PLUS);
+    newTab.setTitle(Localized.getConstants().newTab());
+    
+    newTab.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        insertEmptyPanel(getPageCount());
+      }
+    });
+    
+    getTabBar().add(newTab);
   }
 
   @Override
@@ -346,15 +340,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     super.removePage(index);
-
-    if (getPageCount() == 1) {
-      setStyleOne(true);
-      TabWidget tab = (TabWidget) getTabWidget(0);
-      tab.setClose(false);
-    }
-
-    TabWidget tab = (TabWidget) getTabWidget(getPageCount() - 1);
-    tab.setNewTab(true);
   }
 
   @Override
@@ -488,9 +473,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     } else if (!tile.isBlank()) {
       tile.blank();
     }
-
-    TabWidget tab = (TabWidget) getTabWidget(getPageCount() - 1);
-    tab.setNewTab(true);
   }
 
   private void doAction(TabAction action, int index) {
@@ -580,35 +562,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     TilePanel panel = new TilePanel(this);
     TabWidget tab = new TabWidget(Localized.getConstants().newTab());
 
-    if (getPageCount() == 1) {
-      setStyleOne(false);
-      tab.setClose(false);
-    }
-
     insert(panel, tab, before);
-    tab.setClose(isActionEnabled(TabAction.CLOSE, getTabIndex(tab.getId())));
-
-    if (getPageCount() == 1) {
-      setStyleOne(true);
-      tab.setClose(false);
-    }
 
     selectPage(before, SelectionOrigin.INSERT);
-    
-    if (getTabIndex(tab.getId()) == (getPageCount() - 1)) {
-      tab.setNewTab(true);
-    } else {
-      tab.setNewTab(false);
-    }
-
-    if (getPageCount() > 1) {
-      TabWidget firstTab = (TabWidget) getTabWidget(0);
-      firstTab.setClose(isActionEnabled(TabAction.CLOSE, 0));
-
-      /* last but one tab */
-      TabWidget lboTab = (TabWidget) getTabWidget(getPageCount() - 2);
-      lboTab.setNewTab(false);
-    }
   }
 
   private boolean isActionEnabled(TabAction action, int index) {
@@ -654,10 +610,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     return enabled;
-  }
-
-  private void setStyleOne(boolean add) {
-    setTabStyle(0, getStylePrefix() + "one", add);
   }
 
   private void showActions(String tabId) {
@@ -735,8 +687,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     tab.setCaption(caption);
-
-    tab.setClose(isActionEnabled(TabAction.CLOSE, getTabIndex(tab.getId())));
 
     if (checkSize) {
       checkLayout();

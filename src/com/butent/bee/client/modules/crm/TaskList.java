@@ -44,6 +44,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -62,7 +63,6 @@ import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -121,8 +121,8 @@ final class TaskList {
     public ColumnDescription beforeCreateColumn(GridView gridView,
         ColumnDescription columnDescription) {
 
-      if (type == Type.ASSIGNED && BeeUtils.same(columnDescription.getName(), COL_EXECUTOR)
-          || type == Type.DELEGATED && BeeUtils.same(columnDescription.getName(), COL_OWNER)) {
+      if (type == Type.ASSIGNED && columnDescription.is(COL_EXECUTOR)
+          || type == Type.DELEGATED && columnDescription.is(COL_OWNER)) {
 
         if (columnDescription.getVisible() == null
             && !GridSettings.hasVisibleColumns(gridView.getGridKey())) {
@@ -159,14 +159,15 @@ final class TaskList {
       if (owner == userId) {
         return GridInterceptor.DeleteMode.SINGLE;
       } else {
-        presenter.getGridView().notifyWarning("Užduotį išmesti gali tik vadovas");
+        presenter.getGridView().notifyWarning(Localized.getConstants().crmTaskDeleteCanManager());
         return GridInterceptor.DeleteMode.CANCEL;
       }
     }
 
     @Override
     public List<String> getDeleteRowMessage(IsRow row) {
-      String message = BeeUtils.joinWords("Išmesti užduotį", row.getId(), "?");
+      String message =
+          BeeUtils.joinWords(Localized.getConstants().crmTaskDelete(), row.getId(), "?");
       return Lists.newArrayList(message);
     }
 
@@ -901,14 +902,14 @@ final class TaskList {
   }
 
   private enum Type implements HasCaption {
-    ASSIGNED("Gautos užduotys") {
+    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
       }
     },
 
-    DELEGATED("Deleguotos užduotys") {
+    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
@@ -916,7 +917,7 @@ final class TaskList {
       }
     },
 
-    OBSERVED("Stebimos užduotys") {
+    OBSERVED(Localized.getConstants().crmTasksObservedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
@@ -926,7 +927,7 @@ final class TaskList {
       }
     },
 
-    GENERAL("Užduočių sąrašas") {
+    GENERAL(Localized.getConstants().crmTasksList()) {
       @Override
       Filter getFilter(LongValue userValue) {
         return null;

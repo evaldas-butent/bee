@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.mail.internet.MimeUtility;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,11 +35,13 @@ import javax.servlet.http.HttpServletResponse;
  * Manages file transfers between client and server sides.
  */
 
+@WebServlet(urlPatterns = "/file")
 @SuppressWarnings("serial")
 public class FileServlet extends HttpServlet {
-  private static BeeLogger logger = LogUtils.getLogger(FileServlet.class);
 
   private static final int DEFAULT_BUFFER_SIZE = 10240;
+
+  private static BeeLogger logger = LogUtils.getLogger(FileServlet.class);
 
   @EJB
   QueryServiceBean qs;
@@ -67,15 +70,6 @@ public class FileServlet extends HttpServlet {
     }
   }
 
-  private static void doError(HttpServletResponse resp, String err) {
-    try {
-      logger.severe(err);
-      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
-    } catch (IOException e) {
-      logger.error(e);
-    }
-  }
-
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
     Map<String, String> parameters = HttpUtils.getHeaders(req, false);
     parameters.putAll(HttpUtils.getParameters(req, true));
@@ -101,13 +95,15 @@ public class FileServlet extends HttpServlet {
       fileName = new File(fileName).getName();
     }
     if (path == null) {
-      doError(resp, BeeUtils.joinWords("File not found:", fileName));
+      HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          BeeUtils.joinWords("File not found:", fileName));
       return;
     }
     File file = new File(path);
 
     if (!FileUtils.isInputFile(file)) {
-      doError(resp, BeeUtils.joinWords("File was removed:", fileName));
+      HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          BeeUtils.joinWords("File was removed:", fileName));
       return;
     }
 

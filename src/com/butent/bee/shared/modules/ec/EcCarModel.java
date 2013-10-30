@@ -13,25 +13,25 @@ public class EcCarModel implements BeeSerializable {
   private enum Serial {
     MODEL_ID, MODEL_NAME, MANUFACTURER, PRODUCED_FROM, PRODUCED_TO
   }
-  
+
   public static EcCarModel restore(String s) {
     EcCarModel carModel = new EcCarModel();
     carModel.deserialize(s);
     return carModel;
   }
-  
-  private int modelId;
+
+  private long modelId;
   private String modelName;
   private String manufacturer;
 
   private Integer producedFrom;
   private Integer producedTo;
-  
+
   public EcCarModel(SimpleRow row) {
-    this.modelId = row.getInt(COL_TCD_MODEL_ID);
+    this.modelId = row.getLong(COL_TCD_MODEL);
     this.modelName = row.getValue(COL_TCD_MODEL_NAME);
-    this.manufacturer = row.getValue(COL_TCD_MANUFACTURER);
-    
+    this.manufacturer = row.getValue(COL_TCD_MANUFACTURER_NAME);
+
     this.producedFrom = row.getInt(COL_TCD_PRODUCED_FROM);
     this.producedTo = row.getInt(COL_TCD_PRODUCED_TO);
   }
@@ -55,7 +55,7 @@ public class EcCarModel implements BeeSerializable {
           break;
 
         case MODEL_ID:
-          setModelId(BeeUtils.toInt(value));
+          setModelId(BeeUtils.toLong(value));
           break;
 
         case MODEL_NAME:
@@ -77,7 +77,7 @@ public class EcCarModel implements BeeSerializable {
     return manufacturer;
   }
 
-  public int getModelId() {
+  public long getModelId() {
     return modelId;
   }
 
@@ -130,7 +130,7 @@ public class EcCarModel implements BeeSerializable {
     this.manufacturer = manufacturer;
   }
 
-  public void setModelId(int modelId) {
+  public void setModelId(long modelId) {
     this.modelId = modelId;
   }
 
@@ -141,7 +141,7 @@ public class EcCarModel implements BeeSerializable {
   public void setProducedFrom(Integer producedFrom) {
     this.producedFrom = producedFrom;
   }
-  
+
   public void setProducedTo(Integer producedTo) {
     this.producedTo = producedTo;
   }

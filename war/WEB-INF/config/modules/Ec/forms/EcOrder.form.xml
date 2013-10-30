@@ -7,16 +7,16 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="EcOrder" viewName="EcOrders" caption="=ecOrder" showRowId="true"
+  name="EcOrder" viewName="EcOrders" caption="=ecOrder"
   >
-  <FlowPanel class="flexBox-vertical">
-    <FlowPanel style="margin-top: 1ex; margin-bottom: 2ex;">
+  <FlowPanel class="flexBox-vertical bee-ec-Order-form">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecOrderDate" class="bee-required" style="&lbl;" />
         <InputDateTime source="Date" style="&inp;" />
 
         <Label text="=ecOrderNumber" style="&lbl;" />
-        <InputText source="Number" style="&inp;" />
+        <RowIdLabel style="border: 1px solid silver; padding: 1px 2px;" class="bee-disabled" />
 
         <Label text="=ecOrderStatus" style="margin-left: 3em; margin-right: 10px;" />
         <ListBox source="Status" itemKey="EcOrderStatus" readOnly="true" />
@@ -31,40 +31,54 @@
           <renderToken source="ClientCompanyName" prefix=", " />
         </DataSelector>
 
+        <Label text="=ecCreditLimit" style="&lbl;" />
+        <TextLabel name="creditLimit">
+          <renderToken source="ClientCreditLimit" />
+          <renderToken source="ClientLimitCurrency" prefix=" " />
+        </TextLabel>
+        <Label text="=ecDaysForPayment" style="margin-left: 1.5em; margin-right: 10px;" />
+        <TextLabel name="clientCreditDays">
+          <renderToken source="ClientCreditDays" suffix="=dayShort" />
+        </TextLabel>
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">      
         <Label text="=ecManager" style="&lbl;" />
-        <DataSelector source="Manager" style="&inp;">
+        <DataSelector source="Manager" style="&inp;" editSource="ManagerCompanyPerson">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />
           <renderToken source="ManagerCompanyName" prefix=", " />
         </DataSelector>
-      </FlowPanel>
-      &separator;
 
-      <FlowPanel class="flexBox-horizontal-top">
         <Label text="=ecDeliveryMethod" style="&lbl;" />
         <DataSelector source="DeliveryMethod" style="&inp;" />
+      </FlowPanel>      
+      &separator;
+      
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecOrderCommentManager" style="&lbl;" />
+        <InputArea source="ManagerComment" style="&inp; height: 40px;"
+          disablable="false" />
 
         <Label text="=ecDeliveryAddress" style="&lbl;" />
         <InputArea source="DeliveryAddress" style="&inp; height: 40px;" />
       </FlowPanel>
       &separator;
-      
+
       <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecRejectionReason" style="&lbl;" />
+        <DataSelector source="RejectionReason" style="&inp;" readOnly="true" />
+           
         <Label text="=ecOrderCommentClient" style="&lbl;" />
         <InputArea source="ClientComment" style="&inp; height: 40px;" />
-
-        <Label text="=ecOrderCommentManager" style="&lbl;" />
-        <InputArea source="ManagerComment" style="&inp; height: 40px;" />
       </FlowPanel>
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
         <CheckBox text="=ecOrderCopyByMail" source="CopyByMail"
           style="width: 250px; margin-left: 100px;" />
-        <Label text="=ecRejectionReason" style="&lbl;" />
-        <DataSelector source="RejectionReason" style="&inp;" />
       </FlowPanel>
-
     </FlowPanel>
 
     <TabbedPages class="flexible">
@@ -73,9 +87,15 @@
         <ChildGrid name="EcOrderItems" relColumn="Order" />
       </page>
       <page>
+        <text>=ecOrderEvents</text>
+        <ChildGrid name="EcOrderEvents" relColumn="Order" />
+      </page>
+      <page>
         <text>=notes</text>
-        <InputArea source="Notes" />
-      </page>  
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" disablable="false" />
+        </SimplePanel>
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>

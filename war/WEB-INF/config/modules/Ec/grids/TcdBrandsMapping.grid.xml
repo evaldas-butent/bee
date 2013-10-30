@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="TcdBrandsMapping" viewName="TcdBrandsMapping" caption="=tcdBrandsMapping"
+  >
+  <g:columns>
+    <DataColumn name="Supplier" itemKey="EcSupplier" />
+    <DataColumn name="SupplierBrand" />
+    <RelColumn name="Brand" />
+  </g:columns>
+</g:Grid>

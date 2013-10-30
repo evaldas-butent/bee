@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TaskDurations" viewName="TaskDurations" caption="Registruoti laikai" readOnly="true"
+  name="TaskDurations" viewName="TaskDurations" caption="=crmTaskDurations" readOnly="true"
   flexShrink="1" order="TaskEventID desc" 
   >
 
-  <columns>
+  <g:columns>
     <DataColumn name="DurationDate" flexShrink="0" visible="true" />
     <DataColumn name="DurationType" visible="true" />
     <DataColumn name="Duration" visible="true" />
 
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
-    <DataColumn name="CompanyName" caption="Klientas" />
+    <DataColumn name="CompanyName" caption="=client" />
 
     <RelColumn name="Task" editEnabled="true" renderColumns="Summary" flexGrow="1" />
 
     <RelColumn name="Publisher" renderColumns="PublisherFirstName PublisherLastName" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

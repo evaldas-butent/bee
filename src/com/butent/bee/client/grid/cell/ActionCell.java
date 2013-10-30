@@ -1,18 +1,17 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.HasViewName;
@@ -75,6 +74,15 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
     super(EventUtils.EVENT_TYPE_CLICK);
     this.type = (type == null) ? DEFAULT_TYPE : type;
   }
+  
+  public ActionCell copy() {
+    ActionCell copy = new ActionCell(type);
+    
+    copy.setViewName(getViewName());
+    copy.setOptions(getOptions());
+    
+    return copy;
+  }
 
   @Override
   public String getOptions() {
@@ -87,17 +95,20 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   }
 
   @Override
-  public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
-      ValueUpdater<String> valueUpdater) {
-    if (EventUtils.isClick(event) && context instanceof CellContext) {
-      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(),
-          ((CellContext) context).getRowValue(), Service.CELL_ACTION, getOptions()));
+  public EventState onBrowserEvent(CellContext context, Element parent, String value, Event event) {
+    EventState state = super.onBrowserEvent(context, parent, value, event);
+
+    if (state.proceed() && EventUtils.isClick(event)) {
+      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), context.getRowValue(),
+          Service.CELL_ACTION, getOptions()));
+      state = EventState.CONSUMED;
     }
-    super.onBrowserEvent(context, parent, value, event, valueUpdater);
+
+    return state; 
   }
 
   @Override
-  public void render(Context context, String value, SafeHtmlBuilder sb) {
+  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
     if (!BeeUtils.isEmpty(value)) {
       sb.append(type.render(value));
     }

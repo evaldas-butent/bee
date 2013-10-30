@@ -10,7 +10,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="NewRequest" viewName="Requests" caption="=newRequest"
+  name="NewRequest" viewName="Requests" caption="=crmNewRequest"
   width="610" height="330">
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <FlowPanel style="&section;">
@@ -29,7 +29,7 @@
     
     &separator;
     <FlowPanel style="&section;">
-      <Label text="=request" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
+      <Label text="=crmRequest" class="bee-required" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px; vertical-align:top;" />
       <InputArea source="Content" visibleLines="8" style="width:490px;" />
     </FlowPanel>
 

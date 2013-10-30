@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator '<div style="height: 1ex;"></div>'>
+  <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
+  <!ENTITY inp "width: 200px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+    name="TcdArticle" viewName="TcdArticles" caption="=ecItem">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecItemName" class="bee-required" style="&lbl;" />
+        <InputText source="ArticleName" style="width: 430px;" />
+
+        <CheckBox text="=ecItemVisible" source="Visible" style="margin-left: 50px;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecItemCode" class="bee-required" style="&lbl;" />
+        <InputText source="ArticleNr" style="&inp;" />
+
+        <Label text="=ecItemBrand" class="bee-required" style="&lbl;" />
+        <DataSelector source="Brand" style="&inp;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecItemUnit" style="&lbl;" />
+        <DataSelector source="Unit" style="width: 80px; margin-right: 120px;" />
+
+        <Label text="=ecItemWeight" style="&lbl;" />
+        <InputDouble source="Weight" style="width: 80px;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecNoveltyUntil" style="&lbl;" />
+        <InputDateTime source="Novelty" style="width: 120px; margin-right: 80px;" />
+
+        <Label text="=ecFeaturedUntil" style="&lbl;" />
+        <InputDateTime source="Featured" style="width: 120px;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecItemDescription" style="&lbl;" />
+        <InputArea source="Description" style="width: 540px; height: 60px;" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=ecItemDetailsSuppliers</text>
+        <FlowPanel class="flexBox-horizontal">
+          <ChildGrid name="TcdArticleSuppliers" relColumn="Article" class="flexible"
+            style="margin-right: 2em;" />
+          <ChildGrid name="TcdRemainders" parent="TcdArticleSuppliers" relColumn="ArticleSupplier"
+            style="width: 240px;" />
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>=ecItemAnalogs</text>
+        <ChildGrid name="TcdArticleCodes" relColumn="Article" />
+      </page>
+
+      <page>
+        <text>=ecItemCriteria</text>
+        <ChildGrid name="TcdArticleCriteria" relColumn="Article" />
+      </page>
+
+      <page>
+        <text>=ecItemCategories</text>
+        <ChildGrid name="TcdArticleCategories" relColumn="Article" />
+      </page>
+
+      <page>
+        <text>=ecItemDetailsCarTypes</text>
+        <ChildGrid name="TcdTypeArticles" relColumn="Article" />
+      </page>
+
+      <page>
+        <text>=ecItemGraphics</text>
+        <ChildGrid name="TcdArticleGraphics" relColumn="Article" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

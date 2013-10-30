@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="DiscussCommentsMarks"
+  idName="DiscussComentMarkID"
+  >
+  <Fields>
+    <Relation name="Discussion" notNull="true" relation="Discussions" cascade="DELETE" label="=discussion" />
+    <Relation name="User" notNull="true" relation="Users" label="=user" />
+    <Relation name="Comment" notNull="true" relation="DiscussionsComments" cascade="DELETE" label="=discussion" />
+    <Relation name="Mark" defValue="NULL" relation="CommentsMarksTypes" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Discussion User Comment" />
+  </Constraints>
+</Table>

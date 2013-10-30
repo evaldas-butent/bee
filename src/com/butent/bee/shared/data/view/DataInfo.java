@@ -106,7 +106,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (o == null) {
       return BeeConst.COMPARE_MORE;
     }
-    return BeeUtils.compare(getViewName(), o.getViewName());
+    return BeeUtils.compareNullsFirst(getViewName(), o.getViewName());
   }
 
   public boolean containsAllViewColumns(Collection<String> columnNames) {
@@ -240,6 +240,14 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   public int getColumnIndexBySource(String table, String field, Predicate<ViewColumn> predicate) {
     int index = BeeConst.UNDEF;
+    
+    if (BeeUtils.same(getTableName(), table)) {
+      index = getColumnIndex(field);
+      if (!BeeConst.isUndef(index)) {
+        return index;
+      }
+    }
+    
     List<ViewColumn> vcs = getViewColumnsBySource(table, field, predicate);
     if (vcs.isEmpty()) {
       return index;

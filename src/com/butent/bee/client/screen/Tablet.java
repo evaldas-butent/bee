@@ -10,13 +10,14 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.FontSize;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -58,6 +59,11 @@ public class Tablet extends Mobile {
   }
 
   @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.TABLET;
+  }
+  
+  @Override
   protected int addLogToggle(LayoutPanel panel) {
     final Toggle toggle = new Toggle("Hide Log", "Show Log", "toggleLog");
     StyleUtils.setFontSize(toggle, FontSize.SMALL);
@@ -84,7 +90,7 @@ public class Tablet extends Mobile {
     int w = 70;
     int h = 20;
 
-    grid.setHTML(r, 0, "Count:");
+    grid.setHtml(r, 0, "Count:");
     r++;
 
     minCount = new VolumeSlider(10, 1, 1000);
@@ -95,7 +101,7 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 1, maxCount);
     r++;
 
-    grid.setHTML(r, 0, "Radius:");
+    grid.setHtml(r, 0, "Radius:");
     r++;
 
     minRadius = new VolumeSlider(10, 1, 1000);
@@ -106,7 +112,7 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 1, maxRadius);
     r++;
 
-    grid.setHTML(r, 0, "Color Step:");
+    grid.setHtml(r, 0, "Color Step:");
     r++;
 
     colorStep = new VolumeSlider(16, 1, 256);
@@ -114,7 +120,7 @@ public class Tablet extends Mobile {
     grid.setWidget(r, 0, colorStep);
     r++;
 
-    grid.setHTML(r, 0, "Opacity:");
+    grid.setHtml(r, 0, "Opacity:");
     r++;
 
     minOpacity = new VolumeSlider(50, 0, 100);

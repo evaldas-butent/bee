@@ -27,7 +27,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.modules.ec.EcUtils;
 import com.butent.bee.client.modules.ec.widget.IndexSelector;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.ui.UiHelper;
@@ -37,6 +36,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -122,7 +122,7 @@ class SearchByCar extends EcView {
   private Integer modelIndex;
 
   private final List<EcCarType> types = Lists.newArrayList();
-  private Integer typeId;
+  private Long typeId;
 
   private final List<String> years = Lists.newArrayList();
   private Integer year;
@@ -225,6 +225,15 @@ class SearchByCar extends EcView {
     });
   }
 
+  private EcCarType findType(long id) {
+    for (EcCarType type : types) {
+      if (type.getTypeId() == id) {
+        return type;
+      }
+    }
+    return null;
+  }
+
   private String getEngine() {
     return engine;
   }
@@ -237,7 +246,7 @@ class SearchByCar extends EcView {
     return (getModelIndex() == null) ? null : models.get(getModelIndex());
   }
 
-  private Integer getModelId() {
+  private Long getModelId() {
     return (getModelIndex() == null) ? null : models.get(getModelIndex()).getModelId();
   }
 
@@ -245,7 +254,7 @@ class SearchByCar extends EcView {
     return modelIndex;
   }
 
-  private Integer getTypeId() {
+  private Long getTypeId() {
     return typeId;
   }
 
@@ -318,7 +327,7 @@ class SearchByCar extends EcView {
 
   private void onTypePanelClick(ClickEvent event) {
     TableRowElement element = DomUtils.getParentRow(EventUtils.getEventTargetElement(event), true);
-    int id = DomUtils.getDataIndex(element);
+    long id = DomUtils.getDataIndexLong(element);
 
     if (id > 0 && !Objects.equal(getTypeId(), id)) {
       setTypeId(id);
@@ -326,16 +335,18 @@ class SearchByCar extends EcView {
       resetItems();
       renderTypes();
 
+      EcCarType type = findType(id);
+      String label = (type == null) ? BeeUtils.toString(id) : type.getInfo();
+
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_CAR_TYPE);
       params.addQueryItem(VAR_TYPE, id);
 
-      EcKeeper.requestItems(SVC_GET_ITEMS_BY_CAR_TYPE, BeeUtils.toString(id), params,
-          new Consumer<List<EcItem>>() {
-            @Override
-            public void accept(List<EcItem> items) {
-              EcKeeper.renderItems(itemPanel, items);
-            }
-          });
+      EcKeeper.requestItems(SVC_GET_ITEMS_BY_CAR_TYPE, label, params, new Consumer<List<EcItem>>() {
+        @Override
+        public void accept(List<EcItem> items) {
+          EcKeeper.renderItems(itemPanel, items);
+        }
+      });
     }
   }
 
@@ -491,35 +502,35 @@ class SearchByCar extends EcView {
   private void refreshAttributeWidgets() {
     boolean hasManufacturer = !BeeUtils.isEmpty(getManufacturer());
 
-    manufacturerWidget.setText(hasManufacturer
+    manufacturerWidget.setHtml(hasManufacturer
         ? getManufacturer() : Localized.getConstants().ecCarManufacturer());
     manufacturerWidget.setHasValue(hasManufacturer);
 
     boolean modelEnabled = hasManufacturer;
     boolean hasModel = modelEnabled && getModelIndex() != null;
 
-    modelWidget.setText(hasModel ? renderModel(getModel()) : Localized.getConstants().ecCarModel());
+    modelWidget.setHtml(hasModel ? renderModel(getModel()) : Localized.getConstants().ecCarModel());
     modelWidget.setHasValue(hasModel);
     modelWidget.setEnabled(modelEnabled);
 
     boolean yearEnabled = hasModel && !types.isEmpty();
     boolean hasYear = yearEnabled && getYear() != null;
 
-    yearWidget.setText(hasYear ? getYear().toString() : Localized.getConstants().ecCarYear());
+    yearWidget.setHtml(hasYear ? getYear().toString() : Localized.getConstants().ecCarYear());
     yearWidget.setHasValue(hasYear);
     yearWidget.setEnabled(yearEnabled);
 
     boolean engineEnabled = hasModel && !types.isEmpty();
     boolean hasEngine = engineEnabled && !BeeUtils.isEmpty(getEngine());
 
-    engineWidget.setText(hasEngine ? getEngine() : Localized.getConstants().ecCarEngine());
+    engineWidget.setHtml(hasEngine ? getEngine() : Localized.getConstants().ecCarEngine());
     engineWidget.setHasValue(hasEngine);
     engineWidget.setEnabled(engineEnabled);
   }
 
   private static String renderModel(EcCarModel model) {
     return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, model.getModelName(),
-        EcUtils.renderProduced(model.getProducedFrom(), model.getProducedTo()));
+        EcUtils.formatProduced(model.getProducedFrom(), model.getProducedTo()));
   }
 
   private List<String> renderModels() {
@@ -536,19 +547,19 @@ class SearchByCar extends EcView {
     int row = 0;
     int col = 0;
 
-    table.setText(row, col++, Localized.getConstants().ecCarProduced());
-    table.setText(row, col++, Localized.getConstants().ecCarEngine());
+    table.setHtml(row, col++, Localized.getConstants().ecCarProduced());
+    table.setHtml(row, col++, Localized.getConstants().ecCarEngine());
 
-    table.setText(row, col++, Localized.getConstants().ecCarPower());
+    table.setHtml(row, col++, Localized.getConstants().ecCarPower());
 
-    table.setText(row, col++, COL_TCD_CCM);
-    table.setText(row, col++, COL_TCD_CYLINDERS);
-    table.setText(row, col++, COL_TCD_MAX_WEIGHT);
+    table.setHtml(row, col++, COL_TCD_CCM);
+    table.setHtml(row, col++, COL_TCD_CYLINDERS);
+    table.setHtml(row, col++, COL_TCD_MAX_WEIGHT);
 
-    table.setText(row, col++, COL_TCD_ENGINE);
-    table.setText(row, col++, COL_TCD_FUEL);
-    table.setText(row, col++, COL_TCD_BODY);
-    table.setText(row, col++, COL_TCD_AXLE);
+    table.setHtml(row, col++, COL_TCD_ENGINE);
+    table.setHtml(row, col++, COL_TCD_FUEL);
+    table.setHtml(row, col++, COL_TCD_BODY);
+    table.setHtml(row, col++, COL_TCD_AXLE);
 
     table.getRowFormatter().addStyleName(row, STYLE_TYPE + "headerRow");
     row++;
@@ -572,19 +583,19 @@ class SearchByCar extends EcView {
 
       col = 0;
 
-      table.setText(row, col++,
-          EcUtils.renderProduced(type.getProducedFrom(), type.getProducedTo()));
-      table.setText(row, col++, type.getTypeName());
-      table.setText(row, col++, type.getPower());
+      table.setHtml(row, col++,
+          EcUtils.formatProduced(type.getProducedFrom(), type.getProducedTo()));
+      table.setHtml(row, col++, type.getTypeName());
+      table.setHtml(row, col++, type.getPower());
 
-      table.setText(row, col++, EcUtils.string(type.getCcm()));
-      table.setText(row, col++, EcUtils.string(type.getCylinders()));
-      table.setText(row, col++, EcUtils.string(type.getMaxWeight()));
+      table.setHtml(row, col++, EcUtils.format(type.getCcm()));
+      table.setHtml(row, col++, EcUtils.format(type.getCylinders()));
+      table.setHtml(row, col++, EcUtils.format(type.getMaxWeight()));
 
-      table.setText(row, col++, type.getEngine());
-      table.setText(row, col++, type.getFuel());
-      table.setText(row, col++, type.getBody());
-      table.setText(row, col++, type.getAxle());
+      table.setHtml(row, col++, type.getEngine());
+      table.setHtml(row, col++, type.getFuel());
+      table.setHtml(row, col++, type.getBody());
+      table.setHtml(row, col++, type.getAxle());
 
       DomUtils.setDataIndex(table.getRowFormatter().getElement(row), type.getTypeId());
 
@@ -648,7 +659,7 @@ class SearchByCar extends EcView {
     this.modelIndex = modelIndex;
   }
 
-  private void setTypeId(Integer typeId) {
+  private void setTypeId(Long typeId) {
     this.typeId = typeId;
   }
 

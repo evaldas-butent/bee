@@ -7,9 +7,9 @@
   >
   <Fields>
     <Relation name="Part" notNull="true" relation="SpareParts" />
-    <Relation name="Vehicle" notNull="true" relation="Vehicles" />
-    <Date name="Mounted" notNull="true" />
-    <Date name="Removed" />
-    <String name="Note" precision="50" />
+    <Relation name="Vehicle" notNull="true" relation="Vehicles" label="=trVehicle" />
+    <Date name="Mounted" notNull="true" label="=trSparePartMounted" />
+    <Date name="Removed" label="=trSparePartRemoved" />
+    <String name="Note" precision="50" label="=note" />
   </Fields>
 </Table>

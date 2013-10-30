@@ -5,8 +5,19 @@
   >
   <Columns>
     <SimpleColumn name="Cargo" />
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <SimpleColumn name="Cmr" />
+      <SimpleColumn name="Order" />
+      <SimpleJoin name="Order" joinType="INNER">
+        <SimpleColumn name="Status" />
+        <SimpleColumn name="Date" alias="OrderDate" />
+        <SimpleColumn name="OrderNo" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Date" />
+
     <SimpleColumn name="Service" />
     <SimpleJoin joinType="LEFT" name="Service">
       <SimpleColumn name="Name" alias="ServiceName" />
@@ -16,6 +27,9 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="Supplier" />
     <SimpleJoin name="Supplier" joinType="LEFT">
       <SimpleColumn name="Name" alias="SupplierName" />

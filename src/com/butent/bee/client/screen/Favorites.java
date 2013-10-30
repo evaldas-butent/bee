@@ -36,6 +36,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -293,7 +294,7 @@ public class Favorites implements HandlesDeleteEvents {
     List<String> values = DataUtils.translate(expressions, sourceColumns, row);
     String html = BeeUtils.join(BeeConst.STRING_SPACE, values);
 
-    Global.inputString("Žymos pavadinimas", null, new StringCallback() {
+    Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         addItem(group, viewName, row.getId(), value);
@@ -347,12 +348,12 @@ public class Favorites implements HandlesDeleteEvents {
 
     Image edit = new Image(Global.getImages().silverEdit());
     edit.addStyleName(EDIT_STYLE);
-    edit.setTitle("keisti pavadinimą");
+    edit.setTitle(Localized.getConstants().actionRename());
 
     edit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
+        Global.inputString(Localized.getConstants().actionRename(), null, new StringCallback() {
           @Override
           public void onSuccess(String value) {
             updateItem(group, key, item.getId(), value);
@@ -365,7 +366,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     Image delete = new Image(Global.getImages().silverMinus());
     delete.addStyleName(DELETE_STYLE);
-    delete.setTitle("pašalinti");
+    delete.setTitle(Localized.getConstants().actionRemove());
 
     delete.addClickHandler(new ClickHandler() {
       @Override

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator '<div style="height: 1ex;"></div>'>
+  <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
+  <!ENTITY inp "width: 200px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" 
+    xmlns:f="http://www.butent.com/form"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    
+    name="EcClient" viewName="EcClients" caption="=ecClient">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecClientUser" class="bee-required" style="&lbl;" />
+        <DataSelector source="User" editSource="CompanyPerson" style="width: 550px;">
+          <renderToken source="FirstName" />
+          <renderToken source="LastName" />
+          <renderToken source="CompanyName" prefix=", " />
+        </DataSelector>
+      </FlowPanel>
+      &separator;
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecClientRegistrationDate" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Registered" style="&inp;" />
+
+        <Label text="=ecClientType" class="bee-required" style="&lbl;" />
+        <ListBox source="Type" itemKey="EcClientType" />
+      </FlowPanel>
+      &separator;
+
+      <xi:include href="../../Commons/forms/widgets/ContactInfoClosed.widget.xml" />  
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecManager" style="&lbl;" />
+        <DataSelector source="Manager" style="&inp;" renderColumns="ManagerFirstName ManagerLastName" />
+
+        <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning" style="margin-left: 150px;" />
+      </FlowPanel>
+      &separator;
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecBranchPrimary" class="bee-required" style="&lbl;" />
+        <DataSelector source="PrimaryBranch" style="&inp;" />
+
+        <Label text="=ecBranchSecondary" style="&lbl;" />
+        <DataSelector source="SecondaryBranch" style="&inp;" />
+      </FlowPanel>
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal">
+        <Label text="=ecWarehousesPrimary" style="&lbl;" />
+        <ChildSelector viewName="Warehouses" childTable="PrimaryWarehouses" renderColumns="Code"
+          newRowEnabled="false" label="=ecWarehousesPrimary" style="&inp;" />
+
+        <Label text="=ecWarehousesSecondary" style="&lbl;" />
+        <ChildSelector viewName="Warehouses" childTable="SecondaryWarehouses" renderColumns="Code"
+          newRowEnabled="false" label="=ecWarehousesSecondary" style="&inp;" />
+      </FlowPanel>
+      &separator;
+      &separator;
+
+      <FlowPanel class="flexBox-horizontal-top">
+        <Label text="=ecClientPersonCode" style="&lbl;" />
+        <InputText source="PersonCode" style="&inp;" />
+
+        <Label text="=ecClientActivity" style="&lbl;" />
+        <InputArea source="Activity" style="&inp; height: 40px;" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=ecDiscounts</text>
+        <FlowPanel class="flexBox-vertical">
+          &separator;
+          <FlowPanel class="flexBox-horizontal">
+            <Label text="=ecDiscountPercent" style="margin-left: 2em; margin-right: 10px;" />
+            <InputDecimal source="DiscountPercent" style="width: 80px;" />
+
+            <Label text="=ecDiscountParent" style="margin-left: 2em; margin-right: 10px;" />
+            <DataSelector source="DiscountParent" class="flexible" style="min-width: 100px; max-width: 400px;">
+              <renderToken source="ParentFirstName" />
+              <renderToken source="ParentLastName" />
+              <renderToken source="ParentCompanyName" prefix=", " />
+            </DataSelector>
+
+            <Label text="=ecDisplayedPrice" style="margin-left: 2em; margin-right: 10px;" />
+            <ListBox source="DisplayedPrice" itemKey="EcDisplayedPrice" style="margin-right: 2em;" />
+          </FlowPanel>
+          &separator;
+
+          <ChildGrid name="EcDiscounts" relColumn="Client" class="flexible" />
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>=ecUnsuppliedItems</text>
+        <ChildGrid name="ClientUnsuppliedItems" relColumn="Client" />
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

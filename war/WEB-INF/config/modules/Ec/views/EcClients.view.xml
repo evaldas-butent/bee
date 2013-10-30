@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" name="EcClients" source="EcClients" caption="=ecClients"
+  newRowForm="EcClient" editForm="EcClient"
+  newRowCaption="=ecClientNew" rowCaption="FirstName LastName">
 
-  name="EcClients" source="EcClients" caption="=ecClients"
-  >
   <Columns>
     <SimpleColumn name="User" />
     <SimpleJoin name="User" joinType="LEFT">
@@ -10,6 +10,7 @@
 
       <SimpleColumn name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Person" />
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" />
           <SimpleColumn name="LastName" />
@@ -18,12 +19,41 @@
         <SimpleJoin name="Company" joinType="LEFT">
           <SimpleColumn alias="CompanyName" name="Name" />
         </SimpleJoin>
+
+	    <SimpleJoin name="Contact" joinType="LEFT">
+	      <SimpleColumn name="Phone" editable="true" />
+	      <SimpleColumn name="Mobile" editable="true" />
+	      <SimpleColumn name="Fax" editable="true" />
+	
+	      <SimpleColumn name="Email" alias="EmailId" editable="true" />
+	      <SimpleJoin name="Email" joinType="LEFT">
+	        <SimpleColumn name="Email" />
+	        <SimpleColumn name="Label" />
+	      </SimpleJoin>
+	
+	      <SimpleColumn name="Address" editable="true" />
+	      <SimpleColumn name="PostIndex" editable="true" />
+	      <SimpleColumn name="Website" editable="true" />
+	
+	      <SimpleColumn name="City" editable="true" />
+	      <SimpleJoin name="City" joinType="LEFT">
+	        <SimpleColumn alias="CityName" name="Name" />
+	      </SimpleJoin>
+	
+	      <SimpleColumn name="Country" editable="true" />
+	      <SimpleJoin name="Country" joinType="LEFT">
+	        <SimpleColumn alias="CountryName" name="Name" />
+	        <SimpleColumn alias="CountryCode" name="Code" />
+	      </SimpleJoin>
+	
+	      <SimpleColumn name="SocialContacts" editable="true" /> 
+	    </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Registered" />
     <SimpleColumn name="Type" />
-    
+
     <SimpleColumn name="PrimaryBranch" />
     <SimpleJoin joinType="LEFT" name="PrimaryBranch">
       <SimpleColumn alias="PrimaryBranchName" name="Name" />
@@ -33,7 +63,7 @@
     <SimpleJoin joinType="LEFT" name="SecondaryBranch">
       <SimpleColumn alias="SecondaryBranchName" name="Name" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn alias="ManagerUser" name="User" />
@@ -47,11 +77,32 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="PersonCode" />
     <SimpleColumn name="Activity" />
-    <SimpleColumn name="Notes" />
     <SimpleColumn name="CreditLimitWarning" />
+
+    <SimpleColumn name="DiscountPercent" />
+
+    <SimpleColumn name="DiscountParent" />
+    <SimpleJoin name="DiscountParent" joinType="LEFT">
+      <SimpleColumn alias="ParentUser" name="User" />
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn alias="ParentFirstName" name="FirstName" />
+            <SimpleColumn alias="ParentLastName" name="LastName" />
+          </SimpleJoin>
+          <SimpleJoin name="Company" joinType="LEFT">
+            <SimpleColumn alias="ParentCompanyName" name="Name" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="DisplayedPrice" />
+
+    <SimpleColumn name="Notes" />
   </Columns>
 
   <Order>

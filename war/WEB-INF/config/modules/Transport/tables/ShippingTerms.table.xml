@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="ShippingTerms"
-  idName="TermID"
-  x="0" y="0"
+  name="ShippingTerms" idName="TermID"
   >
   <Fields>
-    <String name="Name" precision="3" notNull="true" unique="true" label="Sąlyga" />
-    <Text name="Description" label="Aprašymas" />
+    <String name="Name" precision="3" notNull="true" unique="true" label="=trShippingTermName" />
+    <Text name="Description" label="=description" />
+    <Integer name="SelfService" label="=trShippingTermSelfService" />
   </Fields>
 </Table>

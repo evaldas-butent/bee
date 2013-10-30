@@ -26,6 +26,7 @@ import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.Flexibility;
+import com.butent.bee.shared.ui.FooterDescription;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.RefreshType;
@@ -95,7 +96,7 @@ public class GridLoaderBean {
   private static final String ATTR_MAX_COLUMN_WIDTH = "maxColumnWidth";
 
   private static final String ATTR_HEADER_MODE = "headerMode";
-  private static final String ATTR_HAS_FOOTERS = "hasFooters";
+  private static final String ATTR_FOOTER_MODE = "footerMode";
 
   private static final String ATTR_CACHE_DATA = "cacheData";
 
@@ -123,8 +124,6 @@ public class GridLoaderBean {
   private static final String ATTR_SORTABLE = "sortable";
   private static final String ATTR_VISIBLE = "visible";
 
-  private static final String ATTR_HAS_FOOTER = "hasFooter";
-
   private static final String ATTR_REQUIRED = "required";
 
   private static final String ATTR_TYPE = "type";
@@ -151,6 +150,8 @@ public class GridLoaderBean {
   private static final String ATTR_RENDER_MODE = "renderMode";
 
   private static final String ATTR_ROW_CHANGE_SENSITIVITY_MILLIS = "rowChangeSensitivityMillis";
+
+  private static final String ATTR_DYNAMIC = "dynamic";
 
   @EJB
   SystemBean sys;
@@ -190,7 +191,6 @@ public class GridLoaderBean {
 
     for (ColumnDescription cd : gridDescription.getColumns()) {
       cd.setSortable(true);
-      cd.setHasFooter(true);
     }
     return gridDescription;
   }
@@ -463,7 +463,7 @@ public class GridLoaderBean {
     String source = columnDescription.getSource();
 
     if (!colType.isReadOnly() && BeeUtils.isEmpty(source)) {
-      source = columnDescription.getName();
+      source = columnDescription.getId();
       columnDescription.setSource(source);
     }
 
@@ -505,8 +505,8 @@ public class GridLoaderBean {
         break;
 
       case ACTION:
-        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getName())) {
-          columnDescription.setSource(columnDescription.getName());
+        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getId())) {
+          columnDescription.setSource(columnDescription.getId());
         }
         ok = true;
         break;
@@ -552,13 +552,13 @@ public class GridLoaderBean {
           dst.setSortable(BeeUtils.toBooleanOrNull(value));
         } else if (BeeUtils.same(key, ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
+
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
           dst.setHorAlign(value.trim());
-
-        } else if (BeeUtils.same(key, ATTR_HAS_FOOTER)) {
-          dst.setHasFooter(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, UiConstants.ATTR_WHITE_SPACE)) {
+          dst.setWhiteSpace(value.trim());
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
           dst.setSource(value.trim());
@@ -608,6 +608,9 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());
+
+        } else if (BeeUtils.same(key, ATTR_DYNAMIC)) {
+          dst.setDynamic(BeeUtils.toBooleanOrNull(value));
 
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;
@@ -680,6 +683,11 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(renderTokens)) {
       dst.setRenderTokens(renderTokens);
     }
+    
+    Element footerElement = XmlUtils.getFirstChildElement(src, TAG_FOOTER);
+    if (footerElement != null) {
+      dst.setFooterDescription(new FooterDescription(XmlUtils.getAttributes(footerElement)));
+    }
   }
 
   private static void xmlToGrid(Element src, GridDescription dst, BeeView view) {
@@ -743,9 +751,9 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(headerMode)) {
       dst.setHeaderMode(headerMode);
     }
-    Boolean hasFooters = XmlUtils.getAttributeBoolean(src, ATTR_HAS_FOOTERS);
-    if (hasFooters != null) {
-      dst.setHasFooters(hasFooters);
+    String footerMode = src.getAttribute(ATTR_FOOTER_MODE);
+    if (!BeeUtils.isEmpty(footerMode)) {
+      dst.setFooterMode(footerMode);
     }
 
     Boolean cacheData = XmlUtils.getAttributeBoolean(src, ATTR_CACHE_DATA);

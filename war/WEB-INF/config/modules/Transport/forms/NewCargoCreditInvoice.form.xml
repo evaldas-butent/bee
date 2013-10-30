@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl "text-align: right;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="NewCargoCreditInvoice" viewName="CargoCreditInvoices" caption="=trNewCargoCreditInvoice"
+  width="700" height="250"
+  >
+  <FlowPanel>
+    <Table>
+      <row>
+        <Label text="=trdDate" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Date" style="width:110px;" />
+
+        <Label text="=orderNumber" style="&lbl;" />
+        <InputText source="Number" />
+      </row>
+      <row>
+        <Label text="=trdAmount" class="bee-required" style="&lbl;" />
+        <HorizontalPanel>
+          <InputDecimal name="Amount" required="true" style="width:80px" />
+          <DataSelector source="CurrencyName" style="width:40px; margin-right:5px;" 
+            editEnabled="false" placeholder="=currencyShort" />
+        </HorizontalPanel>
+
+        <Label text="=trdInvoicePrefix" style="&lbl;" />
+        <FlowPanel>
+          <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
+          <InlineLabel text="=trdInvoiceNo" style="margin-left:5px;" />
+          <InputText source="InvoiceNo" />
+        </FlowPanel>
+      </row>
+      <row>
+        <cell><text /></cell>
+        <CheckBox source="VatIncluded" text="=trdVatIncluded" />
+        <Label text="=trdWarehouseTo" class="bee-required" style="&lbl;" />
+        <DataSelector source="WarehouseTo" />
+      </row>
+      <row>
+        <Label text="=trdSupplier" class="bee-required" style="&lbl;" />
+        <DataSelector source="Supplier" required="true" />
+        <Label text="=trdCustomer" style="&lbl;" />
+        <DataSelector source="Customer" />
+      </row>
+      <row>
+        <Label text="=trdTerm" style="&lbl; text-align:right;" />
+        <InputDate source="Term" style="width:70px;" />
+        <Label text="=trdManager" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" />
+      </row>
+      <row>
+        <cell colSpan="3">
+          <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl;" />
+        </cell>
+        <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" />
+      </row>
+      <row>
+        <Label text="=trCargoCreditInvoiceReason" class="bee-required" style="&lbl;" />
+        <cell colSpan="3">
+          <ListBox name="Cause">
+            <item>Kainos koregavimas</item>
+            <item>Tikslinimas dėl prekybinės nuolaidos</item>
+          </ListBox>
+        </cell>
+      </row>
+      <row>
+        <Label text="=trdNotes" style="&lbl;" />
+        <cell colSpan="2">
+          <InputArea source="Notes" visibleLines="2" style="width:100%" />
+        </cell>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

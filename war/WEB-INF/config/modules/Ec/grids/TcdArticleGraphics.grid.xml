@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="TcdArticleGraphics" viewName="TcdArticleGraphics" headerMode="grid"
+  >
+  <g:body height="60" /> 
+  <g:columns>
+    <DataColumn name="Sort" width="20" visible="true" />
+    <DataColumn name="Type" width="40" readOnly="true" />
+    <CalcColumn name="Resource" type="string" cellType="html" width="60" visible="true" />
+  </g:columns>
+</g:Grid>

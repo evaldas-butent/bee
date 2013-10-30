@@ -6,7 +6,7 @@
   audit="false"
   >
   <Fields>
-    <Relation name="Message" relation="Messages" unique="true" notNull="true" cascade="DELETE" />
+    <Relation name="Message" relation="Messages" unique="true" notNull="true" cascade="DELETE" label="=mailMessage" />
     <Text name="RawContent" />
   </Fields>
 </Table>

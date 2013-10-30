@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdArticleCriteria" source="TcdArticleCriteria" newRowCaption="=ecCriteriaNew"
+  >
+  <Columns>
+    <SimpleColumn name="Article" />
+    <SimpleColumn name="Criteria" />
+    <SimpleJoin name="Criteria" joinType="LEFT">
+      <SimpleColumn name="CriteriaName" />
+    </SimpleJoin>
+    <SimpleColumn name="Value" />
+  </Columns>
+  
+  <Order>
+    <OrderBy column="CriteriaName" />
+  </Order>
+</View>
+ 

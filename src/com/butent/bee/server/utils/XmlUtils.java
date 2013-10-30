@@ -173,6 +173,14 @@ public final class XmlUtils {
     return domBuilder.newDocument();
   }
 
+  public static String createString(String rootName, String... nodes) {
+    Assert.notEmpty(rootName);
+    Assert.notNull(nodes);
+    Assert.parameterCount(nodes.length + 1, 3);
+
+    return transformDocument(createDoc(rootName, nodes));
+  }
+
   public static Document fromFileName(String fileName) {
     File fl = new File(fileName);
     if (!FileUtils.isInputFile(fl)) {
@@ -1051,6 +1059,14 @@ public final class XmlUtils {
     }
   }
 
+  private static void appendElementWithText(Document doc, Element root, String tag, String txt) {
+    Element el = doc.createElement(tag);
+    Text x = doc.createTextNode(txt);
+
+    el.appendChild(x);
+    root.appendChild(el);
+  }
+
   private static Document asDocument(Node nd) {
     if (isDocument(nd)) {
       return (Document) nd;
@@ -1074,6 +1090,25 @@ public final class XmlUtils {
     } else {
       return true;
     }
+  }
+
+  public static Document createDoc(String rootName, String... nodes) {
+    Document doc = createDocument();
+    Element root = doc.createElement(rootName);
+
+    String tag;
+    String txt;
+
+    for (int i = 0; i < nodes.length - 1; i += 2) {
+      tag = nodes[i];
+      txt = nodes[i + 1];
+
+      if (!BeeUtils.anyEmpty(tag, txt)) {
+        appendElementWithText(doc, root, tag.trim(), txt.trim());
+      }
+    }
+    doc.appendChild(root);
+    return doc;
   }
 
   private static synchronized Document createDocument(File fl) {
@@ -1179,6 +1214,22 @@ public final class XmlUtils {
       return BeeConst.STRING_EMPTY;
     } else {
       return imp.toString();
+    }
+  }
+
+  private static String transformDocument(Document doc) {
+    try {
+      Transformer transformer = TransformerFactory.newInstance().newTransformer();
+      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+      StringWriter writer = new StringWriter();
+      transformer.transform(new DOMSource(doc), new StreamResult(writer));
+      return writer.toString();
+
+    } catch (TransformerException ex) {
+      LogUtils.getRootLogger().error(ex);
+      return null;
     }
   }
 

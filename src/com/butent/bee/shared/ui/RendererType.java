@@ -12,7 +12,9 @@ public enum RendererType {
   FLAG("flag", true),
   STAR("star", true),
   FILE_ICON("fileIcon", true),
-  PHOTO("photo", true);
+  PHOTO("photo", true),
+  MAIL("mail", false),
+  URL("url", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

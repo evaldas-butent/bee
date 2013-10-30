@@ -5,10 +5,15 @@
   idName="ConfigurationID"
   >
   <Fields>
+    <Numeric name="MarginDefaultPercent" precision="7" scale="3" />
+
     <String name="TodUrl" precision="200" />
     <Text name="TodHtml" />
 
     <String name="ContactsUrl" precision="200" />
     <Text name="ContactsHtml" />
+    
+    <Relation name="MailAccount" relation="Accounts" cascade="SET_NULL" label="=ecMailAccount" />
+    <Relation name="IncomingMail" relation="Emails" cascade="SET_NULL" label="=ecMailIncoming" />
   </Fields>
 </Table>

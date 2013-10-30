@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="EcDiscounts" viewName="EcDiscounts"
+  flexGrow="1" flexShrink="1"
+  >
+  <g:body height="45" />
+  <g:columns>
+    <DataColumn name="DateFrom" width="70" />
+    <DataColumn name="DateTo" width="70" />
+
+    <xi:include href="columns/Category.column.xml" />
+
+    <RelColumn name="Brand" renderColumns="BrandName" width="100" />
+
+    <RelColumn name="Article" caption="=ecItem" minWidth="150" caching="none"
+        searchableColumns="ArticleName ArticleNr"
+        choiceColumns="ArticleName BrandName ArticleNr" newRowEnabled="false">
+      <renderToken source="ArticleName" />
+      <renderToken source="ArticleBrandName" prefix=", " />
+      <renderToken source="ArticleNr" prefix=", " />
+    </RelColumn>        
+
+    <DataColumn name="Percent" visible="true" width="80" sortable="false" />
+    <DataColumn name="Price" visible="true" width="80" sortable="false" />
+
+    <DataColumn name="Note" visible="false" />
+  </g:columns>
+</g:Grid>

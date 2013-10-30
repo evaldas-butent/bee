@@ -1,6 +1,7 @@
 package com.butent.bee.client.tree;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Position;
@@ -65,12 +66,13 @@ import com.google.gwt.user.client.ui.impl.FocusImpl;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -188,17 +190,32 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
         if (isTarget(elem)) {
           elem.removeClassName(StyleUtils.DND_OVER);
-          TreeItem destination = null;
+
+          final HasTreeItems target;
+          final TreeItem src = source;
+          TreeItem dst = null;
 
           if (isCaption(elem)) {
-            Tree.this.addItem(source);
+            target = Tree.this;
           } else {
-            destination = getItemByContentId(elem.getId());
-            destination.addItem(source);
+            dst = getItemByContentId(elem.getId());
+            target = dst;
           }
-          setSelectedItem(source);
-          ensureSelectedItemVisible();
-          CatchEvent.fire(Tree.this, source, destination);
+
+          CatchEvent<TreeItem> catchEvent = CatchEvent.fire(Tree.this, src, dst,
+              new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                  target.addItem(src);
+                  setSelectedItem(src);
+                  ensureSelectedItemVisible();
+                }
+              });
+
+          if (!catchEvent.isConsumed()) {
+            catchEvent.consume();
+            catchEvent.executeScheduled();
+          }
         }
       }
       return true;
@@ -252,8 +269,8 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     if (elem == null) {
       return false;
     }
-    return BeeUtils.inList(elem.getTagName(), DomUtils.TAG_SELECT, DomUtils.TAG_INPUT,
-        DomUtils.TAG_TEXT_AREA, DomUtils.TAG_OPTION, DomUtils.TAG_BUTTON, DomUtils.TAG_LABEL);
+    return BeeUtils.inList(elem.getTagName(), Tags.SELECT, Tags.INPUT, Tags.TEXT_AREA, Tags.OPTION,
+        Tags.BUTTON, Tags.LABEL);
   }
 
   private final Map<Widget, TreeItem> childWidgets = new HashMap<Widget, TreeItem>();
@@ -295,7 +312,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     root.setTree(this);
 
     if (!BeeUtils.isEmpty(caption)) {
-      this.caption = new InlineLabel(LocaleUtils.maybeLocalize(caption));
+      this.caption = new InlineLabel(Localized.maybeTranslate(caption));
       this.caption.setStyleName("bee-Tree-caption");
       getElement().appendChild(this.caption.getElement());
     } else {
@@ -493,7 +510,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     int eventType = event.getTypeInt();
 
     switch (eventType) {
-      case Event.ONCLICK: 
+      case Event.ONCLICK:
         Element el = DOM.eventGetTarget(event);
         if (!shouldTreeDelegateFocusToElement(el) && (getSelectedItem() != null)
             && getSelectedItem().getContentElem().isOrHasChild(el)) {
@@ -501,15 +518,15 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         }
         break;
 
-      case Event.ONMOUSEDOWN: 
+      case Event.ONMOUSEDOWN:
         if ((DOM.eventGetCurrentTarget(event) == getElement())
             && (event.getButton() == NativeEvent.BUTTON_LEFT)) {
           elementClicked(DOM.eventGetTarget(event));
         }
         break;
 
-      case Event.ONKEYDOWN: 
-        if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event) 
+      case Event.ONKEYDOWN:
+        if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event)
             && !event.getAltKey() && !event.getMetaKey()) {
           navigate(event);
           event.preventDefault();

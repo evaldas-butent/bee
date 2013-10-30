@@ -5,14 +5,18 @@
   idName="ExpenseID"
   >
   <Fields>
-    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" />
-    <Date name="Date" label="Data" />
-    <Relation name="Service" notNull="true" relation="Services" label="Paslauga" />
-    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="Suma" />
-    <Relation name="Currency" relation="Currencies" notNull="true" label="Val." />
-    <String name="Number" precision="20" label="Numeris" />
-    <Relation name="Supplier" relation="Companies" label="Tiekėjas" />
-    <String name="Note" precision="50" label="Pastaba" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo"/>
+    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE" label="=trAssessor"/>
+    <Date name="Date" label="=date" />
+
+    <Relation name="Service" notNull="true" relation="Services" label="=trServiceName" />
+    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=total" />
+    <Relation name="Currency" relation="Currencies" notNull="true" label="=currencyShort" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="%" />
+
+    <String name="Number" precision="20" label="=number" />
+    <Relation name="Supplier" relation="Companies" label="=trSupplier" />
+    <String name="Note" precision="50" label="=note" />
   </Fields>
 </Table>

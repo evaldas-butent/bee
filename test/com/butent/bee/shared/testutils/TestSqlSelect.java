@@ -401,7 +401,7 @@ public class TestSqlSelect {
     assertTrue(select.isEmpty());
 
     select.addFields("Table1", "field1");
-    assertTrue(select.isEmpty());
+    assertFalse(select.isEmpty());
 
     select.addFrom("Table1");
     assertFalse(select.isEmpty());

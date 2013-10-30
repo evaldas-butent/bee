@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="EcBanners"
+  idName="BannerID"
+  >
+  <Fields>
+    <Integer name="Sort" label="=ecBannerSort" />
+    <Text name="Picture" />
+
+    <Integer name="Width" label="=ecBannerWidth" />
+    <Integer name="Height" label="=ecBannerHeight" />
+
+    <String name="Link" precision="200" label="=ecBannerLink" />
+    
+    <DateTime name="ShowAfter" label="=ecBannerAfter" />
+    <DateTime name="ShowBefore" label="=ecBannerBefore" />
+  </Fields>
+</Table>

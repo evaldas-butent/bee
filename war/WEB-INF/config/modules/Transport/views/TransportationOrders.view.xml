@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
   name="TransportationOrders" source="TransportationOrders"
-  caption="Pervežimo užsakymai" newRowCaption="Naujas pervežimo užsakymas"
+  caption="=trTransportationOrders" newRowCaption="=newTransportationOrder"
   editForm="TransportationOrder" newRowForm="TransportationOrder"
   >
   <Columns>
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />
-    <SimpleColumn name="Customer" />
     <SimpleColumn name="Notes" />
     
+    <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
     </SimpleJoin>
@@ -44,6 +45,7 @@
     </SimpleJoin>
     
     <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
+      <HiddenColumn name="Description" />
       <AggregateColumn aggregate="MIN" name="Description" alias="MinCargo" />
       <AggregateColumn aggregate="MAX" name="Description" alias="MaxCargo" />
       <AggregateColumn aggregate="COUNT_DISTINCT" name="Description" alias="CntCargo" />
@@ -51,6 +53,34 @@
       <AggregateColumn aggregate="MAX" name="Partial" />
       <AggregateColumn aggregate="MAX" name="Outsized" />
       <AggregateColumn aggregate="MAX" name="Dangerous" />
+      
+      <AggregateJoin name="UnloadingPlace" joinType="LEFT">
+        <AggregateColumn name="Date" alias="UnloadingDate" aggregate="MIN" />
+      </AggregateJoin>
+      
+      <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
+        <HiddenColumn name="Sale" />
+        <AggregateColumn name="SaleID" aggregate="MIN">
+          <x:nvl type="LONG">
+            <x:number>"Sale"</x:number>
+            <x:number>0</x:number>
+          </x:nvl>
+        </AggregateColumn>
+        <AggregateJoin name="Sale" joinType="LEFT">
+          <HiddenColumn name="Amount" />
+          <HiddenColumn name="Paid" />
+          <AggregateColumn name="Debt" aggregate="MAX">
+            <x:minus>
+              <x:number>"Amount"</x:number>
+              <x:nvl type="DECIMAL">
+                <x:number>"Paid"</x:number>
+                <x:number>0</x:number>
+              </x:nvl>
+            </x:minus>
+          </AggregateColumn>
+          <AggregateColumn name="Proforma" aggregate="MAX" />
+        </AggregateJoin>
+      </ExternalJoin>
       
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <AggregateJoin name="Trip" joinType="LEFT">

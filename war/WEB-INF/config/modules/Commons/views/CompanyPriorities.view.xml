@@ -3,8 +3,8 @@
 
   name="CompanyPriorities"
   source="CompanyPriorities"
-  caption="Klientų prioritetai"
-  newRowCaption="Naujas klientų prioritetas"
+  caption="=clientsPriorities"
+  newRowCaption="=newClientsPriority"
   >
   <Columns>
     <SimpleColumn name="Name" />

@@ -5,7 +5,7 @@
   idName="CompanyGroupID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="Grupės pavadinimas" />
-    <Text name="Description" label="Aprašymas" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=groupName" />
+    <Text name="Description" label="=description" />
   </Fields>
 </Table>

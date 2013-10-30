@@ -1,8 +1,9 @@
 package com.butent.bee.client.render;
 
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
+import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RenderableCell extends AbstractCell<String> {
@@ -12,7 +13,7 @@ public class RenderableCell extends AbstractCell<String> {
   }
 
   @Override
-  public void render(Context context, String value, SafeHtmlBuilder sb) {
+  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
     if (!BeeUtils.isEmpty(value)) {
       sb.appendEscaped(value);
     }

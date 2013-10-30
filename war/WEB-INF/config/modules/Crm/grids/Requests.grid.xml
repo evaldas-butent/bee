@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:w="http://www.butent.com/widget"
 
-  name="Requests" viewName="Requests" caption="Užklausimai"
-  flexGrow="1" flexShrink="1" order="RequestID desc"
+  name="Requests" viewName="Requests" caption="=crmRequests"
+  flexGrow="1" order="RequestID desc"
   >
 
-  <north size="40">
+  <g:north size="40">
     <w:HorizontalPanel style="border-spacing: 8px 0px">
       <w:CheckBox name="Registred" text="=requestShowRegistered" checked="true"/>
       <w:CheckBox name="Finished" text="=requestShowFinished" />
     </w:HorizontalPanel>
-  </north>
+  </g:north>
 
-  <columns>
-    <IdColumn name="ID" />
-    <DataColumn name="Date" caption="Data" width="100"/>
-    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" 
+  <g:columns>
+    <IdColumn name="ID" width="50" />
+    <DataColumn name="Date" caption="=date" width="100" visible="true" />
+    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" 
       filterOptions="empty" />
-    <RelColumn name="Customer" caption="Klientas" minWidth="100" />
+    <RelColumn name="Customer" caption="=client" minWidth="100" visible="true" />
 
-    <DataColumn name="Content" caption="Užklausimas" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Content" caption="=crmRequest" minWidth="100" flexShrink="1" 
+      whiteSpace="nowrap" visible="true" />
 
-    <RelColumn name="Manager" caption="Atsakingas" minWidth="100" />
-    <DataColumn name="Result" visible="false"/>
-  </columns>
+    <RelColumn name="Manager" caption="=responsiblePerson" minWidth="100" />
+    <DataColumn name="Result" visible="false" />
+  </g:columns>
   
-  <!-- <predefinedFilter name="Executing" label="Vykdomi">
-    <column name="Finished" emptyValues="true" />
-  </predefinedFilter> -->
-</Grid>
+  <!-- <g:predefinedFilter name="Executing" label="=crmRequestFilterActive">
+    <g:column name="Finished" emptyValues="true" />
+  </g:predefinedFilter> -->
+</g:Grid>

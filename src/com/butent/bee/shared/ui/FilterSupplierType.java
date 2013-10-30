@@ -4,9 +4,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum FilterSupplierType {
   VALUE("value"),
+  RANGE("range"),
   LIST("list"),
   ENUM("enum"),
-  ID("id");
+  ID("id"),
+  VERSION("version");
 
   public static FilterSupplierType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

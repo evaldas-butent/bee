@@ -124,6 +124,10 @@ public final class Pair<A, B> implements BeeSerializable {
   public int hashCode() {
     return 1 + Objects.hashCode(getA(), getB());
   }
+  
+  public boolean isNull() {
+    return getA() == null && getB() == null;
+  }
 
   @Override
   public String serialize() {

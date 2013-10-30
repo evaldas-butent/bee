@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="EcGroupCategories"
+  idName="GroupCategoryID"
+  >
+  <Fields>
+    <Relation name="Group" relation="EcGroups" notNull="true" cascade="DELETE" />
+    <Relation name="Category" relation="TcdCategories" notNull="true" cascade="DELETE" label="=ecItemCategory" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Group Category" />
+  </Constraints>
+</Table>

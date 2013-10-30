@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Units" source="Units" newRowCaption="Naujas mato vienetas"
+  name="Units" source="Units" newRowCaption="=newUnit"
   >
   <Columns>
     <SimpleColumn name="Name" />

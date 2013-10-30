@@ -15,7 +15,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.io.IoConstants;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -205,6 +205,6 @@ public class FileStorageBean {
   }
   
   private static File getPhotoDir() {
-    return new File(Config.IMAGES_DIR, IoConstants.PHOTO_DIR);
+    return new File(Config.IMAGE_DIR, Paths.PHOTO_DIR);
   }
 }

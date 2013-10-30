@@ -51,7 +51,11 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   }
   
   public static boolean isClickOrEnter(int code) {
-    return code == CLICK || code == ENTER;
+    return code == CLICK || isEnter(code);
+  }
+
+  public static boolean isEnter(int code) {
+    return code == ENTER || code == KeyCodes.KEY_ENTER;
   }
 
   private final IsRow rowValue;

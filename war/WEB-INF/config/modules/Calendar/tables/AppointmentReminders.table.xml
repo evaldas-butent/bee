@@ -5,16 +5,16 @@
   idName="AppointmentReminderID"
   >
   <Fields>
-    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" />
-    <Relation name="ReminderType" notNull="true" relation="ReminderTypes" cascade="DELETE" />
-    <Relation name="Recipient" relation="CompanyPersons" cascade="DELETE" />
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" label="=calAppointment" />
+    <Relation name="ReminderType" notNull="true" relation="ReminderTypes" cascade="DELETE" label="=reminderType" />
+    <Relation name="Recipient" relation="CompanyPersons" cascade="DELETE" label="=recipient" />
 
-    <Integer name="Hours" />
-    <Integer name="Minutes" />
-    <DateTime name="Scheduled" />
+    <Integer name="Hours" label="=unitHours" />
+    <Integer name="Minutes" label="=unitMinutes" />
+    <DateTime name="Scheduled" label ="=calScheduled" />
 
-    <Text name="Message" />
-    <DateTime name="Sent" />
-    <Text name="Error" />
+    <Text name="Message" label="=calMessage" />
+    <DateTime name="Sent" label="=calSent" />
+    <Text name="Error" label="=errorMessage" />
   </Fields>
 </Table>

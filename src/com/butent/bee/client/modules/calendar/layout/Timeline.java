@@ -6,8 +6,8 @@ import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 
@@ -42,7 +42,7 @@ public class Timeline extends Flow {
       add(hourWrapper);
     }
     
-    Html now = new Html();
+    CustomDiv now = new CustomDiv();
     now.addStyleName(CalendarStyleManager.NOW_POINTER);
     add(now);
     setNowIndex(getWidgetCount() - 1);

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcDiscounts" source="EcDiscounts" newRowCaption="=ecDiscountNew"
+  >
+  <Columns>
+    <SimpleColumn name="Client" />
+
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+
+    <SimpleColumn name="Category" />
+    <SimpleJoin name="Category" joinType="LEFT">
+      <SimpleColumn name="CategoryName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Brand" />
+    <SimpleJoin name="Brand" joinType="LEFT">
+      <SimpleColumn name="BrandName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Article" />
+    <SimpleJoin name="Article" joinType="LEFT">
+      <SimpleColumn name="ArticleName" />
+      <SimpleColumn name="ArticleNr" />
+
+      <SimpleJoin name="Brand" joinType="LEFT">
+        <SimpleColumn name="BrandName" alias="ArticleBrandName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Percent" />
+    <SimpleColumn name="Price" />
+
+    <SimpleColumn name="Note" />
+  </Columns>
+</View>

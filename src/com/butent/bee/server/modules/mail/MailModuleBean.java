@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.mail.proxy.MailProxy;
@@ -83,6 +84,8 @@ public class MailModuleBean implements BeeModule {
   MailProxy proxy;
   @EJB
   MailStorageBean mail;
+  @EJB
+  UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -282,7 +285,7 @@ public class MailModuleBean implements BeeModule {
         if (!save) {
           try {
             sendMail(sender, to, cc, bcc, subject, content, attachments);
-            response.addInfo("Laiškas išsiųstas");
+            response.addInfo(usr.getLocalizableConstants().mailMessageSent());
 
           } catch (MessagingException e) {
             save = true;
@@ -301,7 +304,7 @@ public class MailModuleBean implements BeeModule {
           if (!account.addMessageToRemoteFolder(message, folder)) {
             mail.storeMail(message, folder.getId(), null);
           }
-          response.addInfo("Laiškas išsaugotas juodraščiuose");
+          response.addInfo(usr.getLocalizableConstants().mailMessageIsSavedInDraft());
         }
 
       } else if (BeeUtils.same(svc, SVC_GET_USABLE_CONTENT)) {
@@ -375,6 +378,16 @@ public class MailModuleBean implements BeeModule {
       return ResponseObject.error(e);
     }
     return ResponseObject.info("Mail sent");
+  }
+
+  public ResponseObject sendMail(Long from, Set<Long> to, String subject, String content) {
+    try {
+      sendMail(from, to, null, null, subject, content, null);
+    } catch (MessagingException ex) {
+      logger.error(ex);
+      return ResponseObject.error(ex);
+    }
+    return ResponseObject.emptyResponse();
   }
 
   public void sendMail(Long from, Set<Long> to, Set<Long> cc,
@@ -714,8 +727,9 @@ public class MailModuleBean implements BeeModule {
 
     SimpleRowSet newRs = new SimpleRowSet(cols);
 
-    for (String[] row : rs.getRows()) {
-      newRs.addRow(new String[] {row[0], HtmlUtils.cleanHtml(row[1])});
+    for (SimpleRow row : rs) {
+      newRs.addRow(new String[] {row.getValue(COL_CONTENT),
+          HtmlUtils.cleanHtml(row.getValue(COL_HTML_CONTENT))});
     }
     packet.put(TBL_PARTS, newRs);
 
@@ -790,11 +804,12 @@ public class MailModuleBean implements BeeModule {
 
     StringBuilder content = new StringBuilder();
 
-    for (String[] row : rs.getRows()) {
+    for (SimpleRow row : rs) {
       if (content.length() > 0) {
         content.append("\n\n");
       }
-      content.append(BeeUtils.notEmpty(HtmlUtils.stripHtml(row[1]), row[0]));
+      content.append(BeeUtils.notEmpty(HtmlUtils.stripHtml(row.getValue(COL_HTML_CONTENT)),
+          row.getValue(COL_CONTENT)));
     }
     packet.put(COL_CONTENT, content.toString());
 

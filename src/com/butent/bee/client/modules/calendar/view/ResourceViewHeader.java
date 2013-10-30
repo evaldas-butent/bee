@@ -9,11 +9,11 @@ import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.CssUnit;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class ResourceViewHeader extends Horizontal {
     captionPanel.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CONTAINER);
     add(captionPanel);
     
-    Html filler = new Html();
+    CustomDiv filler = new CustomDiv();
     add(filler);
     setCellWidth(filler, DomUtils.getScrollBarWidth());
   }

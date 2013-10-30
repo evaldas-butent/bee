@@ -1,8 +1,8 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.i18n.Format;
 
 /**
@@ -18,11 +18,11 @@ public class BooleanCell extends AbstractCell<Boolean> {
   public BooleanCell() {
     this(Format.getDefaultTrueChar(), Format.getDefaultFalseChar(), Format.getDefaultNullChar());
   }
-  
+
   public BooleanCell(Character trueChar, Character falseChar) {
     this(trueChar, falseChar, Format.getDefaultNullChar());
   }
-  
+
   public BooleanCell(Character trueChar, Character falseChar, Character nullChar) {
     this.trueChar = trueChar;
     this.falseChar = falseChar;
@@ -42,7 +42,7 @@ public class BooleanCell extends AbstractCell<Boolean> {
   }
 
   @Override
-  public void render(Context context, Boolean value, SafeHtmlBuilder sb) {
+  public void render(CellContext context, Boolean value, SafeHtmlBuilder sb) {
     Character ch = (value == null) ? nullChar : (value ? trueChar : falseChar);
     if (ch != null) {
       sb.append(ch);

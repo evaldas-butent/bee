@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="DiscussionsComments"
+  idName="DiscussionComentID"
+  >
+  <Fields>
+    <Relation name="Discussion" notNull="true" relation="Discussions" cascade="DELETE" label="=discussion" />
+    <Relation name="Publisher" notNull="true" relation="Users" label="=user" />
+    <Relation name="Parent" defValue="NULL" relation="DiscussionsComments" cascade="DELETE" label="=discussComment" />
+    
+    <DateTime name="PublishTime" notNull="true" label="=discussCommentPublished" />
+    <Text name="CommentText" label="=discussComment" />
+  </Fields>
+</Table>

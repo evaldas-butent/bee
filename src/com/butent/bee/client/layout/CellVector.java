@@ -3,24 +3,26 @@ package com.butent.bee.client.layout;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.style.HasTextAlign;
+import com.butent.bee.client.style.HasVerticalAlign;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
 
 public abstract class CellVector extends ComplexPanel implements IdentifiableWidget,
-    HasIndexedWidgets, HasAlignment, InsertPanel, IsHtmlTable {
+    HasIndexedWidgets, HasTextAlign, HasVerticalAlign, IsHtmlTable {
 
   private final Element table;
   private final Element body;
 
-  private HorizontalAlignmentConstant horAlign;
-  private VerticalAlignmentConstant vertAlign;
+  private TextAlign horAlign;
+  private VerticalAlign vertAlign;
 
   private String defaultCellClasses;
   private String defaultCellStyles;
@@ -51,17 +53,17 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
   }
 
   @Override
-  public HorizontalAlignmentConstant getHorizontalAlignment() {
-    return horAlign;
-  }
-
-  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
   @Override
-  public VerticalAlignmentConstant getVerticalAlignment() {
+  public TextAlign getTextAlign() {
+    return horAlign;
+  }
+
+  @Override
+  public VerticalAlign getVerticalAlign() {
     return vertAlign;
   }
 
@@ -89,14 +91,14 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     }
   }
 
-  public void setCellHorizontalAlignment(Widget w, HorizontalAlignmentConstant align) {
+  public void setCellHorizontalAlignment(Widget w, TextAlign align) {
     Element td = getWidgetTd(w);
     if (td != null) {
       setCellHorizontalAlignment(td, align);
     }
   }
 
-  public void setCellVerticalAlignment(Widget w, VerticalAlignmentConstant align) {
+  public void setCellVerticalAlignment(Widget w, VerticalAlign align) {
     Element td = getWidgetTd(w);
     if (td != null) {
       setCellVerticalAlignment(td, align);
@@ -128,17 +130,17 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
   }
 
   @Override
-  public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
-    this.horAlign = align;
-  }
-
-  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   @Override
-  public void setVerticalAlignment(VerticalAlignmentConstant align) {
+  public void setTextAlign(TextAlign align) {
+    this.horAlign = align;
+  }
+
+  @Override
+  public void setVerticalAlign(VerticalAlign align) {
     this.vertAlign = align;
   }
 
@@ -147,11 +149,11 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
 
     StyleUtils.updateAppearance(td, getDefaultCellClasses(), getDefaultCellStyles());
 
-    if (getHorizontalAlignment() != null) {
-      setCellHorizontalAlignment(td, getHorizontalAlignment());
+    if (getTextAlign() != null) {
+      setCellHorizontalAlignment(td, getTextAlign());
     }
-    if (getVerticalAlignment() != null) {
-      setCellVerticalAlignment(td, getVerticalAlignment());
+    if (getVerticalAlign() != null) {
+      setCellVerticalAlignment(td, getVerticalAlign());
     }
 
     return td;
@@ -172,13 +174,13 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     return DOM.getParent(w.getElement());
   }
 
-  protected void setCellHorizontalAlignment(Element td, HorizontalAlignmentConstant align) {
+  protected void setCellHorizontalAlignment(Element td, TextAlign align) {
     if (align != null) {
       StyleUtils.setTextAlign(td, align);
     }
   }
 
-  protected void setCellVerticalAlignment(Element td, VerticalAlignmentConstant align) {
+  protected void setCellVerticalAlignment(Element td, VerticalAlign align) {
     if (align != null) {
       StyleUtils.setVerticalAlign(td, align);
     }

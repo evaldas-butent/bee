@@ -8,7 +8,9 @@
     <Relation name="User" notNull="true" unique="true" relation="Users" label="=user" />
     <Integer name="TabNr" label="=ecManagerTabNr" />
 
-    <Relation name="ReportOrder" relation="ReminderTypes" label="=ecManagerReportOrder" />
+    <Relation name="MailAccount" relation="Accounts" cascade="SET_NULL" label="=ecMailAccount" />
+    <Relation name="IncomingMail" relation="Emails" cascade="SET_NULL" label="=ecMailIncoming" />
+    
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
   name="Tasks" viewName="Tasks" caption="=tasks"
   cacheData="false" asyncThreshold="-1" favorite="Summary"
-  flexShrink="1" order="TaskId desc"
+  order="TaskId desc"
   >
-  <columns>
+  <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
       caption="-" label="=taskColumnMode" />
 
@@ -19,47 +19,47 @@
     <IdColumn name="Id" caption="ID" />
 
     <DataColumn name="Priority" itemKey="TaskPriority" />
-    <DataColumn name="Summary" flexGrow="1" visible="true" />
+    <DataColumn name="Summary" maxWidth="200" visible="true" />
 
-    <RelColumn name="Company" editEnabled="true" flexGrow="1" />
+    <RelColumn name="Company" editEnabled="true" />
 
     <DataColumn name="Status" itemKey="TaskStatus" visible="true" />
-    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="Vėl./Plan." />
+    <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="=crmTaskDelayPlannedShort" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />
     <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
-      sortBy="ExecutorLastName ExecutorFirstName" flexGrow="1" />
+      sortBy="ExecutorLastName ExecutorFirstName" />
 
-    <DataColumn name="StartTime" flexShrink="0" visible="true" />
-    <DataColumn name="FinishTime" flexShrink="0" />
-  </columns>
+    <DataColumn name="StartTime" visible="true" />
+    <DataColumn name="FinishTime" />
+  </g:columns>
   
-  <predefinedFilter name="new" label="=taskFilterNew">
-    <column name="Mode" value="0" />
-  </predefinedFilter>
-  <predefinedFilter name="updated" label="=taskFilterUpdated">
-    <column name="Mode" value="1" />
-  </predefinedFilter>
-  <predefinedFilter name="new_upd" label="=taskFilterNewOrUpdated">
-    <column name="Mode" value="2" />
-  </predefinedFilter>
+  <g:predefinedFilter name="new" label="=taskFilterNew">
+    <g:column name="Mode" value="0" />
+  </g:predefinedFilter>
+  <g:predefinedFilter name="updated" label="=taskFilterUpdated">
+    <g:column name="Mode" value="1" />
+  </g:predefinedFilter>
+  <g:predefinedFilter name="new_upd" label="=taskFilterNewOrUpdated">
+    <g:column name="Mode" value="2" />
+  </g:predefinedFilter>
   
-  <predefinedFilter name="starred" label="=taskFilterStarred">
-    <column name="Star" emptyValues="false" />
-  </predefinedFilter>
+  <g:predefinedFilter name="starred" label="=taskFilterStarred">
+    <g:column name="Star" emptyValues="false" />
+  </g:predefinedFilter>
   
-  <predefinedFilter name="nv_a" label="=taskFilterNotVisitedOrActive">
-    <column name="Status" value="0,1" />
-  </predefinedFilter>  
-  <predefinedFilter name="nv_a_c" label="=taskFilterNotVisitedOrActiveOrCompleted">
-    <column name="Status" value="0,1,4" />
-  </predefinedFilter>
+  <g:predefinedFilter name="nv_a" label="=taskFilterNotVisitedOrActive">
+    <g:column name="Status" value="0,1" />
+  </g:predefinedFilter>  
+  <g:predefinedFilter name="nv_a_c" label="=taskFilterNotVisitedOrActiveOrCompleted">
+    <g:column name="Status" value="0,1,4" />
+  </g:predefinedFilter>
   
-  <predefinedFilter name="late" label="=taskFilterLate">
-    <column name="Slack" value="late" />
-  </predefinedFilter>  
-  <predefinedFilter name="scheduled" label="=taskFilterScheduled">
-    <column name="Slack" value="scheduled" />
-  </predefinedFilter>  
-</Grid>
+  <g:predefinedFilter name="late" label="=taskFilterLate">
+    <g:column name="Slack" value="late" />
+  </g:predefinedFilter>  
+  <g:predefinedFilter name="scheduled" label="=taskFilterScheduled">
+    <g:column name="Slack" value="scheduled" />
+  </g:predefinedFilter>  
+</g:Grid>

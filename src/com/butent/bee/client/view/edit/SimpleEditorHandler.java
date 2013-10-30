@@ -3,6 +3,7 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.EventUtils;
@@ -22,10 +23,15 @@ public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.
     observe(caption, editor, null);
   }
 
-  public static void observe(String caption, Editor editor,
+  public static void observe(String caption, Editor editor, Widget focusParent) {
+    observe(caption, editor, focusParent, null);
+  }
+
+  public static void observe(String caption, Editor editor, Widget focusParent,
       NotificationListener notificationListener) {
     Assert.notNull(editor);
-    SimpleEditorHandler handler = new SimpleEditorHandler(caption, editor, notificationListener);
+    SimpleEditorHandler handler = new SimpleEditorHandler(caption, editor, focusParent,
+        notificationListener);
 
     editor.addKeyDownHandler(handler);
     editor.setHandlesTabulation(true);
@@ -35,12 +41,14 @@ public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.
 
   private final String caption;
   private final Editor editor;
+  private final Widget focusParent;
   private final NotificationListener notificationListener;
 
-  private SimpleEditorHandler(String caption, Editor editor,
+  private SimpleEditorHandler(String caption, Editor editor, Widget focusParent,
       NotificationListener notificationListener) {
     this.caption = caption;
     this.editor = editor;
+    this.focusParent = focusParent;
     this.notificationListener = notificationListener;
   }
 
@@ -112,7 +120,7 @@ public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.
   }
 
   private void navigate(boolean forward) {
-    UiHelper.moveFocus(editor.asWidget().getParent(), forward);
+    UiHelper.moveFocus(BeeUtils.nvl(focusParent, editor.asWidget().getParent()), forward);
   }
 
   private void normalize() {

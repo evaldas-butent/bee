@@ -5,9 +5,9 @@
   idName="ColorID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=colorTitle" />
 
-    <String name="Background" precision="100" notNull="true" />
-    <String name="Foreground" precision="100" />
+    <String name="Background" precision="100" notNull="true" label="=backgroundColor"/>
+    <String name="Foreground" precision="100" label="=foregroundColor" />
   </Fields>
 </Table>

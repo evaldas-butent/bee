@@ -114,28 +114,28 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     testc2.add(2);
     testc2.add(10);
 
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare("", ""));
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare("Compare", "Compare"));
-    assertEquals(true, BeeUtils.compare("Aompare", "Compare") < 0);
-    assertEquals(true, BeeUtils.compare("Compare", "Aompare") > 0);
-    assertEquals(true, BeeUtils.compare(null, "Aompare") < 0);
-    assertEquals(true, BeeUtils.compare("Compare", null) > 0);
-    assertEquals(true, BeeUtils.compare(7, 6) > 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(6, 6));
-    assertEquals(true, BeeUtils.compare(5, 6) < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst("", ""));
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst("Compare", "Compare"));
+    assertEquals(true, BeeUtils.compareNullsFirst("Aompare", "Compare") < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst("Compare", "Aompare") > 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(null, "Aompare") < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst("Compare", null) > 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(7, 6) > 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(6, 6));
+    assertEquals(true, BeeUtils.compareNullsFirst(5, 6) < 0);
 
-    assertEquals(true, BeeUtils.compare('a', 'c') < 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare('c', 'c'));
-    assertEquals(false, BeeUtils.compare('c', 'a') < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst('a', 'c') < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst('c', 'c'));
+    assertEquals(false, BeeUtils.compareNullsFirst('c', 'a') < 0);
 
-    assertEquals(true, BeeUtils.compare(true, false) > 0);
-    assertEquals(true, BeeUtils.compare(false, true) < 0);
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(true, true));
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(false, false));
+    assertEquals(true, BeeUtils.compareNullsFirst(true, false) > 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(false, true) < 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(true, true));
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(false, false));
 
-    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compare(5.0, 5.0));
-    assertEquals(true, BeeUtils.compare(-2.0, 5.69) < 0);
-    assertEquals(true, BeeUtils.compare(5.11, 3.0) > 0);
+    assertEquals(BeeConst.COMPARE_EQUAL, BeeUtils.compareNullsFirst(5.0, 5.0));
+    assertEquals(true, BeeUtils.compareNullsFirst(-2.0, 5.69) < 0);
+    assertEquals(true, BeeUtils.compareNullsFirst(5.11, 3.0) > 0);
   }
 
   @Test
@@ -224,6 +224,20 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(null, BeeUtils.fromHex(null));
   }
 
+  @Test
+  public final void testGetDecimals() {
+    assertEquals(0, BeeUtils.getDecimals(null));
+    assertEquals(0, BeeUtils.getDecimals(""));
+    assertEquals(0, BeeUtils.getDecimals("   "));
+    assertEquals(0, BeeUtils.getDecimals("."));
+    assertEquals(0, BeeUtils.getDecimals("  ."));
+    assertEquals(0, BeeUtils.getDecimals("0"));
+    assertEquals(1, BeeUtils.getDecimals(". "));
+    assertEquals(3, BeeUtils.getDecimals(".000"));
+    assertEquals(5, BeeUtils.getDecimals("0.12345"));
+    assertEquals(4, BeeUtils.getDecimals("1.0E17"));
+  }
+  
   @Test
   public final void testGetClassName() {
     assertEquals("TestBeeUtilsTransform", NameUtils.getClassName(this.getClass()));
@@ -509,6 +523,7 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals("00", BeeUtils.removeTrailingZeros("00.00"));
     assertEquals("00", BeeUtils.removeTrailingZeros("00.0000000000000"));
     assertEquals("XX", BeeUtils.removeTrailingZeros("XX.0000000000000"));
+    assertEquals("1.0E10", BeeUtils.removeTrailingZeros("1.0E10"));
   }
 
   @Test
@@ -545,6 +560,11 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(-9.223372036854776E18, BeeUtils.round(Long.MIN_VALUE, 5));
     assertEquals(0.0, BeeUtils.round(Long.valueOf(0), 5));
     assertEquals(0.0, BeeUtils.round(0.0, 5));
+
+    assertEquals("0", BeeUtils.round("0.499", 0));
+    assertEquals("0.50", BeeUtils.round("0.499", 2));
+    assertEquals("3.1416", BeeUtils.round(Double.toString(Math.PI), 4));
+    assertEquals("10000000000", BeeUtils.round("1.0E10", 0));
   }
 
   @Test
@@ -618,7 +638,7 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   @Test
   public final void testToDoubleOrNull() {
     assertEquals(null, BeeUtils.toDoubleOrNull(null));
-    assertEquals(0.0, BeeUtils.toDoubleOrNull("asd"));
+    assertEquals(null, BeeUtils.toDoubleOrNull("asd"));
     assertEquals(15.0, BeeUtils.toDoubleOrNull("15.0"));
   }
 
@@ -685,6 +705,21 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals("5", BeeUtils.toString(5));
     assertEquals("Infinity", BeeUtils.toString(Double.POSITIVE_INFINITY));
     assertEquals("9", BeeUtils.toString((long) 9));
+    
+    assertEquals("0", BeeUtils.toString(0.0));
+    assertEquals("0.123", BeeUtils.toString(0.123));
+    assertEquals("1000000", BeeUtils.toString(1e6));
+    assertEquals("1.0E-6", BeeUtils.toString(0.000001));
+    assertEquals("-1.0E-6", BeeUtils.toString(-1e-6));
+    assertEquals("1.000001", BeeUtils.toString(1.000001));
+
+    assertEquals("0", BeeUtils.toString(0.0, 10));
+    assertEquals("0", BeeUtils.toString(0.0, -1));
+    assertEquals("0", BeeUtils.toString(0.0, -0));
+    assertEquals("NaN", BeeUtils.toString(Double.NaN, 10));
+    assertEquals("1.0E20", BeeUtils.toString(1e20, 2));
+    assertEquals("0.667", BeeUtils.toString(0.666666666, 3));
+    assertEquals("-1", BeeUtils.toString(-0.666, 0));
   }
 
   @Test

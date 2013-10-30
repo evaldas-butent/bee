@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY summary "font-size: larger; padding-bottom: 5px;">
+  <!ENTITY table "border-collapse: collapse;">
+  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
+  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" />'>
+  <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
+  <!ENTITY separator "<hr/>">
+  <!ENTITY area "width: 200px; height: 40px;">
+  <!ENTITY check "margin-top: 5px; margin-left: 1em; display: block;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="CargoReqTemplate" viewName="CargoReqTemplate" caption="=trRequestTemplate"
+  >
+  <FlowPanel>
+    <br/>
+
+    <Table style="&table;" cellStyle="&cells;">
+      &cols;
+     
+      <row>
+        <Label text="=trRequestTemplateName" class="bee-required" />
+        <InputText source="Name" />
+        <Label text="=trRequestTemplateDescription" />
+        <InputArea source="TemplateDescription" style="&area;" />
+      </row>
+
+      <row>
+        <Label text="=trRequestTemplateUser" class="bee-required" />
+        <cell colSpan="3">
+          <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
+            <renderToken source="CustomerFirstName" />
+            <renderToken source="CustomerLastName" />
+            <renderToken source="CustomerCompanyName" prefix=", " />
+          </DataSelector>
+        </cell>
+      </row>
+    </Table>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trLoadingInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestPlaceCompanyName" />
+          <DataSelector source="LoadingCompany" />
+          <Label text="=trRequestPlaceContact" />
+          <InputText source="LoadingContact" />
+        </row>
+
+        <row>
+          <Label text="=address" />
+          <InputText source="LoadingAddress" />
+          <Label text="=phone" />
+          <InputText source="LoadingPhone" />
+        </row>
+
+        <row>
+          <Label text="=city" />
+          <DataSelector source="LoadingCity" />
+          <Label text="=country" />
+          <DataSelector source="LoadingCountry" />
+        </row>
+
+        <row>
+          <Label text="=email" />
+          <DataSelector source="LoadingEmailId" />
+          <Label text="=trRequestPlaceFax" />
+          <InputText source="LoadingFax" />
+        </row>
+
+        <row>
+          <Label text="=trLoadingNumber" />
+          <InputText source="LoadingNumber" />
+        </row>
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trUnloadingInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestPlaceCompanyName" />
+          <DataSelector source="UnloadingCompany" />
+          <Label text="=trRequestPlaceContact" />
+          <InputText source="UnloadingContact" />
+        </row>
+
+        <row>
+          <Label text="=address" />
+          <InputText source="UnloadingAddress" />
+          <Label text="=phone" />
+          <InputText source="UnloadingPhone" />
+        </row>
+
+        <row>
+          <Label text="=city" />
+          <DataSelector source="UnloadingCity" />
+          <Label text="=country" />
+          <DataSelector source="UnloadingCountry" />
+        </row>
+
+        <row>
+          <Label text="=email" />
+          <DataSelector source="UnloadingEmailId" />
+          <Label text="=trRequestPlaceFax" />
+          <InputText source="UnloadingFax" />
+        </row>
+
+        <row>
+          <Label text="=trUnloadingNumber" />
+          <InputText source="UnloadingNumber" />
+        </row>
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trRequestShipmentInfo" style="&summary;" />
+      
+      <FlowPanel>
+        <Table style="&table;" cellStyle="&cells;">
+          &cols;
+
+          <row>
+            <Label text="=trRequestExpeditionType" />
+            <DataSelector source="Expedition" />
+            <Label text="=trRequestShippingTerms" />
+            <DataSelector source="ShippingTerm" />
+          </row>
+
+          <row>
+            <Label text="=trRequestDeliveryTime" />
+            <InputTimeOfDay source="DeliveryTime" style="width: 50px;" />
+            <Label text="=trRequestTermsOfDelivery" />
+            <InputText source="TermsOfDelivery" />
+          </row>
+        </Table>
+      
+        <FlowPanel>
+          <CheckBox source="CustomsBrokerage" text="=trRequestCustomsBrokerage" style="&check;" />
+          <CheckBox source="FreightInsurance" text="=trRequestFreightInsurance" style="&check;" />
+        </FlowPanel>
+      </FlowPanel>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trRequestCargoInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestCargoDescription" />
+          <InputArea source="CargoDescription" style="width: 100%; height: 40px;" />
+          <Label text="=trRequestCargoQuantity" />
+          <InputInteger source="Quantity" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoWeight" />
+          <InputDecimal source="Weight" />
+          <Label text="=trRequestCargoVolume" />
+          <InputDecimal source="Volume" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoLdm" />
+          <InputDecimal source="LDM" />
+          <Label text="=trRequestCargoLength" />
+          <InputDecimal source="Length" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoWidth" />
+          <InputDecimal source="Width" />
+          <Label text="=trRequestCargoHeight" />
+          <InputDecimal source="Height" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoPalettes" />
+          <InputInteger source="Palettes" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoValue" />
+          <InputCurrency source="Value" />
+          <Label text="=trRequestCargoCurrency" />
+          <DataSelector source="ValueCurrency" style="width: 60px;" />
+        </row>
+
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trRequestAdditionalInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestResponsibleManager" />
+          <DataSelector source="Manager" />
+        </row>
+      </Table>
+    </Disclosure>
+    &separator;
+
+  </FlowPanel>
+</f:Form>

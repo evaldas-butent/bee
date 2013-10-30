@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="SaleItems" viewName="SaleItems"
-  flexGrow="1" flexShrink="1"
-  newRowCaption="Nauja prekė"
+  flexGrow="1"
+  newRowCaption="=newItem"
   >
-  <columns>
+  <g:columns>
     <RelColumn name="Item" renderColumns="ItemName" />
     <DataColumn name="Article" />
     <DataColumn name="Quantity" />
-    <DataColumn name="UnitName" />
+    <DataColumn name="UnitName" flexGrow="0" />
     <DataColumn name="Price" />
-    <CalcColumn name="Amount" type="decimal" caption="Suma" format="#.##">
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
+    <CalcColumn name="Amount" type="decimal" caption="=trdAmount" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
       <render>
         <ui:expression>row.Quantity * row.Price</ui:expression>
       </render>
     </CalcColumn>
-    <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" caption="%" width="20" sortable="false" />
-    <DataColumn name="Note" />
-  </columns>
-</Grid>
+    <DataColumn name="Note" maxWidth="300" visible="false" />
+  </g:columns>
+</g:Grid>

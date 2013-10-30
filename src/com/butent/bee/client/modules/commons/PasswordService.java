@@ -83,18 +83,18 @@ public final class PasswordService {
       inpOld = null;
     } else {
       inpOld = new InputPassword(MAX_PASSWORD_LENGTH);
-      table.setText(row, 0, Localized.getConstants().oldPassword());
+      table.setHtml(row, 0, Localized.getConstants().oldPassword());
       table.setWidget(row, 1, inpOld);
       row++;
     }
 
     final InputPassword inpNew = new InputPassword(MAX_PASSWORD_LENGTH);
-    table.setText(row, 0, Localized.getConstants().newPassword());
+    table.setHtml(row, 0, Localized.getConstants().newPassword());
     table.setWidget(row, 1, inpNew);
     row++;
 
     final InputPassword inpNew2 = new InputPassword(MAX_PASSWORD_LENGTH);
-    table.setText(row, 0, Localized.getConstants().repeatNewPassword());
+    table.setHtml(row, 0, Localized.getConstants().repeatNewPassword());
     table.setWidget(row, 1, inpNew2);
     row++;
 

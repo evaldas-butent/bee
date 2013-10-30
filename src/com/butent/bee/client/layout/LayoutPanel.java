@@ -15,7 +15,7 @@ import com.butent.bee.client.layout.Layout.AnimationCallback;
 import com.butent.bee.client.layout.Layout.Layer;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class LayoutPanel extends ComplexPanel implements AnimatedLayout, RequiresResize,

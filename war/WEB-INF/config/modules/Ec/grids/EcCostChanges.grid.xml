@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  
+  name="EcCostChanges" viewName="TcdArticleSuppliers" caption="=ecCostChanges"
+  readOnly="true"
+  filter="Cost != UpdatedCost"
+  >
+  <g:columns>
+    <SelectionColumn name="Select" label="=selectionColumnLabel" width="20" />
+    <DataColumn name="Supplier" itemKey="EcSupplier" />
+    <DataColumn name="ArticleName" />
+    <DataColumn name="BrandName" />
+    <DataColumn name="ArticleNr" />
+    <DataColumn name="Cost" />
+    <DataColumn name="UpdatedCost" />
+    <DataColumn name="UpdateTime" />
+    <CalcColumn type="string" name="Diff" caption="Pokytis">
+      <render>
+        <ui:expression>Math.round((row.UpdatedCost-row.Cost)*100)/100 + ' (' + Math.round(((row.UpdatedCost/row.Cost*100)-100)*10)/10 + '%)'</ui:expression>
+      </render>
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

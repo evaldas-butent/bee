@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="DriverTrips" viewName="DriverTrips" readOnly="true"
   >
 
-  <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="TripNo" source="TripNo" caption="Reiso Nr." />
-    <DataColumn name="ForwarderName" source="ForwarderName" caption="Vežėjas" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas">
+  <g:columns>
+    <DataColumn name="Date" source="Date" caption="=date" />
+    <DataColumn name="TripNo" source="TripNo" caption="=trTripNo" />
+    <DataColumn name="ForwarderName" source="ForwarderName" caption="=carrier" />
+    <CalcColumn name="Vehicle" type="string" caption="=transport">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -26,7 +26,7 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="DateFrom" source="DateFrom" caption="Nuo" />
-    <DataColumn name="DateTo" source="DateTo" caption="Iki" />
-  </columns>
-</Grid>
+    <DataColumn name="DateFrom" source="DateFrom" caption="=trDateFrom" />
+    <DataColumn name="DateTo" source="DateTo" caption="=trDateTo" />
+  </g:columns>
+</g:Grid>

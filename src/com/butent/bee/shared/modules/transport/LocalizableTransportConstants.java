@@ -1,11 +1,9 @@
 package com.butent.bee.shared.modules.transport;
 
 public interface LocalizableTransportConstants {
-  
+
   String additionalServices();
-  
-  String assessmentRequest();
-  
+
   String assessments();
 
   String assignCargosToTripCaption();
@@ -25,103 +23,93 @@ public interface LocalizableTransportConstants {
   String assignTruckToTripCaption();
 
   String assignTruckToTripQuestion();
-  
+
   String cargo();
-  
+
   String cargoChangeOfPallets();
 
   String cargoHandlingPlaces();
-  
+
   String cargoInformation();
 
   String cargoLoading();
 
   String cargoLoadingPlaces();
-  
+
   String cargoMiddleHandlingPlaces();
-  
+
   String cargoNumber();
-  
+
   String cargoProfit();
 
   String cargos();
-
-  String cargoSelectTrip();
 
   String cargoTermsOfService();
 
   String cargoUnloading();
 
-  String cargoUnloadingPlaces(); 
-  
+  String cargoUnloadingPlaces();
+
   String cargoValue();
-  
+
   String carriers();
+
+  String createInvoice();
+
+  String createCreditInvoice();
 
   String createTripForCargoCaption();
 
   String createTripForCargoQuestion();
-  
+
   String customerPrice();
-  
+
   String driverAbsence();
-  
-  String driverEndingDate();
-  
-  String driverExperience();
 
   String driverGroups();
 
   String driverGroupsShort();
-  
-  String driverName();
-  
+
   String driverPosition();
 
   String drivers();
-  
-  String driverStartingDate();
 
   String driverTimeBoard();
-  
-  String emptyKilometers();
 
   String freightExchange();
-  
+
   String income();
 
   String intermediateLoading();
 
   String intermediateUnloading();
-  
-  String loadedKilometers();
 
   String loading();
-  
+
+  String newAssessmentRequest();
+
   String newCargo();
-  
+
   String newTransportationOrder();
-  
-  String newTransportationRequest();
-  
+
   String orderDate();
-  
+
   String orderNumber();
-  
+
   String otherCosts();
-  
+
   String partialCargo();
-  
+
   String payer();
-  
+
   String primeCost();
-  
+
   String ref();
 
   String refNumber();
-  
+
   String route();
-  
+
   String shipper();
 
   String shippingSchedule();
@@ -131,41 +119,229 @@ public interface LocalizableTransportConstants {
   String trailers();
 
   String trailerTimeBoard();
-  
-  String transportationContacts();
 
   String transportationCustomers();
-  
-  String transportationNumber1();
-  
-  String transportationNumber2();
-
-  String transportationOrder();
 
   String transportationOrders();
 
   String transportationOrderStatuses();
-  
-  String transportationPrice();
-  
-  String transportationServicesTypes();
-
-  String transportOrder();
 
   String tripDuration();
 
   String trips();
 
+  String trAssessment();
+
+  String trAssessmentCancelOrderQuestion();
+
+  String trAssessmentMarkAsAnsweredQuestion();
+
+  String trAssessmentMarkAsCompletedQuestion();
+
+  String trAssessmentMarkAsLostQuestion();
+
+  String trAssessmentRejection();
+
+  String trAssessmentRejectionReasonRequired();
+
+  String trAssessmentReturnToOrderQuestion();
+
+  String trAssessmentReturnToRequestQuestion();
+
+  String trAssessmentStatusActive();
+
+  String trAssessmentStatusAnswered();
+
+  String trAssessmentStatusCanceled();
+
+  String trAssessmentStatusCompleted();
+
+  String trAssessmentStatusLost();
+
+  String trAssessmentStatusNew();
+
+  String trAssessmentThereActiveChildrenOrders();
+
+  String trAssessmentThereUnconfirmedAssessments();
+
+  String trAssignCargo();
+
+  String trCargoRequestCreateTransportationOrderQuestion();
+
+  String trCargoRequestFinish();
+
+  String trCargoRequestReturn();
+
+  String trCargoRequestReturnToOrder();
+
+  String trCargoRequestsSetActiveRequestQuestion();
+
+  String trCargoSelectCargo();
+
+  String trCargoSelectTrip();
+
+  String trCargoTripsAssignTrip();
+
+  String trCargoTripThereCargosAssignedInTripsAlarm();
+
+  String trChildOrder();
+
+  String trChooseForwarder();
+
+  String trCommandBlockIpAddress();
+
+  String trCommandConvertToRequest();
+
+  String trCommandCopyRequest();
+
+  String trCommandCreateNewUser();
+
+  String trCommandSaveRequestAsTemplate();
+
+  String trConfirmProforma();
+
+  String trContractPrinting();
+
+  String trCreateTransportation();
+
+  String trDriverName();
+
+  String trDriverEndingDate();
+
+  String trDriverExperience();
+
+  String trDriverStartingDate();
+
+  String trEmptyKilometers();
+
+  String trInvoice();
+
+  String trLoadedKilometers();
+
+  String trLoadingAddress();
+
+  String trLoadingDate();
+
+  String trNewExpedition();
+
+  String trNewTrip();
+
+  String trNewVehicle();
+
+  String trOrder();
+
+  String trOrderStatusActive();
+
+  String trOrderStatusCanceled();
+
+  String trOrderStatusCompleted();
+
+  String trOrderStatusNew();
+
+  String trOrderStatusRequest();
+
+  String trProformaInvoice();
+
+  String trRegistrationActionSubmit();
+
+  String trRegistrationAddress();
+
+  String trRegistrationBank();
+
+  String trRegistrationBankAccount();
+
+  String trRegistrationBankAddress();
+
+  String trRegistrationCity();
+
+  String trRegistrationCompanyCode();
+
+  String trRegistrationCompanyName();
+
+  String trRegistrationContact();
+
+  String trRegistrationContactPosition();
+
+  String trRegistrationCountry();
+
+  String trRegistrationEmail();
+
+  String trRegistrationExchangeCode();
+
+  String trRegistrationFax();
+
+  String trRegistrationFormCaption();
+
+  String trRegistrationMobile();
+
+  String trRegistrationNew();
+
+  String trRegistrationNotes();
+
+  String trRegistrationPhone();
+
+  String trRegistrationSwift();
+
+  String trRegistrationVatCode();
+
+  String trRegistrationVatPayer();
+
+  String trRequestActionFinish();
+
+  String trRequestFinishReason();
+
+  String trRequestNew();
+
+  String trRequests();
+
+  String trRequestStatusActive();
+
+  String trRequestStatusNew();
+
+  String trRequestTemplates();
+
+  String trSelfServiceCommandHistory();
+
+  String trSelfServiceCommandNewRequest();
+
+  String trSelfServiceCommandRequests();
+
+  String trSelfServiceCommandTemplates();
+
+  String trSendToERP();
+
+  String trSendToERPConfirm();
+
+  String trPreInvoice();
+
+  String trTripStatusActive();
+
+  String trTripStatusCanceled();
+
+  String trTripStatusCompleted();
+
+  String trTripStatusNew();
+
+  String trUnloadingAddress();
+
+  String trUnloadingDate();
+
+  String trWriteEmail();
+
   String trucks();
 
   String truckTimeBoard();
+
+  String trVehicleTypes();
+
+  String trVehicleTypesShort();
 
   String unloading();
 
   String vehicleBodyNumber();
 
   String vehicleBrutto();
-  
+
   String vehicleDriver();
 
   String vehicleEngineNumber();
@@ -201,8 +377,4 @@ public interface LocalizableTransportConstants {
   String vehicleTankCapacity();
 
   String vehicleType();
-
-  String vehicleTypes();
-
-  String vehicleTypesShort();
 }

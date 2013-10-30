@@ -77,7 +77,7 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
 
           if (!BeeUtils.isEmpty(txt)) {
             r++;
-            table.setText(r, 0, itemInfo.getB(), STYLE_PREFIX + "caption");
+            table.setHtml(r, 0, itemInfo.getB(), STYLE_PREFIX + "caption");
 
             if (BeeUtils.same(item, COL_PLACE_DATE)) {
               DateLabel dt = new DateLabel(false);
@@ -88,16 +88,16 @@ public class CargoPlaceRenderer extends AbstractGridInterceptor {
               if (flagRenderer != null) {
                 txt = BeeUtils.joinWords(flagRenderer.render(row), txt);
               }
-              table.setHTML(r, 1, txt);
+              table.setHtml(r, 1, txt);
 
             } else if (BeeUtils.same(item, COL_PLACE_CITY)) {
               if (postIndex != BeeConst.UNDEF) {
                 txt = BeeUtils.joinItems(txt, row.getString(postIndex));
               }
-              table.setText(r, 1, txt);
+              table.setHtml(r, 1, txt);
 
             } else {
-              table.setText(r, 1, txt);
+              table.setHtml(r, 1, txt);
             }
           }
         }

@@ -19,10 +19,16 @@
         <Label text="=branch" />
         <DataSelector source="Branch" />
         <Label text="=description" />
-        <InputArea source="Description" visibleLines="3" style="width: 400px;" />
+        <cell rowSpan="2">
+          <InputArea source="Description" visibleLines="3" style="width: 400px;" />
+        </cell>
+      </row>
+      <row>
+        <Label text="=ecSupplierWarehouse" />
+        <InputText source="SupplierCode" style="width: 100px" />
       </row>
     </Table>
 
-    <xi:include href="widgets/ContactInfo.widget.xml" />
+    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
   </FlowPanel>
 </f:Form>  

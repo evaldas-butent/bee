@@ -88,7 +88,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
     return getReference();
   }
 
-  public void addValues(Object[] values) {
+  public SqlInsert addValues(Object... values) {
     Assert.notNull(values);
     Assert.state(getFieldCount() == values.length);
 
@@ -103,6 +103,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
       data = Lists.newArrayList();
     }
     data.add(row);
+
+    return getReference();
   }
 
   /**
@@ -204,6 +206,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   @Override
   public SqlInsert reset() {
     fieldList.clear();
+    return resetValues();
+  }
+
+  public SqlInsert resetValues() {
     data = null;
     dataSource = null;
     return getReference();

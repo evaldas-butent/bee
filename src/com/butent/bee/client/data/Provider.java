@@ -15,11 +15,14 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -31,13 +34,14 @@ import java.util.Map;
  */
 
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
-    DataRequestEvent.Handler, FilterConsumer {
+    DataRequestEvent.Handler, FilterConsumer, HandlesActions {
 
   public enum Type {
     ASYNC, CACHED, LOCAL
   }
 
   private final HasDataTable display;
+  private final HandlesActions actionHandler;
   private final NotificationListener notificationListener;
 
   private final String viewName;
@@ -54,11 +58,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private Order order;
 
-  protected Provider(HasDataTable display, NotificationListener notificationListener,
+  protected Provider(HasDataTable display, HandlesActions actionHandler,
+      NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter) {
 
     this.display = display;
+    this.actionHandler = actionHandler;
     this.notificationListener = notificationListener;
 
     this.viewName = viewName;
@@ -148,9 +154,28 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   @Override
+  public void handleAction(Action action) {
+    if (actionHandler != null) {
+      actionHandler.handleAction(action);
+    }
+  }
+
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onCellUpdate(event);
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (event.hasView(getViewName())) {
+      if (event.hasReset()) {
+        getDisplay().reset();
+      }
+      if (event.hasRefresh()) {
+        handleAction(Action.REFRESH);
+      }
     }
   }
 

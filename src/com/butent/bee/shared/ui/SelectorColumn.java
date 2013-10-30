@@ -66,10 +66,10 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
 
   private String itemKey;
   private List<String> renderColumns;
-  
+
   private SelectorColumn() {
   }
-
+  
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -187,6 +187,29 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
 
   public String getVertAlign() {
     return vertAlign;
+  }
+
+  public void replaceSource(String oldId, String newId) {
+    if (!BeeUtils.isEmpty(oldId) && !BeeUtils.isEmpty(newId)
+        && !BeeUtils.equalsTrim(oldId, newId)) {
+      
+      if (BeeUtils.same(getSource(), oldId)) {
+        setSource(newId.trim());
+      }
+
+      if (getRender() != null) {
+        getRender().replaceColumn(oldId, newId);
+      }
+      if (!BeeUtils.isEmpty(getRenderTokens())) {
+        for (RenderableToken token : getRenderTokens()) {
+          token.replaceSource(oldId, newId);
+        }
+      }
+      
+      if (BeeUtils.containsSame(getRenderColumns(), oldId)) {
+        setRenderColumns(NameUtils.rename(getRenderColumns(), oldId, newId));
+      }
+    }
   }
 
   @Override

@@ -5,8 +5,8 @@
   idName="AbsenceTypeID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="Pavadinimas" />
-    <Char name="Label" precision="2" label="Žymėjimas" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=name" />
+    <Char name="Label" precision="2" label="=trMarking" />
     <Relation name="Color" relation="Colors" label="=color" />
   </Fields>
 </Table>

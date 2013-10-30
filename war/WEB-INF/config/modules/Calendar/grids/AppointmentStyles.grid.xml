@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Grid [
-  <!ENTITY nowrap "<style><bodyStyle><ui:inline>white-space: pre-wrap;</ui:inline></bodyStyle></style>">
-]>
-<Grid xmlns="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentStyles" viewName="AppointmentStyles" caption="=appointmentStyles"
   >
-  <body height="80" /> 
-  <columns>
-    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
-    <DataColumn name="Description" caption="Aprašymas" />
+  <g:body height="80" /> 
+  <g:columns>
+    <DataColumn name="Name" caption="=calAppointmentStyleName" visible="true" />
+    <DataColumn name="Description" caption="=calDescription" />
 
-    <DataColumn name="Simple" caption="=appointmentStyleSimple">&nowrap;</DataColumn>
-    <DataColumn name="Multi" caption="Daugiadienis">&nowrap;</DataColumn>
-    <DataColumn name="Compact" caption="Kompaktiškas">&nowrap;</DataColumn>
+    <DataColumn name="Simple" caption="=appointmentStyleSimple" whiteSpace="pre-wrap" />
+    <DataColumn name="Multi" caption="=calMultiday" whiteSpace="pre-wrap" />
+    <DataColumn name="Compact" caption="=calCompact" whiteSpace="pre-wrap" />
     
-    <DataColumn name="Header" caption="=appointmentStyleHeader">&nowrap;</DataColumn>
-    <DataColumn name="Body" caption="=appointmentStyleBody">&nowrap;</DataColumn>
-    <DataColumn name="Footer" caption="=appointmentStyleFooter">&nowrap;</DataColumn>
-  </columns>
-</Grid>
+    <DataColumn name="Header" caption="=appointmentStyleHeader" whiteSpace="pre-wrap" />
+    <DataColumn name="Body" caption="=appointmentStyleBody" whiteSpace="pre-wrap" />
+    <DataColumn name="Footer" caption="=appointmentStyleFooter" whiteSpace="pre-wrap" />
+  </g:columns>
+</g:Grid>

@@ -6,11 +6,11 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
-    <Date name="Date" />
-    <Relation name="Country" relation="Countries" />
-    <String name="Note" precision="100" />
-    <Double name="Quantity" notNull="true" />
-    <Relation name="Item" relation="Items" />
+    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip" />
+    <Date name="Date" label="=date" />
+    <Relation name="Country" relation="Countries" label="=country" />
+    <String name="Note" precision="100" label="=note" />
+    <Double name="Quantity" notNull="true" label="=quantity" />
+    <Relation name="Item" relation="Items" label="=trProductService" />
   </Fields>
 </Table>

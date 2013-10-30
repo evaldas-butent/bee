@@ -12,13 +12,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.client.widget.Button;
@@ -31,6 +29,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -227,7 +226,7 @@ public class GridFilterManager {
         public void accept(FilterDescription t, Action u) {
           if (t != null) {
             updateFilterValues(asValues(t.getComponents()), true);
-            onChange(null);
+            onChange(null, true);
           } else if (Action.DELETE == u) {
             buildContentPanel();
           }
@@ -265,7 +264,7 @@ public class GridFilterManager {
                   for (Widget widget : contentPanel) {
                     if (StyleUtils.hasClassName(widget.getElement(), STYLE_FILTER_PANEL)) {
                       NodeList<Element> nodes =
-                          widget.getElement().getElementsByTagName(DomUtils.TAG_TR);
+                          widget.getElement().getElementsByTagName(Tags.TR);
                       if (nodes != null && nodes.getLength() > 1) {
                         nodes.getItem(nodes.getLength() - 1).scrollIntoView();
                       }
@@ -288,7 +287,7 @@ public class GridFilterManager {
     panel.add(icon);
 
     CustomDiv message = new CustomDiv(STYLE_SAVE_MESSAGE);
-    message.setText(Localized.getConstants().saveFilter());
+    message.setHtml(Localized.getConstants().saveFilter());
     message.addClickHandler(clickHandler);
     panel.add(message);
 
@@ -299,7 +298,7 @@ public class GridFilterManager {
       final AbstractFilterSupplier filterSupplier) {
 
     CustomDiv label = new CustomDiv();
-    label.setHTML(columnInfo.getLabel());
+    label.setHtml(columnInfo.getLabel());
 
     table.setWidgetAndStyle(row, 0, label, STYLE_SUPPLIER_LABEL);
 
@@ -307,7 +306,7 @@ public class GridFilterManager {
     button.addStyleName(STYLE_SUPPLIER_BUTTON);
 
     if (!filterSupplier.isEmpty()) {
-      button.setHTML(filterSupplier.getLabel());
+      button.getElement().setInnerText(filterSupplier.getLabel());
       button.setTitle(filterSupplier.getTitle());
     }
 
@@ -318,7 +317,7 @@ public class GridFilterManager {
         filterSupplier.onRequest(button.getElement(), new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
-            onChange(columnInfo);
+            onChange(columnInfo, true);
           }
         });
       }
@@ -327,14 +326,15 @@ public class GridFilterManager {
     label.addClickHandler(clickHandler);
     button.addClickHandler(clickHandler);
 
-    Image clear = new Image(Global.getImages().closeSmall());
-    clear.addStyleName(STYLE_SUPPLIER_CLEAR);
+    CustomDiv clear = new CustomDiv(STYLE_SUPPLIER_CLEAR);
+    clear.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+    clear.setTitle(Action.REMOVE_FILTER.getCaption());
 
     clear.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         filterSupplier.setFilterValue(null);
-        onChange(columnInfo);
+        onChange(columnInfo, true);
       }
     });
 
@@ -411,14 +411,14 @@ public class GridFilterManager {
     return values;
   }
 
-  private void onChange(final ColumnInfo columnInfo) {
+  private void onChange(final ColumnInfo columnInfo, final boolean closeDialog) {
     final Filter filter = getFilter(null, null);
 
     filterConsumer.tryFilter(filter, new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {
-          if (columnInfo == null) {
+          if (closeDialog) {
             UiHelper.closeDialog(contentPanel);
           } else {
             retainValues();

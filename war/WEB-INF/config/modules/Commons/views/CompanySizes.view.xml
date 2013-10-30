@@ -3,8 +3,8 @@
 
   name="CompanySizes"
   source="CompanySizes"
-  caption="Klientų įmonių dydžiai"
-  newRowCaption="Naujas įmonės dydis"
+  caption="=clientsCompanySizes"
+  newRowCaption="=newCompanySize"
   >
   <Columns>
     <SimpleColumn name="SizeName" />

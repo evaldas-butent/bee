@@ -120,6 +120,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     }
 
     switch (action) {
+      case CANCEL:
+        gridView.formCancel();
+        break;
+        
       case CLOSE:
         getForm().onClose(new CloseCallback() {
           @Override

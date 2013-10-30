@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl "text-align: right;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="CargoCreditInvoice" viewName="CargoCreditInvoices"
+  width="800" height="600"
+  caption="=trCreditInvoice"
+  >
+  <f:properties reports="PrintCargoCreditInvoice" />
+
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <Label text="=trdDate" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Date" style="width:110px;" />
+
+        <Label text="=orderNumber" style="&lbl;" />
+        <InputText source="Number" />
+      </row>
+      <row>
+        <Label text="=trdTotal" style="&lbl;" />
+        <HorizontalPanel>
+          <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
+          <DataSelector source="CurrencyName" placeholder="=currencyShort"
+            style="width:40px; margin-right:5px;" editEnabled="false" />
+          <CheckBox source="VatIncluded" text="=trdVatIncluded" />
+        </HorizontalPanel>
+
+        <Label text="=trdInvoicePrefix" style="&lbl;" />
+        <FlowPanel>
+          <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
+          <InlineLabel text="=trdInvoiceNo" style="margin-left:5px;" />
+          <InputText source="InvoiceNo" />
+        </FlowPanel>
+      </row>
+      <row>
+        <cell colSpan="3">
+          <Label text="=trdWarehouseTo" class="bee-required" style="&lbl;" />
+        </cell>
+        <DataSelector source="WarehouseTo" />
+      </row>
+      <row>
+        <Label text="=trdSupplier" class="bee-required" style="&lbl;" />
+        <DataSelector source="Supplier" required="true" />
+        <Label text="=trdCustomer" style="&lbl;" />
+        <DataSelector source="Customer" />
+      </row>
+      <row>
+        <Label text="=trdTerm" style="&lbl; text-align:right;" />
+        <InputDate source="Term" style="width:70px;" />
+        <Label text="=trdManager" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson" />
+      </row>
+    </Table>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=trProductsServices</text>
+        <ChildGrid name="PurchaseItems" relColumn="Purchase" />
+      </page>
+      <page>
+        <text>=trdNotes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
+      </page>
+      <page>
+        <text>=transportIncomes</text>
+        <ChildGrid name="CargoCreditIncomes" relColumn="Purchase" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

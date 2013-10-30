@@ -1,18 +1,12 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.Focusable;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasOneWidget;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.UIObject;
@@ -24,6 +18,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.Font;
+import com.butent.bee.client.style.HasTextAlign;
+import com.butent.bee.client.style.HasVerticalAlign;
+import com.butent.bee.client.style.HasWhiteSpace;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HasGridView;
@@ -35,6 +32,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
@@ -44,8 +45,8 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Contains utility user interface creation functions like setting and getting horizontal alignment.
@@ -54,20 +55,6 @@ import java.util.Set;
 public final class UiHelper {
 
   private static final BeeLogger logger = LogUtils.getLogger(UiHelper.class);
-
-  private static final String ALIGN_START = "start";
-  private static final String ALIGN_CENTER = "center";
-  private static final String ALIGN_END = "end";
-
-  private static final Set<HorizontalAlignmentConstant> HORIZONTAL_ALIGNMENT_CONSTANTS =
-      Sets.newHashSet(HasHorizontalAlignment.ALIGN_LEFT, HasHorizontalAlignment.ALIGN_CENTER,
-          HasHorizontalAlignment.ALIGN_RIGHT, HasHorizontalAlignment.ALIGN_JUSTIFY,
-          HasHorizontalAlignment.ALIGN_LOCALE_START, HasHorizontalAlignment.ALIGN_LOCALE_END,
-          HasHorizontalAlignment.ALIGN_DEFAULT);
-
-  private static final Set<VerticalAlignmentConstant> VERTICAL_ALIGNMENT_CONSTANTS =
-      Sets.newHashSet(HasVerticalAlignment.ALIGN_TOP, HasVerticalAlignment.ALIGN_MIDDLE,
-          HasVerticalAlignment.ALIGN_BOTTOM);
 
   public static void add(HasWidgets container, Holder<Widget> holder,
       WidgetInitializer initializer, String name) {
@@ -120,6 +107,30 @@ public final class UiHelper {
       return DomUtils.focus(target);
     }
   }
+
+  public static Collection<Widget> getChildrenByStyleName(Widget parent,
+      Collection<String> styleNames) {
+
+    Collection<Widget> result = Lists.newArrayList();
+    if (parent == null || styleNames == null) {
+      return result;
+    }
+    
+    if (StyleUtils.hasAnyClass(parent.getElement(), styleNames)) {
+      result.add(parent);
+    }
+
+    if (parent instanceof HasOneWidget) {
+      result.addAll(getChildrenByStyleName(((HasOneWidget) parent).getWidget(), styleNames));
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        result.addAll(getChildrenByStyleName(child, styleNames));
+      }
+    }
+
+    return result;
+  }
   
   public static DataView getDataView(Widget widget) {
     if (widget == null) {
@@ -140,21 +151,21 @@ public final class UiHelper {
     return null;
   }
 
-  public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
+  public static TextAlign getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
     }
 
-    HorizontalAlignmentConstant align;
+    TextAlign align;
     switch (type) {
       case BOOLEAN:
-        align = HasHorizontalAlignment.ALIGN_CENTER;
+        align = TextAlign.CENTER;
         break;
       case DECIMAL:
       case INTEGER:
       case LONG:
       case NUMBER:
-        align = HasHorizontalAlignment.ALIGN_LOCALE_END;
+        align = TextAlign.END;
         break;
       default:
         align = null;
@@ -430,53 +441,6 @@ public final class UiHelper {
     return true;
   }
 
-  public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
-    if (BeeUtils.isEmpty(text)) {
-      return null;
-    }
-    HorizontalAlignmentConstant align = null;
-
-    if (BeeUtils.same(text, ALIGN_START)) {
-      align = HasHorizontalAlignment.ALIGN_LOCALE_START;
-    } else if (BeeUtils.same(text, ALIGN_CENTER)) {
-      align = HasHorizontalAlignment.ALIGN_CENTER;
-    } else if (BeeUtils.same(text, ALIGN_END)) {
-      align = HasHorizontalAlignment.ALIGN_LOCALE_END;
-    } else {
-      for (HorizontalAlignmentConstant hac : HORIZONTAL_ALIGNMENT_CONSTANTS) {
-        if (BeeUtils.same(text, hac.getTextAlignString())) {
-          align = hac;
-          break;
-        }
-      }
-    }
-    return align;
-  }
-
-  public static VerticalAlignmentConstant parseVerticalAlignment(String text) {
-    if (BeeUtils.isEmpty(text)) {
-      return null;
-    }
-
-    VerticalAlignmentConstant align = null;
-
-    if (BeeUtils.same(text, ALIGN_START)) {
-      align = HasVerticalAlignment.ALIGN_TOP;
-    } else if (BeeUtils.same(text, ALIGN_CENTER)) {
-      align = HasVerticalAlignment.ALIGN_MIDDLE;
-    } else if (BeeUtils.same(text, ALIGN_END)) {
-      align = HasVerticalAlignment.ALIGN_BOTTOM;
-    } else {
-      for (VerticalAlignmentConstant vac : VERTICAL_ALIGNMENT_CONSTANTS) {
-        if (BeeUtils.same(text, vac.getVerticalAlignString())) {
-          align = vac;
-          break;
-        }
-      }
-    }
-    return align;
-  }
-
   public static void pressKey(ValueBoxBase<?> widget, char key) {
     Assert.notNull(widget);
 
@@ -561,29 +525,35 @@ public final class UiHelper {
     }
   }
 
-  public static void setDefaultHorizontalAlignment(HasHorizontalAlignment obj, ValueType type) {
+  public static void setDefaultHorizontalAlignment(HasTextAlign obj, ValueType type) {
     Assert.notNull(obj);
-    HorizontalAlignmentConstant align = getDefaultHorizontalAlignment(type);
+    TextAlign align = getDefaultHorizontalAlignment(type);
     if (align != null) {
-      obj.setHorizontalAlignment(align);
+      obj.setTextAlign(align);
     }
   }
 
   public static void setHorizontalAlignment(Element elem, String text) {
     Assert.notNull(elem);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
 
-    HorizontalAlignmentConstant align = parseHorizontalAlignment(text);
+    TextAlign align = StyleUtils.parseTextAlign(text);
     if (align != null) {
       StyleUtils.setTextAlign(elem, align);
     }
   }
 
-  public static void setHorizontalAlignment(HasHorizontalAlignment obj, String text) {
+  public static void setHorizontalAlignment(HasTextAlign obj, String text) {
     Assert.notNull(obj);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
 
-    HorizontalAlignmentConstant align = parseHorizontalAlignment(text);
+    TextAlign align = StyleUtils.parseTextAlign(text);
     if (align != null) {
-      obj.setHorizontalAlignment(align);
+      obj.setTextAlign(align);
     }
   }
 
@@ -595,16 +565,28 @@ public final class UiHelper {
 
     VerticalAlign align = StyleUtils.parseVerticalAlign(text);
     if (align != null) {
-      elem.getStyle().setVerticalAlign(align);
+      StyleUtils.setProperty(elem.getStyle(), CssProperties.VERTICAL_ALIGN, align);
     }
   }
 
-  public static void setVerticalAlignment(HasVerticalAlignment obj, String text) {
+  public static void setVerticalAlignment(HasVerticalAlign obj, String text) {
+    Assert.notNull(obj);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
+
+    VerticalAlign align = StyleUtils.parseVerticalAlign(text);
+    if (align != null) {
+      obj.setVerticalAlign(align);
+    }
+  }
+
+  public static void setWhiteSpace(HasWhiteSpace obj, String input) {
     Assert.notNull(obj);
 
-    VerticalAlignmentConstant align = parseVerticalAlignment(text);
-    if (align != null) {
-      obj.setVerticalAlignment(align);
+    WhiteSpace whiteSpace = StyleUtils.parseWhiteSpace(input);
+    if (whiteSpace != null) {
+      obj.setWhiteSpace(whiteSpace);
     }
   }
 

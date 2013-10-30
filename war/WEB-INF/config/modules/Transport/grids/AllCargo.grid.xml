@@ -1,43 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="AllCargo" viewName="AllCargo" caption="=cargos" disabledActions="delete"
-  flexGrow="1" flexShrink="1" minColumnWidth="60" newRowPopup="true" order="OrderID desc"
+  flexGrow="1" newRowPopup="true" order="OrderID desc"
   >
-  <body height="50" />
+  <g:body height="50" />
 
-  <columns>
-    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
-    <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />    
-    <RelColumn name="Customer" caption="Užsakovas" />
-    <RelColumn name="Manager" caption="Vadybininkas" />
+  <g:columns>
+    <DataColumn name="OrderNo" caption="=orderNumber" />
+    <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />    
+    <RelColumn name="Customer" caption="=customer" />
+    <RelColumn name="Manager" caption="=manager" />
 
-    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="Krovinys"
-      minWidth="100" editEnabled="true" filterSupplier="value" />
+    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="=cargo"
+      maxWidth="200" editEnabled="true" filterSupplier="value" />
 
-    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
-      minWidth="140" flexBasis="120" searchBy="LoadingCountryName" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" 
+      searchBy="LoadingCountryName" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
-      minWidth="140" flexBasis="120" searchBy="UnloadingCountryName" />
+      searchBy="UnloadingCountryName" />
 
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
-    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
-    <DataColumn name="CargoNotes" caption="Krovinio pastabos">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="CargoNotes" caption="=cargoNotes" maxWidth="200" whiteSpace="pre-wrap" />
 
     <ActionColumn name="TripNo" element="link" />
-    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
-    <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas" 
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <DataColumn name="ForwarderName" caption="=carrier" />
+    <CalcColumn name="Vehicle" type="string" caption="=transport" 
       searchBy="ForwarderVehicle VehicleNumber TrailerNumber">
       <render>
         <ui:function>
@@ -54,7 +48,7 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <CalcColumn name="Driver" type="string" caption="Vairuotojas"
+    <CalcColumn name="Driver" type="string" caption="=vehicleDriver"
       searchBy="ForwarderDriver DriverLastName DriverFirstName">
       <render>
         <ui:function>
@@ -71,5 +65,5 @@
         </ui:function>
       </render>
     </CalcColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

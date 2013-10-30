@@ -13,15 +13,15 @@ import com.butent.bee.shared.Assert;
 public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
   
   public enum Cause {
-    KEYBOARD, MOUSE, SCRIPT
+    KEYBOARD_ESCAPE, KEYBOARD_SAVE, MOUSE_CLOSE_BOX, MOUSE_OUTSIDE, SCRIPT
   }
 
-  public interface HasCloseHandlers extends HasHandlers {
-    HandlerRegistration addCloseHandler(Handler handler);
-  }
-  
   public interface Handler extends EventHandler {
     void onClose(CloseEvent event);
+  }
+  
+  public interface HasCloseHandlers extends HasHandlers {
+    HandlerRegistration addCloseHandler(Handler handler);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
@@ -44,6 +44,10 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
     this.eventTarget = eventTarget;
   }
 
+  public boolean actionCancel() {
+    return keyboardEscape() || mouseEvent();
+  }
+
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
@@ -57,18 +61,6 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
     return eventTarget;
   }
 
-  public boolean isKeyboard() {
-    return Cause.KEYBOARD.equals(cause);
-  }
-
-  public boolean isMouse() {
-    return Cause.MOUSE.equals(cause);
-  }
-
-  public boolean isScript() {
-    return Cause.SCRIPT.equals(cause);
-  }
-  
   public boolean isTarget(Element element) {
     if (element == null || eventTarget == null) {
       return false;
@@ -76,9 +68,37 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
       return EventUtils.equalsOrIsChild(element, eventTarget);
     }
   }
+  
+  public boolean keyboardEscape() {
+    return Cause.KEYBOARD_ESCAPE.equals(cause);
+  }
 
-  public boolean isUserCaused() {
-    return isKeyboard() || isMouse();
+  public boolean keyboardEvent() {
+    return keyboardEscape() || keyboardSave();
+  }
+
+  public boolean keyboardSave() {
+    return Cause.KEYBOARD_SAVE.equals(cause);
+  }
+
+  public boolean mouseCloseBox() {
+    return Cause.MOUSE_CLOSE_BOX.equals(cause);
+  }
+  
+  public boolean mouseEvent() {
+    return mouseCloseBox() || mouseOutside();
+  }
+
+  public boolean mouseOutside() {
+    return Cause.MOUSE_OUTSIDE.equals(cause);
+  }
+
+  public boolean script() {
+    return Cause.SCRIPT.equals(cause);
+  }
+
+  public boolean userCaused() {
+    return keyboardEvent() || mouseEvent();
   }
   
   @Override

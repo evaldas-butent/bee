@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.html.Tags;
 
 /**
  * Handles a component for using scalable vector graphics.
@@ -13,7 +14,7 @@ public class Svg extends Widget implements IdentifiableWidget {
   public Svg() {
     super();
 
-    setElement(DomUtils.createSvg(DomUtils.TAG_SVG));
+    setElement(DomUtils.createSvg(Tags.SVG));
     init();
   }
 

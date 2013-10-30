@@ -1,10 +1,10 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
+import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.CalculatedCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
@@ -31,13 +31,14 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   private final ValueType valueType;
   private AbstractCellRenderer renderer;
 
-  private DateTimeFormat dateTimeformat;
+  private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
-  
-  public CalculatedColumn(Cell<String> cell, ValueType valueType, AbstractCellRenderer renderer) {
+
+  public CalculatedColumn(AbstractCell<String> cell, ValueType valueType,
+      AbstractCellRenderer renderer) {
     super(cell);
     this.valueType = valueType;
     this.renderer = renderer;
@@ -56,7 +57,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   @Override
   public DateTimeFormat getDateTimeFormat() {
-    return dateTimeformat;
+    return dateTimeFormat;
   }
 
   @Override
@@ -80,7 +81,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     if (row == null || getRenderer() == null) {
       return null;
     } else {
@@ -92,7 +93,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   public String getStyleSuffix() {
     return (getValueType() == null) ? "calc" : ("calc-" + getValueType().getTypeCode());
   }
-  
+
   @Override
   public String getValue(IsRow object) {
     return null;
@@ -104,20 +105,17 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
-  public void render(Context context, IsRow rowValue, SafeHtmlBuilder sb) {
+  public void render(CellContext context, IsRow rowValue, SafeHtmlBuilder sb) {
     String value = getString(context, rowValue);
-    if (BeeUtils.isEmpty(value)) {
-      return;
+    if (!BeeUtils.isEmpty(value)) {
+      getCell().render(context, Format.render(value, getValueType(), getDateTimeFormat(),
+          getNumberFormat(), getScale()), sb);
     }
-
-    getCell().render(context,
-        Format.render(value, getValueType(), getDateTimeFormat(), getNumberFormat(), getScale()),
-        sb);
   }
 
   @Override
   public void setDateTimeFormat(DateTimeFormat format) {
-    this.dateTimeformat = format;
+    this.dateTimeFormat = format;
   }
 
   @Override

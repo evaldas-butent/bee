@@ -35,6 +35,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -67,16 +68,16 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
       switch (sysFolder) {
         case Drafts:
-          label = new Label("Juodraščiai");
+          label = new Label(Localized.getConstants().mailFolderDrafts());
           break;
         case Inbox:
-          label = new Label("Gautieji");
+          label = new Label(Localized.getConstants().mailFolderInbox());
           break;
         case Sent:
-          label = new Label("Siųstieji");
+          label = new Label(Localized.getConstants().mailFolderSent());
           break;
         case Trash:
-          label = new Label("Šiukšlinė");
+          label = new Label(Localized.getConstants().mailFolderTrash());
           break;
       }
       label.addClickHandler(new ClickHandler() {
@@ -93,13 +94,13 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     Horizontal caption = new Horizontal();
     caption.setStyleName("bee-mail-FolderRow");
 
-    Label label = new Label("Aplankai");
+    Label label = new Label(Localized.getConstants().mailFolders());
     label.setStyleName("bee-mail-FolderCaption");
     caption.add(label);
 
     final Image refresh = new Image(Global.getImages().refresh());
     refresh.addStyleName("bee-mail-FolderAction");
-    refresh.setTitle("Sinchronizuoti aplankus");
+    refresh.setTitle(Localized.getConstants().mailSynchronizeFolders());
 
     refresh.addClickHandler(new ClickHandler() {
       @Override
@@ -112,7 +113,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
     final Image create = new Image(Global.getImages().silverPlus());
     create.addStyleName("bee-mail-FolderAction");
-    create.setTitle("Sukurti naują aplanką");
+    create.setTitle(Localized.getConstants().mailCreateNewFolder());
 
     create.addClickHandler(new ClickHandler() {
       @Override
@@ -202,8 +203,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         if (subFolder.isConnected()) {
           final Image disconnect = new Image(Global.getImages().disconnect());
           disconnect.addStyleName("bee-mail-FolderAction");
-          disconnect.setTitle(BeeUtils.joinWords("Nutraukti aplanko",
-              BeeUtils.bracket(label.getText()), "sinchronizaciją su pašto serveriu?"));
+          disconnect.setTitle(Localized.getMessages().mailCancelFolderSynchronizationQuestion(
+              BeeUtils.bracket(label.getHtml())));
 
           disconnect.addClickHandler(new ClickHandler() {
             @Override
@@ -211,7 +212,10 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
               Global.confirmDelete(Settings.getAppName(), Icon.WARNING,
                   Lists.newArrayList(disconnect.getTitle(),
                       subFolder.isConnected()
-                          ? "(Aplanko turinys bus pašalintas iš pašto serverio)" : null),
+                              ? "("
+                                  + Localized.getConstants()
+                                      .mailFolderContentsWillBeRemovedFromTheMailServer() + ")"
+                              : null),
                   new ConfirmationCallback() {
                     @Override
                     public void onConfirm() {
@@ -226,8 +230,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         }
         final Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName("bee-mail-FolderAction");
-        edit.setTitle(BeeUtils.joinWords("Pakeisti aplanko", BeeUtils.bracket(label.getText()),
-            "pavadinimą"));
+        edit.setTitle(Localized.getMessages().mailRenameFolder(BeeUtils.bracket(label.getHtml())));
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -235,18 +238,19 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
             Global.inputString(edit.getTitle(), null, new StringCallback() {
               @Override
               public void onSuccess(String value) {
-                if (!label.getText().equals(value)) {
+                if (!label.getHtml().equals(value)) {
                   MailKeeper.renameFolder(account, folderId, value);
                 }
               }
-            }, label.getText());
+            }, label.getHtml());
           }
         });
         row.add(edit);
 
         final Image delete = new Image(Global.getImages().silverMinus());
         delete.addStyleName("bee-mail-FolderAction");
-        delete.setTitle("Pašalinti aplanką " + BeeUtils.bracket(label.getText()) + "?");
+        delete.setTitle(Localized.getMessages().mailDeleteFolderQuestion(
+            BeeUtils.bracket(label.getHtml())));
 
         delete.addClickHandler(new ClickHandler() {
           @Override
@@ -254,7 +258,9 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
             Global.confirmDelete(Settings.getAppName(), Icon.ALARM,
                 Lists.newArrayList(delete.getTitle(),
                     subFolder.isConnected()
-                        ? "(Aplanko turinys bus pašalintas ir iš pašto serverio!)" : null),
+                        ? "("
+                            + Localized.getConstants()
+                                .mailFolderContentsWillBeRemovedFromTheMailServer() + "!)" : null),
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {

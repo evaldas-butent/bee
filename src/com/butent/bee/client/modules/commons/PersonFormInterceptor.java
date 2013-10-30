@@ -12,6 +12,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.images.Images;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -43,7 +44,6 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
 
-  private static final long MAX_UPLOAD_FILE_SIZE = 1258292L; /* ~1.2 MB */
 
   private Image photoImageWidget;
   private NewFileInfo photoImageAttachment;
@@ -72,9 +72,9 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
               BeeKeeper.getScreen().notifyWarning(
                   Localized.getMessages().invalidImageFileType(fileInfo.getName(), type));
 
-            } else if (size > MAX_UPLOAD_FILE_SIZE) {
+            } else if (size > Images.MAX_SIZE_FOR_DATA_URL) {
               BeeKeeper.getScreen().notifyWarning(
-                  Localized.getMessages().fileSizeExceeded(size, MAX_UPLOAD_FILE_SIZE));
+                  Localized.getMessages().fileSizeExceeded(size, Images.MAX_SIZE_FOR_DATA_URL));
 
             } else {
               photoImageAttachment = fileInfo;

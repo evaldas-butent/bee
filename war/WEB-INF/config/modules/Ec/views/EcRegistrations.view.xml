@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="EcRegistrations" source="EcRegistrations" caption="=ecRegistrations"
+  editForm="EcRegistration" newRowForm="EcRegistration" newRowCaption="=ecRegistrationNew"
   >
   <Columns>
     <SimpleColumn name="Date" />
@@ -32,6 +33,9 @@
 
     <SimpleColumn name="Activity" />
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Host" />
+    <SimpleColumn name="Agent" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

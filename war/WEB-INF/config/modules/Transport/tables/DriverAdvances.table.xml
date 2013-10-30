@@ -6,10 +6,10 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Driver" notNull="true" relation="TripDrivers" cascade="DELETE" />
-    <Date name="Date" />
-    <String name="Number" precision="30" />
-    <Numeric name="Amount" precision="12" scale="2" notNull="true" />
-    <Relation name="Currency" relation="Currencies" notNull="true" />
+    <Relation name="Driver" notNull="true" relation="TripDrivers" cascade="DELETE" label="=vehicleDriver" />
+    <Date name="Date" label="=date" />
+    <String name="Number" precision="30" label="=number" />
+    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=total" />
+    <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" />
   </Fields>
 </Table>

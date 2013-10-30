@@ -1,0 +1,93 @@
+.bee-ec-Margins-defPercent-input {
+  width: 50px;
+  margin-left: 1em;
+  margin-right: 3em;
+}
+
+.bee-ec-CategorySelector .bee-DataSelector-cell {
+  border-bottom: 1px solid #ccc;
+}
+.bee-ec-CategorySelector .bee-DataSelector-item {
+  display: block;
+  white-space: pre;
+}
+
+.bee-NewRow-input-EcDiscounts-Category,
+.bee-NewRow-input-TcdArticleCategories-Category,
+.bee-NewRow-input-EcGroupCategories-Category,
+.bee-NewRow-input-EcDiscounts-Article,
+.bee-NewRow-input-EcOrderItems-ArticleName,
+.bee-NewRow-input-UnsuppliedItems-Client,
+.bee-NewRow-input-UnsuppliedItems-ArticleName,
+.bee-NewRow-input-ClientUnsuppliedItems-ArticleName {
+  width: 500px;
+}
+
+.bee-ec-Picture {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.bee-ec-Order-form .bee-disabled,
+.bee-ec-Order-form .bee-disabled input {
+  background-color: #f3f3eb;
+}
+
+.bee-ec-OrderRejection-table td {
+  padding: 8px;
+}
+
+.bee-ec-OrderRejection-reason-input {
+  width: 300px;
+}
+.bee-ec-OrderRejection-comment-label-cell {
+  vertical-align: top;
+}
+.bee-ec-OrderRejection-comment-input {
+  width: 300px;
+  height: 100px;
+}
+
+.bee-ec-Order-UnsuppliedItems-wrapper {
+  max-height: 500px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.bee-ec-Order-UnsuppliedItems-table {
+  border-collapse: collapse;
+}
+
+.bee-ec-Order-UnsuppliedItems-row:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+.bee-ec-Order-UnsuppliedItems-row:nth-child(even) {
+  background-color: #ebebeb;
+}
+.bee-ec-Order-UnsuppliedItems-row:hover {
+  background-color: #dfd;
+}
+.bee-ec-Order-UnsuppliedItems-selected {
+  background-color: #ffa !important;
+}
+
+.bee-ec-Order-UnsuppliedItems-header > td {
+  text-align: center;
+  padding: 3px 10px;
+  font-weight: bold;
+}
+.bee-ec-Order-UnsuppliedItems-row > td {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+}
+
+.bee-ec-Order-UnsuppliedItems-quantity-cell,
+.bee-ec-Order-UnsuppliedItems-price-cell {
+  text-align: right;
+}
+
+.bee-ec-Order-UnsuppliedItems-append {
+  margin-top: 1ex;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}

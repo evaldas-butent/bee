@@ -5,6 +5,6 @@
   idName="ResponsibilityID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="Atsakomybė" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=responsibility" />
   </Fields>
 </Table>

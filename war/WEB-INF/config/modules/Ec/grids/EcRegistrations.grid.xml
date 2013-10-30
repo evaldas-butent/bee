@@ -1,34 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcRegistrations" viewName="EcRegistrations" caption="=ecRegistrations"
-  flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Date" visible="true" />
+
+    <DataColumn name="Type" itemKey="EcClientType" visible="true" />
+    <RelColumn name="Branch" visible="true" />
 
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
 
-    <RelColumn name="Branch" visible="true" />
-
-    <DataColumn name="Type" itemKey="EcClientType" visible="true" />
     <DataColumn name="CompanyName" visible="true" />
-    <DataColumn name="CompanyCode" visible="false" />
-    <DataColumn name="VatCode" visible="false" />
+    <DataColumn name="CompanyCode" />
+    <DataColumn name="VatCode" />
 
-    <DataColumn name="PersonCode" visible="false" />
+    <DataColumn name="PersonCode" />
 
-    <DataColumn name="Email" visible="true" />
-    <DataColumn name="Phone" visible="true" />
+    <DataColumn name="Email" />
+    <DataColumn name="Phone" />
 
     <DataColumn name="City" />
     <DataColumn name="Address" />
     <DataColumn name="PostIndex" />
 
-    <DataColumn name="Country" visible="false" />
+    <DataColumn name="Country" />
 
-    <DataColumn name="Actvity" visible="false" />
-    <DataColumn name="Notes" visible="false" />
-  </columns>
-</Grid>
+    <DataColumn name="Activity" />
+    <DataColumn name="Notes" />
+    
+    <DataColumn name="Host" />
+    <DataColumn name="Agent" />
+  </g:columns>
+</g:Grid>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="CalendarPersons" viewName="CalendarPersons" newRowCaption="Naujas asmuo"
+  name="CalendarPersons" viewName="CalendarPersons" newRowCaption="=newPerson"
   minColumnWidth="100"
   >
-  <columns>
-    <RelColumn name="FirstName" caption="Vardas" visible="true"
+  <g:columns>
+    <RelColumn name="FirstName" caption="=name" visible="true"
       choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName" />
-    <RelColumn name="LastName" caption="Pavardė" visible="true"
+    <RelColumn name="LastName" caption="=lastName" visible="true"
       choiceColumns="LastName FirstName CompanyName" searchableColumns="LastName" />
-    <RelColumn name="CompanyName" caption="Įmonė"
+    <RelColumn name="CompanyName" caption="=company"
       choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

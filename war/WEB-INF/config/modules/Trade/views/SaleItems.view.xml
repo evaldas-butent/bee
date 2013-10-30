@@ -19,5 +19,6 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
     <SimpleColumn name="Note" />
+    <SimpleColumn name="Parent" />
   </Columns>
 </View>

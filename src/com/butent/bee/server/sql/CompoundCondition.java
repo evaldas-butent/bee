@@ -72,4 +72,9 @@ final class CompoundCondition implements HasConditions {
     }
     return flt;
   }
+
+  @Override
+  public boolean isEmpty() {
+    return subConditions.isEmpty();
+  }
 }

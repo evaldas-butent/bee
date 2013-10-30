@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="DiscussionsAdministration" label="=discussAdministration" order="99" parent="Discussions"
+>
+    <Item name="DiscussisonParameters" label="=discussParameters" service="parameters" parameters="Discussions" separator="true" />
+</Entry>

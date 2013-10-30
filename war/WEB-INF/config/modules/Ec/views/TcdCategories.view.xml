@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdCategories" source="TcdCategories"
+  >
+  <Columns>
+    <SimpleColumn name="CategoryName" />
+    <SimpleColumn name="Parent" />
+    <SimpleJoin name="Parent" joinType="LEFT">
+      <SimpleColumn name="CategoryName" alias="FullName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="MarginPercent" />
+    <SimpleColumn name="Note" />
+  </Columns>
+</View>
+ 

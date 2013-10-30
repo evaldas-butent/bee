@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="CompanyDepartments"
+  idName="DepartmentID"
+  x="501" y="339"
+  >
+  <Fields>
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="=company" />
+    <String name="Name" precision="50" unique="true" label="=companyDepartment"/>   
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Company Name" />
+  </Constraints>
+</Table>

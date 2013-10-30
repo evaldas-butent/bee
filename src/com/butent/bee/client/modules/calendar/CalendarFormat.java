@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -29,7 +30,8 @@ public final class CalendarFormat {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.joinWords(TimeUtils.weekOfYear(date), "sav.");
+      return BeeUtils.joinWords(TimeUtils.weekOfYear(date), Localized.getConstants()
+          .unitWeekShort());
     }
   }
   

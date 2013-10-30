@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
-  <define-property name="screen" values="desktop,tablet,mobile,ec"/>
-  <collapse-property name="screen" values="*"/>
+  <define-property name="screen" values="desktop,tablet,mobile,ec,trss" />
+  <collapse-property name="screen" values="*" />
 
   <property-provider name="screen">
   <![CDATA[

@@ -9,7 +9,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -95,7 +95,7 @@ public class PanelHandler extends Handler implements HasVisibility {
 
     if (frmt instanceof LogFormatter && ((LogFormatter) frmt).isSeparator(record)) {
       Element elem = Document.get().createDivElement().cast();
-      panel.add(new Html(elem));
+      panel.add(new CustomWidget(elem));
       elem.setClassName(STYLENAME_SEPARATOR);
       elem.scrollIntoView();
 
@@ -110,7 +110,7 @@ public class PanelHandler extends Handler implements HasVisibility {
     elem.addClassName(STYLENAME_DEFAULT + BeeConst.STRING_MINUS
         + record.getLevel().getName().toLowerCase());
 
-    panel.add(new Html(elem));
+    panel.add(new CustomWidget(elem));
   }
 
   public void resize(int size) {

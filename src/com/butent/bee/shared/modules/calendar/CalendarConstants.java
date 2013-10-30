@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.calendar;
 
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -8,12 +9,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 public final class CalendarConstants {
 
   public enum AppointmentStatus implements HasCaption {
-    TENTATIVE("Planuojamas"),
-    CONFIRMED("Patvirtintas"),
-    DELAYED("Atidėtas"),
-    CANCELED("Atšauktas"),
-    RUNNING("Vykdomas"),
-    COMPLETED("Baigtas");
+    TENTATIVE(Localized.getConstants().calAppointmentStatusTentative()),
+    CONFIRMED(Localized.getConstants().calAppointmentStatusConfirmed()),
+    DELAYED(Localized.getConstants().calAppointmentStatusDelayed()),
+    CANCELED(Localized.getConstants().calAppointmentStatusCanceled()),
+    RUNNING(Localized.getConstants().calAppointmentStatusRunning()),
+    COMPLETED(Localized.getConstants().calAppointmentStatusCompleted());
 
     private final String caption;
 
@@ -28,10 +29,10 @@ public final class CalendarConstants {
   }
 
   public enum Report implements HasCaption {
-    BUSY_MONTHS("Užimtumas mėnesiais"),
-    BUSY_HOURS("Užimtumas valandomis"),
-    CANCEL_MONTHS("Atšaukimas mėnesiais"),
-    CANCEL_HOURS("Atšaukimas valandomis");
+    BUSY_MONTHS(Localized.getConstants().calReportTypeBusyMonths()),
+    BUSY_HOURS(Localized.getConstants().calReportTypeBusyHours()),
+    CANCEL_MONTHS(Localized.getConstants().calReportTypeCancelMonths()),
+    CANCEL_HOURS(Localized.getConstants().calReportTypeCancelHours());
 
     private final String caption;
 
@@ -55,7 +56,8 @@ public final class CalendarConstants {
   }
 
   public enum Transparency implements HasCaption {
-    OPAQUE("Nepersidengiantis"), TRANSPARENT("Persidengiantis");
+    OPAQUE(Localized.getConstants().calOpaque()), TRANSPARENT(Localized.getConstants()
+        .calTransparent());
 
     public static boolean isOpaque(Integer value) {
       return (value == null) ? false : value == OPAQUE.ordinal();
@@ -74,7 +76,7 @@ public final class CalendarConstants {
   }
 
   public enum Visibility implements HasCaption {
-    PUBLIC("Viešas"), PRIVATE("Privatus");
+    PUBLIC(Localized.getConstants().calPublic()), PRIVATE(Localized.getConstants().calPrivate());
 
     private final String caption;
     
@@ -98,12 +100,12 @@ public final class CalendarConstants {
   }
 
   public enum ViewType implements HasCaption {
-    DAY("DayView", "Diena"),
-    DAYS("DaysView", "Dienos"),
-    WORK_WEEK("WorkWeekView", "Darbo savaitė"),
-    WEEK("WeekView", "Savaitė"),
-    MONTH("MonthView", "Mėnuo"),
-    RESOURCES("ResourceView", "Resursai");
+    DAY("DayView", Localized.getConstants().calDayView()),
+    DAYS("DaysView", Localized.getConstants().calDaysView()),
+    WORK_WEEK("WorkWeekView", Localized.getConstants().calWorkWeekView()),
+    WEEK("WeekView", Localized.getConstants().calWeekView()),
+    MONTH("MonthView", Localized.getConstants().calMonthView()),
+    RESOURCES("ResourceView", Localized.getConstants().calResourceView());
 
     private final String columnId;
     private final String caption;
@@ -120,7 +122,9 @@ public final class CalendarConstants {
 
     public String getCaption(int days) {
       if (this == DAYS) {
-        return BeeUtils.toString(days) + ((days < 10) ? " dienos" : " dien.");
+        return BeeUtils.toString(days)
+            + ((days < 10) ? " " + Localized.getConstants().unitDays().toLowerCase() : " "
+                + Localized.getConstants().unitDaysShort().toLowerCase());
       } else {
         return caption;
       }
@@ -339,6 +343,8 @@ public final class CalendarConstants {
 
   public static final JustDate MIN_DATE = new JustDate(2010, 1, 1);
   public static final JustDate MAX_DATE = TimeUtils.endOfMonth(TimeUtils.today(), 12);
+
+  public static final String STYLE_SHEET = "calendar";
   
   private CalendarConstants() {
   }

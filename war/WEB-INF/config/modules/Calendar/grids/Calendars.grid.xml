@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Calendars" viewName="Calendars" caption="Kalendoriai" newRowCaption="Naujas kalendorius"
+  name="Calendars" viewName="Calendars" caption="=calendars" newRowCaption="=calNewCalendar"
   newRowForm="Calendar" editForm="Calendar" favorite="Name" flexGrow="1" flexShrink="1"
   >
-  <columns>
-    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
-    <ActionColumn name="Open" source="Name" caption="Atidaryti" element="link" sortable="false" />
+  <g:columns>
+    <DataColumn name="Name" caption="=calName" visible="true" />
+    <ActionColumn name="Open" source="Name" caption="=calLinkOpen" element="link" sortable="false" />
 
-    <DataColumn name="Description" caption="Aprašymas" sortable="false" />
+    <DataColumn name="Description" caption="=calDescription" sortable="false" />
 
-    <RelColumn name="Owner" caption="Savininkas" />
-  </columns>
-</Grid>
+    <RelColumn name="Owner" caption="=owner" />
+  </g:columns>
+</g:Grid>

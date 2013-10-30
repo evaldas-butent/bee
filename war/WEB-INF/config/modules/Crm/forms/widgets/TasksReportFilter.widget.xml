@@ -15,7 +15,7 @@
     <Label text="=company" horizontalAlignment="right" />
     <MultiSelector name="Company" viewName="Companies" choiceColumns="Name TypeName"
       newRowEnabled="false" style="width:100%;" />
-    <Label text="=durationType" horizontalAlignment="right" />
+    <Label text="=crmDurationType" horizontalAlignment="right" />
     <MultiSelector name="DurationType" viewName="DurationTypes" choiceColumns="Name"
       newRowEnabled="false" style="width:200px;" />
   </row>

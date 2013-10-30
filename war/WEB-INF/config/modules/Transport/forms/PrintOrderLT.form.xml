@@ -9,7 +9,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
   
-  name="&form;" viewName="PrintOrder" caption="Užsakymo spausdinimas" disabledActions="save"
+  name="&form;" viewName="PrintOrder" caption="Užsakymas" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
@@ -17,7 +17,7 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
-      .&form;-forwarder .companyInfo-name .companyInfo-item:before {content: "Ekspeditorius: "; font-weight:normal;}
+      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Ekspeditorius: "; font-weight:normal;}
     </css>
     <HorizontalPanel>
       <Table>
@@ -34,7 +34,7 @@
           <DateTimeLabel source="OrderDate" format="DATE_SHORT" />
         </row>
       </Table>
-      <Image  url="images/logo.gif" />
+      <Image  url="images/logo.png" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
@@ -96,18 +96,27 @@
     <Table class="&form;-table" style="&section;">
       <row style="font-weight:bold; text-align:center;">
         <Label html="Krovinio pavadinimas" />
-        <Label html="Kiekis vnt." />
-        <Label html="Svoris kg" />
-        <Label html="Tūris m3" />
+        <Label html="Kiekis" />
+        <Label html="Svoris" />
+        <Label html="Tūris" />
         <Label html="Vertė" />
       </row>
       <row>
         <TextLabel source="Description" style="white-space:pre-wrap;" />
-        <DecimalLabel source="Quantity" />
-        <DecimalLabel source="Weight" scale="1" />
-        <DecimalLabel source="Volume" scale="3" />
-        <TextLabel source="Value">
-          <renderToken source="Value" suffix=" " format="#.00" />
+        <TextLabel source="Quantity" style="text-align:right;">
+          <renderToken source="Quantity" suffix=" " />
+          <renderToken source="QuantityUnitName" />
+        </TextLabel>
+        <TextLabel source="Weight" style="text-align:right;">
+          <renderToken source="Weight" suffix=" " format="0.0" />
+          <renderToken source="WeightUnitName" />
+        </TextLabel>
+        <TextLabel source="Volume" style="text-align:right;">
+          <renderToken source="Volume" suffix=" " format="0.000" />
+          <renderToken source="VolumeUnitName" />
+        </TextLabel>
+        <TextLabel source="Value" style="text-align:right;">
+          <renderToken source="Value" suffix=" " format="0.00" />
           <renderToken source="ValueCurrencyName" />
         </TextLabel>
       </row>

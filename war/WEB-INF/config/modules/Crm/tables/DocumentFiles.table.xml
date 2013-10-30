@@ -5,7 +5,7 @@
   idName="FileID"
   >
   <Fields>
-    <Relation name="Document" relation="Documents" notNull="true" cascade="DELETE" />
+    <Relation name="Document" relation="Documents" notNull="true" cascade="DELETE" label="=document" />
     <Relation name="File" relation="Files" notNull="true" />
 
     <String name="Caption" precision="100" label="=documentFileCaption"/>

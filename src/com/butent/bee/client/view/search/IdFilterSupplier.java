@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class IdFilterSupplier extends AbstractFilterSupplier {
@@ -26,7 +27,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     super(viewName, column, label, options);
     
     this.editor = new InputLong();
-    editor.getElement().addClassName(DEFAULT_STYLE_PREFIX + "id-editor");
+    editor.addStyleName(DEFAULT_STYLE_PREFIX + "id-editor");
 
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -65,10 +66,19 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
   }
-
+  
   @Override
   public void setFilterValue(FilterValue filterValue) {
     editor.setValue((filterValue == null) ? null : filterValue.getValue());
+  }
+
+  @Override
+  protected void onDialogCancel() {
+    if (getOldValue() == null) {
+      editor.clearValue();
+    } else {
+      editor.setValue(BeeUtils.toString(getOldValue()));
+    }
   }
   
   private String getEditorValue() {
@@ -88,7 +98,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     } else {
       Long id = BeeUtils.toLongOrNull(value);
       if (id == null) {
-        Global.showError(Lists.newArrayList("Neteisinga ID reikšmė", value));
+        Global.showError(Lists.newArrayList(Localized.getConstants().invalidIdValue(), value));
       } else {
         update(!id.equals(getOldValue()));
       }

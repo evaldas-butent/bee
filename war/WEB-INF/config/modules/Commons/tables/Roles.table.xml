@@ -7,6 +7,6 @@
   x="41" y="121"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" label="Rolė" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=role" />
   </Fields>
 </Table>

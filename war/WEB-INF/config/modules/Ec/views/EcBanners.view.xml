@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcBanners" source="EcBanners"
+  >
+  <Columns>
+    <SimpleColumn name="Sort" />
+    <SimpleColumn name="Picture" />
+
+    <SimpleColumn name="Width" />
+    <SimpleColumn name="Height" />
+
+    <SimpleColumn name="Link" />
+
+    <SimpleColumn name="ShowAfter" />
+    <SimpleColumn name="ShowBefore" />
+  </Columns>
+  
+  <Order>
+    <OrderBy column="Sort" />
+  </Order>
+</View>

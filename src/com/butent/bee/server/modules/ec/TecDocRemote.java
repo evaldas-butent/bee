@@ -4,13 +4,18 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.QueryServiceBean.ResultSetProcessor;
+import com.butent.bee.server.sql.IsSql;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,23 +41,30 @@ public class TecDocRemote {
   @EJB
   QueryServiceBean qs;
 
-  public List<StringBuilder> getRemoteData(SqlSelect query, final SqlInsert insert) {
-    DataSource ds;
+  private DataSource dataSource;
 
-    try {
-      ds = (DataSource) InitialContext.doLookup("jdbc/tcd");
-    } catch (NamingException ex) {
-      try {
-        ds = (DataSource) InitialContext.doLookup("java:jdbc/tcd");
-      } catch (NamingException ex2) {
-        logger.error(ex);
-        ds = null;
+  public void cleanup(List<IsSql> init) {
+    for (IsSql query : init) {
+      if (query instanceof SqlCreate) {
+        processSql("DROP TABLE IF EXISTS " + ((SqlCreate) query).getTarget());
       }
     }
-    if (ds == null) {
-      return Lists.newArrayList();
+  }
+
+  public void init(List<IsSql> init) {
+    DataSource ds = getDataSource();
+    SqlBuilder builder = SqlBuilderFactory.getBuilder(qs.dbEngine(ds));
+
+    for (IsSql query : init) {
+      if (query instanceof SqlCreate) {
+        processSql("DROP TABLE IF EXISTS " + ((SqlCreate) query).getTarget());
+      }
+      processSql(query.getSqlString(builder));
     }
-    return qs.getData(ds, query, new ResultSetProcessor<List<StringBuilder>>() {
+  }
+
+  public List<StringBuilder> getRemoteData(SqlSelect query, final SqlInsert insert) {
+    return qs.getData(getDataSource(), query, new ResultSetProcessor<List<StringBuilder>>() {
       @Override
       public List<StringBuilder> processResultSet(ResultSet rs) throws SQLException {
         SqlBuilder builder = SqlBuilderFactory.getBuilder();
@@ -73,7 +85,14 @@ public class TecDocRemote {
             if (i > 0) {
               sb.append(",");
             }
-            sb.append(SqlUtils.constant(rs.getObject(field)).getSqlString(builder));
+            Object value;
+
+            if (rs.getMetaData().getColumnType(i + 1) == -4 /* LONGBLOB */) {
+              value = Codec.toBase64(rs.getBytes(field));
+            } else {
+              value = rs.getObject(field);
+            }
+            sb.append(SqlUtils.constant(value).getSqlString(builder));
             i++;
           }
           sb.append(")");
@@ -90,5 +109,32 @@ public class TecDocRemote {
         return inserts;
       }
     });
+  }
+
+  private DataSource getDataSource() {
+    if (dataSource == null) {
+      try {
+        dataSource = (DataSource) InitialContext.doLookup("jdbc/tcd");
+      } catch (NamingException ex) {
+        try {
+          dataSource = (DataSource) InitialContext.doLookup("java:jdbc/tcd");
+        } catch (NamingException ex2) {
+          logger.error(ex);
+          dataSource = null;
+        }
+      }
+    }
+    return dataSource;
+  }
+
+  private void processSql(String sql) {
+    DataSource ds = getDataSource();
+    Assert.notNull(ds);
+
+    Object response = qs.doSql(ds, sql);
+
+    if (response instanceof String) {
+      throw new BeeRuntimeException((String) response);
+    }
   }
 }

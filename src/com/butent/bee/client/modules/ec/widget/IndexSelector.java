@@ -210,7 +210,7 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
 
   private void onEnterKeyDown() {
     if (!BeeUtils.isEmpty(getSearchQuery()) && getNumberOfVisibleItems() > 0) {
-      int index = DomUtils.getDataIndex(DomUtils.getFirstVisibleChild(itemContainer));
+      int index = DomUtils.getDataIndexInt(DomUtils.getFirstVisibleChild(itemContainer));
       if (!BeeConst.isUndef(index)) {
         fireSelection(index);
       }
@@ -218,7 +218,7 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
   }
 
   private void onItemClick(ClickEvent event) {
-    int index = DomUtils.getDataIndex(EventUtils.getEventTargetElement(event));
+    int index = DomUtils.getDataIndexInt(EventUtils.getEventTargetElement(event));
     if (!BeeConst.isUndef(index)) {
       fireSelection(index);
     }
@@ -236,7 +236,7 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
       text = BeeUtils.toString(cnt);
     }
 
-    counter.setText(text);
+    counter.setHtml(text);
   }
 
   private void setItemCount(int itemCount) {

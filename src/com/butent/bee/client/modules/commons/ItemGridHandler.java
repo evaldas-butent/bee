@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -54,15 +55,16 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   @Override
   public String getCaption() {
     if (showServices()) {
-      return "Paslaugos";
+      return Localized.getConstants().services();
     } else {
-      return "Prekės";
+      return Localized.getConstants().goods();
     }
   }
 
   @Override
   public String getRowCaption(IsRow row, boolean edit) {
-    return (edit ? "" : "Nauja ") + (showServices() ? "Paslauga" : "Prekė");
+    return edit ? getCaption() : (showServices() ? Localized.getConstants().newService()
+        : Localized.getConstants().newItem());
   }
 
   @Override
@@ -75,7 +77,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   public boolean onLoad(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isEmpty(CommonsConstants.COL_SERVICE);
+    Filter filter = Filter.isEmpty(CommonsConstants.COL_ITEM_IS_SERVICE);
 
     if (showServices()) {
       filter = Filter.isNot(filter);

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdTypeArticles" source="TcdTypeArticles"
+  >
+  <Columns>
+    <SimpleColumn name="Article" />
+    <SimpleColumn name="Type" />
+
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="Model" />
+      <SimpleJoin name="Model" joinType="LEFT">
+        <SimpleColumn name="Manufacturer" />
+        <SimpleJoin name="Manufacturer" joinType="LEFT">
+          <SimpleColumn name="ManufacturerName" />
+          <SimpleColumn name="Visible" alias="ManufacturerVisible" />
+        </SimpleJoin>
+
+        <SimpleColumn name="ModelName" />
+        <SimpleColumn name="Visible" alias="ModelVisible" />
+      </SimpleJoin>
+
+      <SimpleColumn name="TypeName" />
+
+      <SimpleColumn name="ProducedFrom" />
+      <SimpleColumn name="ProducedTo" />
+      <SimpleColumn name="Ccm" />
+      <SimpleColumn name="KwFrom" />
+      <SimpleColumn name="KwTo" />
+      <SimpleColumn name="Cylinders" />
+      <SimpleColumn name="MaxWeight" />
+      <SimpleColumn name="Engine" />
+      <SimpleColumn name="Fuel" />
+      <SimpleColumn name="Body" />
+      <SimpleColumn name="Axle" />
+      
+      <SimpleColumn name="Visible" alias="TypeVisible" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="ManufacturerName" />
+    <OrderBy column="ModelName" />
+    <OrderBy column="TypeName" />
+    <OrderBy column="ProducedFrom" />
+    <OrderBy column="KwFrom" />
+  </Order>
+</View>

@@ -6,10 +6,10 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
-    <DateTime name="DateFrom" label="Data nuo" />
-    <DateTime name="DateTo" label="Data iki" />
-    <Relation name="Driver" notNull="true" relation="Drivers" label="Vairuotojas" />
-    <String name="Note" precision="50" label="Pastaba" />
+    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip"/>
+    <DateTime name="DateFrom" label="=trTripDateFrom" />
+    <DateTime name="DateTo" label="=trTripDateTo" />
+    <Relation name="Driver" notNull="true" relation="Drivers" label="=vehicleDriver" />
+    <String name="Note" precision="50" label="=note" />
   </Fields>
 </Table>

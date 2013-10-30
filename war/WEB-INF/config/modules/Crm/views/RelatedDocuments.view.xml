@@ -13,6 +13,7 @@
     <SimpleColumn name="TransportationOrder" />
     <SimpleColumn name="Cargo" />
     <SimpleColumn name="Trip" />
+    <SimpleColumn name="CargoRequest" />
 
     <SimpleColumn name="Document" />
     <SimpleJoin name="Document" joinType="INNER">

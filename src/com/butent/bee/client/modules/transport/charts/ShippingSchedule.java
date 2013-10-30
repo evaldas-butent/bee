@@ -21,12 +21,13 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.Map;
 
-final class ShippingSchedule extends VehicleTimeBoard  {
+final class ShippingSchedule extends VehicleTimeBoard {
 
   static final String SUPPLIER_KEY = "shipping_schedule";
   private static final String DATA_SERVICE = SVC_GET_SS_DATA;
@@ -93,8 +94,10 @@ final class ShippingSchedule extends VehicleTimeBoard  {
       Trip trip = findTripById(tripsByRow.get(rowIndex));
 
       if (trip != null && trip.getTrailerId() != null) {
-        newRow.setValue(dataInfo.getColumnIndex(COL_TRAILER), trip.getTrailerId());
-        newRow.setValue(dataInfo.getColumnIndex(COL_TRAILER_NUMBER), trip.getTrailerNumber());
+        newRow.setValue(dataInfo.getColumnIndex(VehicleType.TRAILER.getTripVehicleIdColumnName()),
+            trip.getTrailerId());
+        newRow.setValue(dataInfo.getColumnIndex(VehicleType.TRAILER
+            .getTripVehicleNumberColumnName()), trip.getTrailerNumber());
       }
     }
     return newRow;
@@ -179,7 +182,7 @@ final class ShippingSchedule extends VehicleTimeBoard  {
   protected String getStripOpacityColumnName() {
     return COL_SS_STRIP_OPACITY;
   }
-  
+
   @Override
   protected String getThemeColumnName() {
     return COL_SS_THEME;
@@ -194,13 +197,13 @@ final class ShippingSchedule extends VehicleTimeBoard  {
   protected boolean layoutIdleVehicles() {
     return false;
   }
-  
+
   @Override
   protected void prepareChart(Size canvasSize) {
     setSeparateTrips(ChartHelper.getBoolean(getSettings(), COL_SS_SEPARATE_TRIPS));
     super.prepareChart(canvasSize);
   }
-  
+
   @Override
   protected void renderContentInit() {
     super.renderContentInit();
@@ -210,13 +213,13 @@ final class ShippingSchedule extends VehicleTimeBoard  {
   @Override
   protected void renderInfoCell(ChartRowLayout layout, Vehicle vehicle, ComplexPanel panel,
       int firstRow, int lastRow) {
-    
+
     for (GroupLayout group : layout.getGroups()) {
       Trip trip = findTripById(group.getGroupId());
-      
+
       if (trip != null) {
         IdentifiableWidget tripGroupWidget = createTripGroupWidget(trip, group.hasOverlap());
-        addTripGroupWidget(panel, tripGroupWidget, trip.getTripId(), 
+        addTripGroupWidget(panel, tripGroupWidget, trip.getTripId(),
             firstRow + group.getFirstRow(), firstRow + group.getLastRow());
       }
     }
@@ -227,9 +230,9 @@ final class ShippingSchedule extends VehicleTimeBoard  {
     Long lastTrip = tripsByRow.get(firstRow);
 
     for (int rowIndex = firstRow + 1; rowIndex <= lastRow; rowIndex++) {
-      int top = rowIndex * getRowHeight(); 
+      int top = rowIndex * getRowHeight();
       Long currentTrip = tripsByRow.get(rowIndex);
-      
+
       if (Objects.equal(lastTrip, currentTrip)) {
         ChartHelper.addRowSeparator(panel, top, getChartLeft(), getCalendarWidth());
       } else {
@@ -248,7 +251,7 @@ final class ShippingSchedule extends VehicleTimeBoard  {
       tripsByRow.put(row, tripId);
     }
   }
-  
+
   private IdentifiableWidget createTripGroupWidget(Trip trip, boolean hasOverlap) {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_GROUP_PANEL);
@@ -264,13 +267,13 @@ final class ShippingSchedule extends VehicleTimeBoard  {
     label.setTitle(trip.getTitle());
 
     bindOpener(label, VIEW_TRIPS, trip.getTripId());
-    
+
     panel.add(label);
 
     if (trip.getTrailerId() != null) {
       Label trailer = new Label(trip.getTrailerNumber());
       trailer.addStyleName(STYLE_TRIP_GROUP_TRAILER);
-      
+
       bindOpener(trailer, VIEW_VEHICLES, trip.getTrailerId());
 
       panel.add(trailer);

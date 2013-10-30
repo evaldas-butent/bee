@@ -13,14 +13,14 @@ import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
-import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.io.FileNameUtils;
-import com.butent.bee.shared.io.IoConstants;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -65,7 +65,7 @@ public class SystemServiceBean {
     } else if (BeeUtils.same(svc, Service.GET_RESOURCE)) {
       response = getResource(reqInfo, buff);
     } else if (BeeUtils.same(svc, Service.SAVE_RESOURCE)) {
-      saveResource(reqInfo, buff);
+      response = saveResource(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_DIGEST)) {
       getDigest(reqInfo, buff);
@@ -152,7 +152,7 @@ public class SystemServiceBean {
   private static ResponseObject getFlags() {
     Map<String, String> flags = Maps.newHashMap(); 
 
-    File dir = new File(Config.IMAGES_DIR, IoConstants.FLAG_DIR);
+    File dir = new File(Config.IMAGE_DIR, Paths.FLAG_DIR);
     File[] files = dir.listFiles();
     
     if (files != null) {
@@ -293,17 +293,7 @@ public class SystemServiceBean {
           return ResponseObject.response(s);
 
         } else {
-          buff.addResource(resPath, s, ContentType.RESOURCE);
-
-          String mt = reqInfo.getParameter(3);
-          if (!BeeUtils.isEmpty(mt)) {
-            buff.setMediaType(mt);
-          }
-          String ce = reqInfo.getParameter(4);
-          if (!BeeUtils.isEmpty(ce)) {
-            buff.setCharacterEncoding(ce);
-          }
-          return null;
+          return ResponseObject.response(new Resource(resPath, s));
         }
       }
     }
@@ -323,42 +313,43 @@ public class SystemServiceBean {
     return null;
   }
 
-  private static void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static ResponseObject saveResource(RequestInfo reqInfo) {
     long start = System.currentTimeMillis();
 
     String uri = reqInfo.getParameter(Service.RPC_VAR_URI);
     String md5 = reqInfo.getParameter(Service.RPC_VAR_MD5);
 
     if (BeeUtils.isEmpty(uri)) {
-      buff.addSevere("URI not specified");
-      return;
+      return ResponseObject.parameterNotFound(Service.SAVE_RESOURCE, Service.RPC_VAR_URI);
     }
-
-    buff.addMessage("uri", uri);
 
     String content = reqInfo.getContent();
     if (BeeUtils.isEmpty(content)) {
-      buff.addSevere("Content not found");
-      return;
+      return ResponseObject.error("Content not found");
     }
+    
+    ResponseObject response = new ResponseObject();
+    response.addInfo("uri", uri);
 
     if (BeeUtils.isEmpty(md5)) {
-      buff.addWarning("md5 not specified");
+      response.addWarning("md5 not specified");
     } else {
-      buff.addMessage("md5", md5);
+      response.addInfo("md5", md5);
       String z = Codec.md5(content);
       if (!BeeUtils.same(md5, z)) {
-        buff.addSevere("md5 does not match");
-        buff.addSevere("received", z);
-        return;
+        response.addError("md5 does not match");
+        response.addError("received", z);
+        return response;
       }
     }
 
     boolean ok = FileUtils.saveToFile(content, uri);
     if (ok) {
-      buff.addMessage("saved", content.length(), TimeUtils.elapsedSeconds(start));
+      response.addInfo("saved", content.length(), TimeUtils.elapsedSeconds(start));
     } else {
-      buff.addSevere("error saving to", uri);
+      response.addError("error saving to", uri);
     }
+    
+    return response;
   }
 }

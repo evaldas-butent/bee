@@ -51,12 +51,12 @@ public final class FileUtils {
   public static final Filter FILE_FILTER = new NormalFileFilter();
   public static final Filter INPUT_FILTER = new InputFileFilter();
 
-  private static BeeLogger logger = LogUtils.getLogger(FileUtils.class);
-
-  private static final Charset UTF_8 = Charset.forName(BeeConst.CHARSET_UTF8);
+  public static final Charset UTF_8 = Charset.forName(BeeConst.CHARSET_UTF8);
 
   private static int defaultBufferSize = 4096;
   private static Charset defaultCharset = UTF_8;
+
+  private static BeeLogger logger = LogUtils.getLogger(FileUtils.class);
 
   public static void closeQuietly(Closeable closeable) {
     if (closeable == null) {

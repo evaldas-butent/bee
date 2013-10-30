@@ -846,7 +846,7 @@ final class DriverTimeBoard extends ChartBase {
       if (step > 0) {
         for (int x = 0; x <= panelWidth - step; x += step) {
           CustomDiv label = new CustomDiv(STYLE_ABSENCE_LABEL);
-          label.setText(da.label);
+          label.setHtml(da.label);
 
           StyleUtils.setLeft(label, x);
           StyleUtils.setWidth(label, step);
@@ -868,7 +868,7 @@ final class DriverTimeBoard extends ChartBase {
     }
     
     DndDiv widget = new DndDiv(STYLE_DRIVER_LABEL);
-    widget.setText(driver.getItemName());
+    widget.setHtml(driver.getItemName());
     
     UiHelper.maybeSetTitle(widget, driver.getTitle());
 

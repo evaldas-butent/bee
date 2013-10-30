@@ -3,12 +3,12 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="TransportGroup" viewName="TransportGroups" caption="Transporto grupė"
+  name="TransportGroup" viewName="TransportGroups" caption="=transportGroup"
   height="50" heightUnit="%" width="600"
   >
   <FlowPanel class="flexBox-vertical">
     <SimplePanel class="flexBox-horizontal">
-      <InputText source="Name" caption="Grupė" decorator="flex-left" d:size="40" d:rootStyle="margin: 10px;" />
+      <InputText source="Name" caption="=group" decorator="flex-left" d:size="40" d:rootStyle="margin: 10px;" />
     </SimplePanel>
 
     <FlowPanel class="flexBox-horizontal flexible">

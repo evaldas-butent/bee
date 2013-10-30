@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -17,6 +18,7 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
@@ -24,10 +26,10 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,14 +37,15 @@ import java.util.Map;
 
 public class AbstractGridInterceptor implements GridInterceptor {
 
-  public static final List<String> DELETE_ROW_MESSAGE = Lists.newArrayList("Išmesti eilutę ?");
+  public static final List<String> DELETE_ROW_MESSAGE = 
+      Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
-    String m1 = "Išmesti aktyvią eilutę";
+    String m1 = Localized.getConstants().deleteActiveRow();
 
     String m2 = (selectedRows == 1)
-        ? "Išmesti pažymėtą eilutę"
-        : BeeUtils.joinWords("Išmesti", selectedRows, "pažymėtas eilutes");
+        ? Localized.getConstants().deleteSelectedRow()
+        : Localized.getMessages().deleteSelectedRows(selectedRows);
 
     return Pair.of(m1, m2);
   }
@@ -79,6 +82,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void afterInsertRow(IsRow result) {
+  }
+
+  @Override
+  public void afterRender(GridView gridView, RenderingEvent event) {
   }
 
   @Override
@@ -135,6 +142,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+  }
+
+  @Override
   public IdentifiableWidget createCustomWidget(String name, Element description) {
     return null;
   }
@@ -147,6 +158,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public String getColumnCaption(String columnName) {
     return null;
+  }
+
+  @Override
+  public int getDataIndex(String source) {
+    return (getGridView() == null) ? BeeConst.UNDEF : getGridView().getDataIndex(source);
   }
 
   @Override
@@ -166,14 +182,34 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public Collection<DynamicColumnIdentity> getDynamicColumns(GridView gridView, String dynGroup) {
+    return null;
+  }
+
+  @Override
   public AbstractFilterSupplier getFilterSupplier(String columnName,
       ColumnDescription columnDescription) {
     return null;
   }
 
   @Override
+  public ColumnFooter getFooter(String columnName, ColumnDescription columnDescription) {
+    return null;
+  }
+
+  @Override
   public GridPresenter getGridPresenter() {
     return gridPresenter;
+  }
+  
+  @Override
+  public GridView getGridView() {
+    return (getGridPresenter() == null) ? null : getGridPresenter().getGridView();
+  }
+
+  @Override
+  public ColumnHeader getHeader(String columnName, String caption) {
+    return null;
   }
 
   @Override
@@ -210,6 +246,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public String getSupplierKey() {
     return null;
+  }
+
+  @Override
+  public String getViewName() {
+    return (getGridPresenter() == null) ? null : getGridPresenter().getViewName();
   }
 
   @Override

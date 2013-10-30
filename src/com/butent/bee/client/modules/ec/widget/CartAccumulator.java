@@ -2,26 +2,52 @@ package com.butent.bee.client.modules.ec.widget;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputInteger;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 
-public class CartAccumulator extends Horizontal {
-  
+public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
+
   private static final String STYLE_PREFIX = EcStyles.name("cartAccumulator-");
+
+  private final InputInteger input;
 
   public CartAccumulator(final EcItem item, int quantity) {
     super();
     addStyleName(STYLE_PREFIX + "panel");
-    
-    final InputInteger input = new InputInteger(quantity);
+
+    this.input = new InputInteger(quantity);
     input.addStyleName(STYLE_PREFIX + "input");
+
+    input.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          int value = input.getIntValue();
+
+          if (value > 0 && DomUtils.isInView(input.getElement())) {
+            EcKeeper.addToCart(item, value);
+            input.setValue(0);
+          }
+        }
+      }
+    });
+    
+    EcKeeper.bindKeyPress(input);
+
     add(input);
 
     Flow spin = new Flow(STYLE_PREFIX + "spin");
@@ -52,7 +78,7 @@ public class CartAccumulator extends Horizontal {
 
     add(spin);
 
-    Image cart = new Image("images/shoppingcart_add.png");
+    Image cart = new Image(EcUtils.imageUrl("shoppingcart_add.png"));
     cart.setAlt("cart");
     cart.addStyleName(STYLE_PREFIX + "add");
 
@@ -68,5 +94,18 @@ public class CartAccumulator extends Horizontal {
     });
 
     add(cart);
+  }
+
+  @Override
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return input.addKeyDownHandler(handler);
+  }
+
+  public void focus() {
+    input.setFocus(true);
+  }
+
+  public InputInteger getInput() {
+    return input;
   }
 }

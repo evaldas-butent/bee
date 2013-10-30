@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Contacts" label="Kontaktai" order="20"
+name="Contacts" label="=contacts" order="20"
 >
-  <Item name="Companies" label="Klientai" service="grid" parameters="Companies" />
-  <Item name="Persons" label="Asmenys" service="grid" parameters="Persons" />
+  <Item name="Companies" label="=clients" service="grid" parameters="Companies" />
+  <Item name="Persons" label="=persons" service="grid" parameters="Persons" />
 
-  <Item name="Emails" label="El.pašto adresai" service="grid" parameters="Emails" separator="true" />
+  <Item name="Emails" label="=emailAddresses" service="grid" parameters="Emails" separator="true" />
 
 </Entry>

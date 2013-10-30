@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -26,7 +25,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
@@ -54,7 +52,6 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
@@ -69,6 +66,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -191,7 +189,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
 
   private final CustomDiv filterLabel;
-  private final Image removeFilter;
+  private final CustomDiv removeFilter;
 
   private final List<ChartData> filterData = Lists.newArrayList();
   private boolean filtered;
@@ -210,13 +208,16 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       this.filterLabel = new CustomDiv(STYLE_FILTER_LABEL);
       headerView.addCommandItem(filterLabel);
 
-      this.removeFilter = new Image(Global.getImages().closeSmall(), new ScheduledCommand() {
+      this.removeFilter = new CustomDiv(STYLE_ACTION_REMOVE_FILTER);
+      removeFilter.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+      
+      removeFilter.addClickHandler(new ClickHandler() {
         @Override
-        public void execute() {
+        public void onClick(ClickEvent event) {
           handleAction(Action.REMOVE_FILTER);
         }
       });
-      removeFilter.addStyleName(STYLE_ACTION_REMOVE_FILTER);
+      
       removeFilter.setTitle(Action.REMOVE_FILTER.getCaption());
       removeFilter.setVisible(false);
 
@@ -296,6 +297,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         editSettings();
         break;
 
+      case CANCEL:
       case CLOSE:
         BeeKeeper.getScreen().closeWidget(this);
         break;
@@ -333,7 +335,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
         break;
 
       default:
-        logger.info(getCaption(), action, "not implemented");
+        logger.warning(getCaption(), action, "not implemented");
     }
   }
 
@@ -344,6 +346,13 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
+    if (isDataEventRelevant(event)) {
+      refresh();
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
     if (isDataEventRelevant(event)) {
       refresh();
     }
@@ -1814,7 +1823,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
         if (!info.isEmpty()) {
           CustomDiv label = new CustomDiv(STYLE_SHIPMENT_DAY_LABEL);
-          label.setText(BeeUtils.join(BeeConst.STRING_SPACE, info));
+          label.setHtml(BeeUtils.join(BeeConst.STRING_SPACE, info));
 
           widget.add(label);
         }

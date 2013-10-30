@@ -25,7 +25,7 @@ public class TestResource {
   @SuppressWarnings("static-method")
   @Test
   public final void testDeserialize() {
-    Resource resource = new Resource("13URI13ZIP15false17Content");
+    Resource resource = Resource.restore("13URI13ZIP15false17Content");
     assertEquals("URI", resource.getUri());
     assertEquals(ContentType.ZIP, resource.getType());
     assertEquals(false, resource.isReadOnly());
@@ -41,9 +41,6 @@ public class TestResource {
             true);
     assertEquals("226http://localhost/image.jpg15IMAGE14true221This will be an image", resource
         .serialize());
-
-    Resource resource1 = new Resource();
-    assertEquals("0015false0", resource1.serialize());
 
     Resource resource2 = new Resource("", ContentType.UNKNOWN);
     assertEquals("017UNKNOWN15false0", resource2.serialize());

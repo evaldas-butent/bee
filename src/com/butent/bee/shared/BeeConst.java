@@ -62,6 +62,8 @@ public final class BeeConst {
   public static final String STRING_LEFT_PARENTHESIS = "(";
   public static final String STRING_RIGHT_PARENTHESIS = ")";
   public static final String STRING_EQ = "=";
+  public static final String STRING_LT = "<";
+  public static final String STRING_GT = ">";
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
@@ -109,6 +111,10 @@ public final class BeeConst {
   public static final char CHAR_COLON = ':';
   public static final char CHAR_SEMICOLON = ';';
   public static final char CHAR_ALL = '*';
+  public static final char CHAR_SLASH = '/';
+  public static final char CHAR_BACKSLASH = '\\';
+  public static final char CHAR_TIMES = '\u00d7';
+  public static final char CHAR_QUESTION = '?';
 
   public static final char CHECK_MARK = '\u2713';
   public static final char HEAVY_CHECK_MARK = '\u2714';
@@ -238,6 +244,10 @@ public final class BeeConst {
     return x == UNDEF;
   }
 
+  public static boolean isUndef(long x) {
+    return x == UNDEF;
+  }
+  
   /**
    * Sets the state to client.
    * 

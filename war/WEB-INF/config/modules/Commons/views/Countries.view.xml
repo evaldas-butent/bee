@@ -3,7 +3,7 @@
 
   name="Countries"
   source="Countries"
-  newRowCaption="Nauja šalis"
+  newRowCaption="=newCountry"
   newRowColumns="Name Code EUMember"
   >
   <Columns>

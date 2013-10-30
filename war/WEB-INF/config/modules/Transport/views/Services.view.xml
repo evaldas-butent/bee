@@ -3,10 +3,12 @@
 
   name="Services"
   source="Services"
-  newRowCaption="Nauja paslauga" newRowColumns="Name Item"
+  newRowCaption="=trNewService" newRowColumns="Name Item"
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
     <SimpleColumn name="Item"/>
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />

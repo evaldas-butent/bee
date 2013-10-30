@@ -2,8 +2,6 @@ package com.butent.bee.client.screen;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -31,7 +29,8 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -91,6 +90,11 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.MOBILE;
+  }
+  
+  @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return false;
   }
@@ -108,11 +112,6 @@ public class Mobile extends ScreenImpl {
 
   @Override
   public void start() {
-    Element loading = DomUtils.getElement("loading");
-    if (loading != null) {
-      Document.get().getBody().removeChild(loading);
-    }
-
     createUi();
     notifyInfo(BeeUtils.joinWords("Start Time:",
         System.currentTimeMillis() - Settings.getStartMillis(), "ms"));

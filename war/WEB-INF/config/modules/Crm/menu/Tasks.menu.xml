@@ -3,22 +3,22 @@
 
 name="Tasks" label="=tasks" order="30"
 >
-  <Item name="Requests" label="Užklausimai" service="grid" parameters="Requests"/>
-  <Item name="NewRequest" label="Naujas užklausimas" service="new" parameters="Requests" />
+  <Item name="Requests" label="=crmRequests" service="grid" parameters="Requests"/>
+  <Item name="NewRequest" label="=crmNewRequest" service="new" parameters="Requests" />
 
-  <Item name="NewTask" label="Nauja užduotis" service="new" parameters="Tasks" separator="true" />
-  <Item name="AssignedTasks" label="Gautos" service="task_list" parameters="a" />
-  <Item name="DelegatedTasks" label="Deleguotos" service="task_list" parameters="d" />
-  <Item name="ObservedTasks" label="Stebimos" service="task_list" parameters="o" />
+  <Item name="NewTask" label="=crmNewTask" service="new" parameters="Tasks" separator="true" />
+  <Item name="AssignedTasks" label="=crmTasksAssigned" service="task_list" parameters="a" />
+  <Item name="DelegatedTasks" label="=crmTasksDelegated" service="task_list" parameters="d" />
+  <Item name="ObservedTasks" label="=crmTasksObserved" service="task_list" parameters="o" />
 
-  <Item name="AllTasks" label="Užduočių sąrašas" service="task_list" parameters="g" separator="true" />
+  <Item name="AllTasks" label="=crmTasksList" service="task_list" parameters="g" separator="true" />
 
-<!--   <Item name="RecurringTasks" label="Periodinės užduotys" service="grid" parameters="RecurringTasks" separator="true" /> -->
-<!--   <Item name="NewRecurringTask" label="Nauja periodinė užduotis" service="new" parameters="RecurringTasks" /> -->
+<!--   <Item name="RecurringTasks" label="=crmRecurringTasks" service="grid" parameters="RecurringTasks" separator="true" /> -->
+<!--   <Item name="NewRecurringTask" label="=crmNewRecurringTask" service="new" parameters="RecurringTasks" /> -->
 
-<!--   <Item name="TaskFactory" label="Užduočių formavimas" service="task_factory" separator="true" /> -->
+<!--   <Item name="TaskFactory" label="=crmTasksFactory" service="task_factory" separator="true" /> -->
 
-  <Item name="TaskTemplates" label="Užduočių šablonai" service="grid" parameters="TaskTemplates" separator="true" />
+  <Item name="TaskTemplates" label="=crmTasksTemplates" service="grid" parameters="TaskTemplates" separator="true" />
 
-  <Item name="DurationTypes" label="Darbų tipai" service="grid" parameters="DurationTypes" separator="true" />
+  <Item name="DurationTypes" label="=crmTaskDurationTypes" service="grid" parameters="DurationTypes" separator="true" />
 </Entry>

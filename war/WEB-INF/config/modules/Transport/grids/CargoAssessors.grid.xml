@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
       xmlns:ui="http://www.butent.com/ui"
 
   name="CargoAssessors" viewName="CargoAssessors"
-  newRowCaption="Naujas vertinimas"
-  flexGrow="1" flexShrink="1"
+  newRowCaption="=trNewAssessment"
+  flexGrow="1"
   >
-  <columns>
-    <DataColumn name="Date" caption="Sukūrimo data" width="110" readOnly="true" />
+  <g:columns>
+    <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />
     <ActionColumn element="link" name="ID" options="open" width="40">
       <render><ui:expression>rowId</ui:expression></render>
     </ActionColumn>
     <DataColumn name="Assessor" caption="PID" readOnly="true" width="40" />
-    <RelColumn name="Manager" caption="Vadybininkas" />
-    <DataColumn name="Notes" caption="Pastabos" />
-    <PropColumn name="Income" type="decimal" caption="Pajamos" format="#.00" />
-    <PropColumn name="Expense" type="decimal" caption="Sąnaudos" format="#.00" />
+    <RelColumn name="Manager" caption="=manager" />
+    <DataColumn name="Notes" caption="=notes" />
+    <PropColumn name="Income" type="decimal" caption="=income" format="#.00" />
+    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="#.00" />
     <DataColumn name="Status" itemKey="AssessmentStatus" readOnly="true" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

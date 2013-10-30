@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -18,17 +20,22 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -45,13 +52,13 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -59,12 +66,15 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -87,6 +97,16 @@ public final class TransportHandler {
     public FormInterceptor getInstance() {
       return new CargoFormHandler();
     }
+
+    @Override
+    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+      Presenter presenter = form.getViewPresenter();
+      presenter.getHeader().clearCommandPanel();
+      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
+          Value.getValue(row.getId()))));
+
+      return true;
+    }
   }
 
   private static class CargoGridHandler extends CargoPlaceRenderer {
@@ -95,6 +115,43 @@ public final class TransportHandler {
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
 
       return new CargoTripChecker().getDeleteMode(presenter, activeRow, selectedRows, defMode);
+    }
+  }
+
+  private static class InvoiceCreator extends Button implements ClickHandler {
+
+    final Filter filter;
+
+    public InvoiceCreator(Filter filter) {
+      super(Localized.getConstants().createInvoice());
+      addClickHandler(this);
+
+      Assert.notNull(filter);
+      this.filter = Filter.and(filter, Filter.isEmpty(TradeConstants.COL_SALE));
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+      Queries.getRowCount(VIEW_CARGO_INVOICE_INCOMES, filter, new IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          if (BeeUtils.isPositive(result)) {
+            GridPanel grid = new GridPanel(VIEW_CARGO_INVOICE_INCOMES,
+                GridFactory.getGridOptions(ImmutableMap.of(UiConstants.ATTR_FILTER,
+                    filter.toString())));
+
+            StyleUtils.setSize(grid, 800, 600);
+
+            DialogBox dialog = DialogBox.create(null);
+            dialog.setWidget(grid);
+            dialog.setAnimationEnabled(true);
+            dialog.setHideOnEscape(true);
+            dialog.center();
+          } else {
+            BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+          }
+        }
+      });
     }
   }
 
@@ -107,91 +164,97 @@ public final class TransportHandler {
             .addClickHandler(new Profit(COL_ORDER));
       }
       if (BeeUtils.same(name, "trips") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget)
-            .addClickHandler(new Trips(COL_ORDER));
+        ((HasClickHandlers) widget).addClickHandler(new Trips());
       }
     }
 
     @Override
     public FormInterceptor getInstance() {
-      return this;
+      return new OrderFormHandler();
+    }
+
+    @Override
+    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+      Presenter presenter = form.getViewPresenter();
+      presenter.getHeader().clearCommandPanel();
+      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_ORDER,
+          Value.getValue(row.getId()))));
+
+      return true;
     }
   }
 
   private static final class Trips implements ClickHandler {
-    private final String idName;
-    private DialogBox dialog;
-
-    private Trips(String idName) {
-      this.idName = idName;
-    }
-
     @Override
     public void onClick(ClickEvent event) {
-
       final FormView form = UiHelper.getForm((Widget) event.getSource());
+      long id = form.getActiveRow().getId();
 
-      this.dialog = DialogBox.create(Localized.getConstants().assignCargosToTripCaption());
-      dialog.setHideOnEscape(true);
+      if (!DataUtils.isId(id)) {
+        form.notifyWarning(Localized.getMessages()
+            .dataNotAvailable(Localized.getConstants().cargos()));
+        return;
+      }
+      ParameterList args = TransportHandler.createArgs(SVC_GET_UNASSIGNED_CARGOS);
+      args.addDataItem(COL_ORDER, id);
 
-      HtmlTable container = new HtmlTable();
-      container.setBorderSpacing(5);
-
-      container.setText(0, 0, Localized.getConstants().cargoSelectTrip());
-
-      Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
-          Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
-              "ExpeditionType", "ForwarderName"));
-      relation.disableNewRow();
-
-      final UnboundSelector selector = UnboundSelector.create(relation,
-          Lists.newArrayList("TripNo"));
-
-      selector.addEditStopHandler(new EditStopEvent.Handler() {
-
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
-        public void onEditStop(EditStopEvent esEvent) {
-          if (esEvent.isChanged()) {
-            ParameterList args = TransportHandler.createArgs(SVC_GET_UNASSIGNED_CARGOS);
-            args.addDataItem(idName, form.getActiveRow().getId());
-
-            dialog.close();
-
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-
-              @Override
-              public void onResponse(ResponseObject response) {
-
-                if (!response.hasResponse()) {
-                  Global.showError(Localized.getMessages().dataNotAvailable("Unassignment cargos"));
-                  return;
-                }
-
-                if (response.hasResponse(SimpleRowSet.class)) {
-                  SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
-                  BeeColumn cargo = new BeeColumn(ValueType.NUMBER, "Cargo");
-                  BeeColumn trip = new BeeColumn(ValueType.NUMBER, "Trip");
-                  List<BeeColumn> column = Lists.newArrayList(cargo, trip);
-                  List<String> values = Lists.newArrayList();
-
-                  for (int row = 0; row < rs.getNumberOfRows(); row++) {
-                    values.add(rs.getValue(row, 0));
-                    values.add(selector.getValue());
-                    Queries.insert(VIEW_CARGO_TRIPS, column, values);
-                    values.clear();
-                  }
-
-                  Global.showInfo(Localized.getMessages().orderCargoAddingToTrips(
-                      rs.getNumberOfRows()));
-                }
-              }
-            });
+        public void onResponse(ResponseObject response) {
+          if (response.hasErrors()) {
+            response.notify(form);
+            return;
           }
+          final String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (!BeeUtils.isPositive(cargos.length)) {
+            form.notifyWarning(Localized.getMessages()
+                .dataNotAvailable(Localized.getConstants().cargos()));
+            return;
+          }
+          final DialogBox dialog = DialogBox.create(Localized.getConstants()
+              .assignCargosToTripCaption());
+          dialog.setHideOnEscape(true);
+
+          HtmlTable container = new HtmlTable();
+          container.setBorderSpacing(5);
+          container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
+
+          Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
+              Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
+                  "ExpeditionType", "ForwarderName"));
+
+          relation.disableNewRow();
+          relation.setCaching(Relation.Caching.QUERY);
+
+          final UnboundSelector selector = UnboundSelector.create(relation,
+              Lists.newArrayList("TripNo"));
+
+          selector.addEditStopHandler(new EditStopEvent.Handler() {
+            @Override
+            public void onEditStop(EditStopEvent esEvent) {
+              if (esEvent.isChanged()) {
+                dialog.close();
+
+                List<BeeColumn> columns = Data.getColumns(VIEW_CARGO_TRIPS,
+                    Lists.newArrayList(COL_CARGO, COL_TRIP));
+                List<String> values = Lists.newArrayList();
+
+                for (String cargo : cargos) {
+                  values.add(cargo);
+                  values.add(selector.getValue());
+                  Queries.insert(VIEW_CARGO_TRIPS, columns, values);
+                  values.clear();
+                }
+                Global.showInfo(Localized.getMessages().orderCargoAddingToTrips(cargos.length));
+              }
+            }
+          });
+          container.setWidget(0, 1, selector);
+          dialog.setWidget(container);
+          dialog.showOnTop(form.getElement());
         }
       });
-      container.setWidget(0, 1, selector);
-      dialog.setWidget(container);
-      dialog.showOnTop(form.getElement(), 1);
     }
   }
 
@@ -320,7 +383,8 @@ public final class TransportHandler {
 
   private static class TripFormHandler extends AbstractFormInterceptor {
     @Override
-    public void afterCreateEditableWidget(EditableWidget editableWidget) {
+    public void afterCreateEditableWidget(EditableWidget editableWidget,
+        IdentifiableWidget widget) {
       if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
         String viewName = getFormView().getViewName();
         final int dateIndex = Data.getColumnIndex(viewName, "Date");
@@ -580,6 +644,11 @@ public final class TransportHandler {
     Captions.register(AssessmentStatus.class);
     Captions.register(TripStatus.class);
 
+    String key = Captions.register(CargoRequestStatus.class);
+    Captions.registerColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS, key);
+
+    SelectorEvent.register(new TransportSelectorHandler());
+
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
@@ -594,13 +663,15 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
     GridFactory.registerGridInterceptor(VIEW_ALL_CARGO, new CargoPlaceRenderer());
 
-    GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
-    FormFactory.registerFormInterceptor("CargoRequest", new CargoRequestForm());
+    // GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
-    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentsGrid());
+    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_INCOME_LIST, new CargoIncomeListGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICE_INCOMES, new CargoInvoiceIncomesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INCOMES, new CargoCreditIncomesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new CargoInvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
@@ -608,7 +679,15 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
-    FormFactory.registerFormInterceptor("CargoInvoice", new CargoInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TRANSPORTATION,
+        new AssessmentTransportationForm());
+
+    FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_CREDIT_INVOICE, new CargoCreditInvoiceForm());
+
+    FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
+    FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 

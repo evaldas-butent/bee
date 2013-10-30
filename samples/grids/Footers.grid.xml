@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Footers" viewName="DataTypes" caption="Footers"
+  >
+  <g:footer height="30" />
+
+  <g:columns>
+    <IdColumn name="Id" caption="ID" horizontalAlignment="left">
+      <footer html="total" />
+    </IdColumn>
+
+    <VerColumn name="Version" caption="Version min">
+      <footer aggregate="min" />
+    </VerColumn>
+
+    <CalcColumn name="Calc1" type="datetime" caption="Ver Dt max" format="date_short"
+      width="80" source="Version">
+      <render>
+        <ui:expression>rowVersion</ui:expression>
+      </render>
+      <footer aggregate="max" />
+    </CalcColumn>
+
+    <DataColumn name="Boolean" caption="Bool cnt">
+      <footer aggregate="count" />
+    </DataColumn>
+
+    <DataColumn name="I1" source="Integer" caption="int sum">
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <DataColumn name="I2" source="Integer" caption="int avg">
+      <footer aggregate="avg" scale="1" type="decimal" />
+    </DataColumn>
+
+    <DataColumn name="Long" caption="sum (long+1)">
+      <footer expression="row.Long + 1" />
+    </DataColumn>
+
+    <CalcColumn name="Calc2" type="decimal" caption="Math avg" scale="4">
+      <render>
+        <ui:expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</ui:expression>
+      </render>
+      <footer aggregate="avg" />
+    </CalcColumn>
+
+    <DataColumn name="Numeric" caption="num avg 3">
+      <footer aggregate="avg" format="0.000" />
+    </DataColumn>
+
+    <DataColumn name="Currency" format="0.0" caption="curr min">
+      <footer aggregate="min" />
+    </DataColumn>
+
+    <DataColumn name="String" caption="max len">
+      <footer aggregate="max" expression="String(row.String).length" type="integer" />
+    </DataColumn>
+
+    <DataColumn name="Char" caption="Char cnt 0">
+      <footer aggregate="count" options="0" />
+    </DataColumn>
+
+    <DataColumn name="Memo" caption="Memo cnt text">
+      <footer aggregate="count" text="=no" />
+    </DataColumn>
+
+    <DataColumn name="Date" horizontalAlignment="center" caption="date avg ymd">
+      <style>
+        <footerStyle>
+          <ui:inline>background-color: lightpink;</ui:inline>
+        </footerStyle>
+      </style>
+      <footer aggregate="avg" format="year_month_day" />
+    </DataColumn>
+
+    <DataColumn name="DateTime" format="yyyy-MM-dd HH:mm:ss" caption="datetime avg">
+      <footer aggregate="avg" format="yyyy.MM.dd" horizontalAlignment="center" />
+    </DataColumn>
+  </g:columns>
+</g:Grid>

@@ -717,14 +717,16 @@ public final class SqlUtils {
   }
 
   static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {
+    Collection<T> dest = destination;
+
     if (!BeeUtils.isEmpty(source)) {
-      if (BeeUtils.isEmpty(destination)) {
-        destination = source;
+      if (BeeUtils.isEmpty(dest)) {
+        dest = source;
       } else {
-        destination.addAll(source);
+        dest.addAll(source);
       }
     }
-    return destination;
+    return dest;
   }
 
   private static Map<String, Object> getConstraintMap(SqlKeyword type, String table, String name,

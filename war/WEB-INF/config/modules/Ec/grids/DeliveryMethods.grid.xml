@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="DeliveryMethods" viewName="DeliveryMethods" caption="=ecDeliveryMethods"
   flexGrow="1" flexShrink="1"
   >
-  <body height="50" />
-  <columns>
+  <g:body height="50" />
+  <g:columns>
     <DataColumn name="Name" visible="true" />
     <DataColumn name="Notes" flexShrink="2" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

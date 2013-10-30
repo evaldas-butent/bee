@@ -9,13 +9,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.event.logical.CloseEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -49,7 +49,7 @@ public class DialogBox extends Popup implements Printable {
 
   private final Flow container = new Flow();
   private final Flow header = new Flow();
-  
+
   private final String caption;
 
   protected DialogBox(String caption) {
@@ -65,15 +65,15 @@ public class DialogBox extends Popup implements Printable {
     header.addStyleName(STYLE_HEADER);
 
     CustomDiv captionWidget = new CustomDiv(STYLE_CAPTION);
-    String text = LocaleUtils.maybeLocalize(caption);
+    String text = Localized.maybeTranslate(caption);
     if (!BeeUtils.isEmpty(text)) {
-      captionWidget.setText(text);
+      captionWidget.setHtml(text);
     }
 
     header.add(captionWidget);
 
     container.add(header);
-    
+
     this.caption = caption;
 
     enableDragging();
@@ -88,6 +88,10 @@ public class DialogBox extends Popup implements Printable {
 
       header.add(widget);
     }
+  }
+
+  public void addDefaultCloseBox() {
+    addCloseBox(Global.getImages().silverClose());
   }
 
   @Override
@@ -139,16 +143,12 @@ public class DialogBox extends Popup implements Printable {
     Image close = new Image(imageResource, new ScheduledCommand() {
       @Override
       public void execute() {
-        hide(CloseEvent.Cause.MOUSE, null, true);
+        hide(CloseEvent.Cause.MOUSE_CLOSE_BOX, null, true);
       }
     });
 
     close.addStyleName(STYLE_CLOSE);
     addAction(Action.CLOSE, close);
-  }
-
-  protected void addDefaultCloseBox() {
-    addCloseBox(Global.getImages().silverClose());
   }
 
   @Override

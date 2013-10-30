@@ -1,49 +1,66 @@
 package com.butent.bee.server.modules.ec;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.IsQuery;
+import com.butent.bee.server.sql.IsSql;
+import com.butent.bee.server.sql.SqlBuilder;
+import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
-import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.utils.XmlUtils;
-import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.BeeConst.SqlEngine;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.SqlConstants;
-import com.butent.bee.shared.data.SqlConstants.SqlFunction;
-import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
-import com.butent.webservice.ButentWebServiceSoapPort;
 
-import org.w3c.dom.Node;
-
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.imageio.ImageIO;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
-import javax.xml.ws.BindingProvider;
 
 import pl.motonet.ArrayOfString;
 import pl.motonet.WSMotoOferta;
@@ -70,14 +87,17 @@ public class TecDocBean {
 
   private class RemoteItems {
     private final String supplierId;
+    private final Double cost;
     private final Double price;
     private final String brand;
     private final String articleNr;
 
-    public RemoteItems(String supplierId, String brand, String articleNr, Double price) {
+    public RemoteItems(String supplierId, String brand, String articleNr, Double cost,
+        Double price) {
       this.supplierId = supplierId;
       this.brand = brand;
       this.articleNr = articleNr;
+      this.cost = cost;
       this.price = price;
     }
   }
@@ -94,10 +114,46 @@ public class TecDocBean {
     }
   }
 
+  private class TcdData {
+    private final SqlCreate base;
+    private final SqlSelect baseSource;
+    private final List<String[]> baseIndexes = Lists.newArrayList();
+    private final List<IsSql> preparations = Lists.newArrayList();
+
+    public TcdData(SqlCreate base, SqlSelect baseSource) {
+      this.base = base;
+      this.baseSource = baseSource;
+    }
+
+    private void addPreparation(IsSql preparation) {
+      this.preparations.add(preparation);
+    }
+
+    private void addBaseIndexes(String... fldList) {
+      this.baseIndexes.add(fldList);
+    }
+  }
+
   private static BeeLogger logger = LogUtils.getLogger(TecDocBean.class);
   private static BeeLogger messyLogger = LogUtils.getLogger(QueryServiceBean.class);
 
+  private static Boolean supportsJPEG2000;
+  private static final String JPEG = "JPG";
+  private static final String JPEG2000 = "JP2";
+
   private static final String TCD_SCHEMA = "TecDoc";
+  private static final String TCD_GRAPHICS_RESOURCES = "TcdResources";
+
+  private static final String TCD_TECDOC_ID = "TecDocID";
+  private static final String TCD_ARTICLE_ID = "ArticleID";
+  private static final String TCD_CATEGORY_ID = "CategoryID";
+  private static final String TCD_MODEL_ID = "ModelID";
+  private static final String TCD_TYPE_ID = "TypeID";
+  private static final String TCD_GRAPHICS_ID = "GraphicsID";
+  private static final String TCD_GRAPHICS_RESOURCE_ID = "ResourceID";
+  private static final String TCD_GRAPHICS_RESOURCE_NO = "ResourceNo";
+  private static final String TCD_CRITERIA_ID = "CriteriaID";
+  private static final String TCD_PARENT_ID = "ParentID";
 
   @EJB
   QueryServiceBean qs;
@@ -107,357 +163,123 @@ public class TecDocBean {
   TecDocRemote tcd;
   @EJB
   IdGeneratorBean ig;
+  @EJB
+  ParamHolderBean prm;
+  @Resource
+  TimerService timerService;
 
-  @Asynchronous
-  public void justDoIt() {
-    Set<String> names = Sets.newHashSet(qs.dbTables(sys.getDbName(), sys.getDbSchema(), null)
-        .getColumn(SqlConstants.TBL_NAME));
+  private Timer butentTimer;
+  private Timer motonetTimer;
 
-    String articleBrands = "TcdArticleBrands";
-    String articles = "TcdArticles";
-    String tcdArticles = SqlUtils.table("TecDoc", articles);
+  public Collection<BeeParameter> getDefaultParameters() {
+    return Lists.newArrayList(
+        new BeeParameter(EC_MODULE, PRM_BUTENT_INTERVAL, ParameterType.NUMBER,
+            "Interval of BŪTENT data renewal in minutes", false, null),
+        new BeeParameter(EC_MODULE, PRM_MOTONET_INTERVAL, ParameterType.NUMBER,
+            "Interval of MOTOPROFIL data renewal in minutes", false, null));
+  }
 
-    if (!names.contains(articles)) {
-      qs.updateData(new SqlCreate(articles, false)
-          .setDataSource(new SqlSelect()
-              .addAllFields(tcdArticles)
-              .addFrom(tcdArticles)
-              .setWhere(SqlUtils.in(tcdArticles, "ArticleID", articleBrands, "ArticleID", null))));
+  public void initTimers() {
+    Integer minutes = prm.getInteger(EC_MODULE, PRM_BUTENT_INTERVAL);
+    boolean timerExists = butentTimer != null;
 
-      qs.updateData(SqlUtils.createPrimaryKey(articles, "PK_" + articles,
-          Lists.newArrayList("ArticleID")));
+    if (timerExists) {
+      try {
+        butentTimer.cancel();
+      } catch (NoSuchObjectLocalException e) {
+        logger.error(e, EcSupplier.EOLTAS);
+      }
+      butentTimer = null;
     }
-    String articleCriteria = "TcdArticleCriteria";
-    String tcdArticleCriteria = SqlUtils.table("TecDoc", articleCriteria);
-    String tcdCriteria = SqlUtils.table("TecDoc", "TcdCriteria");
+    if (BeeUtils.isPositive(minutes)) {
+      butentTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(EcSupplier.EOLTAS, false));
 
-    if (!names.contains(articleCriteria)) {
-      qs.updateData(new SqlCreate(articleCriteria, false)
-          .setDataSource(new SqlSelect()
-              .addFields(tcdArticleCriteria, "ArticleID", "Value")
-              .addFields(tcdCriteria, "Name")
-              .addFrom(tcdArticleCriteria)
-              .addFromInner(articles, SqlUtils.joinUsing(tcdArticleCriteria, articles, "ArticleID"))
-              .addFromInner(tcdCriteria,
-                  SqlUtils.joinUsing(tcdArticleCriteria, tcdCriteria, "CriteriaID"))));
-
-      qs.updateData(SqlUtils.createIndex(articleCriteria, "IK_" + articleCriteria + "ArticleID",
-          Lists.newArrayList("ArticleID"), false));
-
-      qs.updateData(SqlUtils.createForeignKey(articleCriteria, "FK_" + articleCriteria + articles,
-          Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
-          SqlKeyword.DELETE));
+      logger.info(EcSupplier.EOLTAS, "created timer every", minutes, "minutes starting at",
+          butentTimer.getNextTimeout());
+    } else {
+      if (timerExists) {
+        logger.info(EcSupplier.EOLTAS, "removed timer");
+      }
     }
-    String analogs = "TcdAnalogs";
-    String tcdAnalogs = SqlUtils.table("TecDoc", analogs);
+    minutes = prm.getInteger(EC_MODULE, PRM_MOTONET_INTERVAL);
+    timerExists = motonetTimer != null;
 
-    if (!names.contains(analogs)) {
-      qs.updateData(new SqlCreate(analogs, false)
-          .setDataSource(new SqlSelect()
-              .addAllFields(tcdAnalogs)
-              .addFrom(tcdAnalogs)
-              .addFromInner(articles, SqlUtils.joinUsing(tcdAnalogs, articles, "ArticleID"))));
-
-      qs.updateData(SqlUtils.createIndex(analogs, "IK_" + analogs + "SearchNr",
-          Lists.newArrayList("SearchNr"), false));
-
-      qs.updateData(SqlUtils.createIndex(analogs, "IK_" + analogs + "ArticleID",
-          Lists.newArrayList("ArticleID"), false));
-
-      qs.updateData(SqlUtils.createForeignKey(analogs, "FK_" + analogs + articles,
-          Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
-          SqlKeyword.DELETE));
+    if (timerExists) {
+      try {
+        motonetTimer.cancel();
+      } catch (NoSuchObjectLocalException e) {
+        logger.error(e, EcSupplier.MOTOPROFIL);
+      }
+      motonetTimer = null;
     }
-    String articleCategories = "TcdArticleCategories";
-    String tcdArticlesToGeneric = SqlUtils.table("TecDoc", "TcdArticlesToGeneric");
-    String tcdGenericToCategories = SqlUtils.table("TecDoc", "TcdGenericToCategories");
-    String categories = "TcdCategories";
-    String tcdCategories = SqlUtils.table("TecDoc", categories);
+    if (BeeUtils.isPositive(minutes)) {
+      motonetTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(EcSupplier.MOTOPROFIL, false));
 
-    if (!names.containsAll(Lists.newArrayList(articleCategories, categories))) {
-      qs.updateData(new SqlCreate(articleCategories, false)
-          .setDataSource(new SqlSelect().setDistinctMode(true)
-              .addFields(articles, "ArticleID")
-              .addFields(tcdCategories, "CategoryID")
-              .addFrom(articles)
-              .addFromInner(tcdArticlesToGeneric,
-                  SqlUtils.joinUsing(articles, tcdArticlesToGeneric, "ArticleID"))
-              .addFromInner(tcdGenericToCategories,
-                  SqlUtils.joinUsing(tcdArticlesToGeneric, tcdGenericToCategories, "GenericID"))
-              .addFromInner(tcdCategories,
-                  SqlUtils.joinUsing(tcdGenericToCategories, tcdCategories, "CategoryID"))));
-
-      qs.updateData(new SqlCreate(categories, false)
-          .setDataSource(new SqlSelect()
-              .addAllFields(tcdCategories)
-              .addFrom(tcdCategories)
-              .setWhere(SqlUtils.in(tcdCategories, "CategoryID", articleCategories, "CategoryID",
-                  null))));
-
-      qs.updateData(SqlUtils.createPrimaryKey(categories, "PK_" + categories,
-          Lists.newArrayList("CategoryID")));
-
-      String tmpId = qs.sqlCreateTemp(new SqlSelect()
-          .addFields(categories, "CategoryID")
-          .addFrom(categories)
-          .setWhere(SqlUtils.isNull(categories, "ParentID")));
-
-      int c = 0;
-      String als = SqlUtils.uniqueName();
-
-      do {
-        String nextLevel = qs.sqlCreateTemp(new SqlSelect()
-            .addFields(categories, "CategoryID")
-            .addFrom(categories)
-            .addFromInner(tmpId, SqlUtils.join(categories, "ParentID", tmpId, "CategoryID")));
-
-        SqlSelect query = new SqlSelect()
-            .addFields(categories, "CategoryName")
-            .addFrom(categories)
-            .addFromInner(tmpId, SqlUtils.joinUsing(categories, tmpId, "CategoryID"))
-            .addGroup(categories, "CategoryName");
-
-        if (c > 0) {
-          query.addMax(categories, "CategoryID")
-              .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT, null), 1));
-        } else {
-          query.addEmptyInt("CategoryID");
-        }
-        String tmp = qs.sqlCreateTemp(new SqlSelect()
-            .addFields(categories, "CategoryID")
-            .addField(als, "CategoryID", "TargetID")
-            .addFrom(categories)
-            .addFromInner(tmpId, SqlUtils.joinUsing(categories, tmpId, "CategoryID"))
-            .addFromInner(query, als, SqlUtils.joinUsing(categories, als, "CategoryName"))
-            .setWhere(SqlUtils.or(SqlUtils.isNull(als, "CategoryID"),
-                SqlUtils.joinNotEqual(als, "CategoryID", categories, "CategoryID"))));
-
-        qs.sqlIndex(tmp, "CategoryID");
-
-        qs.updateData(new SqlUpdate(articleCategories)
-            .addExpression("CategoryID", SqlUtils.field(tmp, "TargetID"))
-            .setFrom(tmp, SqlUtils.joinUsing(articleCategories, tmp, "CategoryID")));
-
-        c = qs.updateData(new SqlUpdate(categories)
-            .addExpression("ParentID", SqlUtils.field(tmp, "TargetID"))
-            .setFrom(tmp, SqlUtils.join(categories, "ParentID", tmp, "CategoryID")));
-
-        qs.updateData(new SqlDelete(categories)
-            .setWhere(SqlUtils.in(categories, "CategoryID", tmp, "CategoryID", null)));
-
-        qs.sqlDropTemp(tmp);
-        qs.sqlDropTemp(tmpId);
-        tmpId = nextLevel;
-      } while (c > 0);
-
-      qs.sqlDropTemp(tmpId);
-
-      qs.updateData(SqlUtils.createIndex(categories, "IK_" + categories + "CategoryID",
-          Lists.newArrayList("CategoryID"), false));
-
-      qs.updateData(SqlUtils.createForeignKey(categories, "FK_" + categories + categories,
-          Lists.newArrayList("ParentID"), categories, Lists.newArrayList("CategoryID"),
-          SqlKeyword.DELETE));
-
-      String tmp = SqlUtils.uniqueName();
-
-      qs.updateData(SqlUtils.renameTable(articleCategories, tmp));
-
-      qs.updateData(new SqlCreate(articleCategories, false)
-          .setDataSource(new SqlSelect().setDistinctMode(true)
-              .addFields(tmp, "ArticleID", "CategoryID")
-              .addFrom(tmp)
-              .addFromInner(categories, SqlUtils.joinUsing(tmp, categories, "CategoryID"))));
-
-      qs.updateData(SqlUtils.createIndex(articleCategories,
-          "IK_" + articleCategories + "CategoryID", Lists.newArrayList("CategoryID"), false));
-
-      qs.updateData(SqlUtils.createIndex(articleCategories,
-          "IK_" + articleCategories + "ArticleID", Lists.newArrayList("ArticleID"), false));
-
-      qs.updateData(SqlUtils.createForeignKey(articleCategories,
-          "FK_" + articleCategories + articles,
-          Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
-          SqlKeyword.DELETE));
-
-      qs.updateData(SqlUtils.createForeignKey(articleCategories,
-          "FK_" + articleCategories + categories,
-          Lists.newArrayList("CategoryID"), categories, Lists.newArrayList("CategoryID"),
-          SqlKeyword.DELETE));
-
-      qs.updateData(SqlUtils.dropTable(tmp));
-    }
-    String tcdArticlesWithGeneric = SqlUtils.table("TecDoc", "TcdArticlesWithGeneric");
-    String tcdArticlesWithGenericToTypes =
-        SqlUtils.table("TecDoc", "TcdArticlesWithGenericToTypes");
-    String typeArticles = "TcdTypeArticles";
-    String types = "TcdTypes";
-    String tcdTypes = SqlUtils.table("TecDoc", types);
-
-    if (!names.contains(typeArticles)) {
-      qs.updateData(new SqlCreate(typeArticles, false)
-          .setDataSource(new SqlSelect().setDistinctMode(true)
-              .addFields(tcdTypes, "TypeID")
-              .addFields(articles, "ArticleID")
-              .addFrom(articles)
-              .addFromInner(tcdArticlesWithGeneric,
-                  SqlUtils.joinUsing(articles, tcdArticlesWithGeneric, "ArticleID"))
-              .addFromInner(tcdArticlesWithGenericToTypes,
-                  SqlUtils.joinUsing(tcdArticlesWithGeneric,
-                      tcdArticlesWithGenericToTypes, "GenericArticleID"))
-              .addFromInner(tcdTypes,
-                  SqlUtils.joinUsing(tcdArticlesWithGenericToTypes, tcdTypes, "TypeID"))));
-
-      qs.updateData(SqlUtils.createIndex(typeArticles,
-          "IK_" + typeArticles + "ArticleID", Lists.newArrayList("ArticleID"), false));
-
-      qs.updateData(SqlUtils.createIndex(typeArticles,
-          "IK_" + typeArticles + "TypeID", Lists.newArrayList("TypeID"), false));
-
-      qs.updateData(SqlUtils.createForeignKey(typeArticles, "FK_" + typeArticles + articles,
-          Lists.newArrayList("ArticleID"), articles, Lists.newArrayList("ArticleID"),
-          SqlKeyword.DELETE));
-    }
-    if (!names.contains(types)) {
-      qs.updateData(new SqlCreate(types, false)
-          .setDataSource(new SqlSelect()
-              .addAllFields(tcdTypes)
-              .addFrom(tcdTypes)
-              .setWhere(SqlUtils.in(tcdTypes, "TypeID", typeArticles, "TypeID", null))));
-
-      qs.updateData(SqlUtils.createPrimaryKey(types, "PK_" + types,
-          Lists.newArrayList("TypeID")));
-
-      qs.updateData(SqlUtils.createIndex(types,
-          "IK_" + types + "ModelID", Lists.newArrayList("ModelID"), false));
-
-      qs.updateData(SqlUtils.createForeignKey(typeArticles, "FK_" + typeArticles + types,
-          Lists.newArrayList("TypeID"), types, Lists.newArrayList("TypeID"), SqlKeyword.DELETE));
-    }
-    String models = "TcdModels";
-    String tcdModels = SqlUtils.table("TecDoc", models);
-
-    if (!names.contains(models)) {
-      qs.updateData(new SqlCreate(models, false)
-          .setDataSource(new SqlSelect()
-              .addAllFields(tcdModels)
-              .addFrom(tcdModels)
-              .setWhere(SqlUtils.in(tcdModels, "ModelID", types, "ModelID", null))));
-
-      qs.updateData(SqlUtils.createPrimaryKey(models, "PK_" + models,
-          Lists.newArrayList("ModelID")));
-
-      qs.updateData(SqlUtils.createForeignKey(types, "FK_" + types + models,
-          Lists.newArrayList("ModelID"), models, Lists.newArrayList("ModelID"), SqlKeyword.DELETE));
+      logger.info(EcSupplier.MOTOPROFIL, "created timer every", minutes, "minutes starting at",
+          motonetTimer.getNextTimeout());
+    } else {
+      if (timerExists) {
+        logger.info(EcSupplier.MOTOPROFIL, "removed timer");
+      }
     }
   }
 
   @Asynchronous
   public void suckButent() {
-    String supplier = "EOLTAS";
+    EcSupplier supplier = EcSupplier.EOLTAS;
+    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
-    String address = "http://82.135.245.222:8081/ButentWS/ButentWS.WSDL";
-    ButentWS butentWS = ButentWS.create(address);
-    ButentWebServiceSoapPort port = butentWS.getButentWebServiceSoapPort();
+    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
+        "SELECT preke AS pr, savikaina AS sv, pard_kaina as kn, gam_art AS ga, gamintojas AS gam"
+            + " FROM prekes"
+            + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL",
+        new String[] {"pr", "sv", "kn", "ga", "gam"});
 
-    ((BindingProvider) port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-        butentWS.getWSDLDocumentLocation().toString());
-
-    String response = port.login("admin", "gruntas");
-    String error = "Unknown login response";
-
-    if (BeeUtils.same(response, "OK")) {
-      error = null;
-    }
-    if (!BeeUtils.isEmpty(error)) {
-      Map<String, String> messages = XmlUtils.getElements(response, null);
-
-      if (BeeUtils.containsKey(messages, "Message")) {
-        error = messages.get("Message");
-
-        if (BeeUtils.same(error, "Already logged in")) {
-          error = null;
-        }
-      }
-    }
-    if (!BeeUtils.isEmpty(error)) {
-      logger.severe(supplier, error);
+    if (response.hasErrors()) {
+      logger.severe(supplier, response.getErrors());
       return;
     }
-    logger.info(supplier, "Waiting for items...");
+    SimpleRowSet rows = (SimpleRowSet) response.getResponse();
 
-    response = port.process("GetSQLData", "<query>SELECT preke AS pr, savikaina AS kn,"
-        + " gam_art AS ga, gamintojas AS gam FROM prekes"
-        + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL</query>");
+    if (rows.getNumberOfRows() > 0) {
+      List<RemoteItems> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
 
-    Node node = XmlUtils.fromString(response).getFirstChild();
-
-    if (BeeUtils.same(node.getNodeName(), "Error")) {
-      logger.severe(supplier, node.getTextContent());
-      return;
-    }
-    if (node.hasChildNodes()) {
-      int size = node.getChildNodes().getLength();
-      List<RemoteItems> data = Lists.newArrayListWithExpectedSize(size);
-
-      logger.info(supplier, "Received", size, "records. Updating data...");
-
-      for (int i = 0; i < size; i++) {
-        Node row = node.getChildNodes().item(i);
-
-        if (row.hasChildNodes()) {
-          Map<String, String> info = XmlUtils.getElements(row.getChildNodes(), null);
-
-          data.add(new RemoteItems(info.get("pr"), info.get("gam"), info.get("ga"),
-              BeeUtils.toDoubleOrNull(info.get("kn"))));
-        }
+      for (SimpleRow row : rows) {
+        data.add(new RemoteItems(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
+            row.getDouble("sv"), row.getDouble("kn")));
       }
       importItems(supplier, data);
     }
-    logger.info(supplier, "Waiting for remainders...");
+    response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
+        "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
+            + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
+            + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
+            + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
+        new String[] {"sn", "pr", "lk"});
 
-    response = port.process("GetSQLData", "<query>SELECT likuciai.sandelis AS sn,"
-        + " likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
-        + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
-        + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
-        + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0</query>");
-
-    node = XmlUtils.fromString(response).getFirstChild();
-
-    if (BeeUtils.same(node.getNodeName(), "Error")) {
-      logger.severe(supplier, node.getTextContent());
+    if (response.hasErrors()) {
+      logger.severe(supplier, response.getErrors());
       return;
     }
-    if (node.hasChildNodes()) {
-      int size = node.getChildNodes().getLength();
-      List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(size);
+    rows = (SimpleRowSet) response.getResponse();
 
-      logger.info(supplier, "Received", size, "records. Updating data...");
+    if (rows.getNumberOfRows() > 0) {
+      List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
 
-      for (int i = 0; i < size; i++) {
-        Node row = node.getChildNodes().item(i);
-
-        if (row.hasChildNodes()) {
-          Map<String, String> info = XmlUtils.getElements(row.getChildNodes(), null);
-
-          data.add(new RemoteRemainders(info.get("pr"), info.get("sn"),
-              BeeUtils.toDoubleOrNull(info.get("lk"))));
-        }
+      for (SimpleRow row : rows) {
+        data.add(new RemoteRemainders(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
       }
       importRemainders(supplier, data);
-
-    } else {
-      logger.info(supplier, "webService returned no remainders");
     }
   }
 
   @Asynchronous
   public void suckMotonet() {
-    // keytool -importcert -keystore
-    // /Applications/JavaEE/JavaEE7AS/glassfish4/glassfish/domains/domain1/config/cacerts.jks
-    // -storepass changeit -alias motonet -file motonet.cer
-
-    String supplier = "MOTOPROFIL";
+    EcSupplier supplier = EcSupplier.MOTOPROFIL;
     logger.info(supplier, "Waiting for data...");
 
     WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
@@ -471,22 +293,42 @@ public class TecDocBean {
       logger.info(supplier, "Received", size, "records. Updating data...");
 
       SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addFields(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER_BRAND, COL_TCD_TECDOC_BRAND)
-          .addFrom(TBL_TCD_BRANDS_MAPPING));
+          .addFields(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER_BRAND)
+          .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+          .addFrom(TBL_TCD_BRANDS_MAPPING)
+          .addFromLeft(TBL_TCD_BRANDS,
+              sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_BRANDS_MAPPING, COL_TCD_BRAND))
+          .setWhere(SqlUtils.equals(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER, supplier.ordinal())));
 
+      Map<String, String> mappings = Maps.newHashMap();
+
+      for (SimpleRow row : rs) {
+        mappings.put(row.getValue(COL_TCD_SUPPLIER_BRAND), row.getValue(COL_TCD_BRAND_NAME));
+      }
       for (String item : info.getString()) {
         String[] values = item.split("[|]", 8);
 
         if (values.length == 8) {
-          String brand = rs.getValueByKey(COL_TCD_SUPPLIER_BRAND, values[0], COL_TCD_TECDOC_BRAND);
-          String supplierId = values[0] + values[1];
+          String supplierBrand = values[0];
 
-          if (!BeeUtils.isEmpty(brand)) {
-            items.add(new RemoteItems(supplierId, brand, values[1],
-                BeeUtils.toDoubleOrNull(values[7].replace(',', '.'))));
+          if (mappings.containsKey(supplierBrand)) {
+            String brand = mappings.get(supplierBrand);
 
-            remainders.add(new RemoteRemainders(supplierId, "MotoNet",
-                BeeUtils.toDoubleOrNull(values[3])));
+            if (!BeeUtils.isEmpty(brand)) {
+              String supplierId = supplierBrand + values[1];
+
+              items.add(new RemoteItems(supplierId, brand, values[1],
+                  BeeUtils.toDoubleOrNull(values[7].replace(',', '.')), null));
+
+              remainders.add(new RemoteRemainders(supplierId, "MotoNet",
+                  BeeUtils.toDoubleOrNull(values[3])));
+            }
+          } else {
+            qs.insertData(new SqlInsert(TBL_TCD_BRANDS_MAPPING)
+                .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
+                .addConstant(COL_TCD_SUPPLIER_BRAND, supplierBrand));
+
+            mappings.put(supplierBrand, null);
           }
         }
       }
@@ -494,71 +336,111 @@ public class TecDocBean {
       importRemainders(supplier, remainders);
 
     } else {
-      logger.info(supplier, "webService returned no data");
+      if (info != null && info.getString().size() > 0) {
+        logger.info(supplier, info.getString().get(0));
+      } else {
+        logger.info(supplier, "webService returned no data");
+      }
     }
   }
 
   @Asynchronous
-  @TransactionAttribute(TransactionAttributeType.NEVER)
   public void suckTecdoc() {
-    List<Pair<SqlCreate, SqlSelect>> queries = Lists.newArrayList();
-    queries.add(Pair.of(
-        new SqlCreate("TcdModels", false)
-            .addInteger("ModelID", true)
-            .addString("ModelName", 50, true)
-            .addString("Manufacturer", 50, true),
+    List<IsSql> init = Lists.newArrayList();
+
+    init.add(new SqlCreate("_country_designations", false)
+        .setDataSource(new SqlSelect()
+            .addFields("tof_country_designations", "cds_id")
+            .addMax("tof_des_texts", "tex_text")
+            .addFrom("tof_country_designations")
+            .addFromInner("tof_des_texts", SqlUtils.join("tof_country_designations",
+                "cds_tex_id", "tof_des_texts", "tex_id"))
+            .setWhere(SqlUtils.equals("tof_country_designations", "cds_lng_id", 34))
+            .addGroup("tof_country_designations", "cds_id")));
+
+    init.add(SqlUtils.createIndex("_country_designations", SqlUtils.uniqueName(),
+        Lists.newArrayList("cds_id"), false));
+
+    init.add(new SqlCreate("_designations", false)
+        .setDataSource(new SqlSelect().setUnionAllMode(true)
+            .addFields("tof_designations", "des_id")
+            .addFields("tof_des_texts", "tex_text")
+            .addFrom("tof_designations")
+            .addFromInner("tof_des_texts",
+                SqlUtils.join("tof_designations", "des_tex_id", "tof_des_texts", "tex_id"))
+            .setWhere(SqlUtils.equals("tof_designations", "des_lng_id", 34))
+            .addUnion(new SqlSelect()
+                .addFields("tof_designations", "des_id")
+                .addFields("tof_des_texts", "tex_text")
+                .addFrom("tof_designations")
+                .addFromInner("tof_des_texts",
+                    SqlUtils.join("tof_designations", "des_tex_id", "tof_des_texts", "tex_id"))
+                .setWhere(SqlUtils.and(SqlUtils.equals("tof_designations", "des_lng_id", 255),
+                    SqlUtils.not(SqlUtils.in("tof_designations", "des_id", "tof_designations",
+                        "des_id", SqlUtils.equals("tof_designations", "des_lng_id", 34))))))));
+
+    init.add(SqlUtils.createIndex("_designations", SqlUtils.uniqueName(),
+        Lists.newArrayList("des_id"), false));
+
+    List<TcdData> builds = Lists.newArrayList();
+
+    TcdData data = new TcdData(new SqlCreate(TBL_TCD_MODELS, false)
+        .addInteger(TCD_MODEL_ID, true)
+        .addString(COL_TCD_MODEL_NAME, 50, true)
+        .addString(COL_TCD_MANUFACTURER_NAME, 50, true),
         new SqlSelect()
-            .addField("tof_models", "mod_id", "ModelID")
-            .addField("_designations", "tex_text", "ModelName")
-            .addField("tof_manufacturers", "mfa_brand", "Manufacturer")
+            .addField("tof_models", "mod_id", TCD_MODEL_ID)
+            .addField("_country_designations", "tex_text", COL_TCD_MODEL_NAME)
+            .addField("tof_manufacturers", "mfa_brand", COL_TCD_MANUFACTURER_NAME)
             .addFrom("tof_models")
             .addFromInner("tof_manufacturers",
                 SqlUtils.join("tof_models", "mod_mfa_id", "tof_manufacturers", "mfa_id"))
-            .addFromInner("_designations",
-                SqlUtils.join("tof_models", "mod_cds_id", "_designations", "cds_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdTypes", false)
-            .addInteger("TypeID", true)
-            .addInteger("ModelID", true)
-            .addString("TypeName", 50, true)
-            .addInteger("ProducedFrom", false)
-            .addInteger("ProducedTo", false)
-            .addInteger("Ccm", false)
-            .addDecimal("KwFrom", 3, 0, false)
-            .addDecimal("KwTo", 3, 0, false)
-            .addDecimal("Cylinders", 2, 0, false)
-            .addDecimal("MaxWeight", 6, 2, false)
-            .addString("Engine", 50, false)
-            .addString("Fuel", 50, false)
-            .addString("Body", 50, false)
-            .addString("Axle", 50, false),
+            .addFromInner("_country_designations",
+                SqlUtils.join("tof_models", "mod_cds_id", "_country_designations", "cds_id")));
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_TYPES, false)
+        .addInteger(TCD_TYPE_ID, true)
+        .addInteger(TCD_MODEL_ID, true)
+        .addString(COL_TCD_TYPE_NAME, 50, true)
+        .addInteger(COL_TCD_PRODUCED_FROM, false)
+        .addInteger(COL_TCD_PRODUCED_TO, false)
+        .addInteger(COL_TCD_CCM, false)
+        .addDecimal(COL_TCD_KW_FROM, 3, 0, false)
+        .addDecimal(COL_TCD_KW_TO, 3, 0, false)
+        .addDecimal(COL_TCD_CYLINDERS, 2, 0, false)
+        .addDecimal(COL_TCD_MAX_WEIGHT, 6, 2, false)
+        .addString(COL_TCD_ENGINE, 50, false)
+        .addString(COL_TCD_FUEL, 50, false)
+        .addString(COL_TCD_BODY, 50, false)
+        .addString(COL_TCD_AXLE, 50, false),
         new SqlSelect()
-            .addField("tof_types", "typ_id", "TypeID")
-            .addField("tof_types", "typ_mod_id", "ModelID")
-            .addField("_designations", "tex_text", "TypeName")
+            .addField("tof_types", "typ_id", TCD_TYPE_ID)
+            .addField("tof_types", "typ_mod_id", TCD_MODEL_ID)
+            .addField("_country_designations", "tex_text", COL_TCD_TYPE_NAME)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_pcon_start"),
-                SqlUtils.constant("NULL"), null, "typ_pcon_start"), "ProducedFrom")
+                SqlUtils.constant("NULL"), null, "typ_pcon_start"), COL_TCD_PRODUCED_FROM)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_pcon_end"),
-                SqlUtils.constant("NULL"), null, "typ_pcon_end"), "ProducedTo")
+                SqlUtils.constant("NULL"), null, "typ_pcon_end"), COL_TCD_PRODUCED_TO)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_ccm"),
-                SqlUtils.constant("NULL"), null, "typ_ccm"), "Ccm")
+                SqlUtils.constant("NULL"), null, "typ_ccm"), COL_TCD_CCM)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_kw_from"),
-                SqlUtils.constant("NULL"), null, "typ_kw_from"), "KwFrom")
+                SqlUtils.constant("NULL"), null, "typ_kw_from"), COL_TCD_KW_FROM)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_kw_upto"),
-                SqlUtils.constant("NULL"), null, "typ_kw_upto"), "KwTo")
+                SqlUtils.constant("NULL"), null, "typ_kw_upto"), COL_TCD_KW_TO)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_cylinders"),
-                SqlUtils.constant("NULL"), null, "typ_cylinders"), "Cylinders")
+                SqlUtils.constant("NULL"), null, "typ_cylinders"), COL_TCD_CYLINDERS)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("typ_max_weight"),
-                SqlUtils.constant("NULL"), null, "typ_max_weight"), "MaxWeight")
-            .addField("_engines", "tex_text", "Engine")
-            .addField("_fuels", "tex_text", "Fuel")
+                SqlUtils.constant("NULL"), null, "typ_max_weight"), COL_TCD_MAX_WEIGHT)
+            .addField("_engines", "tex_text", COL_TCD_ENGINE)
+            .addField("_fuels", "tex_text", COL_TCD_FUEL)
             .addExpr(SqlUtils.nvl(SqlUtils.field("_bodies", "tex_text"),
-                SqlUtils.field("_models", "tex_text")), "Body")
-            .addField("_bodies", "tex_text", "Body")
-            .addField("_axles", "tex_text", "Axle")
+                SqlUtils.field("_models", "tex_text")), COL_TCD_BODY)
+            .addField("_axles", "tex_text", COL_TCD_AXLE)
             .addFrom("tof_types")
-            .addFromInner("_designations",
-                SqlUtils.join("tof_types", "typ_cds_id", "_designations", "cds_id"))
+            .addFromInner("_country_designations",
+                SqlUtils.join("tof_types", "typ_cds_id", "_country_designations", "cds_id"))
             .addFromLeft("_designations", "_engines",
                 SqlUtils.join("tof_types", "typ_kv_engine_des_id", "_engines", "des_id"))
             .addFromLeft("_designations", "_fuels",
@@ -568,32 +450,52 @@ public class TecDocBean {
             .addFromLeft("_designations", "_models",
                 SqlUtils.join("tof_types", "typ_kv_model_des_id", "_models", "des_id"))
             .addFromLeft("_designations", "_axles",
-                SqlUtils.join("tof_types", "typ_kv_axle_des_id", "_axles", "des_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdArticles", false)
-            .addInteger("ArticleID", true)
-            .addString("ArticleNr", 50, true)
-            .addString("ArticleName", 50, true)
-            .addString("Supplier", 50, true),
-        new SqlSelect().setLimit(1000000)
-            .addField("tof_articles", "art_id", "ArticleID")
-            .addField("tof_articles", "art_article_nr", "ArticleNr")
-            .addField("_designations", "tex_text", "ArticleName")
-            .addField("tof_suppliers", "sup_brand", "Supplier")
+                SqlUtils.join("tof_types", "typ_kv_axle_des_id", "_axles", "des_id")));
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_ARTICLES, false)
+        .addInteger(TCD_ARTICLE_ID, true)
+        .addString(COL_TCD_ARTICLE_NR, 50, true)
+        .addString(COL_TCD_SEARCH_NR, 50, true)
+        .addString(COL_TCD_ARTICLE_NAME, 50, true)
+        .addString(COL_TCD_BRAND_NAME, 50, true),
+        new SqlSelect().setLimit(100000)
+            .addField("_articles", "art_id", TCD_ARTICLE_ID)
+            .addField("_articles", "art_article_nr", COL_TCD_ARTICLE_NR)
+            .addField("_articles", "arl_search_number", COL_TCD_SEARCH_NR)
+            .addField("_articles", "tex_text", COL_TCD_ARTICLE_NAME)
+            .addField("_articles", "sup_brand", COL_TCD_BRAND_NAME)
+            .addFrom("_articles"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+    data.addBaseIndexes(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME);
+
+    data.addPreparation(new SqlCreate("_articles", false)
+        .setDataSource(new SqlSelect()
+            .addFields("tof_articles", "art_id", "art_article_nr")
+            .addFields("tof_art_lookup", "arl_search_number")
+            .addFields("_designations", "tex_text")
+            .addFields("tof_suppliers", "sup_brand")
             .addFrom("tof_articles")
+            .addFromInner("tof_art_lookup",
+                SqlUtils.and(SqlUtils.equals("tof_art_lookup", "arl_kind", "1"),
+                    SqlUtils.join("tof_articles", "art_id", "tof_art_lookup", "arl_art_id")))
             .addFromInner("tof_suppliers",
                 SqlUtils.join("tof_articles", "art_sup_id", "tof_suppliers", "sup_id"))
             .addFromInner("_designations",
                 SqlUtils.join("tof_articles", "art_complete_des_id", "_designations", "des_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdCriteria", false)
-            .addInteger("CriteriaID", true)
-            .addString("Name", 50, true)
-            .addString("ShortName", 50, false)
-            .addString("UnitName", 50, false),
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_CRITERIA, false)
+        .addInteger(TCD_CRITERIA_ID, true)
+        .addString(COL_TCD_CRITERIA_NAME, 50, true)
+        .addString("ShortName", 50, false)
+        .addString("UnitName", 50, false),
         new SqlSelect()
-            .addField("tof_criteria", "cri_id", "CriteriaID")
-            .addField("_designations", "tex_text", "Name")
+            .addField("tof_criteria", "cri_id", TCD_CRITERIA_ID)
+            .addField("_designations", "tex_text", COL_TCD_CRITERIA_NAME)
             .addField("short", "tex_text", "ShortName")
             .addField("unit", "tex_text", "UnitName")
             .addFrom("tof_criteria")
@@ -602,123 +504,911 @@ public class TecDocBean {
             .addFromLeft("_designations", "short",
                 SqlUtils.join("tof_criteria", "cri_short_des_id", "short", "des_id"))
             .addFromLeft("_designations", "unit",
-                SqlUtils.join("tof_criteria", "cri_unit_des_id", "unit", "des_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdArticleCriteria", false)
-            .addInteger("ArticleID", true)
-            .addInteger("CriteriaID", true)
-            .addString("Value", 50, false),
-        new SqlSelect().setLimit(1000000)
-            .addField("tof_article_criteria", "acr_art_id", "ArticleID")
-            .addField("tof_article_criteria", "acr_cri_id", "CriteriaID")
+                SqlUtils.join("tof_criteria", "cri_unit_des_id", "unit", "des_id")));
+
+    data.addBaseIndexes(TCD_CRITERIA_ID);
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_ARTICLE_CRITERIA, false)
+        .addInteger(TCD_ARTICLE_ID, true)
+        .addInteger(TCD_CRITERIA_ID, true)
+        .addString(COL_TCD_CRITERIA_VALUE, 50, false),
+        new SqlSelect().setLimit(500000)
+            .addField("_article_criteria", "acr_art_id", TCD_ARTICLE_ID)
+            .addField("_article_criteria", "acr_cri_id", TCD_CRITERIA_ID)
+            .addFields("_article_criteria", COL_TCD_CRITERIA_VALUE)
+            .addFrom("_article_criteria"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+
+    data.addPreparation(new SqlCreate("_article_criteria", false)
+        .setDataSource(new SqlSelect().setDistinctMode(true)
+            .addFields("tof_article_criteria", "acr_art_id", "acr_cri_id")
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("acr_value"),
                 SqlUtils.constant("NULL"), SqlUtils.field("_designations", "tex_text"),
-                "acr_value"), "Value")
+                "acr_value"), COL_TCD_CRITERIA_VALUE)
             .addFrom("tof_article_criteria")
             .addFromLeft("_designations", SqlUtils.join("tof_article_criteria", "acr_kv_des_id",
                 "_designations", "des_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdAnalogs", false)
-            .addInteger("ArticleID", true)
-            .addString("SearchNr", 50, true)
-            .addDecimal("Kind", 1, 0, true)
-            .addString("AnalogNr", 50, false)
-            .addString("Supplier", 50, false),
-        new SqlSelect().setLimit(1000000)
-            .addField("tof_art_lookup", "arl_art_id", "ArticleID")
-            .addField("tof_art_lookup", "arl_search_number", "SearchNr")
-            .addField("tof_art_lookup", "arl_kind", "Kind")
-            .addExpr(SqlUtils.sqlCase(SqlUtils.name("arl_display_nr"),
-                SqlUtils.constant("NULL"), null, "arl_display_nr"), "AnalogNr")
-            .addField("tof_brands", "bra_brand", "Supplier")
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_ARTICLE_CODES, false)
+        .addInteger(TCD_ARTICLE_ID, true)
+        .addString(COL_TCD_SEARCH_NR, 50, true)
+        .addString(COL_TCD_CODE_NR, 50, true)
+        .addDecimal(COL_TCD_OE_CODE, 1, 0, true)
+        .addString(COL_TCD_BRAND_NAME, 50, false)
+        .addInteger(TCD_TECDOC_ID, true),
+        new SqlSelect().setLimit(500000)
+            .addField("_analogs", "arl_art_id", TCD_ARTICLE_ID)
+            .addField("_analogs", "arl_search_number", COL_TCD_SEARCH_NR)
+            .addField("_analogs", "arl_display_nr", COL_TCD_CODE_NR)
+            .addField("_analogs", "arl_kind", COL_TCD_OE_CODE)
+            .addField("_analogs", "bra_brand", COL_TCD_BRAND_NAME)
+            .addField("_analogs", "id", TCD_TECDOC_ID)
+            .addFrom("_analogs"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+
+    data.addPreparation(new SqlCreate("_analogs", false)
+        .setDataSource(new SqlSelect()
+            .addExpr(SqlUtils.expression("CAST(arl_art_id AS UNSIGNED)"), "arl_art_id")
+            .addFields("tof_art_lookup", "arl_search_number")
+            .addExpr(SqlUtils.expression("CAST(arl_kind AS DECIMAL(1))"), "arl_kind")
+            .addExpr(SqlUtils.sqlCase(SqlUtils.name("arl_kind"), "1",
+                SqlUtils.field("tof_articles", "art_article_nr"),
+                SqlUtils.field("tof_art_lookup", "arl_display_nr")), "arl_display_nr")
+            .addExpr(SqlUtils.sqlCase(SqlUtils.name("arl_kind"), "1",
+                SqlUtils.field("tof_suppliers", "sup_brand"),
+                SqlUtils.field("tof_brands", "bra_brand")), "bra_brand")
             .addFrom("tof_art_lookup")
+            .addFromInner("tof_articles",
+                SqlUtils.join("tof_art_lookup", "arl_art_id", "tof_articles", "art_id"))
+            .addFromLeft("tof_suppliers",
+                SqlUtils.join("tof_articles", "art_sup_id", "tof_suppliers", "sup_id"))
             .addFromLeft("tof_brands",
                 SqlUtils.join("tof_art_lookup", "arl_bra_id", "tof_brands", "bra_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdGenericArticles", false)
-            .addInteger("GenericID", true)
-            .addString("GenericName", 50, true)
-            .addString("Standard", 50, false)
-            .addString("Assembly", 50, false)
-            .addString("Intended", 50, false),
-        new SqlSelect()
-            .addField("tof_generic_articles", "ga_id", "GenericID")
-            .addField("_designations", "tex_text", "GenericName")
-            .addField("_standard", "tex_text", "Standard")
-            .addField("_assembly", "tex_text", "Assembly")
-            .addField("_intend", "tex_text", "Intended")
-            .addFrom("tof_generic_articles")
-            .addFromInner("_designations",
-                SqlUtils.join("tof_generic_articles", "ga_des_id", "_designations", "des_id"))
-            .addFromLeft("_designations", "_standard",
-                SqlUtils.join("tof_generic_articles", "ga_des_id_standard", "_standard", "des_id"))
-            .addFromLeft("_designations", "_assembly",
-                SqlUtils.join("tof_generic_articles", "ga_des_id_assembly", "_assembly", "des_id"))
-            .addFromLeft("_designations", "_intend",
-                SqlUtils.join("tof_generic_articles", "ga_des_id_intended", "_intend", "des_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdArticlesToGeneric", false)
-            .addInteger("ArticleID", true)
-            .addInteger("GenericID", true),
+
+    data.addPreparation(new IsSql() {
+      @Override
+      public String getSqlString(SqlBuilder builder) {
+        return "ALTER TABLE _analogs ADD id INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST";
+      }
+    });
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_TYPE_ARTICLES, false)
+        .addInteger(TCD_ARTICLE_ID, true)
+        .addInteger(TCD_TYPE_ID, true),
         new SqlSelect().setLimit(1000000)
-            .addField("tof_link_art_ga", "lag_art_id", "ArticleID")
-            .addField("tof_link_art_ga", "lag_ga_id", "GenericID")
-            .addFrom("tof_link_art_ga")));
-    queries.add(Pair.of(
-        new SqlCreate("TcdArticlesWithGeneric", false)
-            .addInteger("GenericArticleID", true)
-            .addInteger("ArticleID", true)
-            .addInteger("GenericID", true),
-        new SqlSelect().setLimit(1000000)
-            .addField("tof_link_art", "la_id", "GenericArticleID")
-            .addField("tof_link_art", "la_art_id", "ArticleID")
-            .addField("tof_link_art", "la_ga_id", "GenericID")
+            .addField("_articles_to_types", "la_art_id", TCD_ARTICLE_ID)
+            .addField("_articles_to_types", "lat_typ_id", TCD_TYPE_ID)
+            .addFrom("_articles_to_types"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+
+    data.addPreparation(new SqlCreate("_art", false)
+        .setDataSource(new SqlSelect()
+            .addExpr(SqlUtils.expression("CAST(la_id AS UNSIGNED)"), "la_id")
+            .addExpr(SqlUtils.expression("CAST(la_art_id AS UNSIGNED)"), "la_art_id")
             .addFrom("tof_link_art")));
-    queries.add(Pair.of(
-        new SqlCreate("TcdArticlesWithGenericToTypes", false)
-            .addInteger("GenericArticleID", true)
-            .addInteger("TypeID", true),
-        new SqlSelect().setLimit(1000000)
-            .addField("tof_link_la_typ", "lat_typ_id", "TypeID")
-            .addField("tof_link_la_typ", "lat_la_id", "GenericArticleID")
+
+    data.addPreparation(SqlUtils.createIndex("_art", SqlUtils.uniqueName(),
+        Lists.newArrayList("la_id"), false));
+
+    data.addPreparation(new SqlCreate("_la_typ", false)
+        .setDataSource(new SqlSelect()
+            .addExpr(SqlUtils.expression("CAST(lat_la_id AS UNSIGNED)"), "lat_la_id")
+            .addExpr(SqlUtils.expression("CAST(lat_typ_id AS UNSIGNED)"), "lat_typ_id")
             .addFrom("tof_link_la_typ")));
-    queries.add(Pair.of(
-        new SqlCreate("TcdCategories", false)
-            .addInteger("CategoryID", true)
-            .addInteger("ParentID", false)
-            .addString("CategoryName", 50, true),
+
+    data.addPreparation(SqlUtils.createIndex("_la_typ", SqlUtils.uniqueName(),
+        Lists.newArrayList("lat_la_id"), false));
+
+    data.addPreparation(new SqlCreate("_articles_to_types", false)
+        .setDataSource(new SqlSelect().setDistinctMode(true)
+            .addFields("_art", "la_art_id")
+            .addFields("_la_typ", "lat_typ_id")
+            .addFrom("_art")
+            .addFromInner("_la_typ",
+                SqlUtils.join("_art", "la_id", "_la_typ", "lat_la_id"))));
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_CATEGORIES, false)
+        .addInteger(TCD_CATEGORY_ID, true)
+        .addInteger(TCD_PARENT_ID, false)
+        .addString(COL_TCD_CATEGORY_NAME, 50, true),
         new SqlSelect()
-            .addField("tof_search_tree", "str_id", "CategoryID")
+            .addField("tof_search_tree", "str_id", TCD_CATEGORY_ID)
             .addExpr(SqlUtils.sqlCase(SqlUtils.name("str_id_parent"),
-                SqlUtils.constant("NULL"), null, "str_id_parent"), "ParentID")
-            .addField("_designations", "tex_text", "CategoryName")
+                SqlUtils.constant("NULL"), null, "str_id_parent"), TCD_PARENT_ID)
+            .addField("_designations", "tex_text", COL_TCD_CATEGORY_NAME)
             .addFrom("tof_search_tree")
             .addFromInner("_designations",
-                SqlUtils.join("tof_search_tree", "str_des_id", "_designations", "des_id"))));
-    queries.add(Pair.of(
-        new SqlCreate("TcdGenericToCategories", false)
-            .addInteger("GenericID", true)
-            .addInteger("CategoryID", true),
-        new SqlSelect()
-            .addField("tof_link_ga_str", "lgs_ga_id", "GenericID")
-            .addField("tof_link_ga_str", "lgs_str_id", "CategoryID")
+                SqlUtils.join("tof_search_tree", "str_des_id", "_designations", "des_id")));
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_ARTICLE_CATEGORIES, false)
+        .addInteger(TCD_ARTICLE_ID, true)
+        .addInteger(TCD_CATEGORY_ID, true),
+        new SqlSelect().setLimit(1000000)
+            .addField("_articles_to_categories", "lag_art_id", TCD_ARTICLE_ID)
+            .addField("_articles_to_categories", "lgs_str_id", TCD_CATEGORY_ID)
+            .addFrom("_articles_to_categories"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+
+    data.addPreparation(new SqlCreate("_art_ga", false)
+        .setDataSource(new SqlSelect()
+            .addExpr(SqlUtils.expression("CAST(lag_ga_id AS UNSIGNED)"), "lag_ga_id")
+            .addExpr(SqlUtils.expression("CAST(lag_art_id AS UNSIGNED)"), "lag_art_id")
+            .addFrom("tof_link_art_ga")));
+
+    data.addPreparation(SqlUtils.createIndex("_art_ga", SqlUtils.uniqueName(),
+        Lists.newArrayList("lag_ga_id"), false));
+
+    data.addPreparation(new SqlCreate("_ga_str", false)
+        .setDataSource(new SqlSelect()
+            .addExpr(SqlUtils.expression("CAST(lgs_ga_id AS UNSIGNED)"), "lgs_ga_id")
+            .addExpr(SqlUtils.expression("CAST(lgs_str_id AS UNSIGNED)"), "lgs_str_id")
             .addFrom("tof_link_ga_str")));
 
-    String tcdSchema = "TecDoc";
+    data.addPreparation(SqlUtils.createIndex("_ga_str", SqlUtils.uniqueName(),
+        Lists.newArrayList("lgs_ga_id"), false));
 
-    if (!qs.dbSchemaExists(sys.getDbName(), tcdSchema)) {
-      qs.updateData(SqlUtils.createSchema(tcdSchema));
+    data.addPreparation(new SqlCreate("_articles_to_categories", false)
+        .setDataSource(new SqlSelect().setDistinctMode(true)
+            .addFields("_art_ga", "lag_art_id")
+            .addFields("_ga_str", "lgs_str_id")
+            .addFrom("_art_ga")
+            .addFromInner("_ga_str",
+                SqlUtils.join("_art_ga", "lag_ga_id", "_ga_str", "lgs_ga_id"))));
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_GRAPHICS, false)
+        .addLong(TCD_GRAPHICS_ID, true)
+        .addString(COL_TCD_GRAPHICS_TYPE, 3, true)
+        .addInteger(TCD_GRAPHICS_RESOURCE_ID, true)
+        .addString(TCD_GRAPHICS_RESOURCE_NO, 2, true),
+        new SqlSelect().setLimit(1000000)
+            .addField("tof_graphics", "gra_id", TCD_GRAPHICS_ID)
+            .addField("tof_doc_types", "doc_extension", COL_TCD_GRAPHICS_TYPE)
+            .addField("tof_graphics", "gra_grd_id", TCD_GRAPHICS_RESOURCE_ID)
+            .addField("tof_graphics", "gra_tab_nr", TCD_GRAPHICS_RESOURCE_NO)
+            .addFrom("tof_graphics")
+            .addFromLeft("tof_doc_types",
+                SqlUtils.join("tof_graphics", "gra_doc_type", "tof_doc_types", "doc_type"))
+            .setWhere(SqlUtils.and(SqlUtils.equals("tof_graphics", "gra_lng_id", "255"),
+                SqlUtils.notEqual("tof_graphics", "gra_grd_id", "NULL"))));
+
+    data.addBaseIndexes(TCD_GRAPHICS_ID);
+
+    builds.add(data);
+
+    data = new TcdData(new SqlCreate(TBL_TCD_ARTICLE_GRAPHICS, false)
+        .addInteger(TCD_ARTICLE_ID, true)
+        .addLong(TCD_GRAPHICS_ID, true)
+        .addDecimal(COL_TCD_SORT, 2, 0, true),
+        new SqlSelect().setLimit(1000000)
+            .addField("tof_link_gra_art", "lga_art_id", TCD_ARTICLE_ID)
+            .addField("tof_link_gra_art", "lga_gra_id", TCD_GRAPHICS_ID)
+            .addField("tof_link_gra_art", "lga_sort", COL_TCD_SORT)
+            .addFrom("tof_link_gra_art"));
+
+    data.addBaseIndexes(TCD_ARTICLE_ID);
+
+    builds.add(data);
+
+    if (!qs.dbSchemaExists(sys.getDbName(), TCD_SCHEMA)) {
+      qs.updateData(SqlUtils.createSchema(TCD_SCHEMA));
     }
-    for (Pair<SqlCreate, SqlSelect> entry : queries) {
-      SqlCreate create = entry.getA();
-      SqlSelect query = entry.getB();
+    tcd.init(init);
+    importTcd(builds);
+    tcd.cleanup(init);
+
+    builds.clear();
+
+    for (String resource : qs.getColumn(new SqlSelect().setDistinctMode(true)
+        .addFields(SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS), TCD_GRAPHICS_RESOURCE_NO)
+        .addFrom(SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS)))) {
+
+      String table = "tof_gra_data_" + resource;
+
+      data = new TcdData(new SqlCreate(TCD_GRAPHICS_RESOURCES + resource, false)
+          .addInteger(TCD_GRAPHICS_RESOURCE_ID, true)
+          .addText(COL_TCD_GRAPHICS_RESOURCE, true),
+          new SqlSelect().setLimit(500)
+              .addField(table, "grd_id", TCD_GRAPHICS_RESOURCE_ID)
+              .addField(table, "grd_graphic", COL_TCD_GRAPHICS_RESOURCE)
+              .addFrom(table));
+
+      data.addBaseIndexes(TCD_GRAPHICS_RESOURCE_ID);
+      builds.add(data);
+    }
+    importTcd(builds);
+  }
+
+  private void analyzeQuery(IsQuery query) {
+    if (SqlEngine.POSTGRESQL != SqlBuilderFactory.getBuilder().getEngine()) {
+      return;
+    }
+    BeeRowSet data = (BeeRowSet) qs.doSql("EXPLAIN " + query.getQuery());
+
+    for (BeeRow row : data.getRows()) {
+      logger.debug((Object[]) row.getValueArray());
+    }
+  }
+
+  @Timeout
+  private void doTimerEvent(Timer timer) {
+    if (timer.getInfo() instanceof EcSupplier) {
+      switch ((EcSupplier) timer.getInfo()) {
+        case EOLTAS:
+          suckButent();
+          break;
+
+        case MOTOPROFIL:
+          suckMotonet();
+          break;
+      }
+    }
+  }
+
+  private void importArticles(String art) {
+    // ---------------- TcdArticles
+    String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
+
+    insertData(TBL_TCD_ARTICLES, new SqlSelect().setLimit(100000)
+        .addFields(tcdArticles, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR)
+        .addFields(art, COL_TCD_BRAND)
+        .addField(tcdArticles, TCD_ARTICLE_ID, TCD_TECDOC_ID)
+        .addConstant(true, COL_TCD_ARTICLE_VISIBLE)
+        .addFrom(art)
+        .addFromInner(tcdArticles, SqlUtils.joinUsing(art, tcdArticles, TCD_ARTICLE_ID))
+        .addOrder(tcdArticles, TCD_ARTICLE_ID));
+
+    qs.updateData(new SqlUpdate(art)
+        .addExpression(COL_TCD_ARTICLE,
+            SqlUtils.field(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES)))
+        .setFrom(TBL_TCD_ARTICLES,
+            SqlUtils.join(art, TCD_ARTICLE_ID, TBL_TCD_ARTICLES, TCD_TECDOC_ID)));
+
+    // ---------------- TcdArticleCriteria, TcdCriteria...
+    String tcdArticleCriteria = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_CRITERIA);
+
+    String artCrit = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(art, COL_TCD_ARTICLE)
+        .addFields(tcdArticleCriteria, COL_TCD_CRITERIA_VALUE, TCD_CRITERIA_ID)
+        .addFrom(art)
+        .addFromInner(tcdArticleCriteria,
+            SqlUtils.joinUsing(art, tcdArticleCriteria, TCD_ARTICLE_ID)));
+
+    qs.sqlIndex(artCrit, TCD_CRITERIA_ID);
+    String tcdCriteria = SqlUtils.table(TCD_SCHEMA, TBL_TCD_CRITERIA);
+    String subq = SqlUtils.uniqueName();
+    String als = SqlUtils.uniqueName();
+
+    insertData(TBL_TCD_CRITERIA, new SqlSelect()
+        .addFields(tcdCriteria, COL_TCD_CRITERIA_NAME)
+        .addField(tcdCriteria, TCD_CRITERIA_ID, TCD_TECDOC_ID)
+        .addFrom(tcdCriteria)
+        .addFromInner(new SqlSelect().setDistinctMode(true)
+            .addFields(artCrit, TCD_CRITERIA_ID)
+            .addFrom(artCrit), subq, SqlUtils.joinUsing(tcdCriteria, subq, TCD_CRITERIA_ID))
+        .addFromLeft(TBL_TCD_CRITERIA, als,
+            SqlUtils.join(tcdCriteria, TCD_CRITERIA_ID, als, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_CRITERIA))));
+
+    insertData(TBL_TCD_ARTICLE_CRITERIA, new SqlSelect().setLimit(500000)
+        .addFields(artCrit, COL_TCD_ARTICLE, COL_TCD_CRITERIA_VALUE)
+        .addField(TBL_TCD_CRITERIA, sys.getIdName(TBL_TCD_CRITERIA), COL_TCD_CRITERIA)
+        .addFrom(artCrit)
+        .addFromInner(TBL_TCD_CRITERIA,
+            SqlUtils.join(artCrit, TCD_CRITERIA_ID, TBL_TCD_CRITERIA, TCD_TECDOC_ID))
+        .addOrder(artCrit, COL_TCD_ARTICLE)
+        .addOrder(TBL_TCD_CRITERIA, sys.getIdName(TBL_TCD_CRITERIA))
+        .addOrder(artCrit, COL_TCD_CRITERIA_VALUE));
+
+    qs.sqlDropTemp(artCrit);
+
+    // ---------------- TcdArticleCategories, TcdCategories...
+    String tcdArticleCategories = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_CATEGORIES);
+
+    String artCateg = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(art, COL_TCD_ARTICLE)
+        .addFields(tcdArticleCategories, TCD_CATEGORY_ID)
+        .addFrom(art)
+        .addFromInner(tcdArticleCategories,
+            SqlUtils.joinUsing(art, tcdArticleCategories, TCD_ARTICLE_ID)));
+
+    qs.sqlIndex(artCateg, TCD_CATEGORY_ID);
+    String tcdCategories = SqlUtils.table(TCD_SCHEMA, TBL_TCD_CATEGORIES);
+
+    String categ = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tcdCategories, TCD_CATEGORY_ID, COL_TCD_CATEGORY_NAME, TCD_PARENT_ID)
+        .addEmptyLong(COL_TCD_CATEGORY_PARENT)
+        .addFrom(tcdCategories)
+        .addFromInner(new SqlSelect().setDistinctMode(true)
+            .addFields(artCateg, TCD_CATEGORY_ID)
+            .addFrom(artCateg), subq, SqlUtils.joinUsing(tcdCategories, subq, TCD_CATEGORY_ID))
+        .addFromLeft(TBL_TCD_TECDOC_CATEGORIES, SqlUtils.join(tcdCategories, TCD_CATEGORY_ID,
+            TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)));
+
+    qs.sqlIndex(categ, TCD_CATEGORY_ID);
+    qs.sqlIndex(categ, TCD_PARENT_ID);
+    boolean isDebugEnabled = messyLogger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.INFO);
+    }
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(categ, COL_TCD_CATEGORY_NAME, TCD_CATEGORY_ID)
+        .addFrom(categ))) {
+
+      qs.insertData(new SqlInsert(TBL_TCD_TECDOC_CATEGORIES)
+          .addConstant(COL_TCD_CATEGORY, qs.insertData(new SqlInsert(TBL_TCD_CATEGORIES)
+              .addConstant(COL_TCD_CATEGORY_NAME, row.getValue(COL_TCD_CATEGORY_NAME))))
+          .addConstant(TCD_TECDOC_ID, row.getLong(TCD_CATEGORY_ID)));
+    }
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.DEBUG);
+    }
+    qs.updateData(new SqlUpdate(categ)
+        .addExpression(COL_TCD_CATEGORY_PARENT,
+            SqlUtils.field(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY))
+        .setFrom(TBL_TCD_TECDOC_CATEGORIES,
+            SqlUtils.join(categ, TCD_PARENT_ID, TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)));
+
+    qs.updateData(new SqlUpdate(TBL_TCD_CATEGORIES)
+        .addExpression(COL_TCD_CATEGORY_PARENT, SqlUtils.field(als, COL_TCD_CATEGORY_PARENT))
+        .setFrom(new SqlSelect()
+            .addFields(categ, COL_TCD_CATEGORY_PARENT)
+            .addFields(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY)
+            .addFrom(categ)
+            .addFromInner(TBL_TCD_TECDOC_CATEGORIES,
+                SqlUtils.join(categ, TCD_CATEGORY_ID, TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)),
+            als, sys.joinTables(TBL_TCD_CATEGORIES, als, COL_TCD_CATEGORY)));
+
+    qs.sqlDropTemp(categ);
+
+    insertData(TBL_TCD_ARTICLE_CATEGORIES, new SqlSelect().setDistinctMode(true).setLimit(500000)
+        .addFields(artCateg, COL_TCD_ARTICLE)
+        .addFields(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY)
+        .addFrom(artCateg)
+        .addFromInner(TBL_TCD_TECDOC_CATEGORIES,
+            SqlUtils.join(artCateg, TCD_CATEGORY_ID, TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID))
+        .addOrder(artCateg, COL_TCD_ARTICLE)
+        .addOrder(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY));
+
+    qs.sqlDropTemp(artCateg);
+
+    // ---------------- TcdTypeArticles, TcdTypes, TcdModels, TcdManufacturers...
+    String tcdTypeArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_TYPE_ARTICLES);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(art, COL_TCD_ARTICLE)
+        .addFields(tcdTypeArticles, TCD_TYPE_ID)
+        .addFrom(art)
+        .addFromInner(tcdTypeArticles,
+            SqlUtils.joinUsing(art, tcdTypeArticles, TCD_ARTICLE_ID));
+
+    tweakSql(true);
+    analyzeQuery(query);
+    String typArt = qs.sqlCreateTemp(query);
+    tweakSql(false);
+
+    qs.sqlIndex(typArt, TCD_TYPE_ID);
+    String tcdTypes = SqlUtils.table(TCD_SCHEMA, TBL_TCD_TYPES);
+
+    String typ = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tcdTypes, TCD_TYPE_ID, COL_TCD_TYPE_NAME, TCD_MODEL_ID,
+            COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM, COL_TCD_KW_FROM,
+            COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT, COL_TCD_ENGINE, COL_TCD_FUEL,
+            COL_TCD_BODY, COL_TCD_AXLE)
+        .addFrom(tcdTypes)
+        .addFromInner(new SqlSelect().setDistinctMode(true)
+            .addFields(typArt, TCD_TYPE_ID)
+            .addFrom(typArt), subq, SqlUtils.joinUsing(tcdTypes, subq, TCD_TYPE_ID))
+        .addFromLeft(TBL_TCD_TYPES, als,
+            SqlUtils.join(tcdTypes, TCD_TYPE_ID, als, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_TYPES))));
+
+    qs.sqlIndex(typ, TCD_MODEL_ID);
+    String tcdModels = SqlUtils.table(TCD_SCHEMA, TBL_TCD_MODELS);
+
+    String mod = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tcdModels, TCD_MODEL_ID, COL_TCD_MODEL_NAME, COL_TCD_MANUFACTURER_NAME)
+        .addFrom(tcdModels)
+        .addFromInner(new SqlSelect().setDistinctMode(true)
+            .addFields(typ, TCD_MODEL_ID)
+            .addFrom(typ), subq, SqlUtils.joinUsing(tcdModels, subq, TCD_MODEL_ID))
+        .addFromLeft(TBL_TCD_MODELS, als,
+            SqlUtils.join(tcdModels, TCD_MODEL_ID, als, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_MODELS))));
+
+    qs.sqlIndex(mod, COL_TCD_MANUFACTURER_NAME);
+
+    insertData(TBL_TCD_MANUFACTURERS, new SqlSelect().setDistinctMode(true)
+        .addFields(mod, COL_TCD_MANUFACTURER_NAME)
+        .addConstant(true, COL_TCD_MF_VISIBLE)
+        .addFrom(mod)
+        .addFromLeft(TBL_TCD_MANUFACTURERS,
+            SqlUtils.joinUsing(mod, TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME))
+        .setWhere(SqlUtils.isNull(TBL_TCD_MANUFACTURERS, sys.getIdName(TBL_TCD_MANUFACTURERS))));
+
+    insertData(TBL_TCD_MODELS, new SqlSelect()
+        .addField(TBL_TCD_MANUFACTURERS, sys.getIdName(TBL_TCD_MANUFACTURERS),
+            COL_TCD_MANUFACTURER)
+        .addFields(mod, COL_TCD_MODEL_NAME)
+        .addField(mod, TCD_MODEL_ID, TCD_TECDOC_ID)
+        .addConstant(true, COL_TCD_MODEL_VISIBLE)
+        .addFrom(mod)
+        .addFromInner(TBL_TCD_MANUFACTURERS,
+            SqlUtils.joinUsing(mod, TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)));
+
+    qs.sqlDropTemp(mod);
+
+    insertData(TBL_TCD_TYPES, new SqlSelect()
+        .addField(TBL_TCD_MODELS, sys.getIdName(TBL_TCD_MODELS), COL_TCD_MODEL)
+        .addFields(typ, COL_TCD_TYPE_NAME, COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT, COL_TCD_ENGINE,
+            COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
+        .addField(typ, TCD_TYPE_ID, TCD_TECDOC_ID)
+        .addConstant(true, COL_TCD_TYPE_VISIBLE)
+        .addFrom(typ)
+        .addFromInner(TBL_TCD_MODELS,
+            SqlUtils.join(typ, TCD_MODEL_ID, TBL_TCD_MODELS, TCD_TECDOC_ID)));
+
+    qs.sqlDropTemp(typ);
+
+    insertData(TBL_TCD_TYPE_ARTICLES, new SqlSelect().setLimit(500000)
+        .addField(TBL_TCD_TYPES, sys.getIdName(TBL_TCD_TYPES), COL_TCD_TYPE)
+        .addFields(typArt, COL_TCD_ARTICLE)
+        .addFrom(typArt)
+        .addFromInner(TBL_TCD_TYPES,
+            SqlUtils.join(typArt, TCD_TYPE_ID, TBL_TCD_TYPES, TCD_TECDOC_ID))
+        .addOrder(TBL_TCD_TYPES, sys.getIdName(TBL_TCD_TYPES))
+        .addOrder(typArt, COL_TCD_ARTICLE));
+
+    qs.sqlDropTemp(typArt);
+
+    // ---------------- TcdArticleCodes
+    String tcdArticleCodes = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_CODES);
+
+    tcdArticleCodes = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(art, COL_TCD_ARTICLE)
+        .addFields(tcdArticleCodes,
+            COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_BRAND_NAME, TCD_TECDOC_ID)
+        .addExpr(SqlUtils.sqlCase(SqlUtils.field(tcdArticleCodes, COL_TCD_OE_CODE), 3,
+            SqlUtils.constant(true), null), COL_TCD_OE_CODE)
+        .addFrom(art)
+        .addFromInner(tcdArticleCodes, SqlUtils.joinUsing(art, tcdArticleCodes, TCD_ARTICLE_ID)));
+
+    String brands = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
+        .addFields(tcdArticleCodes, COL_TCD_BRAND_NAME)
+        .addFrom(tcdArticleCodes)
+        .setWhere(SqlUtils.notNull(tcdArticleCodes, COL_TCD_BRAND_NAME)));
+
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.INFO);
+    }
+    for (String brand : qs.getColumn(new SqlSelect()
+        .addFields(brands, COL_TCD_BRAND_NAME)
+        .addFrom(brands)
+        .addFromLeft(TBL_TCD_BRANDS,
+            SqlUtils.joinUsing(brands, TBL_TCD_BRANDS, COL_TCD_BRAND_NAME))
+        .setWhere(SqlUtils.isNull(TBL_TCD_BRANDS, sys.getIdName(TBL_TCD_BRANDS))))) {
+
+      qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
+          .addConstant(COL_TCD_BRAND_NAME, brand));
+    }
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.DEBUG);
+    }
+    qs.sqlDropTemp(brands);
+
+    insertData(TBL_TCD_ARTICLE_CODES, new SqlSelect().setLimit(100000)
+        .addFields(tcdArticleCodes,
+            COL_TCD_ARTICLE, COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_OE_CODE)
+        .addField(TBL_TCD_BRANDS, sys.getIdName(TBL_TCD_BRANDS), COL_TCD_BRAND)
+        .addFrom(tcdArticleCodes)
+        .addFromLeft(TBL_TCD_BRANDS,
+            SqlUtils.joinUsing(tcdArticleCodes, TBL_TCD_BRANDS, COL_TCD_BRAND_NAME))
+        .addOrder(tcdArticleCodes, TCD_TECDOC_ID));
+
+    qs.sqlDropTemp(tcdArticleCodes);
+
+    // ---------------- TcdArticleGraphics, TcdGraphics, TcdResources...
+    String tcdArticleGraphics = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLE_GRAPHICS);
+
+    String artGraph = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(art, COL_TCD_ARTICLE)
+        .addFields(tcdArticleGraphics, TCD_GRAPHICS_ID, COL_TCD_SORT)
+        .addFrom(art)
+        .addFromInner(tcdArticleGraphics,
+            SqlUtils.joinUsing(art, tcdArticleGraphics, TCD_ARTICLE_ID)));
+
+    qs.sqlIndex(artGraph, TCD_GRAPHICS_ID);
+    String tcdGraphics = SqlUtils.table(TCD_SCHEMA, TBL_TCD_GRAPHICS);
+
+    String graph = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tcdGraphics, COL_TCD_GRAPHICS_TYPE,
+            TCD_GRAPHICS_RESOURCE_NO, TCD_GRAPHICS_RESOURCE_ID)
+        .addField(tcdGraphics, TCD_GRAPHICS_ID, TCD_TECDOC_ID)
+        .addFrom(tcdGraphics)
+        .addFromInner(new SqlSelect().setDistinctMode(true)
+            .addFields(artGraph, TCD_GRAPHICS_ID)
+            .addFrom(artGraph), subq, SqlUtils.joinUsing(tcdGraphics, subq, TCD_GRAPHICS_ID))
+        .addFromLeft(TBL_TCD_GRAPHICS, als,
+            SqlUtils.join(tcdGraphics, TCD_GRAPHICS_ID, als, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(als, sys.getIdName(TBL_TCD_GRAPHICS))));
+
+    qs.sqlIndex(graph, TCD_GRAPHICS_RESOURCE_NO, TCD_GRAPHICS_RESOURCE_ID);
+
+    for (String part : qs.getColumn(new SqlSelect().setDistinctMode(true)
+        .addFields(graph, TCD_GRAPHICS_RESOURCE_NO)
+        .addFrom(graph)
+        .addOrder(graph, TCD_GRAPHICS_RESOURCE_NO))) {
+
+      String resource = SqlUtils.table(TCD_SCHEMA, TCD_GRAPHICS_RESOURCES + part);
+
+      SqlSelect sql = new SqlSelect()
+          .addFields(graph, COL_TCD_GRAPHICS_TYPE, TCD_TECDOC_ID)
+          .addFields(resource, COL_TCD_GRAPHICS_RESOURCE)
+          .addFrom(resource)
+          .addFromInner(graph, SqlUtils.and(SqlUtils.equals(graph,
+              TCD_GRAPHICS_RESOURCE_NO, part),
+              SqlUtils.joinUsing(resource, graph, TCD_GRAPHICS_RESOURCE_ID)))
+          .addOrder(resource, TCD_GRAPHICS_RESOURCE_ID);
+
+      int tot = 0;
+      int chunk = 100;
+      int offset = 0;
+      SimpleRowSet data = null;
+      sql.setLimit(chunk);
+      SqlInsert insert = new SqlInsert(TBL_TCD_GRAPHICS)
+          .addFields(COL_TCD_GRAPHICS_TYPE, COL_TCD_GRAPHICS_RESOURCE, TCD_TECDOC_ID,
+              sys.getIdName(TBL_TCD_GRAPHICS), sys.getVersionName(TBL_TCD_GRAPHICS));
+
+      do {
+        data = qs.getData(sql.setOffset(offset));
+
+        if (isDebugEnabled) {
+          messyLogger.setLevel(LogLevel.INFO);
+        }
+        for (SimpleRow row : data) {
+          String type = row.getValue(COL_TCD_GRAPHICS_TYPE);
+          String image = row.getValue(COL_TCD_GRAPHICS_RESOURCE);
+
+          if (JPEG2000.equals(type)) {
+            if (supportsJPEG2000 == null) {
+              ImageIO.scanForPlugins();
+              supportsJPEG2000 = ArrayUtils.containsSame(ImageIO.getReaderFileSuffixes(), JPEG2000);
+            }
+            if (supportsJPEG2000) {
+              try {
+                ByteArrayInputStream in = new ByteArrayInputStream(Codec.fromBase64(image));
+                BufferedImage img = ImageIO.read(in);
+
+                if (img != null) {
+                  ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+                  if (ImageIO.write(img, JPEG, out)) {
+                    image = Codec.toBase64(out.toByteArray());
+                    type = JPEG;
+                  }
+                  out.close();
+                }
+                in.close();
+              } catch (IOException e) {
+                logger.error(e);
+              }
+            }
+          }
+          insert.addValues(new Object[] {type, image, row.getLong(TCD_TECDOC_ID),
+              ig.getId(TBL_TCD_GRAPHICS), System.currentTimeMillis()});
+
+          if (++tot % chunk == 0) {
+            qs.insertData(insert);
+            insert.resetValues();
+            logger.debug("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
+          }
+        }
+        if (tot % chunk > 0) {
+          qs.insertData(insert);
+          logger.debug("Inserted", tot, "records into table", TBL_TCD_GRAPHICS);
+        }
+        if (isDebugEnabled) {
+          messyLogger.setLevel(LogLevel.DEBUG);
+        }
+        offset += chunk;
+      } while (data.getNumberOfRows() == chunk);
+    }
+    qs.sqlDropTemp(graph);
+
+    insertData(TBL_TCD_ARTICLE_GRAPHICS, new SqlSelect().setLimit(500000)
+        .addFields(artGraph, COL_TCD_ARTICLE, COL_TCD_SORT)
+        .addField(TBL_TCD_GRAPHICS, sys.getIdName(TBL_TCD_GRAPHICS), COL_TCD_GRAPHICS)
+        .addFrom(artGraph)
+        .addFromInner(TBL_TCD_GRAPHICS,
+            SqlUtils.join(artGraph, TCD_GRAPHICS_ID, TBL_TCD_GRAPHICS, TCD_TECDOC_ID))
+        .addOrder(artGraph, COL_TCD_ARTICLE)
+        .addOrder(TBL_TCD_GRAPHICS, sys.getIdName(TBL_TCD_GRAPHICS)));
+
+    qs.sqlDropTemp(artGraph);
+    qs.sqlDropTemp(art);
+  }
+
+  private void importItems(EcSupplier supplier, List<RemoteItems> data) {
+    String log = supplier + " " + TBL_TCD_ARTICLE_SUPPLIERS + ":";
+
+    String idName = sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS);
+
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addField(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, COL_TCD_SEARCH_NR)
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS,
+            COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE, idName)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_BRAND)
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addFrom(TBL_TCD_ARTICLES)
+        .addFrom(TBL_TCD_BRANDS)
+        .addFrom(TBL_TCD_ARTICLE_SUPPLIERS)
+        .setWhere(SqlUtils.sqlFalse()));
+
+    boolean isDebugEnabled = messyLogger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.INFO);
+    }
+    Map<String, Long> brands = Maps.newHashMap();
+
+    for (SimpleRow remoteItems : qs.getData(new SqlSelect()
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addField(TBL_TCD_BRANDS, sys.getIdName(TBL_TCD_BRANDS), COL_TCD_BRAND)
+        .addFrom(TBL_TCD_BRANDS))) {
+
+      brands.put(remoteItems.getValue(COL_TCD_BRAND_NAME),
+          remoteItems.getLong(COL_TCD_BRAND));
+    }
+    SqlInsert insert = new SqlInsert(tmp)
+        .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND, COL_TCD_COST,
+            COL_TCD_PRICE, COL_TCD_SUPPLIER_ID);
+    int tot = 0;
+
+    for (RemoteItems info : data) {
+      if (!brands.containsKey(info.brand)) {
+        brands.put(info.brand, qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
+            .addConstant(COL_TCD_BRAND_NAME, info.brand)));
+      }
+      insert.addValues(EcModuleBean.normalizeCode(info.articleNr), info.brand,
+          brands.get(info.brand), info.cost, info.price, info.supplierId);
+
+      if (++tot % 1e4 == 0) {
+        qs.insertData(insert);
+        insert.resetValues();
+        logger.debug(log, "Processed", tot, "records");
+      }
+    }
+    if (tot % 1e4 > 0) {
+      if (!insert.isEmpty()) {
+        qs.insertData(insert);
+      }
+      logger.debug(log, "Processed", tot, "records");
+    }
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.DEBUG);
+    }
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(idName, SqlUtils.field(TBL_TCD_ARTICLE_SUPPLIERS, idName))
+        .setFrom(TBL_TCD_ARTICLE_SUPPLIERS,
+            SqlUtils.and(
+                SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.ordinal()),
+                SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID))));
+
+    qs.sqlIndex(tmp, idName);
+    long time = System.currentTimeMillis();
+
+    qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
+        .addExpression(COL_TCD_PRICE, SqlUtils.field(tmp, COL_TCD_PRICE))
+        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, tmp, idName)));
+
+    tot = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
+        .addExpression(COL_TCD_UPDATED_COST, SqlUtils.field(tmp, COL_TCD_COST))
+        .addExpression(COL_TCD_PRICE, SqlUtils.field(tmp, COL_TCD_PRICE))
+        .addConstant(COL_TCD_UPDATE_TIME, time)
+        .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, tmp, idName))
+        .setWhere(SqlUtils.notEqual(
+            SqlUtils.nvl(SqlUtils.field(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_UPDATED_COST), 0),
+            SqlUtils.nvl(SqlUtils.field(tmp, COL_TCD_COST), 0))));
+
+    logger.info(log, "Updated", tot, "records");
+
+    String zz = qs.sqlCreateTemp(new SqlSelect()
+        .addAllFields(tmp)
+        .addEmptyLong(TCD_ARTICLE_ID)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.isNull(tmp, idName)));
+
+    qs.sqlDropTemp(tmp);
+    tmp = zz;
+
+    String tcdArticles = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ARTICLES);
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(TCD_ARTICLE_ID, SqlUtils.field(tcdArticles, TCD_ARTICLE_ID))
+        .setFrom(tcdArticles,
+            SqlUtils.joinUsing(tmp, tcdArticles, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME)));
+
+    zz = qs.sqlCreateTemp(new SqlSelect()
+        .addAllFields(tmp)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.notNull(tmp, TCD_ARTICLE_ID)));
+
+    qs.sqlDropTemp(tmp);
+    tmp = zz;
+
+    qs.sqlIndex(tmp, TCD_ARTICLE_ID);
+
+    importArticles(qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tmp, TCD_ARTICLE_ID)
+        .addMax(tmp, COL_TCD_BRAND)
+        .addEmptyLong(COL_TCD_ARTICLE)
+        .addFrom(tmp)
+        .addFromLeft(TBL_TCD_ARTICLES,
+            SqlUtils.join(tmp, TCD_ARTICLE_ID, TBL_TCD_ARTICLES, TCD_TECDOC_ID))
+        .setWhere(SqlUtils.isNull(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES)))
+        .addGroup(tmp, TCD_ARTICLE_ID)));
+
+    insertData(TBL_TCD_ARTICLE_SUPPLIERS, new SqlSelect().setLimit(100000)
+        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
+        .addFields(tmp, COL_TCD_COST, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID)
+        .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)
+        .addField(tmp, COL_TCD_COST, COL_TCD_UPDATED_COST)
+        .addConstant(time, COL_TCD_UPDATE_TIME)
+        .addFrom(tmp)
+        .addFromInner(TBL_TCD_ARTICLES,
+            SqlUtils.join(tmp, TCD_ARTICLE_ID, TBL_TCD_ARTICLES, TCD_TECDOC_ID))
+        .addOrder(tmp, COL_TCD_SUPPLIER_ID));
+
+    qs.sqlDropTemp(tmp);
+  }
+
+  private void importRemainders(EcSupplier supplier, List<RemoteRemainders> data) {
+    String log = supplier + " " + TBL_TCD_REMAINDERS + ":";
+
+    String idName = sys.getIdName(TBL_TCD_REMAINDERS);
+    String supplierWarehouse = CommonsConstants.COL_WAREHOUSE_SUPPLIER_CODE;
+
+    String rem = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)
+        .addFields(TBL_TCD_REMAINDERS, idName)
+        .addFields(CommonsConstants.TBL_WAREHOUSES, supplierWarehouse)
+        .addFrom(TBL_TCD_REMAINDERS)
+        .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
+            SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER,
+                supplier.ordinal()),
+                sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS,
+                    COL_TCD_ARTICLE_SUPPLIER)))
+        .addFromInner(CommonsConstants.TBL_WAREHOUSES,
+            SqlUtils.and(sys.joinTables(CommonsConstants.TBL_WAREHOUSES,
+                TBL_TCD_REMAINDERS, CommonsConstants.COL_WAREHOUSE),
+                SqlUtils.notNull(CommonsConstants.TBL_WAREHOUSES, supplierWarehouse))));
+
+    qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
+        .addConstant(COL_TCD_REMAINDER, null)
+        .setFrom(rem, sys.joinTables(TBL_TCD_REMAINDERS, rem, idName)));
+
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)
+        .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER, idName)
+        .addFields(CommonsConstants.TBL_WAREHOUSES, supplierWarehouse)
+        .addFrom(TBL_TCD_ARTICLE_SUPPLIERS)
+        .addFrom(TBL_TCD_REMAINDERS)
+        .addFrom(CommonsConstants.TBL_WAREHOUSES)
+        .setWhere(SqlUtils.sqlFalse()));
+
+    boolean isDebugEnabled = messyLogger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.INFO);
+    }
+    SqlInsert insert = new SqlInsert(tmp)
+        .addFields(COL_TCD_SUPPLIER_ID, supplierWarehouse, COL_TCD_REMAINDER);
+    int tot = 0;
+
+    for (RemoteRemainders info : data) {
+      insert.addValues(info.supplierId, info.warehouse, info.remainder);
+
+      if (++tot % 1e4 == 0) {
+        qs.insertData(insert);
+        insert.resetValues();
+        logger.debug(log, "Processed", tot, "records");
+      }
+    }
+    if (tot % 1e4 > 0) {
+      if (!insert.isEmpty()) {
+        qs.insertData(insert);
+      }
+      logger.debug(log, "Processed", tot, "records");
+    }
+    if (isDebugEnabled) {
+      messyLogger.setLevel(LogLevel.DEBUG);
+    }
+    qs.sqlIndex(rem, COL_TCD_SUPPLIER_ID, supplierWarehouse);
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(idName, SqlUtils.field(rem, idName))
+        .setFrom(rem, SqlUtils.joinUsing(tmp, rem, COL_TCD_SUPPLIER_ID, supplierWarehouse)));
+
+    qs.sqlIndex(tmp, idName);
+
+    tot = qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
+        .addExpression(COL_TCD_REMAINDER, SqlUtils.field(tmp, COL_TCD_REMAINDER))
+        .setFrom(tmp, sys.joinTables(TBL_TCD_REMAINDERS, tmp, idName)));
+
+    qs.sqlDropTemp(rem);
+
+    logger.info(log, "Updated", tot, "records");
+
+    String zz = qs.sqlCreateTemp(new SqlSelect()
+        .addAllFields(tmp)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.isNull(tmp, idName)));
+
+    qs.sqlDropTemp(tmp);
+    tmp = zz;
+
+    for (String warehouse : qs.getColumn(new SqlSelect().setDistinctMode(true)
+        .addFields(tmp, supplierWarehouse)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.not(SqlUtils.in(tmp, supplierWarehouse, CommonsConstants.TBL_WAREHOUSES,
+            supplierWarehouse, SqlUtils.notNull(CommonsConstants.TBL_WAREHOUSES,
+                supplierWarehouse)))))) {
+
+      qs.insertData(new SqlInsert(CommonsConstants.TBL_WAREHOUSES)
+          .addConstant(CommonsConstants.COL_WAREHOUSE_CODE, warehouse)
+          .addConstant(supplierWarehouse, warehouse));
+    }
+
+    qs.sqlIndex(tmp, COL_TCD_SUPPLIER_ID, supplierWarehouse);
+
+    insertData(TBL_TCD_REMAINDERS, new SqlSelect().setLimit(500000)
+        .addField(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS),
+            COL_TCD_ARTICLE_SUPPLIER)
+        .addField(CommonsConstants.TBL_WAREHOUSES, sys.getIdName(CommonsConstants.TBL_WAREHOUSES),
+            CommonsConstants.COL_WAREHOUSE)
+        .addFields(tmp, COL_TCD_REMAINDER)
+        .addFrom(tmp)
+        .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS, SqlUtils.and(
+            SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.ordinal()),
+            SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)))
+        .addFromInner(CommonsConstants.TBL_WAREHOUSES,
+            SqlUtils.joinUsing(tmp, CommonsConstants.TBL_WAREHOUSES, supplierWarehouse))
+        .addOrder(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS))
+        .addOrder(tmp, supplierWarehouse));
+
+    qs.sqlDropTemp(tmp);
+  }
+
+  private void importTcd(List<TcdData> builds) {
+    for (TcdData entry : builds) {
+      SqlCreate create = entry.base;
+      SqlSelect query = entry.baseSource;
 
       String target = create.getTarget();
 
-      if (qs.dbTableExists(sys.getDbName(), tcdSchema, target)) {
+      if (qs.dbTableExists(sys.getDbName(), TCD_SCHEMA, target)) {
         continue; // qs.updateData(SqlUtils.dropTable(SqlUtils.table(tcdSchema, target)));
       }
-      target = SqlUtils.table(tcdSchema, target);
+      tcd.init(entry.preparations);
+
+      target = SqlUtils.table(TCD_SCHEMA, target);
       create.setTarget(target);
 
       qs.updateData(create);
@@ -751,7 +1441,7 @@ public class TecDocBean {
           int cnt = (Integer) qs.doSql(sql.toString());
           total += cnt;
           chunkTotal += cnt;
-          logger.info(target, "inserted rows:", total);
+          logger.debug(target, "inserted rows:", total);
         }
         if (isDebugEnabled) {
           messyLogger.setLevel(LogLevel.DEBUG);
@@ -760,170 +1450,66 @@ public class TecDocBean {
           offset += chunk;
         }
       } while (chunk > 0 && chunkTotal == chunk);
+
+      for (String[] index : entry.baseIndexes) {
+        qs.sqlIndex(target, index);
+      }
+      tcd.cleanup(entry.preparations);
     }
   }
 
-  private void importItems(String supplier, List<RemoteItems> data) {
-    String log = supplier + " " + TBL_TCD_ARTICLE_BRANDS + ":";
-
+  private void insertData(String table, SqlSelect query) {
     boolean isDebugEnabled = messyLogger.isDebugEnabled();
 
-    if (isDebugEnabled) {
-      messyLogger.setLevel(LogLevel.INFO);
-    }
-    String idName = sys.getIdName(TBL_TCD_ARTICLE_BRANDS);
+    int chunk = BeeUtils.toNonNegativeInt(query.getLimit());
+    int offset = 0;
     int tot = 0;
-    int upd = 0;
-    String tmp = null;
 
-    for (RemoteItems info : data) {
-      int c = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_BRANDS)
-          .addConstant(COL_TCD_PRICE, info.price)
-          .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS,
-              COL_TCD_SUPPLIER, supplier, COL_TCD_SUPPLIER_ID, info.supplierId)));
-      upd += c;
+    SimpleRowSet data = null;
+    SqlInsert insert = null;
 
-      if (c == 0) {
-        if (tmp == null) {
-          tmp = SqlUtils.temporaryName();
+    do {
+      if (chunk > 0) {
+        query.setOffset(offset);
+      }
+      data = qs.getData(query);
 
-          qs.updateData(new SqlCreate(tmp)
-              .addLong(idName, true)
-              .addString(COL_TCD_SUPPLIER_ID, 30, true)
-              .addString(COL_TCD_ANALOG_NR, 50, true)
-              .addString(COL_TCD_BRAND, 50, true)
-              .addString(COL_TCD_SEARCH_NR, 50, true)
-              .addDecimal(COL_TCD_PRICE, 10, 2, false));
+      if (insert == null) {
+        insert = new SqlInsert(table)
+            .addFields(sys.getIdName(table), sys.getVersionName(table))
+            .addFields(data.getColumnNames());
+      }
+      if (isDebugEnabled) {
+        messyLogger.setLevel(LogLevel.INFO);
+      }
+      for (String[] row : data.getRows()) {
+        Object[] values = new Object[row.length + 2];
+        values[0] = ig.getId(table);
+        values[1] = System.currentTimeMillis();
+        System.arraycopy(row, 0, values, 2, row.length);
+        insert.addValues(values);
+
+        if (++tot % 1e4 == 0) {
+          qs.insertData(insert);
+          insert.resetValues();
+          logger.debug("Inserted", tot, "records into table", table);
         }
-        qs.insertData(new SqlInsert(tmp)
-            .addConstant(idName, ig.getId(TBL_TCD_ARTICLE_BRANDS))
-            .addConstant(COL_TCD_SEARCH_NR, EcModuleBean.normalizeCode(info.articleNr))
-            .addConstant(COL_TCD_BRAND, info.brand)
-            .addConstant(COL_TCD_ANALOG_NR, info.articleNr)
-            .addConstant(COL_TCD_PRICE, info.price)
-            .addConstant(COL_TCD_SUPPLIER_ID, info.supplierId));
       }
-      if (++tot % 1000 == 0) {
-        logger.info(log, "Processed", tot, "records");
+      if (tot % 1e4 > 0) {
+        qs.insertData(insert);
+        logger.debug("Inserted", tot, "records into table", table);
       }
-    }
-    if (isDebugEnabled) {
-      messyLogger.setLevel(LogLevel.DEBUG);
-    }
-    if (tot % 1000 > 0) {
-      logger.info(log, "Processed", tot, "records");
-    }
-    logger.info(log, "Updated", upd, "rows");
-
-    if (tmp != null) {
-      qs.updateData(SqlUtils.createIndex(tmp, "IK_" + tmp + COL_TCD_SEARCH_NR,
-          Lists.newArrayList(COL_TCD_SEARCH_NR), false));
-      qs.updateData(SqlUtils.createIndex(tmp, "IK_" + tmp + COL_TCD_BRAND,
-          Lists.newArrayList(COL_TCD_BRAND), false));
-
-      String tcdAnalogs = SqlUtils.table(TCD_SCHEMA, TBL_TCD_ANALOGS);
-
-      upd = qs.sqlCount(TBL_TCD_ARTICLE_BRANDS, null);
-
-      qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_BRANDS)
-          .addFields(COL_TCD_ARTICLE_ID, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE, idName,
-              COL_TCD_SUPPLIER_ID, COL_TCD_SUPPLIER, sys.getVersionName(TBL_TCD_ARTICLE_BRANDS))
-          .setDataSource(new SqlSelect()
-              .addMax(tcdAnalogs, COL_TCD_ARTICLE_ID)
-              .addFields(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE, idName,
-                  COL_TCD_SUPPLIER_ID)
-              .addConstant(supplier, COL_TCD_SUPPLIER)
-              .addConstant(System.currentTimeMillis(),
-                  sys.getVersionName(TBL_TCD_ARTICLE_BRANDS))
-              .addFrom(tmp)
-              .addFromInner(tcdAnalogs,
-                  SqlUtils.joinUsing(tmp, tcdAnalogs, COL_TCD_SEARCH_NR, COL_TCD_BRAND))
-              .addGroup(tmp, COL_TCD_BRAND, COL_TCD_ANALOG_NR, COL_TCD_PRICE,
-                  COL_TCD_SUPPLIER_ID, idName)));
-
-      qs.sqlDropTemp(tmp);
-      logger.info(log, "Inserted", qs.sqlCount(TBL_TCD_ARTICLE_BRANDS, null) - upd, "rows");
-    }
+      if (isDebugEnabled) {
+        messyLogger.setLevel(LogLevel.DEBUG);
+      }
+      offset += chunk;
+    } while (chunk > 0 && data.getNumberOfRows() == chunk);
   }
 
-  private void importRemainders(String supplier, List<RemoteRemainders> data) {
-    String log = supplier + " " + TBL_TCD_REMAINDERS + ":";
-
-    qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
-        .addConstant(COL_TCD_REMAINDER, null)
-        .setFrom(TBL_TCD_ARTICLE_BRANDS,
-            sys.joinTables(TBL_TCD_ARTICLE_BRANDS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
-        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier)));
-
-    boolean isDebugEnabled = messyLogger.isDebugEnabled();
-
-    if (isDebugEnabled) {
-      messyLogger.setLevel(LogLevel.INFO);
+  private void tweakSql(boolean on) {
+    if (SqlEngine.POSTGRESQL != SqlBuilderFactory.getBuilder().getEngine()) {
+      return;
     }
-    String idName = sys.getIdName(TBL_TCD_REMAINDERS);
-    int tot = 0;
-    int upd = 0;
-    String tmp = null;
-
-    for (RemoteRemainders info : data) {
-      int c = qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
-          .addConstant(COL_TCD_REMAINDER, info.remainder)
-          .setFrom(TBL_TCD_ARTICLE_BRANDS, sys.joinTables(TBL_TCD_ARTICLE_BRANDS,
-              TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_BRAND))
-          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_REMAINDERS,
-              COL_TCD_WAREHOUSE, info.warehouse),
-              SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS,
-                  COL_TCD_SUPPLIER, supplier, COL_TCD_SUPPLIER_ID, info.supplierId))));
-      upd += c;
-
-      if (c == 0) {
-        if (tmp == null) {
-          tmp = SqlUtils.temporaryName();
-
-          qs.updateData(new SqlCreate(tmp, false)
-              .addLong(idName, true)
-              .addString(COL_TCD_SUPPLIER_ID, 30, true)
-              .addString(COL_TCD_WAREHOUSE, 10, true)
-              .addDecimal(COL_TCD_REMAINDER, 12, 3, true));
-        }
-        qs.insertData(new SqlInsert(tmp)
-            .addConstant(idName, ig.getId(TBL_TCD_REMAINDERS))
-            .addConstant(COL_TCD_WAREHOUSE, info.warehouse)
-            .addConstant(COL_TCD_REMAINDER, info.remainder)
-            .addConstant(COL_TCD_SUPPLIER_ID, info.supplierId));
-      }
-      if (++tot % 1000 == 0) {
-        logger.info(log, "Processed", tot, "records");
-      }
-    }
-    if (isDebugEnabled) {
-      messyLogger.setLevel(LogLevel.DEBUG);
-    }
-    if (tot % 1000 > 0) {
-      logger.info(log, "Processed", tot, "records");
-    }
-    logger.info(log, "Updated", upd, "rows");
-
-    if (tmp != null) {
-      qs.updateData(SqlUtils.createIndex(tmp, "IK_" + tmp + COL_TCD_SUPPLIER_ID,
-          Lists.newArrayList(COL_TCD_SUPPLIER_ID), false));
-
-      upd = qs.sqlCount(TBL_TCD_REMAINDERS, null);
-
-      qs.insertData(new SqlInsert(TBL_TCD_REMAINDERS)
-          .addFields(COL_TCD_ARTICLE_BRAND, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER, idName,
-              sys.getVersionName(TBL_TCD_REMAINDERS))
-          .setDataSource(new SqlSelect()
-              .addFields(TBL_TCD_ARTICLE_BRANDS, sys.getIdName(TBL_TCD_ARTICLE_BRANDS))
-              .addFields(tmp, COL_TCD_WAREHOUSE, COL_TCD_REMAINDER, idName)
-              .addConstant(System.currentTimeMillis(), sys.getVersionName(TBL_TCD_REMAINDERS))
-              .addFrom(tmp)
-              .addFromInner(TBL_TCD_ARTICLE_BRANDS,
-                  SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER_ID))
-              .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_BRANDS, COL_TCD_SUPPLIER, supplier))));
-
-      qs.sqlDropTemp(tmp);
-      logger.info(log, "Inserted", qs.sqlCount(TBL_TCD_REMAINDERS, null) - upd, "rows");
-    }
+    qs.doSql("set enable_seqscan=" + (on ? "off" : "on"));
   }
 }

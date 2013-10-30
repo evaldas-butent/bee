@@ -3,7 +3,7 @@
 
 name="TasksReports" label="=taskReports" order="7" parent="Tasks"
 >
-    <Item name="TaskDurations" label="Registruoti laikai" service="grid" parameters="TaskDurations" />
+    <Item name="TaskDurations" label="=crmTaskDurations" service="grid" parameters="TaskDurations" />
 	<Item name="TypeHoursReport" label="=hoursByTypes" service="tasks_reports" parameters="typehours" />
 	<Item name="CompanyTimesReport" label="=hoursByCompanies" service="tasks_reports" parameters="companytimes" />
 	<Item name="UsersHoursReport" label="=hoursByUsers" service="tasks_reports" parameters="usershours" />

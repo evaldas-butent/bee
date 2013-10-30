@@ -83,8 +83,17 @@ public final class RelationUtils {
         } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_LAST_NAME)) {
           row.setValue(index, userData.getLastName());
           result++;
+        } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_COMPANY_NAME)) {
+          row.setValue(index, userData.getCompanyName());
+          result++;
         } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_COMPANY_PERSON)) {
           row.setValue(index, userData.getCompanyPerson());
+          result++;
+        } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_PERSON)) {
+          row.setValue(index, userData.getPerson());
+          result++;
+        } else if (BeeUtils.same(vc.getField(), CommonsConstants.COL_COMPANY)) {
+          row.setValue(index, userData.getCompany());
           result++;
         }
       }

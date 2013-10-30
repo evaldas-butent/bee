@@ -4,9 +4,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.html.Tags;
 
 import elemental.html.ProgressElement;
-
 import elemental.js.html.JsProgressElement;
 
 /**
@@ -19,7 +19,7 @@ public class Progress extends Widget implements IdentifiableWidget {
   public Progress() {
     super();
 
-    setElement(DomUtils.createElement(DomUtils.TAG_PROGRESS));
+    setElement(DomUtils.createElement(Tags.PROGRESS));
     init();
   }
 

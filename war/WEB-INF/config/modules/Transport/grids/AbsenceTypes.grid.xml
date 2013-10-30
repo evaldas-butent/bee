@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
-  name="AbsenceTypes" viewName="AbsenceTypes" caption="Nebuvimo darbe tipai"
+  name="AbsenceTypes" viewName="AbsenceTypes" caption="=trAbsenceTypes"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" flexGrow="1" flexShrink="1" />
     <DataColumn name="Label" minWidth="80" />
 
@@ -12,5 +12,5 @@
         <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
       </dynStyle>
     </RelColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

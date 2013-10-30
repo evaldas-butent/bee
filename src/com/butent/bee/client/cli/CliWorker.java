@@ -29,8 +29,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -50,6 +48,7 @@ import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
+import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
@@ -59,6 +58,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.ClientRect;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Rulers;
@@ -90,6 +90,7 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.style.Axis;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
@@ -110,7 +111,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputFile;
@@ -125,6 +125,10 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssAngle;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsTable;
@@ -133,6 +137,9 @@ import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -143,7 +150,6 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Color;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -156,6 +162,7 @@ import com.butent.bee.shared.utils.Wildcards;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -327,6 +334,9 @@ public final class CliWorker {
     } else if (z.startsWith("image")) {
       showImages(arr);
 
+    } else if ("import_cvs".equals(z)) {
+      importCSV(arr);
+
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
 
@@ -345,8 +355,8 @@ public final class CliWorker {
     } else if ("loaders".equals(z)) {
       BeeKeeper.getRpc().invoke("loaderInfo");
 
-    } else if ("locale".equals(z)) {
-      doLocale(arr);
+    } else if (z.startsWith("loc")) {
+      doLocale(arr, args);
 
     } else if ("log".equals(z)) {
       doLog(arr);
@@ -384,11 +394,14 @@ public final class CliWorker {
     } else if ("rebuild".equals(z)) {
       rebuildSomething(args);
 
+    } else if (z.startsWith("rect") && arr.length >= 2) {
+      showRectangle(arr[1]);
+      
+    } else if (z.startsWith("rot") || "scale".equals(z) || "skew".equals(z) || "tt".equals(z)) {
+      animate(arr);
+
     } else if ("rpc".equals(z)) {
       showRpc();
-
-    } else if ("scale".equals(z)) {
-      scale(arr);
 
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args);
@@ -400,7 +413,7 @@ public final class CliWorker {
       showPropData(Settings.getInfo());
 
     } else if (z.startsWith("sheets")) {
-      Global.showGrid(new PropertiesData(Global.getStylesheets()));
+      Global.showGrid(new PropertiesData(Global.getStyleSheets()));
 
     } else if ("size".equals(z) && arr.length >= 2) {
       showSize(arr);
@@ -427,7 +440,7 @@ public final class CliWorker {
       showTableInfo(args);
 
     } else if ("tables".equals(z)) {
-      BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
+      getTables(args);
 
     } else if (z.startsWith("tile")) {
       doTiles(args);
@@ -473,6 +486,208 @@ public final class CliWorker {
       return false;
     }
     return true;
+  }
+
+
+  private static void animate(String[] arr) {
+
+    final class Raf extends RafCallback {
+      private final String function;
+      private Axis axis;
+
+      private final EnumMap<Axis, Double> from = Maps.newEnumMap(Axis.class);
+      private final EnumMap<Axis, Double> to = Maps.newEnumMap(Axis.class);
+
+      private Style style;
+
+      private Raf(String trf, double duration) {
+        super(duration);
+
+        double lower;
+        double upper;
+
+        if (trf.startsWith("r")) {
+          function = StyleUtils.TRANSFORM_ROTATE;
+          lower = 0.0;
+          upper = 360.0;
+
+        } else if (trf.startsWith("sk")) {
+          function = StyleUtils.TRANSFORM_SKEW;
+          axis = Axis.X;
+          lower = 0.0;
+          upper = 180.0;
+
+        } else if (trf.startsWith("t")) {
+          function = StyleUtils.TRANSFORM_TRANSLATE;
+          lower = 0.0;
+          upper = 50.0;
+
+        } else {
+          function = StyleUtils.TRANSFORM_SCALE;
+          lower = 1.0;
+          upper = 0.1;
+        }
+
+        for (Axis a : Axis.values()) {
+          from.put(a, lower);
+          to.put(a, upper);
+        }
+      }
+
+      @Override
+      protected void onComplete() {
+        StyleUtils.clearTransform(style);
+      }
+
+      @Override
+      protected boolean run(double elapsed) {
+        if (axis == null) {
+          if (isRotate()) {
+            StyleUtils.setTransformRotate(style, getInt(elapsed, Axis.X), CssAngle.DEG);
+          } else if (isScale()) {
+            StyleUtils.setTransformScale(style, getDouble(elapsed, Axis.X),
+                getDouble(elapsed, Axis.Y));
+          } else if (isSkew()) {
+            StyleUtils.setTransformSkew(style, Axis.X, getInt(elapsed, Axis.X), CssAngle.DEG);
+          } else if (isTranslate()) {
+            StyleUtils.setTransformTranslate(style, getDouble(elapsed, Axis.X), CssUnit.PX,
+                getDouble(elapsed, Axis.Y), CssUnit.PX);
+          }
+
+        } else if (isRotate()) {
+          StyleUtils.setTransformRotate(style, axis, getInt(elapsed, axis), CssAngle.DEG);
+        } else if (isScale()) {
+          StyleUtils.setTransformScale(style, axis, getDouble(elapsed, axis));
+        } else if (isSkew()) {
+          StyleUtils.setTransformSkew(style, axis, getInt(elapsed, axis), CssAngle.DEG);
+        } else if (isTranslate()) {
+          StyleUtils.setTransformTranslate(style, axis, getDouble(elapsed, axis), CssUnit.PX);
+        }
+
+        return true;
+      }
+
+      private double getDouble(double elapsed, Axis a) {
+        if (elapsed < getDuration() / 2) {
+          return BeeUtils.rescale(elapsed, 0, getDuration() / 2, from.get(a), to.get(a));
+        } else {
+          return BeeUtils
+              .rescale(elapsed, getDuration() / 2, getDuration(), to.get(a), from.get(a));
+        }
+      }
+
+      private int getInt(double elapsed, Axis a) {
+        return BeeUtils.round(getDouble(elapsed, a));
+      }
+
+      private boolean isRotate() {
+        return StyleUtils.TRANSFORM_ROTATE.equals(function);
+      }
+
+      private boolean isScale() {
+        return StyleUtils.TRANSFORM_SCALE.equals(function);
+      }
+
+      private boolean isSkew() {
+        return StyleUtils.TRANSFORM_SKEW.equals(function);
+      }
+
+      private boolean isTranslate() {
+        return StyleUtils.TRANSFORM_TRANSLATE.equals(function);
+      }
+    }
+
+    Raf raf = new Raf(arr[0], 5000);
+
+    for (int i = 1; i < ArrayUtils.length(arr); i++) {
+      char prop = arr[i].toLowerCase().charAt(0);
+      String value = (arr[i].length() > 1) ? arr[i].substring(1) : BeeConst.STRING_EMPTY;
+
+      value = BeeUtils.removePrefix(value, '=');
+      value = BeeUtils.removePrefix(value, ':');
+
+      switch (prop) {
+        case '#':
+          if (!value.isEmpty()) {
+            Element elem = Document.get().getElementById(value);
+            if (elem == null) {
+              logger.warning("element id:", value, "not found");
+            } else {
+              raf.style = elem.getStyle();
+              logger.debug("id", value, elem.getTagName(), elem.getClassName());
+            }
+          }
+          break;
+
+        case 'd':
+          if (BeeUtils.isPositiveDouble(value)) {
+            raf.setDuration(BeeUtils.toDouble(value));
+            logger.debug("duration", raf.getDuration());
+          }
+          break;
+
+        case 'l':
+          if (BeeUtils.isDouble(value)) {
+            double lower = BeeUtils.toDouble(value);
+            for (Axis a : Axis.values()) {
+              raf.from.put(a, lower);
+            }
+            logger.debug("from", lower);
+          }
+          break;
+
+        case 'u':
+          if (BeeUtils.isDouble(value)) {
+            double upper = BeeUtils.toDouble(value);
+            for (Axis a : Axis.values()) {
+              raf.to.put(a, upper);
+            }
+            logger.debug("to", upper);
+          }
+          break;
+
+        case 'x':
+          if (value.isEmpty() || raf.isRotate() || raf.isSkew()) {
+            raf.axis = Axis.X;
+            logger.debug("axis x");
+          }
+          if (BeeUtils.isDouble(value)) {
+            raf.to.put(Axis.X, BeeUtils.toDouble(value));
+            logger.debug("to x", raf.to.get(Axis.X));
+          }
+          break;
+
+        case 'y':
+          if (value.isEmpty() || raf.isRotate() || raf.isSkew()) {
+            raf.axis = Axis.Y;
+            logger.debug("axis y");
+          }
+          if (BeeUtils.isDouble(value)) {
+            raf.to.put(Axis.Y, BeeUtils.toDouble(value));
+            logger.debug("to y", raf.to.get(Axis.Y));
+          }
+          break;
+
+        case 'z':
+          raf.axis = Axis.Z;
+          logger.debug("axis z");
+          if (BeeUtils.isDouble(value)) {
+            raf.to.put(Axis.Z, BeeUtils.toDouble(value));
+            logger.debug("to z", raf.to.get(Axis.Z));
+          }
+          break;
+      }
+    }
+
+    if (raf.style == null) {
+      IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
+      if (widget == null) {
+        widget = BeeKeeper.getScreen().getScreenPanel();
+      }
+      raf.style = widget.asWidget().getElement().getStyle();
+    }
+
+    raf.start();
   }
 
   private static void clear(String args) {
@@ -929,15 +1144,21 @@ public final class CliWorker {
         NameUtils.addName("match", BeeUtils.toString(match)));
   }
 
-  private static void doLocale(String[] arr) {
-    String mode = ArrayUtils.getQuietly(arr, 1);
-    if (BeeUtils.isEmpty(mode)) {
+  private static void doLocale(String[] arr, String args) {
+    if (BeeUtils.isEmpty(args)) {
       showExtData(LocaleUtils.getInfo());
-      return;
-    }
 
-    String lang = ArrayUtils.getQuietly(arr, 2);
-    BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, BeeUtils.joinWords(mode, lang));
+    } else if (BeeUtils.contains(arr[0], 's')) {
+      BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args);
+    
+    } else {
+      List<Property> info = Lists.newArrayList();
+      for (int i = 1; i < arr.length; i++) {
+        String value = Localized.translate(arr[i]);
+        PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL)); 
+      }
+      showPropData(info);
+    }
   }
 
   private static void doLog(String[] arr) {
@@ -1159,7 +1380,7 @@ public final class CliWorker {
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      Window.open(FileUtils.getUrl(arr[1], null), "_blank", null);
+      BrowsingContext.open(FileUtils.getUrl(arr[1], null));
       return;
     }
 
@@ -1168,9 +1389,89 @@ public final class CliWorker {
       params.addPositionalHeader(v);
     }
 
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(Resource.class)) {
+          Resource resource = Resource.restore(response.getResponseAsString());
+          ResourceEditor resourceEditor = new ResourceEditor(resource);
+
+          BeeKeeper.getScreen().updateActivePanel(resourceEditor);
+        }
+      }
+    });
+  }
+
+  private static void getTables(String args) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
+    if (!BeeUtils.isEmpty(args)) {
+      params.addPositionalHeader(args.trim());
+    }
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
+  @Deprecated
+  private static void importCSV(String[] arr) {
+    LogUtils.getRootLogger().debug((Object[]) arr);
+    if (arr.length < 2) {
+      return;
+    }
+
+    String servName = "";
+    if (BeeUtils.same(arr[1], "OsamaTiekejai")) {
+      servName = Service.IMPORT_OSAMA_TIEKEJAI;
+    } else if (BeeUtils.same(arr[1], "OsamaDarbuotojai")) {
+      servName = Service.IMPORT_OSAMA_DARBUOTOJIAI;
+    } else if (BeeUtils.same(arr[1], "OsamaPrekSist")) {
+      servName = Service.IMPORT_OSAMA_PREK_SIST;
+    }
+
+    if (!BeeUtils.isEmpty(servName)) {
+      final String serviceName = servName;
+      LogUtils.getRootLogger().debug("do");
+      final Popup popup = new Popup(OutsideClick.CLOSE);
+
+      final InputFile widget = new InputFile(true);
+      widget.addChangeHandler(new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent event) {
+          popup.close();
+          List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
+
+          for (final NewFileInfo fi : files) {
+            logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
+            FileUtils.uploadFile(fi, new Callback<Long>() {
+              @Override
+              public void onSuccess(Long result) {
+                BeeKeeper.getRpc().sendText(serviceName,
+                    BeeUtils.toString(result),
+                    new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject response) {
+                        Assert.notNull(response);
+
+                        if (response.hasResponse(BeeRowSet.class)) {
+                          BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+
+                          if (rs.isEmpty()) {
+                            logger.debug("sql: RowSet is empty");
+                          } else {
+                            Global.showGrid(rs);
+                          }
+                        }
+                      }
+                    });
+              }
+            });
+          }
+        }
+      });
+
+      popup.setWidget(widget);
+      popup.center();
+    }
+  }
+  
   private static void inform(String... messages) {
     List<String> lst = Lists.newArrayList(messages);
     Global.showInfo(lst);
@@ -1349,7 +1650,7 @@ public final class CliWorker {
         if (response.hasResponse(Resource.class)) {
           final LayoutPanel p = new LayoutPanel();
 
-          final InputArea area = new InputArea(new Resource((String) response.getResponse()));
+          final InputArea area = new InputArea(Resource.restore(response.getResponseAsString()));
           p.add(area);
           p.setWidgetTopBottom(area, 0, CssUnit.EM, 2, CssUnit.EM);
 
@@ -1366,7 +1667,7 @@ public final class CliWorker {
                         if (resp.hasResponse(Resource.class)) {
                           p.getWidget(1).removeFromParent();
                           InputArea res =
-                              new InputArea(new Resource((String) resp.getResponse()));
+                              new InputArea(Resource.restore(resp.getResponseAsString()));
                           p.add(res);
                           p.setWidgetLeftRight(res, 50, CssUnit.PCT, 0, CssUnit.EM);
                           p.setWidgetTopBottom(area, 0, CssUnit.EM, 0, CssUnit.EM);
@@ -1405,7 +1706,7 @@ public final class CliWorker {
 
                           if (resp.hasResponse(Resource.class)) {
                             InputArea res =
-                                new InputArea(new Resource((String) resp.getResponse()));
+                                new InputArea(Resource.restore(resp.getResponseAsString()));
                             inform(res.getValue());
                           } else {
                             showError("Wrong response received");
@@ -1429,6 +1730,8 @@ public final class CliWorker {
     });
   }
 
+  // CHECKSTYLE:ON
+
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
@@ -1440,103 +1743,6 @@ public final class CliWorker {
       }
     }
   }-*/;
-
-  // CHECKSTYLE:ON
-
-  private static void scale(String[] arr) {
-
-    final class Raf extends RafCallback {
-      private double fromX = 1.0;
-      private double fromY = 1.0;
-
-      private double toX = 0.1;
-      private double toY = 0.1;
-
-      private Style style;
-
-      private Raf(double duration) {
-        super(duration);
-      }
-
-      @Override
-      protected void onComplete() {
-        StyleUtils.clearTransform(style);
-      }
-
-      @Override
-      protected boolean run(double elapsed) {
-        double x;
-        double y;
-
-        if (elapsed < getDuration() / 2) {
-          x = BeeUtils.rescale(elapsed, 0, getDuration() / 2, fromX, toX);
-          y = BeeUtils.rescale(elapsed, 0, getDuration() / 2, fromY, toY);
-        } else {
-          x = BeeUtils.rescale(elapsed, getDuration() / 2, getDuration(), toX, fromX);
-          y = BeeUtils.rescale(elapsed, getDuration() / 2, getDuration(), toY, fromY);
-        }
-
-        StyleUtils.setTransformScale(style, x, y);
-        return true;
-      }
-    }
-
-    Raf raf = new Raf(5000);
-
-    for (int i = 1; i < ArrayUtils.length(arr); i++) {
-      char prop = arr[i].toLowerCase().charAt(0);
-      String value = arr[i].substring(1);
-
-      value = BeeUtils.removePrefix(value, '=');
-      value = BeeUtils.removePrefix(value, ':');
-      if (value.isEmpty()) {
-        continue;
-      }
-
-      switch (prop) {
-        case '#':
-          Element elem = Document.get().getElementById(value);
-          if (elem == null) {
-            logger.warning("element id:", value, "not found");
-          } else {
-            raf.style = elem.getStyle();
-            logger.debug("id", value, elem.getTagName(), elem.getClassName());
-          }
-          break;
-
-        case 'd':
-          if (BeeUtils.isPositiveDouble(value)) {
-            raf.setDuration(BeeUtils.toDouble(value));
-            logger.debug("duration", raf.getDuration());
-          }
-          break;
-
-        case 'x':
-          if (BeeUtils.isPositiveDouble(value)) {
-            raf.toX = BeeUtils.toDouble(value);
-            logger.debug("toX", raf.toX);
-          }
-          break;
-
-        case 'y':
-          if (BeeUtils.isPositiveDouble(value)) {
-            raf.toY = BeeUtils.toDouble(value);
-            logger.debug("toY", raf.toY);
-          }
-          break;
-      }
-    }
-
-    if (raf.style == null) {
-      IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
-      if (widget == null) {
-        widget = BeeKeeper.getScreen().getScreenPanel();
-      }
-      raf.style = widget.asWidget().getElement().getStyle();
-    }
-
-    raf.start();
-  }
 
   private static void setDebug(String args) {
     if (BeeUtils.same(args, "ec")) {
@@ -1779,12 +1985,11 @@ public final class CliWorker {
         }
 
         int col = 0;
-        table.getCellFormatter().setHorizontalAlignment(row, col,
-            HasHorizontalAlignment.ALIGN_RIGHT);
-        table.setText(row, col, BeeUtils.toString(row + 1));
+        table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
+        table.setHtml(row, col, BeeUtils.toString(row + 1));
         col++;
 
-        table.setText(row, col, key);
+        table.setHtml(row, col, key);
         col++;
 
         CustomDiv keySwatch = new CustomDiv();
@@ -1799,7 +2004,7 @@ public final class CliWorker {
         table.setWidget(row, col, valueSwatch);
         col++;
 
-        table.setText(row, col, value);
+        table.setHtml(row, col, value);
       }
 
       BeeKeeper.getScreen().updateActivePanel(table);
@@ -1813,14 +2018,14 @@ public final class CliWorker {
 
       HtmlTable table = new HtmlTable();
 
-      table.setText(0, 0, args);
+      table.setHtml(0, 0, args);
 
       CustomDiv argSwatch = new CustomDiv();
       StyleUtils.setSize(argSwatch, 50, 50);
       StyleUtils.setBackgroundColor(argSwatch, args);
       table.setWidget(0, 1, argSwatch);
 
-      table.setText(1, 0, normalized);
+      table.setHtml(1, 0, normalized);
 
       CustomDiv normSwatch = new CustomDiv();
       StyleUtils.setSize(normSwatch, 50, 50);
@@ -2123,9 +2328,8 @@ public final class CliWorker {
           Map<String, String> flags = new TreeMap<String, String>(Flags.getFlags());
 
           for (Map.Entry<String, String> entry : flags.entrySet()) {
-            table.setText(row, col, entry.getKey());
-            table.getCellFormatter().setHorizontalAlignment(row, col,
-                HasHorizontalAlignment.ALIGN_RIGHT);
+            table.setHtml(row, col, entry.getKey());
+            table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
             col++;
 
             ImageElement imageElement = Document.get().createImageElement();
@@ -2209,6 +2413,7 @@ public final class CliWorker {
     List<Property> info = PropertyUtils.createProperties(
         "Host Page Base URL", GWT.getHostPageBaseURL(),
         "Module Base URL", GWT.getModuleBaseURL(),
+        "Module Base For Static Files", GWT.getModuleBaseForStaticFiles(),
         "Module Name", GWT.getModuleName(),
         "Permutation Strong Name", GWT.getPermutationStrongName(),
         "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
@@ -2246,9 +2451,8 @@ public final class CliWorker {
       Map<String, ImageResource> map = new TreeMap<String, ImageResource>(Images.getMap());
 
       for (Map.Entry<String, ImageResource> entry : map.entrySet()) {
-        table.setText(row, col, entry.getKey());
-        table.getCellFormatter().setHorizontalAlignment(row, col,
-            HasHorizontalAlignment.ALIGN_RIGHT);
+        table.setHtml(row, col, entry.getKey());
+        table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
         col++;
 
         table.setWidget(row, col, new Image(entry.getValue()));
@@ -2381,36 +2585,32 @@ public final class CliWorker {
     HtmlTable table = new HtmlTable();
     table.setBorderSpacing(3);
 
-    String[] types = new String[] {
-        "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
-        "datetime-local", "number", "range", "color"};
     TextBox widget;
 
     int row = 0;
-    for (String type : types) {
-      table.setWidget(row, 0, new Label(type));
+    for (Input.Type type : Input.Type.values()) {
+      table.setWidget(row, 0, new Label(type.getKeyword()));
 
-      if (Features.supportsInputType(type)) {
+      if (Features.supportsInputType(type.getKeyword())) {
         widget = new TextBox();
         DomUtils.setInputType(widget, type);
 
-        if ("search".equals(type)) {
+        if (Input.Type.SEARCH.equals(type)) {
           if (Features.supportsAttributePlaceholder()) {
-            widget.getElement().setAttribute("placeholder", "Search...");
-            widget.getElement().setAttribute("results", "0");
+            widget.getElement().setAttribute(Attributes.PLACEHOLDER, "Search...");
           }
 
-        } else if ("number".equals(type)) {
-          widget.getElement().setAttribute("min", "0");
-          widget.getElement().setAttribute("max", "20");
-          widget.getElement().setAttribute("step", "2");
-          widget.getElement().setAttribute("value", "4");
+        } else if (Input.Type.NUMBER.equals(type)) {
+          widget.getElement().setAttribute(Attributes.MIN, "0");
+          widget.getElement().setAttribute(Attributes.MAX, "20");
+          widget.getElement().setAttribute(Attributes.STEP, "2");
+          widget.getElement().setAttribute(Attributes.VALUE, "4");
 
-        } else if ("range".equals(type)) {
-          widget.getElement().setAttribute("min", "0");
-          widget.getElement().setAttribute("max", "50");
-          widget.getElement().setAttribute("step", "5");
-          widget.getElement().setAttribute("value", "30");
+        } else if (Input.Type.RANGE.equals(type)) {
+          widget.getElement().setAttribute(Attributes.MIN, "0");
+          widget.getElement().setAttribute(Attributes.MAX, "50");
+          widget.getElement().setAttribute(Attributes.STEP, "5");
+          widget.getElement().setAttribute(Attributes.VALUE, "30");
         }
 
         table.setWidget(row, 1, widget);
@@ -2495,28 +2695,28 @@ public final class CliWorker {
     table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
 
     int r = 0;
-    table.setHTML(r, 0, "min");
-    table.setHTML(r, 1, BeeUtils.toString(min));
+    table.setHtml(r, 0, "min");
+    table.setHtml(r, 1, BeeUtils.toString(min));
     r++;
-    table.setHTML(r, 0, "max");
-    table.setHTML(r, 1, BeeUtils.toString(max));
+    table.setHtml(r, 0, "max");
+    table.setHtml(r, 1, BeeUtils.toString(max));
     r++;
-    table.setHTML(r, 0, "low");
-    table.setHTML(r, 1, BeeUtils.toString(low));
+    table.setHtml(r, 0, "low");
+    table.setHtml(r, 1, BeeUtils.toString(low));
     r++;
-    table.setHTML(r, 0, "high");
-    table.setHTML(r, 1, BeeUtils.toString(high));
+    table.setHtml(r, 0, "high");
+    table.setHtml(r, 1, BeeUtils.toString(high));
     r++;
-    table.setHTML(r, 0, "optimum");
-    table.setHTML(r, 1, BeeUtils.toString(optimum));
+    table.setHtml(r, 0, "optimum");
+    table.setHtml(r, 1, BeeUtils.toString(optimum));
 
     r++;
-    table.setHTML(r, 0, BeeUtils.toString(value));
+    table.setHtml(r, 0, BeeUtils.toString(value));
     table.setWidget(r, 1, new Meter(min, max, value, low, high, optimum));
 
     for (double i = min; i <= max; i += (max - min) / 10) {
       r++;
-      table.setHTML(r, 0, BeeUtils.toString(i));
+      table.setHtml(r, 0, BeeUtils.toString(i));
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
     BeeKeeper.getScreen().updateActivePanel(table);
@@ -2704,6 +2904,61 @@ public final class CliWorker {
     showTable(v, table);
   }
 
+  private static void showRectangle(String id) {
+    Element el = Document.get().getElementById(id);
+    if (el == null) {
+      showError(id, "element not found");
+      return;
+    }
+    
+    ClientRect startRect = ClientRect.createBounding(el);
+    if (startRect == null) {
+      showError(id, "rectangle not available");
+    }
+    
+    String center = StyleUtils.className(TextAlign.CENTER);
+    String right = StyleUtils.className(TextAlign.RIGHT);
+    
+    HtmlTable table = new HtmlTable();
+    
+    int row = 0;
+    int col = 0;
+    
+    table.setHtml(row, col++, "tag");
+    table.setHtml(row, col++, "id");
+    table.setHtml(row, col++, "left");
+    table.setHtml(row, col++, "right");
+    table.setHtml(row, col++, "top");
+    table.setHtml(row, col++, "bottom");
+    table.setHtml(row, col++, "width");
+    table.setHtml(row, col++, "height");
+    table.setHtml(row, col++, "contains");
+    table.setHtml(row, col++, "intersects");
+    
+    for (Element p = el; p != null; p = p.getParentElement()) {
+      ClientRect rect = id.equals(p.getId()) ? startRect : ClientRect.createBounding(p);
+      if (rect == null) {
+        break;
+      }
+
+      row++;
+      col = 0;
+
+      table.setHtml(row, col++, p.getTagName());
+      table.setHtml(row, col++, p.getId());
+      table.setHtml(row, col++, BeeUtils.toString(rect.getLeft()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getRight()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getTop()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getBottom()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getWidth()), right);
+      table.setHtml(row, col++, BeeUtils.toString(rect.getHeight()), right);
+      table.setHtml(row, col++, rect.contains(startRect) ? "x" : "", center);
+      table.setHtml(row, col++, rect.intersects(startRect) ? "x" : "", center);
+    }
+    
+    Global.showModalWidget(table);
+  }
+  
   private static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
@@ -2766,26 +3021,24 @@ public final class CliWorker {
       info.addAll(font.getInfo());
     }
 
-    InlineLabel span = new InlineLabel();
+    InlineLabel span = new InlineLabel(html);
     if (font != null) {
       font.applyTo(span);
     }
-    StyleUtils.setWhiteSpace(span, StyleUtils.WhiteSpace.PRE);
-    span.setText(html);
+    StyleUtils.setWhiteSpace(span, WhiteSpace.PRE);
 
-    Html div = new Html();
+    Label div = new Label(html);
     if (font != null) {
       font.applyTo(div);
     }
-    div.setHTML(html);
 
     HtmlTable table = new HtmlTable();
     table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
     StyleUtils.collapseBorders(table);
 
     for (int i = 0; i < info.size(); i++) {
-      table.setHTML(i, 0, info.get(i).getName());
-      table.setHTML(i, 1, info.get(i).getValue());
+      table.setHtml(i, 0, info.get(i).getName());
+      table.setHtml(i, 1, info.get(i).getValue());
     }
 
     Flow panel = new Flow();
@@ -3164,7 +3417,7 @@ public final class CliWorker {
     int col = 0;
 
     for (String key : keys) {
-      table.setText(row, col++, key);
+      table.setHtml(row, col++, key);
       if (col >= 5) {
         row++;
         col = 0;
@@ -3259,7 +3512,7 @@ public final class CliWorker {
       List<Property> lst;
 
       if (elem.getStyle() != null) {
-        lst = StyleUtils.getStyleInfo(elem.getStyle());
+        lst = JsUtils.getInfo(elem.getStyle());
         if (!BeeUtils.isEmpty(lst)) {
           info.add(new Property("element style", BeeUtils.bracket(lst.size())));
           info.addAll(lst);
@@ -3387,19 +3640,19 @@ public final class CliWorker {
       logger.info("Translate", codeFrom, codeTo);
       List<Element> elements = Lists.newArrayList();
 
-      NodeList<Element> nodes = Document.get().getElementsByTagName(DomUtils.TAG_BUTTON);
+      NodeList<Element> nodes = Document.get().getElementsByTagName(Tags.BUTTON);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      nodes = Document.get().getElementsByTagName(DomUtils.TAG_TH);
+      nodes = Document.get().getElementsByTagName(Tags.TH);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      nodes = Document.get().getElementsByTagName(DomUtils.TAG_LABEL);
+      nodes = Document.get().getElementsByTagName(Tags.LABEL);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      nodes = Document.get().getElementsByTagName(DomUtils.TAG_OPTION);
+      nodes = Document.get().getElementsByTagName(Tags.OPTION);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }

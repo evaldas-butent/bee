@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
   
-  name="Services" viewName="Services" caption="=transportationServicesTypes"
+  name="Services" viewName="Services" caption="=trServices"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
-    <DataColumn name="Name" source="Name" />
+  <g:columns>
+    <DataColumn name="Name" />
+    <DataColumn name="Vat" width="40">
+      <carry><ui:expression>row.Vat</ui:expression></carry>
+    </DataColumn>
+    <DataColumn name="VatPercent" />
     <RelColumn name="Item" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -9,6 +9,16 @@
     <SimpleColumn name="Service" />
     <SimpleColumn name="Query" />
 
+    <SimpleColumn name="Article" />
+    <SimpleJoin name="Article" joinType="LEFT">
+      <SimpleColumn name="ArticleName" />
+      <SimpleColumn name="ArticleNr" />
+
+      <SimpleJoin name="Brand" joinType="LEFT">
+        <SimpleColumn name="BrandName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Count" />
     <SimpleColumn name="Duration" />
 

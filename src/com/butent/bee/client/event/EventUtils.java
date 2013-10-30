@@ -99,6 +99,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -837,7 +838,7 @@ public final class EventUtils {
   }
 
   public static boolean isInputElement(EventTarget et) {
-    return isTargetTagName(et, DomUtils.TAG_INPUT);
+    return isTargetTagName(et, Tags.INPUT);
   }
 
   public static boolean isInputEvent(String type) {

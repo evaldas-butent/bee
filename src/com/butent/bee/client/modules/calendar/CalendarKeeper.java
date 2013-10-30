@@ -10,7 +10,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -22,7 +21,6 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
@@ -73,7 +71,7 @@ public final class CalendarKeeper {
         event.consume();
         Long calId = event.getRowId();
         if (DataUtils.isId(calId)) {
-          String calName = event.hasRow() 
+          String calName = event.hasRow()
               ? Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
           openCalendar(calId, calName, true);
         }
@@ -205,13 +203,6 @@ public final class CalendarKeeper {
     key = Captions.register(TimeBlockClick.class);
     Captions.registerColumn(VIEW_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
     Captions.registerColumn(VIEW_USER_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
-
-    BeeKeeper.getMenu().registerMenuCallback("calendar_parameters", new MenuManager.MenuCallback() {
-      @Override
-      public void onSelection(String parameters) {
-        GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
-      }
-    });
 
     GridFactory.registerGridInterceptor(GRID_APPOINTMENTS, new AppointmentGridHandler());
 

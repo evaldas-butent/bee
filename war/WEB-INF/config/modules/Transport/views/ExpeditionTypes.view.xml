@@ -3,10 +3,11 @@
 
   name="ExpeditionTypes"
   source="ExpeditionTypes"
-  newRowCaption="Nauja ekspedijavimo rūšis" 
+  newRowCaption="=trNewExpeditionTypes" 
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="SelfService" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

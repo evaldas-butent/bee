@@ -32,7 +32,6 @@ import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -913,14 +912,14 @@ public final class ChartHelper {
   }
 
   private static Widget createDayLabel(JustDate date, int width, int height) {
-    Html widget;
+    Label widget;
     int day = date.getDom();
 
     int tens = day / 10;
     int ones = day % 10;
 
     if (width >= 15 && height >= 10) {
-      widget = new Html(BeeUtils.toString(day));
+      widget = new Label(BeeUtils.toString(day));
 
       widget.addStyleName(STYLE_DAY_LABEL);
       addDayStyle(widget, date);
@@ -941,7 +940,7 @@ public final class ChartHelper {
 
       root.appendChild(onesElement);
 
-      widget = new Html(root);
+      widget = new Label(root);
 
       widget.addStyleName(STYLE_DAY_NARROW);
       addDayStyle(widget, date);
@@ -1015,7 +1014,7 @@ public final class ChartHelper {
         }
       }
 
-      widget = new Html(root);
+      widget = new Label(root);
       widget.addStyleName(STYLE_DAY_PICTURE);
       widget.addStyleName(STYLE_DAY_PICTURE + styleSuffix);
     }

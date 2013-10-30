@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form" 
   xmlns:d="http://www.butent.com/decorator" 
   
-  name="ExpeditionTrip" viewName="ExpeditionTrips" caption="Ekspedijavimo reisas"
+  name="ExpeditionTrip" viewName="ExpeditionTrips" caption="=transportExpeditionTrip"
   width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
@@ -16,19 +16,19 @@
         <row>
           <FlowPanel  class="flexBox-vertical" style="margin-bottom: 1ex">
             <SimplePanel style="margin-top: 10px"> 
-              <InputDateTime source="Date" caption="Data" style="width: 120px;" 
+              <InputDateTime source="Date" caption="=date" style="width: 120px;" 
                   decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
             </SimplePanel>      
             <SimplePanel style="margin-top: 10px"> 
-              <DataSelector source="Forwarder" caption="Vežėjas" style="width: 120px"
+              <DataSelector source="Forwarder" caption="=carrier" style="width: 120px"
                   decorator="flex-left" d:unit="px" d:align="left" required="true" d:size="75"/>
             </SimplePanel>      
             <SimplePanel style="margin-top: 10px"> 
-              <InputText source="ForwarderDriver" caption="Vairuotojas" style="width: 120px" 
+              <InputText source="ForwarderDriver" caption="=vehicleDriver" style="width: 120px" 
                   decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
             </SimplePanel>     
             <SimplePanel style="margin-top: 10px"> 
-              <InputText source="ForwarderVehicle" caption="Transportas" style="width: 120px"
+              <InputText source="ForwarderVehicle" caption="=transport" style="width: 120px"
                   decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
             </SimplePanel>    
           </FlowPanel>
@@ -39,17 +39,17 @@
         <row>   
           <FlowPanel class="flexBox-vertical"  style="margin-left: 11em;">
             <SimplePanel style="margin-top: 10px; margin-bottom: 10px;"> 
-              <InputText source="TripNo" style="width: 10em;" caption="Reiso.Nr." />
+              <InputText source="TripNo" style="width: 10em;" caption="=trTripNo" />
             </SimplePanel>  
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <Label html="Išvykimas" style="font-weight: bold; margin-left: 20px" />
-              <Label html="Sugrįžimas" style="font-weight: bold; margin-left: 50px" />
+              <Label text="=transportDeparture" style="font-weight: bold; margin-left: 20px" />
+              <Label text="=transportArrival" style="font-weight: bold; margin-left: 50px" />
             </FlowPanel>
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
               <SimplePanel>
                 <InputDate source="DateFrom" style="width: 7em;" />
               </SimplePanel>
-                <Label html="Data" style="margin: 0 5px 0 5px"/>
+                <Label text="=date" style="margin: 0 5px 0 5px"/>
               <SimplePanel>
                 <InputDate source="DateTo" style="width: 7em;" />
               </SimplePanel>
@@ -62,10 +62,10 @@
         <row>
           <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;"> 
             <SimplePanel style="margin-bottom: 10px;"> 
-              <DataSelector source="Expedition" caption="Ekspedicijos rūšis" required="true"
+              <DataSelector source="Expedition" caption="=trExpeditionType" required="true"
                   style="width: 120px"  d:unit="px" d:align="left" d:size="125" />
             </SimplePanel>  
-            <Label html="Pastabos" />
+            <Label text="=notes" />
             <SimplePanel  style="position: relative; min-width: 5em;" class="flexible"> 
               <InputArea source="Notes" style="height: 80px; width:250px;"/>
             </SimplePanel>
@@ -76,9 +76,9 @@
       <Table>
         <row>    
           <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;">
-            <ListBox source="Status" itemKey="TripStatus" caption="Būsena" style="margin-bottom: 20px"/>
-            <Button name="profit"  html="Pelnas" style="width: 80px" />
-          </FlowPanel>  
+            <ListBox source="Status" itemKey="TripStatus" caption="=status" style="margin-bottom: 20px"/>
+            <Button name="profit"  text="=cargoProfit" style="width: 80px" />
+          </FlowPanel>
         </row>
       </Table>
    
@@ -90,7 +90,7 @@
         <ChildGrid name="TripCargo" relColumn="Trip" />
       </page>
       <page>
-        <text>Išlaidos</text>
+        <text>=transportTripCosts</text>
         <ChildGrid name="TripCosts" relColumn="Trip" />
       </page>
     </TabbedPages>

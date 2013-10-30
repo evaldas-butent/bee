@@ -4,7 +4,7 @@
   idName="TimeZoneID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" />
-    <Integer name="StandardOffset" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=timeZoneName"/>
+    <Integer name="StandardOffset" label="=timeZoneOffset" />
   </Fields>
 </Table>

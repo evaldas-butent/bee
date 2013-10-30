@@ -14,13 +14,16 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
+import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -33,30 +36,33 @@ class EcData {
 
   private final List<String> carManufacturers = Lists.newArrayList();
   private final Map<String, List<EcCarModel>> carModelsByManufacturer = Maps.newHashMap();
-  private final Map<Integer, List<EcCarType>> carTypesByModel = Maps.newHashMap();
+  private final Map<Long, List<EcCarType>> carTypesByModel = Maps.newHashMap();
 
-  private final Map<Integer, String> categoryNames = Maps.newHashMap();
+  private final Map<Long, String> categoryNames = Maps.newHashMap();
 
-  private final Set<Integer> categoryRoots = Sets.newHashSet();
-  private final Multimap<Integer, Integer> categoryByParent = HashMultimap.create();
-  private final Map<Integer, Integer> categoryByChild = Maps.newHashMap();
+  private final Set<Long> categoryRoots = Sets.newHashSet();
+  private final Multimap<Long, Long> categoryByParent = HashMultimap.create();
+  private final Map<Long, Long> categoryByChild = Maps.newHashMap();
 
-  private final List<String> itemManufacturers = Lists.newArrayList();
+  private final List<EcBrand> itemBrands = Lists.newArrayList();
+  private final Map<Long, String> brandNames = Maps.newHashMap();
 
   private final List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
 
   private final Map<String, String> configuration = Maps.newHashMap();
+  
+  private final List<String> clientStockLabels = Lists.newArrayList();
 
   EcData() {
     super();
   }
 
-  Tree buildCategoryTree(Collection<Integer> ids) {
-    Set<Integer> roots = Sets.newHashSet();
-    Multimap<Integer, Integer> data = HashMultimap.create();
-    
-    for (int id : ids) {
-      Integer parent = getParent(id, ids);
+  Tree buildCategoryTree(Collection<Long> ids) {
+    Set<Long> roots = Sets.newHashSet();
+    Multimap<Long, Long> data = HashMultimap.create();
+
+    for (long id : ids) {
+      Long parent = getParent(id, ids);
       if (parent == null) {
         roots.add(id);
       } else {
@@ -69,17 +75,30 @@ class EcData {
     TreeItem rootItem = new TreeItem(Localized.getConstants().ecSelectCategory());
     tree.addItem(rootItem);
 
-    for (int id : roots) {
+    for (long id : roots) {
       TreeItem treeItem = createCategoryTreeItem(id);
       rootItem.addItem(treeItem);
-      
+
       fillTree(data, id, treeItem);
     }
 
     return tree;
   }
-  
-  void ensureCategoeries(final Consumer<Boolean> callback) {
+
+  void ensureBrands(final Consumer<Boolean> callback) {
+    if (itemBrands.isEmpty()) {
+      getItemBrands(new Consumer<List<EcBrand>>() {
+        @Override
+        public void accept(List<EcBrand> input) {
+          callback.accept(true);
+        }
+      });
+    } else {
+      callback.accept(true);
+    }
+  }
+
+  void ensureCategories(final Consumer<Boolean> callback) {
     if (categoryNames.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_CATEGORIES);
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
@@ -95,8 +114,8 @@ class EcData {
             categoryByChild.clear();
 
             for (int i = 0; i < arr.length; i += 3) {
-              int id = BeeUtils.toInt(arr[i]);
-              int parent = BeeUtils.toInt(arr[i + 1]);
+              long id = BeeUtils.toLong(arr[i]);
+              long parent = BeeUtils.toLong(arr[i + 1]);
               String name = arr[i + 2];
 
               categoryNames.put(id, name);
@@ -117,6 +136,46 @@ class EcData {
     } else {
       callback.accept(true);
     }
+  }
+
+  void ensureCategoriesAndBrandsAndStockLabels(final Consumer<Boolean> callback) {
+    if (!categoryNames.isEmpty() && !itemBrands.isEmpty() && !clientStockLabels.isEmpty()) {
+      callback.accept(true);
+    }
+
+    final Holder<Integer> latch = Holder.of(0);
+
+    Consumer<Boolean> consumer = new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        if (latch.get() >= 2) {
+          callback.accept(input);
+        } else {
+          latch.set(latch.get() + 1);
+        }
+      }
+    };
+    
+    ensureCategories(consumer);
+    ensureBrands(consumer);
+    ensureClientStockLabels(consumer);
+  }
+
+  void ensureClientStockLabels(final Consumer<Boolean> callback) {
+    if (clientStockLabels.isEmpty()) {
+      getClientStockLabels(new Consumer<Boolean>() {
+        @Override
+        public void accept(Boolean input) {
+          callback.accept(true);
+        }
+      });
+    } else {
+      callback.accept(true);
+    }
+  }
+  
+  String getBrandName(long brand) {
+    return brandNames.get(brand);
   }
 
   void getCarManufacturers(final Consumer<List<String>> callback) {
@@ -173,8 +232,8 @@ class EcData {
       });
     }
   }
-
-  void getCarTypes(final int modelId, final Consumer<List<EcCarType>> callback) {
+  
+  void getCarTypes(final long modelId, final Consumer<List<EcCarType>> callback) {
     if (carTypesByModel.containsKey(modelId)) {
       callback.accept(carTypesByModel.get(modelId));
 
@@ -202,15 +261,34 @@ class EcData {
     }
   }
 
-  String getCategoryName(int categoryId) {
+  String getCategoryFullName(long categoryId, String separator) {
+    List<String> names = Lists.newArrayList();
+
+    for (Long parent = categoryId; parent != null; parent = categoryByChild.get(parent)) {
+      String name = getCategoryName(parent);
+      if (name != null) {
+        names.add(name);
+      }
+    }
+
+    if (names.isEmpty()) {
+      return null;
+    } else if (names.size() == 1) {
+      return names.get(0);
+    } else {
+      return BeeUtils.join(separator, Lists.reverse(names));
+    }
+  }
+
+  String getCategoryName(long categoryId) {
     return categoryNames.get(categoryId);
   }
 
   List<String> getCategoryNames(EcItem item) {
     List<String> names = Lists.newArrayList();
 
-    List<Integer> categoryIds = item.getCategoryList();
-    for (Integer categoryId : categoryIds) {
+    List<Long> categoryIds = item.getCategoryList();
+    for (Long categoryId : categoryIds) {
       String name = categoryNames.get(categoryId);
       if (name != null) {
         names.add(name);
@@ -218,29 +296,6 @@ class EcData {
     }
 
     return names;
-  }
-  
-  void saveConfiguration(final String key, final String value) {
-    ParameterList params;
-
-    if (BeeUtils.isEmpty(value)) {
-      params = EcKeeper.createArgs(SVC_CLEAR_CONFIGURATION);
-      params.addDataItem(Service.VAR_COLUMN, key);
-    } else {
-      params = EcKeeper.createArgs(SVC_SAVE_CONFIGURATION);
-      params.addQueryItem(Service.VAR_COLUMN, key);
-      params.addDataItem(Service.VAR_VALUE, value);
-    }
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        EcKeeper.dispatchMessages(response);
-        if (BeeUtils.same(key, response.getResponseAsString())) {
-          configuration.put(key, value);
-        }
-      }
-    });
   }
 
   void getConfiguration(final Consumer<Map<String, String>> callback) {
@@ -265,7 +320,7 @@ class EcData {
       callback.accept(configuration);
     }
   }
-  
+
   void getDeliveryMethods(final Consumer<List<DeliveryMethod>> callback) {
     if (!deliveryMethods.isEmpty()) {
       callback.accept(deliveryMethods);
@@ -291,10 +346,10 @@ class EcData {
       });
     }
   }
-  
-  void getItemManufacturers(final Consumer<List<String>> callback) {
-    if (itemManufacturers.isEmpty()) {
-      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEM_MANUFACTURERS);
+
+  void getItemBrands(final Consumer<List<EcBrand>> callback) {
+    if (itemBrands.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_ITEM_BRANDS);
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
@@ -302,43 +357,102 @@ class EcData {
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
           if (arr != null) {
-            itemManufacturers.clear();
-            for (String manufacturer : arr) {
-              if (!BeeUtils.isEmpty(manufacturer)) {
-                itemManufacturers.add(manufacturer);
-              }
+            itemBrands.clear();
+            brandNames.clear();
+
+            for (String s : arr) {
+              EcBrand brand = EcBrand.restore(s);
+
+              itemBrands.add(brand);
+              brandNames.put(brand.getId(), brand.getName());
             }
 
-            callback.accept(itemManufacturers);
+            callback.accept(itemBrands);
           }
         }
       });
 
     } else {
-      callback.accept(itemManufacturers);
+      callback.accept(itemBrands);
     }
   }
 
-  private TreeItem createCategoryTreeItem(int id) {
+  String getPrimaryStockLabel() {
+    return BeeUtils.getQuietly(clientStockLabels, 0);
+  }
+  
+  String getSecondaryStockLabel() {
+    return BeeUtils.getQuietly(clientStockLabels, 1);
+  }
+
+  void saveConfiguration(final String key, final String value) {
+    ParameterList params;
+
+    if (BeeUtils.isEmpty(value)) {
+      params = EcKeeper.createArgs(SVC_CLEAR_CONFIGURATION);
+      params.addDataItem(Service.VAR_COLUMN, key);
+    } else {
+      params = EcKeeper.createArgs(SVC_SAVE_CONFIGURATION);
+      params.addQueryItem(Service.VAR_COLUMN, key);
+      params.addDataItem(Service.VAR_VALUE, value);
+    }
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        EcKeeper.dispatchMessages(response);
+        if (BeeUtils.same(key, response.getResponseAsString())) {
+          configuration.put(key, value);
+        }
+      }
+    });
+  }
+
+  private TreeItem createCategoryTreeItem(long id) {
     TreeItem treeItem = new TreeItem(categoryNames.get(id));
     treeItem.setUserObject(id);
-    
+
     return treeItem;
   }
 
-  private void fillTree(Multimap<Integer, Integer> data, int parent, TreeItem parentItem) {
+  private void fillTree(Multimap<Long, Long> data, long parent, TreeItem parentItem) {
     if (data.containsKey(parent)) {
-      for (int id : data.get(parent)) {
+      for (long id : data.get(parent)) {
         TreeItem childItem = createCategoryTreeItem(id);
         parentItem.addItem(childItem);
-        
+
         fillTree(data, id, childItem);
       }
     }
   }
 
-  private Integer getParent(int categoryId, Collection<Integer> filter) {
-    for (Integer parent = categoryByChild.get(categoryId); parent != null; parent =
+  private void getClientStockLabels(final Consumer<Boolean> callback) {
+    if (clientStockLabels.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_CLIENT_STOCK_LABELS);
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (!ArrayUtils.isEmpty(arr)) {
+            clientStockLabels.clear();
+            for (String s : arr) {
+              clientStockLabels.add(s);
+            }
+
+            callback.accept(true);
+          }
+        }
+      });
+
+    } else {
+      callback.accept(true);
+    }
+  }
+
+  private Long getParent(long categoryId, Collection<Long> filter) {
+    for (Long parent = categoryByChild.get(categoryId); parent != null; parent =
         categoryByChild.get(parent)) {
       if (filter.contains(parent)) {
         return parent;

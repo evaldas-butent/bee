@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -36,6 +35,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
 import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -106,7 +107,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       @Override
       Widget create(final BeeRow row) {
         Image widget = new Image(Global.getImages().silverMinus());
-        widget.setTitle("pašalinti");
+        widget.setTitle(Localized.getConstants().actionRemove());
         return widget;
       }
     };
@@ -392,7 +393,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private void changeCaption(final long rowId) {
     final BeeRow row = getRow(rowId);
 
-    Global.inputString("Pavadinimas", null, new StringCallback(false) {
+    Global.inputString(Localized.getConstants().calName(), null, new StringCallback(false) {
       @Override
       public void onSuccess(String value) {
         String name = row.getString(nameIndex);
@@ -411,8 +412,8 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
           row.setValue(captionIndex, value);
           Widget widget = table.getWidget(index, UcaColumn.CAPTION.ordinal());
-          if (widget instanceof HasText) {
-            ((HasText) widget).setText(BeeUtils.trim(value));
+          if (widget instanceof HasHtml) {
+            ((HasHtml) widget).setHtml(BeeUtils.trim(value));
           }
 
           postUpdate();
@@ -428,7 +429,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
     DataSelector dataSelector = new DataSelector(relation, true);
     dataSelector.setEditing(true);
-    DomUtils.setPlaceholder(dataSelector, "papildyti");
+    DomUtils.setPlaceholder(dataSelector, Localized.getConstants().actionAppend());
 
     return dataSelector;
   }
@@ -501,7 +502,8 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       return;
     }
 
-    String message = BeeUtils.joinWords("Pašalinti", getCaption(row), "?");
+    String message =
+        BeeUtils.joinWords(Localized.getConstants().actionRemove(), getCaption(row), "?");
 
     Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
         new ConfirmationCallback() {

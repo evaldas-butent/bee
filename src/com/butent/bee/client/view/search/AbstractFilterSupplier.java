@@ -22,10 +22,9 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.NotificationListener;
@@ -104,7 +103,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
     this.column = column;
     this.columnLabel = BeeUtils.notEmpty(label,
-        (column == null) ? null : LocaleUtils.getLabel(column));
+        (column == null) ? null : Localized.getLabel(column));
 
     this.options = options;
   }
@@ -183,7 +182,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected void addBinSize(HtmlTable display, int row, int col, String text) {
-    display.setText(row, col, text);
+    display.setHtml(row, col, text);
     display.getCellFormatter().addStyleName(row, col,
         getStylePrefix() + BIN_SIZE_CELL_STYLE_SUFFIX);
   }
@@ -324,7 +323,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     }
 
     if (addCounter) {
-      Html counter = new Html();
+      Label counter = new Label();
       counter.addStyleName(getStylePrefix() + "counter");
 
       panel.add(counter);
@@ -469,6 +468,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected String messageOneValue(String value, String count) {
     return Localized.getMessages().allValuesIdentical(getColumnLabel(), value, count);
   }
+  
+  protected void onDialogCancel() {
+  }
 
   protected void openDialog(Element target, Widget widget,
       final Scheduler.ScheduledCommand onChange) {
@@ -481,7 +483,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     popup.addCloseHandler(new CloseEvent.Handler() {
       @Override
       public void onClose(CloseEvent event) {
-        if (filterChanged()) {
+        if (event.actionCancel()) {
+          onDialogCancel();
+        } else if (filterChanged()) {
           onChange.execute();
         }
       }
@@ -490,7 +494,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     setDialog(popup);
     setFilterChanged(false);
 
-    popup.showOnTop(target, 5);
+    popup.showOnTop(target);
   }
 
   protected void select(Integer item) {

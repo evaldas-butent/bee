@@ -1,39 +1,238 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 4px;">
+  <!ENTITY summary "font-size: larger; padding-bottom: 5px;">
+  <!ENTITY table "border-collapse: collapse;">
+  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
+  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" />'>
+  <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
   <!ENTITY separator "<hr/>">
-  <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
-  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY area "width: 200px; height: 40px;">
+  <!ENTITY check "margin-top: 5px; margin-left: 1em; display: block;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewCargoRequest" viewName="CargoRequests" caption="Naujas pervežimo užklausimas"
+  name="NewCargoRequest" viewName="CargoRequests" caption="=trRequestNew"
+  width="750" height="600"
   >
-  <FlowPanel style="padding: 10px 2px 2px 10px;">
-    <FlowPanel style="&section;">
-      <Label html="Data" class="bee-required" style="&labelLeft;" />
-      <InputDateTime source="Date" style="&inline; width:110px;" />
-      <Label html="Užsakovas" class="bee-required" style="&labelRight; width:120px;" />
-      <DataSelector source="Customer" style="&inline; width:200px;" />
-    </FlowPanel>
-    <FlowPanel style="&section;">
-      <Label html="Kontaktai" style="&labelLeft;" />
-      <InputText source="Contacts" style="&inline; width:110px;" />
-      <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
-      <DataSelector source="CustomerPerson" style="&inline; width:200px;"
-        choiceColumns="FirstName LastName CompanyName" options="Customer" />
-    </FlowPanel>
-    
-    &separator;
-    <xi:include href="widgets/CargoInfo.widget.xml" />
+  <FlowPanel>
+    <br/>
 
+    <Table style="&table;" cellStyle="&cells;">
+      &cols;
+     
+      <row>
+        <Label text="=trRequestDate" />
+        <InputDateTime source="Date" />
+        <Label text="=trRequestCustomer" />
+        <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
+          <renderToken source="CustomerCompanyName" suffix=", " />
+          <renderToken source="CustomerFirstName" />
+          <renderToken source="CustomerLastName" />
+        </DataSelector>
+      </row>
+      
+      <row>
+        <Label text="=trRequestTemplate" />
+        <DataSelector viewName="CargoReqTemplates" choiceColumns="Name" newRowEnabled="false" />
+      </row>
+    </Table>
     &separator;
-    <FlowPanel style="&section;">
-      <Label html="Vadybininkas" style="&labelLeft;" />
-      <DataSelector source="Manager" style="&inline; width:200px;" />
+
+    <Disclosure open="true">
+      <Label text="=trLoadingInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestPlaceCompanyName" class="bee-required" />
+          <DataSelector source="LoadingCompany" />
+          <Label text="=trRequestPlaceContact" class="bee-required" />
+          <InputText source="LoadingContact" required="true" />
+        </row>
+
+        <row>
+          <Label text="=address" class="bee-required" />
+          <InputText source="LoadingAddress" required="true" />
+          <Label text="=phone" class="bee-required" />
+          <InputText source="LoadingPhone" required="true" />
+        </row>
+
+        <row>
+          <Label text="=city" class="bee-required" />
+          <DataSelector source="LoadingCity" />
+          <Label text="=country" />
+          <DataSelector source="LoadingCountry" />
+        </row>
+
+        <row>
+          <Label text="=email" />
+          <DataSelector source="LoadingEmailId" />
+          <Label text="=trRequestPlaceFax" />
+          <InputText source="LoadingFax" />
+        </row>
+
+        <row>
+          <Label text="=date" class="bee-required" />
+          <InputDateTime source="LoadingDate" required="true" />
+          <Label text="=trLoadingNumber" />
+          <InputText source="LoadingNumber" />
+        </row>
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trUnloadingInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestPlaceCompanyName" class="bee-required" />
+          <DataSelector source="UnloadingCompany" />
+          <Label text="=trRequestPlaceContact" class="bee-required" />
+          <InputText source="UnloadingContact" required="true" />
+        </row>
+
+        <row>
+          <Label text="=address" class="bee-required" />
+          <InputText source="UnloadingAddress" required="true" />
+          <Label text="=phone" class="bee-required" />
+          <InputText source="UnloadingPhone" required="true" />
+        </row>
+
+        <row>
+          <Label text="=city" class="bee-required" />
+          <DataSelector source="UnloadingCity" />
+          <Label text="=country" />
+          <DataSelector source="UnloadingCountry" />
+        </row>
+
+        <row>
+          <Label text="=email" />
+          <DataSelector source="UnloadingEmailId" />
+          <Label text="=trRequestPlaceFax" />
+          <InputText source="UnloadingFax" />
+        </row>
+
+        <row>
+          <Label text="=date" />
+          <InputDateTime source="UnloadingDate" />
+          <Label text="=trUnloadingNumber" />
+          <InputText source="UnloadingNumber" />
+        </row>
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trRequestShipmentInfo" style="&summary;" />
+      
+      <FlowPanel>
+        <Table style="&table;" cellStyle="&cells;">
+          &cols;
+
+          <row>
+            <Label text="=trRequestExpeditionType" class="bee-required" />
+            <DataSelector source="Expedition" />
+            <Label text="=trRequestShippingTerms" class="bee-required" />
+            <DataSelector source="ShippingTerm" required="true" />
+          </row>
+
+          <row>
+            <Label text="=trRequestDeliveryDateAndTime" />
+            <FlowPanel style="display: inline-block;">
+              <InputDate source="DeliveryDate" style="width: 80px;" />
+              <InputTimeOfDay source="DeliveryTime" style="margin-left: 1em; width: 50px;" />
+            </FlowPanel>
+            <Label text="=trRequestTermsOfDelivery" />
+            <InputText source="TermsOfDelivery" />
+          </row>
+        </Table>
+      
+        <FlowPanel>
+          <CheckBox source="CustomsBrokerage" text="=trRequestCustomsBrokerage" style="&check;" />
+          <CheckBox source="FreightInsurance" text="=trRequestFreightInsurance" style="&check;" />
+        </FlowPanel>
+      </FlowPanel>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trRequestCargoInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestCargoDescription" class="bee-required" />
+          <InputArea source="CargoDescription" required="true" style="width: 100%; height: 40px;" />
+          <Label text="=trRequestCargoQuantity" />
+          <InputInteger source="Quantity" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoWeight" class="bee-required" />
+          <InputDecimal source="Weight" required="true" />
+          <Label text="=trRequestCargoVolume" />
+          <InputDecimal source="Volume" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoLdm" />
+          <InputDecimal source="LDM" />
+          <Label text="=trRequestCargoLength" />
+          <InputDecimal source="Length" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoWidth" />
+          <InputDecimal source="Width" />
+          <Label text="=trRequestCargoHeight" />
+          <InputDecimal source="Height" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoPalettes" />
+          <InputInteger source="Palettes" />
+        </row>
+
+        <row>
+          <Label text="=trRequestCargoValue" />
+          <InputCurrency source="Value" />
+          <Label text="=trRequestCargoCurrency" />
+          <DataSelector source="ValueCurrency" style="width: 60px;" />
+        </row>
+
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <Disclosure open="true">
+      <Label text="=trRequestAdditionalInfo" style="&summary;" />
+      
+      <Table style="&table;" cellStyle="&cells;">
+        &cols;
+
+        <row>
+          <Label text="=trRequestResponsibleManager" />
+          <DataSelector source="Manager" />
+          <Label text="=trRequestNotes" />
+          <InputArea source="Notes" style="&area;" />
+        </row>
+      </Table>
+    </Disclosure>
+    &separator;
+
+    <FlowPanel class="flexBox-horizontal">
+      <Label text="=documentFiles" style="margin: 5px 2em 0 1em;" />
+      <FileCollector name="Files" editableColumns="name">
+        <face resource="attachment" />
+      </FileCollector>
     </FlowPanel>
+    &separator;
+
   </FlowPanel>
 </f:Form>

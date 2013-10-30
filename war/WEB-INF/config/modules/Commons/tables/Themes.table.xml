@@ -5,9 +5,9 @@
   idName="ThemeID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
-    <Text name="Description" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=name" />
+    <Text name="Description" label="=description" />
 
-    <Relation name="DefaultColor" relation="Colors" />
+    <Relation name="DefaultColor" relation="Colors" label="=defaultColor" />
   </Fields>
 </Table>

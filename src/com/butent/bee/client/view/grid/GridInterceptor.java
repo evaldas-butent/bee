@@ -3,11 +3,12 @@ package com.butent.bee.client.view.grid;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -17,6 +18,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -32,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
-    EditStartEvent.Handler {
+    EditStartEvent.Handler, ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName {
 
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
@@ -51,6 +53,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void afterDeleteRow(long rowId);
 
   void afterInsertRow(IsRow result);
+
+  void afterRender(GridView gridView, RenderingEvent event);
 
   void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode);
 
@@ -74,8 +78,12 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void beforeRefresh(GridPresenter presenter);
 
+  void beforeRender(GridView gridView, RenderingEvent event);
+  
   String getColumnCaption(String columnName);
 
+  int getDataIndex(String source);
+  
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);
 
@@ -85,7 +93,13 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   AbstractFilterSupplier getFilterSupplier(String columnName, ColumnDescription columnDescription);
 
+  ColumnFooter getFooter(String columnName, ColumnDescription columnDescription);
+
   GridPresenter getGridPresenter();
+
+  GridView getGridView();
+
+  ColumnHeader getHeader(String columnName, String caption);
 
   Map<String, Filter> getInitialParentFilters();
 
@@ -94,9 +108,6 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   GridInterceptor getInstance();
   
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
-
-  AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription);
 
   String getRowCaption(IsRow row, boolean edit);
 

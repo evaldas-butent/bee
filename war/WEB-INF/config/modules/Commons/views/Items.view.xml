@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Items" caption="Prekės" source="Items" newRowForm="Item" newRowCaption="Nauja prekė"
+  name="Items" caption="=goods" source="Items" newRowForm="Item" newRowCaption="=newItem"
   >
   <Columns>
     <SimpleColumn name="Name" />
@@ -19,6 +19,8 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
     <SimpleColumn name="IsService"/>
+
+    <SimpleColumn name="ExternalCode"/>
   </Columns>
   <Order>
     <OrderBy column="Name" />

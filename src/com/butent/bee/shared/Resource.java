@@ -6,6 +6,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 public class Resource implements BeeSerializable {
+  
+  public static Resource restore(String s) {
+    Resource resource = new Resource();
+    resource.deserialize(s);
+    return resource;
+  }
 
   private String uri;
   private boolean readOnly;
@@ -13,11 +19,7 @@ public class Resource implements BeeSerializable {
   private String content;
   private ContentType type;
 
-  public Resource() {
-  }
-
-  public Resource(String src) {
-    deserialize(src);
+  private Resource() {
   }
 
   public Resource(String uri, ContentType type) {

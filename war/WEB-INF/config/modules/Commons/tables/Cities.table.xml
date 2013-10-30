@@ -6,8 +6,8 @@
   x="36" y="474"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" label="Miestas" />
-    <Relation name="Country" relation="Countries" notNull="true" label="Šalis" />
+    <String name="Name" precision="30" notNull="true" label="=city" />
+    <Relation name="Country" relation="Countries" notNull="true" label="=country" />
   </Fields>
 
   <Constraints>

@@ -157,18 +157,14 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   public void addOption(String label) {
-    addOption(label, false, false);
+    addOption(label, false);
   }
 
-  public void addOption(String label, boolean asHtml) {
-    addOption(label, asHtml, false);
-  }
-
-  public void addOption(String label, boolean asHtml, boolean selected) {
+  public void addOption(String label, boolean selected) {
     Assert.notEmpty(label);
     int index = getOptionCount();
 
-    RadioButton rb = new RadioButton(getName(), label, asHtml);
+    RadioButton rb = new RadioButton(getName(), label);
     add(rb);
 
     rb.setFormValue(BeeUtils.toString(index));
@@ -405,7 +401,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     Assert.notNull(opt);
 
     for (String s : opt) {
-      addOption(s, false, false);
+      addOption(s, false);
     }
   }
 
@@ -414,7 +410,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
     int idx = 0;
     for (String s : opt) {
-      addOption(s, false, idx++ == value);
+      addOption(s, idx++ == value);
     }
   }
 

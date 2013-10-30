@@ -4,22 +4,31 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="CompanyPerson" viewName="CompaniesAndPersons" caption="Įmonės asmuo"
-  height="300" width="800"
+  name="CompanyPerson" viewName="CompaniesAndPersons" caption="=companyPerson"
+  height="350" width="850"
   >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <Table style="border-spacing: 10px;">
       <row>
-        <Label html="Asmuo" class="bee-required" />
+        <Label text="=person" class="bee-required" />
         <DataSelector source="Person" style="width: 200px" />
-        <Label html="Pareigos" />
+        <Label text="=personPosition" />
         <DataSelector source="Position" style="width: 200px" />
       </row>
       <row>
-        <cell colSpan="4">
-          <xi:include href="widgets/ContactInfo.widget.xml" />
-        </cell>
+        <Label text="=personTabNo" />
+        <InputText source="TabNo" style="width: 200px" />
+        <Label text="=companyDepartment" />
+        <DataSelector source="Department" style="width: 200px" />
+      </row>
+      <row>
+        <Label text="=personAccountingCode" />
+        <InputText source="AccountingCode" style="width: 200px" />
+        <Label text="=personDateOfEmployment" />
+        <InputDate source="DateOfEmployment" style="width: 200px" />
       </row>
     </Table>
+
+    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
   </FlowPanel>
 </f:Form>  

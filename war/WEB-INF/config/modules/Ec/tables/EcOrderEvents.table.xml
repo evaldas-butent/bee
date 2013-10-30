@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="EcOrderEvents"
+  idName="OrderEventID"
+  >
+  <Fields>
+    <Relation name="Order" notNull="true" relation="EcOrders" cascade="DELETE" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <Integer name="Status" notNull="true" defValue="0" label="=ecOrderStatus" />
+    <Relation name="User" relation="Users" notNull="true" defExpr="CURRENT_USER" cascade="DELETE"
+      label="=user" />
+  </Fields>
+</Table>

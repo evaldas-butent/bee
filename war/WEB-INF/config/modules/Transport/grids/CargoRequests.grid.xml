@@ -1,67 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:w="http://www.butent.com/widget"
 
-  name="CargoRequests" viewName="CargoRequests" caption="Pervežimo užklausimai"
-  flexGrow="1" flexShrink="1" order="Date desc"
+  name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
   >
-  <north size="40">
-    <w:HorizontalPanel>
-      <w:CheckBox name="Owned" html="Tik priklausantys man" checked="true" />
-      <w:CheckBox name="Finished" html="Rodyti baigtus" />
-    </w:HorizontalPanel>
-  </north>
-  <columns>
-    <DataColumn name="Date" caption="Data" width="100" />
-    <DataColumn name="Finished" caption="Baigtas" width="100" format="DATE_TIME_SHORT" />
+  <g:columns>
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="Status" itemKey="CargoRequestStatus" visible="true" />
+    <DataColumn name="Finished" visible="false" />
+    <DataColumn name="Result" visible="false" />
     
-    <RelColumn name="Customer" caption="Užsakovas" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
+    <RelColumn name="User" visible="true" editEnabled="true" editSource="CustomerCompany" >
+      <renderToken source="CustomerCompanyName" suffix=", " />
+      <renderToken source="CustomerFirstName" />
+      <renderToken source="CustomerLastName" />
     </RelColumn>
 
-    <DataColumn name="LoadingDate" caption="Krov.data" width="70" format="DATE_SHORT" />
+    <DataColumn name="LoadingDate" />
+    <RelColumn name="LoadingCompany" visible="false" />
+    <DataColumn name="LoadingContact" visible="false" />
 
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="Iš" horizontalAlignment="center">
-      <renderer type="flag" />
-    </CalcColumn>
+    <RelColumn name="LoadingCity" />
+    <RelColumn name="LoadingCountry" />
 
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="Į" horizontalAlignment="center">
-      <renderer type="flag" />
-    </CalcColumn>
+    <DataColumn name="LoadingAddress" visible="false" />
+    <RelColumn name="LoadingEmailId" visible="false" />
+    <DataColumn name="LoadingPhone" visible="false" />
+    <DataColumn name="LoadingFax" visible="false" />
+    <DataColumn name="LoadingNumber" visible="false" />
 
-    <DataColumn name="Route" caption="Maršrutas" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="UnloadingDate" />
+    <RelColumn name="UnloadingCompany" visible="false" />
+    <DataColumn name="UnloadingContact" visible="false" />
 
-    <DataColumn name="Description" caption="Krovinys" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <RelColumn name="UnloadingCity" />
+    <RelColumn name="UnloadingCountry" />
 
-    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
-    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
-    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <DataColumn name="UnloadingAddress" visible="false" />
+    <RelColumn name="UnloadingEmailId" visible="false" />
+    <DataColumn name="UnloadingPhone" visible="false" />
+    <DataColumn name="UnloadingFax" visible="false" />
+    <DataColumn name="UnloadingNumber" visible="false" />
+    
+    <RelColumn name="Expedition" visible="false" />
+    <RelColumn name="ShippingTerm" visible="false" />
 
-    <RelColumn name="Manager" caption="Vadybininkas" minWidth="100">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: nowrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </RelColumn>
-  </columns>
-</Grid>
+    <DataColumn name="DeliveryDate" visible="false" />
+    <DataColumn name="DeliveryTime" visible="false" />
+    <DataColumn name="TermsOfDelivery" visible="false" />
+
+    <DataColumn name="CustomsBrokerage" visible="false" />
+    <DataColumn name="FreightInsurance" visible="false" />
+
+    <DataColumn name="CargoDescription" />
+    <DataColumn name="Quantity" visible="false" />
+
+    <DataColumn name="Weight" visible="false" />
+    <DataColumn name="Volume" visible="false" />
+    <DataColumn name="LDM" visible="false" />
+    <DataColumn name="Length" visible="false" />
+    <DataColumn name="Width" visible="false" />
+    <DataColumn name="Height" visible="false" />
+    <DataColumn name="Palettes" visible="false" />
+
+    <DataColumn name="Value" />
+    <RelColumn name="ValueCurrency" />
+
+    <RelColumn name="Manager" />
+    
+    <DataColumn name="Notes" visible="false" />
+    <DataColumn name="Host" visible="false" />
+    <DataColumn name="Agent" visible="false" />
+  </g:columns>
+</g:Grid>

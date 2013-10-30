@@ -7,4 +7,5 @@ import com.butent.bee.shared.data.HasViewName;
  */
 
 public interface DataEvent extends HasViewName {
+  boolean hasView(String view);
 }

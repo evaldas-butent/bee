@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
@@ -20,6 +19,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -79,7 +79,6 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
 
   private static final String STYLE_CONTROL = "bee-Header-control";
-  private static final String STYLE_REMOVE = "bee-removeFilter";
 
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
@@ -142,11 +141,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       add(createControl(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      Widget removeFilter = createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER,
-          hiddenActions);
-      removeFilter.removeStyleName(STYLE_CONTROL);
-      removeFilter.addStyleName(STYLE_REMOVE);
-      add(removeFilter);
+      add(createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
     
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
@@ -182,7 +177,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public String getCaption() {
-    return captionWidget.getText();
+    return captionWidget.getHtml();
   }
 
   @Override
@@ -255,7 +250,12 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public void setCaption(String caption) {
-    captionWidget.setText(BeeUtils.trim(LocaleUtils.maybeLocalize(caption)));
+    captionWidget.setHtml(BeeUtils.trim(Localized.maybeTranslate(caption)));
+  }
+
+  @Override
+  public void setCaptionTitle(String title) {
+    captionWidget.setTitle(title);
   }
 
   @Override
@@ -284,7 +284,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   @Override
   public void setMessage(String message) {
-    messageWidget.setText(BeeUtils.trim(message));
+    messageWidget.setHtml(BeeUtils.trim(message));
   }
 
   @Override

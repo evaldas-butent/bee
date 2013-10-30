@@ -6,6 +6,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Handles an event when a row value is inserted in table based user interface components.
@@ -53,6 +54,11 @@ public class RowInsertEvent extends Event<RowInsertEvent.Handler> implements Dat
   @Override
   public String getViewName() {
     return viewName;
+  }
+
+  @Override
+  public boolean hasView(String view) {
+    return BeeUtils.same(view, getViewName());
   }
 
   @Override

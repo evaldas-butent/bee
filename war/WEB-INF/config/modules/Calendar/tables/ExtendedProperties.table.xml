@@ -5,12 +5,12 @@
   idName="ExtendedPropertyID"
   >
   <Fields>
-    <Relation name="PropertyGroup" notNull="true" relation="PropertyGroups" />
-    <String name="Name" precision="100" notNull="true" unique="true" />
+    <Relation name="PropertyGroup" notNull="true" relation="PropertyGroups" label="=calPropertyGroup"/>
+    <String name="Name" precision="100" notNull="true" unique="true" label="=calPropertyGroupName" />
     
-    <Integer name="Hours" />
-    <Integer name="Minutes" />
+    <Integer name="Hours" label="=unitHours" />
+    <Integer name="Minutes" label="=unitMinutes" />
     
-    <Text name="Description" />
+    <Text name="Description" label="=description" />
   </Fields>
 </Table>

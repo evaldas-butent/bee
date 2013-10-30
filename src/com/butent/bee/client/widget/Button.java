@@ -5,18 +5,19 @@ import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ButtonBase;
+import com.google.gwt.user.client.ui.FocusWidget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
+import com.butent.bee.shared.HasHtml;
 
 /**
  * Implements a push button user interface component.
  */
 
-public class Button extends ButtonBase implements IdentifiableWidget, HasCommand {
+public class Button extends FocusWidget implements IdentifiableWidget, HasCommand, HasHtml {
 
   private Scheduler.ScheduledCommand command;
 
@@ -27,17 +28,17 @@ public class Button extends ButtonBase implements IdentifiableWidget, HasCommand
 
   public Button(String html) {
     this();
-    setHTML(html);
-  }
-
-  public Button(String html, Scheduler.ScheduledCommand cmnd) {
-    this(html);
-    setCommand(cmnd);
+    setHtml(html);
   }
 
   public Button(String html, ClickHandler handler) {
     this(html);
     addClickHandler(handler);
+  }
+
+  public Button(String html, Scheduler.ScheduledCommand cmnd) {
+    this(html);
+    setCommand(cmnd);
   }
 
   public void click() {
@@ -50,6 +51,11 @@ public class Button extends ButtonBase implements IdentifiableWidget, HasCommand
   }
 
   @Override
+  public String getHtml() {
+    return getElement().getInnerHTML();
+  }
+
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -58,7 +64,7 @@ public class Button extends ButtonBase implements IdentifiableWidget, HasCommand
   public String getIdPrefix() {
     return "b";
   }
-
+  
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isClick(event)) {
@@ -69,7 +75,7 @@ public class Button extends ButtonBase implements IdentifiableWidget, HasCommand
 
     super.onBrowserEvent(event);
   }
-  
+
   @Override
   public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
@@ -79,15 +85,20 @@ public class Button extends ButtonBase implements IdentifiableWidget, HasCommand
   }
 
   @Override
+  public void setHtml(String html) {
+    getElement().setInnerHTML(html);
+  }
+  
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     addStyleName("bee-Button");
   }
-  
+
   private void initEvents() {
     sinkEvents(Event.ONCLICK);
   }

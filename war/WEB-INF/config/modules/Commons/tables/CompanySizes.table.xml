@@ -5,6 +5,6 @@
   idName="CompanySizeID"
   >
   <Fields>
-    <String name="SizeName" precision="100" notNull="true" unique="true" label="Įmonės dydis" />
+    <String name="SizeName" precision="100" notNull="true" unique="true" label="=companySize" />
   </Fields>
 </Table>

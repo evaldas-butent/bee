@@ -101,6 +101,7 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     return BeeUtils.same(svc, getService());
   }
   
+  @Override
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
   }

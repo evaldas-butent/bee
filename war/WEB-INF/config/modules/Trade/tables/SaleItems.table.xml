@@ -6,13 +6,14 @@
   >
   <Fields>
     <Relation name="Sale" notNull="true" relation="Sales" cascade="DELETE" />
-    <Relation name="Item" notNull="true" relation="Items" label="Prekė" />
-    <String name="Article" precision="30" label="Artikulas" />
-    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="Kiekis" />
-    <Numeric name="Price" precision="12" scale="2" label="Kaina" />
-    <Numeric name="Vat" precision="12" scale="2" label="PVM" />
-    <Boolean name="VatPercent" label="PVM %" />
-    <String name="Note" precision="50" label="Pastaba" />
+    <Relation name="Item" notNull="true" relation="Items" label="=item" />
+    <String name="Article" precision="30" label="=article" />
+    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=trdQuantity" />
+    <Numeric name="Price" precision="12" scale="2" label="=trdPrice" />
+    <Numeric name="Vat" precision="12" scale="2" label="=trdVat" />
+    <Boolean name="VatPercent" label="=trdVatPercent" />
+    <Text name="Note" label="=trdNote" />
+    <Relation name="Parent" relation="PurchaseItems" />
   </Fields>
   <Triggers>
     <Trigger events="INSERT UPDATE DELETE" scope="ROW" timing="AFTER">

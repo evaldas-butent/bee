@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
   
-  name="Cities" viewName="Cities" caption="Miestai"
+  name="Cities" viewName="Cities" caption="=cities"
   maxColumnWidth="300"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" minWidth="200" visible="true" />
     <RelColumn name="Country" minWidth="100" renderColumns="CountryName" visible="true">
       <selectorColumn source="Name" />
@@ -17,5 +17,5 @@
       filterOptions="-">
       <renderer type="flag" />
     </CalcColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

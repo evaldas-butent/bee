@@ -179,8 +179,10 @@ public final class Printer {
           logger.warning("print attempt", counter, "failed");
           return counter < NUMBER_OF_ATTEMPTS;
         }
-
-        frame.getContentDocument().setTitle(BeeUtils.trim(widget.getCaption()));
+        
+        if (widget != null) {
+          frame.getContentDocument().setTitle(BeeUtils.trim(widget.getCaption()));
+        }
         prepareElements(elements, widget);
 
         printFrame();
@@ -211,7 +213,7 @@ public final class Printer {
 
     document.close();
 
-    String caption = widget.getCaption();
+    String caption = (widget == null) ? null : widget.getCaption();
     if (!BeeUtils.isEmpty(caption)) {
       document.setTitle(caption);
     }

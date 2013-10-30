@@ -42,7 +42,7 @@ public class TestSqlInsert {
     insert.addConstant("pass", "slaptasPass");
 
     assertEquals(
-        "INSERT INTO TableName (username, pass) VALUES ('Petras', 'slaptasPass')",
+        "INSERT INTO TableName (username,pass) VALUES ('Petras','slaptasPass')",
         insert.getSqlString(builder));
   }
 
@@ -54,10 +54,9 @@ public class TestSqlInsert {
     SqlInsert insert = new SqlInsert("TableName");
 
     insert.addFields("field1", "field2", "field3");
-    insert.addConstant("field4", "slaptasPass");
 
     assertEquals(
-        "INSERT INTO TableName (field1, field2, field3, field4) VALUES ('slaptasPass')",
+        "INSERT INTO TableName (field1,field2,field3) VALUES ",
         insert.getSqlString(builder));
   }
 
@@ -89,14 +88,14 @@ public class TestSqlInsert {
     SqlInsert insert = new SqlInsert("TableName");
 
     SqlSelect select = new SqlSelect();
-    select.addFields("Table1", "field1", "field2");
+    select.addFields("Table2", "field1", "field2");
 
     select.addFrom("Table1");
     select.addFrom("Table2");
     insert.setDataSource(select);
 
     Object[] rez = insert.getSources().toArray();
-    Object[] expected = {"Table2", "TableName", "Table1"};
+    Object[] expected = {"Table1", "Table2", "TableName"};
 
     assertArrayEquals(expected, rez);
   }
@@ -122,8 +121,6 @@ public class TestSqlInsert {
     select.setWhere(clause);
 
     insert.addFields("field1", "field2", "field3");
-    insert.addConstant("field4", "slaptasPass");
-
     insert.reset();
 
     assertEquals(0, insert.getFieldCount());

@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -88,9 +89,10 @@ class SelectorHandler implements SelectorEvent.Handler {
       options.add(BeeUtils.joinWords(row.getString(numberIndex),
           row.getString(parentModelIndex), row.getString(modelIndex)));
     }
-    options.add("Nauja");
+    options.add(Localized.getConstants().actionNew1());
 
-    Global.choice("Pasirinkite transporto priemonę", companyName, options, new ChoiceCallback() {
+    Global.choice(Localized.getConstants().calSelectVehicle(), companyName, options,
+        new ChoiceCallback() {
       @Override
       public void onSuccess(int value) {
         if (value < rowSet.getNumberOfRows()) {
@@ -114,7 +116,8 @@ class SelectorHandler implements SelectorEvent.Handler {
           Data.getDataInfo(CommonsConstants.VIEW_COMPANIES), owner, true);
     }
 
-    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
+    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, Localized.getConstants()
+        .trNewVehicle(),
         vehiclesInfo, row, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {

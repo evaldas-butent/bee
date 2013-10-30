@@ -6,9 +6,9 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
-    <Text name="Notes" label="Pastabos" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true"  label="=cargoLoadingPlace"/>
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoUnloadingPlace"/>
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

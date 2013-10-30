@@ -6,7 +6,11 @@
   audit="false"
   >
   <Fields>
-    <String name="SupplierBrand" precision="50" notNull="true" unique="true" />
-    <String name="TecDocBrand" precision="50" notNull="true" />
+    <Numeric name="Supplier" precision="1" notNull="true" label="=ecItemSupplier"/>
+    <String name="SupplierBrand" precision="50" notNull="true" label="=tcdSupplierBrand" />
+    <Relation name="Brand" relation="TcdBrands" label="=tcdBrand" />
   </Fields>
+  <Constraints>
+    <Unique fields="Supplier SupplierBrand" />
+  </Constraints>
 </Table>

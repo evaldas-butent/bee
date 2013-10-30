@@ -5,9 +5,9 @@
   idName="RecipientID"
   >
   <Fields>
-    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
-    <Relation name="Address" relation="Emails" notNull="true" />
-    <String name="Type" precision="10" notNull="true" />
+    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" label="=mailMessage" />
+    <Relation name="Address" relation="Emails" notNull="true" label="=mailAddress" />
+    <String name="Type" precision="10" notNull="true" label="=mailType" />
   </Fields>
 
   <Constraints>

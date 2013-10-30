@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="FuelTypes" viewName="FuelTypes" caption="Kuro rūšys"
+  name="FuelTypes" viewName="FuelTypes" caption="=trFuelTypes"
   flexGrow="1" flexShrink="1" minColumnWidth="100"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" source="Name" />
     <RelColumn name="Item" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

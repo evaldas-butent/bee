@@ -3,7 +3,7 @@
 
   name="FuelTypes"
   source="FuelTypes"
-  newRowCaption="Nauja kuro rūšis" newRowColumns="Name Item"
+  newRowCaption="=trNewFuelType" newRowColumns="Name Item"
   >
   <Columns>
     <SimpleColumn name="Name" />

@@ -10,11 +10,11 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
@@ -168,13 +168,13 @@ public class CrmModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
+    sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void setRowProperties(ViewQueryEvent event) {
         if (event.isBefore()) {
           return;
         }
-        if (BeeUtils.same(event.getViewName(), VIEW_TASKS)) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
@@ -242,7 +242,7 @@ public class CrmModuleBean implements BeeModule {
             }
           }
 
-        } else if (BeeUtils.same(event.getViewName(), VIEW_DOCUMENT_FILES)) {
+        } else if (BeeUtils.same(event.getTargetName(), VIEW_DOCUMENT_FILES)) {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
@@ -622,7 +622,7 @@ public class CrmModuleBean implements BeeModule {
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
     long totalTimeMls = 0;
 
-    result.addRow(new String[] {constants.client(), constants.spentTime()});
+    result.addRow(new String[] {constants.client(), constants.crmSpentTime()});
 
     /* Register times in tasks without company */
     companiesListSet.addRow(new String[] {null, "—", null});
@@ -846,7 +846,7 @@ public class CrmModuleBean implements BeeModule {
     SimpleRowSet dTypesList = qs.getData(durationTypes);
     SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
 
-    result.addRow(new String[] {constants.durationType(), constants.spentTime()});
+    result.addRow(new String[] {constants.crmDurationType(), constants.crmSpentTime()});
     Assert.notNull(dTypesList);
 
     long totalTimeMls = 0;
@@ -967,7 +967,7 @@ public class CrmModuleBean implements BeeModule {
     long totalTimeMls = 0;
 
     result.addRow(new String[] {
-        constants.userFullName(), constants.spentTime()});
+        constants.userFullName(), constants.crmSpentTime()});
 
     for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
       String userFullName =

@@ -29,6 +29,10 @@ public class ResponseObject implements BeeSerializable {
     MESSAGES, RESPONSE_TYPE, ARRAY_TYPE, RESPONSE
   }
 
+  public static ResponseObject emptyResponse() {
+    return new ResponseObject();
+  }
+  
   public static ResponseObject error(Object... err) {
     return new ResponseObject().addError(err);
   }
@@ -267,16 +271,23 @@ public class ResponseObject implements BeeSerializable {
 
   public void notify(NotificationListener notificator) {
     if (notificator != null && hasMessages()) {
+      LogLevel level = null;
+      List<String> list = Lists.newArrayList();
+      
       for (ResponseMessage message : getMessages()) {
-        switch (message.getLevel()) {
-          case ERROR:
-            notificator.notifySevere(message.getMessage());
-            break;
-          case WARNING:
-            notificator.notifyWarning(message.getMessage());
-            break;
-          default:
-            notificator.notifyInfo(message.getMessage());
+        if (!BeeUtils.isEmpty(message.getMessage())) {
+          level = BeeUtils.max(level, message.getLevel());
+          list.add(message.getMessage());
+        }
+      }
+      
+      if (!list.isEmpty()) {
+        if (level == LogLevel.ERROR) {
+          notificator.notifySevere(ArrayUtils.toArray(list));
+        } else if (level == LogLevel.WARNING) {
+          notificator.notifyWarning(ArrayUtils.toArray(list));
+        } else {
+          notificator.notifyInfo(ArrayUtils.toArray(list));
         }
       }
     }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="EcGroups" source="EcGroups"
+  editForm="EcGroup" newRowForm="EcGroup" newRowCaption="=ecGroupNew"
+  >
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+    <SimpleColumn name="GroupName" />
+    <SimpleColumn name="Moto" />
+    <SimpleColumn name="BrandSelection" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Moto" />
+    <OrderBy column="Ordinal" />
+    <OrderBy column="GroupName" />
+  </Order>
+</View>
+ 

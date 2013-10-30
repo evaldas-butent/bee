@@ -5,6 +5,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Handles single row deletion event.
@@ -48,6 +49,11 @@ public class RowDeleteEvent extends Event<RowDeleteEvent.Handler> implements Dat
   @Override
   public String getViewName() {
     return viewName;
+  }
+
+  @Override
+  public boolean hasView(String view) {
+    return BeeUtils.same(view, getViewName());
   }
 
   @Override

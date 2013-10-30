@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+
+  name="UnsuppliedItems" viewName="UnsuppliedItems" caption="=ecUnsuppliedItems"
+  footerMode="none" flexGrow="1" minColumnWidth="60"
+  >
+  <g:columns>
+    <RelColumn name="Client" minWidth="150" editEnabled="true" visible="true">
+      <renderToken source="FirstName" />
+      <renderToken source="LastName" />
+      <renderToken source="CompanyName" prefix=", " />
+    </RelColumn>
+  </g:columns>
+
+  <xi:include href="columns/UnsuppliedItems.columns.xml" />
+</g:Grid>

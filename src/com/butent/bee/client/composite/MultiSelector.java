@@ -18,7 +18,6 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -35,7 +34,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
@@ -70,7 +69,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
       addStyleName(STYLE_CHOICE);
 
-      InlineLabel label = new InlineLabel(caption);
+      InlineLabel label = new InlineLabel();
+      label.getElement().setInnerText(caption);
       label.addStyleName(STYLE_LABEL);
 
       if (MultiSelector.this.isEditEnabled()) {
@@ -87,8 +87,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       this.labelId = label.getId();
       add(label);
 
-      Image close = new Image(Global.getImages().closeSmall());
-      close.addStyleName(STYLE_CLOSE);
+      CustomDiv close = new CustomDiv(STYLE_CLOSE);
+      close.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+
       close.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {

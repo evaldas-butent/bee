@@ -33,6 +33,14 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, EDITABLE, LEVEL, DEFAULTS
   }
 
+  public static BeeColumn forRowId(String id) {
+    return new BeeColumn(DataUtils.ID_TYPE, id);
+  }
+
+  public static BeeColumn forRowVersion(String id) {
+    return new BeeColumn(DataUtils.VERSION_TYPE, id);
+  }
+  
   public static BeeColumn restore(String s) {
     BeeColumn c = new BeeColumn();
     c.deserialize(s);

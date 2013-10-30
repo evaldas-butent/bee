@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcHistory" viewName="EcHistory" caption="=ecUserActions"
-  order="Date desc" cacheData="false" asyncThreshold="-1"
-  flexGrow="1" flexShrink="1" disabledActions="add"
+  order="Date desc" cacheData="false" asyncThreshold="-1" disabledActions="add"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Date" visible="true" />
 
     <RelColumn name="User" renderColumns="Login" editEnabled="true" />
@@ -18,5 +17,9 @@
 
     <DataColumn name="Count" />
     <DataColumn name="Duration" />
-  </columns>
-</Grid>
+
+    <DataColumn name="ArticleName" />
+    <DataColumn name="BrandName" />
+    <DataColumn name="ArticleNr" />
+  </g:columns>
+</g:Grid>

@@ -588,6 +588,13 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     sb.append(toDateString()).append(DATE_TIME_SEPARATOR).append(toTimeString());
     return sb.toString();
   }
+  
+  public String toTimeStamp() {
+    return TimeUtils.yearToString(getUtcYear()) + TimeUtils.monthToString(getUtcMonth())
+        + TimeUtils.dayOfMonthToString(getUtcDom()) + TimeUtils.padTwo(getUtcHour())
+        + TimeUtils.padTwo(getUtcMinute()) + TimeUtils.padTwo(getUtcSecond())
+        + TimeUtils.millisToString(getUtcMillis());
+  }
 
   /**
    * Converts the {@code DateTime} in time to {@code String}.

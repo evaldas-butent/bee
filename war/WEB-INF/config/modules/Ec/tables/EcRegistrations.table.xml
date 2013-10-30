@@ -29,5 +29,8 @@
 
     <Text name="Activity" label="=ecClientActivity" />
     <Text name="Notes" label="=notes" />
+
+    <Text name="Host" label="=remoteHost" />
+    <Text name="Agent" label="=userAgent" />
   </Fields>
 </Table>

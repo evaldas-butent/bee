@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="FuelTemperatures" viewName="FuelTemperatures" caption="Temperatūriniai koeficientai"
+  name="FuelTemperatures" viewName="FuelTemperatures" caption="=trFuelTemperatures"
   >
 
-  <columns>
-    <DataColumn name="Season" caption="Sezonas">
+  <g:columns>
+    <DataColumn name="Season" caption="=trSeason">
       <renderer type="list" />
       <editor type="list">
-        <ui:item>Vasara</ui:item>
-        <ui:item>Žiema</ui:item>
+        <ui:item>=summer</ui:item>
+        <ui:item>=winter</ui:item>
       </editor>
     </DataColumn>
-    <DataColumn name="TempFrom" caption="Temp.nuo" format="#.0" />
-    <DataColumn name="TempTo" caption="Temp.iki" format="#.0" />
-    <DataColumn name="Rate" caption="Koef.%" format="#.00" />
-  </columns>
-</Grid>
+    <DataColumn name="TempFrom" caption="=trTemperatureFromShort" format="#.0" />
+    <DataColumn name="TempTo" caption="=trTemparatureToShort" format="#.0" />
+    <DataColumn name="Rate" caption="=trRatePercentShort" format="#.00" />
+  </g:columns>
+</g:Grid>

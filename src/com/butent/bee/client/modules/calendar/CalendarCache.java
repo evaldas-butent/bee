@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -61,6 +62,13 @@ class CalendarCache implements HandlesAllDataEvents {
       if (rowSet != null) {
         event.applyTo(rowSet);
       }
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (isEventRelevant(event)) {
+      refresh();
     }
   }
 

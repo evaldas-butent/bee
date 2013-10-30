@@ -3,7 +3,7 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="Assessments" source="CargoAssessors"
-  newRowForm="Assessment" newRowCaption="Naujas vertinimo užklausimas"
+  newRowForm="Assessment" newRowCaption="=newAssessmentRequest"
   editForm="Assessment"
   >
   <Columns>
@@ -11,7 +11,7 @@
     <SimpleColumn name="Date" />
     <SimpleColumn name="Assessor" />
     <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Notes" label="Komentaras" />
+    <SimpleColumn name="Notes" label="=trComment" />
 
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="INNER">
@@ -30,7 +30,7 @@
         <SimpleColumn name="Date" alias="OrderDate" editable="true" />
         <SimpleColumn name="OrderNo" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
-        <SimpleColumn name="Notes" alias="Route" label="Maršrutas" editable="true" />
+        <SimpleColumn name="Notes" alias="Route" label="=route" editable="true" />
       
         <SimpleColumn name="Customer" editable="true" />
         <SimpleJoin joinType="LEFT" name="Customer">
@@ -58,17 +58,19 @@
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Contact" alias="Shipper" editable="true" />
         <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
-        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="Transporto Nr." editable="true" />
-        <SimpleColumn name="Country" alias="LoadingCountry" label="Pakrovimo šalis" editable="true" />
+        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" editable="true" />
+        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="=transportationNumber1" editable="true" />
+        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
           <SimpleColumn name="Code" alias="LoadingCountryCode" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="Iškrovimo data" editable="true" />
-        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="Transporto Nr.2" editable="true" />
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="Iškrovimo šalis" editable="true" />
+        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" editable="true" />
+        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="=transportationNumber2" editable="true" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
@@ -78,8 +80,23 @@
       <SimpleColumn name="Description" editable="true" />
 
       <SimpleColumn name="Weight" editable="true" />
+      <SimpleColumn name="WeightUnit" editable="true" />
+      <SimpleJoin joinType="LEFT" name="WeightUnit">
+        <SimpleColumn name="Name" alias="WeightUnitName" />
+      </SimpleJoin>
+  
       <SimpleColumn name="Volume" editable="true" />
+      <SimpleColumn name="VolumeUnit" editable="true" />
+      <SimpleJoin joinType="LEFT" name="VolumeUnit">
+        <SimpleColumn name="Name" alias="VolumeUnitName" />
+      </SimpleJoin>
+  
       <SimpleColumn name="Quantity" editable="true" />
+      <SimpleColumn name="QuantityUnit" editable="true" />
+      <SimpleJoin joinType="LEFT" name="QuantityUnit">
+        <SimpleColumn name="Name" alias="QuantityUnitName" />
+      </SimpleJoin>
+
       <SimpleColumn name="Value" editable="true" />
       <SimpleColumn name="ValueCurrency" editable="true" />
       <SimpleJoin joinType="LEFT" name="ValueCurrency">
@@ -93,7 +110,6 @@
       <SimpleColumn name="Outsized" editable="true" />
       <SimpleColumn name="Dangerous" editable="true" />
 
-      <SimpleColumn name="Price" editable="true" />
       <SimpleColumn name="Currency" editable="true" />
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="CurrencyName" />

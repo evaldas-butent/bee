@@ -5,52 +5,52 @@
   idName="AppointmentID"
   >
   <Fields>
-    <Relation name="AppointmentType" relation="AppointmentTypes" label="Tipas" />
+    <Relation name="AppointmentType" relation="AppointmentTypes" label="=calAppointmentType" />
 
-    <String name="Summary" precision="100" label="Santrauka" />
-    <Text name="Description" label="Aprašymas" />
+    <String name="Summary" precision="100" label="=summary" />
+    <Text name="Description" label="=calDescription" />
 
-    <String name="Location" precision="100" label="Vieta" />
+    <String name="Location" precision="100" label="=location" />
     <String name="HtmlLink" precision="200" />
 
     <Relation name="Color" relation="Colors" label="=color" />
-    <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
+    <Relation name="Style" relation="AppointmentStyles" label="=style" />
 
-    <Integer name="Status" defValue="0" label="Būsena" />
+    <Integer name="Status" defValue="0" label="=calAppointmentStatus" />
 
-    <DateTime name="Created" defExpr="CURRENT_TIME" />
+    <DateTime name="Created" defExpr="CURRENT_TIME" label="=calCreated" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" />
 
-    <Relation name="Organizer" relation="CompanyPersons" label="Atsakingas asmuo" />
+    <Relation name="Organizer" relation="CompanyPersons" label="=responsiblePerson" />
 
     <Date name="StartDate" />
-    <DateTime name="StartDateTime" label="Pradžia" />
-    <Relation name="StartTimeZone" relation="TimeZones" />
+    <DateTime name="StartDateTime" label="=calAppointmentStart" />
+    <Relation name="StartTimeZone" relation="TimeZones" label="=calStartTimeZone" />
 
     <Date name="EndDate" />
-    <DateTime name="EndDateTime" label="Pabaiga" />
-    <Relation name="EndTimeZone" relation="TimeZones" />
+    <DateTime name="EndDateTime" label="=calAppointmentEnd" />
+    <Relation name="EndTimeZone" relation="TimeZones" label="=calEndTimeZone" />
 
-    <Text name="Recurrence" />
-    <Relation name="RecurringEventId" relation="Appointments" />
+    <Text name="Recurrence" label="=calRecurrence" />
+    <Relation name="RecurringEventId" relation="Appointments" label="=calRecurringEventId" />
 
-    <Integer name="Transparency" />
-    <Integer name="Visibility" label="Matomumas" />
-    <Boolean name="ReadOnly" />
+    <Integer name="Transparency" label="=calTransparency" />
+    <Integer name="Visibility" label="=calVisibility" />
+    <Boolean name="ReadOnly" label="=calReadOnly" />
 
-    <String name="ICalUID" precision="100" />
-    <Integer name="Sequence" />
+    <String name="ICalUID" precision="100" label="=calICalUID" />
+    <Integer name="Sequence" label="=calSequence" />
 
-    <Boolean name="AnyoneCanAddSelf" />
-    <Boolean name="GuestsCanInviteOthers" />
-    <Boolean name="GuestsCanSeeOtherGuests" />
+    <Boolean name="AnyoneCanAddSelf" label="=calAnyoneCanAddSelf" />
+    <Boolean name="GuestsCanInviteOthers" label="=calGuestsCanInviteOthers" />
+    <Boolean name="GuestsCanSeeOtherGuests" label="=calGuestsCanSeeOtherGuests" />
 
-    <Boolean name="UseDefaultReminders" />
+    <Boolean name="UseDefaultReminders" label="=calUseDefaultReminders" />
     
-    <Relation name="Company" relation="Companies" label="Klientas" />
-    <Relation name="Vehicle" relation="Vehicles" label="Automobilis" />
+    <Relation name="Company" relation="Companies" label="=client" />
+    <Relation name="Vehicle" relation="Vehicles" label="=calCar" />
     
-    <DateTime name="EffectiveStart" />
-    <DateTime name="EffectiveEnd" />
+    <DateTime name="EffectiveStart" label="=calEffectiveStart"/>
+    <DateTime name="EffectiveEnd" label="=calEffectiveEnd" />
   </Fields>
 </Table>

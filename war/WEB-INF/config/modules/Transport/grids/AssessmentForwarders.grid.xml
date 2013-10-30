@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="AssessmentForwarders" viewName="AssessmentForwarders"
-  newRowForm="AssessmentForwarder" newRowCaption="Naujas vežėjas" newRowPopup="true"
+  newRowForm="AssessmentForwarder" newRowCaption="=trNewCarrier" newRowPopup="true"
   editForm="AssessmentForwarder"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
-  <columns>
-    <DataColumn name="LoadingDate" caption="Pakrovimo data" width="80" format="DATE_SHORT" />
-    <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
-    <ActionColumn element="button" name="Contract" caption="Spausdinti" width="70">
-      <render><ui:expression>'Sutartis'</ui:expression></render>
+  <g:columns>
+    <DataColumn name="TripNo" />
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="80" format="DATE_SHORT" />
+    <DataColumn name="ForwarderName" caption="=carrier" />
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <ActionColumn element="button" name="Contract" caption="=print" width="70">
+      <render><ui:expression>$wnd.Bee_maybeTranslate("=trContract")</ui:expression></render>
     </ActionColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

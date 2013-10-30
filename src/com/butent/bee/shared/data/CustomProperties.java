@@ -22,6 +22,8 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class CustomProperties extends HashMap<String, String> implements HasInfo, BeeSerializable {
 
+  public static final String TAG_PROPERTIES = "properties";
+  
   public static CustomProperties create() {
     return new CustomProperties();
   }

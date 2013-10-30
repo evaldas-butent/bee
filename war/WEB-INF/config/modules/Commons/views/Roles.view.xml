@@ -3,7 +3,7 @@
 
   name="Roles"
   source="Roles"
-  newRowCaption="Nauja rolė"
+  newRowCaption="=newRole"
   >
   <Columns>
     <SimpleColumn name="Name" />

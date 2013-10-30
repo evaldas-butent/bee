@@ -80,7 +80,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     int itemCount = addItems(data.getItems());
 
     CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
-    caption.setText(data.getType().getCaption());
+    caption.setHtml(data.getType().getCaption());
     add(caption);
 
     CustomWidget unselectedPanel = new CustomWidget(unselectedContainer, STYLE_DATA_UNSELECTED);
@@ -216,7 +216,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       } else {
         text = BeeUtils.toString(cnt);
       }
-      unselectedSizeWidget.setText(text);
+      unselectedSizeWidget.setHtml(text);
     }
 
     if (selectAllWidget != null) {
@@ -227,7 +227,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     cnt = data.getNumberOfSelectedItems();
     if (selectedSizeWidget != null) {
       String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
-      selectedSizeWidget.setText(text);
+      selectedSizeWidget.setHtml(text);
     }
 
     if (deselectAllWidget != null) {
@@ -237,7 +237,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
   void removeItem(int index, boolean selected) {
     Element itemElement = DomUtils.getChildByDataIndex(selected
-        ? selectedContainer : unselectedContainer, index);
+        ? selectedContainer : unselectedContainer, index, false);
 
     if (itemElement != null) {
       if (!selected && !UIObject.isVisible(itemElement)) {
@@ -355,7 +355,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
   private boolean moveItem(Element itemElement, boolean wasSelected) {
     boolean updated = StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)
-        && data.setSelected(DomUtils.getDataIndex(itemElement), !wasSelected);
+        && data.setSelected(DomUtils.getDataIndexInt(itemElement), !wasSelected);
 
     if (updated) {
       if (wasSelected) {

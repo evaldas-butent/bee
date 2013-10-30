@@ -4,6 +4,8 @@ public interface LocalizableEcConstants {
 
   String ecBikeItems();
 
+  String ecBikeItemsShort();
+
   String ecCarEngine();
 
   String ecCarManufacturer();
@@ -16,21 +18,37 @@ public interface LocalizableEcConstants {
 
   String ecCarYear();
 
-  String ecCategoryBatteries();
+  String ecCategoryMerge();
 
-  String ecCategoryOil();
+  String ecCategoryMove();
 
-  String ecCategoryTires();
+  String ecClientActivity();
+
+  String ecClientCompanyCode();
+
+  String ecClientCompanyName();
+
+  String ecClientFirstName();
+
+  String ecClientLastName();
+
+  String ecClientPersonCode();
 
   String ecClientPrice();
+
+  String ecClientType();
 
   String ecClientTypeCompany();
 
   String ecClientTypePerson();
 
+  String ecClientVatCode();
+
   String ecContacts();
 
   String ecCreditLimit();
+
+  String ecDaysForPayment();
 
   String ecDebt();
 
@@ -44,6 +62,10 @@ public interface LocalizableEcConstants {
 
   String ecDoSearch();
 
+  String ecExceededCreditLimit();
+
+  String ecExceededCreditLimitSend();
+
   String ecFeaturedBanner();
 
   String ecFeaturedItems();
@@ -52,9 +74,9 @@ public interface LocalizableEcConstants {
 
   String ecFoundItems();
 
-  String ecGeneralItems();
-
   String ecGlobalSearchPlaceholder();
+
+  String ecGroups();
 
   String ecInvoiceAmount();
 
@@ -74,6 +96,8 @@ public interface LocalizableEcConstants {
 
   String ecItemAnalogs();
 
+  String ecItemBrand();
+
   String ecItemCapacity();
 
   String ecItemCategory();
@@ -84,25 +108,35 @@ public interface LocalizableEcConstants {
 
   String ecItemDescription();
 
-  String ecItemDetailsBrands();
-
   String ecItemDetailsCarTypes();
-  
+
+  String ecItemDetailsOeNumbers();
+
   String ecItemDetailsRemainders();
-  
+
+  String ecItemDetailsSuppliers();
+
   String ecItemDiameter();
 
   String ecItemHeight();
 
   String ecItemLength();
 
-  String ecItemManufacturer();
-
   String ecItemName();
+
+  String ecItemNote();
 
   String ecItemOeNumber();
 
   String ecItemOriginalNumber();
+
+  String ecItemPrice();
+
+  String ecItemQuantity();
+
+  String ecItemQuantityOrdered();
+
+  String ecItemQuantitySubmit();
 
   String ecItemSeason();
 
@@ -118,13 +152,29 @@ public interface LocalizableEcConstants {
 
   String ecItemVoltage();
 
+  String ecItemWeight();
+
   String ecItemWidth();
 
   String ecListPrice();
 
+  String ecMailAccountNotFound();
+  
+  String ecMailClientAddressNotFound();
+
+  String ecMailFailed();
+
+  String ecMailSent();
+
+  String ecManager();
+
+  String ecMarginDefaultPercent();
+
   String ecMaxedOut();
 
   String ecMoreItems();
+
+  String ecNothingToOrder();
 
   String ecNoveltyBanner();
 
@@ -133,12 +183,34 @@ public interface LocalizableEcConstants {
   String ecOrder();
 
   String ecOrderAmount();
+  
+  String ecOrderCommandFinish();
+  
+  String ecOrderCommandMail();
+  
+  String ecOrderCommandReject();
+  
+  String ecOrderCommandSendToERP();
+  
+  String ecOrderCommandUnsuppliedItems();
+
+  String ecOrderCopyByMail();
 
   String ecOrderDate();
 
+  String ecOrderFinishConfirm();
+
   String ecOrderItems();
 
+  String ecOrderMailConfirm();
+
   String ecOrderNumber();
+
+  String ecOrderRejectCaption();
+
+  String ecOrderRejectConfirm();
+
+  String ecOrderSendToERPConfirm();
 
   String ecOrdersSubmitted();
 
@@ -146,29 +218,51 @@ public interface LocalizableEcConstants {
 
   String ecOrderStatusActive();
 
+  String ecOrderStatusActiveSubject();
+
+  String ecOrderStatusFinished();
+
+  String ecOrderStatusFinishedSubject();
+
   String ecOrderStatusNew();
-  
+
+  String ecOrderStatusNewSubject();
+
   String ecOrderStatusRejected();
+
+  String ecOrderStatusRejectedSubject();
 
   String ecOrderSubmissionDate();
 
   String ecOrderSubmitted();
 
+  String ecRejectionReason();
+
+  String ecRejectionReasonRequired();
+
   String ecRegister();
 
+  String ecRegistrationFormCaption();
+
+  String ecRegistrationNew();
+
   String ecSearchBy();
+
+  String ecSearchByBrand();
 
   String ecSearchByCar();
 
   String ecSearchByItemCode();
 
-  String ecSearchByManufacturer();
+  String ecSearchByItemGroup();
 
   String ecSearchByOeNumber();
 
+  String ecSelectBrand();
+
   String ecSelectCategory();
 
-  String ecSelectManufacturer();
+  String ecSelectGroup();
 
   String ecShoppingCart();
 
@@ -183,7 +277,7 @@ public interface LocalizableEcConstants {
   String ecShoppingCartRemove();
 
   String ecShoppingCartSubmit();
-  
+
   String ecShoppingCartTotal();
 
   String ecShowDetails();
@@ -192,11 +286,25 @@ public interface LocalizableEcConstants {
 
   String ecTermsOfDelivery();
 
-  String ecTermsOfPayment();
+  String ecToggleListPrice();
+
+  String ecTogglePrice();
+
+  String ecToggleStockLimit();
 
   String ecTotalOrdered();
 
-  String ecTotalReceived();
+  String ecTotalTaken();
 
-  String ecUpdateTime();
+  String ecUnsuppliedItems();
+
+  String ecUnsuppliedItemOrder();
+
+  String ecUnsuppliedItemsAppend();
+
+  String ecUnsuppliedItemsNotFound();
+
+  String ecUnsuppliedItemsRemove();
+
+  String ecUpdateCosts();
 }

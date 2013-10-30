@@ -10,7 +10,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;

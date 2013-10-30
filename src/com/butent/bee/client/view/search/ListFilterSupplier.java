@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+// TODO deep relations, ex. CargoCreditIncomes.OrderNo
+
 public class ListFilterSupplier extends AbstractFilterSupplier {
 
   private final List<String> renderColumns = Lists.newArrayList();
@@ -258,12 +260,12 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
       int col = 0;
 
       if (dataItem[valueIndex] == null) {
-        display.setText(row, col, NULL_VALUE_LABEL);
+        display.setHtml(row, col, NULL_VALUE_LABEL);
         col = renderCount;
 
       } else {
         for (int i = 0; i < renderCount; i++) {
-          display.setText(row, col++, dataItem[i]);
+          display.setHtml(row, col++, dataItem[i]);
         }
       }
 

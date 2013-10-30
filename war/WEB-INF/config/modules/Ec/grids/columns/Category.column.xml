@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelColumn xmlns="http://www.butent.com/column" name="Category" searchableColumns="CategoryName"
+  choiceColumns="FullName" selectorClass="bee-ec-CategorySelector" visibleLines="7"
+  minWidth="150" newRowEnabled="false" visible="true" />

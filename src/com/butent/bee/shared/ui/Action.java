@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -14,17 +15,18 @@ import java.util.Set;
  */
 
 public enum Action implements BeeSerializable, HasCaption {
-  ADD("naujas", "add"),
-  BOOKMARK("pridėti žymą", "bookmark"),
-  CLOSE("uždaryti", "close"),
-  CONFIGURE("nustatymai", "configure"),
-  DELETE("išmesti", "delete"),
-  EDIT("koreguoti", "edit"),
-  PRINT("spausdinti", "print"),
-  REFRESH("atnaujinti", "refresh"),
-  SAVE("išsaugoti", "save"),
-  FILTER("filtruoti", "filter"),
-  REMOVE_FILTER("išvalyti filtrą", "removeFilter");
+  ADD(Localized.getConstants().actionAdd(), "add"),
+  BOOKMARK(Localized.getConstants().actionBookmark(), "bookmark"),
+  CANCEL(Localized.getConstants().actionCancel(), "cancel"),
+  CLOSE(Localized.getConstants().actionClose(), "close"),
+  CONFIGURE(Localized.getConstants().actionConfigure(), "configure"),
+  DELETE(Localized.getConstants().actionDelete(), "delete"),
+  EDIT(Localized.getConstants().actionEdit(), "edit"),
+  FILTER(Localized.getConstants().actionFilter(), "filter"),
+  PRINT(Localized.getConstants().actionPrint(), "print"),
+  REFRESH(Localized.getConstants().actionRefresh(), "refresh"),
+  REMOVE_FILTER(Localized.getConstants().actionRemoveFilter(), "removeFilter"),
+  SAVE(Localized.getConstants().actionSave(), "save");
   
   public static final Set<Action> NO_ACTIONS = Sets.newHashSet(); 
   

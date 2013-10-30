@@ -2,8 +2,6 @@ package com.butent.bee.client.grid;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -13,7 +11,9 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.cell.HtmlCell;
+import com.butent.bee.client.grid.cell.TextCell;
 import com.butent.bee.client.grid.column.AreaColumn;
 import com.butent.bee.client.grid.column.BooleanColumn;
 import com.butent.bee.client.grid.column.CurrencyColumn;
@@ -25,7 +25,6 @@ import com.butent.bee.client.grid.column.DoubleColumn;
 import com.butent.bee.client.grid.column.IntegerColumn;
 import com.butent.bee.client.grid.column.LongColumn;
 import com.butent.bee.client.grid.column.StringColumn;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -38,6 +37,7 @@ import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
+import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
@@ -59,6 +59,7 @@ import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.CellType;
@@ -108,7 +109,7 @@ public final class GridFactory {
     descriptionCache.clear();
   }
 
-  public static Cell<String> createCell(CellType cellType) {
+  public static AbstractCell<String> createCell(CellType cellType) {
     Assert.notNull(cellType);
 
     switch (cellType) {
@@ -155,10 +156,10 @@ public final class GridFactory {
 
       case LONG:
         return new LongColumn(cellSource);
-        
+
       case NUMBER:
         return new DoubleColumn(cellSource);
-      
+
       case TEXT:
         if (cellSource.isText()) {
           return new AreaColumn(cellSource);
@@ -169,7 +170,7 @@ public final class GridFactory {
       case TIME_OF_DAY:
         return new StringColumn(cellSource);
     }
-    
+
     Assert.untouchable();
     return null;
   }
@@ -205,26 +206,24 @@ public final class GridFactory {
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, Collection<UiOption> uiOptions) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
+      List<BeeColumn> dataColumns) {
+    return createGridView(gridDescription, supplierKey, dataColumns, null,
         getGridInterceptor(gridDescription.getName()), null);
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, String relColumn, Collection<UiOption> uiOptions,
-      GridInterceptor gridInterceptor, Order order) {
+      List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor, Order order) {
 
-    GridView gridView = new CellGridImpl(gridDescription.getName(), supplierKey,
-        gridDescription.getViewName(), relColumn);
-    gridView.create(dataColumns, gridDescription, gridInterceptor, UiOption.hasSearch(uiOptions),
-        order);
+    GridView gridView = new CellGridImpl(gridDescription, supplierKey, dataColumns, relColumn,
+        gridInterceptor);
+    gridView.create(order);
 
     return gridView;
   }
 
   public static DataColumn<?> createRenderableColumn(AbstractCellRenderer renderer,
       CellSource cellSource, CellType cellType) {
-    Cell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
+    AbstractCell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
     return new RenderableColumn(cell, cellSource, renderer);
   }
 
@@ -286,7 +285,7 @@ public final class GridFactory {
     if (BeeUtils.allEmpty(caption, filter)) {
       return null;
     } else {
-      return new GridOptions(LocaleUtils.maybeLocalize(caption), filter);
+      return new GridOptions(Localized.maybeTranslate(caption), filter);
     }
   }
 
@@ -434,14 +433,15 @@ public final class GridFactory {
       CellSource source = CellSource.forColumn(table.getColumn(i), i);
       column = createColumn(source);
 
+      String id = table.getColumnId(i);
       String label = table.getColumnLabel(i);
-      grid.addColumn(label, source, column, new ColumnHeader(label, label));
+      
+      ColumnInfo columnInfo = new ColumnInfo(id, label, source, column,
+          new ColumnHeader(id, label));
+      grid.addColumn(columnInfo);
     }
 
     grid.setReadOnly(true);
-
-    grid.setMinCellWidth(40);
-    grid.setMaxCellWidth(BeeKeeper.getScreen().getWidth() / 2);
 
     grid.estimateHeaderWidths(true);
     grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
@@ -520,10 +520,10 @@ public final class GridFactory {
     }
 
     if (brs != null) {
-      GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(), uiOptions,
+      GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(),
           gridInterceptor, order);
       gridView.initData(brs.getNumberOfRows(), brs);
-      
+
       Filter filter = GridFilterManager.parseFilter(gridView.getGrid(), initialUserFilterValues);
 
       createPresenter(gridDescription, gridView, brs.getNumberOfRows(), brs, providerType,
@@ -553,8 +553,8 @@ public final class GridFactory {
     }
 
     final GridView gridView = createGridView(gridDescription, supplierKey,
-        Data.getColumns(viewName), uiOptions, gridInterceptor, order);
-    
+        Data.getColumns(viewName), gridInterceptor, order);
+
     final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
         initialUserFilterValues);
     Filter queryFilter = getInitialQueryFilter(immutableFilter, initialParentFilters,
@@ -581,10 +581,8 @@ public final class GridFactory {
   }
 
   private static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
-      Order order) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
-        gridInterceptor, order);
+      List<BeeColumn> dataColumns, GridInterceptor gridInterceptor, Order order) {
+    return createGridView(gridDescription, supplierKey, dataColumns, null, gridInterceptor, order);
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,

@@ -499,7 +499,7 @@ public class MessageBoxes {
     int index = 0;
 
     if (!BeeUtils.isEmpty(caption)) {
-      grid.setHTML(index, 0, caption.trim());
+      grid.setHtml(index, 0, caption.trim());
       grid.alignCenter(index, 0);
       if (c > 1) {
         grid.getCellFormatter().setColSpan(index, 0, c);
@@ -508,7 +508,7 @@ public class MessageBoxes {
     }
 
     for (int j = 0; j < c; j++) {
-      grid.setHTML(index, j, table.getColumnLabel(j));
+      grid.setHtml(index, j, table.getColumnLabel(j));
       grid.alignCenter(index, j);
     }
     index++;
@@ -517,7 +517,7 @@ public class MessageBoxes {
       for (int j = 0; j < c; j++) {
         String value = table.getString(i, j);
         if (!BeeUtils.isEmpty(value)) {
-          grid.setHTML(index, j, value);
+          grid.setHtml(index, j, value);
           if (ValueType.isNumeric(table.getColumnType(j))) {
             grid.alignRight(index, j);
           }

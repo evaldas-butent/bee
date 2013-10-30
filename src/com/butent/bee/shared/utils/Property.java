@@ -51,7 +51,7 @@ public class Property implements Comparable<Property>, BeeSerializable {
     if (oth == null) {
       return BeeConst.COMPARE_MORE;
     }
-    return BeeUtils.compare(getName(), oth.getName());
+    return BeeUtils.compareNullsFirst(getName(), oth.getName());
   }
 
   @Override

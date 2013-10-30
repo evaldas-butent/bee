@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcManagers" source="EcManagers" caption="=ecManagers"
+  name="EcManagers" source="EcManagers" caption="=ecManagers" newRowCaption="=ecManagerNew"
   >
   <Columns>
     <SimpleColumn name="User" />
@@ -23,9 +23,20 @@
 
     <SimpleColumn name="TabNr" />
     
-    <SimpleColumn name="ReportOrder" />
-    <SimpleJoin name="ReportOrder" joinType="LEFT">
-      <SimpleColumn alias="ReminderName" name="Name" />
+    <SimpleColumn name="MailAccount" />
+    <SimpleJoin name="MailAccount" joinType="LEFT">
+      <SimpleColumn name="Description" alias="AccountDescription" />
+      <SimpleColumn name="Address" alias="AccountAddress" />
+      <SimpleJoin name="Address" joinType="LEFT">
+        <SimpleColumn name="Email" alias="AccountEmail" />
+        <SimpleColumn name="Label" alias="AccountLabel" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="IncomingMail" />
+    <SimpleJoin name="IncomingMail" joinType="LEFT">
+      <SimpleColumn name="Email" alias="IncomingEmail" />
+      <SimpleColumn name="Label" alias="IncomingLabel" />
     </SimpleJoin>
     
     <SimpleColumn name="Notes" />

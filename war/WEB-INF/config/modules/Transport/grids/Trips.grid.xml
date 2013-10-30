@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="Trips" viewName="Trips" caption="=trips"
   newRowPopup="true" order="TripID desc"
   >
 
-  <columns>
-    <DataColumn name="Date" caption="Data" />
-    <DataColumn name="TripNo" caption="Reiso Nr." flexGrow="1" flexShrink="1" />
-    <DataColumn name="Status" caption="Būsena" itemKey="TripStatus" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas" flexGrow="1" flexShrink="1"
+  <g:columns>
+    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="TripNo" caption="=trTripNo" flexGrow="1" flexShrink="1" />
+    <DataColumn name="Status" caption="=status" itemKey="TripStatus" />
+    <CalcColumn name="Vehicle" type="string" caption="=transport" flexGrow="1" flexShrink="1"
       searchBy="VehicleNumber TrailerNumber">
       <render>
         <ui:function>
@@ -23,9 +23,9 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="Driver" caption="Vairuotojas" flexGrow="1" flexShrink="1" />
-    <DataColumn name="DateFrom" caption="Išvyko" />
-    <DataColumn name="DateTo" caption="Sugrįžo" />
-    <DataColumn name="PlannedEndDate" caption="Planuojama pabaiga" />
-  </columns>
-</Grid>
+    <DataColumn name="Driver" caption="=vehicleDriver" flexGrow="1" flexShrink="1" />
+    <DataColumn name="DateFrom" caption="=trDeparted" />
+    <DataColumn name="DateTo" caption="=trReturned" />
+    <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />
+  </g:columns>
+</g:Grid>

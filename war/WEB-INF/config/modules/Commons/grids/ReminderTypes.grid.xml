@@ -1,34 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ReminderTypes" viewName="ReminderTypes"
-  caption="Priminimų tipai" newRowCaption="Naujas priminimų tipas"
+  caption="=reminderTypes" newRowCaption="=newReminderType"
   flexGrow="1" flexShrink="1"
   >
-  <body height="60" />
+  <g:body height="60" />
   
-  <columns>
-    <DataColumn name="Name" caption="Pavadinimas" visible="true" />
-    <DataColumn name="Method" caption="Metodas" itemKey="ReminderMethod" visible="true" />
+  <g:columns>
+    <DataColumn name="Name" caption="=name" visible="true" />
+    <DataColumn name="Method" caption="=reminderMethod" itemKey="ReminderMethod" visible="true" />
 
-    <DataColumn name="Hours" caption="Valandos" />
-    <DataColumn name="Minutes" caption="Minutės" />
+    <DataColumn name="Hours" caption="=unitHours" />
+    <DataColumn name="Minutes" caption="=unitMinutes" />
 
-    <DataColumn name="Caption" caption="Antraštė" />
-    <DataColumn name="Template" caption="Šablonas" minWidth="200">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Caption" caption="=reminderCaption" />
+    <DataColumn name="Template" caption="=reminderTemplate" minWidth="200" whiteSpace="pre-wrap" />
     
-    <DataColumn name="Description" caption="Aprašymas">
-      <style>
-        <bodyStyle>
-          <ui:inline>white-space: pre-wrap;</ui:inline>
-        </bodyStyle>
-      </style>
-    </DataColumn>
-  </columns>
-</Grid>
+    <DataColumn name="Description" caption="=description" whiteSpace="pre-wrap" />
+  </g:columns>
+</g:Grid>

@@ -3,8 +3,8 @@
 
   name="InformationSources"
   source="InformationSources"
-  caption="Klientų informacijos šaltiniai"
-  newRowCaption="Naujas informacijos šaltinis"
+  caption="=clientsInformationSources"
+  newRowCaption="=newClientsInformationSource"
   >
   <Columns>
     <SimpleColumn name="Name" />

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdRemainders" source="TcdRemainders"
+  >
+  <Columns>
+    <SimpleColumn name="ArticleSupplier" />
+    <SimpleColumn name="Warehouse" />
+    <SimpleJoin name="Warehouse" joinType="INNER">
+      <SimpleColumn name="Code" />
+    </SimpleJoin>
+    <SimpleColumn name="Remainder" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Warehouse" />
+  </Order>
+</View>

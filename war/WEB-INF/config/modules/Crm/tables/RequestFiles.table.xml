@@ -5,8 +5,8 @@
   idName="RequestFileID"
   >
   <Fields>
-    <Relation name="Request" notNull="true" relation="Requests" cascade="DELETE" />
-    <Relation name="File" relation="Files" notNull="true" />
-    <String name="Caption" precision="100" />
+    <Relation name="Request" notNull="true" relation="Requests" cascade="DELETE" label="=crmRequest" />
+    <Relation name="File" relation="Files" notNull="true" label="=crmFile" />
+    <String name="Caption" precision="100" label="=crmRequestFileCaption"/>
   </Fields>
 </Table>

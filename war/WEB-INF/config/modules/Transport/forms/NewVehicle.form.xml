@@ -8,29 +8,29 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewVehicle" viewName="Vehicles" caption="Transporto priemonė" width="800" height="280"
+  name="NewVehicle" viewName="Vehicles" caption="=trVehicle" width="800" height="280"
   >
   <FlowPanel class="flexBox-vertical" style="margin: 1ex 1em;">
     <xi:include href="widgets/VehicleDescription.widget.xml" />
 
     <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-      <DataSelector source="Fuel" caption="Kuro rūšis" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
-      <Radio source="Body" caption="Kėbulo tipas: " decorator="caption-left">
-        <option>Sedanas</option>
-        <option>Hečbekas</option>
-        <option>Universalas</option>
-        <option>Kupe</option>
-        <option>Vienatūris</option>
-        <option>Visureigis</option>
+      <DataSelector source="Fuel" caption="=vehicleFuel" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
+      <Radio source="Body" caption="=vehicleBodyType" decorator="caption-left">
+        <option>=vehicleSedan</option>
+        <option>=vehicleHatchback</option>
+        <option>=vehicleCaravan</option>
+        <option>=vehicleCoupe</option>
+        <option>=vehicleMinivan</option>
+        <option>=vehicleSUV</option>
       </Radio>
     </FlowPanel>
     <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-      <Radio source="Gearbox" caption="Greičių dėžė: " decorator="caption-left">
-        <option>Mechaninė</option>
-        <option>Automatas</option>
+      <Radio source="Gearbox" caption="=vehicleGearbox" decorator="caption-left">
+        <option>=vehicleManualTransmission</option>
+        <option>=vehicleAutomaticTransmission</option>
       </Radio>
-      <CheckBox source="Conditioner" html="Kondicionierius/klima" />
-      <Radio source="Chassis" caption="Važiuoklė: " decorator="caption-left">
+      <CheckBox source="Conditioner" text="=vehicleAirConditioner" />
+      <Radio source="Chassis" caption= "=vehicleChassis" decorator="caption-left">
         <option>2x4</option>
         <option>4x4</option>
       </Radio>

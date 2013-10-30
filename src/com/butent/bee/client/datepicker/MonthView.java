@@ -1,6 +1,7 @@
 package com.butent.bee.client.datepicker;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -9,7 +10,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.UIObject;
 
@@ -17,6 +17,7 @@ import com.butent.bee.client.datepicker.DatePicker.CssClasses;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -30,7 +31,7 @@ import java.util.List;
 
 class MonthView extends Component implements HasKeyDownHandlers {
 
-  private final class DayGrid extends Grid {
+  private final class DayGrid extends HtmlTable {
 
     private final class Cell extends UIObject implements HasEnabled {
 
@@ -86,15 +87,15 @@ class MonthView extends Component implements HasKeyDownHandlers {
         this.dateStyle = dateStyle;
       }
       
-      private void setText(String text) {
-        DOM.setInnerText(getElement(), text);
+      private void setHtml(String html) {
+        getElement().setInnerHTML(html);
       }
 
       private void update(JustDate date, boolean enable) {
         setEnabled(enable);
 
         value.setDate(date);
-        setText(Model.formatDayOfMonth(value));
+        setHtml(Model.formatDayOfMonth(value));
         
         StringList styles = StringList.uniqueCaseInsensitive();
         styles.add(cellStyle);
@@ -136,12 +137,10 @@ class MonthView extends Component implements HasKeyDownHandlers {
       sinkEvents(Event.ONCLICK | Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONKEYDOWN);
       DomUtils.makeFocusable(this);
 
-      resize(WEEKS_IN_MONTH + 1, DAYS_IN_WEEK);
-
       CellFormatter formatter = getCellFormatter();
 
       for (int i = 0; i < DAYS_IN_WEEK; i++) {
-        setText(0, i, Model.formatDayOfWeek(i));
+        setHtml(0, i, Model.formatDayOfWeek(i));
 
         if (Model.isWeekend(i + 1)) {
           formatter.setStyleName(0, i, css().weekendLabel());
@@ -153,7 +152,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
       int index = 0;
       for (int row = 1; row <= WEEKS_IN_MONTH; row++) {
         for (int column = 0; column < DAYS_IN_WEEK; column++) {
-          Element element = formatter.getElement(row, column);
+          Element element = formatter.ensureElement(row, column);
           Cell cell = new Cell(index++, element, Model.isWeekend(column));
 
           cellList.add(cell);
@@ -225,8 +224,19 @@ class MonthView extends Component implements HasKeyDownHandlers {
     }
 
     private Cell getCell(Event event) {
-      Element td = getEventTargetCell(event);
-      return td != null ? elementToCell.get(td) : null;
+      TableCellElement cellElement = 
+          DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
+      
+      while (cellElement != null) {
+        Cell cell = elementToCell.get(DomUtils.upcast(cellElement));
+        if (cell != null) {
+          return cell;
+        }
+        
+        cellElement = DomUtils.getParentCell(cellElement, false);
+      }
+
+      return null;
     }
 
     private Cell getCell(int index) {

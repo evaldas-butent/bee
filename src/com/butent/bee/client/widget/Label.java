@@ -23,13 +23,13 @@ public class Label extends CustomHasHtml {
     super(element);
   }
 
-  public Label(String text) {
+  public Label(String html) {
     this();
-    setText(text);
+    setHtml(html);
   }
   
   public void clear() {
-    setText(BeeConst.STRING_EMPTY);
+    setHtml(BeeConst.STRING_EMPTY);
   }
 
   @Override

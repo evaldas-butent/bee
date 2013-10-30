@@ -28,6 +28,8 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Wildcards;
+import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.Collection;
 import java.util.List;
@@ -195,6 +197,10 @@ public final class DataUtils {
     return "Column " + index;
   }
 
+  public static BeeRowSet emptyToNull(BeeRowSet rowSet) {
+    return isEmpty(rowSet) ? null : rowSet;
+  }
+
   public static boolean equals(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;
@@ -235,7 +241,7 @@ public final class DataUtils {
   public static Boolean getBoolean(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.getBoolean(getColumnIndex(columnId, rowSet.getColumns()));
   }
-  
+
   public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
     int index = getColumnIndex(columnId, columns);
 
@@ -338,6 +344,10 @@ public final class DataUtils {
 
   public static JustDate getDate(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.getDate(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+
+  public static DateTime getDateTime(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getDateTime(getColumnIndex(columnId, rowSet.getColumns()));
   }
 
   public static int getDefaultAsyncThreshold() {
@@ -483,7 +493,7 @@ public final class DataUtils {
         }
       }
     }
-    
+
     if (colNames.isEmpty()) {
       return null;
     } else {
@@ -517,55 +527,67 @@ public final class DataUtils {
 
   public static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,
       IsRow newRow, Collection<RowChildren> children) {
-    String oldValue;
-    String newValue;
 
-    List<BeeColumn> updatedColumns = Lists.newArrayList();
+    Assert.notNull(oldRow);
+    Assert.notNull(newRow);
+
     List<String> oldValues = Lists.newArrayList();
     List<String> newValues = Lists.newArrayList();
+
+    for (int i = 0; i < oldRow.getNumberOfCells(); i++) {
+      oldValues.add(oldRow.getString(i));
+    }
+    for (int i = 0; i < newRow.getNumberOfCells(); i++) {
+      newValues.add(newRow.getString(i));
+    }
+    return getUpdated(viewName, oldRow.getId(), oldRow.getVersion(),
+        columns, oldValues, newValues, children);
+  }
+
+  public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
+      List<BeeColumn> columns, List<String> oldValues, List<String> newValues,
+      Collection<RowChildren> children) {
+
+    Assert.notEmpty(viewName);
+    Assert.notNull(columns);
+    Assert.notNull(oldValues);
+    Assert.notNull(newValues);
+
+    int cc = columns.size();
+    Assert.isPositive(cc);
+    Assert.isTrue(cc == oldValues.size());
+    Assert.isTrue(cc == newValues.size());
+
+    List<BeeColumn> updatedColumns = Lists.newArrayList();
+    List<String> updatedOldValues = Lists.newArrayList();
+    List<String> updatedNewValues = Lists.newArrayList();
 
     for (int i = 0; i < columns.size(); i++) {
       BeeColumn column = columns.get(i);
       if (!column.isEditable()) {
         continue;
       }
-
-      oldValue = oldRow.getString(i);
-      newValue = newRow.getString(i);
+      String oldValue = oldValues.get(i);
+      String newValue = newValues.get(i);
 
       if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
         updatedColumns.add(column);
-        oldValues.add(oldValue);
-        newValues.add(newValue);
+        updatedOldValues.add(oldValue);
+        updatedNewValues.add(newValue);
       }
     }
-
     if (updatedColumns.isEmpty()) {
       return null;
-    } else {
-      return getUpdated(viewName, oldRow.getId(), oldRow.getVersion(),
-          updatedColumns, oldValues, newValues, children);
     }
-  }
-  
-  public static BeeRowSet getUpdated(String viewName, Long rowId, long rowVersion,
-      List<BeeColumn> columns, List<String> oldValues, List<String> newValues,
-      Collection<RowChildren> children) {
-    if (columns.isEmpty()) {
-      return null;
-    }
+    BeeRowSet rowSet = new BeeRowSet(viewName, updatedColumns);
+    rowSet.addRow(rowId, rowVersion, updatedOldValues);
 
-    BeeRowSet rowSet = new BeeRowSet(viewName, columns);
-    rowSet.addRow(rowId, rowVersion, oldValues);
-
-    for (int i = 0; i < columns.size(); i++) {
-      rowSet.getRow(0).preliminaryUpdate(i, newValues.get(i));
+    for (int i = 0; i < updatedColumns.size(); i++) {
+      rowSet.getRow(0).preliminaryUpdate(i, updatedNewValues.get(i));
     }
-    
     if (!BeeUtils.isEmpty(children)) {
       rowSet.getRow(0).setChildren(children);
     }
-    
     return rowSet;
   }
 
@@ -580,7 +602,7 @@ public final class DataUtils {
   public static boolean isEmpty(SimpleRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }
-  
+
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
@@ -589,21 +611,48 @@ public final class DataUtils {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
-  public static String join(DataInfo dataInfo, IsRow row, List<String> colNames, String separator) {
-    Assert.notNull(dataInfo);
+  public static boolean isNull(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.isNull(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+  
+  public static String join(IsRow row, List<Integer> indexes) {
+    return join(row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
+  }
+
+  public static String join(IsRow row, List<Integer> indexes, String separator) {
     Assert.notNull(row);
-    Assert.notEmpty(colNames);
+    Assert.notEmpty(indexes);
 
     StringBuilder sb = new StringBuilder();
     String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
+    for (int index : indexes) {
+      String value = render(row, index, null);
+      if (!BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(value.trim());
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String join(DataInfo dataInfo, IsRow row, List<String> colNames, String separator) {
+    Assert.notNull(dataInfo);
+    Assert.notNull(row);
+    Assert.notEmpty(colNames);
+    
+    StringBuilder sb = new StringBuilder();
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
+    
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
       if (BeeConst.isUndef(i)) {
         logger.warning(dataInfo.getViewName(), "column not found:", colName);
         continue;
       }
-
+      
       String value = render(row, i, dataInfo.getColumnType(i));
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
@@ -644,19 +693,92 @@ public final class DataUtils {
   }
 
   public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
+      String idName, String versionName) {
+
     List<String> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
     Assert.notEmpty(columns);
 
+    boolean hasWildcards = false;
+    boolean hasExclusions = false;
+
     for (String item : input) {
-      String colName = getColumnName(item, columns, idColumnName, versionColumnName);
-      if (!BeeUtils.isEmpty(colName) && !result.contains(colName)) {
-        result.add(colName);
+      if (!hasWildcards) {
+        hasWildcards = Wildcards.hasDefaultWildcards(item);
+      }
+      if (!hasExclusions) {
+        hasExclusions = BeeUtils.isPrefixOrSuffix(item, BeeConst.CHAR_MINUS);
       }
     }
+
+    if (hasWildcards || hasExclusions) {
+      Set<Pattern> include = Sets.newHashSet();
+      Set<Pattern> exclude = Sets.newHashSet();
+
+      for (String item : input) {
+        if (hasExclusions && BeeUtils.isPrefixOrSuffix(item, BeeConst.CHAR_MINUS)) {
+          String expr = BeeUtils.removePrefixAndSuffix(item, BeeConst.CHAR_MINUS);
+          if (!BeeUtils.isEmpty(expr)) {
+            exclude.add(Wildcards.getDefaultPattern(BeeUtils.trim(expr)));
+          }
+        } else if (!BeeUtils.isEmpty(item)) {
+          include.add(Wildcards.getDefaultPattern(BeeUtils.trim(item)));
+        }
+      }
+
+      List<String> colNames = Lists.newArrayList();
+
+      if (!include.isEmpty()) {
+        if (!BeeUtils.isEmpty(idName) && Wildcards.contains(include, idName)) {
+          colNames.add(idName);
+        }
+        if (!BeeUtils.isEmpty(versionName) && Wildcards.contains(include, versionName)) {
+          colNames.add(versionName);
+        }
+
+        for (IsColumn column : columns) {
+          if (Wildcards.contains(include, column.getId())) {
+            colNames.add(column.getId());
+          }
+        }
+
+      } else if (!exclude.isEmpty()) {
+        if (!BeeUtils.isEmpty(idName)) {
+          colNames.add(idName);
+        }
+        if (!BeeUtils.isEmpty(versionName)) {
+          colNames.add(versionName);
+        }
+
+        for (IsColumn column : columns) {
+          colNames.add(column.getId());
+        }
+      }
+      
+      if (exclude.isEmpty()) {
+        if (!colNames.isEmpty()) {
+          result.addAll(colNames);
+        }
+
+      } else if (!colNames.isEmpty()) {
+        for (String colName : colNames) {
+          if (!Wildcards.contains(exclude, colName)) {
+            result.add(colName);
+          }
+        }
+      }
+
+    } else {
+      for (String item : input) {
+        String colName = getColumnName(item, columns, idName, versionName);
+        if (!BeeUtils.isEmpty(colName) && !result.contains(colName)) {
+          result.add(colName);
+        }
+      }
+    }
+
     return result;
   }
 
@@ -837,21 +959,21 @@ public final class DataUtils {
     if (dataInfo == null || row == null || column == null) {
       return null;
     }
-    
+
     if (dataInfo.hasRelation(column.getId())) {
       List<String> columns = RelationUtils.getRenderColumns(dataInfo, column.getId());
       if (!columns.isEmpty()) {
         return join(dataInfo, row, columns, BeeConst.STRING_SPACE);
       }
 
-    } else if (ValueType.INTEGER.equals(column.getType()) 
+    } else if (ValueType.INTEGER.equals(column.getType())
         && Captions.isColumnRegistered(dataInfo.getViewName(), column.getId())) {
       Integer value = row.getInteger(index);
       if (BeeUtils.isNonNegative(value)) {
         return Captions.getValueCaption(dataInfo.getViewName(), column.getId(), value);
       }
     }
-    
+
     return render(row, index, column.getType());
   }
 
@@ -917,11 +1039,11 @@ public final class DataUtils {
       return set.size() == col.size() && set.containsAll(col);
     }
   }
-  
+
   public static boolean sameIdSet(String s1, String s2) {
     return sameIdSet(s1, parseIdSet(s2));
   }
-  
+
   public static int setDefaults(IsRow row, Collection<String> colNames, List<BeeColumn> columns,
       Defaults defaults) {
     int result = 0;
@@ -1013,7 +1135,7 @@ public final class DataUtils {
       column = new BeeColumn(ValueType.LONG, idColumnName);
       len = idColumnName.length();
     }
-    if (BeeUtils.hasLength(versionColumnName, len + 1) 
+    if (BeeUtils.hasLength(versionColumnName, len + 1)
         && BeeUtils.startsWith(expr, versionColumnName)) {
       column = new BeeColumn(ValueType.DATE_TIME, versionColumnName);
     }

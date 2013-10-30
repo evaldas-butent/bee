@@ -1,6 +1,8 @@
 package com.butent.bee.client.render;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Table;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.utils.Evaluator;
@@ -15,6 +17,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
@@ -28,8 +31,21 @@ public final class RendererFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(RendererFactory.class);
 
+  private static final Table<String, String, ProvidesGridColumnRenderer> gcrProviders =
+      HashBasedTable.create();
+  
   public static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns) {
     return createRenderer(viewName, renderColumns, null);
+  }
+  
+  public static AbstractCellRenderer getGridColumnRenderer(String gridName, String columnName,
+      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+    ProvidesGridColumnRenderer provider = gcrProviders.get(gridName, columnName);
+    if (provider == null) {
+      return null;
+    } else {
+      return provider.getRenderer(columnName, dataColumns, columnDescription);
+    }
   }
 
   public static AbstractCellRenderer getRenderer(RendererDescription description,
@@ -80,6 +96,15 @@ public final class RendererFactory {
     return getRenderer(description, calculation, tokens, itemKey, renderColumns, columns, source);
   }
 
+  public static void registerGcrProvider(String gridName, String columnName,
+      ProvidesGridColumnRenderer provider) {
+    Assert.notEmpty(gridName);
+    Assert.notEmpty(columnName);
+    Assert.notNull(provider);
+    
+    gcrProviders.put(gridName, columnName, provider);
+  }
+
   private static AbstractCellRenderer createRenderer(Calculation calculation,
       List<? extends IsColumn> dataColumns, CellSource source) {
     Assert.notNull(calculation);
@@ -95,6 +120,49 @@ public final class RendererFactory {
     }
 
     return new EvalRenderer(source, evaluator);
+  }
+
+  private static AbstractCellRenderer createRenderer(List<RenderableToken> tokens,
+      List<? extends IsColumn> dataColumns) {
+    if (BeeUtils.isEmpty(tokens) || BeeUtils.isEmpty(dataColumns)) {
+      return null;
+    }
+
+    List<ColumnToken> columnTokens = Lists.newArrayList();
+    for (RenderableToken token : tokens) {
+      String source = token.getSource();
+      if (BeeUtils.isEmpty(source)) {
+        continue;
+      }
+
+      int index = DataUtils.getColumnIndex(source, dataColumns);
+      ValueType type = null;
+
+      if (BeeConst.isUndef(index)) {
+        if (BeeUtils.same(source, DataUtils.ID_TAG)) {
+          index = DataUtils.ID_INDEX;
+          type = DataUtils.ID_TYPE;
+        } else if (BeeUtils.same(source, DataUtils.VERSION_TAG)) {
+          index = DataUtils.VERSION_INDEX;
+          type = ValueType.DATE_TIME;
+        }
+
+      } else {
+        type = dataColumns.get(index).getType();
+      }
+
+      if (type == null) {
+        logger.severe("token source not recognized:", source);
+      } else {
+        columnTokens.add(ColumnToken.create(index, type, token));
+      }
+    }
+
+    if (columnTokens.isEmpty()) {
+      logger.severe("cannot create TokenRenderer");
+      return null;
+    }
+    return new TokenRenderer(columnTokens);
   }
 
   private static AbstractCellRenderer createRenderer(RendererDescription description,
@@ -143,17 +211,26 @@ public final class RendererFactory {
       case STAR:
         renderer = new StarRenderer(source);
         break;
-        
+
       case FILE_ICON:
         renderer = new FileIconRenderer(source);
         break;
-        
+
       case PHOTO:
         renderer = new PhotoRenderer(source);
         break;
-
-      default:
+        
+      case MAIL:
+        renderer = new MailAddressRenderer(dataColumns, renderColumns);
+        break;
+        
+      case URL:
+        renderer = new UrlRenderer(source);
+        break;
+        
+      case TOKEN:
         logger.severe("renderer", type.name(), "not supported");
+        break;
     }
 
     if (renderer instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
@@ -164,49 +241,6 @@ public final class RendererFactory {
       ((HasItems) renderer).setItems(description.getItems());
     }
     return renderer;
-  }
-
-  private static AbstractCellRenderer createRenderer(List<RenderableToken> tokens,
-      List<? extends IsColumn> dataColumns) {
-    if (BeeUtils.isEmpty(tokens) || BeeUtils.isEmpty(dataColumns)) {
-      return null;
-    }
-
-    List<ColumnToken> columnTokens = Lists.newArrayList();
-    for (RenderableToken token : tokens) {
-      String source = token.getSource();
-      if (BeeUtils.isEmpty(source)) {
-        continue;
-      }
-
-      int index = DataUtils.getColumnIndex(source, dataColumns);
-      ValueType type = null;
-
-      if (BeeConst.isUndef(index)) {
-        if (BeeUtils.same(source, DataUtils.ID_TAG)) {
-          index = DataUtils.ID_INDEX;
-          type = DataUtils.ID_TYPE;
-        } else if (BeeUtils.same(source, DataUtils.VERSION_TAG)) {
-          index = DataUtils.VERSION_INDEX;
-          type = ValueType.DATE_TIME;
-        }
-
-      } else {
-        type = dataColumns.get(index).getType();
-      }
-
-      if (type == null) {
-        logger.severe("token source not recognized:", source);
-      } else {
-        columnTokens.add(ColumnToken.create(index, type, token));
-      }
-    }
-
-    if (columnTokens.isEmpty()) {
-      logger.severe("cannot create TokenRenderer");
-      return null;
-    }
-    return new TokenRenderer(columnTokens);
   }
 
   private static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns,

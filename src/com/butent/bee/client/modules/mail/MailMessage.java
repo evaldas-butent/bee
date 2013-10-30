@@ -41,6 +41,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
@@ -119,15 +120,15 @@ public class MailMessage extends AbstractFormInterceptor {
             HtmlTable ft = new HtmlTable();
             ft.setBorderSpacing(5);
             List<Pair<String, String>> types = Lists.newArrayList();
-            types.add(Pair.of(AddressType.TO.name(), "Skirta:"));
-            types.add(Pair.of(AddressType.CC.name(), "Kopija:"));
-            types.add(Pair.of(AddressType.BCC.name(), "Nematoma kopija:"));
+            types.add(Pair.of(AddressType.TO.name(), Localized.getConstants().mailTo() + ":"));
+            types.add(Pair.of(AddressType.CC.name(), Localized.getConstants().mailCc() + ":"));
+            types.add(Pair.of(AddressType.BCC.name(), Localized.getConstants().mailBcc() + ":"));
 
             for (Pair<String, String> type : types) {
               if (recipients.containsKey(type.getA())) {
                 int c = ft.getRowCount();
                 ft.getCellFormatter().setStyleName(c, 0, "bee-mail-RecipientsType");
-                ft.setText(c, 0, type.getB());
+                ft.setHtml(c, 0, type.getB());
                 FlowPanel fp = new FlowPanel();
 
                 for (String[] address : recipients.get(type.getA())) {
@@ -312,7 +313,7 @@ public class MailMessage extends AbstractFormInterceptor {
           recipients.put(address.getValue(COL_ADDRESS_TYPE), info);
           txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(info[ADDR_LABEL], info[ADDR_EMAIL]));
         }
-        setWidgetText(RECIPIENTS, BeeUtils.joinWords("Skirta:", txt));
+        setWidgetText(RECIPIENTS, BeeUtils.joinWords(Localized.getConstants().mailTo() + ":", txt));
 
         int cnt = 0;
         long size = 0;
@@ -330,6 +331,7 @@ public class MailMessage extends AbstractFormInterceptor {
           size += BeeUtils.toLong(info[ATTA_SIZE]);
         }
         if (cnt > 0) {
+
           txt = BeeUtils.joinWords(cnt,
               "prielip" + ((cnt % 10 == 0 || BeeUtils.betweenInclusive(cnt % 100, 11, 19))
                   ? "ų" : (cnt % 10 == 1 ? "as" : "ai")),
@@ -404,26 +406,34 @@ public class MailMessage extends AbstractFormInterceptor {
                 "border-left:1px solid #039; margin:0; padding:10px; color:#039;");
             bq.setInnerHTML(getContent());
             content = BeeUtils.join("<br>", "<br>",
-                getDate() + ", " + SafeHtmlUtils.htmlEscape(getSender() + " rašė:"),
+                    getDate()
+                        + ", "
+                        + SafeHtmlUtils.htmlEscape(getSender() + " "
+                            + Localized.getConstants().mailTextWrote().toLowerCase() + ":"),
                 bq.getString());
 
-            if (!BeeUtils.isPrefix(subject, "Re:")) {
-              subject = BeeUtils.joinWords("Re:", subject);
+            if (!BeeUtils.isPrefix(subject, Localized.getConstants().mailReplayPrefix())) {
+              subject = BeeUtils.joinWords(Localized.getConstants().mailReplayPrefix(), subject);
             }
             break;
 
           case FORWARD:
-            content = BeeUtils.join("<br>", "<br>", "---------- Persiųstas laiškas ----------",
-                "Nuo: " + SafeHtmlUtils.htmlEscape(getSender()),
-                "Data: " + getDate(),
-                "Tema: " + SafeHtmlUtils.htmlEscape(getSubject()),
-                "Kam: " + SafeHtmlUtils.htmlEscape(getRecipients()),
+            content =
+                BeeUtils.join("<br>", "<br>", "---------- "
+                    + Localized.getConstants().mailForwardedMessage() + " ----------",
+                    Localized.getConstants().mailFrom() + ": "
+                        + SafeHtmlUtils.htmlEscape(getSender()),
+                    Localized.getConstants().date() + ": " + getDate(),
+                    Localized.getConstants().mailSubject() + ": "
+                        + SafeHtmlUtils.htmlEscape(getSubject()),
+                    Localized.getConstants().mailTo() + ": "
+                        + SafeHtmlUtils.htmlEscape(getRecipients()),
                 "<br>" + getContent());
 
             attach = getAttachments();
 
-            if (!BeeUtils.isPrefix(subject, "Fwd:")) {
-              subject = BeeUtils.joinWords("Fwd:", subject);
+            if (!BeeUtils.isPrefix(subject, Localized.getConstants().mailForwardedPrefix())) {
+              subject = BeeUtils.joinWords(Localized.getConstants().mailForwardedPrefix(), subject);
             }
             break;
         }

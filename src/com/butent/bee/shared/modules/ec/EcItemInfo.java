@@ -12,7 +12,7 @@ import java.util.List;
 public class EcItemInfo implements BeeSerializable {
 
   private enum Serial {
-    CRITERIA, REMAINDERS, BRANDS, CAR_TYPES
+    CRITERIA, CAR_TYPES, OE_NUMBERS
   }
 
   public static EcItemInfo restore(String s) {
@@ -23,14 +23,30 @@ public class EcItemInfo implements BeeSerializable {
 
   private final List<ArticleCriteria> criteria = Lists.newArrayList();
 
-  private final List<ArticleRemainder> remainders = Lists.newArrayList();
-
-  private final List<ArticleBrand> brands = Lists.newArrayList();
-
   private final List<EcCarType> carTypes = Lists.newArrayList();
+
+  private final List<String> oeNumbers = Lists.newArrayList();
 
   public EcItemInfo() {
     super();
+  }
+
+  public void addCarType(EcCarType carType) {
+    if (carType != null) {
+      carTypes.add(carType);
+    }
+  }
+
+  public void addCriteria(ArticleCriteria ac) {
+    if (ac != null) {
+      criteria.add(ac);
+    }
+  }
+
+  public void addOeNumber(String oeNumber) {
+    if (!BeeUtils.isEmpty(oeNumber)) {
+      oeNumbers.add(oeNumber);
+    }
   }
 
   @Override
@@ -53,32 +69,20 @@ public class EcItemInfo implements BeeSerializable {
           }
           break;
 
-        case REMAINDERS:
-          remainders.clear();
-          for (String v : values) {
-            remainders.add(ArticleRemainder.restore(v));
-          }
-          break;
-
-        case BRANDS:
-          brands.clear();
-          for (String v : values) {
-            brands.add(ArticleBrand.restore(v));
-          }
-          break;
-
         case CAR_TYPES:
           carTypes.clear();
           for (String v : values) {
             carTypes.add(EcCarType.restore(v));
           }
           break;
+
+        case OE_NUMBERS:
+          oeNumbers.clear();
+          for (String v : values) {
+            oeNumbers.add(v);
+          }
       }
     }
-  }
-
-  public List<ArticleBrand> getBrands() {
-    return brands;
   }
 
   public List<EcCarType> getCarTypes() {
@@ -89,8 +93,8 @@ public class EcItemInfo implements BeeSerializable {
     return criteria;
   }
 
-  public List<ArticleRemainder> getRemainders() {
-    return remainders;
+  public List<String> getOeNumbers() {
+    return oeNumbers;
   }
 
   @Override
@@ -105,35 +109,15 @@ public class EcItemInfo implements BeeSerializable {
           arr[i++] = getCriteria();
           break;
 
-        case REMAINDERS:
-          arr[i++] = getRemainders();
-          break;
-
-        case BRANDS:
-          arr[i++] = getBrands();
-          break;
-
         case CAR_TYPES:
           arr[i++] = getCarTypes();
+          break;
+
+        case OE_NUMBERS:
+          arr[i++] = getOeNumbers();
           break;
       }
     }
     return Codec.beeSerialize(arr);
-  }
-
-  public void setBrands(List<ArticleBrand> brands) {
-    BeeUtils.overwrite(this.brands, brands);
-  }
-
-  public void setCarTypes(List<EcCarType> carTypes) {
-    BeeUtils.overwrite(this.carTypes, carTypes);
-  }
-
-  public void setCriteria(List<ArticleCriteria> criteria) {
-    BeeUtils.overwrite(this.criteria, criteria);
-  }
-
-  public void setRemainders(List<ArticleRemainder> remainders) {
-    BeeUtils.overwrite(this.remainders, remainders);
   }
 }

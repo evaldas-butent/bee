@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="TimeZones" viewName="TimeZones" caption="Laiko juostos" newRowCaption="Nauja laiko juosta"
+  name="TimeZones" viewName="TimeZones" caption="=timeZones" newRowCaption="=newTimeZone"
   >
-  <columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="200" visible="true" />
-    <DataColumn name="StandardOffset" caption="Santykis su UTC" visible="true" />
-  </columns>
-</Grid>
+  <g:columns>
+    <DataColumn name="Name" caption="=timeZoneName" minWidth="200" visible="true" />
+    <DataColumn name="StandardOffset" caption="=timeZoneUTCOffset" visible="true" />
+  </g:columns>
+</g:Grid>

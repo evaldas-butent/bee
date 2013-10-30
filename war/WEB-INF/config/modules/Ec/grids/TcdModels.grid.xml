@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="TcdModels" viewName="TcdModels" caption="=tcdModels"
+  >
+  <g:columns>
+    <RelColumn name="Manufacturer" renderColumns="ManufacturerName" minWidth="200" />
+    <DataColumn name="ModelName" minWidth="200" />
+    <DataColumn name="Visible" />
+  </g:columns>
+</g:Grid>

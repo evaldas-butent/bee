@@ -10,7 +10,6 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
@@ -27,6 +26,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -47,13 +47,13 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
       this.cargoIndex = DataUtils.getColumnIndex(COL_CARGO, gridView.getDataColumns());
       this.tripIndex = DataUtils.getColumnIndex(COL_TRIP, gridView.getDataColumns());
 
-      this.dialog = DialogBox.create("Priskirti krovinį");
+      this.dialog = DialogBox.create(Localized.getConstants().trAssignCargo());
       dialog.setHideOnEscape(true);
 
       Horizontal container = new Horizontal();
       container.setBorderSpacing(5);
 
-      container.add(new Label("Pasirinkite krovinį"));
+      container.add(new Label(Localized.getConstants().trCargoSelectCargo()));
 
       Relation relation = Relation.create(VIEW_WAITING_CARGO,
           Lists.newArrayList("OrderNo", "CustomerName", "LoadingPostIndex", "LoadingCountryName",
@@ -66,6 +66,7 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
         filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(cargoIndex)));
       }
       relation.setFilter(filter);
+      relation.setCaching(Relation.Caching.QUERY);
 
       final UnboundSelector selector = UnboundSelector.create(relation,
           Lists.newArrayList("OrderNo", "Description"));
@@ -80,7 +81,7 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
       });
       container.add(selector);
       dialog.setWidget(container);
-      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
+      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
     }
 
     private void addCargo(final long cargoId) {

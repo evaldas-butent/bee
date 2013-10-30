@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcClients" viewName="EcClients" caption="=ecClients"
-  flexGrow="1" flexShrink="1"
   >
-  <columns>
-    <RelColumn name="User" renderColumns="Login" editEnabled="true"
+  <g:columns>
+    <RelColumn name="User" renderColumns="Login"
       choiceColumns="Login FirstName LastName CompanyName" visible="true" />
 
     <DataColumn name="FirstName" visible="true" />
@@ -19,10 +18,28 @@
 
     <RelColumn name="Manager" visible="true" />
 
+    <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
+    <DataColumn name="Fax" caption="=fax" visible="false" />
+    <RelColumn name="EmailId" renderColumns="Label Email">
+      <renderer type="mail" />
+    </RelColumn>
+
+    <DataColumn name="Address" />
+    <DataColumn name="PostIndex" visible="false" />
+
+    <DataColumn name="CityName" caption="=city" />
+    <DataColumn name="CountryName" caption="=country" visible="false" />
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-" visible="false">
+      <renderer type="flag" />
+    </CalcColumn>
+
     <DataColumn name="CreditLimitWarning" visible="false" />
     <DataColumn name="Registered" visible="false" />
     <DataColumn name="PersonCode" visible="false" />
-    <DataColumn name="Actvity" visible="false" />
+    <DataColumn name="Activity" visible="false" />
     <DataColumn name="Notes" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

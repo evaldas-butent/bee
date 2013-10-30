@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
@@ -7,16 +7,15 @@
   maxColumnWidth="500" caption="Types" asyncThreshold="50" filter="Integer > 0"
   order="Integer desc, Version"
   >
-  <header borderWidth="2">
-    <style>
+  <g:header borderWidth="2">
+    <g:style>
       <ui:inline>background-color: #f6cef5;</ui:inline>
       <ui:font>medium</ui:font>
-    </style>
-  </header>
-  <body maxHeight="100" />
-  <footer height="30" />
+    </g:style>
+  </g:header>
+  <g:body maxHeight="100" />
 
-  <columns>
+  <g:columns>
     <IdColumn name="Id" caption="ID" horizontalAlignment="left">
       <style>
         <headerStyle>
@@ -119,12 +118,6 @@
     </DataColumn>
 
     <DataColumn name="Sss" source="String" sortable="false">
-      <editor type="picker" height="116">
-        <ui:item>123 www</ui:item>
-        <ui:item>Bitinas ; &lt;img src="images/logo.gif"&gt;</ui:item>
-        <ui:item>ccc ddd</ui:item>
-        <ui:item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</ui:item>
-      </editor>
       <carry>
         <ui:expression>cell.value</ui:expression>
       </carry>
@@ -157,11 +150,6 @@
 
     <DataColumn name="Ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
       horizontalAlignment="center">
-      <style>
-        <footerStyle>
-          <ui:class>bee-afraid</ui:class>
-        </footerStyle>
-      </style>
       <editor type="date" minWidth="100" />
       <carry>
         <ui:function>return new Date();</ui:function>
@@ -176,32 +164,32 @@
       </style>
       <editor type="dateTime" onEntry="home" />
     </DataColumn>
-  </columns>
+  </g:columns>
 
-  <rowStyle>
+  <g:rowStyle>
     <ui:inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</ui:inline>
     <ui:expression>new Date().getMinutes() % 15 != 0</ui:expression>
-  </rowStyle>
-  <rowStyle>
+  </g:rowStyle>
+  <g:rowStyle>
     <ui:inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</ui:inline>
     <ui:expression>true</ui:expression>
-  </rowStyle>
+  </g:rowStyle>
 
-  <rowMessage>
+  <g:rowMessage>
     <ui:function>return String(rowId) + '  ' + rowVersion.toLocaleTimeString()</ui:function>
-  </rowMessage>
+  </g:rowMessage>
 
-  <rowEditable>
+  <g:rowEditable>
     <ui:expression>row.Date == null || row.Date &gt;= new Date(2008, 0, 1)</ui:expression>
-  </rowEditable>
+  </g:rowEditable>
 
-  <rowValidation>
+  <g:rowValidation>
     <ui:function>
       if (row.Integer + row.Long + row.Double &gt; 0) {
         return null;
       }
       return "sum 'Integer+Long+Double' must be positive";
     </ui:function>
-  </rowValidation>
+  </g:rowValidation>
 
-</Grid>
+</g:Grid>

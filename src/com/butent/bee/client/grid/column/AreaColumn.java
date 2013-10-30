@@ -1,8 +1,7 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
-
+import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.grid.cell.TextCell;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -16,11 +15,11 @@ public class AreaColumn extends DataColumn<String> {
     this(new TextCell(), cellSource, BeeConst.UNDEF);
   }
 
-  public AreaColumn(Cell<String> cell, CellSource cellSource) {
+  public AreaColumn(AbstractCell<String> cell, CellSource cellSource) {
     this(cell, cellSource, BeeConst.UNDEF);
   }
 
-  public AreaColumn(Cell<String> cell, CellSource cellSource, int maxDisplaySize) {
+  public AreaColumn(AbstractCell<String> cell, CellSource cellSource, int maxDisplaySize) {
     super(cell, cellSource);
     this.maxDisplaySize = maxDisplaySize;
   }

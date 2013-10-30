@@ -7,12 +7,15 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="ArticleBrand" relation="TcdArticleBrands" notNull="true" />
-    <String name="Warehouse" precision="10" notNull="true" />
-    <Numeric name="Remainder" precision="12" scale="3" />
+    <Relation name="ArticleSupplier" relation="TcdArticleSuppliers" notNull="true" cascade="DELETE" />
+    <Relation name="Warehouse" relation="Warehouses" notNull="true" label="=warehouse" />
+    <Numeric name="Remainder" precision="12" scale="3" label="=ecRemainder" />
   </Fields>
+  <Constraints>
+    <Unique fields="ArticleSupplier Warehouse" />
+  </Constraints>
   <Indexes>
-    <Index fields="ArticleBrand" />
+    <Index fields="ArticleSupplier" />
     <Index fields="Warehouse" />
   </Indexes>
 </Table>

@@ -13,7 +13,7 @@ import java.util.List;
 public class Cart implements BeeSerializable {
 
   private enum Serial {
-    DELIVERY_ADDRESS, DELIVERY_METHOD, COPY_BY_MAIL, COMMENT, ITEMS
+    DELIVERY_ADDRESS, DELIVERY_METHOD, COMMENT, ITEMS
   }
 
   public static Cart restore(String s) {
@@ -25,8 +25,6 @@ public class Cart implements BeeSerializable {
   private String deliveryAddress;
   private Long deliveryMethod;
 
-  private Boolean copyByMail;
-
   private String comment;
 
   private final List<CartItem> items = Lists.newArrayList();
@@ -34,16 +32,21 @@ public class Cart implements BeeSerializable {
   public Cart() {
     super();
   }
-  
-  public void add(EcItem ecItem, int quantity) {
+
+  public CartItem add(EcItem ecItem, int quantity) {
     if (ecItem != null && quantity > 0) {
-      CartItem item = getItem(ecItem.getId());
+      CartItem item = getItem(ecItem.getArticleId());
 
       if (item == null) {
-        items.add(new CartItem(ecItem, quantity));
+        item = new CartItem(ecItem, quantity);
+        items.add(item);
       } else {
         item.add(quantity);
       }
+      return item;
+
+    } else {
+      return null;
     }
   }
 
@@ -66,10 +69,6 @@ public class Cart implements BeeSerializable {
           setDeliveryMethod(BeeUtils.toLongOrNull(value));
           break;
 
-        case COPY_BY_MAIL:
-          setCopyByMail(BeeUtils.toBooleanOrNull(value));
-          break;
-
         case COMMENT:
           setComment(value);
           break;
@@ -86,13 +85,9 @@ public class Cart implements BeeSerializable {
       }
     }
   }
-  
+
   public String getComment() {
     return comment;
-  }
-
-  public Boolean getCopyByMail() {
-    return copyByMail;
   }
 
   public String getDeliveryAddress() {
@@ -114,7 +109,7 @@ public class Cart implements BeeSerializable {
   public boolean remove(EcItem ecItem) {
     for (Iterator<CartItem> it = items.iterator(); it.hasNext();) {
       CartItem item = it.next();
-      
+
       if (item.getEcItem().equals(ecItem)) {
         it.remove();
         return true;
@@ -144,10 +139,6 @@ public class Cart implements BeeSerializable {
           arr[i++] = getDeliveryMethod();
           break;
 
-        case COPY_BY_MAIL:
-          arr[i++] = getCopyByMail();
-          break;
-
         case COMMENT:
           arr[i++] = getComment();
           break;
@@ -162,10 +153,6 @@ public class Cart implements BeeSerializable {
 
   public void setComment(String comment) {
     this.comment = comment;
-  }
-
-  public void setCopyByMail(Boolean copyByMail) {
-    this.copyByMail = copyByMail;
   }
 
   public void setDeliveryAddress(String deliveryAddress) {
@@ -183,7 +170,7 @@ public class Cart implements BeeSerializable {
     }
     return total;
   }
-  
+
   public int totalQuantity() {
     int total = 0;
     for (CartItem item : items) {
@@ -191,10 +178,10 @@ public class Cart implements BeeSerializable {
     }
     return total;
   }
-  
-  private CartItem getItem(int id) {
+
+  private CartItem getItem(long articleId) {
     for (CartItem item : items) {
-      if (item.getEcItem().getId() == id) {
+      if (item.getEcItem().getArticleId() == articleId) {
         return item;
       }
     }

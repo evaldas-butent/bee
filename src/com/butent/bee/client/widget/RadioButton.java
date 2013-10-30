@@ -22,16 +22,7 @@ public class RadioButton extends CheckBox {
 
   public RadioButton(String name, String label) {
     this(name);
-    setText(label);
-  }
-
-  public RadioButton(String name, String label, boolean asHTML) {
-    this(name);
-    if (asHTML) {
-      setHTML(label);
-    } else {
-      setText(label);
-    }
+    setHtml(label);
   }
 
   @Override

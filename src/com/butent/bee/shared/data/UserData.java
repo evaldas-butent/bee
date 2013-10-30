@@ -35,8 +35,8 @@ public class UserData implements BeeSerializable, HasInfo {
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_PERSON, COMPANY, PERSON,
-    LOCALE, PROPERTIES, RIGHTS, CONSTANTS
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
+    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
@@ -53,17 +53,16 @@ public class UserData implements BeeSerializable, HasInfo {
   private String firstName;
   private String lastName;
   private String photoFileName;
+
+  private String companyName;
   
   private Long companyPerson;
   private Long company;
   private Long person;
   
-  private String locale;
   private Map<String, String> properties;
 
   private Map<RightsState, Multimap<RightsObjectType, String>> rights;
-
-  private Map<String, String> constants;
 
   public UserData(long userId, String login) {
     this.userId = userId;
@@ -71,13 +70,15 @@ public class UserData implements BeeSerializable, HasInfo {
   }
   
   public UserData(long userId, String login, String firstName, String lastName,
-      String photoFileName, Long companyPerson, Long company, Long person) {
+      String photoFileName, String companyName, Long companyPerson, Long company, Long person) {
     this.userId = userId;
     this.login = login;
     
     this.firstName = firstName;
     this.lastName = lastName;
     this.photoFileName = photoFileName;
+    
+    this.companyName = companyName;
     
     this.companyPerson = companyPerson;
     this.company = company;
@@ -101,30 +102,39 @@ public class UserData implements BeeSerializable, HasInfo {
         case LOGIN:
           this.login = value;
           break;
+
         case USER_ID:
           this.userId = BeeUtils.toLong(value);
           break;
+
         case FIRST_NAME:
           this.firstName = value;
           break;
+
         case LAST_NAME:
           this.lastName = value;
           break;
+        
         case PHOTO_FILE_NAME:
           this.photoFileName = value;
           break;
+        
+        case COMPANY_NAME:
+          this.companyName = value;
+          break;
+        
         case COMPANY_PERSON:
           this.companyPerson = BeeUtils.toLongOrNull(value);
           break;
+        
         case COMPANY:
           this.company = BeeUtils.toLongOrNull(value);
           break;
+        
         case PERSON:
           this.person = BeeUtils.toLongOrNull(value);
           break;
-        case LOCALE:
-          this.locale = value;
-          break;
+        
         case PROPERTIES:
           String[] entry = Codec.beeDeserializeCollection(value);
 
@@ -136,6 +146,7 @@ public class UserData implements BeeSerializable, HasInfo {
             }
           }
           break;
+
         case RIGHTS:
           entry = Codec.beeDeserializeCollection(value);
 
@@ -154,16 +165,6 @@ public class UserData implements BeeSerializable, HasInfo {
             }
           }
           break;
-        case CONSTANTS:
-          entry = Codec.beeDeserializeCollection(value);
-
-          if (!ArrayUtils.isEmpty(entry)) {
-            constants = Maps.newHashMap();
-            for (int j = 0; j < entry.length; j += 2) {
-              constants.put(entry[j], entry[j + 1]);
-            }
-          }
-          break;
       }
     }
   }
@@ -172,16 +173,12 @@ public class UserData implements BeeSerializable, HasInfo {
     return company;
   }
 
+  public String getCompanyName() {
+    return companyName;
+  }
+
   public Long getCompanyPerson() {
     return companyPerson;
-  }
-
-  public String getConstant(String name) {
-    return (constants == null) ? null : constants.get(name);
-  }
-
-  public Map<String, String> getConstants() {
-    return constants;
   }
 
   public String getFirstName() {
@@ -195,10 +192,10 @@ public class UserData implements BeeSerializable, HasInfo {
         "First Name", getFirstName(),
         "Last Name", getLastName(),
         "Photo File Name", getPhotoFileName(),
+        "Company Name", getCompanyName(),
         "Company Person ID", getCompanyPerson(),
         "Company ID", getCompany(),
-        "Person ID", getPerson(),
-        "Locale", getLocale());
+        "Person ID", getPerson());
 
     if (!BeeUtils.isEmpty(properties)) {
       info.add(new Property("Properties", BeeUtils.bracket(properties.size())));
@@ -212,11 +209,6 @@ public class UserData implements BeeSerializable, HasInfo {
       }
     }
 
-    if (!BeeUtils.isEmpty(constants)) {
-      info.add(new Property("Constants", BeeUtils.bracket(constants.size())));
-      info.addAll(PropertyUtils.createProperties(constants));
-    }
-
     return info;
   }
 
@@ -224,14 +216,10 @@ public class UserData implements BeeSerializable, HasInfo {
     return lastName;
   }
 
-  public String getLocale() {
-    return locale;
-  }
-
   public String getLogin() {
     return login;
   }
-  
+
   public Long getPerson() {
     return person;
   }
@@ -240,15 +228,15 @@ public class UserData implements BeeSerializable, HasInfo {
     return photoFileName;
   }
 
-  public Map<String, String> getProperties() {
-    return ImmutableMap.copyOf(properties);
-  }
-
   public String getProperty(String name) {
     if (properties != null) {
       return this.properties.get(name);
     }
     return null;
+  }
+
+  public Map<String, String> getProperties() {
+    return ImmutableMap.copyOf(properties);
   }
 
   public long getUserId() {
@@ -302,6 +290,9 @@ public class UserData implements BeeSerializable, HasInfo {
         case PHOTO_FILE_NAME:
           arr[i++] = photoFileName;
           break;
+        case COMPANY_NAME:
+          arr[i++] = companyName;
+          break;
         case COMPANY_PERSON:
           arr[i++] = companyPerson;
           break;
@@ -310,9 +301,6 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
         case PERSON:
           arr[i++] = person;
-          break;
-        case LOCALE:
-          arr[i++] = locale;
           break;
         case PROPERTIES:
           arr[i++] = properties;
@@ -329,16 +317,13 @@ public class UserData implements BeeSerializable, HasInfo {
           }
           arr[i++] = x;
           break;
-        case CONSTANTS:
-          arr[i++] = constants;
-          break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  public void setConstants(Map<String, String> constants) {
-    this.constants = constants;
+  public void setCompanyName(String companyName) {
+    this.companyName = companyName;
   }
 
   public void setFirstName(String firstName) {
@@ -349,11 +334,6 @@ public class UserData implements BeeSerializable, HasInfo {
     this.lastName = lastName;
   }
 
-  public UserData setLocale(String loc) {
-    this.locale = loc;
-    return this;
-  }
-
   public void setPerson(Long person) {
     this.person = person;
   }
@@ -362,16 +342,16 @@ public class UserData implements BeeSerializable, HasInfo {
     this.photoFileName = photoFileName;
   }
 
-  public void setProperties(Map<String, String> properties) {
-    this.properties = properties;
-  }
-
   public UserData setProperty(String name, String value) {
     if (this.properties == null) {
       this.properties = Maps.newHashMap();
     }
     this.properties.put(name, value);
     return this;
+  }
+
+  public void setProperties(Map<String, String> properties) {
+    this.properties = properties;
   }
 
   public void setRights(Map<RightsState, Multimap<RightsObjectType, String>> userRights) {

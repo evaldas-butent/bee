@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -29,6 +28,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -148,7 +148,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     addStyleName(stylePrefix + STYLE_PANEL);
     addStyleName(getStyle(STYLE_PANEL));
     
-    panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+    panel.setVerticalAlign(VerticalAlign.BOTTOM);
     
     sinkEvents(Event.ONCLICK);
   }
@@ -170,15 +170,11 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   @Override
   public void addItem(String text) {
-    addItem(text, false);
+    addItem(text, null);
   }
 
-  public void addItem(String text, boolean asHTML) {
-    addItem(text, asHTML, null);
-  }
-
-  public void addItem(String text, boolean asHTML, String styleName) {
-    insertTab(text, asHTML, getItemCount(), styleName);
+  public void addItem(String text, String styleName) {
+    insertTab(text, getItemCount(), styleName);
   }
 
   public void addItem(Widget widget) {
@@ -265,22 +261,17 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
   }
 
-  public void insertTab(String text, boolean asHTML, int beforeIndex, String styleName) {
+  public void insertTab(String text, int beforeIndex, String styleName) {
     checkInsertBeforeTabIndex(beforeIndex);
 
-    Label item = new Label();
-    if (asHTML) {
-      item.setHTML(text);
-    } else {
-      item.setText(text);
-    }
-    
+    Label item = new Label(text);
     StyleUtils.setWordWrap(item.getElement(), false);
+
     insertTabWidget(item, beforeIndex, styleName);
   }
 
   public void insertTab(String text, int beforeIndex) {
-    insertTab(text, false, beforeIndex, null);
+    insertTab(text, beforeIndex, null);
   }
 
   public void insertTab(Widget widget, int beforeIndex, String styleName) {

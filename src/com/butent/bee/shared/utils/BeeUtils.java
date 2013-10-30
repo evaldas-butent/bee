@@ -47,6 +47,14 @@ public final class BeeUtils {
     }
   }
 
+  public static <T> void addQuietly(List<T> list, int index, T item) {
+    if (isIndex(list, index)) {
+      list.add(index, item);
+    } else {
+      list.add(item);
+    }
+  }
+  
   public static boolean allEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return false;
@@ -323,7 +331,7 @@ public final class BeeUtils {
    * @param x2 second value to compare
    * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
    */
-  public static <T extends Comparable<T>> int compare(T x1, T x2) {
+  public static <T extends Comparable<T>> int compareNullsFirst(T x1, T x2) {
     if (x1 == null) {
       if (x2 == null) {
         return BeeConst.COMPARE_EQUAL;
@@ -337,6 +345,20 @@ public final class BeeUtils {
     }
   }
 
+  public static <T extends Comparable<T>> int compareNullsLast(T x1, T x2) {
+    if (x1 == null) {
+      if (x2 == null) {
+        return BeeConst.COMPARE_EQUAL;
+      } else {
+        return BeeConst.COMPARE_MORE;
+      }
+    } else if (x2 == null) {
+      return BeeConst.COMPARE_LESS;
+    } else {
+      return x1.compareTo(x2);
+    }
+  }
+  
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -351,44 +373,6 @@ public final class BeeUtils {
     } else {
       return s.indexOf(ch) >= 0;
     }
-  }
-
-  /**
-   * Checks is there are equal elements in the Collections.
-   * 
-   * @param c1 first Collection's elements to be compared
-   * @param c2 second Collection's elements to be compared
-   * @return true if one of the collections contain at least one equal element from the other
-   *         collection, otherwise false.
-   */
-  public static <T> boolean containsAny(Collection<T> c1, Collection<T> c2) {
-    boolean ok = false;
-
-    int n1 = size(c1);
-    if (n1 <= 0) {
-      return ok;
-    }
-    int n2 = size(c2);
-    if (n2 <= 0) {
-      return ok;
-    }
-
-    if (n1 <= n2) {
-      for (T el : c1) {
-        if (c2.contains(el)) {
-          ok = true;
-          break;
-        }
-      }
-    } else {
-      for (T el : c2) {
-        if (c1.contains(el)) {
-          ok = true;
-          break;
-        }
-      }
-    }
-    return ok;
   }
 
   public static boolean containsAnySame(String x, String first, String second, String... rest) {
@@ -677,6 +661,11 @@ public final class BeeUtils {
     }
   }
 
+  public static int getDecimals(String s) {
+    int index = (s == null) ? BeeConst.UNDEF : s.lastIndexOf(BeeConst.CHAR_POINT);
+    return (index >= 0) ? s.length() - index - 1 : 0;
+  }
+
   public static <K, V> Collection<V> getIfContains(Multimap<K, V> multimap, K key) {
     if (multimap != null && multimap.containsKey(key)) {
       return multimap.get(key);
@@ -684,7 +673,7 @@ public final class BeeUtils {
       return null;
     }
   }
-
+  
   public static <C extends Comparable<C>> C getLowerEndpoint(Range<C> range) {
     return (range != null && range.hasLowerBound()) ? range.lowerEndpoint() : null;
   }
@@ -806,6 +795,10 @@ public final class BeeUtils {
     return (range != null && range.hasUpperBound()) ? range.upperEndpoint() : null;
   }
 
+  public static boolean hasExponent(String s) {
+    return contains(s, 'E') || contains(s, 'e');
+  }
+
   public static boolean hasLength(CharSequence cs, int min) {
     if (cs == null) {
       return false;
@@ -901,6 +894,44 @@ public final class BeeUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * Checks is there are equal elements in the Collections.
+   * 
+   * @param c1 first Collection's elements to be compared
+   * @param c2 second Collection's elements to be compared
+   * @return true if one of the collections contain at least one equal element from the other
+   *         collection, otherwise false.
+   */
+  public static <T> boolean intersects(Collection<T> c1, Collection<T> c2) {
+    boolean ok = false;
+
+    int n1 = size(c1);
+    if (n1 <= 0) {
+      return ok;
+    }
+    int n2 = size(c2);
+    if (n2 <= 0) {
+      return ok;
+    }
+
+    if (n1 <= n2) {
+      for (T el : c1) {
+        if (c2.contains(el)) {
+          ok = true;
+          break;
+        }
+      }
+    } else {
+      for (T el : c2) {
+        if (c1.contains(el)) {
+          ok = true;
+          break;
+        }
+      }
+    }
+    return ok;
   }
 
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
@@ -1134,11 +1165,11 @@ public final class BeeUtils {
   }
 
   public static <T extends Comparable<T>> boolean isLeq(T x1, T x2) {
-    return compare(x1, x2) <= 0;
+    return compareNullsFirst(x1, x2) <= 0;
   }
 
   public static <T extends Comparable<T>> boolean isLess(T x1, T x2) {
-    return compare(x1, x2) < 0;
+    return compareNullsFirst(x1, x2) < 0;
   }
 
   /**
@@ -1167,11 +1198,19 @@ public final class BeeUtils {
   }
 
   public static <T extends Comparable<T>> boolean isMeq(T x1, T x2) {
-    return compare(x1, x2) >= 0;
+    return compareNullsFirst(x1, x2) >= 0;
   }
 
   public static <T extends Comparable<T>> boolean isMore(T x1, T x2) {
-    return compare(x1, x2) > 0;
+    return compareNullsFirst(x1, x2) > 0;
+  }
+
+  public static boolean isNegative(Double d) {
+    if (isDouble(d)) {
+      return Double.compare(d, BeeConst.DOUBLE_ZERO) < 0;
+    } else {
+      return false;
+    }
   }
 
   public static boolean isNonNegative(Double d) {
@@ -1365,6 +1404,10 @@ public final class BeeUtils {
     return isEmpty(ints) ? null : NUMBER_JOINER.join(ints);
   }
 
+  public static String joinItems(Collection<?> col) {
+    return join(BeeConst.DEFAULT_LIST_SEPARATOR, col);
+  }
+
   public static String joinItems(Object first, Object second, Object... rest) {
     return join(BeeConst.DEFAULT_LIST_SEPARATOR, first, second, rest);
   }
@@ -1454,6 +1497,24 @@ public final class BeeUtils {
     }
   }
 
+  public static Integer min(Collection<Integer> col) {
+    Integer result = null;
+    if (col == null) {
+      return result;
+    }
+
+    for (Integer item : col) {
+      if (item != null) {
+        if (result == null) {
+          result = item;
+        } else {
+          result = Math.min(result, item);
+        }
+      }
+    }
+    return result;
+  }
+  
   public static <T extends Comparable<T>> T min(T x1, T x2) {
     if (x1 == null) {
       return x2;
@@ -1463,6 +1524,14 @@ public final class BeeUtils {
       return x1;
     } else {
       return x2;
+    }
+  }
+
+  public static Double minusPercent(Double d, Double p) {
+    if (isDouble(d) && isDouble(p)) {
+      return d - d * p / 100d;
+    } else {
+      return d;
     }
   }
 
@@ -1536,7 +1605,7 @@ public final class BeeUtils {
     return nvl(nvl(o1, o2), nvl(o3, o4));
   }
 
-  public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
+  public static <T> void overwrite(Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
       target.clear();
@@ -1544,6 +1613,17 @@ public final class BeeUtils {
 
     if (!isEmpty(source)) {
       target.addAll(source);
+    }
+  }
+
+  public static <K, V> void overwrite(Map<K, V> target, Map<K, V> source) {
+    Assert.notNull(target);
+    if (!target.isEmpty()) {
+      target.clear();
+    }
+    
+    if (!isEmpty(source)) {
+      target.putAll(source);
     }
   }
 
@@ -1600,6 +1680,22 @@ public final class BeeUtils {
       return element;
     }
     return null;
+  }
+
+  public static int plusPercent(int x, Double p) {
+    if (x != 0 && isDouble(p)) {
+      return x + round(x * p / 100d);
+    } else {
+      return x;
+    }
+  }
+
+  public static Double plusPercent(Double d, Double p) {
+    if (isDouble(d) && isDouble(p)) {
+      return d + d * p / 100d;
+    } else {
+      return d;
+    }
   }
 
   public static int positive(int x, int def) {
@@ -1679,7 +1775,7 @@ public final class BeeUtils {
   public static char randomChar(char min, char max) {
     return (char) randomInt(min, max);
   }
-  
+
   public static double randomDouble(double min, double max) {
     Assert.isTrue(max > min);
     return min + Math.random() * (max - min);
@@ -1869,7 +1965,7 @@ public final class BeeUtils {
     if (p < 1) {
       return str;
     }
-    if (!isDigit(str.substring(p + 1))) {
+    if (!isDigit(str.substring(p + 1)) || hasExponent(str)) {
       return str;
     }
 
@@ -2358,7 +2454,12 @@ public final class BeeUtils {
     if (isEmpty(s)) {
       return null;
     }
-    return toDouble(s);
+
+    try {
+      return Double.parseDouble(s.trim());
+    } catch (NumberFormatException ex) {
+      return null;
+    }
   }
 
   /**
@@ -2566,6 +2667,15 @@ public final class BeeUtils {
    */
   public static String toString(double x) {
     return removeTrailingZeros(Double.toString(x));
+  }
+
+  public static String toString(double x, int maxDec) {
+    String s = toString(x);
+    if (maxDec >= 0 && getDecimals(s) > maxDec && !hasExponent(s)) {
+      return removeTrailingZeros(round(s, maxDec));
+    } else {
+      return s;
+    }
   }
 
   public static String toString(Enum<?> e) {

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="CalAppointmentTypes" viewName="CalAppointmentTypes" newRowCaption="=newAppointmentType"
   minColumnWidth="100"
   >
-  <columns>
-    <RelColumn name="TypeName" caption="Tipas" visible="true" />
-    <DataColumn name="TypeDescription" caption="Aprašymas" />
-  </columns>
-</Grid>
+  <g:columns>
+    <RelColumn name="TypeName" caption="=calAppointmentType" visible="true" />
+    <DataColumn name="TypeDescription" caption="=calAppointmentTypeDescription" />
+  </g:columns>
+</g:Grid>

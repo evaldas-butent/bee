@@ -2,19 +2,19 @@ package com.butent.bee.client.modules.ec.widget;
 
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.modules.ec.EcUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.RadioButton;
 import com.butent.bee.shared.BeeConst;
@@ -23,6 +23,7 @@ import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -41,6 +42,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   private static final String STYLE_INACTIVE = STYLE_PRIMARY + "-inactive";
 
   private static final String STYLE_HAS_ITEMS = STYLE_PRIMARY + "-hasItems";
+  private static final String STYLE_UPDATED = STYLE_PRIMARY + "-updated";
 
   private static final int COL_ACTIVATE = 0;
   private static final int COL_LABEL = 1;
@@ -88,14 +90,21 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
       row++;
     }
   }
-  
+
   public void addToCart(EcItem ecItem, int quantity) {
     CartType cartType = getActiveCartType();
-    carts.get(cartType).add(ecItem, quantity);
+    CartItem cartItem = carts.get(cartType).add(ecItem, quantity);
 
-    refresh(cartType);
+    if (cartItem != null) {
+      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+          .ecUpdateCartItem(cartType.getCaption(), ecItem.getName(), cartItem.getQuantity()));
+
+      refresh(cartType);
+
+      EcKeeper.persistCartItem(cartType, cartItem);
+    }
   }
-  
+
   public Cart getCart(CartType cartType) {
     return carts.get(cartType);
   }
@@ -103,7 +112,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   @Override
   public void onValueChange(ValueChangeEvent<Boolean> event) {
     if (BeeUtils.isTrue(event.getValue())) {
-      Integer newRow = getEventRow(event);
+      Integer newRow = getEventRow(event, false);
 
       if (newRow != null) {
         CartType newType = typesToRows.inverse().get(newRow);
@@ -123,15 +132,34 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   }
 
   public void refresh(CartType cartType) {
-    updateInfo(cartType);
+    boolean updated = updateInfo(cartType);
     updateTitle(cartType);
 
-    getRowFormatter().setStyleName(typesToRows.get(cartType), STYLE_HAS_ITEMS,
-        !carts.get(cartType).isEmpty());
+    final Element rowElement = getRowFormatter().getElement(typesToRows.get(cartType));
+    if (carts.get(cartType).isEmpty()) {
+      rowElement.removeClassName(STYLE_HAS_ITEMS);
+    } else {
+      rowElement.addClassName(STYLE_HAS_ITEMS);
+    }
+
+    if (updated) {
+      rowElement.removeClassName(STYLE_UPDATED);
+      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          if (!StyleUtils.hasClassName(rowElement, STYLE_UPDATED)) {
+            rowElement.addClassName(STYLE_UPDATED);
+          }
+        }
+      });
+    }
   }
 
   public boolean removeFromCart(CartType cartType, EcItem ecItem) {
     if (cartType != null && carts.get(cartType).remove(ecItem)) {
+      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+          .ecRemoveCartItem(cartType.getCaption(), ecItem.getName()));
+
       refresh(cartType);
       return true;
     } else {
@@ -143,20 +171,8 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     return activeCartType;
   }
 
-  private static Integer getEventRow(GwtEvent<?> event) {
-    if (event.getSource() instanceof Widget) {
-      TableRowElement rowElement =
-          DomUtils.getParentRow(((Widget) event.getSource()).getElement(), false);
-
-      if (rowElement != null) {
-        return rowElement.getRowIndex();
-      }
-    }
-    return null;
-  }
-
   private void onLabelClick(ClickEvent event) {
-    CartType type = typesToRows.inverse().get(getEventRow(event));
+    CartType type = typesToRows.inverse().get(getEventRow(event, false));
     if (type != null && !getCart(type).isEmpty()) {
       EcKeeper.openCart(type);
     }
@@ -179,12 +195,12 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
         int quantity = item.getQuantity();
         int price = item.getEcItem().getPrice();
 
-        sb.append(quantity).append(" x ").append(EcUtils.renderCents(price));
+        sb.append(quantity).append(" x ").append(EcUtils.formatCents(price));
         sb.append(BeeConst.CHAR_EOL);
       }
 
       sb.append(Localized.getConstants().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
-      sb.append(EcUtils.renderCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
+      sb.append(EcUtils.formatCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
       sb.append(EcConstants.CURRENCY);
 
       return sb.toString();
@@ -195,12 +211,15 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     this.activeCartType = activeCartType;
   }
 
-  private void updateInfo(CartType cartType) {
+  private boolean updateInfo(CartType cartType) {
     String info = renderInfo(carts.get(cartType));
 
     Widget widget = getWidget(typesToRows.get(cartType), COL_INFO);
-    if (widget != null) {
+    if (widget != null && !BeeUtils.equalsTrim(info, widget.getElement().getInnerHTML())) {
       widget.getElement().setInnerHTML(info);
+      return true;
+    } else {
+      return false;
     }
   }
 

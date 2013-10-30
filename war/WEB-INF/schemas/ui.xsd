@@ -40,20 +40,30 @@
 
   <xs:simpleType name="horizontalAlignmentType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="left" />
-      <xs:enumeration value="center" />
-      <xs:enumeration value="right" />
-      <xs:enumeration value="justify" />
       <xs:enumeration value="start" />
       <xs:enumeration value="end" />
+      <xs:enumeration value="left" />
+      <xs:enumeration value="right" />
+      <xs:enumeration value="center" />
+      <xs:enumeration value="justify" />
+      <xs:enumeration value="match-parent" />
+      <xs:enumeration value="start end" />
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="verticalAlignmentType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="auto" />
+      <xs:enumeration value="use-script" />
+      <xs:enumeration value="baseline" />
+      <xs:enumeration value="sub" />
+      <xs:enumeration value="super" />
       <xs:enumeration value="top" />
+      <xs:enumeration value="text-top" />
+      <xs:enumeration value="central" />
       <xs:enumeration value="middle" />
       <xs:enumeration value="bottom" />
+      <xs:enumeration value="text-bottom" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -138,7 +148,6 @@
   <xs:simpleType name="editorType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="list" />
-      <xs:enumeration value="picker" />
       <xs:enumeration value="date" />
       <xs:enumeration value="dateTime" />
       <xs:enumeration value="string" />
@@ -317,6 +326,7 @@
       <xs:enumeration value="close" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="edit" />
+      <xs:enumeration value="filter" />
       <xs:enumeration value="refresh" />
       <xs:enumeration value="save" />
     </xs:restriction>
@@ -361,6 +371,8 @@
       <xs:enumeration value="star" />
       <xs:enumeration value="fileIcon" />
       <xs:enumeration value="photo" />
+      <xs:enumeration value="mail" />
+      <xs:enumeration value="url" />
     </xs:restriction>
   </xs:simpleType>
   
@@ -411,6 +423,7 @@
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="caching" type="relationCaching" />
     <xs:attribute name="operator" type="type:operatorType" />
+    <xs:attribute name="selectorClass" type="xs:normalizedString" />
     <xs:attribute name="itemType" type="menuItemType" />
     <xs:attribute name="visibleLines" type="xs:positiveInteger" />
     <xs:attribute name="newRowForm" type="type:nameType" />
@@ -460,4 +473,15 @@
       <xs:enumeration value="button" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:simpleType name="whiteSpaceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="normal" />
+      <xs:enumeration value="nowrap" />
+      <xs:enumeration value="pre" />
+      <xs:enumeration value="pre-line" />
+      <xs:enumeration value="pre-wrap" />
+    </xs:restriction>
+  </xs:simpleType>
+  
 </xs:schema>

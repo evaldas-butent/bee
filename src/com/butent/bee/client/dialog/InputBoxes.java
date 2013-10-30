@@ -10,7 +10,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Panel;
@@ -32,11 +31,12 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
@@ -360,8 +360,8 @@ public class InputBoxes {
 
   private static void showError(Widget widget, String message) {
     if (!BeeUtils.isEmpty(message) && !SILENT_ERROR.equals(message)) {
-      if (widget instanceof HasText) {
-        ((HasText) widget).setText(message);
+      if (widget instanceof HasHtml) {
+        ((HasHtml) widget).setHtml(message);
       } else if (widget instanceof NotificationListener) {
         ((NotificationListener) widget).notifySevere(message);
       } else {

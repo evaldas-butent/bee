@@ -45,6 +45,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -68,6 +69,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -142,7 +144,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             public void onSuccess(Integer result) {
               BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
               afterMulti(rowIds);
-              showInfo("Išmesta " + result + " eil.");
+              showInfo(Localized.getMessages().deletedRows(result));
             }
           });
         }
@@ -158,8 +160,19 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private static final BeeLogger logger = LogUtils.getLogger(GridPresenter.class);
 
+  private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
+      int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
+      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
+
+    GridContainerView view = new GridContainerImpl();
+    view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
+        gridOptions);
+
+    return view;
+  }
   private final GridContainerView gridContainer;
   private final Provider dataProvider;
+
   private final GridFilterManager filterManager;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
@@ -239,8 +252,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       options.add(Localized.getConstants().cancel());
 
-      Global.getMsgBoxen().display(getCaption(), Icon.ALARM, Lists.newArrayList("Išmesti ?"),
-          options, 2, new ChoiceCallback() {
+      Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
+          Lists.newArrayList(Localized.getConstants().deleteQuestion()), options, 2,
+          new ChoiceCallback() {
             @Override
             public void onSuccess(int value) {
               if (value == 0) {
@@ -251,8 +265,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
                 deleteCallback.onConfirm();
               }
             }
-          }, BeeConst.UNDEF, null, StyleUtils.FontSize.XX_LARGE.getClassName(),
-          StyleUtils.FontSize.MEDIUM.getClassName(), null);
+          }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.XX_LARGE),
+          StyleUtils.className(FontSize.MEDIUM), null);
     }
   }
 
@@ -322,6 +336,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             gridContainer.getFavorite());
         break;
 
+      case CANCEL:
       case CLOSE:
         close();
         break;
@@ -373,7 +388,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       default:
-        logger.info(action, "not implemented");
+        logger.warning(NameUtils.getName(this), action, "not implemented");
     }
 
     if (getGridInterceptor() != null) {
@@ -505,7 +520,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public void tryFilter(Filter filter, Consumer<Boolean> callback, boolean notify) {
+  public void tryFilter(final Filter filter, final Consumer<Boolean> callback, boolean notify) {
     if (Objects.equal(getDataProvider().getUserFilter(), filter)) {
       if (callback != null) {
         callback.accept(true);
@@ -513,12 +528,21 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       return;
     }
 
-    HeaderView header = getHeader();
-    if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
-      header.showAction(Action.REMOVE_FILTER, filter != null);
-    }
+    getDataProvider().tryFilter(filter, new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        if (BeeUtils.isTrue(input)) {
+          HeaderView header = getHeader();
+          if (header != null && header.hasAction(Action.REMOVE_FILTER)) {
+            header.showAction(Action.REMOVE_FILTER, filter != null);
+          }
+        }
 
-    getDataProvider().tryFilter(filter, callback, notify);
+        if (callback != null) {
+          callback.accept(input);
+        }
+      }
+    }, notify);
   }
 
   private void addRow() {
@@ -556,7 +580,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     BeeKeeper.getScreen().closeWidget(getMainView());
   }
 
-  private static Provider createProvider(GridContainerView view, String viewName,
+  private Provider createProvider(GridContainerView view, String viewName,
       List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter, Order order,
       BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy) {
@@ -571,18 +595,18 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, notificationListener, viewName, columns,
+        provider = new AsyncProvider(display, this, notificationListener, viewName, columns,
             idColumnName, versionColumnName, immutableFilter, cachingPolicy, parentFilters,
             userFilter);
         break;
 
       case CACHED:
-        provider = new CachedProvider(display, notificationListener, viewName, columns,
+        provider = new CachedProvider(display, this, notificationListener, viewName, columns,
             idColumnName, versionColumnName, immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       case LOCAL:
-        provider = new LocalProvider(display, notificationListener, viewName, columns,
+        provider = new LocalProvider(display, this, notificationListener, viewName, columns,
             immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
@@ -595,17 +619,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       provider.setOrder(order);
     }
     return provider;
-  }
-
-  private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
-      int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
-      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
-
-    GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
-        gridOptions);
-
-    return view;
   }
 
   private GridInterceptor.DeleteMode getDeleteMode(IsRow row, Collection<RowInfo> selected) {

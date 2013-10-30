@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -22,8 +23,8 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     ColumnToken columnToken = new ColumnToken(dataIndex, valueType);
     
     if (renderableToken != null) {
-      columnToken.setPrefix(renderableToken.getPrefix());
-      columnToken.setSuffix(renderableToken.getSuffix());
+      columnToken.setPrefix(Localized.maybeTranslate(renderableToken.getPrefix()));
+      columnToken.setSuffix(Localized.maybeTranslate(renderableToken.getSuffix()));
       
       if (BeeUtils.isTrue(renderableToken.getAddPrefixWhenEmpty())) {
         columnToken.setAddPrefixWhenEmpty(true);
@@ -52,7 +53,7 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
   private boolean addPrefixWhenEmpty;
   private boolean addSuffixWhenEmpty;
 
-  private DateTimeFormat dateTimeformat;
+  private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
 
   private int scale = BeeConst.UNDEF;
@@ -75,13 +76,9 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     return dataIndex;
   }
 
-  public DateTimeFormat getDateTimeformat() {
-    return dateTimeformat;
-  }
-
   @Override
   public DateTimeFormat getDateTimeFormat() {
-    return dateTimeformat;
+    return dateTimeFormat;
   }
 
   @Override
@@ -135,13 +132,9 @@ public class ColumnToken implements HasDateTimeFormat, HasNumberFormat, HasScale
     this.addSuffixWhenEmpty = addSuffixWhenEmpty;
   }
 
-  public void setDateTimeformat(DateTimeFormat dateTimeformat) {
-    this.dateTimeformat = dateTimeformat;
-  }
-
   @Override
   public void setDateTimeFormat(DateTimeFormat format) {
-    this.dateTimeformat = format;
+    this.dateTimeFormat = format;
   }
 
   @Override

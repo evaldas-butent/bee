@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separator="true"
+>
+
+  <Item name="EcClients" label="=ecClients" service="ensure_categories_and_open_grid"
+    parameters="EcClients" />
+
+  <Item name="EcRegistrations" label="=ecRegistrations" service="grid" parameters="EcRegistrations"
+    separator="true" />
+
+  <Item name="EcManagers" label="=ecManagers" service="grid" parameters="EcManagers"
+    separator="true" />
+
+  <Item name="Branches" label="=branches" service="grid" parameters="Branches" separator="true" />
+  <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses" />
+
+  <Item name="TermsOfDelivery" label="=ecTermsOfDelivery" service="edit_terms_of_delivery"
+    separator="true" />
+  <Item name="EcContacts" label="=ecContacts" service="edit_ec_contacts" />
+
+  <Item name="EcBanners" label="=ecBanners" service="grid" parameters="EcBanners"
+    separator="true" />
+
+  <Item name="EcMailParameters" label="=ecMailParameters" service="grid"
+    parameters="EcMailParameters" separator="true" />
+
+  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec" />
+
+</Entry>

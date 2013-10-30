@@ -3,19 +3,19 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Mail" caption="Laiškai" readOnly="true" enabledActions="add delete"
+  name="Mail" caption="=mails" readOnly="true" enabledActions="add delete"
   >
   <SplitPanel splitterSize="1" style="margin:5px;">
     <west size="300">
       <FlowPanel class="flexBox-vertical">
-        <InputText placeholder="Čia bus paieška..." style="width: 295px" />
+        <InputText placeholder="There will be a search..." style="width: 295px" />
         <GridPanel name="Messages" class="bee-mail-Headers flexible" />
       </FlowPanel>
     </west>
       
     <center>
       <FlowPanel class="flexBox-vertical" style="margin-top: 5px; margin-left: 5px;">
-        <Label name="EmptySelection" class="bee-mail-EmptySelection" text="Nepasirinktas joks laiškas" />
+        <Label name="EmptySelection" class="bee-mail-EmptySelection" text="=mailThereIsNoMessageSelected" />
 
         <FlowPanel name="Message" class="flexible flexBox-vertical" style="display: none;">
           <xi:include href="widgets/Message.widget.xml" />

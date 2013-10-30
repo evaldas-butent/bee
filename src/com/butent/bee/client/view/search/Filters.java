@@ -19,7 +19,6 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
@@ -295,7 +294,7 @@ public class Filters {
       c++;
 
       final CustomDiv labelWidget = new CustomDiv();
-      labelWidget.setHTML(LocaleUtils.maybeLocalize(item.getLabel()));
+      labelWidget.setHtml(Localized.maybeTranslate(item.getLabel()));
 
       labelWidget.addClickHandler(new ClickHandler() {
         @Override
@@ -310,21 +309,22 @@ public class Filters {
       if (item.isEditable()) {
         Image edit = new Image(Global.getImages().silverEdit());
         edit.addStyleName(STYLE_EDIT);
-        edit.setTitle("keisti pavadinimą");
+        edit.setTitle(Localized.getConstants().actionRenameFilter());
 
         edit.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             final Item editItem = getItem(items, id);
-            final String oldLabel = normalizeLabel(LocaleUtils.maybeLocalize(editItem.getLabel()));
+            final String oldLabel = normalizeLabel(Localized.maybeTranslate(editItem.getLabel()));
 
-            Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
+            Global.inputString(Localized.getConstants().actionRenameFilter(), null,
+                new StringCallback() {
               @Override
               public void onSuccess(String newValue) {
                 String newLabel = normalizeLabel(newValue);
                 if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
                   editItem.setLabel(newLabel);
-                  labelWidget.setHTML(newLabel);
+                  labelWidget.setHtml(newLabel);
 
                   Queries.update(CommonsConstants.TBL_FILTERS, editItem.getId(), COL_LABEL,
                       new TextValue(newLabel));
@@ -342,16 +342,17 @@ public class Filters {
 
       if (item.isRemovable()) {
         Image delete = new Image(Global.getImages().silverMinus());
-        delete.setTitle("pašalinti");
+        delete.setTitle(Localized.getConstants().actionRemove());
 
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             final Item delItem = getItem(items, id);
             List<String> messages =
-                Lists.newArrayList("Pašalinti filtrą", BeeUtils.joinWords(delItem.getLabel(), "?"));
+                Lists.newArrayList(Localized.getConstants().actionDeleteFilter(), BeeUtils
+                    .joinWords(delItem.getLabel(), "?"));
 
-            Global.confirmDelete("Filtro pašalinimas", Icon.WARNING, messages,
+            Global.confirmDelete(Localized.getConstants().filterRemove(), Icon.WARNING, messages,
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {

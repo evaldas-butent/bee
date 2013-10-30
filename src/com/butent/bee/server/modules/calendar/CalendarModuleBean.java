@@ -14,14 +14,14 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
+import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
-import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
-import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
-import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -283,9 +283,9 @@ public class CalendarModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
         new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, ParameterType.TIME,
-            "Kalendoriaus anksčiausias priminimų laikas", false, "8:00"),
+            usr.getLocalizableConstants().calRemindersEarliestTime(), false, "8:00"),
         new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, ParameterType.TIME,
-            "Kalendoriaus vėliausias priminimų laikas", false, "18:00"));
+            usr.getLocalizableConstants().calRemindersLatestTime(), false, "18:00"));
   }
 
   @Override
@@ -302,11 +302,11 @@ public class CalendarModuleBean implements BeeModule {
   public void init() {
     createNotificationTimers(null);
 
-    sys.registerViewEventHandler(new ViewEventHandler() {
+    sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void updateTimers(ViewModifyEvent event) {
         if (event.isAfter()) {
-          if (BeeUtils.same(event.getViewName(), CommonsConstants.TBL_REMINDER_TYPES)) {
+          if (BeeUtils.same(event.getTargetName(), CommonsConstants.TBL_REMINDER_TYPES)) {
             if (event instanceof ViewDeleteEvent
                 || event instanceof ViewUpdateEvent
                 && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
@@ -314,7 +314,7 @@ public class CalendarModuleBean implements BeeModule {
 
               createNotificationTimers(null);
             }
-          } else if (BeeUtils.same(event.getViewName(), TBL_APPOINTMENTS)) {
+          } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENTS)) {
             if (event instanceof ViewDeleteEvent) {
               for (long id : ((ViewDeleteEvent) event).getIds()) {
                 createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
@@ -328,7 +328,7 @@ public class CalendarModuleBean implements BeeModule {
                 createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
               }
             }
-          } else if (BeeUtils.same(event.getViewName(), TBL_APPOINTMENT_REMINDERS)) {
+          } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENT_REMINDERS)) {
             if (event instanceof ViewDeleteEvent) {
               for (long id : ((ViewDeleteEvent) event).getIds()) {
                 createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
@@ -656,7 +656,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (hours.size() > 1) {
-      result.addColumn(ValueType.TEXT, "Viso");
+      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -681,7 +681,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 
@@ -743,7 +743,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (months.size() > 1) {
-      result.addColumn(ValueType.TEXT, "Viso");
+      result.addColumn(ValueType.TEXT, usr.getLocalizableConstants().calTotal());
     }
     int columnCount = result.getNumberOfColumns();
 
@@ -768,7 +768,7 @@ public class CalendarModuleBean implements BeeModule {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
     if (result.getNumberOfRows() > 1) {
-      totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
+      totalRows(result, 2, columnCount - 1, 0, usr.getLocalizableConstants().totalOf() + ":", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
 
@@ -790,10 +790,10 @@ public class CalendarModuleBean implements BeeModule {
     appFilter.add(VALID_APPOINTMENT);
     appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
-    
+
     Long startTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_START_TIME));
     Long endTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_END_TIME));
-    
+
     if (startTime != null) {
       appFilter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(startTime)));
     }

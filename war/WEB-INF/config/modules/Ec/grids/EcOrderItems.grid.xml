@@ -1,18 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
-  name="EcOrderItems" viewName="EcOrderItems" disabledActions="add"
-  flexGrow="1" flexShrink="1"
+  name="EcOrderItems" viewName="EcOrderItems"
+  flexGrow="1" minColumnWidth="60"
   >
-  <columns>
-    <PropColumn name="ArticleName" type="string" minWidth="200" caption="=ecItemName" visible="true" />
-    <PropColumn name="ArticleNr" type="string" minWidth="100" caption="=ecItemCode" visible="true" />
-  
-    <DataColumn name="QuantityOrdered" visible="true" />
-    <DataColumn name="QuantitySubmit" visible="true" />
+  <g:columns>
+    <RelColumn name="ArticleName" caching="none" newRowEnabled="false"
+        renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
+        choiceColumns="ArticleName BrandName ArticleNr" editEnabled="true" visible="true" />
+    <DataColumn name="BrandName" />
+    <DataColumn name="ArticleNr" visible="true">
+      <footer text="=ecOrderTotal" horizontalAlignment="right" />
+    </DataColumn>
 
-    <DataColumn name="Price" visible="true" />
+    <DataColumn name="Weight" maxWidth="80">
+      <footer expression="row.Weight ? (row.QuantitySubmit * row.Weight) : null" />
+    </DataColumn>
+      
+    <DataColumn name="QuantityOrdered" visible="true" maxWidth="100">
+      <footer aggregate="sum" options="0" />
+    </DataColumn>
+    <DataColumn name="QuantitySubmit" visible="true" maxWidth="100">
+      <footer aggregate="sum" options="0" />
+    </DataColumn>
 
-    <DataColumn name="Note" />
-  </columns>
-</Grid>
+    <DataColumn name="Price" visible="true" maxWidth="100" updateMode="row" />
+    <CalcColumn name="Amount" type="decimal" scale="2" caption="=total" maxWidth="100">
+      <render>
+        <ui:expression>row.QuantitySubmit * row.Price</ui:expression>
+      </render>
+      <footer aggregate="sum" options="0" />
+    </CalcColumn>
+
+    <DataColumn name="Note" visible="false" />
+    
+    <PropColumn name="Remainder" type="integer" dynamic="true" minWidth="40" maxWidth="80">
+      <footer aggregate="sum" />
+    </PropColumn>
+
+    <PropColumn name="Cost" type="decimal" scale="2" caption="=ecItemCost" dynamic="true"
+      flexGrow="0">
+      <dynStyle>
+        <ui:inline>color: red</ui:inline>
+        <ui:expression>Number(row.Cost) >= row.Price</ui:expression>
+      </dynStyle>
+    </PropColumn>
+
+    <PropColumn name="SupplPrice" type="decimal" scale="2" caption="=ecItemPrice" dynamic="true"
+      flexGrow="0" />
+
+    <PropColumn name="SupplierID" type="string" caption="=code" dynamic="true" flexGrow="0" />
+  </g:columns>
+</g:Grid>

@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.Node;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -869,7 +870,7 @@ public final class Features {
   }
 
   private static boolean testAudio() {
-    Element element = Document.get().createElement(DomUtils.TAG_AUDIO);
+    Element element = Document.get().createElement(Tags.AUDIO);
     boolean ok;
 
     if (element == null) {
@@ -944,16 +945,15 @@ public final class Features {
   }-*/;
 
   private static boolean testContentEditable() {
-    return JsUtils.isIn("isContentEditable",
-        DomUtils.createElement(DomUtils.TAG_SPAN));
+    return JsUtils.isIn("isContentEditable", DomUtils.createElement(Tags.SPAN));
   }
 
   private static boolean testDnd() {
-    return JsUtils.isIn("draggable", DomUtils.createElement(DomUtils.TAG_SPAN));
+    return JsUtils.isIn("draggable", DomUtils.createElement(Tags.SPAN));
   }
 
   private static boolean testDndEvents() {
-    String tg = DomUtils.TAG_DIV;
+    String tg = Tags.DIV;
     return isEventSupported(tg, "drag") && isEventSupported(tg, "dragstart")
         && isEventSupported(tg, "dragenter")
         && isEventSupported(tg, "dragover")
@@ -978,7 +978,7 @@ public final class Features {
   }
 
   private static boolean testElementMeter() {
-    return JsUtils.isIn("value", DomUtils.createElement(DomUtils.TAG_METER));
+    return JsUtils.isIn("value", DomUtils.createElement(Tags.METER));
   }
 
   private static boolean testElementOutput() {
@@ -986,7 +986,7 @@ public final class Features {
   }
 
   private static boolean testElementProgress() {
-    return JsUtils.isIn("value", DomUtils.createElement(DomUtils.TAG_PROGRESS));
+    return JsUtils.isIn("value", DomUtils.createElement(Tags.PROGRESS));
   }
 
   private static boolean testElementTime() {
@@ -1006,7 +1006,7 @@ public final class Features {
   }
 
   private static boolean testInputAttribute(String attr) {
-    Element element = DomUtils.createElement(DomUtils.TAG_INPUT);
+    Element element = DomUtils.createElement(Tags.INPUT);
     return JsUtils.isIn(attr, element);
   }
 
@@ -1134,7 +1134,7 @@ public final class Features {
   }
 
   private static boolean testSvgInline() {
-    Element element = Document.get().createElement(DomUtils.TAG_DIV);
+    Element element = Document.get().createElement(Tags.DIV);
     element.setInnerHTML("<svg/>");
     Node node = element.getFirstChild();
 
@@ -1152,7 +1152,7 @@ public final class Features {
   }-*/;
 
   private static boolean testVideo() {
-    Element element = DomUtils.createElement(DomUtils.TAG_VIDEO);
+    Element element = DomUtils.createElement(Tags.VIDEO);
     return JsUtils.isFunction(element, "canPlayType");
   }
 
@@ -1172,7 +1172,7 @@ public final class Features {
   }
 
   private static boolean testVideoPoster() {
-    return JsUtils.isIn("poster", DomUtils.createElement(DomUtils.TAG_VIDEO));
+    return JsUtils.isIn("poster", DomUtils.createElement(Tags.VIDEO));
   }
 
   private static String testVideoTheora() {

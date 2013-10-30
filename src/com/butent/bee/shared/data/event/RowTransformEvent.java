@@ -50,6 +50,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
     return viewName;
   }
 
+  @Override
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
   }

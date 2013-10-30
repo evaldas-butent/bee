@@ -3,7 +3,7 @@
 
   name="Rights"
   source="Rights"
-  newRowCaption="Nauja teisė"
+  newRowCaption="=newRight"
   >
   <Columns>
     <SimpleColumn name="Object" />

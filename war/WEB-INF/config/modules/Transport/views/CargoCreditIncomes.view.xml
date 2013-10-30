@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CargoCreditIncomes" source="CargoIncomes"
+  >
+  <Columns>
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <SimpleColumn name="Order" />
+      <SimpleJoin name="Order" joinType="INNER">
+        <SimpleColumn name="Date" alias="OrderDate" />
+        <SimpleColumn name="OrderNo" />
+      </SimpleJoin>
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleJoin joinType="LEFT" name="Service">
+      <SimpleColumn name="Item" />
+      <SimpleColumn name="Name" alias="ServiceName" />
+    </SimpleJoin>
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
+    <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Sale" />
+    <SimpleJoin name="Sale" joinType="INNER">
+      <HiddenColumn name="Proforma" />
+      <SimpleColumn name="Date" alias="InvoiceDate" />
+      <SimpleColumn name="InvoicePrefix" />
+      <SimpleColumn name="InvoiceNo" />
+
+      <SimpleColumn name="Customer" />
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Payer" />
+      <SimpleJoin joinType="LEFT" name="Payer">
+        <SimpleColumn name="Name" alias="PayerName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <HiddenColumn name="Purchase" />
+  </Columns>
+  <Order>
+    <OrderBy column="OrderDate" />
+    <OrderBy column="OrderNo" />
+  </Order>
+</View>

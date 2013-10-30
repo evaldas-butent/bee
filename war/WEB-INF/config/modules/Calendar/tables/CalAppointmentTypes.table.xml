@@ -5,8 +5,8 @@
   idName="CalAppointmentTypeID"
   >
   <Fields>
-    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" />
-    <Relation name="AppointmentType" notNull="true" relation="AppointmentTypes" cascade="DELETE" />
+    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" label="=calendar" />
+    <Relation name="AppointmentType" notNull="true" relation="AppointmentTypes" cascade="DELETE" label="=calAppointmentType"/>
   </Fields>
 
   <Constraints>

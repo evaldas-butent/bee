@@ -72,6 +72,11 @@ public final class Service {
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
   
+  public static final String IMPORT_OSAMA_TIEKEJAI = DATA_SERVICE_PREFIX + "import_osama_tiekejai";
+  public static final String IMPORT_OSAMA_DARBUOTOJIAI = DATA_SERVICE_PREFIX + "import_osama_darb";
+  public static final String IMPORT_OSAMA_PREK_SIST = DATA_SERVICE_PREFIX
+      + "import_osama_prek_sist";
+
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
   
@@ -83,7 +88,6 @@ public final class Service {
   public static final String RPC_VAR_SID = RPC_VAR_SYS_PREFIX + "sid";
   public static final String RPC_VAR_SEP = RPC_VAR_SYS_PREFIX + "sep";
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
-  public static final String RPC_VAR_LOC = RPC_VAR_SYS_PREFIX + "loc";
   public static final String RPC_VAR_RESP = RPC_VAR_SYS_PREFIX + "ro";
 
   public static final String RPC_VAR_CNT = RPC_VAR_SYS_PREFIX + "cnt";
@@ -164,6 +168,7 @@ public final class Service {
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
   
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
+  public static final String VAR_UI = RPC_VAR_PREFIX + "ui";
   
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

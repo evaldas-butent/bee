@@ -17,6 +17,6 @@ public class ReadyDemo extends ReadyHandler {
 
   @Override
   public void onReady(ReadyEvent event) {
-    label.setText("ready");
+    label.setHtml("ready");
   }
 }

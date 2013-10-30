@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="DriverAdvances" viewName="DriverAdvances" caption="Avansai"
+  name="DriverAdvances" viewName="DriverAdvances" caption="=trAdvances"
   >
 
-  <columns>
-    <DataColumn name="Date" caption="Data" minWidth="80">
+  <g:columns>
+    <DataColumn name="Date" caption="=date" minWidth="80">
       <carry><ui:expression>row.Date</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="Number" caption="Dok.Nr." flexGrow="1" flexShrink="1" />
-    <DataColumn name="Amount" caption="Suma" format="#.00" flexGrow="1" flexShrink="1">
+    <DataColumn name="Number" caption="=trDocumentNumberShort" flexGrow="1" flexShrink="1" />
+    <DataColumn name="Amount" caption="=total" format="#.00" flexGrow="1" flexShrink="1">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <RelColumn name="Currency" caption="Val." minWidth="50">
+    <RelColumn name="Currency" caption="=currencyShort" minWidth="50">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
       <carry><ui:expression>row.Currency</ui:expression></carry>
     </RelColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

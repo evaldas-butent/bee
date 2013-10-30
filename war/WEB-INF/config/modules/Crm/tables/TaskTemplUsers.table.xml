@@ -5,9 +5,9 @@
   idName="TaskTemplUserID"
   >
   <Fields>
-    <Relation name="Template" notNull="true" relation="TaskTemplates" cascade="DELETE" />
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
-    <Boolean name="Executor" />
+    <Relation name="Template" notNull="true" relation="TaskTemplates" cascade="DELETE" label="=crmTasksTemplate"/>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <Boolean name="Executor" label="=crmTaskExecutor" />
   </Fields>
 
   <Constraints>

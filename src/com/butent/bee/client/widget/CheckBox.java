@@ -12,16 +12,16 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.HasHTML;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a standard check box user interface component.
  */
 
-public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
+public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
 
   private final InputElement inputElem;
   private final LabelElement labelElem;
@@ -50,16 +50,7 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
 
   public CheckBox(String label) {
     this();
-    setText(label);
-  }
-
-  public CheckBox(String label, boolean asHTML) {
-    this();
-    if (asHTML) {
-      setHTML(label);
-    } else {
-      setText(label);
-    }
+    setHtml(label);
   }
 
   @Override
@@ -76,7 +67,7 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
   }
   
   @Override
-  public String getHTML() {
+  public String getHtml() {
     return labelElem.getInnerHTML();
   }
 
@@ -95,11 +86,6 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
     return inputElem.getTabIndex();
   }
 
-  @Override
-  public String getText() {
-    return labelElem.getInnerText();
-  }
-  
   @Override
   public Boolean getValue() {
     if (isAttached()) {
@@ -138,7 +124,7 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
   }
   
   @Override
-  public void setHTML(String html) {
+  public void setHtml(String html) {
     labelElem.setInnerHTML(html);
   }
   
@@ -152,11 +138,6 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHTML {
     if (inputElem != null) {
       inputElem.setTabIndex(index);
     }
-  }
-  
-  @Override
-  public void setText(String text) {
-    labelElem.setInnerText(text);
   }
   
   @Override

@@ -301,6 +301,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       Assert.notEmpty(this.relation);
 
+      addIndex(getStorageTable(), Lists.newArrayList(this.getName()), false);
+
       addForeignKey(getStorageTable(), Lists.newArrayList(this.getName()), getRelation(), null,
           getCascade());
     }

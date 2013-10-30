@@ -17,7 +17,6 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.HasDimensions;
-import com.butent.bee.client.view.grid.CellGrid.ColumnInfo;
 import com.butent.bee.client.widget.BooleanWidget;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.SimpleCheckBox;
@@ -79,8 +78,8 @@ public final class GridSettings {
       return;
     }
 
-    final List<ColumnInfo> predefinedColumns = grid.getPredefinedColumns();
-    List<Integer> visibleColumns = grid.getVisibleColumns();
+    final List<ColumnInfo> predefinedColumns = grid.getStaticPredefinedColumns();
+    List<Integer> visibleColumns = grid.getStaticVisibleColumns();
 
     final HtmlTable table = new HtmlTable();
     table.addStyleName(STYLE_TABLE);
@@ -129,12 +128,14 @@ public final class GridSettings {
       public void onSuccess() {
         List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
 
-        if (grid.updateVisibleColumns(selectedColumns)) {
+        if (grid.updateStaticVisibleColumns(selectedColumns)) {
           List<String> names = Lists.newArrayList();
 
           List<ColumnInfo> columns = grid.getColumns();
           for (ColumnInfo columnInfo : columns) {
-            names.add(columnInfo.getColumnId());
+            if (!columnInfo.isDynamic()) {
+              names.add(columnInfo.getColumnId());
+            }
           }
 
           saveGridSetting(key, GridConfig.columnsIndex, NameUtils.join(names));
@@ -236,7 +237,7 @@ public final class GridSettings {
   private static Widget createLabel(ColumnInfo columnInfo, int index) {
     DndDiv widget = new DndDiv(STYLE_LABEL);
 
-    widget.setHTML(columnInfo.getLabel());
+    widget.setHtml(columnInfo.getLabel());
     DomUtils.setDataIndex(widget.getElement(), index);
 
     DndHelper.makeSource(widget, DND_CONTENT_TYPE, index, STYLE_DRAG);
@@ -267,7 +268,7 @@ public final class GridSettings {
   }
 
   private static int getDataIndex(HtmlTable table, int row) {
-    return DomUtils.getDataIndex(table.getWidget(row, LABEL_COL).getElement());    
+    return DomUtils.getDataIndexInt(table.getWidget(row, LABEL_COL).getElement());    
   }
 
   private static List<Integer> getSelectedColumns(HtmlTable table, 

@@ -3,8 +3,8 @@
 
   name="CompanyRelationTypeStates"
   source="RelationTypeStates"
-  caption="Klientų sąryšio būsenos"
-  newRowCaption="Nauja sąryšio būsena"
+  caption="=clientsRelationTypeStates"
+  newRowCaption="=newClientsRelationTypeState"
   >
   <Columns>
     <SimpleColumn name="Name" />

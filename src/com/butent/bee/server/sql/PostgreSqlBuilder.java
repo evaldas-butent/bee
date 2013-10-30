@@ -189,6 +189,8 @@ class PostgreSqlBuilder extends SqlBuilder {
         Object prm = params.get("dbSchema");
         if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equals("s", "nspname", prm));
+        } else {
+          wh = SqlUtils.sqlFalse();
         }
         prm = params.get("table");
         if (!isEmpty(prm)) {

@@ -10,9 +10,9 @@ public class InlineLabel extends Label {
     super(true);
   }
 
-  public InlineLabel(String text) {
+  public InlineLabel(String html) {
     this();
-    setText(text);
+    setHtml(html);
   }
 
   @Override

@@ -23,7 +23,7 @@ import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -128,8 +128,8 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     Assert.unsupported("Single-argument add() is not supported for Stack");
   }
 
-  public void add(Widget widget, String header, boolean asHtml, int headerSize) {
-    insert(widget, header, asHtml, headerSize, getStackSize());
+  public void add(Widget widget, String header, int headerSize) {
+    insert(widget, header, headerSize, getStackSize());
   }
 
   public void add(Widget widget, Widget header, int headerSize) {
@@ -204,13 +204,8 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
   }
 
-  public void insert(Widget child, String text, boolean asHtml, int headerSize, int before) {
-    Html contents = new Html();
-    if (asHtml) {
-      contents.setHTML(text);
-    } else {
-      contents.setText(text);
-    }
+  public void insert(Widget child, String text, int headerSize, int before) {
+    Label contents = new Label(text);
     insert(child, contents, headerSize, before);
   }
 

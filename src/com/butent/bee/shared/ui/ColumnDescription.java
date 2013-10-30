@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -68,13 +69,13 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
    */
 
   private enum Serial {
-    COL_TYPE, NAME, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER,
+    COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
-    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE
+    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC
   }
 
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
@@ -89,7 +90,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   }
 
   private ColType colType;
-  private String name;
+
+  private String id;
   private String caption;
   private String label;
   private Boolean readOnly;
@@ -109,8 +111,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private String format;
   private String horAlign;
-
-  private Boolean hasFooter;
+  private String whiteSpace;
 
   private Calculation validation;
   private Calculation editable;
@@ -134,9 +135,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Integer scale;
 
   private List<String> renderColumns;
+  
   private String sortBy;
-
   private String searchBy;
+
   private FilterSupplierType filterSupplierType;
   private String filterOptions;
 
@@ -151,26 +153,30 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private RefreshType updateMode;
   private String elementType;
+  
+  private FooterDescription footerDescription;
 
   private String options;
 
+  private Boolean dynamic;
+  
   private boolean relationInitialized;
 
-  public ColumnDescription(ColType colType, String name) {
+  public ColumnDescription(ColType colType, String id) {
     Assert.notNull(colType);
-    Assert.notEmpty(name);
+    Assert.notEmpty(id);
 
     this.colType = colType;
-    this.name = name;
-  }
-
-  private ColumnDescription() {
+    this.id = id;
   }
   
+  private ColumnDescription() {
+  }
+
   public ColumnDescription copy() {
     return restore(serialize());
   }
-
+  
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -188,8 +194,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case COL_TYPE:
           setColType(ColType.getColType(value));
           break;
-        case NAME:
-          setName(value);
+        case ID:
+          setId(value);
           break;
         case CAPTION:
           setCaption(value);
@@ -248,8 +254,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case HOR_ALIGN:
           setHorAlign(value);
           break;
-        case HAS_FOOTER:
-          setHasFooter(BeeUtils.toBooleanOrNull(value));
+        case WHITE_SPACE:
+          setWhiteSpace(value);
           break;
         case MAX_VALUE:
           setMaxValue(value);
@@ -337,6 +343,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
             setRenderColumns(Lists.newArrayList(cols));
           }
           break;
+        case FOOTER_DESCRIPTION:
+          setFooterDescription(FooterDescription.restore(value));
+          break;
+        case DYNAMIC:
+          setDynamic(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -369,6 +381,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return colType;
   }
 
+  public Boolean getDynamic() {
+    return dynamic;
+  }
+
   public Collection<ConditionalStyleDeclaration> getDynStyles() {
     return dynStyles;
   }
@@ -397,6 +413,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return flexibility;
   }
 
+  public FooterDescription getFooterDescription() {
+    return footerDescription;
+  }
+
   public StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
@@ -413,11 +433,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return horAlign;
   }
 
+  public String getId() {
+    return id;
+  }
+
   @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Col Type", getColType(),
-        "Name", getName(),
+        "Id", getId(),
         "Caption", getCaption(),
         "Label", getLabel(),
         "Read Only", getReadOnly(),
@@ -431,7 +455,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Visible", getVisible(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
-        "Has Footer", hasFooter(),
+        "White Space", getWhiteSpace(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Required", getRequired(),
@@ -448,7 +472,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Update Mode", getUpdateMode(),
         "Item Key", getItemKey(),
         "Element Type", getElementType(),
-        "Options", getOptions());
+        "Options", getOptions(),
+        "Dynamic", getDynamic());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -473,8 +498,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     }
 
     if (getRendererDescription() != null) {
-      PropertyUtils
-          .appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
+      PropertyUtils.appendChildrenToProperties(info, "Renderer",
+          getRendererDescription().getInfo());
     }
     if (getRender() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
@@ -506,6 +531,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         }
       }
     }
+
+    if (getFooterDescription() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Footer", getFooterDescription().getInfo());
+    }
     
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
@@ -535,10 +564,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public Integer getMinWidth() {
     return minWidth;
-  }
-
-  public String getName() {
-    return name;
   }
 
   @Override
@@ -619,16 +644,77 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return visible;
   }
 
+  public String getWhiteSpace() {
+    return whiteSpace;
+  }
+
   public Integer getWidth() {
     return width;
   }
 
-  public Boolean hasFooter() {
-    return hasFooter;
+  public boolean is(String columnId) {
+    return BeeUtils.same(getId(), columnId);
   }
 
   public boolean isRelationInitialized() {
     return relationInitialized;
+  }
+  
+  public void replaceSource(String oldId, String newId) {
+    if (!BeeUtils.isEmpty(oldId) && !BeeUtils.isEmpty(newId)
+        && !BeeUtils.equalsTrim(oldId, newId)) {
+      
+      if (BeeUtils.same(getSource(), oldId)) {
+        setSource(newId.trim());
+      }
+      if (BeeUtils.same(getProperty(), oldId)) {
+        setProperty(newId.trim());
+      }
+      
+      if (getRelation() != null) {
+        getRelation().replaceTargeColumn(oldId, newId);
+      }
+      
+      if (getValidation() != null) {
+        getValidation().replaceColumn(oldId, newId);
+      }
+      if (getEditable() != null) {
+        getEditable().replaceColumn(oldId, newId);
+      }
+      if (getCarry() != null) {
+        getCarry().replaceColumn(oldId, newId);
+      }
+
+      if (getRender() != null) {
+        getRender().replaceColumn(oldId, newId);
+      }
+      if (!BeeUtils.isEmpty(getRenderTokens())) {
+        for (RenderableToken token : getRenderTokens()) {
+          token.replaceSource(oldId, newId);
+        }
+      }
+      
+      if (BeeUtils.containsSame(getRenderColumns(), oldId)) {
+        setRenderColumns(NameUtils.rename(getRenderColumns(), oldId, newId));
+      }
+      
+      if (BeeUtils.containsSame(getSortBy(), oldId)) {
+        setSortBy(NameUtils.rename(getSortBy(), oldId, newId));
+      }
+      if (BeeUtils.containsSame(getSearchBy(), oldId)) {
+        setSortBy(NameUtils.rename(getSearchBy(), oldId, newId));
+      }
+      
+      if (!BeeUtils.isEmpty(getDynStyles())) {
+        for (ConditionalStyleDeclaration declaration : getDynStyles()) {
+          declaration.replaceColumn(oldId, newId);
+        }
+      }
+      
+      if (getFooterDescription() != null) {
+        getFooterDescription().replaceColumn(oldId, newId);
+      }
+    }
   }
 
   @Override
@@ -642,8 +728,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case COL_TYPE:
           arr[i++] = (getColType() == null) ? null : getColType().getTagName();
           break;
-        case NAME:
-          arr[i++] = getName();
+        case ID:
+          arr[i++] = getId();
           break;
         case CAPTION:
           arr[i++] = getCaption();
@@ -703,8 +789,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case HOR_ALIGN:
           arr[i++] = getHorAlign();
           break;
-        case HAS_FOOTER:
-          arr[i++] = hasFooter();
+        case WHITE_SPACE:
+          arr[i++] = getWhiteSpace();
           break;
         case MAX_VALUE:
           arr[i++] = getMaxValue();
@@ -778,6 +864,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case RENDER_COLUMNS:
           arr[i++] = getRenderColumns();
           break;
+        case FOOTER_DESCRIPTION:
+          arr[i++] = getFooterDescription();
+          break;
+        case DYNAMIC:
+          arr[i++] = getDynamic();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -805,6 +897,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setCellType(CellType cellType) {
     this.cellType = cellType;
+  }
+
+  public void setDynamic(Boolean dynamic) {
+    this.dynamic = dynamic;
   }
 
   public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {
@@ -835,6 +931,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.flexibility = flexibility;
   }
 
+  public void setFooterDescription(FooterDescription footerDescription) {
+    this.footerDescription = footerDescription;
+  }
+
   public void setFooterStyle(StyleDeclaration footerStyle) {
     this.footerStyle = footerStyle;
   }
@@ -843,16 +943,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.format = format;
   }
 
-  public void setHasFooter(Boolean hasFooter) {
-    this.hasFooter = hasFooter;
-  }
-
   public void setHeaderStyle(StyleDeclaration headerStyle) {
     this.headerStyle = headerStyle;
   }
 
   public void setHorAlign(String horAlign) {
     this.horAlign = horAlign;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public void setItemKey(String itemKey) {
@@ -962,15 +1062,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.visible = visible;
   }
 
+  public void setWhiteSpace(String whiteSpace) {
+    this.whiteSpace = whiteSpace;
+  }
+
   public void setWidth(Integer width) {
     this.width = width;
   }
 
   private void setColType(ColType colType) {
     this.colType = colType;
-  }
-
-  private void setName(String name) {
-    this.name = name;
   }
 }

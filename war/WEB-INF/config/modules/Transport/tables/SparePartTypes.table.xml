@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true"/>
+    <String name="Name" precision="30" notNull="true" label="=name"/>
     <Relation name="Parent" relation="SparePartTypes" />
   </Fields>
 

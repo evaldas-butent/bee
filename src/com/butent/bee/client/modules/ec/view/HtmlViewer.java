@@ -39,7 +39,7 @@ class HtmlViewer extends EcView {
         } else if (!BeeUtils.isEmpty(html)) {
           CustomDiv widget = new CustomDiv();
           EcStyles.add(widget, getPrimaryStyle(), "html");
-          widget.setHTML(html);
+          widget.setHtml(html);
           add(widget);
         
         } else {

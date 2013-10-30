@@ -18,7 +18,6 @@ import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
@@ -38,6 +37,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.JustDate;
@@ -167,7 +167,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (!BeeUtils.isEmpty(getWidgetDescription().getCaption())) {
       return getWidgetDescription().getCaption();
     } else if (hasColumn()) {
-      return LocaleUtils.getLabel(getDataColumn());
+      return Localized.getLabel(getDataColumn());
     } else {
       return null;
     }

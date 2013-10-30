@@ -15,6 +15,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -48,7 +49,9 @@ public class CargoTripChecker extends AbstractGridInterceptor {
         if (!response.hasErrors()) {
           if (BeeUtils.isPositiveInt((String) response.getResponse())) {
             Global.confirmDelete(Settings.getAppName(), Icon.ALARM,
-                Lists.newArrayList("Yra krovinių, priskirtų reisams!", "Tęsti?"),
+                Lists.newArrayList(Localized.getConstants()
+                    .trCargoTripThereCargosAssignedInTripsAlarm(), Localized.getConstants()
+                    .continueQuestion()),
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {

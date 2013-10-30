@@ -5,9 +5,9 @@
   idName="TaskFileID"
   >
   <Fields>
-    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" />
-    <Relation name="TaskEvent" relation="TaskEvents" cascade="DELETE" />
-    <Relation name="File" relation="Files" notNull="true" />
-    <String name="Caption" precision="100" />
+    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="=crmTask" />
+    <Relation name="TaskEvent" relation="TaskEvents" cascade="DELETE" label="=crmTaskEvent" />
+    <Relation name="File" relation="Files" notNull="true" label="=crmFile" />
+    <String name="Caption" precision="100" label="=crmTaskFileCaption"/>
   </Fields>
 </Table>

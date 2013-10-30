@@ -142,7 +142,7 @@
           <InputArea source="Memo" visibleLines="4" characterWidth="40" />
         </cell>
         <cell colSpan="3">
-          <HtmlLabel source="Memo" style="width: 500px; overflow: auto; border: 1px solid gray;" />
+          <TextLabel source="Memo" style="width: 500px; overflow: auto; border: 1px solid gray;" />
         </cell>
       </row>
     

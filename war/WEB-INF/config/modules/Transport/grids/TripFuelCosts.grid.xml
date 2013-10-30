@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TripFuelCosts" viewName="TripFuelCosts" caption="Kuro išlaidos"
+  name="TripFuelCosts" viewName="TripFuelCosts" caption="=trFuelCosts"
   >
 
-  <columns>
-    <DataColumn name="Date" caption="Data">
+  <g:columns>
+    <DataColumn name="Date" caption="=date">
       <carry><ui:expression>row.Date</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="Quantity" caption="Kiekis" />
-    <DataColumn name="Price" caption="Kaina" format="#.00" />
-    <RelColumn name="Currency" caption="Val." />
-    <CalcColumn name="Total" type="decimal" caption="Suma" format="#.00">
+    <DataColumn name="Quantity" caption="=quantity" />
+    <DataColumn name="Price" caption="=price" format="#.00" />
+    <RelColumn name="Currency" caption="=currencyShort" />
+    <CalcColumn name="Total" type="decimal" caption="=total" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
       <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
-    <DataColumn name="Number" caption="Numeris" />
-    <RelColumn name="Supplier" caption="Tiekėjas" />
-    <RelColumn name="Country" caption="Šalis">
+    <DataColumn name="Number" caption="=number" />
+    <RelColumn name="Supplier" caption="=trSupplier" />
+    <RelColumn name="Country" caption="=country">
       <carry><ui:expression>row.Country</ui:expression></carry>
     </RelColumn>
-    <DataColumn name="Note" caption="Pastaba" />
-    <RelColumn name="Item" caption="Apskaitos prekė">
+    <DataColumn name="Note" caption="=note" />
+    <RelColumn name="Item" caption="=trAccountItem">
       <carry><ui:expression>row.Item</ui:expression></carry>
     </RelColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

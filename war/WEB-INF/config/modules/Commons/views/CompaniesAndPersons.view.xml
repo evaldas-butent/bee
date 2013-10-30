@@ -13,6 +13,11 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
+    </SimpleJoin>   
+    
+    <SimpleColumn name="Department" />
+    <SimpleJoin name="Department" joinType="LEFT">
+        <SimpleColumn alias="DepartmentName" name="Name" />
     </SimpleJoin>
 
     <SimpleColumn name="Person" />
@@ -20,6 +25,10 @@
       <SimpleColumn name="FirstName" />
       <SimpleColumn name="LastName" />
     </SimpleJoin>
+
+    <SimpleColumn name="TabNo" />
+    <SimpleColumn name="AccountingCode" />
+    <SimpleColumn name="DateOfEmployment" />
 
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />

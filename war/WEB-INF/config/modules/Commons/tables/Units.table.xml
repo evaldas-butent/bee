@@ -5,9 +5,9 @@
   idName="UnitID"
   >
   <Fields>
-    <String name="Name" precision="10" notNull="true" unique="true" label="Mato.v" />
-    <String name="Caption" precision="30" />
-    <Relation name="BaseUnit" relation="Units" />
-    <Double name="Factor" />
+    <String name="Name" precision="10" notNull="true" unique="true" label="=unit" />
+    <String name="Caption" precision="30" label="=caption" />
+    <Relation name="BaseUnit" relation="Units" label="=baseUnit"/>
+    <Double name="Factor" label="=unitFactor" />
   </Fields>
 </Table>

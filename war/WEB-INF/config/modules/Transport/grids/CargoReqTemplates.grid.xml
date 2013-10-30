@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="CargoReqTemplates" viewName="CargoReqTemplates" caption="=trRequestTemplates"
+  >
+
+  <g:columns>
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="TemplateDescription" visible="false" />
+
+    <RelColumn name="User" visible="true">
+      <renderToken source="CustomerFirstName" />
+      <renderToken source="CustomerLastName" />
+      <renderToken source="CustomerCompanyName" prefix=", " />
+    </RelColumn>
+
+    <RelColumn name="LoadingCompany" visible="false" />
+    <DataColumn name="LoadingContact" visible="false" />
+
+    <RelColumn name="LoadingCity" />
+    <RelColumn name="LoadingCountry" />
+
+    <DataColumn name="LoadingAddress" visible="false" />
+    <RelColumn name="LoadingEmailId" visible="false" />
+    <DataColumn name="LoadingPhone" visible="false" />
+    <DataColumn name="LoadingFax" visible="false" />
+    <DataColumn name="LoadingNumber" visible="false" />
+
+    <DataColumn name="UnloadingDate" />
+    <RelColumn name="UnloadingCompany" visible="false" />
+    <DataColumn name="UnloadingContact" visible="false" />
+
+    <RelColumn name="UnloadingCity" />
+    <RelColumn name="UnloadingCountry" />
+
+    <DataColumn name="UnloadingAddress" visible="false" />
+    <RelColumn name="UnloadingEmailId" visible="false" />
+    <DataColumn name="UnloadingPhone" visible="false" />
+    <DataColumn name="UnloadingFax" visible="false" />
+    <DataColumn name="UnloadingNumber" visible="false" />
+    
+    <RelColumn name="Expedition" visible="false" />
+    <RelColumn name="ShippingTerm" visible="false" />
+
+    <DataColumn name="DeliveryTime" visible="false" />
+    <DataColumn name="TermsOfDelivery" visible="false" />
+
+    <DataColumn name="CustomsBrokerage" visible="false" />
+    <DataColumn name="FreightInsurance" visible="false" />
+
+    <DataColumn name="CargoDescription" />
+    <DataColumn name="Quantity" visible="false" />
+
+    <DataColumn name="Weight" visible="false" />
+    <DataColumn name="Volume" visible="false" />
+    <DataColumn name="LDM" visible="false" />
+    <DataColumn name="Length" visible="false" />
+    <DataColumn name="Width" visible="false" />
+    <DataColumn name="Height" visible="false" />
+    <DataColumn name="Palettes" visible="false" />
+
+    <DataColumn name="Value" visible="false" />
+    <RelColumn name="ValueCurrency" visible="false" />
+
+    <RelColumn name="Manager" caption="=manager" />
+  </g:columns>
+</g:Grid>

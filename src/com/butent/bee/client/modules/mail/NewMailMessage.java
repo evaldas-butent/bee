@@ -47,6 +47,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -72,8 +73,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Assert.notNull(closeCallback);
 
       if (hasChanges()) {
-        Global.decide(null, Lists.newArrayList("Laiškas nebuvo išsiųstas",
-            "Ar norite išsaugoti laišką juodraščiuose"), new DecisionCallback() {
+        Global.decide(null, Lists.newArrayList(Localized.getConstants().mailMessageWasNotSent(),
+            Localized.getConstants().mailQuestionSaveToDraft()), new DecisionCallback() {
           @Override
           public void onCancel() {
             UiHelper.focus(getFormView().asWidget());
@@ -388,16 +389,16 @@ public final class NewMailMessage extends AbstractFormInterceptor
       }
     }
     if (!hasRecipients) {
-      error = "Nurodykite gavėją(-us)";
+      error = Localized.getConstants().mailSpecifyRecipient();
 
     } else if (subjectWidget == null || BeeUtils.isEmpty(subjectWidget.getValue())) {
-      error = "Nurodykite temą";
+      error = Localized.getConstants().mailSpecifySubject();
 
     } else if (contentWidget == null || BeeUtils.isEmpty(contentWidget.getValue())) {
-      error = "Laiško turinys tuščias";
+      error = Localized.getConstants().mailMessageBodyIsEmpty();
 
     } else if (attachments.values().contains(0L)) {
-      error = "Yra nebaigtų krauti prielipų";
+      error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
     }
     if (!BeeUtils.isEmpty(error)) {
       getFormView().notifySevere(error);

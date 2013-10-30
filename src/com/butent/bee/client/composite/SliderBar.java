@@ -23,12 +23,12 @@ import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.layout.Focus;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.FontSize;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 

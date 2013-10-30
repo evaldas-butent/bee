@@ -53,7 +53,7 @@ public final class I18nUtils {
       if (o2 == null) {
         return BeeConst.COMPARE_MORE;
       }
-      return BeeUtils.compare(o1.toString(), o2.toString());
+      return BeeUtils.compareNullsFirst(o1.toString(), o2.toString());
     }
   }
 

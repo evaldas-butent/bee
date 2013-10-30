@@ -43,7 +43,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
@@ -77,6 +76,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
@@ -331,12 +331,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     private Boolean pendingSelection;
 
-    private Selector(ITEM_TYPE itemType, Element partner) {
+    private Selector(ITEM_TYPE itemType, Element partner, String selectorClass) {
       this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
 
       menu.addStyleName(STYLE_MENU);
 
       this.popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP);
+      if (!BeeUtils.isEmpty(selectorClass)) {
+        popup.addStyleName(selectorClass);
+      }
+
       popup.setWidget(menu);
 
       popup.setKeyboardPartner(partner);
@@ -344,7 +348,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       popup.addCloseHandler(new CloseEvent.Handler() {
         @Override
         public void onClose(CloseEvent event) {
-          if (event.isUserCaused()) {
+          if (event.userCaused()) {
             getMenu().clearItems();
             exit(false, State.CANCELED);
           }
@@ -658,7 +662,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     ITEM_TYPE itemType = relation.getItemType();
 
     this.input = new InputWidget();
-    this.selector = new Selector(itemType, this.input.getElement());
+    this.selector = new Selector(itemType, this.input.getElement(), relation.getSelectorClass());
 
     this.choiceColumns.addAll(relation.getChoiceColumns());
     for (SelectorColumn selectorColumn : relation.getSelectorColumns()) {
@@ -790,7 +794,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editSourceIndex = BeeConst.UNDEF;
     }
 
-    this.relationLabel = LocaleUtils.maybeLocalize(relation.getLabel());
+    this.relationLabel = Localized.maybeTranslate(relation.getLabel());
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
@@ -1061,8 +1065,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     hideSelector();
     reset();
 
-    SelectorEvent.fire(this, State.CHANGED);
     fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
+    SelectorEvent.fire(this, State.CHANGED);
   }
 
   @Override
@@ -1461,7 +1465,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       SelectorColumn sc = entry.getValue();
       int index = dataInfo.getColumnIndex(sc.getSource());
 
-      CellSource cellSource = BeeConst.isUndef(index) 
+      CellSource cellSource = BeeConst.isUndef(index)
           ? null : CellSource.forColumn(dataInfo.getColumns().get(index), index);
 
       AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),

@@ -50,7 +50,6 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.Presenter;
@@ -64,9 +63,9 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -140,7 +139,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
           CalendarKeeper.getAppointmentViewColumns(), oldRow, newRow,
           getFormView().getChildrenForUpdate());
       if (!DataUtils.isEmpty(rowSet)) {
-        changes.addAll(LocaleUtils.getLabels(rowSet.getColumns()));
+        changes.addAll(Localized.getLabels(rowSet.getColumns()));
       }
 
       Long oldService = null;
@@ -163,27 +162,27 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       if (!Objects.equal(oldService, newService)) {
-        changes.add("Serviso tipas");
+        changes.add(Localized.getConstants().calServiceType());
       }
       if (!Objects.equal(oldRepair, newRepair)) {
-        changes.add("Remonto tipas");
+        changes.add(Localized.getConstants().calRepairType());
       }
 
       if (!isNew && !DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_ATTENDEES),
           newRow.getProperty(VIEW_APPOINTMENT_ATTENDEES))) {
-        changes.add("Resursai");
+        changes.add(Localized.getConstants().calAttendees());
       }
 
       DateTime oldStart = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_START_DATE_TIME);
       DateTime newStart = getStart();
       if (!Objects.equal(oldStart, newStart)) {
-        changes.add("Pradžia");
+        changes.add(Localized.getConstants().calAppointmentStart());
       }
 
       DateTime oldEnd = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_END_DATE_TIME);
       DateTime newEnd = getEnd(newStart);
       if (!Objects.equal(oldEnd, newEnd) && !isNew) {
-        changes.add("Pabaiga");
+        changes.add(Localized.getConstants().calAppointmentEnd());
       }
 
       List<Long> reminders = Lists.newArrayList();
@@ -192,7 +191,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         reminders.add(reminderType);
       }
       if (!DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_REMINDERS), reminders)) {
-        changes.add("Priminimas");
+        changes.add(Localized.getConstants().calReminder());
       }
 
       Long oldColor = Data.getLong(VIEW_APPOINTMENTS, oldRow, CommonsConstants.COL_COLOR);
@@ -1002,7 +1001,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       String bc = Data.getString(viewName, row, CommonsConstants.COL_BACKGROUND);
       String fc = Data.getString(viewName, row, CommonsConstants.COL_FOREGROUND);
 
-      Html item = new Html();
+      Label item = new Label();
       item.getElement().getStyle().setBackgroundColor(bc);
       if (!BeeUtils.isEmpty(fc)) {
         item.getElement().getStyle().setColor(fc);
@@ -1572,27 +1571,27 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
 
     if (isRequired(COL_COMPANY) && isEmpty(row, COL_COMPANY)) {
-      getFormView().notifySevere("Įveskite klientą");
+      getFormView().notifySevere(Localized.getConstants().calEnterClient());
       return false;
     }
     if (isRequired(COL_VEHICLE) && isEmpty(row, COL_VEHICLE)) {
-      getFormView().notifySevere("Įveskite automobilį");
+      getFormView().notifySevere(Localized.getConstants().calEnterVehicle());
       return false;
     }
 
     if (!BeeUtils.isEmpty(getServiceTypeWidgetId()) && isRequired(NAME_SERVICE_TYPE)
         && !hasValue(getServiceTypeWidgetId())) {
-      getFormView().notifySevere("Pasirinkite serviso tipą");
+      getFormView().notifySevere(Localized.getConstants().calEnterServiceType());
       return false;
     }
     if (!BeeUtils.isEmpty(getRepairTypeWidgetId()) && isRequired(NAME_REPAIR_TYPE)
         && !hasValue(getRepairTypeWidgetId())) {
-      getFormView().notifySevere("Pasirinkite remonto tipą");
+      getFormView().notifySevere(Localized.getConstants().calEnterRepairType());
       return false;
     }
 
     if (isRequired(NAME_RESOURCES) && getResources(row).isEmpty()) {
-      getFormView().notifySevere("Nurodykite resursus");
+      getFormView().notifySevere(Localized.getConstants().calEnterAttendees());
       return false;
     }
 
@@ -1600,15 +1599,15 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     DateTime end = getEnd(start);
 
     if (start == null) {
-      getFormView().notifySevere("Įveskite planuojamą pradžios laiką");
+      getFormView().notifySevere(Localized.getConstants().calEnterPlanedStartTime());
       return false;
     }
     if (end == null) {
-      getFormView().notifySevere("Įveskite trukmę arba planuojamą pabaigos laiką");
+      getFormView().notifySevere(Localized.getConstants().calEnterDurationOrPlanedEndDate());
       return false;
     }
     if (TimeUtils.isLeq(end, start)) {
-      getFormView().notifySevere("Pabaigos laikas turi būti didesnis už pradžios laiką");
+      getFormView().notifySevere(Localized.getConstants().calPlanedEndDateMustBeGreater());
       return false;
     }
 

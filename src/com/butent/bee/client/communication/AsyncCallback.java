@@ -11,12 +11,10 @@ import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.data.ResponseData;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -177,9 +175,6 @@ public class AsyncCallback implements RequestCallback {
     } else if (Service.isInvocation(svc)) {
       dispatchInvocation(svc, info, txt, mc, messages, cc, cnt, sep);
 
-    } else if (CommUtils.isResource(ctp)) {
-      dispatchResource(txt);
-
     } else if (txt.indexOf(sep) < 0) {
       logger.info("<", id, "text", txt);
 
@@ -216,10 +211,6 @@ public class AsyncCallback implements RequestCallback {
     } else if (mc <= 0) {
       logger.warning("unknown invocation method", method);
     }
-  }
-
-  private static void dispatchResource(String src) {
-    BeeKeeper.getScreen().updateActivePanel(new ResourceEditor(new Resource(src)));
   }
 
   private static void dispatchResponse(String svc, int cc, JsArrayString arr) {

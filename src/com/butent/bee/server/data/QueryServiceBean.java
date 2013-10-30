@@ -3,9 +3,11 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEvent.TableModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.HasTarget;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
@@ -29,6 +31,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -212,9 +215,17 @@ public class QueryServiceBean {
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public Object doSql(String sql) {
+    BeeDataSource bds = dsb.locateDs(SqlBuilderFactory.getDsn());
+    Assert.notNull(bds);
+
+    return doSql(bds.getDs(), sql);
+  }
+
+  public Object doSql(DataSource ds, String sql) {
+    Assert.notNull(ds);
     Assert.notEmpty(sql);
 
-    return processSql(null, sql, new SqlHandler<Object>() {
+    return processSql(ds, sql, new SqlHandler<Object>() {
       @Override
       public Object processError(SQLException ex) {
         logger.error(ex);
@@ -228,13 +239,13 @@ public class QueryServiceBean {
 
       @Override
       public Object processUpdateCount(int updateCount) {
-        logger.debug("Affected rows:", updateCount);
+        logger.debug("affected rows:", updateCount);
         return updateCount;
       }
     });
   }
 
-  public boolean getBoolean(IsQuery query) {
+  public Boolean getBoolean(IsQuery query) {
     return getSingleValue(query).getBoolean(0, 0);
   }
 
@@ -571,6 +582,23 @@ public class QueryServiceBean {
 
     activateTables(query);
 
+    final TableModifyEvent event;
+
+    if (query instanceof HasTarget) {
+      event = new TableModifyEvent(((HasTarget) query).getTarget(), query);
+      sys.postDataEvent(event);
+
+      if (event.hasErrors()) {
+        ResponseObject response = new ResponseObject();
+
+        for (String error : event.getErrorMessages()) {
+          response.addError(error);
+        }
+        return response;
+      }
+    } else {
+      event = null;
+    }
     ResponseObject res = processSql(null, query.getQuery(), new SqlHandler<ResponseObject>() {
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
@@ -579,6 +607,11 @@ public class QueryServiceBean {
 
       @Override
       public ResponseObject processUpdateCount(int updateCount) {
+        if (event != null) {
+          event.setUpdateCount(updateCount);
+          sys.postDataEvent(event);
+        }
+        logger.debug("affected rows:", updateCount);
         return ResponseObject.response(updateCount);
       }
     });
@@ -637,13 +670,13 @@ public class QueryServiceBean {
     activateTables(query);
 
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
-    sys.postViewEvent(event);
+    sys.postDataEvent(event);
 
     return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         event.setRowset(rsToBeeRowSet(rs, view));
-        sys.postViewEvent(event);
+        sys.postDataEvent(event);
         return event.getRowset();
       }
 
@@ -763,18 +796,24 @@ public class QueryServiceBean {
               values[i] = null;
             }
             break;
+
           case DATE:
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
             values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
             break;
+
           case NUMBER:
           case DECIMAL:
-            if (column.getScale() > 0) {
-              values[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
+            Double d = rs.getDouble(colIndex);
+            if (rs.wasNull() || !BeeUtils.isDouble(d)) {
+              values[i] = null;
+            } else if (column.getScale() >= 0) {
+              values[i] = BeeUtils.toString(d, column.getScale());
             } else {
-              values[i] = rs.getString(colIndex);
+              values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
             }
             break;
+
           default:
             values[i] = rs.getString(colIndex);
         }
@@ -826,7 +865,7 @@ public class QueryServiceBean {
       }
       res.addRow(row);
     }
-    logger.debug("Retrieved rows:", res.getNumberOfRows());
+    logger.debug("cols:", res.getNumberOfColumns(), "rows:", res.getNumberOfRows());
     return res;
   }
 }

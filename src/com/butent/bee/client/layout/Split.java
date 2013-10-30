@@ -34,7 +34,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.ui.CssUnit;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -284,6 +284,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
   private static final String STYLE_NAME = "bee-Split";
   private static final String STYLE_CHILD = STYLE_NAME + "Child";
+  private static final String STYLE_HIDDEN = STYLE_NAME + "-hidden";
 
   public static boolean validDirection(Direction direction, boolean allowCenter) {
     if (direction == null) {
@@ -565,8 +566,15 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     for (Widget child : getChildren()) {
       if (!isSplitter(child) && direction.equals(getWidgetDirection(child))) {
         LayoutData ld = getLayoutData(child);
+
         if (ld != null) {
           data.add(ld);
+          
+          if (size > 0) {
+            child.removeStyleName(STYLE_HIDDEN);
+          } else {
+            child.addStyleName(STYLE_HIDDEN);
+          }
         }
       }
     }
@@ -607,6 +615,13 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
     if (data != null && size != data.getSize()) {
       data.setSize(size);
+      
+      if (size > 0) {
+        widget.removeStyleName(STYLE_HIDDEN);
+      } else {
+        widget.addStyleName(STYLE_HIDDEN);
+      }
+      
       doLayout();
     }
   }
@@ -729,8 +744,14 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
       if (Direction.CENTER.equals(direction)) {
         setCenter(child);
         layoutChildren();
-      } else if (splSize > 0) {
-        insertSplitter(direction, splSize, BeeConst.isUndef(before) ? before : before + 1);
+
+      } else {
+        if (size <= 0) {
+          child.asWidget().addStyleName(STYLE_HIDDEN);
+        }
+        if (splSize > 0) {
+          insertSplitter(direction, splSize, BeeConst.isUndef(before) ? before : before + 1);
+        }
       }
     }
   }

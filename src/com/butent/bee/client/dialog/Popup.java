@@ -2,7 +2,6 @@ package com.butent.bee.client.dialog;
 
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
@@ -23,7 +22,6 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -35,6 +33,7 @@ import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
@@ -57,11 +56,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   private final class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
-    private int clientLeft;
-    private int clientTop;
-
-    private int dragStartX;
-    private int dragStartY;
+    private int startX;
+    private int startY;
 
     private MouseHandler() {
     }
@@ -74,23 +70,21 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
         setDragging(true);
 
-        clientLeft = Document.get().getBodyOffsetLeft();
-        clientTop = Document.get().getBodyOffsetTop();
-        
-        dragStartX = event.getX();
-        dragStartY = event.getY();
+        startX = event.getX();
+        startY = event.getY();
       }
     }
 
     @Override
     public void onMouseMove(MouseMoveEvent event) {
       if (isDragging()) {
-        int absX = event.getX() + getAbsoluteLeft();
-        int absY = event.getY() + getAbsoluteTop();
-        if (absX < clientLeft || absX >= Window.getClientWidth() || absY < clientTop) {
-          return;
-        }
-        setPopupPosition(absX - dragStartX, absY - dragStartY);
+        int x = getAbsoluteLeft() + event.getX() - startX;
+        int y = getAbsoluteTop() + event.getY() - startY;
+
+        x = BeeUtils.clamp(x, 0, DomUtils.getClientWidth() - getOffsetWidth());
+        y = BeeUtils.clamp(y, 0, DomUtils.getClientHeight() - getOffsetHeight());
+
+        setPopupPosition(x, y);
       }
     }
 
@@ -123,7 +117,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     protected void onComplete() {
       if (!show) {
         if (!isUnloading) {
-          RootPanel.get().remove(curPanel);
+          BodyPanel.get().remove(curPanel);
         }
       }
       StyleUtils.clearClip(curPanel);
@@ -177,10 +171,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         if (!BeeConst.isUndef(curPanel.getTopPosition())) {
           curPanel.setPopupPosition(curPanel.getLeftPosition(), curPanel.getTopPosition());
         }
-        RootPanel.get().add(curPanel);
+        BodyPanel.get().add(curPanel);
       } else {
         if (!isUnloading) {
-          RootPanel.get().remove(curPanel);
+          BodyPanel.get().remove(curPanel);
         }
       }
       curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
@@ -212,7 +206,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
             curPanel.setPopupPosition(curPanel.getLeftPosition(), curPanel.getTopPosition());
           }
           StyleUtils.setClip(curPanel, 0, 0, 0, 0);
-          RootPanel.get().add(curPanel);
+          BodyPanel.get().add(curPanel);
 
           showTimer = new Timer() {
             @Override
@@ -236,9 +230,9 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private static final int ANIMATION_DURATION = 250;
 
   public static Popup getActivePopup() {
-    int widgetCount = RootPanel.get().getWidgetCount();
+    int widgetCount = BodyPanel.get().getWidgetCount();
     for (int i = widgetCount - 1; i >= 0; i--) {
-      Widget child = RootPanel.get().getWidget(i);
+      Widget child = BodyPanel.get().getWidget(i);
       if (child instanceof Popup && ((Popup) child).isShowing()) {
         return (Popup) child;
       }
@@ -246,10 +240,23 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return null;
   }
 
+  private static int clampLeft(int left, int width) {
+    int windowLeft = Window.getScrollLeft();
+    int windowRight = Window.getClientWidth() + Window.getScrollLeft();
+
+    return Math.max(Math.min(left, windowRight - width), windowLeft);
+  }
+
+  private static int clampTop(int top, int height) {
+    int windowTop = Window.getScrollTop();
+    int windowBottom = Window.getScrollTop() + Window.getClientHeight();
+
+    return Math.max(Math.min(top, windowBottom - height), windowTop);
+  }
+
   private AnimationType animationType = AnimationType.CENTER;
 
   private final OutsideClick onOutsideClick;
-
   private boolean showing;
 
   private String desiredHeight;
@@ -268,6 +275,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
 
   private boolean dragging;
+
   private MouseHandler mouseHandler;
 
   private Element keyboardPartner;
@@ -313,6 +321,21 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     hide(false);
     setAnimationEnabled(animationEnabled);
     setVisible(visible);
+  }
+
+  public void cascade() {
+    int x = BeeUtils.clamp(Window.getClientWidth() / 30, 5, 30);
+    int y = BeeUtils.clamp(Window.getClientHeight() / 30, 5, 30);
+    cascade(x, y);
+  }
+
+  public void cascade(int x, int y) {
+    Popup activePopup = getActivePopup();
+    if (activePopup == null) {
+      center();
+    } else {
+      showAt(activePopup.getAbsoluteLeft() + x, activePopup.getAbsoluteTop() + y);
+    }
   }
 
   public void center() {
@@ -431,7 +454,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       } else if (isModal()) {
         event.cancel();
       } else {
-        hide(CloseEvent.Cause.MOUSE, target, true);
+        hide(CloseEvent.Cause.MOUSE_OUTSIDE, target, true);
       }
 
     } else if (EventUtils.isKeyEvent(type)) {
@@ -440,7 +463,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
           if (hideOnEscape()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD, target, true);
+            hide(CloseEvent.Cause.KEYBOARD_ESCAPE, target, true);
           }
           if (getOnEscape() != null) {
             getOnEscape().accept(event);
@@ -449,7 +472,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         } else if (UiHelper.isSave(nativeEvent)) {
           if (hideOnSave()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD, target, true);
+            hide(CloseEvent.Cause.KEYBOARD_SAVE, target, true);
           }
           if (getOnSave() != null) {
             getOnSave().accept(event);
@@ -523,8 +546,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     setTopPosition(top);
 
     Style style = getElement().getStyle();
-    StyleUtils.setLeft(style, left - Document.get().getBodyOffsetLeft());
-    StyleUtils.setTop(style, top - Document.get().getBodyOffsetTop());
+    StyleUtils.setLeft(style, left);
+    StyleUtils.setTop(style, top);
   }
 
   public void setPopupPositionAndShow(PositionCallback callback) {
@@ -556,19 +579,19 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  public void showAt(final int x, final int y, final int margin) {
+  public void showAt(final int x, final int y) {
     setPopupPositionAndShow(new PositionCallback() {
       @Override
       public void setPosition(int offsetWidth, int offsetHeight) {
-        int left = fitLeft(x, offsetWidth, margin);
-        int top = fitTop(y, offsetHeight, margin);
+        int left = clampLeft(x, offsetWidth);
+        int top = clampTop(y, offsetHeight);
 
         setPopupPosition(left, top);
       }
     });
   }
 
-  public void showOnTop(final Element target, final int margin) {
+  public void showOnTop(final Element target) {
     if (target == null) {
       center();
     } else {
@@ -578,8 +601,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
           int x = target.getAbsoluteLeft();
           int y = target.getAbsoluteTop();
 
-          int left = fitLeft(x, offsetWidth, margin);
-          int top = fitTop(y, offsetHeight, margin);
+          int left = clampLeft(x, offsetWidth);
+          int top = clampTop(y, offsetHeight);
 
           setPopupPosition(left, top);
         }
@@ -643,20 +666,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (isShowing()) {
       resizeAnimation.setState(false, true);
     }
-  }
-
-  private static int fitLeft(int left, int width, int margin) {
-    int windowLeft = Window.getScrollLeft() + margin;
-    int windowRight = Window.getClientWidth() + Window.getScrollLeft() - margin;
-
-    return Math.max(Math.min(left, windowRight - width), windowLeft);
-  }
-
-  private static int fitTop(int top, int height, int margin) {
-    int windowTop = Window.getScrollTop() + margin;
-    int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
-
-    return Math.max(Math.min(top, windowBottom - height), windowTop);
   }
 
   private String getDesiredHeight() {
@@ -756,8 +765,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       top += objectHeight;
     }
 
-    left = fitLeft(left, offsetWidth, 2);
-    top = fitTop(top, offsetHeight, 2);
+    left = clampLeft(left, offsetWidth);
+    top = clampTop(top, offsetHeight);
 
     setPopupPosition(left, top);
   }

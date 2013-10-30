@@ -14,6 +14,7 @@ import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class InputNumber extends InputText implements HasBounds, HasIntStep,
     HasNumberFormat, HasPrecision, HasScale {
-
+  
   public static final CharMatcher INT_CHAR_MATCHER =
       CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
           .or(CharMatcher.is(BeeConst.CHAR_SPACE))
@@ -77,11 +78,12 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     }
 
     if (getNumberFormat() != null) {
-      Double d = Format.parseQuietly(getNumberFormat(), v);
+      String s = sanitize(v);
+      Double d = Format.parseQuietly(getNumberFormat(), s);
       if (d == null) {
         return null;
       }
-      v = BeeUtils.toString(d);
+      v = BeeUtils.toString(d, BeeUtils.getDecimals(s));
     }
     return normalize(v);
   }
@@ -151,7 +153,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     } else if (getNumberFormat() != null) {
       setValue(getNumberFormat().format(value));
     } else {
-      setValue(BeeUtils.toString(value));
+      setValue(BeeUtils.toString(value, NumberValue.MAX_SCALE));
     }
   }
 
@@ -185,18 +187,19 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
     }
 
     if (getNumberFormat() != null) {
-      Double d = Format.parseQuietly(getNumberFormat(), v);
+      String s = sanitize(v);
+      Double d = Format.parseQuietly(getNumberFormat(), s);
       if (d == null) {
-        messages.add("Neteisingas skaičiaus formatas:");
+        messages.add(Localized.getConstants().invalidNumberFormat());
         messages.add(BeeUtils.joinWords(v, BeeUtils.bracket(getNumberFormat().getPattern())));
         return messages;
       }
 
-      v = normalize(BeeUtils.toString(d));
+      v = BeeUtils.toString(d, BeeUtils.getDecimals(s));
     }
 
-    if (!checkType(v)) {
-      messages.add(BeeUtils.joinWords("Neteisingas skaičius:", v));
+    if (!checkType(sanitize(v))) {
+      messages.add(BeeUtils.joinWords(Localized.getConstants().invalidNumber(), v));
       return messages;
     }
 
@@ -242,7 +245,16 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   }
 
   protected String normalize(String v) {
-    return BeeUtils.toString(BeeUtils.toDouble(v));
+    String input = sanitize(v);
+    return BeeUtils.toString(BeeUtils.toDouble(input), BeeUtils.getDecimals(input));
+  }
+
+  protected String sanitize(String v) {
+    if (BeeUtils.contains(v, BeeConst.CHAR_COMMA) && !BeeUtils.contains(v, BeeConst.CHAR_POINT)) {
+      return v.replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_POINT);
+    } else {
+      return v;
+    }
   }
 
   private boolean checkBounds(Double v) {

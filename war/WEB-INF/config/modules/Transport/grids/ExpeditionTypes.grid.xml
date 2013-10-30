@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
  
-  name="ExpeditionTypes" viewName="ExpeditionTypes" caption="Ekspedijavimo rūšys"
+  name="ExpeditionTypes" viewName="ExpeditionTypes" caption="=trExpeditionTypes"
   >
-  <columns>
-    <DataColumn name="Name" minWidth="200" />
-  </columns>
-</Grid>
+  <g:columns>
+    <DataColumn name="Name" minWidth="200" visible="true" />
+    <DataColumn name="SelfService" />
+  </g:columns>
+</g:Grid>

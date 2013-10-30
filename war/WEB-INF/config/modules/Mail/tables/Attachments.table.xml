@@ -5,7 +5,7 @@
   idName="AttachmentID"
   >
   <Fields>
-    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
+    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" label="=mailMessage" />
     <Relation name="File" relation="Files" notNull="true" />
     <String name="FileName" precision="255" />
   </Fields>

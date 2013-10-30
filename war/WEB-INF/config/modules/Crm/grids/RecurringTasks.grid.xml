@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
-  name="RecurringTasks" viewName="RecurringTasks" caption="Periodinės užduotys"
+  name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
   editShowId="true"
   >
-  <columns>
+  <g:columns>
     <IdColumn name="Id" caption="ID" />
 
     <DataColumn name="Priority" itemKey="TaskPriority" />
@@ -22,5 +22,5 @@
     <DataColumn name="FinishTime" />
 
     <DataColumn name="Recurrence" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

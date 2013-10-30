@@ -3,7 +3,7 @@
 
   name="AllCargo" source="TransportationOrders"
   newRowForm="TransportationOrder" editForm="TransportationOrder"
-  newRowCaption="Naujas pervežimo užsakymas">
+  newRowCaption="=newTransportationOrder">
   <Columns>
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />

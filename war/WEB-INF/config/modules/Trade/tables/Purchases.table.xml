@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Purchases"
+  idName="PurchaseID"
+  >
+  <Fields>
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trdDate" />
+    <String name="Number" precision="50" label="=trdNumber" />
+    <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" />
+    <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
+
+    <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
+    <Relation name="WarehouseTo" relation="Warehouses" notNull="true" label="=trdWarehouseTo" />
+
+    <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
+    <Relation name="Customer" relation="Companies" label="=trdCustomer" />
+
+    <Numeric name="Amount" precision="12" scale="2" label="=trdTotal" />
+    <Relation name="Currency" relation="Currencies" notNull="true" />
+    <Boolean name="VatIncluded" label="=trdVatIncluded" />
+
+    <Date name="Term" label="=trdTerm" />
+    <DateTime name="PaymentTime" label="=trdPaymentTime" />
+    <Numeric name="Paid" precision="12" scale="2" label="=trdPaid" />
+
+    <Relation name="Manager" relation="Users" label="=trdManager" />
+
+    <Text name="Notes" label="=trdNotes" />
+
+    <DateTime name="Exported" label="=trdExported" />
+  </Fields>
+
+  <Triggers>
+    <Trigger events="UPDATE" scope="ROW" timing="AFTER">
+      <PostgreSql>
+        <![CDATA[
+DECLARE _id BIGINT;
+BEGIN
+  IF ((OLD."VatIncluded" IS NULL)!=(NEW."VatIncluded" IS NULL) OR
+      OLD."VatIncluded"!=NEW."VatIncluded") THEN
+    _id:=OLD."PurchaseID";
+    
+    UPDATE "Purchases" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
+        CASE WHEN "VatIncluded"=1 OR "Vat" IS NULL THEN 0
+             WHEN "VatPercent"=1 THEN "Quantity"*"Price"/100*"Vat"
+             ELSE "Vat" END)
+      FROM "PurchaseItems" INNER JOIN "Purchases"
+        ON "PurchaseItems"."Purchase"="Purchases"."PurchaseID"
+      WHERE "Purchase"=_id) WHERE "PurchaseID"=_id;
+  END IF;
+  RETURN NULL;
+END;
+        ]]>
+      </PostgreSql>
+      <MsSql />
+      <Oracle />
+    </Trigger>
+  </Triggers>
+</Table>

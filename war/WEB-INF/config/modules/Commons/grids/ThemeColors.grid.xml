@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Grid [
-  <!ENTITY dyn "<dynStyle><ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline></dynStyle>">
+  <!ENTITY dyn "<ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline>">
 ]>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ThemeColors" viewName="ThemeColors" caption="Spalvos" newRowCaption="Nauja temos spalva"
+  name="ThemeColors" viewName="ThemeColors" caption="=colors" newRowCaption="=newThemeColor"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
-    <RelColumn name="ColorName" caption="Pavadinimas" visible="true" />
+  <g:columns>
+    <RelColumn name="ColorName" caption="=name" visible="true" />
 
-    <DataColumn name="Background" caption="Fono spalva">&dyn;</DataColumn>
-    <DataColumn name="Foreground" caption="Teksto spalva">&dyn;</DataColumn>
-  </columns>
-</Grid>
+    <DataColumn name="Background" caption="=backgroundColor">
+      <dynStyle>&dyn;</dynStyle>
+    </DataColumn>
+    <DataColumn name="Foreground" caption="=foregroundColor">
+      <dynStyle>&dyn;</dynStyle>
+    </DataColumn>
+  </g:columns>
+</g:Grid>
 

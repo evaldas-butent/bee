@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Objects" viewName="Objects" caption="Objektai" newRowPopup="true"
+  name="Objects" viewName="Objects" caption="=objects" newRowPopup="true"
   >
-  <columns>
-    <DataColumn name="Type" caption="Tipas" itemKey="RightsObjectType" visible="true" />
-    <DataColumn name="Name" caption="Objektas" visible="true" />
-  </columns>
-</Grid>
+  <g:columns>
+    <DataColumn name="Type" caption="=objectType" itemKey="RightsObjectType" visible="true" />
+    <DataColumn name="Name" caption="=object" visible="true" />
+  </g:columns>
+</g:Grid>

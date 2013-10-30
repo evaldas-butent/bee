@@ -10,10 +10,11 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -23,6 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
+import elemental.html.FileReader;
 import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
@@ -49,7 +51,7 @@ public final class FileUtils {
 
     final XMLHttpRequest xhr = createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-    
+
     addSessionId(xhr);
 
     xhr.setOnload(new EventListener() {
@@ -61,7 +63,7 @@ public final class FileUtils {
           if (BeeUtils.same(response, photoFileName)) {
             logger.info("deleted photo", photoFileName);
             logger.addSeparator();
-            
+
             if (callback != null) {
               callback.onSuccess(photoFileName);
             }
@@ -84,7 +86,7 @@ public final class FileUtils {
         }
       }
     });
-    
+
     xhr.send();
   }
 
@@ -92,7 +94,7 @@ public final class FileUtils {
     String name = BeeUtils.join(BeeConst.STRING_UNDER, BeeUtils.randomString(6),
         System.currentTimeMillis());
     String ext = FileNameUtils.getExtension(originalFileName);
-    
+
     return BeeUtils.isEmpty(ext) ? name : FileNameUtils.addExtension(name, ext);
   }
 
@@ -119,16 +121,29 @@ public final class FileUtils {
     }
     return result;
   }
-  
+
   public static String getUrl(String fileName, Long fileId) {
     Map<String, String> parameters = Maps.newHashMap();
     parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
-    return RpcUtils.addQueryString(GWT.getModuleBaseURL() + OPEN_URL,
-        RpcUtils.buildQueryString(parameters, true));
+    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + OPEN_URL,
+        CommUtils.buildQueryString(parameters, true));
   }
-  
+
+  public static void readAsDataURL(File file, final Consumer<String> consumer) {
+    final FileReader reader = Browser.getWindow().newFileReader();
+
+    reader.setOnload(new EventListener() {
+      @Override
+      public void handleEvent(Event evt) {
+        consumer.accept((String) reader.getResult());
+      }
+    });
+
+    reader.readAsDataURL(file);
+  }
+
   public static String sizeToText(Long size) {
     long sz = BeeUtils.unbox(size);
     String prfx = "MB";
@@ -164,7 +179,7 @@ public final class FileUtils {
 
     final XMLHttpRequest xhr = createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-    
+
     addSessionId(xhr);
 
     final long start = System.currentTimeMillis();
@@ -228,7 +243,7 @@ public final class FileUtils {
 
     final XMLHttpRequest xhr = createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-    
+
     addSessionId(xhr);
 
     final long start = System.currentTimeMillis();
@@ -264,15 +279,15 @@ public final class FileUtils {
         }
       }
     });
-    
+
     addProgressListener(xhr, progressId);
     xhr.send(fileInfo.getFile());
   }
-  
+
   static native double getLastModifiedMillis(File file) /*-{
     return file.lastModifiedDate.getTime();
   }-*/;
-  
+
   private static void addProgressListener(XMLHttpRequest xhr, final String progressId) {
     if (progressId != null) {
       xhr.getUpload().setOnprogress(new EventListener() {
@@ -290,16 +305,16 @@ public final class FileUtils {
       xhr.setRequestHeader(Service.RPC_VAR_SID, sid);
     }
   }
-  
+
   private static Map<String, String> createParameters(String service, String fileName) {
     Map<String, String> parameters = Maps.newHashMap();
 
     parameters.put(Service.RPC_VAR_SVC, service);
     parameters.put(Service.VAR_FILE_NAME, fileName);
-    
+
     return parameters;
   }
-  
+
   private static XMLHttpRequest createXhr() {
     return createXhr(Browser.getWindow());
   }
@@ -307,12 +322,12 @@ public final class FileUtils {
   private static XMLHttpRequest createXhr(Window window) {
     return window.newXMLHttpRequest();
   }
-  
+
   private static String getUploadUrl(Map<String, String> parameters) {
-    return RpcUtils.addQueryString(GWT.getModuleBaseURL() + UPLOAD_URL,
-        RpcUtils.buildQueryString(parameters, true));
+    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + UPLOAD_URL,
+        CommUtils.buildQueryString(parameters, true));
   }
-  
+
   private static String maybeCreateProgress(String caption, long size) {
     return (size > MIN_FILE_SIZE_FOR_PROGRESS)
         ? BeeKeeper.getScreen().createProgress(caption, (double) size, null) : null;

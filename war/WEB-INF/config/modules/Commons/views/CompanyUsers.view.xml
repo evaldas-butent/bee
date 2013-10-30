@@ -4,8 +4,8 @@
   xmlns:xpr="http://www.butent.com/expression"
   name="CompanyUsers"
   source="CompanyUsers"
-  caption="Atsakomybės"
-  newRowCaption="Nauja atrsakomybė"
+  caption="=responsibilities"
+  newRowCaption="=newResponsibility"
   >
   <Columns>
     <SimpleColumn name="Company" />
@@ -22,6 +22,8 @@
           <SimpleColumn name="FirstName" />
           <SimpleColumn name="LastName" />
         </SimpleJoin>
+
+        <SimpleColumn name="AccountingCode" />
       </SimpleJoin>
     </SimpleJoin>
    

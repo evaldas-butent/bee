@@ -22,11 +22,11 @@ import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
@@ -50,7 +50,7 @@ import java.util.Map;
 public final class XmlUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(XmlUtils.class);
-  
+
   private static final Map<Short, String> NODE_TYPES = Maps.newHashMap();
 
   static {
@@ -68,27 +68,27 @@ public final class XmlUtils {
     NODE_TYPES.put(Node.NOTATION_NODE, "Notation");
   }
 
-  public static String createString(String rootName, String... nodes) {
-    Assert.notEmpty(rootName);
-    Assert.notNull(nodes);
-    Assert.parameterCount(nodes.length + 1, 3);
-
-    return transformDocument(createDoc(rootName, nodes));
-  }
-
   public static String createString(String rootName, Map<String, String> input) {
     Assert.notEmpty(rootName);
     Assert.notEmpty(input);
 
     String[] nodes = new String[input.size() * 2];
     int i = 0;
-    
+
     for (Map.Entry<String, String> entry : input.entrySet()) {
       nodes[i] = entry.getKey();
       nodes[i + 1] = entry.getValue();
-      
+
       i += 2;
     }
+
+    return transformDocument(createDoc(rootName, nodes));
+  }
+
+  public static String createString(String rootName, String... nodes) {
+    Assert.notEmpty(rootName);
+    Assert.notNull(nodes);
+    Assert.parameterCount(nodes.length + 1, 3);
 
     return transformDocument(createDoc(rootName, nodes));
   }
@@ -109,6 +109,10 @@ public final class XmlUtils {
     Assert.notNull(element);
     Assert.notEmpty(name);
     return BeeUtils.toIntOrNull(element.getAttribute(name));
+  }
+
+  public static Map<String, String> getAttributes(Element element) {
+    return getAttributes(element, false);
   }
 
   public static Map<String, String> getAttributes(Element element, boolean includeNSDeclaration) {
@@ -188,6 +192,24 @@ public final class XmlUtils {
   public static List<Property> getCDATAInfo(CDATASection cdata) {
     Assert.notNull(cdata);
     return PropertyUtils.createProperties("Length", cdata.getLength(), "Data", cdata.getData());
+  }
+
+  public static Map<String, String> getChildAttributes(Element parent, String tagName) {
+    return getChildAttributes(parent, tagName, false);
+  }
+
+  public static Map<String, String> getChildAttributes(Element parent, String tagName,
+      boolean includeNSDeclaration) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+
+    Map<String, String> result = Maps.newHashMap();
+    List<Element> children = getElementsByLocalName(parent, tagName);
+
+    for (Element child : children) {
+      result.putAll(getAttributes(child, includeNSDeclaration));
+    }
+    return result;
   }
 
   public static List<Element> getChildrenElements(Element parent) {
@@ -387,12 +409,12 @@ public final class XmlUtils {
     RendererDescription rowRenderer = null;
     Calculation rowRender = null;
     List<RenderableToken> rowRenderTokens = null;
-    
+
     List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
     for (Element child : children) {
       String tagName = getLocalName(child);
-      
+
       if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDERER)) {
         rowRenderer = getRendererDescription(child);
 
@@ -408,7 +430,7 @@ public final class XmlUtils {
             rowRenderTokens.add(token);
           }
         }
-        
+
       } else if (BeeUtils.same(tagName, Relation.TAG_SELECTOR_COLUMN)) {
         RendererDescription renderer = getRendererDescription(child,
             RendererDescription.TAG_RENDERER);
@@ -422,7 +444,7 @@ public final class XmlUtils {
 
     return Relation.create(attributes, selectorColumns, rowRenderer, rowRender, rowRenderTokens);
   }
-  
+
   public static RendererDescription getRendererDescription(Element element) {
     Assert.notNull(element);
     String typeCode = element.getAttribute(RendererDescription.ATTR_TYPE);
@@ -456,7 +478,7 @@ public final class XmlUtils {
     }
     return getRendererDescription(element);
   }
-  
+
   public static List<RenderableToken> getRenderTokens(Element parent, String tagName) {
     if (parent == null) {
       return null;
@@ -475,7 +497,7 @@ public final class XmlUtils {
     }
     return result;
   }
-  
+
   public static StyleDeclaration getStyle(Element element) {
     Assert.notNull(element);
 
@@ -573,7 +595,7 @@ public final class XmlUtils {
       return isNamespaceDeclaration(attr.getName());
     }
   }
-  
+
   public static boolean isNamespaceDeclaration(String name) {
     return BeeUtils.same(name, XmlHelper.ATTR_XMLNS)
         || BeeUtils.same(NameUtils.getNamespacePrefix(name), XmlHelper.ATTR_XMLNS);
@@ -594,14 +616,14 @@ public final class XmlUtils {
 
   public static void setAttributes(Element element, Map<String, String> attributes) {
     Assert.notNull(element);
-    
+
     if (!BeeUtils.isEmpty(attributes)) {
       for (Map.Entry<String, String> entry : attributes.entrySet()) {
         element.setAttribute(entry.getKey().trim(), entry.getValue());
       }
     }
   }
-  
+
   public static boolean tagIs(Element element, String tagName) {
     if (element == null) {
       return false;

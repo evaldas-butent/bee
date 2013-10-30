@@ -32,11 +32,11 @@ import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -265,7 +265,7 @@ public class MonthView extends CalendarView {
 
   private void buildGrid() {
     for (int i = 0; i < TimeUtils.DAYS_PER_WEEK; i++) {
-      grid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
+      grid.setHtml(0, i, CalendarFormat.getDayOfWeekNames()[i]);
       grid.getCellFormatter().setStyleName(0, i, CalendarStyleManager.WEEKDAY_LABEL);
     }
 

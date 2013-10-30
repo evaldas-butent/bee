@@ -4,13 +4,13 @@
   xmlns:ui="http://www.butent.com/ui"
   
   name="CategoryTree" caption="=itemCategoryTree">
-  <DataTree caption="Kategorijos" source="CategoryTree" parentColumn="Parent">
+  <DataTree caption="=itemCategories" source="CategoryTree" parentColumn="Parent">
     <calc>
       <ui:expression>row.Name</ui:expression>
     </calc>
-    <form name="Kategorijos koregavimas">
+    <form name="=categoryEdit">
       <FlowPanel>
-        <Label html="Kategorija" class="bee-required" />
+        <Label text="=category" class="bee-required" />
         <InputText source="Name" style="width: 300px;" />
       </FlowPanel>
     </form>

@@ -6,17 +6,17 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" />
-    <Date name="Date" />
-    <Relation name="Item" notNull="true" relation="Items" />
-    <Relation name="Unit" notNull="true" relation="Units" />
-    <Double name="Quantity" notNull="true" />
-    <Numeric name="Price" precision="15" scale="5" />
-    <Relation name="Currency" relation="Currencies" />
-    <String name="Note" precision="50" />
-    <Integer name="Run" />
-    <String name="DocumentNo" precision="30" />
-    <Relation name="Supplier" relation="Companies" />
-    <Relation name="Country" relation="Countries" />
+    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" label="=trVehicle" />
+    <Date name="Date" label="=date" />
+    <Relation name="Item" notNull="true" relation="Items" label="=trProductService" />
+    <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
+    <Double name="Quantity" notNull="true" label="=quantity"/>
+    <Numeric name="Price" precision="15" scale="5" label="=price" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+    <String name="Note" precision="50" label="=note" />
+    <Integer name="Run" label="=trVehicleRun" />
+    <String name="DocumentNo" precision="30" label="=trDocumentNumberShort" />
+    <Relation name="Supplier" relation="Companies" label="=trSupplier" />
+    <Relation name="Country" relation="Countries" label="=country" />
   </Fields>
 </Table>

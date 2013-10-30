@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Branches" viewName="Branches" caption="=branches"
-  flexGrow="1" flexShrink="1"
   >
-  <columns>
+  <g:columns>
     <DataColumn name="Name" visible="true" />
+    <DataColumn name="Code" />
 
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
 
-    <RelColumn name="EmailId">
-      <renderToken source="Label" suffix=" " />
-      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    <RelColumn name="EmailId" renderColumns="Label Email">
+      <renderer type="mail" />
     </RelColumn>
 
     <DataColumn name="Address" />
@@ -31,5 +30,5 @@
     <DataColumn name="Fax" visible="false" />
     <DataColumn name="PostIndex" visible="false" />
     <DataColumn name="Website" visible="false" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

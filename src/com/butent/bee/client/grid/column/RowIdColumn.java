@@ -1,11 +1,12 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.NumberCell;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
@@ -23,7 +24,7 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
 
   public RowIdColumn(NumberFormat format) {
     super(new NumberCell<Long>(format));
-    setHorizontalAlignment(ALIGN_RIGHT);
+    setTextAlign(TextAlign.RIGHT);
   }
   
   @Override
@@ -40,7 +41,7 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
   }
 
   @Override
-  public String getString(Context context, IsRow row) {
+  public String getString(CellContext context, IsRow row) {
     if (row == null) {
       return null;
     }

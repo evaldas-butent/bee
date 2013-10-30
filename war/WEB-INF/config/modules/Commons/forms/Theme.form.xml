@@ -5,16 +5,18 @@
   
   name="Theme" viewName="Themes" caption="=colorTheme">
 
-  <FlowPanel>
+  <FlowPanel class="flexBox-vertical">
     <Table>
       <row>
-        <InputText source="Name" caption="=colorTitle" d:style="padding-right:8px;" style="margin-right:8px;" />
-        <DataSelector source="DefaultColorName" caption="=defaultColor" d:style="padding-right:8px;" />
+        <InputText source="Name" caption="=colorTitle" d:style="padding-right:8px;"
+          style="margin-right:8px;" />
+        <DataSelector source="DefaultColorName" caption="=defaultColor"
+          d:style="padding-right:8px;" />
       </row>
       <row>
         <cell colSpan="2">
-          <InputArea source="Description" caption="=colorDescription" visibleLines="3" d:style="width:70px; margin-right:5px; margin-left:4px;"
-            style="width: 432px;" />
+          <InputArea source="Description" caption="=colorDescription" visibleLines="3" 
+            d:style="width:70px; margin-right:5px; margin-left:4px;" style="width: 432px;" />
         </cell>
       </row>
     </Table>

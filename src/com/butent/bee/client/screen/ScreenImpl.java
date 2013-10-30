@@ -5,10 +5,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -33,18 +30,23 @@ import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.UiConstants;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -56,7 +58,6 @@ public class ScreenImpl implements Screen {
 
   private static final BeeLogger logger = LogUtils.getLogger(ScreenImpl.class);
 
-  private LayoutPanel rootPanel;
   private Split screenPanel;
 
   private CentralScrutinizer centralScrutinizer;
@@ -67,7 +68,7 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel;
 
   private HasWidgets userPhotoContainer;
-  private HasText userSignature;
+  private HasHtml userSignature;
 
   private Notification notification;
 
@@ -215,6 +216,11 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public UserInterface getUserInterface() {
+    return UserInterface.DESKTOP;
+  }
+  
+  @Override
   public int getWidth() {
     return getScreenPanel().getOffsetWidth();
   }
@@ -256,7 +262,6 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void onExit() {
-    getRootPanel().clear();
   }
 
   @Override
@@ -267,11 +272,6 @@ public class ScreenImpl implements Screen {
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return getCentralScrutinizer().remove(domain, key);
-  }
-
-  @Override
-  public void setRootPanel(LayoutPanel rootPanel) {
-    this.rootPanel = rootPanel;
   }
 
   @Override
@@ -359,9 +359,34 @@ public class ScreenImpl implements Screen {
       }
 
       if (getUserSignature() != null) {
-        getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
+        getUserSignature().setHtml(BeeUtils.trim(userData.getUserSign()));
       }
     }
+  }
+
+  protected Widget createCopyright(String stylePrefix) {
+    Flow copyright = new Flow();
+    copyright.addStyleName(stylePrefix + "Copyright");
+
+    Image logo = new Image(UiConstants.wtfplLogo());
+    logo.addStyleName(stylePrefix + "Copyright-logo");
+    copyright.add(logo);
+
+    Label label = new Label(UiConstants.wtfplLabel());
+    label.addStyleName(stylePrefix + "Copyright-label");
+    copyright.add(label);
+
+    final String url = UiConstants.wtfplUrl();
+    copyright.setTitle(url);
+
+    copyright.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        BrowsingContext.open(url);
+      }
+    });
+
+    return copyright;
   }
 
   protected Widget createLogo(ScheduledCommand command) {
@@ -394,7 +419,7 @@ public class ScreenImpl implements Screen {
       widget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Window.open(openUrl, "_blank", null);
+          BrowsingContext.open(openUrl);
         }
       });
     }
@@ -404,6 +429,7 @@ public class ScreenImpl implements Screen {
 
   protected void createUi() {
     Split p = new Split(0);
+    StyleUtils.occupy(p);
     p.addStyleName(getScreenStyle());
 
     Pair<? extends IdentifiableWidget, Integer> north = initNorth();
@@ -431,7 +457,7 @@ public class ScreenImpl implements Screen {
       p.add(center);
     }
 
-    getRootPanel().add(p);
+    BodyPanel.get().add(p);
     setScreenPanel(p);
   }
 
@@ -469,7 +495,7 @@ public class ScreenImpl implements Screen {
               public void onConfirm() {
                 Bee.exit();
               }
-            }, null, StyleUtils.FontSize.MEDIUM.getClassName(), null);
+            }, null, StyleUtils.className(FontSize.MEDIUM), null);
       }
     });
     exit.addStyleName("bee-UserExit");
@@ -482,10 +508,6 @@ public class ScreenImpl implements Screen {
 
   protected Notification getNotification() {
     return notification;
-  }
-
-  protected LayoutPanel getRootPanel() {
-    return rootPanel;
   }
 
   protected String getScreenStyle() {
@@ -552,7 +574,11 @@ public class ScreenImpl implements Screen {
     setCentralScrutinizer(new CentralScrutinizer());
     getCentralScrutinizer().start();
 
-    return Pair.of(getCentralScrutinizer(), 240);
+    Flow panel = new Flow();
+    panel.add(getCentralScrutinizer());
+    panel.add(createCopyright("bee-"));
+
+    return Pair.of(panel, 240);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {
@@ -575,7 +601,7 @@ public class ScreenImpl implements Screen {
     this.userPhotoContainer = userPhotoContainer;
   }
 
-  protected void setUserSignature(HasText userSignature) {
+  protected void setUserSignature(HasHtml userSignature) {
     this.userSignature = userSignature;
   }
 
@@ -599,7 +625,7 @@ public class ScreenImpl implements Screen {
     return userPhotoContainer;
   }
 
-  private HasText getUserSignature() {
+  private HasHtml getUserSignature() {
     return userSignature;
   }
 

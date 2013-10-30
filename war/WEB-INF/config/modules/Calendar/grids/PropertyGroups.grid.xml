@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="PropertyGroups" viewName="PropertyGroups" caption="Parametrų grupės"
-  newRowColumns="Name Description" newRowCaption="Nauja parametrų grupė"
+  name="PropertyGroups" viewName="PropertyGroups" caption="=calParametersGroups"
+  newRowColumns="Name Description" newRowCaption="=calNewParameterGroup"
   flexGrow="1" flexShrink="1"
   >
-  <columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" maxWidth="200" visible="true" />
-    <DataColumn name="Description" caption="Aprašymas" flexShrink="5" />
+  <g:columns>
+    <DataColumn name="Name" caption="=calName" minWidth="100" maxWidth="200" visible="true" />
+    <DataColumn name="Description" caption="=calDescription" flexShrink="5" />
 
-    <RelColumn name="DefaultPropertyName" caption="Pagrindinis parametras" newRowEnabled="false"
+    <RelColumn name="DefaultPropertyName" caption="=calDefaultParameter" newRowEnabled="false"
       flexGrow="0" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

@@ -1,7 +1,5 @@
 package com.butent.bee.shared.communication;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -9,8 +7,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Contains utility functions for communication between server and client sides, for example
@@ -30,12 +27,24 @@ public final class CommUtils {
   public static final String CONTENT_TYPE_HEADER = "content-type";
   public static final String CONTENT_LENGTH_HEADER = "content-length";
 
-  public static final String PATH_SEGMENT_SEPARATOR = "/";
-  
   public static final ContentType DEFAULT_REQUEST_CONTENT_TYPE = ContentType.XML;
   public static final ContentType DEFAULT_RESPONSE_CONTENT_TYPE = ContentType.TEXT;
 
   public static final ContentType FORM_RESPONSE_CONTENT_TYPE = ContentType.HTML;
+  
+  public static String getPath(String url, Map<String, String> parameters, boolean encode) {
+    return addQueryString(url, buildQueryString(parameters, encode)); 
+  }
+
+  public static String addQueryString(String url, String qs) {
+    Assert.notEmpty(url);
+
+    if (BeeUtils.isEmpty(qs)) {
+      return url;
+    } else {
+      return url.trim() + QUERY_STRING_SEPARATOR + qs.trim();
+    }
+  }
 
   public static String buildContentType(String type) {
     return buildContentType(type, getCharacterEncoding(getContentType(type)));
@@ -50,12 +59,26 @@ public final class CommUtils {
     }
   }
   
-  public static String buildPath(String first, String second, String... rest) {
-    List<String> segments = Lists.newArrayList(first, second);
-    if (rest != null) {
-      segments.addAll(Arrays.asList(rest));
+  public static String buildQueryString(Map<String, String> parameters, boolean encode) {
+    if (BeeUtils.isEmpty(parameters)) {
+      return BeeConst.STRING_EMPTY;
     }
-    return BeeUtils.join(PATH_SEGMENT_SEPARATOR, segments);
+
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      String key = BeeUtils.trim(entry.getKey());
+      String value = BeeUtils.trim(entry.getValue());
+
+      if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(QUERY_STRING_PAIR_SEPARATOR);
+        }
+
+        sb.append(key).append(QUERY_STRING_VALUE_SEPARATOR);
+        sb.append(encode ? Codec.encodeBase64(value) : value);
+      }
+    }
+    return sb.toString();
   }
 
   public static boolean equals(ContentType z1, ContentType z2) {
@@ -122,10 +145,6 @@ public final class CommUtils {
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, Service.RPC_VAR_SYS_PREFIX);
-  }
-
-  public static boolean isResource(ContentType ctp) {
-    return ContentType.RESOURCE.equals(ctp);
   }
 
   public static boolean isText(ContentType ctp) {

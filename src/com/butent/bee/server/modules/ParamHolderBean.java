@@ -2,6 +2,7 @@ package com.butent.bee.server.modules;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.google.common.eventbus.EventBus;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -61,6 +62,7 @@ public class ParamHolderBean {
   SystemBean sys;
 
   private final Map<String, Map<String, BeeParameter>> modules = Maps.newHashMap();
+  private final EventBus parameterEventBus = new EventBus();
 
   @Lock(LockType.WRITE)
   public void createParameter(BeeParameter param) {
@@ -189,6 +191,16 @@ public class ParamHolderBean {
         ? parameter.getTime(usr.getCurrentUserId()) : parameter.getTime();
   }
 
+  public String getValue(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getUserValue(usr.getCurrentUserId()) : parameter.getValue();
+  }
+
+  public void postParameterEvent(ParameterEvent event) {
+    parameterEventBus.post(event);
+  }
+
   public void refreshParameters(String module) {
     modules.put(module, new TreeMap<String, BeeParameter>());
     Collection<BeeParameter> defaults = moduleBean.getModuleDefaultParameters(module);
@@ -233,6 +245,11 @@ public class ParamHolderBean {
   }
 
   @Lock(LockType.WRITE)
+  public void registerParameterEventHandler(ParameterEventHandler eventHandler) {
+    parameterEventBus.register(eventHandler);
+  }
+
+  @Lock(LockType.WRITE)
   public void removeParameters(String module, String... names) {
     Assert.noNulls((Object[]) names);
     HasConditions wh = SqlUtils.or();
@@ -243,6 +260,9 @@ public class ParamHolderBean {
     if (BeeUtils.isPositive(qs.updateData(new SqlDelete(TBL_PARAMS)
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module), wh))))) {
       refreshParameters(module);
+    }
+    for (String name : names) {
+      postParameterEvent(new ParameterEvent(module, name));
     }
   }
 
@@ -289,6 +309,7 @@ public class ParamHolderBean {
         storeParameter(parameter);
       }
     }
+    postParameterEvent(new ParameterEvent(module, name));
   }
 
   private BeeParameter getModuleParameter(String module, String name) {

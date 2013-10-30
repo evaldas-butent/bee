@@ -129,7 +129,7 @@ class ItemFormHandler extends AbstractFormInterceptor {
         ItemGridHandler grd = (ItemGridHandler) gcb;
 
         if (grd.showServices()) {
-          newRow.setValue(form.getDataIndex(CommonsConstants.COL_SERVICE), 1);
+          newRow.setValue(form.getDataIndex(CommonsConstants.COL_ITEM_IS_SERVICE), 1);
         }
 
         IsRow category = grd.getSelectedCategory();

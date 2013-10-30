@@ -148,7 +148,7 @@ public class SystemBean {
   private String dbAuditSchema;
   private final Map<String, BeeTable> tableCache = Maps.newHashMap();
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
-  private final EventBus viewEventBus = new EventBus();
+  private final EventBus dataEventBus = new EventBus();
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
@@ -261,8 +261,8 @@ public class SystemBean {
     return getTable(tblName).getExtendedInfo();
   }
 
-  public Collection<String> getTableNames() {
-    Collection<String> tables = Lists.newArrayList();
+  public List<String> getTableNames() {
+    List<String> tables = Lists.newArrayList();
 
     for (BeeTable table : getTables()) {
       tables.add(table.getName());
@@ -367,6 +367,10 @@ public class SystemBean {
     return SqlUtils.equals(tblName, getIdName(tblName), id);
   }
 
+  public IsCondition idInList(String tblName, Collection<Long> ids) {
+    return SqlUtils.inList(tblName, getIdName(tblName), ids);
+  }
+
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
@@ -464,8 +468,8 @@ public class SystemBean {
     return XmlUtils.unmarshal(XmlView.class, resource, SysObject.VIEW.getSchemaPath());
   }
 
-  public void postViewEvent(ViewEvent viewEvent) {
-    viewEventBus.post(viewEvent);
+  public void postDataEvent(DataEvent event) {
+    dataEventBus.post(event);
   }
 
   @Lock(LockType.WRITE)
@@ -486,8 +490,8 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  public void registerViewEventHandler(ViewEventHandler eventHandler) {
-    viewEventBus.register(eventHandler);
+  public void registerDataEventHandler(DataEventHandler eventHandler) {
+    dataEventBus.register(eventHandler);
   }
 
   private void createAuditTables(BeeTable table) {

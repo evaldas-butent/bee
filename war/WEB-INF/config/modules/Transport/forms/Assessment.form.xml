@@ -11,29 +11,31 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Assessment" viewName="Assessments" caption="Vertinimo užklausimas"
+  name="Assessment" viewName="Assessments" caption="=transportAssessmentRequest"
   showRowId="true"
   >
+  <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
+
   <FlowPanel style="padding: 10px 2px 2px 10px;" class="flexBox-vertical bee-tr-assessment-form">
     <FlowPanel style="height:65%; overflow:auto;">
       <FlowPanel style="&section;">
-        <Label html="Būsena" style="&labelLeft;" />
+        <Label text="=status" style="&labelLeft;" />
         <TextLabel source="Status" itemKey="AssessmentStatus" style="&input; font-weight:bold;" />
-        <Label html="Užsakovas" class="bee-required" style="&labelRight; width:120px;" />
+        <Label text="=customer" class="bee-required" style="&labelRight; width:120px;" />
         <DataSelector source="Customer" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label html="Užsakymo data" class="bee-required" style="&labelLeft;" />
+        <Label text="=orderDate" class="bee-required" style="&labelLeft;" />
         <InputDateTime source="OrderDate" style="&input;" />
-        <Label html="Kontaktinis asmuo" style="&labelRight; width:120px;" />
+        <Label text="=personContact" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;" 
           choiceColumns="FirstName LastName CompanyName" options="Customer" />
       </FlowPanel>
     
       <FlowPanel style="&section;">
-        <Label html="Ref numeris" style="&labelLeft;" />
+        <Label text="=refNumber" style="&labelLeft;" />
         <InputText source="Number" style="&input;" />
-        <Label html="Siuntėjas" style="&labelRight; width:120px;" />
+        <Label text="=shipper" style="&labelRight; width:120px;" />
         <InputText source="Shipper" style="&input; width:200px;" />
       </FlowPanel>
     
@@ -42,37 +44,34 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Vadybininkas" class="bee-required" style="&labelLeft;" />
+        <Label text="=manager" class="bee-required" style="&labelLeft;" />
         <DataSelector source="Manager" style="&input; width:200px;" editSource="ManagerPerson"
           newRowEnabled="false" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label html="Komentaras" style="&labelLeft; vertical-align:top;" />
+        <Label text="=trComment" style="&labelLeft; vertical-align:top;" />
         <InputArea source="Notes" style="width:400px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label html="Transporto nr." style="&labelLeft;" />
+        <Label text="=transportationNumber1" style="&labelLeft;" />
         <InputText source="LoadingTerminal" style="&inline; width:130px;" />
-        <Label html="Transporto nr.2" style="&labelRight; width:100px;" />
+        <Label text="=transportationNumber2" style="&labelRight; width:100px;" />
         <InputText source="UnloadingTerminal" style="&inline; width:130px;" />
       </FlowPanel>
 
-      <FlowPanel name="AmountsPanel" style="&section;">
+      <FlowPanel style="&section;">
         &separator;
-        <Label html="Kaina klientui" style="&labelLeft;" />
-        <Label name="IncomeTotal" style="&inline; font-weight:bold; margin-right:5px;" />
-        <DataSelector name="Currency" source="Currency" placeholder="Val."
-          style="&inline; width:40px; margin-right:10px;" editEnabled="false" />
-        <Label html="Spausdinti" style="&labelRight;" />
-        <Button name="LT" html="LT" style="&inline; margin-right:10px;" disablable="false" />
-        <Button name="RU" html="RU" style="&inline; margin-right:10px;" disablable="false" />
-        <Button name="EN" html="EN" style="&inline; margin-right:10px;" disablable="false" />
-        
-        <FlowPanel style="&section;">
-          <Label html="Savikaina" style="&labelLeft;" />
-          <Label name="ExpenseTotal" style="&inline; font-weight:bold; margin-right:10px;" />
-          <Label html="Pelnas" style="&labelRight;" />
-          <Label name="Profit" style="&inline; font-weight:bold;" />
+        <Label text="=currency" class="bee-required" style="&labelLeft;" />
+        <DataSelector name="Currency" source="Currency" required="true"
+          style="&inline; width:40px; margin-right:20px;" editEnabled="false" />
+                  
+        <FlowPanel name="AmountsPanel" style="&inline; &section;">
+          <InlineLabel text="=customerPrice" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel name="IncomeTotal" style="font-weight:bold; margin-right:20px;" />
+          <InlineLabel text="=transportCost" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel name="ExpenseTotal" style="font-weight:bold; margin-right:20px;" />
+          <InlineLabel text="=cargoProfit" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel name="Profit" style="font-weight:bold;" />
         </FlowPanel>
       </FlowPanel>
     </FlowPanel>
@@ -80,23 +79,23 @@
     &separator;
     <TabbedPages class="flexible" style="&section; min-height:100px;">
       <page>
-        <text>Vertinimai</text>
+        <text>=assessments</text>
         <ChildGrid name="CargoAssessors" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
       <page>
-        <text>Vežėjai</text>
+        <text>=carriers</text>
         <ChildGrid name="AssessmentForwarders" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
       <page>
         <FlowPanel>
-          <Label html="Pajamos" style="&inline;" />
+          <Label text="=income" style="&inline;" />
           <FlowPanel name="Income" style="&inline;" />
         </FlowPanel>
         <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
       </page>
       <page>
         <FlowPanel>
-          <Label html="Sąnaudos" style="&inline;" />
+          <Label text="=trExpenses" style="&inline;" />
           <FlowPanel name="Expense" style="&inline;" />
         </FlowPanel>
         <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" disablable="false" />

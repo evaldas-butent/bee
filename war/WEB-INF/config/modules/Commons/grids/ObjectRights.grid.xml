@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="ObjectRights" viewName="Rights" caption="Teisės"
+  name="ObjectRights" viewName="Rights" caption="=objectRights"
   >
-  <columns>
-    <RelColumn name="Role" caption="Rolė" visible="true" />
-    <DataColumn name="State" caption="Būsena" itemKey="RightsState" visible="true">
+  <g:columns>
+    <RelColumn name="Role" caption="=role" visible="true" />
+    <DataColumn name="State" caption="=roleState" itemKey="RightsState" visible="true">
       <style>
         <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>
       </style>
     </DataColumn>
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

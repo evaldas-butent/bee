@@ -6,10 +6,10 @@
   >
   <Fields>
     <Relation name="Order" notNull="true" relation="EcOrders" cascade="DELETE" />
-    <Integer name="Item" notNull="true" />
+    <Relation name="Article" relation="TcdArticles" notNull="true" label="=ecItemName" />
     <Integer name="QuantityOrdered" notNull="true" label="=ecItemQuantityOrdered" />
     <Integer name="QuantitySubmit" label="=ecItemQuantitySubmit" />
-    <Numeric name="Price" notNull="true" precision="12" scale="2" label="=price" />
+    <Numeric name="Price" notNull="true" precision="10" scale="2" label="=ecItemPrice" />
     <String name="Note" precision="100" label="=ecItemNote" />
   </Fields>
 </Table>

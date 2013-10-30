@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcManagers" viewName="EcManagers" caption="=ecManagers"
-  flexGrow="1" flexShrink="1"
+  autoFit="true"
   >
-  <columns>
-    <RelColumn name="User" renderColumns="Login" editEnabled="true"
+  <g:columns>
+    <RelColumn name="User" renderColumns="Login" editEnabled="true" editSource="CompanyPerson"
       choiceColumns="Login FirstName LastName CompanyName" visible="true" />
 
     <DataColumn name="FirstName" />
     <DataColumn name="LastName" />
     <DataColumn name="CompanyName" caption="=company" />
 
-    <DataColumn name="TabNr" visible="true" />
+    <DataColumn name="TabNr" />
 
-    <RelColumn name="ReportOrder" />
+    <RelColumn name="MailAccount" renderColumns="AccountDescription AccountEmail">
+      <renderer type="mail" />
+    </RelColumn>
+
+    <RelColumn name="IncomingMail" renderColumns="IncomingLabel IncomingEmail">
+      <renderer type="mail" />
+    </RelColumn>
 
     <DataColumn name="Notes" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

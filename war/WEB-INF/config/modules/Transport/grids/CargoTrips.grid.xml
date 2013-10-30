@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="CargoTrips" viewName="CargoTrips"
   editForm="CargoPlace" editPopup="true" editInPlace="TripPercent"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
-  <body height="50" />
+  <g:body height="50" />
 
-  <columns>
-    <ActionColumn element="link" name="TripNo" caption="Reiso Nr." />
-    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
-    <DataColumn name="ForwarderName" caption="Vežėjas" />
-    <CalcColumn name="Vehicle" type="string" caption="Transportas" flexBasis="120">
+  <g:columns>
+    <ActionColumn element="link" name="TripNo" caption="=trTripNo" />
+    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <DataColumn name="ForwarderName" caption="=carrier" />
+    <CalcColumn name="Vehicle" type="string" caption="=transport" flexBasis="120">
       <render>
         <ui:function>
           var vehicle = row.ForwarderVehicle;
@@ -29,10 +29,10 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="DateFrom" caption="Išvyko" />
-    <DataColumn name="DateTo" caption="Sugrįžo" />
+    <DataColumn name="DateFrom" caption="=trDeparted" />
+    <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="TripPercent" caption="%" minValue="0" />
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" minWidth="140" flexBasis="120" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading" minWidth="140" flexBasis="120" />
-  </columns>
-</Grid>
+  </g:columns>
+</g:Grid>

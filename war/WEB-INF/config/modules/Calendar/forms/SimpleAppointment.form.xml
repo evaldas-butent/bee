@@ -5,16 +5,16 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator" name="SimpleAppointment" viewName="Appointments"
-  caption="=appointment" disabledActions="add delete" enabledActions="save">
+  caption="=calAppointment" disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; width: 760px; height: 360px;">
-    <InputText source="Summary" required="true" caption="Santrauka:" style="width: 240px;"
+    <InputText source="Summary" required="true" caption="=summary" style="width: 240px;"
       d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
 
-    <InputText source="Location" caption="Vieta:" style="width: 320px;"
+    <InputText source="Location" caption="=location" style="width: 320px;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
 
-    <Label html="Resursai:" style="&absolute; left: 0; top: 40px;" />
+    <Label text="=calAppointmentAttendees" style="&absolute; left: 0; top: 40px;" />
 
     <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
 
@@ -22,46 +22,46 @@
       renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
       style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
 
-    <InputArea source="Description" placeholder="Aprašymas" visibleLines="5"
+    <InputArea source="Description" placeholder="=calDescription" visibleLines="5"
       style="&absolute; left: 360px; top: 40px; width: 382px;" />
 
-    <InputDate name="StartDate" required="true" caption="Planuojamas pradžios laikas:"
+    <InputDate name="StartDate" required="true" caption="=scheduledStartingTime"
       style="width: 80px;" d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 160px;" />
     <InputTimeOfDay name="StartTime" step="30"
       style="&absolute; left: 280px; top: 160px; width: 40px;" />
 
-    <InputSpinner name="Hours" caption="Trukmė:" minValue="0" maxValue="99" style="width: 40px;"
+    <InputSpinner name="Hours" caption="=calDuration" minValue="0" maxValue="99" style="width: 40px;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 160px;" />
     <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"
       style="&absolute; left: 480px; top: 160px; width: 40px;" />
 
-    <InputDate name="EndDate" caption="Planuojamas pabaigos laikas:" style="width: 80px;"
+    <InputDate name="EndDate" caption="=scheduledEndingTime" style="width: 80px;"
       d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />
     <InputTimeOfDay name="EndTime" step="30"
       style="&absolute; left: 280px; top: 192px; width: 40px;" options="60" />
 
     <FlowPanel name="Colors" style="&absolute; left: 360px; top: 192px; width: 380px;" />
 
-    <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:" style="width: 160px;"
+    <ListBox source="Status" itemKey="AppointmentStatus" caption="=calAppointmentStatus" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 240px;" />
-    <ListBox name="Reminder" caption="Priminimas:" style="width: 160px;"
+    <ListBox name="Reminder" caption="=calReminder" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 280px;" />
       
     <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false"
       style="&absolute; left: 0; top: 324px;" />
 
-    <DataSelector source="CompanyName" caption="Klientas:" style="width: 300px;"
+    <DataSelector source="CompanyName" caption="=calClient" style="width: 300px;"
        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 240px;"
        choiceColumns="Name Phone Email" />
 
-    <DataSelector source="Organizer" caption="Atsakingas:" style="width: 300px;"
+    <DataSelector source="Organizer" caption="=responsiblePerson" style="width: 300px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />
     </DataSelector>
 
-    <DataSelector source="AppointmentType" required="true" caption="Tipas:" style="width: 300px;"
+    <DataSelector source="AppointmentType" required="true" caption="=appointmentType" style="width: 300px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 320px;" />
 
   </FlowPanel>
