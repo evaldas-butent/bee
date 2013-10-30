@@ -7,18 +7,30 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
+import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.Node;
+import com.butent.bee.shared.html.builder.elements.Datalist;
 import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
+import com.butent.bee.shared.html.builder.elements.Select;
+import com.butent.bee.shared.html.builder.elements.Span;
+import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -36,113 +48,78 @@ public class EcServlet extends LoginServlet {
 
   private static final String PATH_REGISTER = "/register";
 
-  private static String getRegistrationForm(LocalizableConstants constants) {
-    String classRequired = "bee-required";
-    String classTable = "bee-ec-registration-table";
-    String classLabelCell = "bee-ec-registration-label-cell";
+  private static final String REG_STYLE_PREFIX = "bee-ec-registration-";
 
-    Document doc = new Document();
+  private static final String REG_STYLE_LABEL_CELL = REG_STYLE_PREFIX + "label-cell";
+  private static final String REG_STYLE_LABEL = REG_STYLE_PREFIX + "label";
 
-    doc.getHead().append(
-        meta().encodingDeclarationUtf8(),
-        title().text(constants.ecRegistrationNew()),
-        style()
-            .text("." + classRequired + ":after {")
-            .text("  content: \"*\"; color: red; font-size: 13px; font-weight: bold;")
-            .text("}")
-            .text("." + classTable + " td {")
-            .text("  vertical-align: top;")
-            .text("  padding-bottom: 4px;")
-            .text("}")
-            .text("." + classLabelCell + " {")
-            .text("  text-align: right;")
-            .text("  padding-left: 1em;")
-            .text("  padding-right: 1em;")
-            .text("}"));
+  private static final String REG_STYLE_INPUT_CELL = REG_STYLE_PREFIX + "input-cell";
+  private static final String REG_STYLE_INPUT = REG_STYLE_PREFIX + "input";
 
-    doc.getBody().append(
-        h2().text(constants.ecRegistrationNew()),
-        form().methodPost().append(
-            table().borderCollapse().marginTop(2, CssUnit.EX).marginLeft(1, CssUnit.EM).append(
-                tbody().append(
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.ecClientCompanyName())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_COMPANY_NAME)),
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.ecClientCompanyCode())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_COMPANY_CODE))
-                        ),
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.ecClientPersonCode())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_PERSON_CODE)),
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.ecClientVatCode())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_VAT_CODE))
-                        ),
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.ecClientFirstName())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_FIRST_NAME).required()),
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.ecClientLastName())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_LAST_NAME).required())
-                        ),
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.email())),
-                        td().append(
-                            input().type(Type.EMAIL).name(COL_REGISTRATION_EMAIL).required()),
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.phone())),
-                        td().append(
-                            input().type(Type.TEL).name(COL_REGISTRATION_PHONE).required())
-                        ),
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.city())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_CITY).required()),
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.country())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_COUNTRY))
-                        ),
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.address())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_ADDRESS).required()),
-                        td().addClass(classLabelCell).append(
-                            div().addClass(classRequired).text(constants.postIndex())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_POST_INDEX).required())
-                        ),
-                    tr().append(
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.ecClientActivity())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_ACTIVITY)),
-                        td().addClass(classLabelCell).append(
-                            div().text(constants.notes())),
-                        td().append(
-                            input().type(Type.TEXT).name(COL_REGISTRATION_NOTES))
-                        )
-                    )),
-            input().type(Type.SUBMIT).value("Submit")));
+  private static final String REG_STYLE_REQUIRED = REG_STYLE_PREFIX + "required";
 
-    return doc.build(0, 2);
+  private static final String REG_STYLE_TYPE_PREFIX = "bee-ec-registration-type-";
+
+  private static final String ID_SUFFIX_FIELD = "-field";
+  private static final String ID_SUFFIX_LABEL = "-label";
+  private static final String ID_SUFFIX_INPUT = "-input";
+  private static final String ID_SUFFIX_LIST = "-list";
+
+  private static Node clientTypeSelector(LocalizableConstants constants) {
+    String name = COL_REGISTRATION_TYPE;
+
+    Div container = div().addClass(REG_STYLE_TYPE_PREFIX + "container");
+
+    for (EcClientType clientType : EcClientType.values()) {
+      Input input = input().addClass(REG_STYLE_TYPE_PREFIX + "input").type(Type.RADIO)
+          .name(name).value(clientType.ordinal()).id(clientType.name().toLowerCase())
+          .onChange("onSelectType()");
+
+      Span span = span().addClass(REG_STYLE_TYPE_PREFIX + "text")
+          .text(clientType.getCaption(constants));
+
+      container.append(label().addClass(REG_STYLE_TYPE_PREFIX + "label").append(input, span));
+    }
+
+    return tr().id(name + ID_SUFFIX_FIELD).append(
+        registrationLabelCell(name + ID_SUFFIX_LABEL, constants.ecClientType(), true),
+        td().addClass(REG_STYLE_INPUT_CELL).append(container));
+  }
+
+  private static Node registrationField(String label, String name, boolean required) {
+    return registrationField(label, Type.TEXT, name, required);
+  }
+
+  private static Node registrationField(String label, Type type, String name, boolean required) {
+    return tr().id(name + ID_SUFFIX_FIELD).append(
+        registrationLabelCell(name + ID_SUFFIX_LABEL, label, required),
+        registrationInputCell(name + ID_SUFFIX_INPUT, type, name, required));
+  }
+
+  private static Node registrationInputCell(String id, Type type, String name, boolean required) {
+    Input input = input().addClass(REG_STYLE_INPUT).id(id).type(type).name(name);
+    if (required) {
+      input.required();
+    }
+
+    return td().addClass(REG_STYLE_INPUT_CELL).append(input);
+  }
+
+  private static Node registrationLabelCell(String id, String text, boolean required) {
+    Div div = div().addClass(REG_STYLE_LABEL);
+    if (required) {
+      div.addClass(REG_STYLE_REQUIRED);
+    }
+    div.id(id).text(text);
+
+    return td().addClass(REG_STYLE_LABEL_CELL).append(div);
   }
 
   @EJB
   ProxyBean proxy;
+
+  @EJB
+  QueryServiceBean qs;
 
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
@@ -160,8 +137,9 @@ public class EcServlet extends LoginServlet {
       if (parameters.size() > 3) {
         html = register(req, parameters, constants);
       } else {
-        html = getRegistrationForm(constants);
+        html = getRegistrationForm(req.getServletContext().getContextPath(), constants);
       }
+
     } else {
       HttpUtils.sendError(resp, HttpServletResponse.SC_NOT_FOUND, path);
       return;
@@ -185,6 +163,106 @@ public class EcServlet extends LoginServlet {
             .value(localizableConstants.loginCommandRegister())));
 
     return commandContainer;
+  }
+
+  private Node branchSelector(String label) {
+    String name = COL_REGISTRATION_BRANCH;
+    Select select = select().name(name).required();
+
+    BeeRowSet branches = qs.getViewData(CommonsConstants.VIEW_BRANCHES);
+    if (!DataUtils.isEmpty(branches)) {
+      int index = branches.getColumnIndex(CommonsConstants.COL_BRANCH_NAME);
+
+      for (BeeRow row : branches.getRows()) {
+        select.append(option().value(row.getId()).text(row.getString(index)));
+      }
+    }
+
+    return tr().id(name + ID_SUFFIX_FIELD).append(
+        registrationLabelCell(name + ID_SUFFIX_LABEL, label, true),
+        td().addClass(REG_STYLE_INPUT_CELL).append(select));
+  }
+
+  private Datalist getDataList(String tblName, String fldName) {
+    String[] values = qs.getColumn(new SqlSelect().setDistinctMode(true)
+        .addFields(tblName, fldName)
+        .addFrom(tblName)
+        .setWhere(SqlUtils.notNull(tblName, fldName))
+        .addOrder(tblName, fldName));
+
+    if (values == null || values.length <= 0) {
+      return null;
+    }
+
+    Datalist datalist = datalist();
+
+    for (String value : values) {
+      datalist.append(option().value(value));
+    }
+
+    return datalist;
+  }
+
+  private String getRegistrationForm(String contextPath, LocalizableConstants constants) {
+    Document doc = new Document();
+
+    doc.getHead().append(
+        meta().encodingDeclarationUtf8(),
+        title().text(constants.ecRegistrationNew()),
+        link().styleSheet(resource(contextPath, Paths.getStyleSheetPath("ecregistration"))),
+        script().src(resource(contextPath, Paths.getScriptPath("ecregistration"))));
+
+    Tbody fields = tbody().append(
+        branchSelector(constants.branch()),
+        clientTypeSelector(constants),
+        registrationField(constants.ecClientCompanyName(), COL_REGISTRATION_COMPANY_NAME, true),
+        registrationField(constants.ecClientCompanyCode(), COL_REGISTRATION_COMPANY_CODE, true),
+        registrationField(constants.ecClientVatCode(), COL_REGISTRATION_VAT_CODE, true),
+        registrationField(constants.ecClientFirstName(), COL_REGISTRATION_FIRST_NAME, true),
+        registrationField(constants.ecClientLastName(), COL_REGISTRATION_LAST_NAME, true),
+        registrationField(constants.ecClientPersonCode(), COL_REGISTRATION_PERSON_CODE, false),
+        registrationField(constants.email(), Type.EMAIL, COL_REGISTRATION_EMAIL, true),
+        registrationField(constants.phone(), Type.TEL, COL_REGISTRATION_PHONE, true),
+        registrationField(constants.country(), COL_REGISTRATION_COUNTRY, false),
+        registrationField(constants.city(), COL_REGISTRATION_CITY, true),
+        registrationField(constants.address(), COL_REGISTRATION_ADDRESS, true),
+        registrationField(constants.postIndex(), COL_REGISTRATION_POST_INDEX, true),
+        registrationField(constants.ecClientActivity(), COL_REGISTRATION_ACTIVITY, false));
+
+    doc.getBody().append(
+        div().addClass(REG_STYLE_PREFIX + "panel").append(
+            div().addClass(REG_STYLE_PREFIX + "caption").text(constants.ecRegistrationNew()),
+            form().addClass(REG_STYLE_PREFIX + "form").methodPost().append(
+                table().addClass(REG_STYLE_PREFIX + "table").append(fields),
+                input().type(Type.SUBMIT).addClass(REG_STYLE_PREFIX + "submit")
+                    .value(constants.ecRegister()))));
+
+    Datalist cities = getDataList(CommonsConstants.TBL_CITIES, CommonsConstants.COL_CITY_NAME);
+    if (cities != null) {
+      String listId = COL_REGISTRATION_CITY + ID_SUFFIX_LIST;
+      cities.id(listId);
+
+      Element element = fields.queryId(COL_REGISTRATION_CITY + ID_SUFFIX_INPUT);
+      if (element instanceof Input) {
+        ((Input) element).list(listId);
+        doc.getBody().append(cities);
+      }
+    }
+
+    Datalist countries = getDataList(CommonsConstants.TBL_COUNTRIES,
+        CommonsConstants.COL_COUNTRY_NAME);
+    if (countries != null) {
+      String listId = COL_REGISTRATION_COUNTRY + ID_SUFFIX_LIST;
+      countries.id(listId);
+
+      Element element = fields.queryId(COL_REGISTRATION_COUNTRY + ID_SUFFIX_INPUT);
+      if (element instanceof Input) {
+        ((Input) element).list(listId);
+        doc.getBody().append(countries);
+      }
+    }
+
+    return doc.build(0, 2);
   }
 
   private String register(HttpServletRequest req, Map<String, String> parameters,
@@ -216,13 +294,8 @@ public class EcServlet extends LoginServlet {
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
     si.addConstant(COL_REGISTRATION_AGENT, req.getHeader(HttpHeaders.USER_AGENT));
 
-    si.addConstant(COL_REGISTRATION_TYPE, 0);
-
-    String branches = CommonsConstants.TBL_BRANCHES;
-    si.addConstant(COL_REGISTRATION_BRANCH, proxy.getColumnValues(new SqlSelect().
-        addFields(branches, proxy.getIdName(branches)).addFrom(branches))[0]);
-
-    ResponseObject response = proxy.insert(si);
+    // ResponseObject response = proxy.insert(si);
+    ResponseObject response = ResponseObject.response(si);
     if (response.hasErrors()) {
       for (String message : response.getErrors()) {
         doc.getBody().append(div().text(message));

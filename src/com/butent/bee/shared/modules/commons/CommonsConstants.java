@@ -137,6 +137,8 @@ public final class CommonsConstants {
 
   public static final String VIEW_COUNTRIES = "Countries";
 
+  public static final String VIEW_BRANCHES = "Branches";
+  
   public static final String GRID_PERSONS = "Persons";
 
   public static final String COL_RELATION = "Relation";

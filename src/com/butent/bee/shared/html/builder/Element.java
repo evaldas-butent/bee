@@ -217,6 +217,10 @@ public class Element extends Node {
     setAttribute(name, Integer.toString(value));
   }
 
+  public void setAttribute(String name, long value) {
+    setAttribute(name, Long.toString(value));
+  }
+
   public void setAttribute(String name, String value) {
     if (value == null) {
       removeAttribute(name);

@@ -51,10 +51,10 @@
       </row>
 
       <row>
-        <Label text="=city" class="bee-required" />
-        <InputText source="City" />
         <Label text="=country" />
         <InputText source="Country" />
+        <Label text="=city" class="bee-required" />
+        <InputText source="City" />
       </row>
 
       <row>

@@ -76,7 +76,7 @@
       &separator;
 
       <FlowPanel class="flexBox-horizontal">
-        <CheckBox text="=ecOrderCopyByMail" source="CopyByMail"
+        <CheckBox text="=ecOrderCopyByMail" source="CopyByMail" disablable="false"
           style="width: 250px; margin-left: 100px;" />
       </FlowPanel>
     </FlowPanel>

@@ -32,19 +32,25 @@ public final class EcConstants {
   }
 
   public enum EcClientType implements HasCaption {
-    COMPANY(Localized.getConstants().ecClientTypeCompany()),
-    PERSON(Localized.getConstants().ecClientTypePerson());
-
-    private final String caption;
-
-    private EcClientType(String caption) {
-      this.caption = caption;
-    }
+    COMPANY {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ecClientTypeCompany();
+      }
+    },
+    PERSON {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.ecClientTypePerson();
+      }
+    };
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
+
+    public abstract String getCaption(LocalizableConstants constants);
   }
 
   public enum EcDisplayedPrice implements HasCaption {

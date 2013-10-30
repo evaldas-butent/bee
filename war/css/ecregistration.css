@@ -1,0 +1,34 @@
+.bee-ec-registration-required:after {
+  content: "*";
+  color: red;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bee-ec-registration-table {
+  border-collapse: collapse;
+  margin-top: 2ex;
+  margin-left: 1em;
+}
+
+.bee-ec-registration-table td {
+  vertical-align: top;
+  padding-bottom: 4px;
+}
+
+.bee-ec-registration-label-cell {
+  text-align: right;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.bee-ec-registration-input {
+  width: 200px;
+}
+
+.bee-ec-registration-show {
+  display: table-row;
+}
+.bee-ec-registration-hide {
+  display: none;
+}
