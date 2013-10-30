@@ -6,6 +6,8 @@
   <g:columns>
     <DataColumn name="Name" visible="true" />
     <DataColumn name="Code" />
+    
+    <RelColumn name="PrimaryWarehouse" />
 
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />

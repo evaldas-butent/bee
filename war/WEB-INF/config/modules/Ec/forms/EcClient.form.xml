@@ -39,7 +39,8 @@
         <Label text="=ecManager" style="&lbl;" />
         <DataSelector source="Manager" style="&inp;" renderColumns="ManagerFirstName ManagerLastName" />
 
-        <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning" style="margin-left: 150px;" />
+        <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning" style="margin-left: 30px;" />
+        <CheckBox text="=ecKeyboardShortcuts" source="KeyboardShortcuts" style="margin-left: 30px;" />
       </FlowPanel>
       &separator;
       &separator;

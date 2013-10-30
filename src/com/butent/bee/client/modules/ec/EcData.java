@@ -11,13 +11,18 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
@@ -50,8 +55,11 @@ class EcData {
   private final List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
 
   private final Map<String, String> configuration = Maps.newHashMap();
-  
+
+  private final Map<String, String> clientInfo = Maps.newHashMap();
   private final List<String> clientStockLabels = Lists.newArrayList();
+  
+  private BeeRowSet warehouses;
 
   EcData() {
     super();
@@ -167,6 +175,20 @@ class EcData {
         @Override
         public void accept(Boolean input) {
           callback.accept(true);
+        }
+      });
+    } else {
+      callback.accept(true);
+    }
+  }
+
+  void ensureWarehouses(final Consumer<Boolean> callback) {
+    if (warehouses == null) {
+      Queries.getRowSet(CommonsConstants.VIEW_WAREHOUSES, null, new Queries.RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          warehouses = result; 
+          callback.accept(result != null);
         }
       });
     } else {
@@ -297,6 +319,29 @@ class EcData {
 
     return names;
   }
+  
+  void getClientValue(final String key, final Consumer<String> callback) {
+    if (clientInfo.isEmpty()) {
+      ParameterList params = EcKeeper.createArgs(SVC_GET_CLIENT_INFO);
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          EcKeeper.dispatchMessages(response);
+
+          Map<String, String> map = Codec.beeDeserializeMap(response.getResponseAsString());
+          if (!map.isEmpty()) {
+            clientInfo.clear();
+            clientInfo.putAll(map);
+
+            callback.accept(clientInfo.get(key));
+          }
+        }
+      });
+      
+    } else {
+      callback.accept(clientInfo.get(key));
+    }
+  }
 
   void getConfiguration(final Consumer<Map<String, String>> callback) {
     if (configuration.isEmpty()) {
@@ -383,6 +428,22 @@ class EcData {
   
   String getSecondaryStockLabel() {
     return BeeUtils.getQuietly(clientStockLabels, 1);
+  }
+  
+  String getWarehouseLabel(String code) {
+    if (BeeUtils.isEmpty(code) || DataUtils.isEmpty(warehouses)) {
+      return null;
+    } else {
+      int codeIndex = warehouses.getColumnIndex(CommonsConstants.COL_WAREHOUSE_CODE);
+      int nameIndex = warehouses.getColumnIndex(CommonsConstants.COL_WAREHOUSE_NAME);
+
+      for (BeeRow row : warehouses.getRows()) {
+        if (code.equals(row.getString(codeIndex))) {
+          return BeeUtils.notEmpty(row.getString(nameIndex), code);
+        }
+      }
+      return code;
+    }
   }
 
   void saveConfiguration(final String key, final String value) {

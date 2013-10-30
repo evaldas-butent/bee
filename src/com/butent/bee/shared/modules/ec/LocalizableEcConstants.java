@@ -106,6 +106,8 @@ public interface LocalizableEcConstants {
 
   String ecItemCode();
 
+  String ecItemCost();
+
   String ecItemDescription();
 
   String ecItemDetailsCarTypes();

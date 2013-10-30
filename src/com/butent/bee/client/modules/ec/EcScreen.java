@@ -89,7 +89,9 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public void onLoad() {
-    EcKeeper.getSearchBox().setFocus(true);
+    if (EcKeeper.showGlobalSearch()) {
+      EcKeeper.getSearchBox().setFocus(true);
+    }
 
     EcKeeper.showPromo(true);
     EcKeeper.restoreShoppingCarts();
@@ -155,8 +157,10 @@ public class EcScreen extends ScreenImpl {
       EcStyles.add(logo, "Logo");
       panel.add(logo);
     }
-
-    panel.add(createGlobalSearch());
+    
+    if (EcKeeper.showGlobalSearch()) {
+      panel.add(createGlobalSearch());
+    }
 
     createCommands(panel);
 

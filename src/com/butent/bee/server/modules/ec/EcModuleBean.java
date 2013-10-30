@@ -307,6 +307,8 @@ public class EcModuleBean implements BeeModule {
       response = getGroupItems(reqInfo, BeeUtils.toLongOrNull(query));
       log = true;
 
+    } else if (BeeUtils.same(svc, SVC_GET_CLIENT_INFO)) {
+      response = getClientInfo();
     } else if (BeeUtils.same(svc, SVC_GET_CLIENT_STOCK_LABELS)) {
       response = getClientStockLabels();
 
@@ -772,29 +774,29 @@ public class EcModuleBean implements BeeModule {
 
   private BeeRowSet getBanners(List<RowInfo> cachedBanners) {
     DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
-    
+
     Filter filter = Filter.and(
         Filter.or(Filter.isEmpty(COL_BANNER_SHOW_AFTER),
             ComparisonFilter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
         Filter.or(Filter.isEmpty(COL_BANNER_SHOW_BEFORE),
             ComparisonFilter.isMore(COL_BANNER_SHOW_BEFORE, now)));
-    
+
     BeeRowSet rowSet = qs.getViewData(VIEW_BANNERS, filter);
     boolean changed;
-    
+
     if (DataUtils.isEmpty(rowSet)) {
       changed = !cachedBanners.isEmpty();
 
     } else if (cachedBanners.size() != rowSet.getNumberOfRows()) {
       changed = true;
-    
+
     } else {
       changed = false;
-      
+
       for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
         RowInfo rowInfo = cachedBanners.get(i);
         BeeRow row = rowSet.getRow(i);
-        
+
         if (rowInfo.getId() != row.getId() || rowInfo.getVersion() != row.getVersion()) {
           changed = true;
           break;
@@ -1042,6 +1044,28 @@ public class EcModuleBean implements BeeModule {
     return new EcClientDiscounts(percent, discounts);
   }
 
+  private ResponseObject getClientInfo() {
+    BeeRowSet rowSet = qs.getViewData(VIEW_CLIENTS,
+        ComparisonFilter.isEqual(COL_CLIENT_USER, new LongValue(usr.getCurrentUserId())));
+
+    if (DataUtils.isEmpty(rowSet)) {
+      String msg = BeeUtils.joinWords("client not available for user", usr.getCurrentUser());
+      logger.severe(msg);
+      return ResponseObject.error(msg);
+    }
+
+    Map<String, String> result = Maps.newHashMap();
+
+    BeeRow row = rowSet.getRow(0);
+    for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
+      if (!row.isNull(i)) {
+        result.put(rowSet.getColumnId(i), row.getString(i));
+      }
+    }
+
+    return ResponseObject.response(result);
+  }
+
   private ResponseObject getClientStockLabels() {
     List<String> result = Lists.newArrayList();
 
@@ -1205,7 +1229,7 @@ public class EcModuleBean implements BeeModule {
       return null;
     }
   }
-  
+
   private ResponseObject getFinancialInformation(Long client) {
     EcFinInfo finInfo = new EcFinInfo();
     if (!DataUtils.isId(client)) {
@@ -1931,9 +1955,9 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getPromo(RequestInfo reqInfo) {
     long time = System.currentTimeMillis();
-    
+
     List<RowInfo> cachedBanners = Lists.newArrayList();
-    
+
     String param = reqInfo.getParameter(VAR_BANNERS);
     if (!BeeUtils.isEmpty(param)) {
       String[] arr = Codec.beeDeserializeCollection(param);
@@ -1943,7 +1967,7 @@ public class EcModuleBean implements BeeModule {
         }
       }
     }
-    
+
     BeeRowSet banners = getBanners(cachedBanners);
 
     SqlSelect articleIdQuery = new SqlSelect()
@@ -1956,7 +1980,7 @@ public class EcModuleBean implements BeeModule {
 
     String a = (banners == null) ? null : Codec.beeSerialize(banners);
     String b = BeeUtils.isEmpty(items) ? null : Codec.beeSerialize(items);
-    
+
     return ResponseObject.response(Pair.of(a, b));
   }
 
@@ -2145,7 +2169,7 @@ public class EcModuleBean implements BeeModule {
     if (status == EcOrderStatus.NEW) {
       incomingEmailId = getIncomingEmailId(manager);
       if (incomingEmailId != null && incomingEmailId.equals(clientEmailId)) {
-        incomingEmailId = null;        
+        incomingEmailId = null;
       }
 
       if (DataUtils.isId(incomingEmailId)) {
@@ -2672,7 +2696,7 @@ public class EcModuleBean implements BeeModule {
 
       registerOrderEvent(orderId, EcOrderStatus.ACTIVE);
       addToUnsuppliedItems(orderId);
-      
+
       if (sendMail) {
         ResponseObject mailResponse = mailOrder(orderId, false);
         response.addMessagesFrom(mailResponse);
@@ -2968,9 +2992,9 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject uploadGraphics(RequestInfo reqInfo) {
     Long article = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
     Integer sort = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_TCD_SORT));
-    
+
     String resource = reqInfo.getParameter(COL_TCD_GRAPHICS_RESOURCE);
-    
+
     if (!DataUtils.isId(article)) {
       return ResponseObject.parameterNotFound(SVC_UPLOAD_GRAPHICS, COL_TCD_ARTICLE);
     }
@@ -2980,16 +3004,16 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(resource)) {
       return ResponseObject.parameterNotFound(SVC_UPLOAD_GRAPHICS, COL_TCD_GRAPHICS_RESOURCE);
     }
-    
+
     ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_TCD_GRAPHICS)
-    .addConstant(COL_TCD_GRAPHICS_RESOURCE, resource));
+        .addConstant(COL_TCD_GRAPHICS_RESOURCE, resource));
     if (response.hasErrors()) {
       return response;
     }
-    
+
     return qs.insertDataWithResponse(new SqlInsert(TBL_TCD_ARTICLE_GRAPHICS)
-    .addConstant(COL_TCD_ARTICLE, article)
-    .addConstant(COL_TCD_SORT, sort)
-    .addConstant(COL_TCD_GRAPHICS, response.getResponse()));
+        .addConstant(COL_TCD_ARTICLE, article)
+        .addConstant(COL_TCD_SORT, sort)
+        .addConstant(COL_TCD_GRAPHICS, response.getResponse()));
   }
 }

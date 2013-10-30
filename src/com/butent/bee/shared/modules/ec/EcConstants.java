@@ -223,6 +223,7 @@ public final class EcConstants {
   public static final String SVC_GET_GROUP_FILTERS = "getGroupFilters";
   public static final String SVC_GET_GROUP_ITEMS = "getGroupItems";
 
+  public static final String SVC_GET_CLIENT_INFO = "getClientInfo";
   public static final String SVC_GET_CLIENT_STOCK_LABELS = "getClientStockLabels";
 
   public static final String SVC_ADD_TO_UNSUPPLIED_ITEMS = "addToUnsuppliedItems";
@@ -333,6 +334,7 @@ public final class EcConstants {
   public static final String COL_CLIENT_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_CLIENT_DISCOUNT_PARENT = "DiscountParent";
   public static final String COL_CLIENT_DISPLAYED_PRICE = "DisplayedPrice";
+  public static final String COL_CLIENT_KEYBOARD_SHORTCUTS = "KeyboardShortcuts";
   public static final String COL_CLIENT_NOTES = "Notes";
 
   public static final String COL_CONFIG_ID = "ConfigurationID";

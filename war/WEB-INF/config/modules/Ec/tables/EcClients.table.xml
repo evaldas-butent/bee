@@ -27,6 +27,8 @@
     
     <Integer name="DisplayedPrice" label="=ecDisplayedPrice" />
     
+    <Boolean name="KeyboardShortcuts" label="=ecKeyboardShortcuts" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

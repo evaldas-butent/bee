@@ -1909,8 +1909,15 @@
 }
 
 .bee-FontWeight-bold {
+  font-weight: bold;
+}
+.bee-FontWeight-bolder {
   font-weight: bolder;
 }
+.bee-FontWeight-normal {
+  font-weight: normal;
+}
+
 .bee-FontStyle-italic {
   font-style: italic;
 }

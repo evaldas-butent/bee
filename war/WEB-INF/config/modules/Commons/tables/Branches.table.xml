@@ -10,6 +10,8 @@
 
     <Text name="Description" label="=description" />
 
+    <Relation name="PrimaryWarehouse" relation="Warehouses" label="=primaryWarehouse" />
+
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contact" />
   </Fields>
 </Table>

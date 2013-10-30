@@ -18,6 +18,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
@@ -110,6 +111,17 @@ public final class EcKeeper {
   }
 
   public static HandlerRegistration bindKeyPress(HasKeyPressHandlers source) {
+    if (eventHandler.getEnabled() == null) {
+      eventHandler.setEnabled(false);
+
+      getClientValue(COL_CLIENT_KEYBOARD_SHORTCUTS, new Consumer<String>() {
+        @Override
+        public void accept(String input) {
+          eventHandler.setEnabled(BeeConst.isTrue(input));
+        }
+      });
+    }
+
     return source.addKeyPressHandler(eventHandler);
   }
 
@@ -183,6 +195,11 @@ public final class EcKeeper {
     data.ensureCategoriesAndBrandsAndStockLabels(callback);
   }
 
+  public static void ensureWarehouses(Consumer<Boolean> callback) {
+    Assert.notNull(callback);
+    data.ensureWarehouses(callback);
+  }
+  
   public static void finalizeRequest(EcRequest request, boolean remove) {
     if (request.hasProgress()) {
       BeeKeeper.getScreen().closeProgress(request.getProgressId());
@@ -245,6 +262,12 @@ public final class EcKeeper {
     return data.getCategoryNames(item);
   }
 
+  public static void getClientValue(String key, Consumer<String> callback) {
+    Assert.notEmpty(key);
+    Assert.notNull(callback);
+    data.getClientValue(key, callback);
+  }
+
   public static void getConfiguration(Consumer<Map<String, String>> callback) {
     Assert.notNull(callback);
     data.getConfiguration(callback);
@@ -267,31 +290,14 @@ public final class EcKeeper {
     }
   }
 
-  private static List<EcItem> deserializeItems(String serialized) {
-    List<EcItem> items = Lists.newArrayList();
-
-    if (serialized != null) {
-      long millis = System.currentTimeMillis();
-
-      String[] arr = Codec.beeDeserializeCollection(serialized);
-      if (arr != null) {
-        for (String s : arr) {
-          items.add(EcItem.restore(s));
-        }
-      }
-
-      if (isDebug()) {
-        logger.debug("deserialized items", items.size(), TimeUtils.elapsedMillis(millis));
-      }
-    }
-
-    return items;
-  }
-
   public static String getSecondaryStockLabel() {
     return data.getSecondaryStockLabel();
   }
 
+  public static String getWarehouseLabel(String code) {
+    return data.getWarehouseLabel(code);
+  }
+  
   public static boolean isDebug() {
     return debug;
   }
@@ -600,6 +606,14 @@ public final class EcKeeper {
     EcKeeper.stockLimited = stockLimited;
   }
 
+  public static boolean showGlobalSearch() {
+    return Settings.getPropertyBoolean("showGlobalSearch");
+  }
+
+  public static boolean showItemSuppliers() {
+    return Settings.getPropertyBoolean("showItemSuppliers");
+  }
+
   public static void showPromo(final boolean checkView) {
     ParameterList params = createArgs(SVC_GET_PROMO);
 
@@ -713,6 +727,27 @@ public final class EcKeeper {
           Localized.getMessages().minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
       return false;
     }
+  }
+
+  private static List<EcItem> deserializeItems(String serialized) {
+    List<EcItem> items = Lists.newArrayList();
+
+    if (serialized != null) {
+      long millis = System.currentTimeMillis();
+
+      String[] arr = Codec.beeDeserializeCollection(serialized);
+      if (arr != null) {
+        for (String s : arr) {
+          items.add(EcItem.restore(s));
+        }
+      }
+
+      if (isDebug()) {
+        logger.debug("deserialized items", items.size(), TimeUtils.elapsedMillis(millis));
+      }
+    }
+
+    return items;
   }
 
   private static void editConfigurationHtml(final String caption, final String urlColumn,
