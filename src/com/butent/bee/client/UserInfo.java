@@ -21,13 +21,6 @@ public class UserInfo implements Module, HasInfo {
   private String sessionId;
   private UserData userData;
 
-  public String getDsn() {
-    if (!isLoggedIn()) {
-      return null;
-    }
-    return userData.getProperty("dsn");
-  }
-
   public Filter getFilter(String column) {
     if (isLoggedIn()) {
       return ComparisonFilter.isEqual(column, new LongValue(getUserId()));
@@ -44,9 +37,8 @@ public class UserInfo implements Module, HasInfo {
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties("Is Logged In", isLoggedIn(),
         "Session Id", getSessionId(),
-        "Signature", getUserSign(),
-        "Dsn", getDsn());
-    
+        "Signature", getUserSign());
+
     if (userData != null) {
       info.addAll(userData.getInfo());
     }
@@ -150,7 +142,7 @@ public class UserInfo implements Module, HasInfo {
   @Override
   public void init() {
   }
-  
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
@@ -161,12 +153,6 @@ public class UserInfo implements Module, HasInfo {
 
   @Override
   public void onExit() {
-  }
-
-  public void setDsn(String dsn) {
-    if (isLoggedIn()) {
-      userData.setProperty("dsn", dsn);
-    }
   }
 
   public void setSessionId(String sessionId) {

@@ -56,8 +56,8 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.ClientRect;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
@@ -78,11 +78,11 @@ import com.butent.bee.client.language.DetectionResult;
 import com.butent.bee.client.language.Language;
 import com.butent.bee.client.language.Translation;
 import com.butent.bee.client.language.TranslationCallback;
-import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Layout;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
@@ -105,15 +105,15 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputFile;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
@@ -396,7 +396,7 @@ public final class CliWorker {
 
     } else if (z.startsWith("rect") && arr.length >= 2) {
       showRectangle(arr[1]);
-      
+
     } else if (z.startsWith("rot") || "scale".equals(z) || "skew".equals(z) || "tt".equals(z)) {
       animate(arr);
 
@@ -487,7 +487,6 @@ public final class CliWorker {
     }
     return true;
   }
-
 
   private static void animate(String[] arr) {
 
@@ -990,16 +989,24 @@ public final class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DSNS, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        List<String> dsns = Lists.newArrayList();
+        final List<String> dsns = Lists.newArrayList();
+        String current = null;
+
         if (response.hasResponse()) {
-          String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+          char defChar = '*';
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
           if (arr != null) {
             for (String s : arr) {
-              dsns.add(s);
+              if (BeeUtils.isPrefixOrSuffix(s, defChar)) {
+                current = BeeUtils.removePrefixAndSuffix(s, defChar);
+                dsns.add(current);
+              } else {
+                dsns.add(s);
+              }
             }
           }
         }
-
         if (dsns.isEmpty()) {
           Global.showError(Lists.newArrayList("No DSN's available"));
 
@@ -1010,25 +1017,23 @@ public final class CliWorker {
           Horizontal panel = new Horizontal();
           panel.add(new Label("Available DSN's"));
 
-          final RadioGroup rg = new RadioGroup(true,
-              dsns.indexOf(BeeKeeper.getUser().getDsn()), dsns);
+          final String currentDsn = current;
+          final RadioGroup rg = new RadioGroup(true, dsns.indexOf(currentDsn), dsns);
           panel.add(rg);
 
           Global.inputWidget("Choose DSN", panel, new InputCallback() {
             @Override
             public void onSuccess() {
-              String dsn = rg.getValue();
+              String dsn = dsns.get(rg.getSelectedIndex());
 
-              if (!BeeUtils.isEmpty(dsn) && !BeeUtils.same(dsn, BeeKeeper.getUser().getDsn())) {
+              if (!BeeUtils.same(dsn, currentDsn)) {
                 ParameterList params = BeeKeeper.getRpc().createParameters(Service.SWITCH_DSN);
                 params.addQueryItem(Service.VAR_DSN, dsn);
 
                 BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
                   @Override
                   public void onResponse(ResponseObject rsp) {
-                    if (rsp.hasResponse(String.class)) {
-                      BeeKeeper.getUser().setDsn((String) rsp.getResponse());
-                    }
+                    logger.info("DSN switched to:", rsp.getResponseAsString());
                   }
                 });
               }
@@ -1150,12 +1155,12 @@ public final class CliWorker {
 
     } else if (BeeUtils.contains(arr[0], 's')) {
       BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args);
-    
+
     } else {
       List<Property> info = Lists.newArrayList();
       for (int i = 1; i < arr.length; i++) {
         String value = Localized.translate(arr[i]);
-        PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL)); 
+        PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL));
       }
       showPropData(info);
     }
@@ -1471,7 +1476,7 @@ public final class CliWorker {
       popup.center();
     }
   }
-  
+
   private static void inform(String... messages) {
     List<String> lst = Lists.newArrayList(messages);
     Global.showInfo(lst);
@@ -1736,8 +1741,8 @@ public final class CliWorker {
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
 
-    for ( var i = 0; i < 6; i++) {
-      for ( var j = 0; j < 6; j++) {
+    for (var i = 0; i < 6; i++) {
+      for (var j = 0; j < 6; j++) {
         ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
@@ -2910,20 +2915,20 @@ public final class CliWorker {
       showError(id, "element not found");
       return;
     }
-    
+
     ClientRect startRect = ClientRect.createBounding(el);
     if (startRect == null) {
       showError(id, "rectangle not available");
     }
-    
+
     String center = StyleUtils.className(TextAlign.CENTER);
     String right = StyleUtils.className(TextAlign.RIGHT);
-    
+
     HtmlTable table = new HtmlTable();
-    
+
     int row = 0;
     int col = 0;
-    
+
     table.setHtml(row, col++, "tag");
     table.setHtml(row, col++, "id");
     table.setHtml(row, col++, "left");
@@ -2934,7 +2939,7 @@ public final class CliWorker {
     table.setHtml(row, col++, "height");
     table.setHtml(row, col++, "contains");
     table.setHtml(row, col++, "intersects");
-    
+
     for (Element p = el; p != null; p = p.getParentElement()) {
       ClientRect rect = id.equals(p.getId()) ? startRect : ClientRect.createBounding(p);
       if (rect == null) {
@@ -2955,10 +2960,10 @@ public final class CliWorker {
       table.setHtml(row, col++, rect.contains(startRect) ? "x" : "", center);
       table.setHtml(row, col++, rect.intersects(startRect) ? "x" : "", center);
     }
-    
+
     Global.showModalWidget(table);
   }
-  
+
   private static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
