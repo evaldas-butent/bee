@@ -9,6 +9,12 @@
     <SimpleColumn name="Code" />
     <SimpleColumn name="Description" />
 
+    <SimpleColumn name="PrimaryWarehouse" />
+    <SimpleJoin name="PrimaryWarehouse" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+      <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />
       <SimpleColumn name="Mobile" />

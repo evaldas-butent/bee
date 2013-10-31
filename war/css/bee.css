@@ -1,11 +1,3 @@
-.bee-ApplianceAdmin {
-  display: none;
-}
-
-.bee-ApplianceReport {
-  display: none;
-}
-
 .bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
@@ -1917,8 +1909,15 @@
 }
 
 .bee-FontWeight-bold {
+  font-weight: bold;
+}
+.bee-FontWeight-bolder {
   font-weight: bolder;
 }
+.bee-FontWeight-normal {
+  font-weight: normal;
+}
+
 .bee-FontStyle-italic {
   font-style: italic;
 }

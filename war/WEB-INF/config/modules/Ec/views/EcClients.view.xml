@@ -102,6 +102,8 @@
 
     <SimpleColumn name="DisplayedPrice" />
 
+    <SimpleColumn name="KeyboardShortcuts" />
+
     <SimpleColumn name="Notes" />
   </Columns>
 

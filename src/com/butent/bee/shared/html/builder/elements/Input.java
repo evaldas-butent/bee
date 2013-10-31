@@ -283,6 +283,11 @@ public class Input extends Element {
     return this;
   }
 
+  public Input onChange(String event) {
+    setOnChange(event);
+    return this;
+  }
+
   public Input onKeyDown(String event) {
     setOnKeyDown(event);
     return this;
@@ -363,6 +368,16 @@ public class Input extends Element {
   }
 
   public Input value(String value) {
+    setAttribute(Attributes.VALUE, value);
+    return this;
+  }
+
+  public Input value(int value) {
+    setAttribute(Attributes.VALUE, value);
+    return this;
+  }
+
+  public Input value(long value) {
     setAttribute(Attributes.VALUE, value);
     return this;
   }

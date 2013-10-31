@@ -3,6 +3,7 @@ package com.butent.bee.client.view.grid;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Assert;
@@ -32,43 +33,48 @@ class GridConfig {
   
   private static final List<BeeColumn> dataColumns = Lists.newArrayList();
 
-  static int userIndex;
-  static int keyIndex;
-  static int captionIndex;
-  static int columnsIndex;
-  static int orderIndex;
+  private static int userIndex;
+  private static int keyIndex;
+  private static int captionIndex;
+  private static int columnsIndex;
+  private static int orderIndex;
 
-  static int headerHeightIndex;
-  static int headerStyleIndex;
-  static int headerFontIndex;
-  static int headerPaddingIndex;
-  static int headerBorderIndex;
-  static int headerMarginIndex;
+  private static int headerHeightIndex;
+  private static int headerStyleIndex;
+  private static int headerFontIndex;
+  private static int headerPaddingIndex;
+  private static int headerBorderIndex;
+  private static int headerMarginIndex;
 
-  static int rowHeightIndex;
-  static int bodyStyleIndex;
-  static int bodyFontIndex;
-  static int bodyPaddingIndex;
-  static int bodyBorderIndex;
-  static int bodyMarginIndex;
+  private static int rowHeightIndex;
+  private static int bodyStyleIndex;
+  private static int bodyFontIndex;
+  private static int bodyPaddingIndex;
+  private static int bodyBorderIndex;
+  private static int bodyMarginIndex;
 
-  static int footerHeightIndex;
-  static int footerStyleIndex;
-  static int footerFontIndex;
-  static int footerPaddingIndex;
-  static int footerBorderIndex;
-  static int footerMarginIndex;
+  private static int footerHeightIndex;
+  private static int footerStyleIndex;
+  private static int footerFontIndex;
+  private static int footerPaddingIndex;
+  private static int footerBorderIndex;
+  private static int footerMarginIndex;
 
-  static int autoFitIndex;
-  static int minColumnWidthIndex;
-  static int maxColumnWidthIndex;
+  private static int autoFitIndex;
 
-  static int flexGrowIndex;
-  static int flexShrinkIndex;
-  static int flexBasisIndex;
-  static int flexUnitIndex;
+  private static int minColumnWidthIndex;
 
-  static void ensureIndexes(List<BeeColumn> columns) {
+  private static int maxColumnWidthIndex;
+
+  private static int flexGrowIndex;
+
+  private static int flexShrinkIndex;
+
+  private static int flexBasisIndex;
+
+  private static int flexUnitIndex;
+
+  static void ensureFields(List<BeeColumn> columns) {
     if (dataColumns.isEmpty()) {
       dataColumns.addAll(columns);
 
@@ -112,8 +118,84 @@ class GridConfig {
     }
   }
 
+  static int getColumnsIndex() {
+    ensureFields();
+    return columnsIndex;
+  }
+
   static List<BeeColumn> getDataColumns() {
+    ensureFields();
     return dataColumns;
+  }
+
+  static int getFooterHeightIndex() {
+    ensureFields();
+    return footerHeightIndex;
+  }
+
+  static int getHeaderHeightIndex() {
+    ensureFields();
+    return headerHeightIndex;
+  }
+
+  static int getKeyIndex() {
+    ensureFields();
+    return keyIndex;
+  }
+
+  static int getOrderIndex() {
+    ensureFields();
+    return orderIndex;
+  }
+
+  static int getRowHeightIndex() {
+    ensureFields();
+    return rowHeightIndex;
+  }
+  
+  static int getUserIndex() {
+    ensureFields();
+    return userIndex;
+  }
+
+  private static void ensureFields() {
+    if (dataColumns.isEmpty()) {
+      ensureFields(Data.getColumns(GridDescription.VIEW_GRID_SETTINGS));
+    }
+  }
+
+  private static GridComponentDescription fuseCompnent(GridComponentDescription component,
+      Integer height, String style, String font, String padding, String border, String margin) {
+
+    if (!BeeUtils.isPositive(height) && BeeUtils.allEmpty(style, font, padding, border, margin)) {
+      return component;
+    }
+
+    GridComponentDescription result;
+    if (component == null) {
+      result = new GridComponentDescription(height);
+    } else {
+      result = component.copy();
+      if (BeeUtils.isPositive(height)) {
+        result.setHeight(height);
+      }
+    }
+
+    if (!BeeUtils.allEmpty(style, font)) {
+      result.setStyle(StyleDeclaration.fuse(result.getStyle(), null, style, font));
+    }
+
+    if (!BeeUtils.isEmpty(padding)) {
+      result.setPadding(padding);
+    }
+    if (!BeeUtils.isEmpty(border)) {
+      result.setBorderWidth(border);
+    }
+    if (!BeeUtils.isEmpty(margin)) {
+      result.setMargin(margin);
+    }
+
+    return result;
   }
 
   final BeeRow row;
@@ -123,7 +205,7 @@ class GridConfig {
   GridConfig(BeeRow row) {
     this.row = row;
   }
-
+  
   void applyTo(GridDescription gridDescription) {
     String caption = getCaption();
     if (!BeeUtils.isEmpty(caption)) {
@@ -271,7 +353,7 @@ class GridConfig {
         && getFlexGrow() == null && getFlexShrink() == null
         && getFlexBasis() == null && getFlexBasisUnit() == null;
   }
-  
+
   void saveColumnSetting(String name, int index, String value) {
     Assert.notEmpty(name);
     Assert.isIndex(ColumnConfig.getDataColumns(), index);
@@ -285,8 +367,8 @@ class GridConfig {
     if (columnConfig == null) {
       if (newValue != null) {
         List<BeeColumn> columns = Lists.newArrayList();
-        columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.gridIndex));
-        columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.nameIndex));
+        columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.getGridIndex()));
+        columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.getNameIndex()));
         columns.add(dataColumn);
 
         List<String> values = Queries.asList(row.getId(), columnName, newValue);
@@ -318,40 +400,6 @@ class GridConfig {
             }
           });
     }
-  }
-
-  private static GridComponentDescription fuseCompnent(GridComponentDescription component,
-      Integer height, String style, String font, String padding, String border, String margin) {
-
-    if (!BeeUtils.isPositive(height) && BeeUtils.allEmpty(style, font, padding, border, margin)) {
-      return component;
-    }
-
-    GridComponentDescription result;
-    if (component == null) {
-      result = new GridComponentDescription(height);
-    } else {
-      result = component.copy();
-      if (BeeUtils.isPositive(height)) {
-        result.setHeight(height);
-      }
-    }
-
-    if (!BeeUtils.allEmpty(style, font)) {
-      result.setStyle(StyleDeclaration.fuse(result.getStyle(), null, style, font));
-    }
-
-    if (!BeeUtils.isEmpty(padding)) {
-      result.setPadding(padding);
-    }
-    if (!BeeUtils.isEmpty(border)) {
-      result.setBorderWidth(border);
-    }
-    if (!BeeUtils.isEmpty(margin)) {
-      result.setMargin(margin);
-    }
-
-    return result;
   }
 
   private Boolean getAutoFit() {

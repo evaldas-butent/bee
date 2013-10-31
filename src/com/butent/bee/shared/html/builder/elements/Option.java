@@ -54,6 +54,16 @@ public class Option extends FertileElement {
     return this;
   }
 
+  public Option value(int value) {
+    setAttribute(Attributes.VALUE, value);
+    return this;
+  }
+  
+  public Option value(long value) {
+    setAttribute(Attributes.VALUE, value);
+    return this;
+  }
+
   public Option value(String value) {
     setAttribute(Attributes.VALUE, value);
     return this;

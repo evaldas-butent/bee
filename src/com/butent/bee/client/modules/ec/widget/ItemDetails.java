@@ -17,7 +17,10 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.HtmlList;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
@@ -211,29 +214,45 @@ public class ItemDetails extends Flow {
     return widget;
   }
 
-  private static Widget renderRemainders(EcItem item) {
+  private static Widget renderRemainders(final EcItem item) {
     if (item == null || BeeUtils.isEmpty(item.getSuppliers())) {
       return null;
     }
-
-    String stylePrefix = EcStyles.name(STYLE_PRIMARY, "remainders-");
-    Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-
-    HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
-
-    int row = 0;
+    
+    boolean hasRemainders = false;
     for (ArticleSupplier as : item.getSuppliers()) {
-      for (String warehouse : as.getRemainders().keySet()) {
-        Label warehouseWidget = new Label(warehouse);
-        table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
-
-        int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
-        Widget stockWidget = EcWidgetFactory.createStockWidget(remainder);
-        table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
-
-        row++;
+      if (!as.getRemainders().isEmpty()) {
+        hasRemainders = true;
+        break;
       }
     }
+    if (!hasRemainders) {
+      return null;
+    }
+    
+    final String stylePrefix = EcStyles.name(STYLE_PRIMARY, "remainders-");
+    Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
+
+    final HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
+    
+    EcKeeper.ensureWarehouses(new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        int row = 0;
+        for (ArticleSupplier as : item.getSuppliers()) {
+          for (String warehouse : as.getRemainders().keySet()) {
+            Label warehouseWidget = new Label(EcKeeper.getWarehouseLabel(warehouse));
+            table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
+            
+            int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
+            Widget stockWidget = EcWidgetFactory.createStockWidget(remainder);
+            table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
+            
+            row++;
+          }
+        }
+      }
+    });
 
     Simple wrapper = new Simple(table);
     wrapper.addStyleName(stylePrefix + STYLE_WRAPPER);
@@ -252,18 +271,31 @@ public class ItemDetails extends Flow {
     Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
 
     HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
+    table.setDefaultCellClasses(StyleUtils.className(FontWeight.BOLDER));
 
     int row = 0;
-    int col;
+    int col = 0;
+
+    table.setHtml(row, col++, Localized.getConstants().ecItemSupplier());
+    table.setHtml(row, col++, Localized.getConstants().ecItemSupplierCode());
+
+    table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
+    table.setHtml(row, col++, Localized.getConstants().ecItemCost());
+
+    table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
+    table.setHtml(row, col++, Localized.getConstants().ecItemPrice());
+
+    row++;
+    table.setDefaultCellClasses(StyleUtils.className(FontWeight.NORMAL));
 
     for (ArticleSupplier as : item.getSuppliers()) {
       col = 0;
 
-      table.setHtml(row, col++, BeeUtils.toString(as.getRealCost()));
-      table.setHtml(row, col++, BeeUtils.toString(as.getRealPrice()));
-
       table.setHtml(row, col++, as.getSupplier().name());
       table.setHtml(row, col++, as.getSupplierId());
+
+      table.setHtml(row, col++, EcUtils.formatCents(as.getCost()));
+      table.setHtml(row, col++, EcUtils.formatCents(as.getPrice()));
 
       row++;
     }
@@ -292,10 +324,12 @@ public class ItemDetails extends Flow {
     if (oeNumbers != null) {
       widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers());
     }
-
-    Widget suppliers = renderSuppliers(item);
-    if (suppliers != null) {
-      widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers());
+    
+    if (EcKeeper.showItemSuppliers()) {
+      Widget suppliers = renderSuppliers(item);
+      if (suppliers != null) {
+        widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers());
+      }
     }
 
     Widget carTypes = renderCarTypes(info);

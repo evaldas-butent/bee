@@ -1,0 +1,65 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  background-color: #fbfbfb;  
+}
+
+.bee-ec-registration-panel {
+  margin-top: 3ex;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
+.bee-ec-registration-caption {
+  font-size: large;
+  font-weight: bolder;
+  margin-bottom: 3ex;
+}
+
+.bee-ec-registration-table {
+  border-collapse: collapse;
+}
+
+.bee-ec-registration-table td {
+  padding: 2px 1em;
+}
+
+.bee-ec-registration-label-cell {
+  text-align: right;
+}
+.bee-ec-registration-required:after {
+  content: "*";
+  color: red;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bee-ec-registration-input {
+  width: 200px;
+}
+
+.bee-ec-registration-submit {
+  font-size: medium;
+  padding: 5px 10px;
+  display: block;
+  margin-top: 3ex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bee-ec-registration-show {
+  display: table-row;
+}
+.bee-ec-registration-hide {
+  display: none;
+}

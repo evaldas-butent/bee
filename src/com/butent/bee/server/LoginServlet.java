@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})
+@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp" })
 @SuppressWarnings("serial")
 public class LoginServlet extends HttpServlet {
 
@@ -44,6 +44,29 @@ public class LoginServlet extends HttpServlet {
 
   private static final String FAV_ICON = "favicon.ico";
   private static final String LOGO = "logo.png";
+
+  protected static String resource(String contextPath, String path) {
+    File file = new File(path);
+    if (!file.exists()) {
+      file = new File(Config.WAR_DIR, path);
+      if (!file.exists()) {
+        return path;
+      }
+    }
+    String requestPath;
+
+    if (BeeUtils.isEmpty(contextPath) || path.startsWith("/")) {
+      requestPath = path;
+    } else {
+      requestPath = contextPath + "/" + path;
+    }
+    long time = file.lastModified();
+
+    if (time > 0) {
+      requestPath += "?v=" + new DateTime(time).toTimeStamp();
+    }
+    return requestPath;
+  }
 
   private static String render(String contextPath, UserInterface ui, SupportedLocale locale) {
     Document doc = new Document();
@@ -74,29 +97,6 @@ public class LoginServlet extends HttpServlet {
     doc.getHead().append(script().src(resource(contextPath, "bee/bee.nocache.js")));
 
     return doc.build(0, 0);
-  }
-
-  private static String resource(String contextPath, String path) {
-    File file = new File(path);
-    if (!file.exists()) {
-      file = new File(Config.WAR_DIR, path);
-      if (!file.exists()) {
-        return path;
-      }
-    }
-    String requestPath;
-
-    if (BeeUtils.isEmpty(contextPath) || path.startsWith("/")) {
-      requestPath = path;
-    } else {
-      requestPath = contextPath + "/" + path;
-    }
-    long time = file.lastModified();
-
-    if (time > 0) {
-      requestPath += "?v=" + new DateTime(time).toTimeStamp();
-    }
-    return requestPath;
   }
 
   private static String verboten(String contextPath) {

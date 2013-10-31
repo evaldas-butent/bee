@@ -359,6 +359,12 @@
   padding-left: 5px;
 }
 
+.bee-ec-ItemList-listPrice-label {
+  max-width: 80px;
+}
+.bee-ec-ItemList-price-label {
+  max-width: 70px;
+}
 .bee-ec-ItemList-listPrice-cell,
 .bee-ec-ItemList-price-cell {
   text-align: right;
@@ -852,16 +858,20 @@
   color: #43494F;
 }
 
+.bee-ec-ItemDetails-addToCart-cart {
+  margin-left: 3em;
+}
 .bee-ec-ItemDetails-addToCart-listPrice,
 .bee-ec-ItemDetails-addToCart-price {
   margin-top: 2ex;
   margin-right: 1em;
   text-align: right;
-  font-size: medium;
 }
 
+.bee-ec-ItemDetails-remainders-table td {
+  padding: 5px 1em;
+}
 .bee-ec-ItemDetails-remainders-stock-cell {
-  padding-left: 1em;
   text-align: right;
 }
 
@@ -885,7 +895,7 @@
 }
 
 .bee-ec-ItemDetails-suppliers-table td {
-  padding-right: 3px;
+  padding: 5px 1em;
 }
 
 .bee-ec-ItemPicture-enabled {

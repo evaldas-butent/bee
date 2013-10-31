@@ -126,6 +126,28 @@ public class FertileElement extends Element {
     children.add(index, child);
   }
   
+  public Element queryId(String id) {
+    if (BeeUtils.same(id, getId())) {
+      return this;
+    }
+    
+    Element result = null;
+
+    for (Node child : children) {
+      if (child instanceof FertileElement) {
+        result = ((FertileElement) child).queryId(id);
+      } else if (child instanceof Element && BeeUtils.same(id, ((Element) child).getId())) {
+        result = (Element) child;
+      }
+      
+      if (result != null) {
+        break;
+      }
+    }
+    
+    return result;
+  }
+  
   public List<Element> queryTag(String tagName) {
     List<Element> result = Lists.newArrayList();
     if (getTag().equals(tagName)) {

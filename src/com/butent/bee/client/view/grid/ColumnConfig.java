@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -17,33 +18,33 @@ class ColumnConfig {
 
   private static final List<BeeColumn> dataColumns = Lists.newArrayList();
 
-  static int gridIndex;
-  static int nameIndex;
-  static int captionIndex;
+  private static int gridIndex;
+  private static int nameIndex;
+  private static int captionIndex;
 
-  static int widthIndex;
-  static int minWidthIndex;
-  static int maxWidthIndex;
+  private static int widthIndex;
+  private static int minWidthIndex;
+  private static int maxWidthIndex;
 
-  static int autoFitIndex;
+  private static int autoFitIndex;
 
-  static int flexGrowIndex;
-  static int flexShrinkIndex;
-  static int flexBasisIndex;
-  static int flexUnitIndex;
+  private static int flexGrowIndex;
+  private static int flexShrinkIndex;
+  private static int flexBasisIndex;
+  private static int flexUnitIndex;
 
-  static int formatIndex;
+  private static int formatIndex;
 
-  static int headerStyleIndex;
-  static int headerFontIndex;
+  private static int headerStyleIndex;
+  private static int headerFontIndex;
 
-  static int bodyStyleIndex;
-  static int bodyFontIndex;
+  private static int bodyStyleIndex;
+  private static int bodyFontIndex;
 
-  static int footerStyleIndex;
-  static int footerFontIndex;
+  private static int footerStyleIndex;
+  private static int footerFontIndex;
 
-  static void ensureIndexes(List<BeeColumn> columns) {
+  static void ensureFields(List<BeeColumn> columns) {
     if (dataColumns.isEmpty()) {
       dataColumns.addAll(columns);
 
@@ -76,11 +77,32 @@ class ColumnConfig {
       footerFontIndex = GridUtils.getIndex(names, "FooterFont");
     }
   }
-
+  
   static List<BeeColumn> getDataColumns() {
+    ensureFields();
     return dataColumns;
   }
 
+  static int getGridIndex() {
+    ensureFields();
+    return gridIndex;
+  }
+  
+  static int getNameIndex() {
+    ensureFields();
+    return nameIndex;
+  }
+
+  static int getWidthIndex() {
+    ensureFields();
+    return widthIndex;
+  }
+
+  private static void ensureFields() {
+    if (dataColumns.isEmpty()) {
+      ensureFields(Data.getColumns(ColumnDescription.VIEW_COLUMN_SETTINGS));
+    }
+  }
 
   final BeeRow row;
 
