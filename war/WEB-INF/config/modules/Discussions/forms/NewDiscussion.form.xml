@@ -8,6 +8,7 @@
 
   <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 8px; min-height: 20px; max-height: 20px; padding-top: 1px;">
   <!ENTITY top1 "text-align: right; padding-right: 8px; max-width: 128px; padding-top: 1px;">
+  <!ENTITY inp1x "&inline; width: 450px;">
   <!ENTITY inp2x "&inline; width: 540px;">
  
 ]>
@@ -37,12 +38,13 @@
       </FileCollector>
     </FlowPanel>
 
-    &separator;
-    <!--  TODO: Check box is public -->
+    &separator; 
+    
     <FlowPanel style="&section;" class="flexBox-horizontal">
+      <CheckBox name="Accessibility" source="Accessibility" text="=discussPublic" style="&top1; min-width:70px; padding-right:18px;" />
       <Label text="=discussMembers" style="&top1; min-width:70px; padding-right:18px;" />
-      <MultiSelector viewName="Users" property="Members" renderColumns="FirstName LastName"
-        editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="=discussMembers" />
+      <MultiSelector name="Members" viewName="Users" property="Members" renderColumns="FirstName LastName"
+        editPopup="true" editSource="CompanyPerson" style="&inp1x;" label="=discussMembers" />
     </FlowPanel>
 
     &separator;
