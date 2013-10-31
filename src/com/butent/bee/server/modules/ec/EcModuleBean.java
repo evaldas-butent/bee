@@ -2597,6 +2597,7 @@ public class EcModuleBean implements BeeModule {
     } else {
       SimpleRow order = qs.getRow(new SqlSelect()
           .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
+          .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_SUPPLIER_CODE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
           .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
           .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
@@ -2604,6 +2605,10 @@ public class EcModuleBean implements BeeModule {
           .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
           .addFrom(TBL_ORDERS)
           .addFromLeft(TBL_CLIENTS, sys.joinTables(TBL_CLIENTS, TBL_ORDERS, COL_ORDER_CLIENT))
+          .addFromLeft(TBL_BRANCHES,
+              sys.joinTables(TBL_BRANCHES, TBL_CLIENTS, COL_CLIENT_PRIMARY_BRANCH))
+          .addFromLeft(TBL_WAREHOUSES,
+              sys.joinTables(TBL_WAREHOUSES, TBL_BRANCHES, COL_BRANCH_PRIMARY_WAREHOUSE))
           .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_CLIENTS, COL_CLIENT_USER))
           .addFromLeft(TBL_COMPANY_PERSONS,
               sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
@@ -2620,9 +2625,11 @@ public class EcModuleBean implements BeeModule {
           order.getValue(COL_POST_INDEX), order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
 
       if (!response.hasErrors()) {
-        WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
-            prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(),
+        String warehouse = BeeUtils.notEmpty(order.getValue(COL_WAREHOUSE_SUPPLIER_CODE),
             prm.getText(COMMONS_MODULE, "ERPWarehouse"));
+
+        WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
+            prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(), warehouse);
 
         SimpleRowSet data = qs.getData(query);
 
