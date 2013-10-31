@@ -233,10 +233,12 @@ public class TecDocBean {
     String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
     String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
 
+    String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL";
+
     ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT preke AS pr, savikaina AS sv, pard_kaina as kn, gam_art AS ga, gamintojas AS gam"
             + " FROM prekes"
-            + " WHERE gamintojas IS NOT NULL AND gam_art IS NOT NULL",
+            + " WHERE " + itemsFilter,
         new String[] {"pr", "sv", "kn", "ga", "gam"});
 
     if (response.hasErrors()) {
@@ -256,8 +258,9 @@ public class TecDocBean {
     }
     response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
-            + " FROM likuciai INNER JOIN prekes ON likuciai.preke = prekes.preke"
-            + " AND prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL"
+            + " FROM likuciai INNER JOIN sand"
+            + " ON likuciai.sandelis = sand.sandelis AND sand.properties LIKE '%e%'"
+            + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
             + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
         new String[] {"sn", "pr", "lk"});
 
