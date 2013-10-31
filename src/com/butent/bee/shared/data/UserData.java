@@ -55,11 +55,11 @@ public class UserData implements BeeSerializable, HasInfo {
   private String photoFileName;
 
   private String companyName;
-  
+
   private Long companyPerson;
   private Long company;
   private Long person;
-  
+
   private Map<String, String> properties;
 
   private Map<RightsState, Multimap<RightsObjectType, String>> rights;
@@ -68,18 +68,18 @@ public class UserData implements BeeSerializable, HasInfo {
     this.userId = userId;
     this.login = login;
   }
-  
+
   public UserData(long userId, String login, String firstName, String lastName,
       String photoFileName, String companyName, Long companyPerson, Long company, Long person) {
     this.userId = userId;
     this.login = login;
-    
+
     this.firstName = firstName;
     this.lastName = lastName;
     this.photoFileName = photoFileName;
-    
+
     this.companyName = companyName;
-    
+
     this.companyPerson = companyPerson;
     this.company = company;
     this.person = person;
@@ -114,27 +114,27 @@ public class UserData implements BeeSerializable, HasInfo {
         case LAST_NAME:
           this.lastName = value;
           break;
-        
+
         case PHOTO_FILE_NAME:
           this.photoFileName = value;
           break;
-        
+
         case COMPANY_NAME:
           this.companyName = value;
           break;
-        
+
         case COMPANY_PERSON:
           this.companyPerson = BeeUtils.toLongOrNull(value);
           break;
-        
+
         case COMPANY:
           this.company = BeeUtils.toLongOrNull(value);
           break;
-        
+
         case PERSON:
           this.person = BeeUtils.toLongOrNull(value);
           break;
-        
+
         case PROPERTIES:
           String[] entry = Codec.beeDeserializeCollection(value);
 

@@ -65,7 +65,7 @@ public class EcServlet extends LoginServlet {
   private static final String ID_SUFFIX_INPUT = "-input";
   private static final String ID_SUFFIX_LIST = "-list";
 
-  private static Node clientTypeSelector(LocalizableConstants constants) {
+  private static Node clientTypeSelector(LocalizableConstants constants, EcClientType defaultType) {
     String name = COL_REGISTRATION_TYPE;
 
     Div container = div().addClass(REG_STYLE_TYPE_PREFIX + "container");
@@ -74,6 +74,10 @@ public class EcServlet extends LoginServlet {
       Input input = input().addClass(REG_STYLE_TYPE_PREFIX + "input").type(Type.RADIO)
           .name(name).value(clientType.ordinal()).id(clientType.name().toLowerCase())
           .onChange("onSelectType()");
+      
+      if (clientType == defaultType) {
+        input.checked();
+      }
 
       Span span = span().addClass(REG_STYLE_TYPE_PREFIX + "text")
           .text(clientType.getCaption(constants));
@@ -86,11 +90,17 @@ public class EcServlet extends LoginServlet {
         td().addClass(REG_STYLE_INPUT_CELL).append(container));
   }
 
-  private static Node registrationField(String label, String name, boolean required) {
+  private static Element registrationField(String label, String name, boolean required) {
     return registrationField(label, Type.TEXT, name, required);
   }
 
-  private static Node registrationField(String label, Type type, String name, boolean required) {
+  private static Element registrationField(String label, String name, String className) {
+    Element element = registrationField(label, Type.TEXT, name, false);
+    element.addClassName(className);
+    return element;
+  }
+  
+  private static Element registrationField(String label, Type type, String name, boolean required) {
     return tr().id(name + ID_SUFFIX_FIELD).append(
         registrationLabelCell(name + ID_SUFFIX_LABEL, label, required),
         registrationInputCell(name + ID_SUFFIX_INPUT, type, name, required));
@@ -167,7 +177,7 @@ public class EcServlet extends LoginServlet {
 
   private Node branchSelector(String label) {
     String name = COL_REGISTRATION_BRANCH;
-    Select select = select().name(name).required();
+    Select select = select().name(name).required().append(option());
 
     BeeRowSet branches = qs.getViewData(CommonsConstants.VIEW_BRANCHES);
     if (!DataUtils.isEmpty(branches)) {
@@ -214,13 +224,14 @@ public class EcServlet extends LoginServlet {
 
     Tbody fields = tbody().append(
         branchSelector(constants.branch()),
-        clientTypeSelector(constants),
+        clientTypeSelector(constants, EcClientType.COMPANY),
         registrationField(constants.ecClientCompanyName(), COL_REGISTRATION_COMPANY_NAME, true),
         registrationField(constants.ecClientCompanyCode(), COL_REGISTRATION_COMPANY_CODE, true),
         registrationField(constants.ecClientVatCode(), COL_REGISTRATION_VAT_CODE, true),
         registrationField(constants.ecClientFirstName(), COL_REGISTRATION_FIRST_NAME, true),
         registrationField(constants.ecClientLastName(), COL_REGISTRATION_LAST_NAME, true),
-        registrationField(constants.ecClientPersonCode(), COL_REGISTRATION_PERSON_CODE, false),
+        registrationField(constants.ecClientPersonCode(), COL_REGISTRATION_PERSON_CODE,
+            REG_STYLE_PREFIX + "hide"),
         registrationField(constants.email(), Type.EMAIL, COL_REGISTRATION_EMAIL, true),
         registrationField(constants.phone(), Type.TEL, COL_REGISTRATION_PHONE, true),
         registrationField(constants.country(), COL_REGISTRATION_COUNTRY, false),
@@ -281,7 +292,7 @@ public class EcServlet extends LoginServlet {
       String text = BeeUtils.toString(++cnt) + "  "
           + BeeUtils.join(": ", entry.getKey(), entry.getValue());
 
-      doc.getBody().append(div().text(text), br());
+      doc.getBody().append(div().text(text));
 
       if (!BeeUtils.isEmpty(entry.getValue()) && proxy.isField(TBL_REGISTRATIONS, entry.getKey())) {
         si.addConstant(entry.getKey(), entry.getValue());
@@ -294,8 +305,7 @@ public class EcServlet extends LoginServlet {
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
     si.addConstant(COL_REGISTRATION_AGENT, req.getHeader(HttpHeaders.USER_AGENT));
 
-    // ResponseObject response = proxy.insert(si);
-    ResponseObject response = ResponseObject.response(si);
+    ResponseObject response = proxy.insert(si);
     if (response.hasErrors()) {
       for (String message : response.getErrors()) {
         doc.getBody().append(div().text(message));

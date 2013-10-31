@@ -544,8 +544,8 @@ public class UserServiceBean {
       if (oldInfo != null) {
         user.setOnline(oldInfo.isOnline());
       }
-
       infoCache.put(login, user);
+      userData.setRights(getUserRights(userId));
     }
   }
 
