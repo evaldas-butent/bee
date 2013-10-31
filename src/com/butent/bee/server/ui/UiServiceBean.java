@@ -6,10 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.mail.MailConstants.COL_ACCOUNT_DEFAULT;
-import static com.butent.bee.shared.modules.mail.MailConstants.COL_ADDRESS;
-import static com.butent.bee.shared.modules.mail.MailConstants.COL_USER;
-import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ACCOUNTS;
+import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -628,7 +625,7 @@ public class UiServiceBean {
           logger.info("do query: ", select.getQuery());
 
           SimpleRowSet companyPerson = qs.getData(select);
-          
+
           if (!companyPerson.isEmpty()) {
             long companyPersonId =
                 companyPerson.getLong(0, companyPerson.getColumnIndex("CompanyPersonId"));
@@ -645,11 +642,11 @@ public class UiServiceBean {
             logger.info("do query: ", select.getQuery());
 
             SimpleRowSet user = qs.getData(select);
-            
+
             if (user.isEmpty()) {
               String userLogin = (companyPerson.getValue(0, CommonsConstants.COL_FIRST_NAME)
                   + companyPerson.getValue(0, CommonsConstants.COL_LAST_NAME)).toLowerCase();
-              
+
               SqlInsert insert = new SqlInsert(CommonsConstants.TBL_USERS)
                   .addFields(CommonsConstants.COL_LOGIN, CommonsConstants.COL_COMPANY_PERSON)
                   .addValues(userLogin, companyPersonId);
@@ -672,7 +669,7 @@ public class UiServiceBean {
 
           logger.info("do query: ", insert.getQuery());
           try {
-          qs.insertData(insert);
+            qs.insertData(insert);
           } catch (Exception sqlerr) {
             logger.warning("record exists");
           }
