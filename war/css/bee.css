@@ -1,3 +1,11 @@
+.bee-ApplianceAdmin {
+  display: none;
+}
+
+.bee-ApplianceReport {
+  display: none;
+}
+
 .bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
