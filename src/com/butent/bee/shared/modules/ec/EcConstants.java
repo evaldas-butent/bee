@@ -66,7 +66,7 @@ public final class EcConstants {
 
     @Override
     public String getCaption() {
-      return name();
+      return this == EOLTAS ? "ALTERNA" : name();
     }
   }
 
@@ -82,7 +82,7 @@ public final class EcConstants {
         return constants.ecOrderStatusNewSubject();
       }
     },
-    
+
     ACTIVE {
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -140,14 +140,14 @@ public final class EcConstants {
     public String getCaption() {
       return getCaption(Localized.getConstants());
     }
-    
+
     public abstract String getCaption(LocalizableConstants constants);
 
     public abstract String getSubject(LocalizableConstants constants);
   }
 
   public enum EcSupplier implements HasCaption {
-    EOLTAS("Eolt"), MOTOPROFIL("MP");
+    EOLTAS("Alt"), MOTOPROFIL("MP");
 
     private final String shortName;
 
@@ -157,7 +157,7 @@ public final class EcConstants {
 
     @Override
     public String getCaption() {
-      return name();
+      return this == EOLTAS ? "ALTERNA" : name();
     }
 
     public String getShortName() {
@@ -548,7 +548,7 @@ public final class EcConstants {
   public static final String CLIENT_STYLE_SHEET = "ec";
 
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
-  
+
   private EcConstants() {
   }
 }

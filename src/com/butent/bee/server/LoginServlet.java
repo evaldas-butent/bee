@@ -36,14 +36,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp" })
+@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})
 @SuppressWarnings("serial")
 public class LoginServlet extends HttpServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
 
   private static final String FAV_ICON = "favicon.ico";
-  private static final String LOGO = "logo.png";
+  private static final String LOGO = "ec/alternaLogo.png";
 
   protected static String resource(String contextPath, String path) {
     File file = new File(path);

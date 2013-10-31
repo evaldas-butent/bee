@@ -3,6 +3,6 @@ var BeeSettings = {
   logoImage: "images/ec/logo.png",
   startMillis: new Date().getTime(),
   logCapacity: 1000,
-  showGlobalSearch: true,
+  showGlobalSearch: false,
   showItemSuppliers: false
 };

@@ -28,10 +28,10 @@ import javax.xml.ws.WebServiceFeature;
 @WebServiceClient(name = ButentWS.NAME, targetNamespace = ButentWS.NAMESPACE)
 public class ButentWS extends Service {
 
-  static final String NAMESPACE = "http://localhost/ButentWS/wsdl/";
+  static final String NAMESPACE = "http://tempuri.org/PlytelesWS/wsdl/";
   static final String PORT = "ButentWebServiceSoapPort";
-  static final String NAME = "ButentWS";
-  static final String ACTION = "http://localhost/ButentWS/action/ButentWebService";
+  static final String NAME = "PlytelesWS";
+  static final String ACTION = "http://tempuri.org/PlytelesWS/action/ButentWebService";
 
   private static BeeLogger logger = LogUtils.getLogger(ButentWS.class);
 
