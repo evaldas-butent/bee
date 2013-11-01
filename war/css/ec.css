@@ -202,12 +202,22 @@
   margin-top: 1ex;
   display: flex;
   display: -webkit-flex;
+  display: -ms-flexbox;
   flex-direction: row;
   -webkit-flex-direction: row;
+  -ms-flex-direction: row;
   justify-content: space-around;
   -webkit-justify-content: space-around;
+  -ms-flex-pack: center;
   align-items: center;
   -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-ec-Banner-picture {
+  width: auto;
+  height: auto;
+  margin-left: 2em;
+  marign-right: 2em;
 }
 .bee-ec-Banner-noLink {
   cursor: default;

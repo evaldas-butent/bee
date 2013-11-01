@@ -547,14 +547,16 @@ public final class DataUtils {
   public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
       List<BeeColumn> columns, List<String> oldValues, List<String> newValues,
       Collection<RowChildren> children) {
+    
+    if (BeeUtils.isEmpty(columns)) {
+      return null;
+    }
 
     Assert.notEmpty(viewName);
-    Assert.notNull(columns);
     Assert.notNull(oldValues);
     Assert.notNull(newValues);
 
     int cc = columns.size();
-    Assert.isPositive(cc);
     Assert.isTrue(cc == oldValues.size());
     Assert.isTrue(cc == newValues.size());
 
@@ -562,7 +564,7 @@ public final class DataUtils {
     List<String> updatedOldValues = Lists.newArrayList();
     List<String> updatedNewValues = Lists.newArrayList();
 
-    for (int i = 0; i < columns.size(); i++) {
+    for (int i = 0; i < cc; i++) {
       BeeColumn column = columns.get(i);
       if (!column.isEditable()) {
         continue;
@@ -579,6 +581,7 @@ public final class DataUtils {
     if (updatedColumns.isEmpty()) {
       return null;
     }
+
     BeeRowSet rowSet = new BeeRowSet(viewName, updatedColumns);
     rowSet.addRow(rowId, rowVersion, updatedOldValues);
 
