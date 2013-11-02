@@ -1937,23 +1937,25 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLE_GRAPHICS)
         .addFromInner(TBL_TCD_GRAPHICS,
             sys.joinTables(TBL_TCD_GRAPHICS, TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_GRAPHICS))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_SORT, 1),
-            SqlUtils.inList(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE, articles)));
+        .setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE, articles))
+        .addOrder(TBL_TCD_ARTICLE_GRAPHICS, COL_TCD_ARTICLE, COL_TCD_SORT,
+            sys.getIdName(TBL_TCD_ARTICLE_GRAPHICS));
 
     SimpleRowSet graphicsData = qs.getData(graphicsQuery);
 
     if (DataUtils.isEmpty(graphicsData)) {
       logger.warning("graphics not found for", articles);
-      return ResponseObject.response(BeeConst.NULL);
+      return ResponseObject.emptyResponse();
     }
-    Map<Long, String> pictures = Maps.newHashMap();
-
+    
+    List<String> pictures = Lists.newArrayListWithExpectedSize(graphicsData.getNumberOfRows() * 2);
     for (SimpleRow row : graphicsData) {
-      pictures.put(row.getLong(COL_TCD_ARTICLE),
-          EcUtils.picture(row.getValue(COL_TCD_GRAPHICS_TYPE),
-              row.getValue(COL_TCD_GRAPHICS_RESOURCE)));
+      pictures.add(row.getValue(COL_TCD_ARTICLE));
+      pictures.add(EcUtils.picture(row.getValue(COL_TCD_GRAPHICS_TYPE),
+          row.getValue(COL_TCD_GRAPHICS_RESOURCE)));
     }
-    return ResponseObject.response(pictures).setSize(pictures.size());
+
+    return ResponseObject.response(pictures).setSize(pictures.size() / 2);
   }
 
   private ResponseObject getPromo(RequestInfo reqInfo) {

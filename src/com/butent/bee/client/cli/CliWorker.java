@@ -3,6 +3,7 @@ package com.butent.bee.client.cli;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
@@ -126,7 +127,10 @@ import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssAngle;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -137,6 +141,7 @@ import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
@@ -287,6 +292,9 @@ public final class CliWorker {
 
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
+
+    } else if (BeeUtils.inList(z, "fa", "fontawesome")) {
+      showFontAwesome(args);
 
     } else if ("files".equals(z) || z.startsWith("repo")) {
       getFiles();
@@ -2371,6 +2379,37 @@ public final class CliWorker {
     }
 
     showTable(id, new PropertiesData(Font.getComputed(el).getInfo()));
+  }
+
+  private static void showFontAwesome(String args) {
+    Flow panel = new Flow();
+    StyleUtils.setFontFamily(panel, FontAwesome.FAMILY);
+    StyleUtils.setFontSize(panel, FontSize.MEDIUM);
+
+    List<Property> styles = PropertyUtils.createProperties(
+        CssProperties.DISPLAY, Display.INLINE_BLOCK.getCssName(),
+        CssProperties.PADDING, CssUnit.format(5, CssUnit.PX));
+
+    if (!BeeUtils.isEmpty(args)) {
+      styles.addAll(StyleUtils.parseStyles(args));
+    }
+
+    int count = 0;
+    for (Range<Character> range : FontAwesome.RANGES) {
+      for (char c = range.lowerEndpoint(); c <= range.upperEndpoint(); c++) {
+        InlineLabel label = new InlineLabel();
+        label.getElement().setInnerText(String.valueOf(c));
+        label.setTitle(Integer.toHexString(c));
+
+        StyleUtils.updateStyle(label, styles);
+
+        panel.add(label);
+        count++;
+      }
+    }
+
+    logger.debug(FontAwesome.FAMILY, count);
+    BeeKeeper.getScreen().updateActivePanel(panel);
   }
 
   private static void showFunctions(String v, String[] arr) {

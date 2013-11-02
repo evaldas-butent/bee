@@ -47,20 +47,22 @@ class EcPictures {
   }
 
   private static boolean isPicture(String picture) {
-    return picture != null && picture.startsWith(EcConstants.PICTURE_PREFIX);
+    return picture != null;
   }
 
-  private static void setBackgroundImage(Collection<ItemPicture> widgets, String picture) {
-    if (widgets != null) {
+  private static void setBackgroundImage(Collection<ItemPicture> widgets, List<String> pictures) {
+    if (widgets != null && !BeeUtils.isEmpty(pictures)) {
       for (ItemPicture widget : widgets) {
         if (widget != null) {
-          widget.setPicture(picture);
+          widget.setPicture(pictures.get(0));
+          widget.setTitle(Integer.toString(pictures.size()));
         }
       }
     }
   }
 
-  private final Cache<Long, String> cache = CacheBuilder.newBuilder().maximumSize(2000).build();
+  private final Cache<Long, List<String>> cache = 
+      CacheBuilder.newBuilder().maximumSize(2000).build();
   private final Set<Long> noPicture = Sets.newHashSet();
 
   private BeeRowSet banners;
@@ -133,11 +135,11 @@ class EcPictures {
         continue;
       }
 
-      String picture = cache.getIfPresent(article);
-      if (picture == null) {
+      List<String> pictures = cache.getIfPresent(article);
+      if (BeeUtils.isEmpty(pictures)) {
         articles.add(article);
       } else {
-        setBackgroundImage(articleWidgets.get(article), picture);
+        setBackgroundImage(articleWidgets.get(article), pictures);
       }
     }
 
@@ -152,19 +154,45 @@ class EcPictures {
 
           if (hasPictures(response)) {
             String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
             if (arr != null) {
+              Long lastArticle = null;
+              List<String> pictures = Lists.newArrayList();
+    
               for (int i = 0; i < arr.length - 1; i += 2) {
                 Long article = BeeUtils.toLongOrNull(arr[i]);
                 String picture = arr[i + 1];
 
                 if (article != null && isPicture(picture)) {
-                  if (articleWidgets.containsKey(article)) {
-                    setBackgroundImage(articleWidgets.get(article), picture);
-                  }
+                  if (lastArticle == null) {
+                    lastArticle = article;
+                    pictures.add(picture);
 
-                  cache.put(article, picture);
-                  articles.remove(article);
+                  } else if (article.equals(lastArticle)) {
+                    pictures.add(picture);
+                    
+                  } else {
+                    if (articleWidgets.containsKey(lastArticle)) {
+                      setBackgroundImage(articleWidgets.get(lastArticle), pictures);
+                    }
+                    
+                    cache.put(lastArticle, pictures);
+                    articles.remove(lastArticle);
+
+                    lastArticle = article;
+                    pictures.clear();
+                    pictures.add(picture);
+                  }
                 }
+              }
+              
+              if (lastArticle != null && !pictures.isEmpty()) {
+                if (articleWidgets.containsKey(lastArticle)) {
+                  setBackgroundImage(articleWidgets.get(lastArticle), pictures);
+                }
+                
+                cache.put(lastArticle, pictures);
+                articles.remove(lastArticle);
               }
 
               if (EcKeeper.isDebug()) {

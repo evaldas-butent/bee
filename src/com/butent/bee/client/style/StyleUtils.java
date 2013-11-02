@@ -59,7 +59,7 @@ public final class StyleUtils {
   public enum ScrollBars {
     NONE, HORIZONTAL, VERTICAL, BOTH
   }
-  
+
   public static final String CLASS_NAME_PREFIX = "bee-";
 
   public static final String DND_SOURCE = CLASS_NAME_PREFIX + "dndSource";
@@ -477,7 +477,7 @@ public final class StyleUtils {
   public static SafeStyles buildZIndex(int value) {
     return buildStyle(CssProperties.Z_INDEX, value);
   }
-  
+
   public static <E extends Enum<?> & HasCssName> String className(E value) {
     Assert.notNull(value);
     return CLASS_NAME_PREFIX + NameUtils.getClassName(value.getDeclaringClass()) + NAME_DELIMITER
@@ -1245,6 +1245,20 @@ public final class StyleUtils {
     return sb;
   }
 
+  public static List<Property> parseStyles(String styles) {
+    Assert.notEmpty(styles);
+    List<Property> result = Lists.newArrayList();
+
+    for (String style : DEFINITION_SPLITTER.split(styles)) {
+      String name = BeeUtils.getPrefix(style, NAME_VALUE_SEPARATOR);
+      String value = BeeUtils.getSuffix(style, NAME_VALUE_SEPARATOR);
+      if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(value)) {
+        result.add(new Property(name, value));
+      }
+    }
+    return result;
+  }
+
   public static TextAlign parseTextAlign(String input) {
     return parseCssName(TextAlign.class, input);
   }
@@ -1873,16 +1887,16 @@ public final class StyleUtils {
     setOverflow(obj.getElement(), scroll, value);
   }
 
+  public static void setProperty(Style st, String name, double value, CssUnit unit) {
+    st.setProperty(checkPropertyName(name), value + unit.getCaption());
+  }
+
   public static void setProperty(Style st, String name, HasCssName value) {
     if (value == null) {
       st.clearProperty(checkPropertyName(name));
     } else {
       st.setProperty(checkPropertyName(name), value.getCssName());
     }
-  }
-
-  public static void setProperty(Style st, String name, double value, CssUnit unit) {
-    st.setProperty(checkPropertyName(name), value + unit.getCaption());
   }
 
   public static void setRectangle(Element el, int left, int top, int width, int height) {
@@ -2054,25 +2068,14 @@ public final class StyleUtils {
     setTop(obj.getElement(), px);
   }
 
-  public static void setTransformRotate(Element el, int value, CssAngle angle) {
-    Assert.notNull(el);
-    setTransformRotate(el.getStyle(), value, angle);
-  }
-
-  public static void setTransformRotate(Style st, int value, CssAngle angle) {
-    Assert.notNull(st);
-    st.setProperty(getStyleTransformPropertyName(st),
-        TRANSFORM_ROTATE + BeeUtils.parenthesize(CssAngle.format(value, angle)));
-  }
-
-  public static void setTransformRotate(UIObject obj, int value, CssAngle angle) {
-    Assert.notNull(obj);
-    setTransformRotate(obj.getElement(), value, angle);
-  }
-
   public static void setTransformRotate(Element el, Axis axis, int value, CssAngle angle) {
     Assert.notNull(el);
     setTransformRotate(el.getStyle(), axis, value, angle);
+  }
+
+  public static void setTransformRotate(Element el, int value, CssAngle angle) {
+    Assert.notNull(el);
+    setTransformRotate(el.getStyle(), value, angle);
   }
 
   public static void setTransformRotate(Style st, Axis axis, int value, CssAngle angle) {
@@ -2081,30 +2084,30 @@ public final class StyleUtils {
     st.setProperty(getStyleTransformPropertyName(st), axis.rotate(value, angle));
   }
 
+  public static void setTransformRotate(Style st, int value, CssAngle angle) {
+    Assert.notNull(st);
+    st.setProperty(getStyleTransformPropertyName(st),
+        TRANSFORM_ROTATE + BeeUtils.parenthesize(CssAngle.format(value, angle)));
+  }
+
   public static void setTransformRotate(UIObject obj, Axis axis, int value, CssAngle angle) {
     Assert.notNull(obj);
     setTransformRotate(obj.getElement(), axis, value, angle);
   }
 
-  public static void setTransformScale(Element el, double x, double y) {
-    Assert.notNull(el);
-    setTransformScale(el.getStyle(), x, y);
-  }
-
-  public static void setTransformScale(Style st, double x, double y) {
-    Assert.notNull(st);
-    st.setProperty(getStyleTransformPropertyName(st),
-        TRANSFORM_SCALE + BeeUtils.parenthesize(x + BeeConst.STRING_COMMA + y));
-  }
-
-  public static void setTransformScale(UIObject obj, double x, double y) {
+  public static void setTransformRotate(UIObject obj, int value, CssAngle angle) {
     Assert.notNull(obj);
-    setTransformScale(obj.getElement(), x, y);
+    setTransformRotate(obj.getElement(), value, angle);
   }
 
   public static void setTransformScale(Element el, Axis axis, double value) {
     Assert.notNull(el);
     setTransformScale(el.getStyle(), axis, value);
+  }
+
+  public static void setTransformScale(Element el, double x, double y) {
+    Assert.notNull(el);
+    setTransformScale(el.getStyle(), x, y);
   }
 
   public static void setTransformScale(Style st, Axis axis, double value) {
@@ -2113,9 +2116,20 @@ public final class StyleUtils {
     st.setProperty(getStyleTransformPropertyName(st), axis.scale(value));
   }
 
+  public static void setTransformScale(Style st, double x, double y) {
+    Assert.notNull(st);
+    st.setProperty(getStyleTransformPropertyName(st),
+        TRANSFORM_SCALE + BeeUtils.parenthesize(x + BeeConst.STRING_COMMA + y));
+  }
+
   public static void setTransformScale(UIObject obj, Axis axis, double value) {
     Assert.notNull(obj);
     setTransformScale(obj.getElement(), axis, value);
+  }
+
+  public static void setTransformScale(UIObject obj, double x, double y) {
+    Assert.notNull(obj);
+    setTransformScale(obj.getElement(), x, y);
   }
 
   public static void setTransformSkew(Element el, Axis axis, int value, CssAngle angle) {
@@ -2133,17 +2147,10 @@ public final class StyleUtils {
     Assert.notNull(obj);
     setTransformSkew(obj.getElement(), axis, value, angle);
   }
-  
-  public static void setTransformTranslate(Style st, double x, CssUnit xu, double y, CssUnit yu) {
-    Assert.notNull(st);
-    st.setProperty(getStyleTransformPropertyName(st), TRANSFORM_TRANSLATE
-        + BeeUtils.parenthesize(toCssLength(x, xu) + BeeConst.STRING_COMMA + toCssLength(y, yu)));
-  }
 
-  public static void setTransformTranslate(UIObject obj, double x, CssUnit xu,
-      double y, CssUnit yu) {
-    Assert.notNull(obj);
-    setTransformTranslate(obj.getElement(), x, xu, y, yu);
+  public static void setTransformTranslate(Element el, Axis axis, double value, CssUnit unit) {
+    Assert.notNull(el);
+    setTransformTranslate(el.getStyle(), axis, value, unit);
   }
 
   public static void setTransformTranslate(Element el, double x, CssUnit xu, double y, CssUnit yu) {
@@ -2156,14 +2163,21 @@ public final class StyleUtils {
     st.setProperty(getStyleTransformPropertyName(st), axis.translate(value, unit));
   }
 
+  public static void setTransformTranslate(Style st, double x, CssUnit xu, double y, CssUnit yu) {
+    Assert.notNull(st);
+    st.setProperty(getStyleTransformPropertyName(st), TRANSFORM_TRANSLATE
+        + BeeUtils.parenthesize(toCssLength(x, xu) + BeeConst.STRING_COMMA + toCssLength(y, yu)));
+  }
+
   public static void setTransformTranslate(UIObject obj, Axis axis, double value, CssUnit unit) {
     Assert.notNull(obj);
     setTransformTranslate(obj.getElement(), axis, value, unit);
   }
 
-  public static void setTransformTranslate(Element el, Axis axis, double value, CssUnit unit) {
-    Assert.notNull(el);
-    setTransformTranslate(el.getStyle(), axis, value, unit);
+  public static void setTransformTranslate(UIObject obj, double x, CssUnit xu,
+      double y, CssUnit yu) {
+    Assert.notNull(obj);
+    setTransformTranslate(obj.getElement(), x, xu, y, yu);
   }
 
   public static void setVerticalAlign(Element el, VerticalAlign align) {
@@ -2355,18 +2369,35 @@ public final class StyleUtils {
     updateClasses(obj.getElement(), classes);
   }
 
+  public static void updateStyle(Element el, List<Property> properties) {
+    Assert.notNull(el);
+    updateStyle(el.getStyle(), properties);
+  }
+
   public static void updateStyle(Element el, String styles) {
     Assert.notNull(el);
     updateStyle(el.getStyle(), styles);
   }
 
+  public static void updateStyle(Style st, List<Property> properties) {
+    Assert.notNull(st);
+    Assert.notNull(properties);
+
+    for (Property property : properties) {
+      st.setProperty(checkPropertyName(property.getName()), property.getValue());
+    }
+  }
+
   public static void updateStyle(Style st, String styles) {
     List<Property> properties = parseStyles(styles);
     if (properties != null) {
-      for (Property property : properties) {
-        st.setProperty(checkPropertyName(property.getName()), property.getValue());
-      }
+      updateStyle(st, properties);
     }
+  }
+
+  public static void updateStyle(UIObject obj, List<Property> properties) {
+    Assert.notNull(obj);
+    updateStyle(obj.getElement(), properties);
   }
 
   public static void updateStyle(UIObject obj, String styles) {
@@ -2543,20 +2574,6 @@ public final class StyleUtils {
 
   private static CssUnit normalizeUnit(CssUnit unit) {
     return (unit == null) ? DEFAULT_UNIT : unit;
-  }
-
-  private static List<Property> parseStyles(String styles) {
-    Assert.notEmpty(styles);
-    List<Property> result = Lists.newArrayList();
-
-    for (String style : DEFINITION_SPLITTER.split(styles)) {
-      String name = BeeUtils.getPrefix(style, NAME_VALUE_SEPARATOR);
-      String value = BeeUtils.getSuffix(style, NAME_VALUE_SEPARATOR);
-      if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(value)) {
-        result.add(new Property(name, value));
-      }
-    }
-    return result;
   }
 
   private static void setFontSize(Style st, String value) {
