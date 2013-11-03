@@ -11,25 +11,21 @@ import com.butent.bee.shared.utils.BeeUtils;
  * mouse.
  */
 
-public class InputSlider extends InputInteger {
+public class InputRange extends InputInteger {
 
   private static Input.Type inputType = Input.Type.RANGE;
 
-  public InputSlider() {
+  public InputRange() {
     super();
     DomUtils.setInputType(this, inputType);
   }
 
-  public InputSlider(int min, int max) {
+  public InputRange(int min, int max) {
     super(inputType, min, max);
   }
 
-  public InputSlider(int min, int max, int step) {
+  public InputRange(int min, int max, int step) {
     super(inputType, min, max, step);
-  }
-
-  public InputSlider(int value, int min, int max, int step) {
-    super(value, inputType, min, max, step);
   }
 
   @Override
@@ -44,7 +40,7 @@ public class InputSlider extends InputInteger {
 
   @Override
   public FormWidget getWidgetType() {
-    return FormWidget.INPUT_SLIDER;
+    return FormWidget.INPUT_RANGE;
   }
   
   @Override
@@ -58,7 +54,7 @@ public class InputSlider extends InputInteger {
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputSlider";
+    return "bee-InputRange";
   }
 
   @Override

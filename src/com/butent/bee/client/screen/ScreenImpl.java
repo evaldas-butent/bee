@@ -297,7 +297,7 @@ public class ScreenImpl implements Screen {
         getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
       }
 
-      Previewer.registermouseDownPriorHandler(getWorkspace());
+      Previewer.registerMouseDownPriorHandler(getWorkspace());
     }
   }
 

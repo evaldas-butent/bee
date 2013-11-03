@@ -158,7 +158,7 @@ public class Promo extends Flow {
     Multimap<Long, ItemPicture> pictureWidgets = ArrayListMultimap.create();
     
     for (EcItem item : items) {
-      ItemPicture pictureWidget = new ItemPicture();
+      ItemPicture pictureWidget = new ItemPicture(item.getCaption());
       pictureWidgets.put(item.getArticleId(), pictureWidget);
 
       if (item.isFeatured()) {

@@ -7,12 +7,18 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.style.StyleUtils;
 
+import elemental.js.dom.JsElement;
+
 public final class BodyPanel extends ComplexPanel {
   
   private static BodyPanel singleton;
   
   public static void conceal(Element el) {
     get().concealment.appendChild(el);
+  }
+
+  public static void conceal(JsElement el) {
+    conceal(Element.as(el));
   }
 
   public static BodyPanel get() {

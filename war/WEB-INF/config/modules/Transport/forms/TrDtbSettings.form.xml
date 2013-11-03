@@ -65,11 +65,11 @@
     &separator;
     <FlowPanel style="&slider_row;">
       <Label text="=transportItemOpacity" style="&lbl;" />
-      <InputSlider source="DtbItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+      <InputRange source="DtbItemOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
     </FlowPanel>
     <FlowPanel style="&slider_row;">
       <Label text="=transportStripOpacity" style="&lbl;" />
-      <InputSlider source="DtbStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
+      <InputRange source="DtbStripOpacity" minValue="0" maxValue="100" step="5" style="&slider_inp;" />
     </FlowPanel>
 
   </FlowPanel>

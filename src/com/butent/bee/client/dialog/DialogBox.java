@@ -124,6 +124,10 @@ public class DialogBox extends Popup implements Printable {
         || !StyleUtils.hasClassName(source, STYLE_ACTION);
   }
 
+  public Flow getHeader() {
+    return header;
+  }
+
   @Override
   public void setWidget(Widget w) {
     Assert.notNull(w);

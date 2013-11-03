@@ -17,7 +17,7 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
-import com.butent.bee.client.widget.InputSlider;
+import com.butent.bee.client.widget.InputRange;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
@@ -205,7 +205,7 @@ public final class EditorFactory {
         break;
 
       case SLIDER:
-        editor = new InputSlider();
+        editor = new InputRange();
         break;
 
       case SPINNER:

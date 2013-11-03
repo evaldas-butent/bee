@@ -155,6 +155,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -1026,7 +1027,8 @@ public final class CliWorker {
           panel.add(new Label("Available DSN's"));
 
           final String currentDsn = current;
-          final RadioGroup rg = new RadioGroup(true, dsns.indexOf(currentDsn), dsns);
+          final RadioGroup rg = new RadioGroup(Orientation.VERTICAL, dsns.indexOf(currentDsn),
+              dsns);
           panel.add(rg);
 
           Global.inputWidget("Choose DSN", panel, new InputCallback() {

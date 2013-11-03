@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.ec;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -50,18 +51,17 @@ class EcPictures {
     return picture != null;
   }
 
-  private static void setBackgroundImage(Collection<ItemPicture> widgets, List<String> pictures) {
+  private static void setPictures(Collection<ItemPicture> widgets, List<String> pictures) {
     if (widgets != null && !BeeUtils.isEmpty(pictures)) {
       for (ItemPicture widget : widgets) {
         if (widget != null) {
-          widget.setPicture(pictures.get(0));
-          widget.setTitle(Integer.toString(pictures.size()));
+          widget.setPictures(ImmutableList.copyOf(pictures));
         }
       }
     }
   }
 
-  private final Cache<Long, List<String>> cache = 
+  private final Cache<Long, ImmutableList<String>> cache = 
       CacheBuilder.newBuilder().maximumSize(2000).build();
   private final Set<Long> noPicture = Sets.newHashSet();
 
@@ -124,7 +124,7 @@ class EcPictures {
       EcStyles.add(image, primaryStyle, "picture");
     }
 
-    Global.showModalWidget(image);
+    Global.showModalWidget(image, cellElement);
   }
 
   void setBackground(final Multimap<Long, ItemPicture> articleWidgets) {
@@ -139,10 +139,10 @@ class EcPictures {
       if (BeeUtils.isEmpty(pictures)) {
         articles.add(article);
       } else {
-        setBackgroundImage(articleWidgets.get(article), pictures);
+        setPictures(articleWidgets.get(article), pictures);
       }
     }
-
+    
     if (!articles.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_PICTURES);
       params.addDataItem(EcConstants.COL_TCD_ARTICLE, DataUtils.buildIdList(articles));
@@ -173,10 +173,10 @@ class EcPictures {
                     
                   } else {
                     if (articleWidgets.containsKey(lastArticle)) {
-                      setBackgroundImage(articleWidgets.get(lastArticle), pictures);
+                      setPictures(articleWidgets.get(lastArticle), pictures);
                     }
                     
-                    cache.put(lastArticle, pictures);
+                    cache.put(lastArticle, ImmutableList.copyOf(pictures));
                     articles.remove(lastArticle);
 
                     lastArticle = article;
@@ -188,10 +188,10 @@ class EcPictures {
               
               if (lastArticle != null && !pictures.isEmpty()) {
                 if (articleWidgets.containsKey(lastArticle)) {
-                  setBackgroundImage(articleWidgets.get(lastArticle), pictures);
+                  setPictures(articleWidgets.get(lastArticle), pictures);
                 }
                 
-                cache.put(lastArticle, pictures);
+                cache.put(lastArticle, ImmutableList.copyOf(pictures));
                 articles.remove(lastArticle);
               }
 
