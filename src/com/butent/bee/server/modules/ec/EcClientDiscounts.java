@@ -18,6 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class EcClientDiscounts {
 
@@ -222,7 +223,7 @@ public class EcClientDiscounts {
 
     if (discounts.isEmpty()) {
       Long brand = ecItem.getBrand();
-      List<Long> categories = ecItem.getCategoryList();
+      Set<Long> categories = ecItem.getCategorySet();
 
       if (brand != null && brandAndCategoryDiscounts.containsKey(brand) && !categories.isEmpty()) {
         List<Discount> filtered = getCategoryDiscounts(brandAndCategoryDiscounts.get(brand),

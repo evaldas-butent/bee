@@ -691,29 +691,37 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLE_CATEGORIES)
         .addFromInner(tempArticleIds, SqlUtils.joinUsing(tempArticleIds,
             TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE))
-        .addOrder(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE, COL_TCD_CATEGORY);
+        .addOrder(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE);
 
     SimpleRowSet data = qs.getData(query);
     if (!DataUtils.isEmpty(data)) {
-      long lastArt = 0;
-      StringBuilder sb = new StringBuilder();
+      Map<Long, Long> parents = getCategoryParents();
 
+      long lastArt = 0;
+      Set<Long> categories = Sets.newHashSet();
+      
       for (SimpleRow row : data) {
         long art = row.getLong(COL_TCD_ARTICLE);
         long cat = row.getLong(COL_TCD_CATEGORY);
 
         if (art != lastArt) {
-          if (sb.length() > 0) {
-            result.put(lastArt, sb.toString());
-            lastArt = art;
-            sb = new StringBuilder();
+          if (!categories.isEmpty()) {
+            result.put(lastArt, EcItem.joinCategories(categories));
+            categories.clear();
+          }
+
+          lastArt = art;
+        }
+        
+        for (Long id = cat; id != null; id = parents.get(id)) {
+          if (!categories.add(id)) {
+            break;
           }
         }
-        sb.append(CATEGORY_ID_SEPARATOR).append(cat);
       }
 
-      if (sb.length() > 0) {
-        result.put(lastArt, sb.toString());
+      if (!categories.isEmpty()) {
+        result.put(lastArt, EcItem.joinCategories(categories));
       }
     }
 
@@ -2781,7 +2789,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     for (EcItem item : items) {
-      Double marginPercent = getMarginPercent(item.getCategoryList(), catParents, catRoots,
+      Double marginPercent = getMarginPercent(item.getCategorySet(), catParents, catRoots,
           catMargins);
       if (marginPercent == null) {
         marginPercent = defMargin;

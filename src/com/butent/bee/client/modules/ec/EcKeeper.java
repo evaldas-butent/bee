@@ -71,7 +71,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +124,7 @@ public final class EcKeeper {
     return source.addKeyPressHandler(eventHandler);
   }
 
-  public static Tree buildCategoryTree(Collection<Long> categoryIds) {
+  public static Tree buildCategoryTree(Set<Long> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
   }

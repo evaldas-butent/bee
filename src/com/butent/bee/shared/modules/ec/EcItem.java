@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.ec;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
@@ -13,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 public class EcItem implements BeeSerializable, HasCaption {
 
@@ -24,6 +25,14 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   public static final Splitter CATEGORY_SPLITTER =
       Splitter.on(EcConstants.CATEGORY_ID_SEPARATOR).trimResults().omitEmptyStrings();
+  
+  public static String joinCategories(Collection<Long> categories) {
+    StringBuilder sb = new StringBuilder();
+    for (Long category : categories) {
+      sb.append(category).append(EcConstants.CATEGORY_ID_SEPARATOR);
+    }
+    return sb.toString();
+  }
 
   public static EcItem restore(String s) {
     EcItem item = new EcItem();
@@ -170,29 +179,26 @@ public class EcItem implements BeeSerializable, HasCaption {
     return BeeUtils.joinWords(getName(), getCode());
   }
 
-  public String getCategories() {
-    return categories;
-  }
-
-  public List<Long> getCategoryList() {
-    List<Long> result = Lists.newArrayList();
+  public Set<Long> getCategorySet() {
+    Set<Long> result = Sets.newHashSet();
 
     if (getCategories() != null) {
       for (String s : CATEGORY_SPLITTER.split(getCategories())) {
         result.add(BeeUtils.toLong(s));
       }
     }
+
     return result;
   }
 
   public String getCode() {
     return code;
   }
-  
+
   public String getDescription() {
     return description;
   }
-
+  
   public int getListPrice() {
     return listPrice;
   }
@@ -278,12 +284,6 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   public String getUnit() {
     return unit;
-  }
-
-  public boolean hasCategory(long category) {
-    return categories != null
-        && categories.contains(EcConstants.CATEGORY_ID_SEPARATOR + category
-            + EcConstants.CATEGORY_ID_SEPARATOR);
   }
 
   @Override
@@ -437,5 +437,9 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   public int totalStock() {
     return getPrimaryStock() + getSecondaryStock();
+  }
+
+  private String getCategories() {
+    return categories;
   }
 }
