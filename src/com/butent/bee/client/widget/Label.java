@@ -32,6 +32,10 @@ public class Label extends CustomHasHtml {
     setHtml(BeeConst.STRING_EMPTY);
   }
 
+  protected String getDefaultStyleName() {
+    return "bee-Label";
+  }
+  
   @Override
   public String getIdPrefix() {
     return "lbl";
@@ -40,6 +44,6 @@ public class Label extends CustomHasHtml {
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-Label");
+    addStyleName(getDefaultStyleName());
   }
 }

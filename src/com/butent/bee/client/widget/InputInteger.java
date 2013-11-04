@@ -31,20 +31,6 @@ public class InputInteger extends InputNumber {
     initAttributes(type, min, max, step);
   }
 
-  public InputInteger(int value) {
-    this();
-    setValue(value);
-  }
-
-  public InputInteger(int value, Input.Type type, int min, int max) {
-    this(value, type, min, max, 1);
-  }
-
-  public InputInteger(int value, Input.Type type, int min, int max, int step) {
-    this(value);
-    initAttributes(type, min, max, step);
-  }
-
   @Override
   protected String getDefaultStyleName() {
     return "bee-InputInteger";

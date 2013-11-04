@@ -82,7 +82,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     INSTANCE.maybeSortHandlers();
   }
 
-  public static void registermouseDownPriorHandler(PreviewHandler handler) {
+  public static void registerMouseDownPriorHandler(PreviewHandler handler) {
     Assert.notNull(handler);
     INSTANCE.mouseDownPriorHandlers.add(handler);
   }
@@ -94,7 +94,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     INSTANCE.remove(handler);
   }
 
-  public static void unregistermouseDownPriorHandler(PreviewHandler handler) {
+  public static void unregisterMouseDownPriorHandler(PreviewHandler handler) {
     Assert.notNull(handler);
     INSTANCE.mouseDownPriorHandlers.remove(handler);
   }

@@ -1,3 +1,10 @@
+@font-face {
+  font-family: FontAwesome;
+  src: url(../fonts/fontawesome-webfont.woff);
+  font-weight: normal;
+  font-style: normal;
+}
+
 .bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
@@ -532,27 +539,32 @@
 .bee-CellGridEvenRow {
   background-color: #f5f5f5;
 }
-
 .bee-CellGridOddRow {
   background-color: #fbfbfb;
 }
 
 .bee-CellGridBody:hover {
   background-color: #e1e1e1 !important;
-}
-
-.bee-CellGridSelectedRow {
-  background-color: #e2f2ff !important;
+  background-image: none !important;
 }
 
 .bee-CellGridActiveRow {
   background-color: #cfc !important;
 }
-
 .bee-CellGridActiveCell {
   background-color: #c7e3f9 !important;
   outline: #c7e3f9 solid 2px !important;
   outline-offset: -1px;
+}
+
+.bee-CellGridSelectedRow {
+  background-image: linear-gradient(to bottom, #f0f9ff 0%, #cbebff 47%, #a1dbff 100%);  
+}
+.bee-CellGridSelectedRow.bee-CellGridActiveRow {
+  background-image: linear-gradient(to bottom, #f8ffe8 0%, #e3f5ab 33%, #b7df2d 100%);
+}
+.bee-CellGridSelectedRow.bee-CellGridActiveCell {
+  background-image: none;
 }
 
 .bee-CellGridResizedCell {
@@ -1947,7 +1959,7 @@
   padding-bottom: 0;
 }
 
-.bee-InputSlider {
+.bee-InputRange {
   margin: 0;
 }
 
@@ -2072,4 +2084,129 @@
 }
 .bee-TextAlign-right {
   text-align: right;
+}
+
+.bee-SlideDeck-thumbnails {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  overflow-x: auto; 
+}
+.bee-SlideDeck-tn {
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.bee-SlideDeck-tn:hover {
+  outline: 1px solid #151515;
+  opacity: 1;
+}
+.bee-SlideDeck-tn-active {
+  outline: 2px solid #c33;
+  opacity: 1;
+}
+
+.bee-SlideDeck-canvas {
+  position: relative;
+  overflow: hidden;
+}
+.bee-SlideDeck-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.bee-SlideDeck-controls {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  background-color: rgba(20, 20, 20, 0.8);
+  color: white;  
+}
+
+.bee-SlideDeck-controls .bee-fa-label {
+  padding: 2px;
+}
+.bee-SlideDeck-controls .bee-fa-label:hover {
+  outline: 1px solid white;  
+}
+
+.bee-SlideDeck-play {
+  margin-left: 0.5em;
+  font-size: 20px;
+  cursor: pointer;
+}
+.bee-SlideDeck-progress {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  margin-left: 1em;
+  margin-right: 1em;
+  cursor: pointer;
+}
+
+.bee-SlideDeck-backward {
+  font-size: 16px;
+  cursor: pointer;
+}
+.bee-SlideDeck-label {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+.bee-SlideDeck-forward {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.bee-SlideDeck-settings {
+  font-size: 17px;
+  margin-left: 1em;
+  margin-right: 0.5em;
+  cursor: pointer;
+}
+
+.bee-SlideDeck-nav-disabled {
+  visibility: hidden;
+  cursor: default;
+}
+
+.bee-SlideDeck-config-popup {
+  background-color: rgba(20, 20, 20, 0.8);
+  color: white;  
+}
+.bee-SlideDeck-config-panel {
+  position: relative;
+}
+.bee-SlideDeck-config-table {
+  border-collapse: collapse;
+}
+.bee-SlideDeck-config-table td {
+  padding: 5px 8px;
+}
+.bee-SlideDeck-config-effect {
+  color: black;
+}
+.bee-SlideDeck-config-close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  cursor: pointer;
 }

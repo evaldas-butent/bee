@@ -208,8 +208,8 @@ class ReportManager {
       addStyle(lhLabel, "lhLabel");
       container.add(lhLabel);
 
-      int value = BeeUtils.unbox(Data.getInteger(viewName, options, COL_LOWER_HOUR));
-      lowerHour = new InputSpinner(value, 0, TimeUtils.HOURS_PER_DAY - 1);
+      lowerHour = new InputSpinner(0, TimeUtils.HOURS_PER_DAY - 1);
+      lowerHour.setValue(BeeUtils.unbox(Data.getInteger(viewName, options, COL_LOWER_HOUR)));
       addStyle(lowerHour, "lowerHour");
       container.add(lowerHour);
 
@@ -217,9 +217,10 @@ class ReportManager {
       addStyle(uhLabel, "uhLabel");
       container.add(uhLabel);
 
-      value = BeeUtils.positive(BeeUtils.unbox(Data.getInteger(viewName, options, COL_UPPER_HOUR)),
-          TimeUtils.HOURS_PER_DAY);
-      upperHour = new InputSpinner(value, 0, TimeUtils.HOURS_PER_DAY);
+      upperHour = new InputSpinner(0, TimeUtils.HOURS_PER_DAY);
+      int value = BeeUtils.positive(BeeUtils.unbox(Data.getInteger(viewName, options,
+          COL_UPPER_HOUR)), TimeUtils.HOURS_PER_DAY);
+      upperHour.setValue(value);
       addStyle(upperHour, "upperHour");
       container.add(upperHour);
     } else {

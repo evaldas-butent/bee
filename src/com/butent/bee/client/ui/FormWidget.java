@@ -100,7 +100,7 @@ import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
-import com.butent.bee.client.widget.InputSlider;
+import com.butent.bee.client.widget.InputRange;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
@@ -210,7 +210,7 @@ public enum FormWidget {
   INPUT_FILE("InputFile", EnumSet.of(Type.INPUT)),
   INPUT_INTEGER("InputInteger", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_LONG("InputLong", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
-  INPUT_SLIDER("InputSlider", EnumSet.of(Type.EDITABLE, Type.INPUT)),
+  INPUT_RANGE("InputRange", EnumSet.of(Type.EDITABLE, Type.INPUT)),
   INPUT_SPINNER("InputSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TEXT("InputText", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TIME("InputTime", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -826,11 +826,11 @@ public enum FormWidget {
             attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultLongFormat()));
         break;
 
-      case INPUT_SLIDER:
-        widget = new InputSlider();
+      case INPUT_RANGE:
+        widget = new InputRange();
         format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
-          ((InputSlider) widget).setNumberFormat(Format.getNumberFormat(format));
+          ((InputRange) widget).setNumberFormat(Format.getNumberFormat(format));
         }
         break;
 
@@ -961,7 +961,8 @@ public enum FormWidget {
         break;
 
       case RADIO:
-        widget = new RadioGroup(BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL)));
+        widget = new RadioGroup(BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL))
+            ? Orientation.VERTICAL : Orientation.HORIZONTAL);
         break;
 
       case RESIZE_PANEL:

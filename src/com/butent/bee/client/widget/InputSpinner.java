@@ -23,14 +23,6 @@ public class InputSpinner extends InputInteger {
     super(inputType, min, max);
   }
 
-  public InputSpinner(int value, int min, int max) {
-    super(value, inputType, min, max);
-  }
-
-  public InputSpinner(int value, int min, int max, int step) {
-    super(value, inputType, min, max, step);
-  }
-
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;

@@ -16,7 +16,5 @@
     <DateTime name="BlockBefore" label="=blockBefore" />
       
     <Text name="Properties" label="=userProperties" />
-    <Text name="Host" label="=remoteHost" />
-    <Text name="Agent" label="=userAgent" />
   </Fields>
 </Table>

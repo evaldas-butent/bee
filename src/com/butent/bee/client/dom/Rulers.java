@@ -1,5 +1,6 @@
 package com.butent.bee.client.dom;
 
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -10,12 +11,20 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.WhiteSpace;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import elemental.client.Browser;
+import elemental.events.Event;
+import elemental.events.EventListener;
+import elemental.html.ImageElement;
+import elemental.js.dom.JsElement;
 
 /**
  * Controls scale parameters between lenght measure units and screen pixels.
@@ -83,7 +92,26 @@ public final class Rulers {
   public static int getAreaWidth(Font font, String content, boolean asHtml) {
     return getWidth(areaRuler, font, content, asHtml);
   }
+  
+  public static void getImageNaturalSize(String src, final Consumer<Size> consumer) {
+    Assert.notEmpty(src);
+    Assert.notNull(consumer);
 
+    final ImageElement imageElement = (ImageElement) Browser.getDocument().createElement(Tags.IMG);
+    imageElement.addEventListener(BrowserEvents.LOAD, new EventListener() {
+      @Override
+      public void handleEvent(Event evt) {
+        consumer.accept(new Size(imageElement.getNaturalWidth(), imageElement.getNaturalHeight()));
+        if (imageElement.getParentElement() != null) {
+          imageElement.getParentElement().removeChild(imageElement);
+        }
+      }
+    }, false);
+    
+    imageElement.setSrc(src);
+    BodyPanel.conceal((JsElement) imageElement);
+  }
+  
   public static int getIntPixels(double value, CssUnit unit) {
     return BeeUtils.toInt(getPixels(value, unit));
   }

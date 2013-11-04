@@ -9,6 +9,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -17,12 +18,12 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -34,7 +35,7 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(urlPatterns = "/bee")
 @SuppressWarnings("serial")
-public class BeeServlet extends HttpServlet {
+public class BeeServlet extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(BeeServlet.class);
 
@@ -42,18 +43,7 @@ public class BeeServlet extends HttpServlet {
   DispatcherBean dispatcher;
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  private void doService(HttpServletRequest req, HttpServletResponse resp) {
+  protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
 
     HttpSession session = req.getSession();
@@ -120,6 +110,9 @@ public class BeeServlet extends HttpServlet {
 
       } else {
         session.setAttribute(Service.VAR_USER, req.getRemoteUser());
+        session.setAttribute(Service.VAR_FILE_ID,
+            ((UserData) ((Map<?, ?>) response.getResponse()).get(Service.VAR_USER))
+                .getProperty(Service.VAR_FILE_ID));
 
         resp.setHeader(Service.RPC_VAR_SID, sessionId);
         resp.setHeader(Service.RPC_VAR_QID, rid);

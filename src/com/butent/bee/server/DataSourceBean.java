@@ -2,6 +2,7 @@ package com.butent.bee.server;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -72,7 +73,12 @@ public class DataSourceBean {
 
     if (!bds.isEmpty()) {
       for (BeeDataSource z : bds) {
-        dsns.add(z.getDsn());
+        String dsn = z.getDsn();
+
+        if (BeeUtils.same(dsn, SqlBuilderFactory.getDsn())) {
+          dsn += "*";
+        }
+        dsns.add(dsn);
       }
     }
     return dsns;
@@ -108,7 +114,6 @@ public class DataSourceBean {
 
     String nm;
     DataSource ds;
-    boolean ok;
     boolean isDef;
 
     for (String z : arr) {
@@ -119,19 +124,22 @@ public class DataSourceBean {
       }
       try {
         ds = (DataSource) InitialContext.doLookup("jdbc/" + nm);
-        ok = true;
       } catch (NamingException ex) {
         try {
           ds = (DataSource) InitialContext.doLookup("java:jdbc/" + nm);
-          ok = true;
         } catch (NamingException ex2) {
-          logger.error(ex);
           ds = null;
-          ok = false;
         }
       }
-
-      if (ok) {
+      if (ds == null) {
+        try {
+          ds = (DataSource) InitialContext.doLookup("java:app/env/" + nm);
+        } catch (NamingException ex) {
+          logger.error(ex);
+          ds = null;
+        }
+      }
+      if (ds != null) {
         bds.add(new BeeDataSource(nm, ds));
         if (isDef) {
           defaultDataSourceIndex = bds.size() - 1;

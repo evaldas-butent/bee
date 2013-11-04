@@ -2,10 +2,11 @@ package com.butent.bee.shared.modules.ec;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class EcOrderItem implements BeeSerializable {
+public class EcOrderItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
     ARTICLE_ID, NAME, CODE, QUANTITY_ORDERED, QUANTITY_SUBMIT, PRICE, UNIT, WEIGHT
@@ -88,6 +89,11 @@ public class EcOrderItem implements BeeSerializable {
     return BeeUtils.unbox(getQuantitySubmit()) * BeeUtils.unbox(getPrice());
   }
 
+  @Override
+  public String getCaption() {
+    return BeeUtils.joinWords(getName(), getCode());
+  }
+  
   public String getCode() {
     return code;
   }

@@ -8,13 +8,14 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
 
-public class EcItem implements BeeSerializable {
+public class EcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
     ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
@@ -164,6 +165,11 @@ public class EcItem implements BeeSerializable {
     return brand;
   }
 
+  @Override
+  public String getCaption() {
+    return BeeUtils.joinWords(getName(), getCode());
+  }
+
   public String getCategories() {
     return categories;
   }
@@ -182,11 +188,11 @@ public class EcItem implements BeeSerializable {
   public String getCode() {
     return code;
   }
-
+  
   public String getDescription() {
     return description;
   }
-  
+
   public int getListPrice() {
     return listPrice;
   }

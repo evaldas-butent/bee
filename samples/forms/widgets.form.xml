@@ -162,8 +162,8 @@
               </row>
 
               <row>
-                <html>Slider</html>
-                <InputSlider />
+                <html>Range</html>
+                <InputRange />
               </row>
               <row>
                 <cell horizontalAlignment="end">

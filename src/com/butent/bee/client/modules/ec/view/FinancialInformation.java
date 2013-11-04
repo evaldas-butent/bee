@@ -317,7 +317,7 @@ class FinancialInformation extends EcView {
     Widget widget;
 
     for (EcOrderItem item : order.getItems()) {
-      ItemPicture pictureWidget = new ItemPicture();
+      ItemPicture pictureWidget = new ItemPicture(item.getCaption());
       itemTable.setWidgetAndStyle(row, ORDER_ITEM_PICTURE_COL, pictureWidget,
           STYLE_ORDER_ITEM_PICTURE);
       pictureWidgets.put(item.getArticleId(), pictureWidget);

@@ -205,7 +205,7 @@ public class ItemDetails extends Flow {
   }
 
   private static Widget renderPicture(EcItem item, int width, int height) {
-    ItemPicture widget = new ItemPicture();
+    ItemPicture widget = new ItemPicture(item.getCaption());
     EcStyles.add(widget, STYLE_PRIMARY, "picture");
     StyleUtils.setSize(widget, width, height);
 

@@ -19,7 +19,5 @@
     <DataColumn name="BlockBefore" />
 
     <DataColumn name="Properties" visible="false" />
-    <DataColumn name="Host" />
-    <DataColumn name="Agent" />
   </g:columns>
 </g:Grid>
