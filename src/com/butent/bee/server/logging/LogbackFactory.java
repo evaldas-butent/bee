@@ -18,15 +18,16 @@ import ch.qos.logback.core.util.StatusPrinter;
 public class LogbackFactory implements BeeLoggerFactory {
 
   private static final String LOGBACK_PROPERTIES = "logback.xml";
+  private final LoggerContext context;
 
   public LogbackFactory() {
-    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    context.reset();
+    context.putProperty("LOG_DIR", Config.LOG_DIR.getAbsolutePath().replace("\\", "/"));
 
     try {
       JoranConfigurator configurator = new JoranConfigurator();
       configurator.setContext(context);
-      context.reset();
-      context.putProperty("LOG_DIR", Config.LOG_DIR.getAbsolutePath().replace("\\", "/"));
       configurator.doConfigure(FileUtils.isInputFile(Config.LOCAL_DIR, LOGBACK_PROPERTIES)
           ? new File(Config.LOCAL_DIR, LOGBACK_PROPERTIES)
           : new File(Config.CONFIG_DIR, LOGBACK_PROPERTIES));
@@ -44,5 +45,10 @@ public class LogbackFactory implements BeeLoggerFactory {
   @Override
   public BeeLogger getRootLogger() {
     return new LogbackLogger(Logger.ROOT_LOGGER_NAME);
+  }
+
+  @Override
+  public void stop() {
+    context.stop();
   }
 }

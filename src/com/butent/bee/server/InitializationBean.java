@@ -10,6 +10,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import java.util.Locale;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
@@ -38,5 +39,10 @@ public class InitializationBean {
     moduleBean.initModules();
 
     usr.initRights();
+  }
+
+  @PreDestroy
+  public void stop() {
+    LogUtils.stopLogger();
   }
 }
