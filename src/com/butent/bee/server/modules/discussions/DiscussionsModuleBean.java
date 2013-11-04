@@ -37,6 +37,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -280,6 +281,13 @@ public class DiscussionsModuleBean implements BeeModule {
     switch (event) {
       case CREATE:
         Map<String, String> properties = discussRow.getProperties();
+        
+        if (properties == null) {
+          properties = new HashMap<>();
+        }
+
+        logger.info("ROW", discussRow);
+        
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
         List<Long> discussions = Lists.newArrayList();
 
@@ -314,6 +322,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (!response.hasErrors()) {
           response = createDiscussionRelations(discussionId, properties);
+        }
+
+        if (!response.hasErrors()) {
+          discussions.add(discussionId);
         }
 
         if (response.hasErrors()) {

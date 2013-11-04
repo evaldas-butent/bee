@@ -34,7 +34,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -59,10 +58,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       ((FileCollector) widget).bindDnd(getFormView());
     }
 
-    LogUtils.getRootLogger().debug(name, widget.getClass().getName());
-
     if (BeeUtils.same(name, WIDGET_ACCESSIBILITY) && widget instanceof InputBoolean) {
-
       final InputBoolean ac = (InputBoolean) widget;
       ac.setValue(BeeConst.STRING_TRUE);
       
@@ -77,7 +73,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     
     if (BeeUtils.same(name, WIDGET_MEMBERS) && widget instanceof MultiSelector) {
       MultiSelector ms = (MultiSelector) widget;
-      ms.setEditing(false);
+      ms.setEnabled(false);
     }
   }
 
@@ -90,7 +86,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     event.consume();
     IsRow activeRow = getFormView().getActiveRow();
-
+    
     boolean discussPublic = BeeUtils.toBoolean(
         ((InputBoolean) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY)).getValue());
     
@@ -108,6 +104,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       Data.setValue(VIEW_DISCUSSIONS, newRow, COL_DESCRIPTION, description);
     }
     
+    Data.setValue(VIEW_DISCUSSIONS, newRow, COL_ACCESSIBILITY, BeeUtils.toInt(discussPublic));
+
     BeeRowSet rowSet =
         Queries.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
             null, true);

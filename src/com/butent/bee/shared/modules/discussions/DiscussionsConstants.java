@@ -77,6 +77,7 @@ public final class DiscussionsConstants {
   public static final String DISCUSSIONS_METHOD = DISCUSSIONS_MODULE + "Method";
   public static final String DISCUSSIONS_PREFIX = "discuss_";
 
+  public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DESCRIPTION = "Description";

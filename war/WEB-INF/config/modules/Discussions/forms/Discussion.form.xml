@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY section "margin-top: 2px;">
+  <!ENTITY header "font-style: italic;">
+  <!ENTITY separator "<br/>">
+
+  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px;">
+  <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
+  <!ENTITY inp1x "&inline; width: 424px;">
+  <!ENTITY inp2 "&inline; width: 140px;">
+  <!ENTITY inp2x "&inline; width: 424px;">
+  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
+  <!ENTITY inp4 "&inline; width: 140px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
+  caption="=discussion" printHeader="true">
+
+  <FlowPanel class="flexBox-horizontal">
+    <FlowPanel style="margin-left: 5px;">
+      <FlowPanel style="&section;">
+        <Label text="=discussStatus" style="&lbl1;" />
+        <ListBox source="Status" itemKey="DiscussionStatus"
+          style="&inp2;" readOnly="true" />
+        <Label text="=discussOwner" style="&lbl3;" />
+        <DataSelector source="Owner" editSource="OwnerPerson"
+          style="&inp4;" readOnly="true" />
+      </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label text="=discussCreated" style="&lbl1;" />
+        <InputDateTime source="Created" style="&inp2;"
+          readOnly="true" />
+      </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label text="=discussSubject" class="bee-required" style="&lbl1;" />
+        <InputText source="Subject" style="&inp2x;" readOnly="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=discussDescription" style="&top1;" />
+        <InputArea source="Description" style="width: 424px; height: 60px;"
+          readOnly="true" />
+      </FlowPanel>
+
+      <FileGroup name="Files" />
+
+      &separator;
+      <FlowPanel style="&section;">
+        <CheckBox name="Accessibility" text="=discussPublic" style="&lbl1;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=discussMembers" style="&top1;" />
+        <MultiSelector viewName="Users" property="Members"
+          renderColumns="FirstName LastName" editSource="CompanyPerson"
+          style="&inp2x;" disablable="true" label="=discussMembers" />
+      </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label text="=companies" style="&top1;" />
+        <MultiSelector viewName="Companies" property="Companies"
+          renderColumns="Name" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=persons" style="&top1;" />
+        <MultiSelector viewName="Persons" property="Persons"
+          renderColumns="FirstName LastName" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=appointments" style="&top1;" />
+        <MultiSelector viewName="Appointments" property="Appointments"
+          renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+          newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=tasks" style="&top1;" />
+        <MultiSelector viewName="Tasks" property="Tasks"
+          renderColumns="Summary ExecutorFirstName ExecutorLastName"
+          choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+          newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=documents" style="&top1;" />
+        <MultiSelector viewName="Documents" property="Documents"
+          renderColumns="Name DocumentDate Number" choiceColumns="Name DocumentDate Number"
+          newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      &separator;
+    </FlowPanel>
+
+    <FlowPanel name="DiscussionComments" class="flexible bee-discuss-comment-container" />
+  </FlowPanel>
+</f:Form>
