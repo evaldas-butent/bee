@@ -1,9 +1,6 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.user.client.ui.Widget;
-
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.html.Tags;
 
 import elemental.html.ProgressElement;
@@ -14,13 +11,10 @@ import elemental.js.html.JsProgressElement;
  * 100% of the process.
  */
 
-public class Progress extends Widget implements IdentifiableWidget {
+public class Progress extends CustomWidget {
 
   public Progress() {
-    super();
-
-    setElement(DomUtils.createElement(Tags.PROGRESS));
-    init();
+    super(DomUtils.createElement(Tags.PROGRESS));
   }
 
   public Progress(double max) {
@@ -32,11 +26,6 @@ public class Progress extends Widget implements IdentifiableWidget {
     this();
     setMax(max);
     setValue(value);
-  }
-
-  @Override
-  public String getId() {
-    return DomUtils.getId(this);
   }
 
   @Override
@@ -56,11 +45,6 @@ public class Progress extends Widget implements IdentifiableWidget {
     return getProgressElement().getValue();
   }
   
-  @Override
-  public void setId(String id) {
-    DomUtils.setId(this, id);
-  }
-
   public void setMax(double max) {
     getProgressElement().setMax(max);
   }
@@ -69,9 +53,10 @@ public class Progress extends Widget implements IdentifiableWidget {
     getProgressElement().setValue(value);
   }
 
+  @Override
   protected void init() {
-    DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-Progress");
+    super.init();
+    addStyleName("bee-Progress");
   }
   
   private ProgressElement getProgressElement() {

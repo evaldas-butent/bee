@@ -27,7 +27,7 @@ public class InitializationBean {
   public void init() {
     LogUtils.setLoggerFactory(new LogbackFactory());
     Config.init();
-    
+
     Locale locale = Localizations.getDefaultLocale();
 
     Localized.setConstants(Localizations.getConstants(locale));
@@ -37,7 +37,6 @@ public class InitializationBean {
 
     moduleBean.initModules();
 
-    usr.initUsers();
     usr.initRights();
   }
 }

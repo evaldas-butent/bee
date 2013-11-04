@@ -397,7 +397,7 @@ public class ShoppingCart extends Split {
 
       row++;
       for (CartItem item : items) {
-        ItemPicture pictureWidget = new ItemPicture();
+        ItemPicture pictureWidget = new ItemPicture(item.getEcItem().getCaption());
         renderItem(row++, item, pictureWidget);
 
         pictureWidgets.put(item.getEcItem().getArticleId(), pictureWidget);

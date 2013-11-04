@@ -548,7 +548,7 @@ public class MessageBoxes {
     close.setFocus(true);
   }
 
-  public void showWidget(Widget widget) {
+  public void showWidget(Widget widget, Element target) {
     Assert.notNull(widget);
 
     Popup popup = new Popup(OutsideClick.CLOSE);
@@ -557,7 +557,7 @@ public class MessageBoxes {
 
     popup.setWidget(widget);
 
-    popup.center();
+    popup.showRelativeTo(target);
   }
 
   private static void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {

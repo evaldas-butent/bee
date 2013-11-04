@@ -649,7 +649,7 @@
   <xs:element name="InputCurrency" type="inputWidget" substitutionGroup="widget" />
 
   <xs:element name="InputSpinner" type="quantizedInput" substitutionGroup="widget" />
-  <xs:element name="InputSlider" type="quantizedInput" substitutionGroup="widget" />
+  <xs:element name="InputRange" type="quantizedInput" substitutionGroup="widget" />
 
   <xs:element name="InputDate" type="quantizedInput" substitutionGroup="widget" />
   <xs:element name="InputDateTime" type="quantizedInput" substitutionGroup="widget" />

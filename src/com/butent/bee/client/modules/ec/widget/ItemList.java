@@ -395,7 +395,7 @@ public class ItemList extends Flow implements KeyDownHandler {
           break;
         }
 
-        ItemPicture pictureWidget = new ItemPicture();
+        ItemPicture pictureWidget = new ItemPicture(item.getCaption());
         renderItem(row++, item, pictureWidget);
 
         pictureWidgets.put(item.getArticleId(), pictureWidget);
@@ -515,7 +515,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
       for (int i = pageStart; i < pageStart + pageSize; i++) {
         EcItem item = data.get(i);
-        ItemPicture pictureWidget = new ItemPicture();
+        ItemPicture pictureWidget = new ItemPicture(item.getCaption());
 
         renderItem(i + 1, item, pictureWidget);
 

@@ -20,6 +20,9 @@ public abstract class RafCallback implements RequestAnimationFrameCallback {
     this.duration = duration;
   }
 
+  protected RafCallback() {
+  }
+
   public double getDuration() {
     return duration;
   }

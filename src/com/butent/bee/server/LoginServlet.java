@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp" })
+@WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})
 @SuppressWarnings("serial")
 public class LoginServlet extends HttpServlet {
 

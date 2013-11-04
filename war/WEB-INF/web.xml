@@ -16,6 +16,7 @@
       <url-pattern>/css/*</url-pattern>
       <url-pattern>/js/*</url-pattern>
       <url-pattern>/images/*</url-pattern>
+      <url-pattern>/fonts/*</url-pattern>
       <url-pattern>/ec/register</url-pattern>
     </web-resource-collection>
   </security-constraint>
@@ -23,4 +24,14 @@
   <security-role>
     <role-name>architect</role-name>
   </security-role>
+
+  <data-source>
+    <name>java:app/env/BeeDS</name>
+    <class-name>org.postgresql.ds.PGPoolingDataSource</class-name>
+    <server-name>127.0.0.1</server-name>
+    <port-number>5432</port-number>
+    <database-name>bee</database-name>
+    <user>postgres</user>
+    <password>admin</password>
+  </data-source>
 </web-app>

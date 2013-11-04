@@ -1,23 +1,32 @@
 package com.butent.bee.client.modules.ec.widget;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.SlideDeck;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.Assert;
+import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.utils.BeeUtils;
 
-public class ItemPicture extends CustomDiv {
+public class ItemPicture extends Flow {
 
-  private static final String STYLE_NAME = EcStyles.name("ItemPicture");
+  private static final String STYLE_PREFIX = EcStyles.name("ItemPicture-");
+  
+  private final String itemCaption;
 
-  private boolean hasPicture;
-
-  public ItemPicture() {
-    super(STYLE_NAME);
+  public ItemPicture(String itemCaption) {
+    super(STYLE_PREFIX + "container");
+    this.itemCaption = itemCaption;
   }
 
   @Override
@@ -25,31 +34,70 @@ public class ItemPicture extends CustomDiv {
     return "picture";
   }
 
-  public void setPicture(final String picture) {
-    Assert.notEmpty(picture);
-    StyleUtils.setBackgroundImage(this, picture);
+  public String getItemCaption() {
+    return itemCaption;
+  }
 
-    if (!hasPicture()) {
-      setHasPicture(true);
-      addStyleName(STYLE_NAME + "-enabled");
+  public void setPictures(final ImmutableList<String> pictures) {
+    if (!BeeUtils.isEmpty(pictures)) {
+      if (!isEmpty()) {
+        clear();
+      }
+      addStyleName(STYLE_PREFIX + "notEmpty");
+
+      CustomDiv wrapper = new CustomDiv(STYLE_PREFIX + "wrapper");
+      StyleUtils.setBackgroundImage(wrapper, pictures.get(0));
+      add(wrapper);
+
+      if (pictures.size() > 1) {
+        Flow more = new Flow(STYLE_PREFIX + "more");
+        
+        FaLabel play = new FaLabel(FontAwesome.PLAY, true);
+        play.addStyleName(STYLE_PREFIX + "more-play");
+        more.add(play);
+        
+        InlineLabel count = new InlineLabel(BeeUtils.toString(pictures.size() - 1));
+        count.addStyleName(STYLE_PREFIX + "more-count");
+        more.add(count);
+
+        more.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            event.stopPropagation();
+
+            SlideDeck.create(pictures, new Callback<SlideDeck>() {
+              @Override
+              public void onSuccess(SlideDeck result) {
+                DialogBox dialog = DialogBox.create(getItemCaption(), STYLE_PREFIX + "slides");
+                int width = StyleUtils.getWidth(result);
+                if (width > 0) {
+                  StyleUtils.setWidth(dialog.getHeader(), width);
+                }
+
+                dialog.setWidget(result);
+                
+                dialog.setAnimationEnabled(true);
+                dialog.setHideOnEscape(true);
+                
+                dialog.center();
+                result.handleKeyboard();
+              }
+            });
+          }
+        });
+
+        add(more);
+      }
 
       addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Image image = new Image(picture);
-          image.addStyleName(STYLE_NAME + "-image");
+          Image image = new Image(pictures.get(0));
+          image.addStyleName(STYLE_PREFIX + "-open");
 
-          Global.showModalWidget(image);
+          Global.showModalWidget(image, getElement());
         }
       });
     }
-  }
-
-  private boolean hasPicture() {
-    return hasPicture;
-  }
-
-  private void setHasPicture(boolean hasPicture) {
-    this.hasPicture = hasPicture;
   }
 }

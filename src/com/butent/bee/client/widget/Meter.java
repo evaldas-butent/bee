@@ -1,9 +1,6 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.user.client.ui.Widget;
-
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Tags;
 
@@ -11,12 +8,10 @@ import com.butent.bee.shared.html.Tags;
  * Implements a meter user interface component for gauging actual values against the target ones.
  */
 
-public class Meter extends Widget implements IdentifiableWidget {
+public class Meter extends CustomWidget {
 
   public Meter() {
-    super();
-    setElement(DomUtils.createElement(Tags.METER));
-    init();
+    super(DomUtils.createElement(Tags.METER));
   }
 
   public Meter(double min, double max, double value) {
@@ -38,11 +33,6 @@ public class Meter extends Widget implements IdentifiableWidget {
 
   public double getHigh() {
     return getElement().getPropertyDouble(Attributes.HIGH);
-  }
-
-  @Override
-  public String getId() {
-    return DomUtils.getId(this);
   }
 
   @Override
@@ -74,11 +64,6 @@ public class Meter extends Widget implements IdentifiableWidget {
     getElement().setPropertyDouble(Attributes.HIGH, high);
   }
 
-  @Override
-  public void setId(String id) {
-    DomUtils.setId(this, id);
-  }
-
   public void setLow(double low) {
     getElement().setPropertyDouble(Attributes.LOW, low);
   }
@@ -99,8 +84,9 @@ public class Meter extends Widget implements IdentifiableWidget {
     getElement().setPropertyDouble(Attributes.VALUE, value);
   }
 
-  private void init() {
-    DomUtils.createId(this, getIdPrefix());
+  @Override
+  protected void init() {
+    super.init();
     setStyleName("bee-Meter");
   }
 }

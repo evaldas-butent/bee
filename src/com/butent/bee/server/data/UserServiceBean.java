@@ -13,7 +13,6 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -476,6 +475,7 @@ public class UserServiceBean {
         }
       }
     }
+    initUsers();
   }
 
   @Lock(LockType.WRITE)
@@ -578,42 +578,39 @@ public class UserServiceBean {
     if (isUser(user)) {
       Long userId = getUserId(user);
 
-      UserInfo info = getUserInfo(userId);
-      info.setOnline(true);
-
-      UserData data = info.getUserData();
-
-      data.setProperty("dsn", SqlBuilderFactory.getDsn()).setRights(getUserRights(userId));
-
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(COL_REMOTE_HOST, host)
           .addConstant(COL_USER_AGENT, agent)
           .setWhere(sys.idEquals(TBL_USERS, userId)));
 
+      UserInfo info = getUserInfo(userId);
+      info.setOnline(true);
+
+      UserData data = info.getUserData();
+
       response.setResponse(data);
       logger.info("User logged in:", user, BeeUtils.parenthesize(data.getUserSign()));
 
     } else if (BeeUtils.isEmpty(getUsers())) {
-      response.setResponse(new UserData(-1, user).setProperty("dsn", SqlBuilderFactory.getDsn()));
+      response.setResponse(new UserData(-1, user));
       logger.warning("Anonymous user logged in:", user);
 
     } else {
       response.addError("Login attempt by an unauthorized user:", user);
       response.log(logger);
     }
-
     return response;
   }
 
   @Lock(LockType.WRITE)
   public void logout(String user) {
     if (isUser(user)) {
-      UserInfo info = getUserInfo(getUserId(user));
-      String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
-
       qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant(COL_REMOTE_HOST, null)
           .setWhere(sys.idEquals(TBL_USERS, getUserId(user))));
+
+      UserInfo info = getUserInfo(getUserId(user));
+      String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
       if (info.isOnline()) {
         info.setOnline(false);

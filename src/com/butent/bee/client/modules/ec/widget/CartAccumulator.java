@@ -29,7 +29,8 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
     super();
     addStyleName(STYLE_PREFIX + "panel");
 
-    this.input = new InputInteger(quantity);
+    this.input = new InputInteger();
+    input.setValue(quantity);
     input.addStyleName(STYLE_PREFIX + "input");
 
     input.addKeyDownHandler(new KeyDownHandler() {

@@ -22,7 +22,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -34,7 +33,7 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(urlPatterns = "/bee")
 @SuppressWarnings("serial")
-public class BeeServlet extends HttpServlet {
+public class BeeServlet extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(BeeServlet.class);
 
@@ -42,18 +41,7 @@ public class BeeServlet extends HttpServlet {
   DispatcherBean dispatcher;
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  private void doService(HttpServletRequest req, HttpServletResponse resp) {
+  protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
 
     HttpSession session = req.getSession();
