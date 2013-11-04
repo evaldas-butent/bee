@@ -1297,8 +1297,11 @@ public class EcModuleBean implements BeeModule {
                 + " FROM apyvarta"
                 + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
                 + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
+                + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
                 + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
-                + "   AND apyvarta.skola_w > 0 AND apyvarta.gavejas = '" + company + "'"
+                + "   AND apyvarta.skola_w > 0"
+                + "   AND (klientai.klientas = '" + company + "'"
+                + "     OR klientai.moketojas = '" + company + "')"
                 + " ORDER BY data",
             new String[] {"data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w",
                 "terminas"});
