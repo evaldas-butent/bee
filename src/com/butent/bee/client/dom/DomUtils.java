@@ -43,6 +43,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
+import com.butent.bee.shared.html.builder.elements.Link;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -1206,7 +1207,7 @@ public final class DomUtils {
     Assert.notNull(head, "<head> element not found");
 
     LinkElement link = Document.get().createLinkElement();
-    link.setRel("stylesheet");
+    link.setRel(Link.Rel.STYLE_SHEET.getKeyword());
     link.setHref(css);
     head.appendChild(link);
   }

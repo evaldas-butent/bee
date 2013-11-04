@@ -175,7 +175,7 @@ public class EcScreen extends ScreenImpl {
 
     panel.add(nw);
 
-    return Pair.of(panel, 100);
+    return Pair.of(panel, getNorthHeight(100));
   }
 
   @Override

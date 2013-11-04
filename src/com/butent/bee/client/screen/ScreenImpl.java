@@ -559,7 +559,11 @@ public class ScreenImpl implements Screen {
     panel.add(nw);
     setNotification(nw);
 
-    return Pair.of(panel, 100);
+    return Pair.of(panel, getNorthHeight(100));
+  }
+  
+  protected int getNorthHeight(int defHeight) {
+    return BeeUtils.positive(Settings.getPropertyInt("northHeight"), defHeight);
   }
 
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {

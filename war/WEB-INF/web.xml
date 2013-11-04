@@ -17,6 +17,7 @@
       <url-pattern>/js/*</url-pattern>
       <url-pattern>/images/*</url-pattern>
       <url-pattern>/fonts/*</url-pattern>
+      <url-pattern>/ext/*</url-pattern>
       <url-pattern>/ec/register</url-pattern>
     </web-resource-collection>
   </security-constraint>
