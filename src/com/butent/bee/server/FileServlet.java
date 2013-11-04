@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -25,9 +26,7 @@ import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.mail.internet.MimeUtility;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(urlPatterns = "/file")
 @SuppressWarnings("serial")
-public class FileServlet extends HttpServlet {
+public class FileServlet extends LoginServlet {
 
   private static final int DEFAULT_BUFFER_SIZE = 10240;
 
@@ -47,18 +46,6 @@ public class FileServlet extends HttpServlet {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
-
-  @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doService(req, resp);
-  }
 
   private static void close(Closeable resource) {
     if (resource != null) {
@@ -70,12 +57,13 @@ public class FileServlet extends HttpServlet {
     }
   }
 
-  private void doService(HttpServletRequest req, HttpServletResponse resp) {
+  @Override
+  protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     Map<String, String> parameters = HttpUtils.getHeaders(req, false);
-    parameters.putAll(HttpUtils.getParameters(req, true));
+    parameters.putAll(HttpUtils.getParameters(req, false));
 
-    Long fileId = BeeUtils.toLongOrNull(parameters.get(Service.VAR_FILE_ID));
-    String fileName = parameters.get(Service.VAR_FILE_NAME);
+    Long fileId = BeeUtils.toLongOrNull(Codec.decodeBase64(parameters.get(Service.VAR_FILE_ID)));
+    String fileName = Codec.decodeBase64(parameters.get(Service.VAR_FILE_NAME));
     String path = null;
     String mimeType = null;
 

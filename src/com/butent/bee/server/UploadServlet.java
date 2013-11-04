@@ -16,10 +16,8 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(urlPatterns = "/upload")
 @SuppressWarnings("serial")
 @MultipartConfig
-public class UploadServlet extends HttpServlet {
+public class UploadServlet extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(UploadServlet.class);
 
@@ -38,15 +36,7 @@ public class UploadServlet extends HttpServlet {
   FileStorageBean fs;
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-    doPost(req, resp);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-
+  protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     Map<String, String> parameters = HttpUtils.getHeaders(req, false);
     parameters.putAll(HttpUtils.getParameters(req, true));
 
