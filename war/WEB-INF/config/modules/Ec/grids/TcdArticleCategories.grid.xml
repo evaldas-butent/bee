@@ -5,6 +5,7 @@
   name="TcdArticleCategories" viewName="TcdArticleCategories"
   flexGrow="1" flexShrink="1"
   >
+  <g:body height="32" />
   <g:columns>
     <xi:include href="columns/Category.column.xml" />
   

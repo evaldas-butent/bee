@@ -20,11 +20,11 @@ public class ClientLogManager implements BeeLoggerFactory {
   public static int getInitialPanelSize() {
     return getPanelHandler().getInitialSize();
   }
-  
+
   public static IdentifiableWidget getLogPanel() {
     return getPanelHandler().getPanel();
   }
-  
+
   public static boolean isPanelVisible() {
     return getPanelHandler().isVisible();
   }
@@ -62,5 +62,9 @@ public class ClientLogManager implements BeeLoggerFactory {
   @Override
   public BeeLogger getRootLogger() {
     return rootLogger;
+  }
+
+  @Override
+  public void stop() {
   }
 }

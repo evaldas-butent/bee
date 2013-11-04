@@ -115,7 +115,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
       EcItem ecItem = ecItems.get(i);
       items.add(ecItem);
 
-      categories.addAll(ecItem.getCategoryList());
+      categories.addAll(ecItem.getCategorySet());
 
       Long brand = ecItem.getBrand();
       if (brand != null && !brands.contains(brand)) {
@@ -189,7 +189,7 @@ public class ItemPanel extends Flow implements SelectionHandler<TreeItem> {
     } else {
       List<EcItem> result = Lists.newArrayList();
       for (EcItem item : input) {
-        if (BeeUtils.intersects(selectedCategories, item.getCategoryList())) {
+        if (BeeUtils.intersects(selectedCategories, item.getCategorySet())) {
           result.add(item);
         }
       }
