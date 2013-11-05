@@ -31,9 +31,6 @@
     <SimpleColumn name="BlockBefore" />
 
     <SimpleColumn name="Properties" />
-
-    <SimpleColumn name="Host" />
-    <SimpleColumn name="Agent" />
   </Columns>
   <Order>
     <OrderBy column="Login" />

@@ -1,0 +1,18 @@
+.bee-ec-NorthContainer {
+  background-image: url(virsus.jpg);
+  background-repeat: no-repeat;
+  background-color: #222;
+}
+.bee-ec-Logo,
+.bee-ec-GlobalSearch-container {
+  display: none;
+}
+.bee-ec-Command-link,
+.bee-UserSignature {
+  color: #ec373f;
+  font-family: Tahoma, sans-serif;
+  font-size: 14px;
+}
+.bee-ec-Command-label {
+  background-image: url(raudonas_fonas.png);
+}  

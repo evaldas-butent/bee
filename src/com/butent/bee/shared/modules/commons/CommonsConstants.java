@@ -95,6 +95,7 @@ public final class CommonsConstants {
   public static final String TBL_USER_ROLES = "UserRoles";
   public static final String TBL_OBJECTS = "Objects";
   public static final String TBL_RIGHTS = "Rights";
+  public static final String TBL_USER_HISTORY = "UserHistory";
 
   public static final String TBL_FILES = "Files";
 
@@ -139,7 +140,7 @@ public final class CommonsConstants {
 
   public static final String VIEW_BRANCHES = "Branches";
   public static final String VIEW_WAREHOUSES = "Warehouses";
-  
+
   public static final String GRID_PERSONS = "Persons";
 
   public static final String COL_RELATION = "Relation";
@@ -153,6 +154,8 @@ public final class CommonsConstants {
   public static final String COL_USER_BLOCK_BEFORE = "BlockBefore";
   public static final String COL_REMOTE_HOST = "Host";
   public static final String COL_USER_AGENT = "Agent";
+  public static final String COL_LOGGED_IN = "LoggedIn";
+  public static final String COL_LOGGED_OUT = "LoggedOut";
 
   public static final String COL_ROLE_NAME = "Name";
   public static final String COL_USER = "User";
@@ -245,7 +248,7 @@ public final class CommonsConstants {
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";
-  
+
   public static final String FORM_NEW_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 
@@ -260,7 +263,7 @@ public final class CommonsConstants {
   public static final String PROP_CATEGORIES = "CategList";
 
   public static final String STYLE_SHEET = "commons";
-  
+
   private CommonsConstants() {
   }
 }

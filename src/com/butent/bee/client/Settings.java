@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.gwt.i18n.client.Dictionary;
 
@@ -9,6 +10,7 @@ import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.MissingResourceException;
 
@@ -109,6 +111,15 @@ public final class Settings {
   
   public static long getStartMillis() {
     return getPropertyLong("startMillis");
+  }
+  
+  public static List<String> getStyleSheets() {
+    String value = getProperty("styleSheets");
+    if (BeeUtils.isEmpty(value)) {
+      return Collections.emptyList();
+    } else {
+      return Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults().splitToList(value);
+    }
   }
 
   public static String getVersion() {

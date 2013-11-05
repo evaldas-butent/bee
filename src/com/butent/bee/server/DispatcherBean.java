@@ -139,8 +139,8 @@ public class DispatcherBean {
     return response.setResponse(data);
   }
 
-  public void doLogout(String user) {
-    userService.logout(user);
+  public void doLogout(String user, Long historyId) {
+    userService.logout(user, historyId);
   }
 
   public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {

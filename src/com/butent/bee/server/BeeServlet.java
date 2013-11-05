@@ -9,6 +9,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -108,6 +110,9 @@ public class BeeServlet extends LoginServlet {
 
       } else {
         session.setAttribute(Service.VAR_USER, req.getRemoteUser());
+        session.setAttribute(Service.VAR_FILE_ID,
+            ((UserData) ((Map<?, ?>) response.getResponse()).get(Service.VAR_USER))
+                .getProperty(Service.VAR_FILE_ID));
 
         resp.setHeader(Service.RPC_VAR_SID, sessionId);
         resp.setHeader(Service.RPC_VAR_QID, rid);

@@ -47,6 +47,12 @@ public final class LogUtils {
     LogUtils.loggerFactory = loggerFactory;
   }
 
+  public static void stopLogger() {
+    if (LogUtils.loggerFactory != null) {
+      LogUtils.loggerFactory.stop();
+    }
+  }
+
   static BeeLogger createLogger(String name) {
     if (loggerFactory != null) {
       return loggerFactory.getLogger(name);
