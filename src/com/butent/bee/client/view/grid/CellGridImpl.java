@@ -762,28 +762,19 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
   }
 
   @Override
-  public boolean createParentRow(final NotificationListener notificationListener,
+  public void createParentRow(final NotificationListener notificationListener,
       final Callback<IsRow> callback) {
 
-    if (!isAdding()) {
-      return false;
-    }
     final FormView form = getForm(false);
-    if (form == null) {
-      return false;
-    }
 
     if (!form.validate(notificationListener, false)) {
-      return false;
+      return;
     }
-    IsRow row = form.getActiveRow();
-    if (!DataUtils.isNewRow(row)) {
-      return true;
-    }
-
     if (!validateFormData(form, notificationListener, false)) {
-      return false;
+      return;
     }
+    
+    IsRow row = form.getActiveRow();
 
     prepareForInsert(row, form, new RowCallback() {
       @Override
@@ -809,8 +800,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
         }
       }
     });
-
-    return true;
   }
 
   @Override

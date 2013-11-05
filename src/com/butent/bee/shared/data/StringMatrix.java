@@ -119,12 +119,12 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
   }
 
   @Override
-  public void sort(List<Pair<Integer, Boolean>> sortInfo) {
+  public void sort(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator) {
     Assert.notNull(sortInfo);
     Assert.isTrue(sortInfo.size() >= 1);
 
     if (getNumberOfRows() > 1) {
-      sortRows(new RowOrdering<StringRow>(getColumns(), sortInfo));
+      sortRows(new RowOrdering<StringRow>(getColumns(), sortInfo, collator));
     }
   }
 

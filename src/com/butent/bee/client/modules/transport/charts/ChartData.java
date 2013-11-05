@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -34,7 +35,7 @@ class ChartData {
 
     @Override
     public int compareTo(Item o) {
-      return BeeUtils.compareNullsFirst(name, o.name);
+      return Collator.DEFAULT.compare(name, o.name);
     }
 
     @Override

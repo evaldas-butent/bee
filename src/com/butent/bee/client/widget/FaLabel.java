@@ -5,14 +5,14 @@ import com.butent.bee.shared.font.FontAwesome;
 
 public class FaLabel extends Label {
 
-  public FaLabel(char ch) {
+  public FaLabel(FontAwesome fa) {
     super();
-    setChar(ch);
+    setChar(fa);
   }
 
-  public FaLabel(char ch, boolean inline) {
+  public FaLabel(FontAwesome fa, boolean inline) {
     super(inline);
-    setChar(ch);
+    setChar(fa);
   }
   
   @Override
@@ -20,8 +20,12 @@ public class FaLabel extends Label {
     return "fa";
   }
 
-  public void setChar(char ch) {
-    getElement().setInnerText(String.valueOf(ch));
+  public void setChar(FontAwesome fa) {
+    if (fa == null) {
+      clear();
+    } else {
+      getElement().setInnerText(String.valueOf(fa.getCode()));
+    }
   }
 
   @Override

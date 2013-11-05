@@ -69,10 +69,7 @@ public class ItemPicture extends Flow {
               @Override
               public void onSuccess(SlideDeck result) {
                 DialogBox dialog = DialogBox.create(getItemCaption(), STYLE_PREFIX + "slides");
-                int width = StyleUtils.getWidth(result);
-                if (width > 0) {
-                  StyleUtils.setWidth(dialog.getHeader(), width);
-                }
+                StyleUtils.setWidth(dialog.getHeader(), result.getWidth());
 
                 dialog.setWidget(result);
                 

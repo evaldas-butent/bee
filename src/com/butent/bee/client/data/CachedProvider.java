@@ -6,6 +6,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SortEvent;
+import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -201,7 +202,7 @@ public class CachedProvider extends Provider {
         }
       }
       if (!sortList.isEmpty()) {
-        getTable().sort(sortList);
+        getTable().sort(sortList, Collator.DEFAULT);
       }
     }
 
