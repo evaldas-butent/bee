@@ -47,26 +47,32 @@ public class IdGeneratorBean {
 
   @PreDestroy
   public void destroy() {
-    for (Entry<String, long[]> entry : idCache.entrySet()) {
-      String source = entry.getKey();
-      IsCondition wh = SqlUtils.equals(ID_TABLE, ID_KEY, source);
+    try {
+      for (Entry<String, long[]> entry : idCache.entrySet()) {
+        String source = entry.getKey();
+        IsCondition wh = SqlUtils.equals(ID_TABLE, ID_KEY, source);
 
-      long lastId = BeeUtils.unbox(
-          qs.getLong(new SqlSelect().addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh)));
+        long lastId = BeeUtils.unbox(qs.getLong(new SqlSelect()
+            .addFields(ID_TABLE, ID_LAST)
+            .addFrom(ID_TABLE).setWhere(wh)));
 
-      if (entry.getValue()[LAST_ID_INDEX] == lastId) {
-        String idFld = sys.getIdName(source);
+        if (entry.getValue()[LAST_ID_INDEX] == lastId) {
+          String idFld = sys.getIdName(source);
 
-        lastId = BeeUtils.unbox(qs.getLong(new SqlSelect().addMax(source, idFld).addFrom(source)));
+          lastId = BeeUtils.unbox(qs.getLong(new SqlSelect()
+              .addMax(source, idFld)
+              .addFrom(source)));
 
-        qs.updateData(new SqlUpdate(ID_TABLE)
-            .addConstant(sys.getVersionName(ID_TABLE), System.currentTimeMillis())
-            .addConstant(ID_LAST, lastId)
-            .setWhere(wh));
+          qs.updateData(new SqlUpdate(ID_TABLE)
+              .addConstant(sys.getVersionName(ID_TABLE), System.currentTimeMillis())
+              .addConstant(ID_LAST, lastId)
+              .setWhere(wh));
+        }
       }
+    } catch (Exception e) {
+      logger.error(e);
     }
     idCache.clear();
-    logger.debug(getClass().getSimpleName(), "destroy end");
   }
 
   public long getId(String source) {
