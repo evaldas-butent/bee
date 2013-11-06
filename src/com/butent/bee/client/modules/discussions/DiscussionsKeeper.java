@@ -13,6 +13,7 @@ public final class DiscussionsKeeper {
   public static void register() {
     /* Form interceptors */
     FormFactory.registerFormInterceptor(FORM_NEW_DISCUSSION, new CreateDiscussionInterceptor());
+    FormFactory.registerFormInterceptor(FORM_DISCUSSION, new DiscussionInterceptor());
     /* Menu */
     BeeKeeper.getMenu().registerMenuCallback(MENU_SERVICE_DISCUSSIONS_LIST,
         new MenuManager.MenuCallback() {

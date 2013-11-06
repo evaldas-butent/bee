@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.discussions;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -15,11 +17,13 @@ import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -27,13 +31,17 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -203,6 +211,40 @@ public class DiscussionsModuleBean implements BeeModule {
       }
     });
   }
+  
+  private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,
+      Collection<Long> discussionUsers, Long commentId) {
+    long discussionId = row.getId();
+    
+    if (!BeeUtils.isEmpty(discussionUsers)) {
+      discussionUsers.remove(row.getLong(DataUtils.getColumnIndex(COL_OWNER, columns)));
+
+      if (!discussionUsers.isEmpty()) {
+        row.setProperty(PROP_MEMBERS, DataUtils.buildIdList(discussionUsers));
+      }
+    }
+
+    Multimap<String, Long> discussionRelations = getDiscussionRelations(discussionId);
+    for (String property : discussionRelations.keySet()) {
+      row.setProperty(property, DataUtils.buildIdList(discussionRelations.get(property)));
+    }
+
+    List<StoredFile> files = getDiscussionFiles(discussionId);
+    if (!files.isEmpty()) {
+      row.setProperty(PROP_FILES, Codec.beeSerialize(files));
+    }
+    
+    BeeRowSet comments =
+        qs.getViewData(VIEW_DISCUSSIONS_COMMENTS, ComparisonFilter.isEqual(COL_DISCUSSION,
+            new LongValue(discussionId)));
+    if (!DataUtils.isEmpty(comments)) {
+      row.setProperty(PROP_COMMENTS, comments.serialize());
+    }
+
+    if (commentId != null) {
+      row.setProperty(PROP_LAST_COMMENT, BeeUtils.toString(commentId));
+    }
+  }
 
   private ResponseObject createDiscussionRelations(long discussionId,
       Map<String, String> properties) {
@@ -245,6 +287,62 @@ public class DiscussionsModuleBean implements BeeModule {
     return qs.insertDataWithResponse(insert);
   }
 
+  @SuppressWarnings("unused")
+  private ResponseObject commitDiscussionData(BeeRowSet data, Collection<Long> oldUsers,
+      boolean checkUsers, Set<String> updatedRelations, Long commentId) {
+
+    ResponseObject response;
+    BeeRow row = data.getRow(0);
+
+    List<Long> newUsers;
+
+    if (checkUsers) {
+      newUsers = DiscussionsUtils.getDiscussionMembers(row, data.getColumns());
+
+      if (!BeeUtils.sameElements(oldUsers, newUsers)) {
+        updateDiscussionUsers(row.getId(), oldUsers, newUsers);
+      }
+    } else {
+      newUsers = Lists.newArrayList(oldUsers);
+    }
+
+    if (!BeeUtils.isEmpty(updatedRelations)) {
+      updateDiscussionRelations(row.getId(), updatedRelations, row);
+    }
+
+    Map<Integer, String> shadow = row.getShadow();
+    if (shadow != null && !shadow.isEmpty()) {
+      List<BeeColumn> columns = Lists.newArrayList();
+      List<String> oldValues = Lists.newArrayList();
+      List<String> newValues = Lists.newArrayList();
+      
+      for (Map.Entry<Integer, String> entry : shadow.entrySet()) {
+        columns.add(data.getColumn(entry.getKey()));
+
+        oldValues.add(entry.getValue());
+        newValues.add(row.getString(entry.getKey()));
+      }
+
+      BeeRow updRow = new BeeRow(row.getId(), row.getVersion(), oldValues);
+      for (int i = 0; i < columns.size(); i++) {
+        updRow.preliminaryUpdate(i, newValues.get(i));
+      }
+
+      BeeRowSet updated = new BeeRowSet(data.getViewName(), columns);
+      updated.addRow(updRow);
+
+      response = deb.commitRow(updated, true);
+      if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
+        addDiscussionProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers,
+            commentId);
+      }
+    } else {
+      response = getDiscussionData(row.getId(), commentId);
+    }
+
+    return response;
+  }
+
   private ResponseObject doDiscussionEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
     DiscussionEvent event = NameUtils.getEnumByName(DiscussionEvent.class, svc);
@@ -285,9 +383,9 @@ public class DiscussionsModuleBean implements BeeModule {
         if (properties == null) {
           properties = new HashMap<>();
         }
-
-        logger.info("ROW", discussRow);
-        
+        /*
+         * logger.info("ROW", discussRow);
+         */
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
         List<Long> discussions = Lists.newArrayList();
 
@@ -365,5 +463,129 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject getDiscussionData(long discussionId, Long commentId) {
+    BeeRowSet rowSet = qs.getViewData(VIEW_DISCUSSIONS, ComparisonFilter.compareId(discussionId));
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeRow data = rowSet.getRow(0);
+    addDiscussionProperties(data, rowSet.getColumns(), getDiscussionMembers(discussionId),
+        commentId);
+
+    return ResponseObject.response(data);
+  }
+
+  private List<StoredFile> getDiscussionFiles(long discussionId) {
+    List<StoredFile> result = Lists.newArrayList();
+
+    BeeRowSet rowSet =
+        qs.getViewData(VIEW_DISCUSSIONS_FILES, ComparisonFilter.isEqual(COL_DISCUSSION,
+            new LongValue(discussionId)));
+    if (rowSet == null || rowSet.isEmpty()) {
+      return result;
+    }
+
+    for (BeeRow row : rowSet.getRows()) {
+      StoredFile sf =
+          new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE), DataUtils.getString(rowSet, row,
+              CommonsConstants.COL_FILE_NAME), DataUtils.getLong(rowSet, row,
+              CommonsConstants.COL_FILE_SIZE), DataUtils.getString(rowSet, row,
+              CommonsConstants.COL_FILE_TYPE));
+
+      Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
+
+      if (commentId != null) {
+        sf.setRelatedId(commentId);
+      }
+
+      String caption = DataUtils.getString(rowSet, row, COL_CAPTION);
+
+      if (!BeeUtils.isEmpty(caption)) {
+        sf.setCaption(caption);
+      }
+    }
+
+    return result;
+  }
+
+  private Multimap<String, Long> getDiscussionRelations(long discussionId) {
+    Multimap<String, Long> res = HashMultimap.create();
+
+    for (String relation : DiscussionsUtils.getRelations()) {
+      Long[] ids =
+          qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, COL_DISCUSSION, discussionId,
+              relation);
+
+      if (ids != null) {
+        String property = DiscussionsUtils.translateRelationToDiscussionProperty(relation);
+
+        for (Long id : ids) {
+          res.put(property, id);
+        }
+      }
+    }
+
+    return res;
+  }
+
+  private List<Long> getDiscussionMembers(long discussionId) {
+    if (!DataUtils.isId(discussionId)) {
+      return Lists.newArrayList();
+    }
+    
+    SqlSelect query = new SqlSelect()
+    .addFields(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER)
+    .addFrom(TBL_DISCUSSIONS_USERS)
+            .setWhere(
+                SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId),
+                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, VALUE_MEMBER))).addOrder(
+                TBL_DISCUSSIONS_USERS, sys.getIdName(TBL_DISCUSSIONS_USERS));
+    return Lists.newArrayList(qs.getLongColumn(query));
+  }
+
+  private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,
+      BeeRow row) {
+    ResponseObject response = new ResponseObject();
+    List<RowChildren> children = Lists.newArrayList();
+
+    for (String property : updatedRelations) {
+      String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(property);
+
+      if (!BeeUtils.isEmpty(relation)) {
+        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_DISCUSSION,
+            discussionId, relation, row.getProperty(property)));
+      }
+    }
+
+    int count = 0;
+
+    if (!BeeUtils.isEmpty(children)) {
+      count = deb.commitChildren(discussionId, children, response);
+    }
+
+    return response.setResponse(count);
+  }
+
+  private void updateDiscussionUsers(long discussionId, Collection<Long> oldUsers,
+      Collection<Long> newUsers) {
+    List<Long> insert = Lists.newArrayList(newUsers);
+    insert.removeAll(oldUsers);
+
+    List<Long> delete = Lists.newArrayList(oldUsers);
+    delete.removeAll(newUsers);
+
+    for (Long user : insert) {
+      createDiscussionUser(discussionId, user, null, true);
+    }
+
+    for (Long user : delete) {
+      IsCondition condition =
+          SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
+              CommonsConstants.COL_USER, user);
+      qs.updateData(new SqlDelete(TBL_DISCUSSIONS_USERS).setWhere(condition));
+    }
   }
 }
