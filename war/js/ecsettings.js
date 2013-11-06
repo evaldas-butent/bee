@@ -1,6 +1,6 @@
 var BeeSettings = {
   appName: "E-commerce",
-  logoImage: "images/ec/logo.png",
+  logoImage: "images/logo.png",
   startMillis: new Date().getTime(),
   logCapacity: 1000,
   showGlobalSearch: true,

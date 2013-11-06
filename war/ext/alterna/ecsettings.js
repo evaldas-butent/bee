@@ -6,5 +6,5 @@ var BeeSettings = {
   showGlobalSearch: false,
   showItemSuppliers: false,
   northHeight: 190,
-  styleSheets: "ext/alterna/alterna.css?v=2"
+  styleSheets: "ext/alterna/alterna.css?v=3"
 };
