@@ -807,6 +807,9 @@ public abstract class SqlBuilder {
             .setWhere(wh)
             .getSqlString(this);
 
+      case TRUNCATE_TABLE:
+        return "TRUNCATE TABLE " + params.get("table");
+
       case DROP_TABLE:
         return "DROP TABLE " + params.get("table");
 

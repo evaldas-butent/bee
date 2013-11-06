@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TcdOrphans" source="TcdOrphans"
+  >
+  <Columns>
+    <SimpleColumn name="ArticleNr" />
+
+    <SimpleJoin name="Brand" joinType="INNER">
+      <SimpleColumn name="BrandName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Supplier" />
+    <SimpleColumn name="SupplierID" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Supplier" />
+    <OrderBy column="ArticleNr" />
+    <OrderBy column="SupplierID" />
+  </Order>
+</View>

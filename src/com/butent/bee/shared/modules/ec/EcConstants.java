@@ -82,7 +82,7 @@ public final class EcConstants {
         return constants.ecOrderStatusNewSubject();
       }
     },
-    
+
     ACTIVE {
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -140,7 +140,7 @@ public final class EcConstants {
     public String getCaption() {
       return getCaption(Localized.getConstants());
     }
-    
+
     public abstract String getCaption(LocalizableConstants constants);
 
     public abstract String getSubject(LocalizableConstants constants);
@@ -292,6 +292,8 @@ public final class EcConstants {
 
   public static final String TBL_TCD_CRITERIA = "TcdCriteria";
   public static final String TBL_TCD_ARTICLE_CRITERIA = "TcdArticleCriteria";
+
+  public static final String TBL_TCD_ORPHANS = "TcdOrphans";
 
   public static final String VIEW_BANNERS = "EcBanners";
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
@@ -548,7 +550,7 @@ public final class EcConstants {
   public static final String CLIENT_STYLE_SHEET = "ec";
 
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
-  
+
   private EcConstants() {
   }
 }

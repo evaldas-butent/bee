@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
@@ -77,11 +78,16 @@ public class UserServiceBean {
     private DateTime blockAfter;
     private DateTime blockBefore;
 
-    private boolean online;
+    private final Set<Long> sessions = Sets.newHashSet();
 
     private UserInfo(UserData userData, String password) {
       this.userData = userData;
       this.password = password;
+    }
+
+    private UserInfo addSession(long session) {
+      sessions.add(session);
+      return this;
     }
 
     private DateTime getBlockAfter() {
@@ -141,7 +147,11 @@ public class UserServiceBean {
     }
 
     private boolean isOnline() {
-      return online;
+      return !BeeUtils.isEmpty(sessions);
+    }
+
+    private boolean removeSession(long session) {
+      return sessions.remove(session);
     }
 
     private UserInfo setBlockAfter(DateTime after) {
@@ -151,11 +161,6 @@ public class UserServiceBean {
 
     private UserInfo setBlockBefore(DateTime before) {
       this.blockBefore = before;
-      return this;
-    }
-
-    private UserInfo setOnline(boolean isOnline) {
-      this.online = isOnline;
       return this;
     }
 
@@ -541,8 +546,8 @@ public class UserServiceBean {
           .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_BEFORE)));
 
       UserInfo oldInfo = expiredCache.get(login);
-      if (oldInfo != null) {
-        user.setOnline(oldInfo.isOnline());
+      if (oldInfo != null && oldInfo.isOnline()) {
+        user.sessions.addAll(oldInfo.sessions);
       }
       infoCache.put(login, user);
       userData.setRights(getUserRights(userId));
@@ -585,7 +590,7 @@ public class UserServiceBean {
           .addConstant(COL_USER_AGENT, agent));
 
       UserInfo info = getUserInfo(userId);
-      info.setOnline(true);
+      info.addSession(historyId);
 
       UserData data = info.getUserData()
           .setProperty(Service.VAR_FILE_ID, BeeUtils.toString(historyId));
@@ -605,27 +610,27 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
-  public void logout(String user, Long historyId) {
-    if (isUser(user)) {
+  public void logout(long userId, long historyId) {
+    UserInfo info = getUserInfo(userId);
+
+    if (info != null) {
       qs.updateData(new SqlUpdate(TBL_USER_HISTORY)
           .addConstant(COL_LOGGED_OUT, System.currentTimeMillis())
           .setWhere(sys.idEquals(TBL_USER_HISTORY, historyId)));
 
-      UserInfo info = getUserInfo(getUserId(user));
-      String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
+      String sign = info.getUserData().getLogin() + " "
+          + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
-      if (info.isOnline()) {
-        info.setOnline(false);
-        info.getUserData().setProperty(Service.VAR_FILE_ID, null);
+      if (info.removeSession(historyId)) {
         logger.info("User logged out:", sign);
       } else {
         logger.warning("User was not logged in:", sign);
       }
     } else if (BeeUtils.isEmpty(getUsers())) {
-      logger.warning("Anonymous user logged out:", user);
+      logger.warning("Anonymous user logged out:", getCurrentUser());
 
     } else {
-      logger.severe("Logout attempt by an unauthorized user:", user);
+      logger.severe("Logout attempt by an unauthorized user:", getCurrentUser());
     }
   }
 

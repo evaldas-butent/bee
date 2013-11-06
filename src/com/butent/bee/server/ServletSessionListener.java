@@ -3,7 +3,6 @@ package com.butent.bee.server;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -31,12 +30,11 @@ public class ServletSessionListener implements HttpSessionListener {
   @Override
   public void sessionDestroyed(HttpSessionEvent se) {
     HttpSession session = se.getSession();
-    Object loginName = session.getAttribute(Service.VAR_USER);
+    Object userId = session.getAttribute(Service.VAR_USER);
 
-    if (loginName != null) {
+    if (userId != null) {
       try {
-        dispatcher.doLogout((String) loginName,
-            BeeUtils.toLongOrNull((String) session.getAttribute(Service.VAR_FILE_ID)));
+        dispatcher.doLogout((Long) userId, (Long) session.getAttribute(Service.VAR_FILE_ID));
       } catch (EJBException e) {
         logger.warning(e.getMessage());
       }

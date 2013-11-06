@@ -712,6 +712,11 @@ public final class SqlUtils {
         .getQuery();
   }
 
+  public static IsQuery truncateTable(String table) {
+    return new SqlCommand(SqlKeyword.TRUNCATE_TABLE,
+        ImmutableMap.of("table", (Object) name(table)));
+  }
+
   public static String uniqueName() {
     return BeeUtils.randomString(5);
   }
