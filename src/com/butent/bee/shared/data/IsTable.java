@@ -9,6 +9,7 @@ import com.butent.bee.shared.time.JustDate;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -148,9 +149,7 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void setValue(int rowIndex, int colIndex, Value value);
 
-  void sort(int... colIndexes);
-
-  void sort(List<Pair<Integer, Boolean>> sortInfo);
+  void sort(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator);
 
   void sortByRowId(boolean ascending);
   

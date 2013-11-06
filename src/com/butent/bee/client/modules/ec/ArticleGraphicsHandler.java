@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -41,19 +42,19 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
 
   ArticleGraphicsHandler() {
   }
-  
+
   @Override
   public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
-    
+
     if (BeeUtils.same(columnName, COL_TCD_GRAPHICS_RESOURCE)) {
       EcKeeper.addPictureCellHandlers(column.getCell(), TBL_TCD_GRAPHICS);
     }
-    
+
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
   }
-  
+
   @Override
   public boolean beforeAction(Action action, final GridPresenter presenter) {
     if (action == Action.ADD) {
@@ -96,15 +97,18 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
       collector = FileCollector.headless(new Consumer<Collection<NewFileInfo>>() {
         @Override
         public void accept(Collection<NewFileInfo> input) {
-          Collection<NewFileInfo> files = Images.sanitizeInput(input, getGridView());
-          Long articleId = getGridView().getRelId();
-
-          if (!files.isEmpty() && DataUtils.isId(articleId)) {
-            uploadGraphics(articleId, files);
+          final Collection<NewFileInfo> files = Images.sanitizeInput(input, getGridView());
+          if (!files.isEmpty()) {
+            getGridView().ensureRelId(new IdCallback() {
+              @Override
+              public void onSuccess(Long result) {
+                uploadGraphics(result, files);
+              }
+            });
           }
         }
       });
-      
+
       collector.setAccept(Keywords.ACCEPT_IMAGE);
 
       getGridView().add(collector);

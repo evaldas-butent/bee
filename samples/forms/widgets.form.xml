@@ -33,18 +33,12 @@
         <stack headerSize="30">
           <html>&lt;big style="color: red;"&gt;Images&lt;/big&gt;</html>
           <VerticalPanel style="border-spacing: 10px;" horizontalAlignment="center">
-            <cell>
-              <html>url</html>
-            </cell>
-            <cell>
-              <Image url="images/logo.png" />
-            </cell>
-            <cell>
-              <html>resource</html>
-            </cell>
-            <cell>
-              <Image resource="play" />
-            </cell>
+            <html>url</html>
+            <Image url="images/logo.png" style="width: 100px;" />
+            <html>resource</html>
+            <Image resource="play" />
+            <html>fa</html>
+            <FaLabel char="coffee" class="bee-FontSize-x-large" />
           </VerticalPanel>
         </stack>
 

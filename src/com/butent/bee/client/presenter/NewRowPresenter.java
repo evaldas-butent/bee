@@ -59,16 +59,14 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   }
 
   @Override
-  public boolean createParentRow(NotificationListener notificationListener,
+  public void createParentRow(NotificationListener notificationListener,
       final Callback<IsRow> callback) {
 
     if (!formView.validate(notificationListener, false)) {
-      return false;
+      return;
     }
+
     IsRow row = formView.getActiveRow();
-    if (!DataUtils.isNewRow(row)) {
-      return true;
-    }
 
     insert(row, new RowCallback() {
       @Override
@@ -86,7 +84,6 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
         }
       }
     });
-    return true;
   }
 
   @Override

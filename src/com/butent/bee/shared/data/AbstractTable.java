@@ -457,19 +457,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   }
 
   @Override
-  public int[] getSortedRows(int... colIndexes) {
-    Assert.notNull(colIndexes);
-    Assert.parameterCount(colIndexes.length, 1);
-
-    List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
-    for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo.add(Pair.of(colIndexes[i], true));
-    }
-    return getSortedRows(sortInfo);
-  }
-
-  @Override
-  public int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo) {
+  public int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator) {
     Assert.notNull(sortInfo);
     Assert.isTrue(sortInfo.size() >= 1);
     int rowCount = getNumberOfRows();
@@ -486,7 +474,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
     }
 
     Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering<R>(getColumns(),
-        sortInfo)));
+        sortInfo, collator)));
     return Ints.toArray(rowIndexes);
   }
 
@@ -742,18 +730,6 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   @Override
   public void setValue(int rowIndex, int colIndex, Value value) {
     getRow(rowIndex).setValue(colIndex, value);
-  }
-
-  @Override
-  public void sort(int... colIndexes) {
-    Assert.notNull(colIndexes);
-    Assert.parameterCount(colIndexes.length, 1);
-
-    List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
-    for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo.add(Pair.of(colIndexes[i], true));
-    }
-    sort(sortInfo);
   }
 
   @Override

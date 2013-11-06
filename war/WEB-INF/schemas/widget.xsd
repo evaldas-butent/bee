@@ -994,4 +994,14 @@
 
   <xs:element name="Summary" type="widgetType" substitutionGroup="widget" />
 
+  <xs:element name="FaLabel" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="labelType">
+          <xs:attribute name="char" type="ui:fontAwesome" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
 </xs:schema>

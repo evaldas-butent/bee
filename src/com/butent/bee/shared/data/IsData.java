@@ -7,6 +7,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -65,9 +66,7 @@ public interface IsData {
 
   String getRowProperty(int rowIndex, String name);
 
-  int[] getSortedRows(int... colIndexes);
-
-  int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo);
+  int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator);
 
   String getString(int rowIndex, int colIndex);
 

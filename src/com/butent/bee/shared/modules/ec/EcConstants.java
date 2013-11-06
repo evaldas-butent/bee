@@ -293,6 +293,8 @@ public final class EcConstants {
   public static final String TBL_TCD_CRITERIA = "TcdCriteria";
   public static final String TBL_TCD_ARTICLE_CRITERIA = "TcdArticleCriteria";
 
+  public static final String TBL_TCD_ORPHANS = "TcdOrphans";
+
   public static final String VIEW_BANNERS = "EcBanners";
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
   public static final String VIEW_CATALOG = "EcCatalog";

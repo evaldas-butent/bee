@@ -126,7 +126,6 @@
   left: 1ex;
   top: 3ex;
   max-width: 100px;
-  max-height: 57px;
 }
 
 .bee-NorthContainer > div {
@@ -2119,6 +2118,8 @@
 .bee-SlideDeck-canvas {
   position: relative;
   overflow: hidden;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 .bee-SlideDeck-wrapper {
   position: absolute;
@@ -2126,6 +2127,10 @@
   left: 0;
   background-repeat: no-repeat;
   background-size: contain;
+}
+
+.bee-SlideDeck-playing .bee-SlideDeck-canvas {
+  background-image: none !important;
 }
 
 .bee-SlideDeck-controls {

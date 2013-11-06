@@ -7,17 +7,24 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.Comparator;
 import java.util.List;
 
 public class RowOrdering<R extends IsRow> implements Comparator<R> {
+  
+  public static final NullOrdering NULL_ORDERING = NullOrdering.DEFAULT;
 
   private final List<Integer> indexes = Lists.newArrayList();
   private final List<Boolean> ascending = Lists.newArrayList();
   private final List<ValueType> types = Lists.newArrayList();
+  
+  private final Comparator<String> collator;
 
-  public RowOrdering(List<? extends IsColumn> columns, List<Pair<Integer, Boolean>> sortInfo) {
+  public RowOrdering(List<? extends IsColumn> columns, List<Pair<Integer, Boolean>> sortInfo,
+      Comparator<String> collator) {
+
     Assert.notEmpty(columns);
     Assert.notNull(sortInfo);
     Assert.isTrue(sortInfo.size() >= 1);
@@ -49,6 +56,8 @@ public class RowOrdering<R extends IsRow> implements Comparator<R> {
       ascending.add(BeeUtils.unbox(sortInfo.get(i).getB()));
       types.add(type);
     }
+    
+    this.collator = collator;
   }
 
   @Override
@@ -69,37 +78,42 @@ public class RowOrdering<R extends IsRow> implements Comparator<R> {
 
       switch (index) {
         case DataUtils.ID_INDEX:
-          z = BeeUtils.compareNullsFirst(row1.getId(), row2.getId());
+          z = BeeUtils.compare(row1.getId(), row2.getId(), NULL_ORDERING);
           break;
         case DataUtils.VERSION_INDEX:
-          z = BeeUtils.compareNullsFirst(row1.getVersion(), row2.getVersion());
+          z = BeeUtils.compare(row1.getVersion(), row2.getVersion(), NULL_ORDERING);
           break;
 
         default:
           switch (types.get(i)) {
             case BOOLEAN:
-              z = BeeUtils.compareNullsFirst(row1.getBoolean(index), row2.getBoolean(index));
+              z = BeeUtils.compare(row1.getBoolean(index), row2.getBoolean(index), NULL_ORDERING);
               break;
             case DATE:
-              z = BeeUtils.compareNullsFirst(row1.getDate(index), row2.getDate(index));
+              z = BeeUtils.compare(row1.getDate(index), row2.getDate(index), NULL_ORDERING);
               break;
             case DATE_TIME:
-              z = BeeUtils.compareNullsFirst(row1.getDateTime(index), row2.getDateTime(index));
+              z = BeeUtils.compare(row1.getDateTime(index), row2.getDateTime(index), NULL_ORDERING);
               break;
             case NUMBER:
-              z = BeeUtils.compareNullsFirst(row1.getDouble(index), row2.getDouble(index));
+              z = BeeUtils.compare(row1.getDouble(index), row2.getDouble(index), NULL_ORDERING);
               break;
             case INTEGER:
-              z = BeeUtils.compareNullsFirst(row1.getInteger(index), row2.getInteger(index));
+              z = BeeUtils.compare(row1.getInteger(index), row2.getInteger(index), NULL_ORDERING);
               break;
             case LONG:
-              z = BeeUtils.compareNullsFirst(row1.getLong(index), row2.getLong(index));
+              z = BeeUtils.compare(row1.getLong(index), row2.getLong(index), NULL_ORDERING);
               break;
             case DECIMAL:
-              z = BeeUtils.compareNullsFirst(row1.getDecimal(index), row2.getDecimal(index));
+              z = BeeUtils.compare(row1.getDecimal(index), row2.getDecimal(index), NULL_ORDERING);
               break;
+ 
             default:
-              z = BeeUtils.compareNullsFirst(row1.getString(index), row2.getString(index));
+              if (collator == null) {
+                z = BeeUtils.compare(row1.getString(index), row2.getString(index), NULL_ORDERING);
+              } else {
+                z = collator.compare(row1.getString(index), row2.getString(index));
+              }
           }
       }
 

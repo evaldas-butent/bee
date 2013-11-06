@@ -5,6 +5,7 @@ import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.Pair;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -57,12 +58,12 @@ public abstract class RowList<R extends IsRow, C extends IsColumn> extends Abstr
   }
 
   @Override
-  public void sort(List<Pair<Integer, Boolean>> sortInfo) {
+  public void sort(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator) {
     Assert.notNull(sortInfo);
     Assert.isTrue(sortInfo.size() >= 1);
 
     if (getNumberOfRows() > 1) {
-      Collections.sort(getRows().getList(), new RowOrdering<R>(getColumns(), sortInfo));
+      Collections.sort(getRows().getList(), new RowOrdering<R>(getColumns(), sortInfo, collator));
     }
   }
 

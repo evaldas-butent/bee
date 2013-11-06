@@ -109,15 +109,17 @@ public class BeeServlet extends LoginServlet {
         logout(req, session);
 
       } else {
-        session.setAttribute(Service.VAR_USER, req.getRemoteUser());
-        session.setAttribute(Service.VAR_FILE_ID,
-            ((UserData) ((Map<?, ?>) response.getResponse()).get(Service.VAR_USER))
-                .getProperty(Service.VAR_FILE_ID));
+        Object userData = ((Map<?, ?>) response.getResponse()).get(Service.VAR_USER);
 
+        if (userData instanceof UserData) {
+          session.setAttribute(Service.VAR_USER, ((UserData) userData).getUserId());
+          session.setAttribute(Service.VAR_FILE_ID,
+              BeeUtils.toLong(((UserData) userData).getProperty(Service.VAR_FILE_ID)));
+        }
         resp.setHeader(Service.RPC_VAR_SID, sessionId);
         resp.setHeader(Service.RPC_VAR_QID, rid);
 
-        logger.info("session id:", sessionId);
+        logger.debug("session id:", sessionId);
       }
 
     } else if (doLogout) {
@@ -222,7 +224,7 @@ public class BeeServlet extends LoginServlet {
     try {
       req.logout();
       session.invalidate();
-      logger.info("logout successful");
+      logger.debug("logout successful");
     } catch (ServletException ex) {
       logger.warning("logout", ex);
     }

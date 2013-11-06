@@ -16,6 +16,7 @@ import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -85,14 +86,14 @@ public class TecDocBean {
     });
   }
 
-  private class RemoteItems {
+  private class RemoteItem {
     private final String supplierId;
     private final Double cost;
     private final Double price;
     private final String brand;
     private final String articleNr;
 
-    public RemoteItems(String supplierId, String brand, String articleNr, Double cost,
+    public RemoteItem(String supplierId, String brand, String articleNr, Double cost,
         Double price) {
       this.supplierId = supplierId;
       this.brand = brand;
@@ -102,12 +103,12 @@ public class TecDocBean {
     }
   }
 
-  private class RemoteRemainders {
+  private class RemoteRemainder {
     private final String supplierId;
     private final String warehouse;
     private final Double remainder;
 
-    public RemoteRemainders(String supplierId, String warehouse, Double remainder) {
+    public RemoteRemainder(String supplierId, String warehouse, Double remainder) {
       this.supplierId = supplierId;
       this.warehouse = warehouse;
       this.remainder = remainder;
@@ -248,10 +249,10 @@ public class TecDocBean {
     SimpleRowSet rows = (SimpleRowSet) response.getResponse();
 
     if (rows.getNumberOfRows() > 0) {
-      List<RemoteItems> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
+      List<RemoteItem> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
 
       for (SimpleRow row : rows) {
-        data.add(new RemoteItems(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
+        data.add(new RemoteItem(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
             row.getDouble("sv"), row.getDouble("kn")));
       }
       importItems(supplier, data);
@@ -271,10 +272,10 @@ public class TecDocBean {
     rows = (SimpleRowSet) response.getResponse();
 
     if (rows.getNumberOfRows() > 0) {
-      List<RemoteRemainders> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
+      List<RemoteRemainder> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
 
       for (SimpleRow row : rows) {
-        data.add(new RemoteRemainders(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
+        data.add(new RemoteRemainder(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
       }
       importRemainders(supplier, data);
     }
@@ -290,8 +291,8 @@ public class TecDocBean {
 
     if (info != null && info.getString().size() > 1) {
       int size = info.getString().size();
-      List<RemoteItems> items = Lists.newArrayListWithExpectedSize(size);
-      List<RemoteRemainders> remainders = Lists.newArrayListWithExpectedSize(size);
+      List<RemoteItem> items = Lists.newArrayListWithExpectedSize(size);
+      List<RemoteRemainder> remainders = Lists.newArrayListWithExpectedSize(size);
 
       logger.info(supplier, "Received", size, "records. Updating data...");
 
@@ -320,10 +321,10 @@ public class TecDocBean {
             if (!BeeUtils.isEmpty(brand)) {
               String supplierId = supplierBrand + values[1];
 
-              items.add(new RemoteItems(supplierId, brand, values[1],
+              items.add(new RemoteItem(supplierId, brand, values[1],
                   BeeUtils.toDoubleOrNull(values[7].replace(',', '.')), null));
 
-              remainders.add(new RemoteRemainders(supplierId, "MotoNet",
+              remainders.add(new RemoteRemainder(supplierId, "MotoNet",
                   BeeUtils.toDoubleOrNull(values[3])));
             }
           } else {
@@ -1148,7 +1149,7 @@ public class TecDocBean {
     qs.sqlDropTemp(art);
   }
 
-  private void importItems(EcSupplier supplier, List<RemoteItems> data) {
+  private void importItems(EcSupplier supplier, List<RemoteItem> data) {
     String log = supplier + " " + TBL_TCD_ARTICLE_SUPPLIERS + ":";
 
     String idName = sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS);
@@ -1184,7 +1185,7 @@ public class TecDocBean {
             COL_TCD_PRICE, COL_TCD_SUPPLIER_ID);
     int tot = 0;
 
-    for (RemoteItems info : data) {
+    for (RemoteItem info : data) {
       if (!brands.containsKey(info.brand)) {
         brands.put(info.brand, qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
             .addConstant(COL_TCD_BRAND_NAME, info.brand)));
@@ -1223,7 +1224,6 @@ public class TecDocBean {
 
     tot = qs.updateData(new SqlUpdate(TBL_TCD_ARTICLE_SUPPLIERS)
         .addExpression(COL_TCD_UPDATED_COST, SqlUtils.field(tmp, COL_TCD_COST))
-        .addExpression(COL_TCD_PRICE, SqlUtils.field(tmp, COL_TCD_PRICE))
         .addConstant(COL_TCD_UPDATE_TIME, time)
         .setFrom(tmp, sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, tmp, idName))
         .setWhere(SqlUtils.notEqual(
@@ -1248,6 +1248,23 @@ public class TecDocBean {
         .setFrom(tcdArticles,
             SqlUtils.joinUsing(tmp, tcdArticles, COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME)));
 
+    qs.updateData(new SqlDelete(TBL_TCD_ORPHANS)
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal()),
+            SqlUtils.not(SqlUtils.in(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER_ID, tmp,
+                COL_TCD_SUPPLIER_ID, null)))));
+
+    insertData(TBL_TCD_ORPHANS, new SqlSelect()
+        .addField(tmp, COL_TCD_SEARCH_NR, COL_TCD_ARTICLE_NR)
+        .addFields(tmp, COL_TCD_BRAND, COL_TCD_SUPPLIER_ID)
+        .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)
+        .addFrom(tmp)
+        .addFromLeft(TBL_TCD_ORPHANS,
+            SqlUtils.and(SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal()),
+                SqlUtils.joinUsing(tmp, TBL_TCD_ORPHANS, COL_TCD_SUPPLIER_ID)))
+        .setWhere(SqlUtils.and(SqlUtils.isNull(tmp, TCD_ARTICLE_ID),
+            SqlUtils.isNull(TBL_TCD_ORPHANS, sys.getIdName(TBL_TCD_ORPHANS)))));
+
     zz = qs.sqlCreateTemp(new SqlSelect()
         .addAllFields(tmp)
         .addFrom(tmp)
@@ -1255,6 +1272,11 @@ public class TecDocBean {
 
     qs.sqlDropTemp(tmp);
     tmp = zz;
+
+    qs.updateData(new SqlDelete(TBL_TCD_ORPHANS)
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal()),
+            SqlUtils.in(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER_ID, tmp, COL_TCD_SUPPLIER_ID, null))));
 
     qs.sqlIndex(tmp, TCD_ARTICLE_ID);
 
@@ -1282,7 +1304,7 @@ public class TecDocBean {
     qs.sqlDropTemp(tmp);
   }
 
-  private void importRemainders(EcSupplier supplier, List<RemoteRemainders> data) {
+  private void importRemainders(EcSupplier supplier, List<RemoteRemainder> data) {
     String log = supplier + " " + TBL_TCD_REMAINDERS + ":";
 
     String idName = sys.getIdName(TBL_TCD_REMAINDERS);
@@ -1325,7 +1347,7 @@ public class TecDocBean {
         .addFields(COL_TCD_SUPPLIER_ID, supplierWarehouse, COL_TCD_REMAINDER);
     int tot = 0;
 
-    for (RemoteRemainders info : data) {
+    for (RemoteRemainder info : data) {
       insert.addValues(info.supplierId, info.warehouse, info.remainder);
 
       if (++tot % 1e4 == 0) {

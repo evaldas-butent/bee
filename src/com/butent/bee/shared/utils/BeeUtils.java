@@ -54,7 +54,7 @@ public final class BeeUtils {
       list.add(item);
     }
   }
-  
+
   public static boolean allEmpty(String first, String second, String... rest) {
     if (!isEmpty(first) || !isEmpty(second)) {
       return false;
@@ -331,6 +331,15 @@ public final class BeeUtils {
    * @param x2 second value to compare
    * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
    */
+  public static <T extends Comparable<T>> int compare(T x1, T x2, NullOrdering nullOrdering) {
+    if (nullOrdering == NullOrdering.NULLS_FIRST
+        || nullOrdering == null && NullOrdering.DEFAULT == NullOrdering.NULLS_FIRST) {
+      return compareNullsFirst(x1, x2);
+    } else {
+      return compareNullsLast(x1, x2);
+    }
+  }
+
   public static <T extends Comparable<T>> int compareNullsFirst(T x1, T x2) {
     if (x1 == null) {
       if (x2 == null) {
@@ -358,7 +367,7 @@ public final class BeeUtils {
       return x1.compareTo(x2);
     }
   }
-  
+
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -673,7 +682,7 @@ public final class BeeUtils {
       return null;
     }
   }
-  
+
   public static <C extends Comparable<C>> C getLowerEndpoint(Range<C> range) {
     return (range != null && range.hasLowerBound()) ? range.lowerEndpoint() : null;
   }
@@ -1514,7 +1523,7 @@ public final class BeeUtils {
     }
     return result;
   }
-  
+
   public static <T extends Comparable<T>> T min(T x1, T x2) {
     if (x1 == null) {
       return x2;
@@ -1621,7 +1630,7 @@ public final class BeeUtils {
     if (!target.isEmpty()) {
       target.clear();
     }
-    
+
     if (!isEmpty(source)) {
       target.putAll(source);
     }

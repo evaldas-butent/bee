@@ -102,10 +102,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
       Subject serviceSubject) throws AuthException {
 
     if (!isProtectedResource(messageInfo)) {
-      CallerPrincipalCallback callerPrincipalCallback =
-          new CallerPrincipalCallback(clientSubject, (Principal) null);
-
-      return handleCallbacks(new Callback[] {callerPrincipalCallback});
+      return AuthStatus.SUCCESS;
     }
     HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
     Principal userPrincipal = request.getUserPrincipal();
@@ -117,10 +114,8 @@ public class BeeServerAuthModule implements ServerAuthModule {
 
       return handleCallbacks(new Callback[] {callerPrincipalCallback});
     }
-    Map<String, String> parameters = HttpUtils.getParameters(request, false);
-
-    String userName = BeeUtils.trim(parameters.get(HttpConst.PARAM_USER));
-    String password = BeeUtils.trim(parameters.get(HttpConst.PARAM_PASSWORD));
+    String userName = BeeUtils.trim(request.getParameter(HttpConst.PARAM_USER));
+    String password = BeeUtils.trim(request.getParameter(HttpConst.PARAM_PASSWORD));
     boolean ok = false;
 
     if (!BeeUtils.anyEmpty(userName, password)) {
@@ -129,8 +124,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
       try {
         usr = (UserServiceBean) InitialContext.doLookup("java:global" + BeeUtils.join("/",
             request.getServletContext().getContextPath(), UserServiceBean.class.getSimpleName()));
-
-        ok = usr.authenticateUser(userName, Codec.md5(BeeUtils.trim(password)));
+        ok = usr.authenticateUser(userName, Codec.md5(password));
       } catch (NamingException | ClassCastException ex) {
         logger.error(ex);
       }
@@ -144,7 +138,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
             "Servlet, processing protected request " + request.getServletPath()
                 + ", does not extend " + LoginServlet.class.getName());
 
-        return AuthStatus.FAILURE;
+        return AuthStatus.SEND_FAILURE;
       }
       HttpUtils.sendResponse(response, servlet.getLoginForm(request, userName));
 

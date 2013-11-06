@@ -12,6 +12,7 @@
 .bee-ec-Logo {
   margin-left: 1em;
   margin-top: 1ex;
+  max-width: 100px;
 }
 
 .bee-ec-GlobalSearch-container {
