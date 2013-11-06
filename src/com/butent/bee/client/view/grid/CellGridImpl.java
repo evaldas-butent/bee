@@ -811,11 +811,14 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       return;
     }
 
-    Assert.isTrue(isChild());
+    if (!isChild()) {
+      callback.onFailure(getViewName(), "not a child");
+      return;
+    }
 
     FormView parentForm = UiHelper.getForm(this);
     if (parentForm == null) {
-      callback.onFailure("parent form not found");
+      callback.onFailure(getViewName(), "parent form not found");
       return;
     }
 
@@ -832,13 +835,13 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
               if (DataUtils.isId(getRelId())) {
                 callback.onSuccess(getRelId());
               } else {
-                callback.onFailure("parent row not created");
+                callback.onFailure(getViewName(), "parent row not created");
               }
             }
           });
 
     } else {
-      callback.onFailure("parent row creator not available");
+      callback.onFailure(getViewName(), "parent row creator not available");
     }
   }
 
@@ -1010,7 +1013,6 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     return relColumn;
   }
 
-  @Override
   public Long getRelId() {
     return relId;
   }
