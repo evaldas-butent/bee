@@ -21,4 +21,7 @@
     
     <Long name="TecDocID" unique="true" />
   </Fields>
+  <Indexes>
+    <Index fields="ArticleNr Brand" />
+  </Indexes>
 </Table>

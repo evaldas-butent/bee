@@ -33,8 +33,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -102,7 +102,7 @@ public class ItemList extends Flow implements KeyDownHandler {
       codeWidget.setTitle(BeeUtils.joinWords("ArticleID:", item.getArticleId()));
     }
 
-    if (item.getAnalogCount() > 1) {
+    if (item.getAnalogCount() > 0) {
       String analogLabel = BeeUtils.joinWords(Localized.getConstants().ecItemAnalogs(),
           BeeUtils.parenthesize(item.getAnalogCount()));
       InternalLink analogs = new InternalLink(analogLabel);
@@ -246,7 +246,7 @@ public class ItemList extends Flow implements KeyDownHandler {
     if (BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_UP,
         KeyCodes.KEY_PAGEDOWN, KeyCodes.KEY_PAGEUP, KeyCodes.KEY_END, KeyCodes.KEY_HOME)
         && table.getRowCount() > 2) {
-      
+
       Integer eventRow = table.getEventRow(event, false);
       if (eventRow == null) {
         return;
@@ -258,12 +258,12 @@ public class ItemList extends Flow implements KeyDownHandler {
       int max = table.getRowCount() - 1;
 
       int oldRow = BeeUtils.clamp(eventRow, min, max);
-      if (oldRow == max && moreWidget.isVisible() 
+      if (oldRow == max && moreWidget.isVisible()
           && BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_PAGEDOWN)) {
         moreWidget.click();
         return;
       }
-      
+
       int newRow = BeeConst.UNDEF;
 
       switch (keyCode) {
@@ -306,7 +306,7 @@ public class ItemList extends Flow implements KeyDownHandler {
             }
           }
           break;
-          
+
         case KeyCodes.KEY_END:
           if (hasModifiers) {
             newRow = max;
@@ -319,7 +319,7 @@ public class ItemList extends Flow implements KeyDownHandler {
           }
           break;
       }
-      
+
       if (!BeeConst.isUndef(newRow) && newRow != oldRow) {
         focusRow(newRow);
       }

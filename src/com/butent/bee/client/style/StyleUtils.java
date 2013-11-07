@@ -1887,6 +1887,11 @@ public final class StyleUtils {
     setOverflow(obj.getElement(), scroll, value);
   }
 
+  public static void setProperty(Element el, String name, HasCssName value) {
+    Assert.notNull(el);
+    setProperty(el.getStyle(), name, value);
+  }
+
   public static void setProperty(Style st, String name, double value, CssUnit unit) {
     st.setProperty(checkPropertyName(name), value + unit.getCaption());
   }
@@ -1897,6 +1902,11 @@ public final class StyleUtils {
     } else {
       st.setProperty(checkPropertyName(name), value.getCssName());
     }
+  }
+
+  public static void setProperty(UIObject obj, String name, HasCssName value) {
+    Assert.notNull(obj);
+    setProperty(obj.getElement(), name, value);
   }
 
   public static void setRectangle(Element el, int left, int top, int width, int height) {

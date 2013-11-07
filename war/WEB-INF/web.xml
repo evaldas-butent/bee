@@ -27,8 +27,8 @@
   </security-role>
 
   <data-source>
-    <name>java:app/env/BeeDS</name>
-    <class-name>org.postgresql.ds.PGPoolingDataSource</class-name>
+    <name>BeeDS</name>
+    <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
     <server-name>localhost</server-name>
     <port-number>5432</port-number>
     <database-name>alternaEcommerce</database-name>

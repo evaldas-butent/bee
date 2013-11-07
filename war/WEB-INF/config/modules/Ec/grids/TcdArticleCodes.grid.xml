@@ -7,7 +7,7 @@
   <g:columns>
     <DataColumn name="SearchNr" />
     <DataColumn name="CodeNr" />
-    <DataColumn name="BrandName" />
+    <RelColumn name="Brand" />
     <DataColumn name="OECode" maxWidth="80" />
   </g:columns>
 </g:Grid>

@@ -38,7 +38,7 @@ public class MetaDataBean {
     if (BeeUtils.same(svc, Service.DB_PING)) {
       ping(ds, buff);
     } else if (BeeUtils.same(svc, Service.DB_INFO)) {
-      dbInfo(ds, buff);
+      dbInfo(ds, reqInfo, buff);
     } else if (BeeUtils.same(svc, Service.DB_TABLES)) {
       getTables(ds, reqInfo, buff);
     } else if (BeeUtils.same(svc, Service.DB_KEYS)) {
@@ -52,12 +52,12 @@ public class MetaDataBean {
     }
   }
 
-  private static void dbInfo(BeeDataSource ds, ResponseBuffer buff) {
+  private static void dbInfo(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff) {
     List<ExtendedProperty> prp = null;
     boolean ok = true;
 
     try {
-      prp = ds.getDbInfo();
+      prp = ds.getDbInfo(reqInfo.getParameter(0));
     } catch (SQLException ex) {
       logger.error(ex);
       buff.addError(ex);

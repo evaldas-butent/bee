@@ -613,25 +613,23 @@ public class EcModuleBean implements BeeModule {
     String countName = "cnt" + SqlUtils.uniqueName();
 
     String articlesAlias = "art" + SqlUtils.uniqueName();
-    String articleId = sys.getIdName(TBL_TCD_ARTICLES);
 
     SqlSelect query = new SqlSelect()
         .addFields(tempArticleIds, COL_TCD_ARTICLE)
-        .addCountDistinct(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, countName)
+        .addCountDistinct(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), countName)
         .addFrom(tempArticleIds)
-        .addFromInner(TBL_TCD_ARTICLES,
-            sys.joinTables(TBL_TCD_ARTICLES, tempArticleIds, COL_TCD_ARTICLE))
         .addFromInner(TBL_TCD_ARTICLE_CODES,
-            SqlUtils.and(
-                SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR,
-                    TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR),
-                SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_BRAND,
-                    TBL_TCD_ARTICLES, COL_TCD_BRAND),
-                SqlUtils.joinNotEqual(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE,
-                    tempArticleIds, COL_TCD_ARTICLE)))
+            SqlUtils.joinUsing(tempArticleIds, TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE))
+        .addFromInner(TBL_TCD_ARTICLES,
+            SqlUtils.and(SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_CODE_NR, TBL_TCD_ARTICLES,
+                COL_TCD_ARTICLE_NR),
+                SqlUtils.joinUsing(TBL_TCD_ARTICLE_CODES, TBL_TCD_ARTICLES, COL_TCD_BRAND),
+                SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_VISIBLE)))
         .addFromInner(TBL_TCD_ARTICLES, articlesAlias,
-            SqlUtils.join(articlesAlias, articleId, TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE))
-        .setWhere(SqlUtils.notNull(articlesAlias, COL_TCD_ARTICLE_VISIBLE))
+            sys.joinTables(TBL_TCD_ARTICLES, articlesAlias, tempArticleIds, COL_TCD_ARTICLE))
+        .setWhere(SqlUtils.or(SqlUtils.joinNotEqual(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR,
+            articlesAlias, COL_TCD_ARTICLE_NR),
+            SqlUtils.joinNotEqual(TBL_TCD_ARTICLES, COL_TCD_BRAND, articlesAlias, COL_TCD_BRAND)))
         .addGroup(tempArticleIds, COL_TCD_ARTICLE);
 
     SimpleRowSet data = qs.getData(query);
@@ -699,7 +697,7 @@ public class EcModuleBean implements BeeModule {
 
       long lastArt = 0;
       Set<Long> categories = Sets.newHashSet();
-      
+
       for (SimpleRow row : data) {
         long art = row.getLong(COL_TCD_ARTICLE);
         long cat = row.getLong(COL_TCD_CATEGORY);
@@ -712,7 +710,7 @@ public class EcModuleBean implements BeeModule {
 
           lastArt = art;
         }
-        
+
         for (Long id = cat; id != null; id = parents.get(id)) {
           if (!categories.add(id)) {
             break;
@@ -1643,14 +1641,20 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getItemAnalogs(RequestInfo reqInfo) {
     Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
-    String code = normalizeCode(reqInfo.getParameter(COL_TCD_ARTICLE_NR));
+    String code = reqInfo.getParameter(COL_TCD_ARTICLE_NR);
     Long brand = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_BRAND));
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE)
+        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
         .addFrom(TBL_TCD_ARTICLE_CODES)
-        .setWhere(SqlUtils.and(SqlUtils.notEqual(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, id),
-            SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, code, COL_TCD_BRAND, brand)));
+        .addFromInner(TBL_TCD_ARTICLES,
+            SqlUtils.and(SqlUtils.join(TBL_TCD_ARTICLE_CODES, COL_TCD_CODE_NR, TBL_TCD_ARTICLES,
+                COL_TCD_ARTICLE_NR),
+                SqlUtils.joinUsing(TBL_TCD_ARTICLE_CODES, TBL_TCD_ARTICLES, COL_TCD_BRAND),
+                SqlUtils.notNull(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_VISIBLE)))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, id),
+            SqlUtils.or(SqlUtils.notEqual(TBL_TCD_ARTICLE_CODES, COL_TCD_CODE_NR, code),
+                SqlUtils.notEqual(TBL_TCD_ARTICLE_CODES, COL_TCD_BRAND, brand))));
 
     return ResponseObject.response(getItems(articleIdQuery, null));
   }
@@ -1955,7 +1959,7 @@ public class EcModuleBean implements BeeModule {
       logger.warning("graphics not found for", articles);
       return ResponseObject.emptyResponse();
     }
-    
+
     List<String> pictures = Lists.newArrayListWithExpectedSize(graphicsData.getNumberOfRows() * 2);
     for (SimpleRow row : graphicsData) {
       pictures.add(row.getValue(COL_TCD_ARTICLE));

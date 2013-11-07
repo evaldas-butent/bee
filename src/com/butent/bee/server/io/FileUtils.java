@@ -389,6 +389,12 @@ public final class FileUtils {
     return new File(name).exists();
   }
 
+  public static boolean isFile(File parent, String child) {
+    Assert.notNull(parent);
+    Assert.notEmpty(child);
+    return new File(parent, child).exists();
+  }
+  
   public static boolean isInputFile(File fl) {
     if (fl == null) {
       return false;
