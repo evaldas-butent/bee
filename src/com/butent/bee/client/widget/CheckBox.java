@@ -190,12 +190,12 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
 
   @Override
   protected void onLoad() {
-    DOM.setEventListener(DomUtils.upcast(inputElem), this);
+    DOM.setEventListener(inputElem, this);
   }
 
   @Override
   protected void onUnload() {
-    DOM.setEventListener(DomUtils.upcast(inputElem), null);
+    DOM.setEventListener(inputElem, null);
   }
   
   private void init() {

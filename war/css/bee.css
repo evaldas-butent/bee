@@ -2181,7 +2181,6 @@
   -webkit-flex: 1;
   -ms-flex: 1;
   margin-left: 1em;
-  margin-right: 1em;
   cursor: pointer;
 }
 
@@ -2194,6 +2193,11 @@
 .bee-SlideDeck-progress::-moz-progress-bar {
 /*   background-color: #bada55; */
 } 
+
+.bee-SlideDeck-repeat {
+  margin-left: 0.5em;
+  margin-right: 1em;
+}
 
 .bee-SlideDeck-backward {
   font-size: 16px;

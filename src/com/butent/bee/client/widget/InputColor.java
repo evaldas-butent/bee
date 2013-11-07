@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
@@ -9,7 +10,6 @@ import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -28,7 +28,6 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.client.Browser;
-
 import elemental.html.InputElement;
 
 public class InputColor extends Widget implements HasEnabled, IdentifiableWidget, HasInputHandlers,

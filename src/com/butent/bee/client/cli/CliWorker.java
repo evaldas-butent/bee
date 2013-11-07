@@ -3506,7 +3506,7 @@ public final class CliWorker {
         BeeKeeper.getStorage().clear();
         inform(BeeUtils.joinWords(len, "items cleared"));
       } else {
-        String z = BeeKeeper.getStorage().getItem(key);
+        String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
           showError(Localized.getMessages().keyNotFound(key));
         } else {
@@ -3519,10 +3519,10 @@ public final class CliWorker {
     String value = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
-      BeeKeeper.getStorage().removeItem(value);
+      BeeKeeper.getStorage().remove(value);
       inform(value, "removed");
     } else {
-      BeeKeeper.getStorage().setItem(key, value);
+      BeeKeeper.getStorage().set(key, value);
       inform("Storage", NameUtils.addName(key, value));
     }
   }

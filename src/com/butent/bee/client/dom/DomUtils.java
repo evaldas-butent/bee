@@ -1805,10 +1805,6 @@ public final class DomUtils {
     }
   }
 
-  public static com.google.gwt.user.client.Element upcast(Element elem) {
-    return (com.google.gwt.user.client.Element) elem;
-  }
-
   private static void assertInputElement(Element elem) {
     Assert.isTrue(isInputElement(elem), "not an input element");
   }

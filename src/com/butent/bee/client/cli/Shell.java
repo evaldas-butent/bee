@@ -82,7 +82,7 @@ public class Shell extends InputArea {
   }
 
   public void restore() {
-    String stored = BeeKeeper.getStorage().getItem(STORAGE_KEY);
+    String stored = BeeKeeper.getStorage().get(STORAGE_KEY);
     if (!BeeUtils.isEmpty(stored)) {
       setValue(stored.trim());
     }
@@ -90,7 +90,7 @@ public class Shell extends InputArea {
 
   public void save() {
     if (!BeeUtils.isEmpty(getValue())) {    
-      BeeKeeper.getStorage().setItem(STORAGE_KEY, getValue().trim());
+      BeeKeeper.getStorage().set(STORAGE_KEY, getValue().trim());
     }
   }
 }

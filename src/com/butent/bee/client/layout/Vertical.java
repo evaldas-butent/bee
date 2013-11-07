@@ -1,7 +1,7 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -47,7 +47,7 @@ public class Vertical extends CellVector  {
     Element td = DOM.getParent(w.getElement());
     boolean removed = super.remove(w);
     if (removed) {
-      DOM.removeChild(getBody(), DOM.getParent(td));
+      getBody().removeChild(DOM.getParent(td));
     }
     return removed;
   }
