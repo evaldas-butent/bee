@@ -234,7 +234,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     }
 
     private void onEffectChanged(Effect oldEff, Effect newEff) {
-      if ((isRunning() || isPaused())) {
+      if (isRunning() || isPaused()) {
         oldEff.reset(getPrevStyle(), getNextStyle());
         if (isTransition()) {
           applyTransition(newEff, getStepProgress());

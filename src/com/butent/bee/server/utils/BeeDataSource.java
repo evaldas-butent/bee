@@ -69,7 +69,7 @@ public class BeeDataSource {
     return conn;
   }
 
-  public List<ExtendedProperty> getDbInfo() throws SQLException {
+  public List<ExtendedProperty> getDbInfo(String args) throws SQLException {
     ResultSet rs;
     ResultSet z;
 
@@ -77,7 +77,7 @@ public class BeeDataSource {
     String k;
     String v;
     String s;
-    
+
     int c;
     boolean ok;
 
@@ -139,16 +139,28 @@ public class BeeDataSource {
         "Result Set Holdability",
         JdbcUtils.holdabilityAsString(dbMd.getResultSetHoldability()));
 
-    PropertyUtils.addSplit(lst, "SQL Keywords", null,
-        dbMd.getSQLKeywords(), BeeConst.STRING_COMMA);
-    PropertyUtils.addSplit(lst, "System Functions", null,
-        dbMd.getSystemFunctions(), BeeConst.STRING_COMMA);
-    PropertyUtils.addSplit(lst, "Numeric Functions", null,
-        dbMd.getNumericFunctions(), BeeConst.STRING_COMMA);
-    PropertyUtils.addSplit(lst, "String Functions", null,
-        dbMd.getStringFunctions(), BeeConst.STRING_COMMA);
-    PropertyUtils.addSplit(lst, "Time Date Functions", null,
-        dbMd.getTimeDateFunctions(), BeeConst.STRING_COMMA);
+    if (!BeeUtils.isEmpty(args)) {
+      if (args.toLowerCase().contains("sqlkw")) {
+        PropertyUtils.addSplit(lst, "SQL Keywords", null,
+            dbMd.getSQLKeywords(), BeeConst.STRING_COMMA);
+      }
+      if (args.toLowerCase().contains("sysfunc")) {
+        PropertyUtils.addSplit(lst, "System Functions", null,
+            dbMd.getSystemFunctions(), BeeConst.STRING_COMMA);
+      }
+      if (args.toLowerCase().contains("numfunc")) {
+        PropertyUtils.addSplit(lst, "Numeric Functions", null,
+            dbMd.getNumericFunctions(), BeeConst.STRING_COMMA);
+      }
+      if (args.toLowerCase().contains("strfunc")) {
+        PropertyUtils.addSplit(lst, "String Functions", null,
+            dbMd.getStringFunctions(), BeeConst.STRING_COMMA);
+      }
+      if (args.toLowerCase().contains("tdfunc")) {
+        PropertyUtils.addSplit(lst, "Time Date Functions", null,
+            dbMd.getTimeDateFunctions(), BeeConst.STRING_COMMA);
+      }
+    }
 
     PropertyUtils.addProperties(lst, false,
         "All Procedures Are Callable", dbMd.allProceduresAreCallable(),
@@ -253,58 +265,64 @@ public class BeeDataSource {
     }
     rs.close();
 
-    try {
-      rs = dbMd.getFunctions(null, null, null);
-      c = JdbcUtils.getSize(rs);
-      s = BeeUtils.bracket(c);
-    } catch (SQLException ex) {
-      c = 0;
-      s = ex.getMessage();
-    } finally {
-      rs.close();
-    }
-
-    PropertyUtils.addExtended(lst, "Functions", null, s);
-
-    if (BeeUtils.betweenInclusive(c, 1, 100)) {
-      rs = dbMd.getFunctions(null, null, null);
-      while (rs.next()) {
-        k = rs.getString("FUNCTION_NAME");
-        if (BeeUtils.isEmpty(k)) {
-          continue;
-        }
-
-        v = BeeUtils.joinItems(NameUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
-            NameUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
-        PropertyUtils.addExtended(lst, "Function", k, BeeUtils.notEmpty(v, k));
+    if (BeeUtils.containsSame(args, "functions")) {
+      try {
+        rs = dbMd.getFunctions(null, null, null);
+        c = JdbcUtils.getSize(rs);
+        s = BeeUtils.bracket(c);
+      } catch (SQLException ex) {
+        c = 0;
+        s = ex.getMessage();
+      } finally {
+        rs.close();
       }
-      rs.close();
-    }
 
-    try {
-      rs = dbMd.getProcedures(null, null, null);
-      c = JdbcUtils.getSize(rs);
-      rs.close();
-    } catch (SQLException ex) {
-      c = 0;
-      s = ex.getMessage();
-    }
+      PropertyUtils.addExtended(lst, "Functions", null, s);
 
-    PropertyUtils.addExtended(lst, "Procedures", null, s);
+      if (BeeUtils.betweenInclusive(c, 1, 100)) {
+        rs = dbMd.getFunctions(null, null, null);
+        while (rs.next()) {
+          k = rs.getString("FUNCTION_NAME");
+          if (BeeUtils.isEmpty(k)) {
+            continue;
+          }
 
-    if (BeeUtils.betweenInclusive(c, 1, 100)) {
-      rs = dbMd.getProcedures(null, null, null);
-      while (rs.next()) {
-        k = rs.getString("PROCEDURE_NAME");
-        if (BeeUtils.isEmpty(k)) {
-          continue;
+          v = BeeUtils.joinItems(NameUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
+              NameUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
+          PropertyUtils.addExtended(lst, "Function", k, BeeUtils.notEmpty(v, k));
         }
-
-        v = BeeUtils.joinItems(NameUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
-            NameUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
-        PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.notEmpty(v, k));
+        rs.close();
       }
-      rs.close();
+    }
+
+    if (BeeUtils.containsSame(args, "procedures")) {
+      try {
+        rs = dbMd.getProcedures(null, null, null);
+        c = JdbcUtils.getSize(rs);
+        s = BeeUtils.bracket(c);
+      } catch (SQLException ex) {
+        c = 0;
+        s = ex.getMessage();
+      } finally {
+        rs.close();
+      }
+
+      PropertyUtils.addExtended(lst, "Procedures", null, s);
+
+      if (BeeUtils.betweenInclusive(c, 1, 100)) {
+        rs = dbMd.getProcedures(null, null, null);
+        while (rs.next()) {
+          k = rs.getString("PROCEDURE_NAME");
+          if (BeeUtils.isEmpty(k)) {
+            continue;
+          }
+
+          v = BeeUtils.joinItems(NameUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
+              NameUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
+          PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.notEmpty(v, k));
+        }
+        rs.close();
+      }
     }
 
     rs = dbMd.getCatalogs();
@@ -378,84 +396,87 @@ public class BeeDataSource {
     }
     rs.close();
 
-    nm = "Type";
+    if (BeeUtils.containsSame(args, "types")) {
+      nm = "Type";
 
-    rs = dbMd.getTypeInfo();
-    while (rs.next()) {
-      k = rs.getString("TYPE_NAME");
-      if (BeeUtils.isEmpty(k)) {
-        continue;
+      rs = dbMd.getTypeInfo();
+      while (rs.next()) {
+        k = rs.getString("TYPE_NAME");
+        if (BeeUtils.isEmpty(k)) {
+          continue;
+        }
+
+        c = rs.getInt("DATA_TYPE");
+        v = BeeUtils.joinWords(NameUtils.addName("sql.Type", c), JdbcUtils.getJdbcTypeName(c));
+        PropertyUtils.addExtended(lst, nm, k, v);
+
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Precision", rs.getInt("PRECISION")));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Prefix", rs.getString("LITERAL_PREFIX")));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Suffix", rs.getString("LITERAL_SUFFIX")));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Create", rs.getString("CREATE_PARAMS")));
+
+        switch (rs.getInt("NULLABLE")) {
+          case DatabaseMetaData.typeNoNulls:
+            s = BeeConst.NO;
+            break;
+
+          case DatabaseMetaData.typeNullable:
+            s = BeeConst.YES;
+            break;
+
+          default:
+            s = null;
+        }
+        PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Nullable", s));
+
+        PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Case sensitive",
+            rs.getBoolean("CASE_SENSITIVE") ? BeeConst.YES : BeeConst.NO));
+
+        switch (rs.getInt("SEARCHABLE")) {
+          case DatabaseMetaData.typePredNone:
+            s = BeeConst.NO;
+            break;
+
+          case DatabaseMetaData.typeSearchable:
+            s = BeeConst.YES;
+            break;
+
+          case DatabaseMetaData.typePredBasic:
+            s = "except LIKE";
+            break;
+
+          case DatabaseMetaData.typePredChar:
+            s = "only LIKE";
+            break;
+
+          default:
+            s = null;
+        }
+        PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Searchable", s));
+
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Unsigned", BeeUtils.toString(rs.getBoolean("UNSIGNED_ATTRIBUTE"))));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Fixed prec scale",
+                BeeUtils.toString(rs.getBoolean("FIXED_PREC_SCALE"))));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Auto increment",
+                BeeUtils.toString(rs.getBoolean("AUTO_INCREMENT"))));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Local name", rs.getString("LOCAL_TYPE_NAME")));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Min scale", rs.getShort("MINIMUM_SCALE")));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Max scale", rs.getShort("MAXIMUM_SCALE")));
+        PropertyUtils.addExtended(lst, nm, k,
+            NameUtils.addName("Num prec radix", rs.getInt("NUM_PREC_RADIX")));
       }
-
-      c = rs.getInt("DATA_TYPE");
-      v = BeeUtils.joinWords(NameUtils.addName("sql.Type", c), JdbcUtils.getJdbcTypeName(c));
-      PropertyUtils.addExtended(lst, nm, k, v);
-
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Precision", rs.getInt("PRECISION")));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Prefix", rs.getString("LITERAL_PREFIX")));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Suffix", rs.getString("LITERAL_SUFFIX")));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Create", rs.getString("CREATE_PARAMS")));
-
-      switch (rs.getInt("NULLABLE")) {
-        case DatabaseMetaData.typeNoNulls:
-          s = BeeConst.NO;
-          break;
-
-        case DatabaseMetaData.typeNullable:
-          s = BeeConst.YES;
-          break;
-
-        default:
-          s = null;
-      }
-      PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Nullable", s));
-
-      PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Case sensitive",
-          rs.getBoolean("CASE_SENSITIVE") ? BeeConst.YES : BeeConst.NO));
-
-      switch (rs.getInt("SEARCHABLE")) {
-        case DatabaseMetaData.typePredNone:
-          s = BeeConst.NO;
-          break;
-
-        case DatabaseMetaData.typeSearchable:
-          s = BeeConst.YES;
-          break;
- 
-        case DatabaseMetaData.typePredBasic:
-          s = "except LIKE";
-          break;
-
-        case DatabaseMetaData.typePredChar:
-          s = "only LIKE";
-          break;
-
-        default:
-          s = null;
-      }
-      PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Searchable", s));
-
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Unsigned", BeeUtils.toString(rs.getBoolean("UNSIGNED_ATTRIBUTE"))));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Fixed prec scale",
-              BeeUtils.toString(rs.getBoolean("FIXED_PREC_SCALE"))));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Auto increment", BeeUtils.toString(rs.getBoolean("AUTO_INCREMENT"))));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Local name", rs.getString("LOCAL_TYPE_NAME")));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Min scale", rs.getShort("MINIMUM_SCALE")));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Max scale", rs.getShort("MAXIMUM_SCALE")));
-      PropertyUtils.addExtended(lst, nm, k,
-          NameUtils.addName("Num prec radix", rs.getInt("NUM_PREC_RADIX")));
+      rs.close();
     }
-    rs.close();
 
     return lst;
   }

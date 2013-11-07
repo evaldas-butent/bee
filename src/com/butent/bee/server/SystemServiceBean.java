@@ -204,8 +204,11 @@ public class SystemServiceBean {
     File resFile = null;
     if (FileUtils.isFile(search)) {
       resFile = new File(search);
-    } else {
 
+    } else if (FileUtils.isFile(Config.WAR_DIR, search)) {
+      resFile = new File(Config.WAR_DIR, search);
+
+    } else {
       List<File> roots = null;
       if (BeeUtils.same(mode, "src")) {
         roots = Lists.newArrayList(Config.SOURCE_DIR);

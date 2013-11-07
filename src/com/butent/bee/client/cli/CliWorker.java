@@ -262,7 +262,7 @@ public final class CliWorker {
       cornify(arr);
 
     } else if (z.startsWith("dbinf")) {
-      BeeKeeper.getRpc().makeGetRequest(Service.DB_INFO);
+      getDbInfo(args);
 
     } else if ("debug".equals(z)) {
       setDebug(args);
@@ -1327,6 +1327,14 @@ public final class CliWorker {
     }
   }
 
+  private static void getDbInfo(String args) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_INFO);
+    if (!BeeUtils.isEmpty(args)) {
+      params.addPositionalHeader(args.trim());
+    }
+    BeeKeeper.getRpc().makeRequest(params);
+  }
+
   private static void getFiles() {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_FILES, new ResponseCallback() {
       @Override
@@ -1417,13 +1425,13 @@ public final class CliWorker {
       }
     });
   }
-
+  
   private static void getTables(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
-    BeeKeeper.getRpc().makeGetRequest(params);
+    BeeKeeper.getRpc().makeRequest(params);
   }
 
   @Deprecated
