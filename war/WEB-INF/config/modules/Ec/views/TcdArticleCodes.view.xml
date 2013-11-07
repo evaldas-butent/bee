@@ -16,6 +16,7 @@
 
     <SimpleColumn name="SearchNr" />
     <SimpleColumn name="CodeNr" />
+    <SimpleColumn name="Brand" />
     <SimpleJoin name="Brand" joinType="LEFT">
       <SimpleColumn name="BrandName" />
     </SimpleJoin>
