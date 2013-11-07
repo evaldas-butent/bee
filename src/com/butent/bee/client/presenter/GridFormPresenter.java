@@ -60,9 +60,20 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   @Override
-  public boolean createParentRow(NotificationListener notificationListener,
-      Callback<IsRow> callback) {
-    return gridView.createParentRow(notificationListener, callback);
+  public void createParentRow(final NotificationListener notificationListener,
+      final Callback<IsRow> callback) {
+
+    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
+      gridView.ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          gridView.createParentRow(notificationListener, callback);
+        }
+      });
+
+    } else {
+      gridView.createParentRow(notificationListener, callback);
+    }
   }
 
   @Override

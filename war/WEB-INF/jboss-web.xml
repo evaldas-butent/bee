@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <jboss-web>
-    <security-domain>other</security-domain>
-    <valve>
-        <class-name>org.jboss.as.web.security.jaspi.WebJASPIAuthenticator</class-name>
-    </valve>
+  <security-domain>other</security-domain>
+  <valve>
+    <class-name>org.jboss.as.web.security.jaspi.WebJASPIAuthenticator</class-name>
+    <param>
+      <param-name>characterEncoding</param-name>
+      <param-value>UTF-8</param-value>
+    </param>
+  </valve>
 </jboss-web>

@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -101,22 +102,27 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
       dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
     }
 
-    private void addTrip(long tripId) {
+    private void addTrip(final long tripId) {
       if (!DataUtils.isId(tripId)) {
         return;
       }
       dialog.close();
-
-      List<BeeColumn> columns =
-          DataUtils.getColumns(gridView.getDataColumns(), cargoIndex, tripIndex);
-      List<String> values = Lists.newArrayList(BeeUtils.toString(gridView.getRelId()),
-          BeeUtils.toString(tripId));
-
-      Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
+      
+      gridView.ensureRelId(new IdCallback() {
         @Override
-        public void onSuccess(BeeRow row) {
-          BeeKeeper.getBus().fireEvent(new RowInsertEvent(gridView.getViewName(), row));
-          gridView.getGrid().insertRow(row, false);
+        public void onSuccess(Long result) {
+          List<BeeColumn> columns =
+              DataUtils.getColumns(gridView.getDataColumns(), cargoIndex, tripIndex);
+          List<String> values = Lists.newArrayList(BeeUtils.toString(result),
+              BeeUtils.toString(tripId));
+          
+          Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow row) {
+              BeeKeeper.getBus().fireEvent(new RowInsertEvent(gridView.getViewName(), row));
+              gridView.getGrid().insertRow(row, false);
+            }
+          });
         }
       });
     }

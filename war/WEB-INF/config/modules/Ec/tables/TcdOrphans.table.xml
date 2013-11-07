@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="TcdOrphans"
+  idName="OrphanID"
+  audit="false"
+  idChunk="100"
+  >
+  <Fields>
+    <String name="ArticleNr" precision="50" notNull="true" label="=ecItemCode" />
+    <Relation name="Brand" relation="TcdBrands" notNull="true" label="=ecItemBrand" />
+    <Numeric name="Supplier" precision="1" notNull="true" label="=ecItemSupplier"/>
+    <String name="SupplierID" precision="50" notNull="true" label="=ecItemSupplierCode" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Supplier SupplierID" />
+  </Constraints>
+  <Indexes>
+    <Index fields="Supplier" />
+    <Index fields="SupplierID" />
+  </Indexes>
+</Table>

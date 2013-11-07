@@ -251,6 +251,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String item();
 
+  String languageTag();
+
   String length();
 
   String location();

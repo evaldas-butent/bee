@@ -6,4 +6,6 @@
     <role-name>architect</role-name>
     <group-name>architect</group-name>
   </security-role-mapping>
+
+  <parameter-encoding default-charset="UTF-8"/>
 </glassfish-web-app>

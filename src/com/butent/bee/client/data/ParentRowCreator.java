@@ -5,5 +5,5 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 
 public interface ParentRowCreator {
-  boolean createParentRow(NotificationListener notificationListener, Callback<IsRow> callback);
+  void createParentRow(NotificationListener notificationListener, Callback<IsRow> callback);
 }

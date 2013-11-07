@@ -70,8 +70,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   String getRelColumn();
   
-  Long getRelId();
-
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
 
   void initData(int rowCount, BeeRowSet rowSet);

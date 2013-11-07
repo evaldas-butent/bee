@@ -75,6 +75,7 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InternalLink;
@@ -132,6 +133,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -187,6 +189,7 @@ public enum FormWidget {
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DIV("div", null),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
+  FA_LABEL("FaLabel", EnumSet.of(Type.IS_LABEL)),
   FIELD_SET("FieldSet", EnumSet.of(Type.HAS_CHILDREN)),
   FILE_COLLECTOR("FileCollector", null),
   FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
@@ -326,6 +329,7 @@ public enum FormWidget {
   private static final String ATTR_DISABLABLE = "disablable";
 
   private static final String ATTR_INLINE = "inline";
+  private static final String ATTR_CHAR = "char";
 
   private static final String ATTR_URL = "url";
   private static final String ATTR_ALT = "alt";
@@ -650,6 +654,16 @@ public enum FormWidget {
         }
         break;
         
+      case FA_LABEL:
+        FontAwesome fa = FontAwesome.parse(attributes.get(ATTR_CHAR));
+        if (fa == null) {
+          logger.warning(FontAwesome.FAMILY, "cannot parse", ATTR_CHAR, attributes.get(ATTR_CHAR));
+        } else {
+          inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
+          widget = new FaLabel(fa, inline);
+        }
+        break;
+
       case FIELD_SET:
         widget = new FieldSet();
         break;

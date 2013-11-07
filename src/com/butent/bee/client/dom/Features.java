@@ -82,6 +82,7 @@ public final class Features {
   private static Boolean inputUrl;
   private static Boolean inputWeek;
 
+  private static Boolean intl;
   private static Boolean localStorage;
   private static Boolean microdata;
   private static Boolean postMessage;
@@ -208,7 +209,8 @@ public final class Features {
         "Input Time", supportsInputTime(),
         "Input Url", supportsInputUrl(),
         "Input Week", supportsInputWeek(),
-
+        
+        "Intl", supportsIntl(),
         "Local Storage", supportsLocalStorage(),
         "Microdata", supportsMicrodata(),
         "Post Message", supportsPostMessage(),
@@ -589,6 +591,13 @@ public final class Features {
     return inputWeek;
   }
 
+  public static boolean supportsIntl() {
+    if (intl == null) {
+      intl = testIntl();
+    }
+    return intl;
+  }
+  
   public static boolean supportsLocalStorage() {
     if (localStorage == null) {
       localStorage = testLocalStorage();
@@ -1080,6 +1089,10 @@ public final class Features {
     return testInputType("week");
   }
 
+  private static native boolean testIntl() /*-{
+    return typeof Intl != 'undefined';
+  }-*/;
+  
   private static boolean testLocalStorage() {
     return getWindowProperty("localStorage") != null;
   }

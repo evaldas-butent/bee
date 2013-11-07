@@ -271,14 +271,18 @@ public final class DocumentHandler {
         collector = FileCollector.headless(new Consumer<Collection<NewFileInfo>>() {
           @Override
           public void accept(Collection<NewFileInfo> input) {
-            Collection<NewFileInfo> files = sanitize(gridView, input);
-            Long docId = gridView.getRelId();
+            final Collection<NewFileInfo> files = sanitize(gridView, input);
 
-            if (!files.isEmpty() && DataUtils.isId(docId)) {
-              sendFiles(docId, files, new ScheduledCommand() {
+            if (!files.isEmpty()) {
+              gridView.ensureRelId(new IdCallback() {
                 @Override
-                public void execute() {
-                  gridView.getViewPresenter().handleAction(Action.REFRESH);
+                public void onSuccess(Long result) {
+                  sendFiles(result, files, new ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                      gridView.getViewPresenter().handleAction(Action.REFRESH);
+                    }
+                  });
                 }
               });
             }

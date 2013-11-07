@@ -3,7 +3,6 @@ package com.butent.bee.client.cli;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
@@ -69,6 +68,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -110,6 +110,7 @@ import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -2290,8 +2291,8 @@ public final class CliWorker {
     }
 
     JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
-    table.sort(0);
 
+    sortTable(table, 0);
     showTable(v, table);
   }
 
@@ -2396,21 +2397,16 @@ public final class CliWorker {
       styles.addAll(StyleUtils.parseStyles(args));
     }
 
-    int count = 0;
-    for (Range<Character> range : FontAwesome.RANGES) {
-      for (char c = range.lowerEndpoint(); c <= range.upperEndpoint(); c++) {
-        InlineLabel label = new InlineLabel();
-        label.getElement().setInnerText(String.valueOf(c));
-        label.setTitle(Integer.toHexString(c));
+    for (FontAwesome fa : FontAwesome.values()) {
+      FaLabel label = new FaLabel(fa, true);
+      label.setTitle(BeeUtils.joinWords(fa.name().toLowerCase(),
+          Integer.toHexString(fa.getCode())));
 
-        StyleUtils.updateStyle(label, styles);
-
-        panel.add(label);
-        count++;
-      }
+      StyleUtils.updateStyle(label, styles);
+      panel.add(label);
     }
 
-    logger.debug(FontAwesome.FAMILY, count);
+    logger.debug(FontAwesome.FAMILY, FontAwesome.values().length);
     BeeKeeper.getScreen().updateActivePanel(panel);
   }
 
@@ -2444,8 +2440,8 @@ public final class CliWorker {
     }
 
     JsData<?> table = new JsData<TableColumn>(fnc, "function");
-    table.sort(0);
 
+    sortTable(table, 0);
     showTable(v, table);
   }
 
@@ -2945,8 +2941,8 @@ public final class CliWorker {
     }
 
     JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
-    table.sort(0);
 
+    sortTable(table, 0);
     showTable(v, table);
   }
 
@@ -3470,6 +3466,15 @@ public final class CliWorker {
       }
     }
     BeeKeeper.getScreen().updateActivePanel(table);
+  }
+
+  private static void sortTable(IsTable<?, ?> table, int col) {
+    if (table.getNumberOfRows() > 1) {
+      List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
+      sortInfo.add(Pair.of(col, true));
+
+      table.sort(sortInfo, Collator.DEFAULT);
+    }
   }
 
   private static void storage(String[] arr) {

@@ -252,13 +252,8 @@ public final class NameUtils {
     return BeeUtils.join(DEFAULT_NAME_SEPARATOR, names);
   }
 
-  public static String rename(String input, String oldName, String newName) {
-    if (BeeUtils.containsSame(input, oldName) && !BeeUtils.isEmpty(newName)
-        && !oldName.trim().equals(newName.trim())) {
-      return join(rename(toList(input), oldName, newName));
-    } else {
-      return input;
-    }
+  public static String normalizeEnumName(String input) {
+    return CharMatcher.JAVA_LETTER_OR_DIGIT.retainFrom(input).toLowerCase();
   }
   
   public static List<String> rename(List<String> names, String oldName, String newName) {
@@ -287,6 +282,15 @@ public final class NameUtils {
     return result;
   }
 
+  public static String rename(String input, String oldName, String newName) {
+    if (BeeUtils.containsSame(input, oldName) && !BeeUtils.isEmpty(newName)
+        && !oldName.trim().equals(newName.trim())) {
+      return join(rename(toList(input), oldName, newName));
+    } else {
+      return input;
+    }
+  }
+  
   public static String replaceName(String input, String search, String replacement) {
     if (BeeUtils.isEmpty(input) || BeeUtils.isEmpty(search) || replacement == null) {
       return input;
@@ -325,7 +329,7 @@ public final class NameUtils {
 
     return sb.toString();
   }
-  
+
   public static List<String> toList(String s) {
     if (BeeUtils.isEmpty(s)) {
       return Lists.newArrayList();
@@ -355,10 +359,6 @@ public final class NameUtils {
     } else {
       return obj.getClass().getName();
     }
-  }
-
-  private static String normalizeEnumName(String input) {
-    return CharMatcher.JAVA_LETTER_OR_DIGIT.retainFrom(input).toLowerCase();
   }
 
   private NameUtils() {
