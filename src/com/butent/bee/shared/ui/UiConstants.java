@@ -54,6 +54,8 @@ public final class UiConstants {
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";
 
+  public static final int MAX_PASSWORD_LENGTH = 30;
+  
   public static String wtfplLabel() {
     return "UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear();
   }

@@ -19,8 +19,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.animation.AnimationState;
 import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
@@ -167,16 +165,16 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       }
     }
 
-    private double getCut() {
-      return cut;
-    }
-
     private int getCycleDuration() {
       return cycleDuration;
     }
-    
+
     private double getCycleValue() {
       return cycleValue;
+    }
+    
+    private double getCut() {
+      return cut;
     }
 
     private int getNextPosition() {
@@ -240,12 +238,12 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       setState(AnimationState.RESUMED);
     }
 
-    private void setCut(double cut) {
-      this.cut = cut;
-    }
-
     private void setCycleValue(double cycleValue) {
       this.cycleValue = cycleValue;
+    }
+
+    private void setCut(double cut) {
+      this.cut = cut;
     }
     
     private void setNextPosition(int nextPosition) {
@@ -390,7 +388,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private static final int IDLE_MILLIS_STEP = 100;
   private static final int IDLE_MILLIS_MAX = 10000;
 
-  private static final int IDLE_MILLIS_DEFAULT = 2000;
+  private static final int IDLE_MILLIS_DEFAULT = 3000;
   private static final String IDLE_MILLIS_KEY = "SlideDeckIdleMillis";
 
   private static final int TRANSITION_MILLIS_MIN = 100;
@@ -414,6 +412,10 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private static final String STYLE_REPEAT = STYLE_PREFIX + "repeat";
   private static final String STYLE_REPEAT_ON = STYLE_REPEAT + "-on";
   private static final String STYLE_REPEAT_OFF = STYLE_REPEAT + "-off";
+
+  private static final String STYLE_SETTINGS_PREFIX = STYLE_PREFIX + "settings-";
+  private static final String STYLE_SETTINGS_HIDDEN = STYLE_SETTINGS_PREFIX + "hidden";
+  private static final String STYLE_SETTINGS_LABEL = STYLE_SETTINGS_PREFIX + "label";
 
   public static void create(List<String> sources, Callback<SlideDeck> callback) {
     int maxWidth = BeeUtils.round(Window.getClientWidth() * MAX_WIDTH_FACTOR);
@@ -473,6 +475,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private final Flow thumbnails;
   private final Flow canvas;
   private final Flow controls;
+  private Flow settingsPanel;
 
   private final Widget[] wrappers = new Widget[2];
   private int activeWrapperIndex;
@@ -690,101 +693,10 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     }
   }
 
-  private void editSettings() {
-    String stylePrefix = STYLE_PREFIX + "config-";
-
-    HtmlTable table = new HtmlTable(stylePrefix + "table");
-
-    int row = 0;
-    table.setHtml(row, 0, "Effect");
-
-    final BeeListBox effectWidget = new BeeListBox();
-    effectWidget.addCaptions(Effect.class);
-    if (getEffect() != null) {
-      effectWidget.setSelectedIndex(getEffect().ordinal());
-    }
-
-    effectWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        Effect eff = NameUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
-        if (eff != null && eff != getEffect()) {
-          animation.onEffectChanged(getEffect(), eff);
-          setEffect(eff);
-        }
-      }
-    });
-
-    table.setWidgetAndStyle(row, 1, effectWidget, stylePrefix + "effect");
-
-    row++;
-
-    table.setHtml(row, 0, "Idle");
-    InputRange idleWidget = new InputRange(IDLE_MILLIS_MIN, IDLE_MILLIS_MAX, IDLE_MILLIS_STEP);
-    idleWidget.setValue(getIdleMillis());
-
-    idleWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        int millis = BeeUtils.toInt(event.getValue());
-        if (millis > 0) {
-          setIdleMillis(millis);
-          animation.updateCycleDuration();
-        }
-      }
-    });
-
-    table.setWidgetAndStyle(row, 1, idleWidget, stylePrefix + "idle");
-
-    row++;
-
-    table.setHtml(row, 0, "Transition");
-    InputRange transitionWidget = new InputRange(TRANSITION_MILLIS_MIN, TRANSITION_MILLIS_MAX,
-        TRANSITION_MILLIS_STEP);
-    transitionWidget.setValue(getTransitionMillis());
-
-    transitionWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        int millis = BeeUtils.toInt(event.getValue());
-        if (millis > 0) {
-          setTransitionMillis(millis);
-          animation.updateCycleDuration();
-        }
-      }
-    });
-
-    table.setWidgetAndStyle(row, 1, transitionWidget, stylePrefix + "transition");
-
-    final Popup popup = new Popup(OutsideClick.CLOSE, stylePrefix + "popup");
-
-    Flow panel = new Flow(stylePrefix + "panel");
-    panel.add(table);
-
-    FaLabel close = new FaLabel(FontAwesome.TIMES);
-    close.addStyleName(stylePrefix + "close");
-
-    close.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        popup.close();
-      }
-    });
-
-    panel.add(close);
-
-    popup.setWidget(panel);
-
-    popup.setHideOnEscape(true);
-    popup.setAnimationEnabled(true);
-
-    popup.showRelativeTo(controls.getElement());
-  }
-
   private Widget getActiveWrapper() {
     return wrappers[getActiveWrapperIndex()];
   }
-
+  
   private int getActiveWrapperIndex() {
     return activeWrapperIndex;
   }
@@ -827,6 +739,10 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
   private String getProgressId() {
     return progressId;
+  }
+
+  private Flow getSettingsPanel() {
+    return settingsPanel;
   }
 
   private Widget getThumbnail(int index) {
@@ -923,17 +839,106 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     setForwardId(forward.getId());
     controls.add(forward);
 
-    FaLabel settings = new FaLabel(FontAwesome.COG);
-    settings.addStyleName(STYLE_PREFIX + "settings");
+    FaLabel settingsToggle = new FaLabel(FontAwesome.COG);
+    settingsToggle.addStyleName(STYLE_SETTINGS_PREFIX + "toggle");
 
-    settings.addClickHandler(new ClickHandler() {
+    settingsToggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        editSettings();
+        toggleSettingsPanel();
       }
     });
 
-    controls.add(settings);
+    controls.add(settingsToggle);
+  }
+
+  private Flow renderSettingsPanel() {
+    Flow panel = new Flow(STYLE_SETTINGS_PREFIX + "panel");
+    StyleUtils.setBottom(panel, CONTROLS_HEIGHT);
+
+    HtmlTable table = new HtmlTable(STYLE_SETTINGS_PREFIX + "table");
+    int row = 0;
+    
+    Label effLabel = new Label("Effect");
+    table.setWidgetAndStyle(row, 0, effLabel, STYLE_SETTINGS_LABEL);
+
+    final BeeListBox effectWidget = new BeeListBox();
+    effectWidget.addCaptions(Effect.class);
+    if (getEffect() != null) {
+      effectWidget.setSelectedIndex(getEffect().ordinal());
+    }
+
+    effectWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        Effect eff = NameUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
+        if (eff != null && eff != getEffect()) {
+          animation.onEffectChanged(getEffect(), eff);
+          setEffect(eff);
+        }
+      }
+    });
+
+    table.setWidgetAndStyle(row, 1, effectWidget, STYLE_SETTINGS_PREFIX + "effect");
+    row++;
+
+    Label idleLabel = new Label("Idle");
+    table.setWidgetAndStyle(row, 0, idleLabel, STYLE_SETTINGS_LABEL);
+    
+    InputRange idleWidget = new InputRange(IDLE_MILLIS_MIN, IDLE_MILLIS_MAX, IDLE_MILLIS_STEP);
+    idleWidget.setValue(getIdleMillis());
+
+    idleWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        int millis = BeeUtils.toInt(event.getValue());
+        if (millis > 0) {
+          setIdleMillis(millis);
+          animation.updateCycleDuration();
+        }
+      }
+    });
+
+    table.setWidgetAndStyle(row, 1, idleWidget, STYLE_SETTINGS_PREFIX + "idle");
+    row++;
+
+    Label transitionLabel = new Label("Transition");
+    table.setWidgetAndStyle(row, 0, transitionLabel, STYLE_SETTINGS_LABEL);
+    
+    InputRange transitionWidget = new InputRange(TRANSITION_MILLIS_MIN, TRANSITION_MILLIS_MAX,
+        TRANSITION_MILLIS_STEP);
+    transitionWidget.setValue(getTransitionMillis());
+
+    transitionWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        int millis = BeeUtils.toInt(event.getValue());
+        if (millis > 0) {
+          setTransitionMillis(millis);
+          animation.updateCycleDuration();
+        }
+      }
+    });
+
+    table.setWidgetAndStyle(row, 1, transitionWidget, STYLE_SETTINGS_PREFIX + "transition");
+
+    panel.add(table);
+
+    FaLabel close = new FaLabel(FontAwesome.TIMES);
+    close.addStyleName(STYLE_SETTINGS_PREFIX + "close");
+
+    close.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (getSettingsPanel() != null) {
+          getSettingsPanel().addStyleName(STYLE_SETTINGS_HIDDEN);
+        }
+      }
+    });
+
+    panel.add(close);
+    
+    return panel;
   }
 
   private void renderThumbnails() {
@@ -993,6 +998,10 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     this.progressId = progressId;
   }
 
+  private void setSettingsPanel(Flow settingsPanel) {
+    this.settingsPanel = settingsPanel;
+  }
+
   private void setTransitionMillis(int transitionMillis) {
     this.transitionMillis = transitionMillis;
     BeeKeeper.getStorage().set(TRANSITION_MILLIS_KEY, transitionMillis);
@@ -1009,6 +1018,15 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
     updateStyle();
     updatePlayIcon();
+  }
+
+  private void toggleSettingsPanel() {
+    if (getSettingsPanel() == null) {
+      setSettingsPanel(renderSettingsPanel());
+      add(getSettingsPanel());
+    } else {
+      getSettingsPanel().getElement().toggleClassName(STYLE_SETTINGS_HIDDEN);
+    }
   }
 
   private void updateActiveWrapper(int slideIndex) {
@@ -1052,7 +1070,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
           ? FontAwesome.PAUSE : FontAwesome.PLAY);
     }
   }
-
+  
   private void updateProgressControl(double value) {
     Widget progress = DomUtils.getChildById(controls, getProgressId());
     if (progress instanceof Progress) {
@@ -1073,7 +1091,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       }
     }
   }
-  
+
   private void updateStyle() {
     if (animation.isRunning() || animation.isResumed()) {
       removeStyleName(STYLE_NOT_PLAYING);

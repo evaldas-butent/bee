@@ -48,6 +48,10 @@ public enum SupportedLocale implements HasCaption {
     }
     return null;
   }
+  
+  public static String normalizeLanguage(String language) {
+    return BeeUtils.nvl(getByLanguage(language), DEFAULT).getLanguage();
+  }
 
   public abstract String getIconName();
 

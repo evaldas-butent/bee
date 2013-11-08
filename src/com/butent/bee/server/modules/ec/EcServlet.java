@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.SqlInsert;
@@ -74,7 +75,7 @@ public class EcServlet extends LoginServlet {
       Input input = input().addClass(REG_STYLE_TYPE_PREFIX + "input").type(Type.RADIO)
           .name(name).value(clientType.ordinal()).id(clientType.name().toLowerCase())
           .onChange("onSelectType()");
-      
+
       if (clientType == defaultType) {
         input.checked();
       }
@@ -99,7 +100,7 @@ public class EcServlet extends LoginServlet {
     element.addClassName(className);
     return element;
   }
-  
+
   private static Element registrationField(String label, Type type, String name, boolean required) {
     return tr().id(name + ID_SUFFIX_FIELD).append(
         registrationLabelCell(name + ID_SUFFIX_LABEL, label, required),
@@ -158,19 +159,18 @@ public class EcServlet extends LoginServlet {
   }
 
   @Override
-  protected Node getLoginExtension(HttpServletRequest req,
-      LocalizableConstants localizableConstants) {
-
+  protected Node getLoginExtension(HttpServletRequest req) {
     String stylePrefix = "bee-SignIn-";
     String styleName = stylePrefix + "Command-container";
     Div commandContainer = div().addClass(styleName);
 
     commandContainer.append(form()
         .addClass(stylePrefix + "Command-Form-register")
+        .name("register")
         .methodPost()
         .action(req.getServletContext().getContextPath() + req.getServletPath() + PATH_REGISTER)
-        .append(input().type(Type.SUBMIT).addClass(stylePrefix + "Register")
-            .value(localizableConstants.loginCommandRegister())));
+        .append(button().typeSubmit().addClass(stylePrefix + "Register").id(COMMAND_REGISTER_ID),
+            input().type(Type.HIDDEN).id("register-language").name(HttpConst.PARAM_LOCALE)));
 
     return commandContainer;
   }

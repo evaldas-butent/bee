@@ -8,12 +8,8 @@ import com.google.gwt.dom.client.Document;
 
 public class InputPassword extends InputText {
 
-  public InputPassword() {
-    super(Document.get().createPasswordInputElement());
-  }
-
   public InputPassword(int maxLength) {
-    this();
+    super(Document.get().createPasswordInputElement());
     setMaxLength(maxLength);
   }
   

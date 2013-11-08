@@ -22,13 +22,13 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 public final class PasswordService {
 
   private static final String STYLE_DIALOG = "bee-ChangePassword";
-  private static final int MAX_PASSWORD_LENGTH = 30;
 
   public static void change() {
     final Long userId = BeeKeeper.getUser().getUserId();
@@ -82,18 +82,18 @@ public final class PasswordService {
     if (BeeUtils.isEmpty(oldPass)) {
       inpOld = null;
     } else {
-      inpOld = new InputPassword(MAX_PASSWORD_LENGTH);
+      inpOld = new InputPassword(UiConstants.MAX_PASSWORD_LENGTH);
       table.setHtml(row, 0, Localized.getConstants().oldPassword());
       table.setWidget(row, 1, inpOld);
       row++;
     }
 
-    final InputPassword inpNew = new InputPassword(MAX_PASSWORD_LENGTH);
+    final InputPassword inpNew = new InputPassword(UiConstants.MAX_PASSWORD_LENGTH);
     table.setHtml(row, 0, Localized.getConstants().newPassword());
     table.setWidget(row, 1, inpNew);
     row++;
 
-    final InputPassword inpNew2 = new InputPassword(MAX_PASSWORD_LENGTH);
+    final InputPassword inpNew2 = new InputPassword(UiConstants.MAX_PASSWORD_LENGTH);
     table.setHtml(row, 0, Localized.getConstants().repeatNewPassword());
     table.setWidget(row, 1, inpNew2);
     row++;

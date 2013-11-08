@@ -98,6 +98,11 @@ public class Form extends FertileElement {
     return this;
   }
 
+  public Form onSubmit() {
+    setAttribute(Attributes.ON_SUBMIT, true);
+    return this;
+  }
+
   public Form remove(Node child) {
     super.removeChild(child);
     return this;

@@ -12,3 +12,44 @@ function goPswd(ev) {
   }
   return true;
 }
+
+function getStoredLanguage() {
+  return localStorage.getItem("language");
+}
+function storeLanguage(lng) {
+  localStorage.setItem("language", lng);
+}
+
+function onSelectLanguage(lng) {
+  if (lng) {
+    storeLanguage(lng);
+    translate(lng);
+  }
+}
+
+function translate(lng) {
+  var dictionary = eval("dictionary" + lng);
+  if (dictionary) {
+    for (var id in dictionary) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.textContent = dictionary[id];
+      }
+    }
+  }
+}
+
+function onload(reqLng) {
+  var lng = getStoredLanguage();
+  if (!lng) {
+    lng = reqLng;
+  }
+
+  if (lng) {
+    var el = document.getElementById(lng);
+    if (el) {
+      el.checked = true;
+    }
+    translate(lng);
+  }
+}

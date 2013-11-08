@@ -125,7 +125,6 @@ public class DataSourceBean {
       try {
         ds = (DataSource) InitialContext.doLookup("java:comp/env/" + nm);
       } catch (NamingException ex) {
-        logger.error(ex);
         ds = null;
       }
       if (ds == null) {
@@ -135,6 +134,7 @@ public class DataSourceBean {
           try {
             ds = (DataSource) InitialContext.doLookup("java:jdbc/" + nm);
           } catch (NamingException ex2) {
+            logger.error(ex);
             ds = null;
           }
         }

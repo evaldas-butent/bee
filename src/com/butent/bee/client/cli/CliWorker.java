@@ -290,7 +290,7 @@ public final class CliWorker {
       getResource(arr);
 
     } else if ("eval".equals(z)) {
-      eval(v, arr);
+      eval(args);
 
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
@@ -1293,11 +1293,9 @@ public final class CliWorker {
     }
   }
 
-  private static void eval(String v, String[] arr) {
-    String xpr = v.substring(arr[0].length()).trim();
-
+  private static void eval(String xpr) {
     if (BeeUtils.isEmpty(xpr)) {
-      Global.sayHuh(v);
+      Global.sayHuh();
     } else {
       inform(xpr, JsUtils.evalToString(xpr));
     }
