@@ -248,6 +248,8 @@ public interface LocalizableEcConstants {
 
   String ecRegistrationNew();
 
+  String ecRegistrationReceived();
+
   String ecSearchBy();
 
   String ecSearchByBrand();

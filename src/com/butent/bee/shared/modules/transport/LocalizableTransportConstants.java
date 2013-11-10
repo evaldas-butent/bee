@@ -280,6 +280,8 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationPhone();
 
+  String trRegistrationReceived();
+  
   String trRegistrationSwift();
 
   String trRegistrationVatCode();

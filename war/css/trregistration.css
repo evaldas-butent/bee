@@ -4,7 +4,7 @@ body {
   background-color: WhiteSmoke;  
 }
 
-.bee-ec-registration-panel {
+.bee-tr-registration-panel {
   margin-top: 3ex;
   display: flex;
   display: -webkit-flex;
@@ -20,46 +20,39 @@ body {
   -ms-flex-align: center;
 }
 
-.bee-ec-registration-caption {
+.bee-tr-registration-caption {
   font-size: large;
   font-weight: bolder;
   margin-bottom: 3ex;
 }
 
-.bee-ec-registration-table {
+.bee-tr-registration-table {
   border-collapse: collapse;
 }
 
-.bee-ec-registration-table td {
+.bee-tr-registration-table td {
   padding: 2px 1em;
 }
 
-.bee-ec-registration-label-cell {
+.bee-tr-registration-label-cell {
   text-align: right;
 }
-.bee-ec-registration-required:after {
+.bee-tr-registration-required:after {
   content: "*";
   color: red;
   font-size: 13px;
   font-weight: bold;
 }
 
-.bee-ec-registration-input {
+.bee-tr-registration-input {
   width: 200px;
 }
 
-.bee-ec-registration-submit {
+.bee-tr-registration-submit {
   font-size: medium;
   padding: 5px 10px;
   display: block;
   margin-top: 3ex;
   margin-left: auto;
   margin-right: auto;
-}
-
-.bee-ec-registration-show {
-  display: table-row;
-}
-.bee-ec-registration-hide {
-  display: none;
 }

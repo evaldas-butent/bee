@@ -19,6 +19,8 @@
       <url-pattern>/fonts/*</url-pattern>
       <url-pattern>/ext/*</url-pattern>
       <url-pattern>/ec/register</url-pattern>
+      <url-pattern>/tr/register</url-pattern>
+      <url-pattern>/tr/query</url-pattern>
     </web-resource-collection>
   </security-constraint>
 

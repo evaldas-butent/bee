@@ -45,11 +45,15 @@ public final class Localized {
   }
 
   public static String maybeTranslate(String text) {
+    return maybeTranslate(text, dictionary);
+  }
+
+  public static String maybeTranslate(String text, Map<String, String> dict) {
     if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
       return text;
     }
-
-    String localized = translate(text.substring(1));
+    
+    String localized = translate(text.substring(1), dict);
     if (localized == null) {
       logger.warning("cannot localize:", text);
       return text;
@@ -71,7 +75,11 @@ public final class Localized {
   }
   
   public static String translate(String key) {
-    return (dictionary == null) ? null : dictionary.get(key);
+    return translate(key, dictionary);
+  }
+
+  public static String translate(String key, Map<String, String> dict) {
+    return (dict == null) ? null : dict.get(key);
   }
 
   private Localized() {

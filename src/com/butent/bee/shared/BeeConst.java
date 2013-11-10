@@ -68,6 +68,7 @@ public final class BeeConst {
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
   public static final String STRING_ALL = "*";
+  public static final String STRING_APOS = "'";
   public static final String STRING_QUOT = "\"";
   public static final String STRING_UNDER = "_";
   public static final String STRING_COLON = ":";

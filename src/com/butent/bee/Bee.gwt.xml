@@ -7,6 +7,7 @@
   
   <inherits name='com.google.common.cache.Cache'/>
   <inherits name='com.google.common.net.Net'/>
+  <inherits name='com.google.common.html.Html'/>
 
   <inherits name='elemental.Elemental'/>
   

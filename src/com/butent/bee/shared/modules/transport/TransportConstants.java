@@ -252,6 +252,8 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
 
+  public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
+  
   public static final String COL_GROUP = "Group";
 
   public static final String COL_TRIP = "Trip";
