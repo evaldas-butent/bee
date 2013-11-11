@@ -10,6 +10,8 @@ public class Document extends Node {
 
   private static final String DOC_TYPE = "<!doctype html>";
 
+  private static final int DEFAULT_INDENTATION = 2;
+
   private final Html html;
 
   private final Head head;
@@ -39,6 +41,10 @@ public class Document extends Node {
     sb.append(html.build(indentStart, indentStep));
 
     return sb.toString();
+  }
+  
+  public String buildLines() {
+    return build(0, DEFAULT_INDENTATION);
   }
 
   public Body getBody() {

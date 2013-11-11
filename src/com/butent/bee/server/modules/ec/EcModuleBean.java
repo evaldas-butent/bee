@@ -2207,7 +2207,7 @@ public class EcModuleBean implements BeeModule {
     Assert.notNull(constants);
 
     Document document = orderToHtml(orderData.getColumns(), orderRow, constants);
-    String content = document.build(0, 2);
+    String content = document.buildLines();
 
     ResponseObject mailResponse = mail.sendMail(sender, recipients, status.getSubject(constants),
         content);

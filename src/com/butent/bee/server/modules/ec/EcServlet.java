@@ -170,17 +170,12 @@ public class EcServlet extends LoginServlet {
         .acceptCharsetUtf8()
         .methodPost()
         .action(req.getServletContext().getContextPath() + req.getServletPath() + PATH_REGISTER)
-        .onSubmit("return ecCommandRegister()")
+        .onSubmit("setSelectedLanguage(this)")
         .append(
             button().typeSubmit().addClass(STYLE_PREFIX + "Register").id(COMMAND_REGISTER_ID),
             input().type(Type.HIDDEN).id("register-language").name(HttpConst.PARAM_LOCALE));
 
     return div().addClass(STYLE_PREFIX + "Command-container").append(form);
-  }
-
-  @Override
-  protected String getLoginScriptName() {
-    return "eclogin";
   }
 
   private Node branchSelector(String label) {
@@ -264,7 +259,7 @@ public class EcServlet extends LoginServlet {
       }
     }
 
-    return doc.build(0, 2);
+    return doc.buildLines();
   }
 
   private String register(HttpServletRequest req, Map<String, String> parameters,
@@ -351,6 +346,6 @@ public class EcServlet extends LoginServlet {
           response.getResponse())));
     }
 
-    return doc.build(0, 0);
+    return doc.buildLines();
   }
 }

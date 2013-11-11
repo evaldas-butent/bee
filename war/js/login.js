@@ -39,6 +39,9 @@ function getSelectedLanguage() {
   }
   return null;
 }
+function setSelectedLanguage(form) {
+  form["locale"].value = getSelectedLanguage();
+}
 
 function translate(lng) {
   var dictionary = eval("dictionary" + lng);

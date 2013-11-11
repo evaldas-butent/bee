@@ -141,6 +141,8 @@ public final class CommonsConstants {
   public static final String VIEW_BRANCHES = "Branches";
   public static final String VIEW_WAREHOUSES = "Warehouses";
 
+  public static final String VIEW_CURRENCIES = "Currencies";
+
   public static final String GRID_PERSONS = "Persons";
 
   public static final String COL_RELATION = "Relation";
@@ -242,6 +244,8 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+
+  public static final String COL_CURRENCY_NAME = "Name";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";

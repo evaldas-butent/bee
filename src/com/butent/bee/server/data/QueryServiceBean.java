@@ -460,6 +460,10 @@ public class QueryServiceBean {
     return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
   }
 
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, List<String> columns) {
+    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, columns);
+  }
+
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       List<String> columns) {
 

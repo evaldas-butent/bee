@@ -157,7 +157,7 @@ public class LoginServlet extends HttpServlet {
     }
     doc.getHead().append(script().src(resource(contextPath, "bee/bee.nocache.js")));
 
-    return doc.build(0, 0);
+    return doc.buildLines();
   }
 
   private static String verboten(String contextPath) {
@@ -170,7 +170,7 @@ public class LoginServlet extends HttpServlet {
     doc.getBody().append(img().src(resource(contextPath, Paths.getImagePath("answer.jpg")))
         .alt("respect my authoritah"));
 
-    return doc.build();
+    return doc.buildLines();
   }
 
   @EJB
@@ -262,7 +262,7 @@ public class LoginServlet extends HttpServlet {
                     .src(resource(contextPath, UiConstants.wtfplLogo())).alt("wtfpl"),
                 span().addClass(STYLE_PREFIX + "Copyright-label").text(UiConstants.wtfplLabel())));
 
-    return doc.build(0, 2);
+    return doc.buildLines();
   }
   
   @Override
