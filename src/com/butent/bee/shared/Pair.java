@@ -124,7 +124,7 @@ public final class Pair<A, B> implements BeeSerializable {
   public int hashCode() {
     return 1 + Objects.hashCode(getA(), getB());
   }
-  
+
   public boolean isNull() {
     return getA() == null && getB() == null;
   }
@@ -134,13 +134,13 @@ public final class Pair<A, B> implements BeeSerializable {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
-  
+
     for (Serial member : members) {
       switch (member) {
         case A:
           arr[i++] = getA();
           break;
-  
+
         case B:
           arr[i++] = getB();
           break;
@@ -164,6 +164,6 @@ public final class Pair<A, B> implements BeeSerializable {
    */
   @Override
   public String toString() {
-    return BeeUtils.join(BeeConst.STRING_COMMA, a, b);
+    return BeeUtils.join(BeeConst.STRING_COLON, a, b);
   }
 }

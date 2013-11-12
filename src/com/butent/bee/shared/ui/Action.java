@@ -16,6 +16,7 @@ import java.util.Set;
 
 public enum Action implements BeeSerializable, HasCaption {
   ADD(Localized.getConstants().actionAdd(), "add"),
+  AUDIT(Localized.getConstants().actionAudit(), "audit"),
   BOOKMARK(Localized.getConstants().actionBookmark(), "bookmark"),
   CANCEL(Localized.getConstants().actionCancel(), "cancel"),
   CLOSE(Localized.getConstants().actionClose(), "close"),
@@ -27,9 +28,9 @@ public enum Action implements BeeSerializable, HasCaption {
   REFRESH(Localized.getConstants().actionRefresh(), "refresh"),
   REMOVE_FILTER(Localized.getConstants().actionRemoveFilter(), "removeFilter"),
   SAVE(Localized.getConstants().actionSave(), "save");
-  
-  public static final Set<Action> NO_ACTIONS = Sets.newHashSet(); 
-  
+
+  public static final Set<Action> NO_ACTIONS = Sets.newHashSet();
+
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
     if (!BeeUtils.isEmpty(s)) {
@@ -42,7 +43,7 @@ public enum Action implements BeeSerializable, HasCaption {
     }
     return result;
   }
-  
+
   public static Action restore(String s) {
     if (!BeeUtils.isEmpty(s)) {
       for (Action action : Action.values()) {
@@ -53,7 +54,7 @@ public enum Action implements BeeSerializable, HasCaption {
     }
     return null;
   }
-  
+
   private final String caption;
   private final String styleSuffix;
 
@@ -75,7 +76,7 @@ public enum Action implements BeeSerializable, HasCaption {
   public String getStyleName() {
     return "bee-Action-" + styleSuffix;
   }
-  
+
   @Override
   public String serialize() {
     return this.name();

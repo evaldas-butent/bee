@@ -187,6 +187,10 @@ public class SystemBean {
         usr.getUserRoles(usr.getCurrentUserId()));
   }
 
+  public String getAuditSource(String tableName) {
+    return BeeUtils.join(".", dbAuditSchema, BeeUtils.join("_", tableName, AUDIT_PREFIX));
+  }
+
   public List<DataInfo> getDataInfo() {
     SimpleRowSet dbTables = qs.dbTables(dbName, dbSchema, null);
     String[] tables = dbTables.getColumn(SqlConstants.TBL_NAME);

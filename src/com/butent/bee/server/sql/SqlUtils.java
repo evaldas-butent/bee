@@ -240,16 +240,10 @@ public final class SqlUtils {
   }
 
   public static IsCondition equals(IsExpression expr, Object value) {
-    IsSql v;
-
     if (value == null) {
       return isNull(expr);
-    } else if (value instanceof IsSql) {
-      v = (IsSql) value;
-    } else {
-      v = constant(value);
     }
-    return compare(expr, Operator.EQ, v);
+    return compare(expr, Operator.EQ, getSqlExpression(value));
   }
 
   public static IsCondition equals(String source, String field, Object value) {
@@ -346,12 +340,12 @@ public final class SqlUtils {
     if (len == 1) {
       cond = equals(expr, values[0]);
     } else {
-      HasConditions orCondition = or();
+      IsSql[] vals = new IsSql[len];
 
-      for (Object value : values) {
-        orCondition.add(equals(expr, value));
+      for (int i = 0; i < len; i++) {
+        vals[i] = getSqlExpression(values[i]);
       }
-      cond = orCondition;
+      cond = new ComparisonCondition(Operator.IN, expr, vals);
     }
     return cond;
   }
@@ -442,14 +436,7 @@ public final class SqlUtils {
   }
 
   public static IsCondition less(IsExpression expr, Object value) {
-    IsSql v;
-
-    if (value instanceof IsSql) {
-      v = (IsSql) value;
-    } else {
-      v = constant(value);
-    }
-    return compare(expr, Operator.LT, v);
+    return compare(expr, Operator.LT, getSqlExpression(value));
   }
 
   public static IsCondition less(String source, String field, Object value) {
@@ -457,14 +444,7 @@ public final class SqlUtils {
   }
 
   public static IsCondition lessEqual(IsExpression expr, Object value) {
-    IsSql v;
-
-    if (value instanceof IsSql) {
-      v = (IsSql) value;
-    } else {
-      v = constant(value);
-    }
-    return compare(expr, Operator.LE, v);
+    return compare(expr, Operator.LE, getSqlExpression(value));
   }
 
   public static IsCondition lessEqual(String source, String field, Object value) {
@@ -487,14 +467,7 @@ public final class SqlUtils {
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
-    IsSql v;
-
-    if (value instanceof IsSql) {
-      v = (IsSql) value;
-    } else {
-      v = constant(value);
-    }
-    return compare(expr, Operator.GT, v);
+    return compare(expr, Operator.GT, getSqlExpression(value));
   }
 
   public static IsCondition more(String source, String field, Object value) {
@@ -502,14 +475,7 @@ public final class SqlUtils {
   }
 
   public static IsCondition moreEqual(IsExpression expr, Object value) {
-    IsSql v;
-
-    if (value instanceof IsSql) {
-      v = (IsSql) value;
-    } else {
-      v = constant(value);
-    }
-    return compare(expr, Operator.GE, v);
+    return compare(expr, Operator.GE, getSqlExpression(value));
   }
 
   public static IsCondition moreEqual(String source, String field, Object value) {
@@ -555,16 +521,10 @@ public final class SqlUtils {
   }
 
   public static IsCondition notEqual(IsExpression expr, Object value) {
-    IsSql v;
-
     if (value == null) {
       return notNull(expr);
-    } else if (value instanceof IsSql) {
-      v = (IsSql) value;
-    } else {
-      v = constant(value);
     }
-    return compare(expr, Operator.NE, v);
+    return compare(expr, Operator.NE, getSqlExpression(value));
   }
 
   public static IsCondition notEqual(String source, String field, Object value) {
@@ -640,11 +600,11 @@ public final class SqlUtils {
 
     Map<String, Object> params = Maps.newHashMap();
     params.put("expression", expr);
-    params.put("caseElse", pairs[pairs.length - 1]);
+    params.put("caseElse", getSqlExpression(pairs[pairs.length - 1]));
 
     for (int i = 0; i < (pairs.length - 1) / 2; i++) {
-      params.put("case" + i, pairs[i * 2]);
-      params.put("value" + i, pairs[i * 2 + 1]);
+      params.put("case" + i, getSqlExpression(pairs[i * 2]));
+      params.put("value" + i, getSqlExpression(pairs[i * 2 + 1]));
     }
     return new FunctionExpression(SqlFunction.CASE, params);
   }
@@ -656,8 +616,8 @@ public final class SqlUtils {
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
     Map<String, Object> params = Maps.newHashMap();
     params.put("condition", cond);
-    params.put("ifTrue", ifTrue);
-    params.put("ifFalse", ifFalse);
+    params.put("ifTrue", getSqlExpression(ifTrue));
+    params.put("ifFalse", getSqlExpression(ifFalse));
 
     return new FunctionExpression(SqlFunction.IF, params);
   }
@@ -761,6 +721,17 @@ public final class SqlUtils {
       }
     }
     return params;
+  }
+
+  private static IsSql getSqlExpression(Object value) {
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return v;
   }
 
   private SqlUtils() {

@@ -3,7 +3,6 @@ package com.butent.bee.server.data;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -341,9 +340,7 @@ public class DataEditorBean {
     String tblName = table.getName();
     ResponseObject response = new ResponseObject();
 
-    if (cache == null) {
-      cache = Sets.newHashSet();
-    } else if (cache.contains(BeeUtils.normalize(tblName))) {
+    if (cache.contains(BeeUtils.normalize(tblName))) {
       return response.addWarning(tblName, "already generated");
     }
     cache.add(BeeUtils.normalize(tblName));

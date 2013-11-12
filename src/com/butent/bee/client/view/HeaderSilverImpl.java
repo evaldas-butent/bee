@@ -143,7 +143,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
-    
+
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
     }
@@ -164,6 +164,10 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
       add(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
+    }
+
+    if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
+      add(createControl(Global.getImages().silverChatIcon(), Action.AUDIT, hiddenActions));
     }
 
     if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
@@ -317,7 +321,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     if (action != null) {
       control.addStyleName(action.getStyleName());
       control.setTitle(action.getCaption());
-      
+
       if (hiddenActions != null && hiddenActions.contains(action)) {
         StyleUtils.hideDisplay(control);
       }

@@ -126,9 +126,7 @@ public class BeeServlet extends LoginServlet {
       logout(req, session);
       try {
         req.getRequestDispatcher(req.getRequestURI()).forward(req, resp);
-      } catch (ServletException ex) {
-        logger.error(ex);
-      } catch (IOException ex) {
+      } catch (ServletException | IOException ex) {
         logger.error(ex);
       }
       return;
