@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
@@ -16,6 +17,10 @@ public class Form extends FertileElement {
   public Form acceptCharset(String value) {
     setAttribute(Attributes.ACCEPT_CHARSET, value);
     return this;
+  }
+
+  public Form acceptCharsetUtf8() {
+    return acceptCharset(BeeConst.CHARSET_UTF8);
   }
 
   public Form action(String value) {
@@ -95,6 +100,11 @@ public class Form extends FertileElement {
 
   public Form noValidate() {
     setAttribute(Attributes.NO_VALIDATE, true);
+    return this;
+  }
+
+  public Form onSubmit(String value) {
+    setAttribute(Attributes.ON_SUBMIT, value);
     return this;
   }
 

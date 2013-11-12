@@ -2,7 +2,6 @@ package com.butent.bee.client;
 
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
@@ -26,31 +25,6 @@ public class Storage implements Module {
     this.localStorage = Features.supportsLocalStorage();
   }
 
-  public Enum<?> checkEnum(String key, Enum<?> def) {
-    Assert.notNull(def);
-    String v = getItem(key);
-    if (BeeUtils.isDigit(v)) {
-      Enum<?>[] arr = def.getClass().getEnumConstants();
-      int idx = BeeUtils.toInt(v);
-      if (ArrayUtils.isIndex(arr, idx)) {
-        return arr[idx];
-      }
-    }
-
-    setItem(key, BeeUtils.toString(def.ordinal()));
-    return def;
-  }
-
-  public int checkInt(String key, int def) {
-    String v = getItem(key);
-    if (BeeUtils.isDigit(v)) {
-      return BeeUtils.toInt(v);
-    }
-
-    setItem(key, BeeUtils.toString(def));
-    return def;
-  }
-
   public void clear() {
     if (localStorage) {
       lsClear();
@@ -66,21 +40,21 @@ public class Storage implements Module {
 
     for (int i = 0; i < len; i++) {
       z = key(i);
-      lst.add(new Property(z, getItem(z)));
+      lst.add(new Property(z, get(z)));
     }
 
     return lst;
   }
 
   public boolean getBoolean(String key) {
-    return BeeUtils.toBoolean(getItem(key));
+    return BeeUtils.toBoolean(get(key));
   }
 
   public int getInt(String key) {
-    return BeeUtils.toInt(getItem(key));
+    return BeeUtils.toInt(get(key));
   }
 
-  public String getItem(String key) {
+  public String get(String key) {
     Assert.notEmpty(key);
 
     if (localStorage) {
@@ -113,7 +87,7 @@ public class Storage implements Module {
     if (BeeUtils.isEmpty(key)) {
       return false;
     }
-    return getItem(key) != null;
+    return get(key) != null;
   }
 
   @Override
@@ -152,7 +126,7 @@ public class Storage implements Module {
   public void onExit() {
   }
 
-  public void removeItem(String key) {
+  public void remove(String key) {
     Assert.notEmpty(key);
 
     if (localStorage) {
@@ -162,11 +136,15 @@ public class Storage implements Module {
     }
   }
 
-  public void setItem(String key, String value) {
+  public void set(String key, int value) {
+    set(key, BeeUtils.toString(value));
+  }
+
+  public void set(String key, String value) {
     Assert.notEmpty(key);
 
     if (BeeUtils.isEmpty(value)) {
-      removeItem(key);
+      remove(key);
     } else if (localStorage) {
       lsSetItem(key, value);
     } else {

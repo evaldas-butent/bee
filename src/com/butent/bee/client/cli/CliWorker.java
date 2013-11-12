@@ -290,7 +290,7 @@ public final class CliWorker {
       getResource(arr);
 
     } else if ("eval".equals(z)) {
-      eval(v, arr);
+      eval(args);
 
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
@@ -1293,11 +1293,9 @@ public final class CliWorker {
     }
   }
 
-  private static void eval(String v, String[] arr) {
-    String xpr = v.substring(arr[0].length()).trim();
-
+  private static void eval(String xpr) {
     if (BeeUtils.isEmpty(xpr)) {
-      Global.sayHuh(v);
+      Global.sayHuh();
     } else {
       inform(xpr, JsUtils.evalToString(xpr));
     }
@@ -3498,7 +3496,7 @@ public final class CliWorker {
         BeeKeeper.getStorage().clear();
         inform(BeeUtils.joinWords(len, "items cleared"));
       } else {
-        String z = BeeKeeper.getStorage().getItem(key);
+        String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
           showError(Localized.getMessages().keyNotFound(key));
         } else {
@@ -3511,10 +3509,10 @@ public final class CliWorker {
     String value = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
-      BeeKeeper.getStorage().removeItem(value);
+      BeeKeeper.getStorage().remove(value);
       inform(value, "removed");
     } else {
-      BeeKeeper.getStorage().setItem(key, value);
+      BeeKeeper.getStorage().set(key, value);
       inform("Storage", NameUtils.addName(key, value));
     }
   }

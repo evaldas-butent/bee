@@ -47,7 +47,7 @@ public class CustomComplex extends ComplexPanel implements IdentifiableWidget, P
   @Override
   public void add(Widget child) {
     Assert.notNull(child);
-    super.add(child, getElement());
+    super.add(child, Element.as(getElement()));
   }
 
   @Override
@@ -97,7 +97,7 @@ public class CustomComplex extends ComplexPanel implements IdentifiableWidget, P
 
   @Override
   public void insert(Widget w, int beforeIndex) {
-    insert(w, getElement(), beforeIndex, true);
+    insert(w, Element.as(getElement()), beforeIndex, true);
   }
   
   @Override

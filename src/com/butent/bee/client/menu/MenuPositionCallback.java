@@ -1,6 +1,6 @@
 package com.butent.bee.client.menu;
 
-import com.google.gwt.user.client.Element;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dialog.Popup.PositionCallback;
 import com.butent.bee.client.dom.DomUtils;

@@ -123,7 +123,7 @@ public class PanelHandler extends Handler implements HasVisibility {
       }
 
       ((Split) parent).setWidgetSize(getPanel(), size);
-      BeeKeeper.getStorage().setItem(STORAGE_KEY, BeeUtils.toString(size));
+      BeeKeeper.getStorage().set(STORAGE_KEY, size);
     }
   }
 

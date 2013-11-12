@@ -401,11 +401,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   public int getPopupLeft() {
-    return DOM.getAbsoluteLeft(getElement());
+    return getElement().getAbsoluteLeft();
   }
 
   public int getPopupTop() {
-    return DOM.getAbsoluteTop(getElement());
+    return getElement().getAbsoluteTop();
   }
 
   public boolean hideOnEscape() {

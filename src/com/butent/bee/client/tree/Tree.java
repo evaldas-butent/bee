@@ -3,6 +3,8 @@ package com.butent.bee.client.tree;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DataTransfer;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -51,7 +53,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.AbstractImagePrototype.ImagePrototypeElement;
@@ -293,7 +294,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   }
 
   public Tree(String caption) {
-    setElement(DOM.createDiv());
+    setElement(Document.get().createDivElement());
 
     getElement().getStyle().setPosition(Position.RELATIVE);
 
@@ -720,10 +721,10 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
     TreeItem item = findItemByChain(chain, 0, root);
     if (item != null && item != root) {
-      if (item.getChildCount() > 0 && DOM.isOrHasChild(item.getImageElement(), hElem)) {
+      if (item.getChildCount() > 0 && item.getImageElement().isOrHasChild(hElem)) {
         item.setOpen(!item.isOpen(), true);
         return true;
-      } else if (DOM.isOrHasChild(item.getElement(), hElem)) {
+      } else if (item.getElement().isOrHasChild(hElem)) {
         onSelection(item, true, !shouldTreeDelegateFocusToElement(hElem));
         return true;
       }

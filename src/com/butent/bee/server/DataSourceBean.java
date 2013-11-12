@@ -123,20 +123,20 @@ public class DataSourceBean {
         nm = BeeUtils.removePrefixAndSuffix(nm, defChar);
       }
       try {
-        ds = (DataSource) InitialContext.doLookup("jdbc/" + nm);
+        ds = (DataSource) InitialContext.doLookup("java:comp/env/" + nm);
       } catch (NamingException ex) {
-        try {
-          ds = (DataSource) InitialContext.doLookup("java:jdbc/" + nm);
-        } catch (NamingException ex2) {
-          ds = null;
-        }
+        ds = null;
       }
       if (ds == null) {
         try {
-          ds = (DataSource) InitialContext.doLookup("java:app/env/" + nm);
+          ds = (DataSource) InitialContext.doLookup("jdbc/" + nm);
         } catch (NamingException ex) {
-          logger.error(ex);
-          ds = null;
+          try {
+            ds = (DataSource) InitialContext.doLookup("java:jdbc/" + nm);
+          } catch (NamingException ex2) {
+            logger.error(ex);
+            ds = null;
+          }
         }
       }
       if (ds != null) {

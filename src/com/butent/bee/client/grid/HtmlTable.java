@@ -2,12 +2,12 @@ package com.butent.bee.client.grid;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -444,7 +444,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       orphan(widget);
     } finally {
       Element elem = widget.getElement();
-      DOM.removeChild(DOM.getParent(elem), elem);
+      elem.removeFromParent();
 
       widgetMap.removeByElement(elem);
     }
@@ -456,7 +456,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     for (int column = 0; column < columnCount; ++column) {
       cleanCell(row, column, false);
     }
-    DOM.removeChild(bodyElem, rowFormatter.getElement(row));
+    bodyElem.removeChild(rowFormatter.getElement(row));
   }
 
   @Override

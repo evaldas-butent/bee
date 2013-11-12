@@ -8,6 +8,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.html.builder.elements.Div;
@@ -15,6 +16,7 @@ import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Link.Rel;
 import com.butent.bee.shared.html.builder.elements.Meta;
+import com.butent.bee.shared.html.builder.elements.Script;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.Paths;
@@ -27,23 +29,60 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 
 import javax.ejb.EJB;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+// CHECKSTYLE:OFF
 @WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})
+// CHECKSTYLE:ON
 @SuppressWarnings("serial")
 public class LoginServlet extends HttpServlet {
+
+  protected static final String COMMAND_REGISTER_ID = "command-register";
+  protected static final String COMMAND_QUERY_ID = "command-query";
+
+  protected static final String ID_SUFFIX_FIELD = "-field";
+  protected static final String ID_SUFFIX_LABEL = "-label";
+  protected static final String ID_SUFFIX_INPUT = "-input";
+  protected static final String ID_SUFFIX_LIST = "-list";
+  
+  protected static final String FORM_NAME = "login";
+
+  protected static final String STYLE_PREFIX = "bee-SignIn-";
 
   private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
 
   private static final String FAV_ICON = "favicon.ico";
   private static final String LOGO = "logo.png";
+
+  private static final String USER_NAME_LABEL_ID = "user-name-label";
+  private static final String PASSWORD_LABEL_ID = "password-label";
+  private static final String ERROR_MESSAGE_ID = "error";
+  private static final String SUBMIT_BUTTON_ID = "submit";
+
+  protected static String event(String func, String param) {
+    return func + BeeConst.STRING_LEFT_PARENTHESIS + BeeConst.STRING_QUOT + param
+        + BeeConst.STRING_QUOT + BeeConst.STRING_RIGHT_PARENTHESIS;
+  }
+  
+  protected static String getLanguage(HttpServletRequest req) {
+    String language = req.getParameter(HttpConst.PARAM_LOCALE);
+    if (BeeUtils.isEmpty(language)) {
+      language = SupportedLocale.normalizeLanguage(HttpUtils.getLanguage(req));
+    }
+    
+    return language;
+  }
 
   protected static String resource(String contextPath, String path) {
     File file = new File(path);
@@ -53,26 +92,46 @@ public class LoginServlet extends HttpServlet {
         return path;
       }
     }
-    String requestPath;
 
-    if (BeeUtils.isEmpty(contextPath) || path.startsWith("/")) {
+    String requestPath;
+    if (BeeUtils.isEmpty(contextPath) || Paths.isAbsolute(path)) {
       requestPath = path;
     } else {
-      requestPath = contextPath + "/" + path;
+      requestPath = Paths.buildPath(contextPath, path);
     }
-    long time = file.lastModified();
 
+    long time = file.lastModified();
     if (time > 0) {
       requestPath += "?v=" + new DateTime(time).toTimeStamp();
     }
     return requestPath;
   }
 
+  private static String generateDictionary(SupportedLocale locale) {
+    String language = locale.getLanguage();
+    LocalizableConstants constants = Localizations.getPreferredConstants(language);
+
+    JsonObject dictionary = Json.createObjectBuilder()
+        .add(USER_NAME_LABEL_ID, constants.loginUserName())
+        .add(PASSWORD_LABEL_ID, constants.loginPassword())
+        .add(ERROR_MESSAGE_ID, constants.loginFailed())
+        .add(SUBMIT_BUTTON_ID, constants.loginSubmit())
+        .add(COMMAND_REGISTER_ID, constants.loginCommandRegister())
+        .add(COMMAND_QUERY_ID, constants.loginCommandQuery())
+        .build();
+
+    StringWriter strWriter = new StringWriter();
+    JsonWriter jsonWriter = Json.createWriter(strWriter);
+    jsonWriter.writeObject(dictionary);
+    jsonWriter.close();
+
+    return strWriter.toString();
+  }
+
   private static String render(String contextPath, UserInterface ui, SupportedLocale locale) {
     Document doc = new Document();
 
     doc.getHead().append(meta().encodingDeclarationUtf8());
-
     if (locale != null) {
       doc.getHead().append(meta().name("gwt:property").content("locale=" + locale.getLanguage()));
     }
@@ -81,6 +140,7 @@ public class LoginServlet extends HttpServlet {
     if (!BeeUtils.isEmpty(meta)) {
       doc.getHead().append(meta);
     }
+
     doc.getHead().append(
         title().text(ui.getTitle()),
         link().rel(Rel.SHORTCUT_ICON)
@@ -91,12 +151,13 @@ public class LoginServlet extends HttpServlet {
       doc.getHead().append(link()
           .styleSheet(resource(contextPath, Paths.getStyleSheetPath(styleSheet))));
     }
+
     for (String script : ui.getScripts()) {
       doc.getHead().append(script().src(resource(contextPath, Paths.getScriptPath(script))));
     }
     doc.getHead().append(script().src(resource(contextPath, "bee/bee.nocache.js")));
 
-    return doc.build(0, 0);
+    return doc.buildLines();
   }
 
   private static String verboten(String contextPath) {
@@ -109,7 +170,7 @@ public class LoginServlet extends HttpServlet {
     doc.getBody().append(img().src(resource(contextPath, Paths.getImagePath("answer.jpg")))
         .alt("respect my authoritah"));
 
-    return doc.build();
+    return doc.buildLines();
   }
 
   @EJB
@@ -117,66 +178,76 @@ public class LoginServlet extends HttpServlet {
 
   public String getLoginForm(HttpServletRequest request, String userName) {
     String contextPath = request.getServletContext().getContextPath();
-    LocalizableConstants localizableConstants =
-        Localizations.getPreferredConstants(HttpUtils.getLanguage(request));
+    String requestLanguage = SupportedLocale.normalizeLanguage(HttpUtils.getLanguage(request));
 
     Document doc = new Document();
 
     doc.getHead().append(
         meta().encodingDeclarationUtf8(),
-        title().text("to BEE or not to BEE"),
+        title().text(UserInterface.TITLE),
         link().rel(Rel.SHORTCUT_ICON).href(resource(contextPath, Paths.getImagePath(FAV_ICON))),
         link().styleSheet(resource(contextPath, Paths.getStyleSheetPath("login"))),
         script().src(resource(contextPath, Paths.getScriptPath("login"))));
+    
+    String scriptName = getLoginScriptName();
+    if (!BeeUtils.isEmpty(scriptName)) {
+      doc.getHead().append(script().src(resource(contextPath, Paths.getScriptPath(scriptName))));
+    }
 
-    String stylePrefix = "bee-SignIn-";
+    Div panel = div().addClass(STYLE_PREFIX + "Panel").id("login-panel");
+    doc.getBody().onLoad(event("onload", requestLanguage)).append(panel);
 
-    Div panel = div().addClass(stylePrefix + "Panel");
-    doc.getBody().append(panel);
-
-    Form form = form().addClass(stylePrefix + "Form").methodPost();
+    Form form = form().addClass(STYLE_PREFIX + "Form").name(FORM_NAME).acceptCharsetUtf8()
+        .methodPost();
 
     form.append(
-        div().addClass(stylePrefix + "Logo-container").append(
-            img().addClass(stylePrefix + "Logo")
+        div().addClass(STYLE_PREFIX + "Logo-container").append(
+            img().addClass(STYLE_PREFIX + "Logo")
                 .src(resource(contextPath, Paths.getImagePath(LOGO))).alt("logo")));
 
-    if (SupportedLocale.values().length > 1) {
-      Div localeContainer = div().addClass(stylePrefix + "Locale-container");
+    Div localeContainer = div().addClass(STYLE_PREFIX + "Locale-container");
+    Script dictionaries = script();
 
-      for (SupportedLocale locale : SupportedLocale.values()) {
-        localeContainer.append(
-            label().addClass(stylePrefix + "Locale-label").append(
-                input().addClass(stylePrefix + "Locale-input").type(Type.RADIO)
-                    .name(HttpConst.PARAM_LOCALE).value(locale.getLanguage()),
-                img().addClass(stylePrefix + "Locale-flag").title(locale.getCaption())
-                    .src(resource(contextPath, Paths.getLangIconPath(locale.getIconName())))
-                    .alt(locale.getCaption())));
-      }
-      form.append(localeContainer);
+    for (SupportedLocale locale : SupportedLocale.values()) {
+      String language = locale.getLanguage();
+
+      localeContainer.append(
+          label().addClass(STYLE_PREFIX + "Locale-label").append(
+              input().addClass(STYLE_PREFIX + "Locale-input").type(Type.RADIO)
+                  .id(language).name(HttpConst.PARAM_LOCALE).value(language)
+                  .onChange("onSelectLanguage(this.value)"),
+              img().addClass(STYLE_PREFIX + "Locale-flag").title(locale.getCaption())
+                  .src(resource(contextPath, Paths.getLangIconPath(locale.getIconName())))
+                  .alt(locale.getCaption())));
+
+      String dictionary = generateDictionary(locale);
+      dictionaries.text("var dictionary" + language + " = " + dictionary + ";");
     }
+
+    form.append(localeContainer);
+    doc.getHead().append(dictionaries);
+
     form.append(
-        div().addClass(stylePrefix + "Label").addClass(stylePrefix + "Label-user")
-            .text(localizableConstants.loginUserName()),
-        input().addClass(stylePrefix + "Input").addClass(stylePrefix + "Input-user")
+        div().addClass(STYLE_PREFIX + "Label").addClass(STYLE_PREFIX + "Label-user")
+            .id(USER_NAME_LABEL_ID),
+        input().addClass(STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-user")
             .name(HttpConst.PARAM_USER).id("user").value(Strings.emptyToNull(userName))
-            .onKeyDown("return goPswd(event)").autofocus().required(),
-        div().addClass(stylePrefix + "Label").addClass(stylePrefix + "Label-password")
-            .text(localizableConstants.loginPassword()),
-        input().addClass(stylePrefix + "Input").addClass(stylePrefix + "Input-password")
-            .type(Type.PASSWORD).name(HttpConst.PARAM_PASSWORD).id("pswd").required()
+            .maxLength(100).onKeyDown("return goPswd(event)").autofocus().required(),
+        div().addClass(STYLE_PREFIX + "Label").addClass(STYLE_PREFIX + "Label-password")
+            .id(PASSWORD_LABEL_ID),
+        input().addClass(STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-password")
+            .type(Type.PASSWORD).name(HttpConst.PARAM_PASSWORD).id("pswd")
+            .maxLength(UiConstants.MAX_PASSWORD_LENGTH).required()
         );
 
     if (!BeeUtils.isEmpty(userName)) {
-      form.append(div().addClass(stylePrefix + "Error").text(localizableConstants.loginFailed()));
+      form.append(div().addClass(STYLE_PREFIX + "Error").id(ERROR_MESSAGE_ID));
     }
-    form.append(input().type(Type.SUBMIT).addClass(stylePrefix + "Button").value(
-        localizableConstants.loginSubmit()));
+    form.append(button().typeSubmit().addClass(STYLE_PREFIX + "Button").id(SUBMIT_BUTTON_ID));
 
     panel.append(form);
 
-    Node extension = getLoginExtension(request, localizableConstants);
-
+    Node extension = getLoginExtension(request);
     if (extension != null) {
       panel.append(extension);
     }
@@ -184,16 +255,16 @@ public class LoginServlet extends HttpServlet {
     String wtfplUrl = UiConstants.wtfplUrl();
 
     panel.append(
-        div().addClass(stylePrefix + "Copyright").title(wtfplUrl)
-            .onClick("window.open('" + wtfplUrl + "')")
+        div().addClass(STYLE_PREFIX + "Copyright").title(wtfplUrl)
+            .onClick(event("window.open", wtfplUrl))
             .append(
-                img().addClass(stylePrefix + "Copyright-logo")
+                img().addClass(STYLE_PREFIX + "Copyright-logo")
                     .src(resource(contextPath, UiConstants.wtfplLogo())).alt("wtfpl"),
-                span().addClass(stylePrefix + "Copyright-label").text(UiConstants.wtfplLabel())));
+                span().addClass(STYLE_PREFIX + "Copyright-label").text(UiConstants.wtfplLabel())));
 
-    return doc.build(0, 2);
+    return doc.buildLines();
   }
-
+  
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
@@ -210,7 +281,7 @@ public class LoginServlet extends HttpServlet {
     HttpUtils.sendResponse(resp, getInitialPage(req, null));
   }
 
-  protected String getInitialPage(HttpServletRequest req, UserInterface ui) {
+  protected String getInitialPage(HttpServletRequest req, UserInterface userInterface) {
     String remoteUser = req.getRemoteUser();
     String contextPath = req.getServletContext().getContextPath();
     final String html;
@@ -235,16 +306,26 @@ public class LoginServlet extends HttpServlet {
           userLocale = loginLocale;
         }
       }
-      html = render(contextPath, ui == null
-          ? BeeUtils.nvl(userService.getUserInterface(remoteUser), UserInterface.DEFAULT)
-          : ui, userLocale);
+
+      UserInterface ui = userInterface;
+      if (ui == null) {
+        ui = userService.getUserInterface(remoteUser);
+      }
+      if (ui == null) {
+        ui = UserInterface.DEFAULT;
+      }
+
+      html = render(contextPath, ui, userLocale);
     }
     return html;
   }
 
   @SuppressWarnings("unused")
-  protected Node getLoginExtension(HttpServletRequest req,
-      LocalizableConstants localizableConstants) {
+  protected Node getLoginExtension(HttpServletRequest req) {
+    return null;
+  }
+  
+  protected String getLoginScriptName() {
     return null;
   }
 

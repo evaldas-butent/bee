@@ -1,8 +1,8 @@
-function onSelectType() {
+function onSelectType(tp) {
   var show = "bee-ec-registration-show";
   var hide = "bee-ec-registration-hide";
 
-  var person = document.getElementById("person").checked;
+  var person = (tp == "1");
 
   var companyName = document.getElementById("CompanyName-field");
   if (companyName) {
@@ -10,7 +10,7 @@ function onSelectType() {
   }
   var companyNameInput = document.getElementById("CompanyName-input");
   if (companyNameInput) {
-    companyNameInput.required = !person;
+    companyNameInput.disabled = person;
   }
   
   var companyCode = document.getElementById("CompanyCode-field");
@@ -19,7 +19,7 @@ function onSelectType() {
   }
   var companyCodeInput = document.getElementById("CompanyCode-input");
   if (companyCodeInput) {
-    companyCodeInput.required = !person;
+    companyCodeInput.disabled = person;
   }
 
   var vatCode = document.getElementById("VatCode-field");
@@ -28,11 +28,15 @@ function onSelectType() {
   }
   var vatCodeInput = document.getElementById("VatCode-input");
   if (vatCodeInput) {
-    vatCodeInput.required = !person;
+    vatCodeInput.disabled = person;
   }
 
   var personCode = document.getElementById("PersonCode-field");
   if (personCode) {
     personCode.className = person ? show : hide;
+  }
+  var personCodeInput = document.getElementById("PersonCode-input");
+  if (personCodeInput) {
+    personCodeInput.disabled = !person;
   }
 }

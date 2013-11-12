@@ -260,7 +260,7 @@ public class TecDocBean {
     response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
             + " FROM likuciai INNER JOIN sand"
-            + " ON likuciai.sandelis = sand.sandelis AND sand.properties LIKE '%e%'"
+            + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
             + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
             + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
         new String[] {"sn", "pr", "lk"});

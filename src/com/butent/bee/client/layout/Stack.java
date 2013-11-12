@@ -1,6 +1,7 @@
 package com.butent.bee.client.layout;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -368,8 +369,8 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
       }
     });
     
-    super.insert(header, getElement(), before * 2, true);
-    super.insert(child, getElement(), before * 2 + 1, true);
+    super.insert(header, Element.as(getElement()), before * 2, true);
+    super.insert(child, Element.as(getElement()), before * 2 + 1, true);
     
     if (before >= 0 && before <= getSelectedIndex()) {
       setSelectedIndex(getSelectedIndex() + 1);

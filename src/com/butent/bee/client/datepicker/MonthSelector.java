@@ -1,7 +1,7 @@
 package com.butent.bee.client.datepicker;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.Element;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;

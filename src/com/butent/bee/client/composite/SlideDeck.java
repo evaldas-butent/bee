@@ -14,12 +14,11 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.animation.AnimationState;
 import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
@@ -62,16 +61,14 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
     private Size size;
 
-    private int stepMillis;
-    private int cycleMillis;
+    private int cycleDuration;
+    private double cycleValue;
 
     private AnimationState state;
     private boolean transition;
 
     private double cut;
     private Double pausedAt;
-    
-    private double progress;
 
     private Animation() {
       super(Integer.MAX_VALUE);
@@ -90,8 +87,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
       setSize(new Size(canvas.getOffsetWidth(), canvas.getOffsetHeight()));
 
-      setStepMillis(getDisplayMillis() + getTransitionMillis());
-      setCycleMillis(getStepMillis() * slides.size());
+      updateCycleDuration();
 
       setTransition(false);
       setState(AnimationState.RUNNING);
@@ -124,12 +120,11 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
         return false;
       }
 
-      setProgress(elapsed - getCut());
-      updateProgressControl(getProgress() % getCycleMillis() / getCycleMillis() 
-          * (slides.size() - 1));
+      setCycleValue((elapsed - getCut()) % getCycleDuration() / getCycleDuration());
+      updateProgressControl(getCycleValue() * (slides.size() - 1));
 
-      double stepProgress = getStepProgress();
-      if (stepProgress > getDisplayMillis()) {
+      double stepValue = getStepValue();
+      if (stepValue > stepTransitionStartValue()) {
         if (!isTransition()) {
           setTransition(true);
           
@@ -139,7 +134,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
           getEffect().start(getPrevStyle(), getNextStyle(), getSize());
         }
         
-        applyTransition(getEffect(), stepProgress);
+        applyTransition(getEffect(), stepValue);
 
       } else if (isTransition()) {
         setTransition(false);
@@ -157,8 +152,9 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       return true;
     }
 
-    private void applyTransition(Effect eff, double stepProgress) {
-      double transitionValue = (stepProgress - getDisplayMillis()) / getTransitionMillis();
+    private void applyTransition(Effect eff, double stepValue) {
+      double startValue = stepTransitionStartValue();
+      double transitionValue = (stepValue - startValue) / (1 - startValue);
       eff.apply(getPrevStyle(), getNextStyle(), getSize(), transitionValue);
     }
 
@@ -168,9 +164,13 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
         getEffect().reset(getPrevStyle(), getNextStyle());
       }
     }
-    
-    private int getCycleMillis() {
-      return cycleMillis;
+
+    private int getCycleDuration() {
+      return cycleDuration;
+    }
+
+    private double getCycleValue() {
+      return cycleValue;
     }
     
     private double getCut() {
@@ -180,7 +180,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     private int getNextPosition() {
       return nextPosition;
     }
-
+    
     private Style getNextStyle() {
       return nextStyle;
     }
@@ -188,17 +188,13 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     private Double getPausedAt() {
       return pausedAt;
     }
-
+    
     private int getPrevPosition() {
       return prevPosition;
     }
-
+    
     private Style getPrevStyle() {
       return prevStyle;
-    }
-
-    private double getProgress() {
-      return progress;
     }
 
     private Size getSize() {
@@ -209,12 +205,8 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       return state;
     }
 
-    private int getStepMillis() {
-      return stepMillis;
-    }
-
-    private double getStepProgress() {
-      return getProgress() % getStepMillis();
+    private double getStepValue() {
+      return getCycleValue() * slides.size() % 1;
     }
 
     private boolean isPaused() {
@@ -237,23 +229,23 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       if ((isRunning() || isPaused())) {
         oldEff.reset(getPrevStyle(), getNextStyle());
         if (isTransition()) {
-          applyTransition(newEff, getStepProgress());
+          applyTransition(newEff, getStepValue());
         }
       }
     }
-    
+
     private void resume() {
       setState(AnimationState.RESUMED);
     }
 
-    private void setCycleMillis(int cycleMillis) {
-      this.cycleMillis = cycleMillis;
+    private void setCycleValue(double cycleValue) {
+      this.cycleValue = cycleValue;
     }
 
     private void setCut(double cut) {
       this.cut = cut;
     }
-
+    
     private void setNextPosition(int nextPosition) {
       this.nextPosition = nextPosition;
     }
@@ -274,10 +266,6 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       this.prevStyle = prevStyle;
     }
 
-    private void setProgress(double progress) {
-      this.progress = progress;
-    }
-
     private void setSize(Size size) {
       this.size = size;
     }
@@ -286,16 +274,20 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       this.state = state;
     }
 
-    private void setStepMillis(int stepMillis) {
-      this.stepMillis = stepMillis;
-    }
-
     private void setTransition(boolean transition) {
       this.transition = transition;
     }
 
+    private double stepTransitionStartValue() {
+      return (double) getIdleMillis() / (getIdleMillis() + getTransitionMillis());
+    }
+
     private void suspend() {
       setState(AnimationState.PAUSED);
+    }
+
+    private void updateCycleDuration() {
+      this.cycleDuration = (getIdleMillis() + getTransitionMillis()) * slides.size();
     }
   }
 
@@ -392,6 +384,22 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private static final double MAX_WIDTH_FACTOR = 0.9;
   private static final double MAX_HEIGHT_FACTOR = 0.9;
 
+  private static final int IDLE_MILLIS_MIN = 100;
+  private static final int IDLE_MILLIS_STEP = 100;
+  private static final int IDLE_MILLIS_MAX = 10000;
+
+  private static final int IDLE_MILLIS_DEFAULT = 3000;
+  private static final String IDLE_MILLIS_KEY = "SlideDeckIdleMillis";
+
+  private static final int TRANSITION_MILLIS_MIN = 100;
+  private static final int TRANSITION_MILLIS_STEP = 100;
+  private static final int TRANSITION_MILLIS_MAX = 10000;
+
+  private static final int TRANSITION_MILLIS_DEFAULT = 1000;
+  private static final String TRANSITION_MILLIS_KEY = "SlideDeckTransitionMillis";
+
+  private static final String EFFECT_KEY = "SlideDeckEffect";
+
   private static final String STYLE_PREFIX = "bee-SlideDeck-";
 
   private static final String STYLE_TN_ACTIVE = STYLE_PREFIX + "tn-active";
@@ -400,6 +408,14 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private static final String STYLE_PLAYING = STYLE_PREFIX + "playing";
   private static final String STYLE_NOT_PLAYING = STYLE_PREFIX + "not-playing";
   private static final String STYLE_PAUSED = STYLE_PREFIX + "paused";
+
+  private static final String STYLE_REPEAT = STYLE_PREFIX + "repeat";
+  private static final String STYLE_REPEAT_ON = STYLE_REPEAT + "-on";
+  private static final String STYLE_REPEAT_OFF = STYLE_REPEAT + "-off";
+
+  private static final String STYLE_SETTINGS_PREFIX = STYLE_PREFIX + "settings-";
+  private static final String STYLE_SETTINGS_HIDDEN = STYLE_SETTINGS_PREFIX + "hidden";
+  private static final String STYLE_SETTINGS_LABEL = STYLE_SETTINGS_PREFIX + "label";
 
   public static void create(List<String> sources, Callback<SlideDeck> callback) {
     int maxWidth = BeeUtils.round(Window.getClientWidth() * MAX_WIDTH_FACTOR);
@@ -459,6 +475,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private final Flow thumbnails;
   private final Flow canvas;
   private final Flow controls;
+  private Flow settingsPanel;
 
   private final Widget[] wrappers = new Widget[2];
   private int activeWrapperIndex;
@@ -470,18 +487,29 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   private String forwardId;
 
   private int position = BeeConst.UNDEF;
-  private boolean cycle;
+  private boolean repeat;
 
   private final Animation animation;
 
-  private Effect effect = Effect.FADE;
+  private Effect effect;
 
-  private int displayMillis = 2000;
-  private int transitionMillis = 1000;
+  private int idleMillis;
+  private int transitionMillis;
 
   private SlideDeck(List<Slide> slides, Size maxSize) {
     super(Document.get().createDivElement(), STYLE_PREFIX + "container");
     this.slides = slides;
+
+    int eff = BeeKeeper.getStorage().getInt(EFFECT_KEY);
+    if (!BeeUtils.isOrdinal(Effect.class, eff)) {
+      eff = 0;
+    }
+    this.effect = Effect.values()[eff];
+    
+    this.idleMillis = BeeUtils.positive(BeeKeeper.getStorage().getInt(IDLE_MILLIS_KEY),
+        IDLE_MILLIS_DEFAULT);
+    this.transitionMillis = BeeUtils.positive(BeeKeeper.getStorage().getInt(TRANSITION_MILLIS_KEY),
+        TRANSITION_MILLIS_DEFAULT);
 
     this.animation = new Animation();
 
@@ -508,10 +536,6 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     activateSlide(0);
 
     updateStyle();
-  }
-
-  public boolean cycle() {
-    return cycle;
   }
 
   @Override
@@ -566,8 +590,12 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     }
   }
 
-  public void setCycle(boolean cycle) {
-    this.cycle = cycle;
+  public boolean repeat() {
+    return repeat;
+  }
+
+  public void setRepeat(boolean repeat) {
+    this.repeat = repeat;
   }
 
   @Override
@@ -665,98 +693,10 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     }
   }
 
-  private void editSettings() {
-    String stylePrefix = STYLE_PREFIX + "config-";
-
-    HtmlTable table = new HtmlTable(stylePrefix + "table");
-
-    int row = 0;
-    table.setHtml(row, 0, "Effect");
-
-    final BeeListBox effectWidget = new BeeListBox();
-    effectWidget.addCaptions(Effect.class);
-    if (getEffect() != null) {
-      effectWidget.setSelectedIndex(getEffect().ordinal());
-    }
-
-    effectWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        Effect eff = NameUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
-        if (eff != null && eff != getEffect()) {
-          animation.onEffectChanged(getEffect(), eff);
-          setEffect(eff);
-        }
-      }
-    });
-
-    table.setWidgetAndStyle(row, 1, effectWidget, stylePrefix + "effect");
-
-    row++;
-
-    table.setHtml(row, 0, "Display");
-    InputRange displayWidget = new InputRange(100, 10000, 100);
-    displayWidget.setValue(getDisplayMillis());
-
-    displayWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        int millis = BeeUtils.toInt(event.getValue());
-        if (millis > 0) {
-          setDisplayMillis(millis);
-        }
-      }
-    });
-
-    table.setWidgetAndStyle(row, 1, displayWidget, stylePrefix + "display");
-
-    row++;
-
-    table.setHtml(row, 0, "Transition");
-    InputRange transitionWidget = new InputRange(100, 10000, 100);
-    transitionWidget.setValue(getTransitionMillis());
-
-    transitionWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        int millis = BeeUtils.toInt(event.getValue());
-        if (millis > 0) {
-          setTransitionMillis(millis);
-        }
-      }
-    });
-
-    table.setWidgetAndStyle(row, 1, transitionWidget, stylePrefix + "transition");
-
-    final Popup popup = new Popup(OutsideClick.CLOSE, stylePrefix + "popup");
-
-    Flow panel = new Flow(stylePrefix + "panel");
-    panel.add(table);
-
-    FaLabel close = new FaLabel(FontAwesome.TIMES);
-    close.addStyleName(stylePrefix + "close");
-
-    close.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        popup.close();
-      }
-    });
-
-    panel.add(close);
-
-    popup.setWidget(panel);
-
-    popup.setHideOnEscape(true);
-    popup.setAnimationEnabled(true);
-
-    popup.showRelativeTo(controls.getElement());
-  }
-
   private Widget getActiveWrapper() {
     return wrappers[getActiveWrapperIndex()];
   }
-
+  
   private int getActiveWrapperIndex() {
     return activeWrapperIndex;
   }
@@ -765,16 +705,16 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     return backwardId;
   }
 
-  private int getDisplayMillis() {
-    return displayMillis;
-  }
-
   private Effect getEffect() {
     return effect;
   }
 
   private String getForwardId() {
     return forwardId;
+  }
+
+  private int getIdleMillis() {
+    return idleMillis;
   }
 
   private String getLabelId() {
@@ -799,6 +739,10 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
   private String getProgressId() {
     return progressId;
+  }
+
+  private Flow getSettingsPanel() {
+    return settingsPanel;
   }
 
   private Widget getThumbnail(int index) {
@@ -842,15 +786,29 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     setProgressId(progress.getId());
     controls.add(progress);
 
+    FaLabel cycle = new FaLabel(FontAwesome.REPEAT);
+    cycle.addStyleName(STYLE_REPEAT);
+    updateRepeat(cycle.getElement());
+
+    cycle.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        setRepeat(!repeat());
+        updateRepeat(EventUtils.getEventTargetElement(event));
+      }
+    });
+    
+    controls.add(cycle);
+
     FaLabel backward = new FaLabel(FontAwesome.BACKWARD);
     backward.addStyleName(STYLE_PREFIX + "backward");
-
+    
     backward.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         if (getPosition() > 0) {
           activateSlide(getPosition() - 1);
-        } else if (cycle()) {
+        } else if (repeat()) {
           activateSlide(slides.size() - 1);
         }
       }
@@ -872,7 +830,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       public void onClick(ClickEvent event) {
         if (getPosition() < slides.size() - 1) {
           activateSlide(getPosition() + 1);
-        } else if (cycle()) {
+        } else if (repeat()) {
           activateSlide(0);
         }
       }
@@ -881,17 +839,106 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     setForwardId(forward.getId());
     controls.add(forward);
 
-    FaLabel settings = new FaLabel(FontAwesome.COG);
-    settings.addStyleName(STYLE_PREFIX + "settings");
+    FaLabel settingsToggle = new FaLabel(FontAwesome.COG);
+    settingsToggle.addStyleName(STYLE_SETTINGS_PREFIX + "toggle");
 
-    settings.addClickHandler(new ClickHandler() {
+    settingsToggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        editSettings();
+        toggleSettingsPanel();
       }
     });
 
-    controls.add(settings);
+    controls.add(settingsToggle);
+  }
+
+  private Flow renderSettingsPanel() {
+    Flow panel = new Flow(STYLE_SETTINGS_PREFIX + "panel");
+    StyleUtils.setBottom(panel, CONTROLS_HEIGHT);
+
+    HtmlTable table = new HtmlTable(STYLE_SETTINGS_PREFIX + "table");
+    int row = 0;
+    
+    Label effLabel = new Label("Effect");
+    table.setWidgetAndStyle(row, 0, effLabel, STYLE_SETTINGS_LABEL);
+
+    final BeeListBox effectWidget = new BeeListBox();
+    effectWidget.addCaptions(Effect.class);
+    if (getEffect() != null) {
+      effectWidget.setSelectedIndex(getEffect().ordinal());
+    }
+
+    effectWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        Effect eff = NameUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
+        if (eff != null && eff != getEffect()) {
+          animation.onEffectChanged(getEffect(), eff);
+          setEffect(eff);
+        }
+      }
+    });
+
+    table.setWidgetAndStyle(row, 1, effectWidget, STYLE_SETTINGS_PREFIX + "effect");
+    row++;
+
+    Label idleLabel = new Label("Idle");
+    table.setWidgetAndStyle(row, 0, idleLabel, STYLE_SETTINGS_LABEL);
+    
+    InputRange idleWidget = new InputRange(IDLE_MILLIS_MIN, IDLE_MILLIS_MAX, IDLE_MILLIS_STEP);
+    idleWidget.setValue(getIdleMillis());
+
+    idleWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        int millis = BeeUtils.toInt(event.getValue());
+        if (millis > 0) {
+          setIdleMillis(millis);
+          animation.updateCycleDuration();
+        }
+      }
+    });
+
+    table.setWidgetAndStyle(row, 1, idleWidget, STYLE_SETTINGS_PREFIX + "idle");
+    row++;
+
+    Label transitionLabel = new Label("Transition");
+    table.setWidgetAndStyle(row, 0, transitionLabel, STYLE_SETTINGS_LABEL);
+    
+    InputRange transitionWidget = new InputRange(TRANSITION_MILLIS_MIN, TRANSITION_MILLIS_MAX,
+        TRANSITION_MILLIS_STEP);
+    transitionWidget.setValue(getTransitionMillis());
+
+    transitionWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        int millis = BeeUtils.toInt(event.getValue());
+        if (millis > 0) {
+          setTransitionMillis(millis);
+          animation.updateCycleDuration();
+        }
+      }
+    });
+
+    table.setWidgetAndStyle(row, 1, transitionWidget, STYLE_SETTINGS_PREFIX + "transition");
+
+    panel.add(table);
+
+    FaLabel close = new FaLabel(FontAwesome.TIMES);
+    close.addStyleName(STYLE_SETTINGS_PREFIX + "close");
+
+    close.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (getSettingsPanel() != null) {
+          getSettingsPanel().addStyleName(STYLE_SETTINGS_HIDDEN);
+        }
+      }
+    });
+
+    panel.add(close);
+    
+    return panel;
   }
 
   private void renderThumbnails() {
@@ -921,16 +968,18 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     this.backwardId = backwardId;
   }
 
-  private void setDisplayMillis(int displayMillis) {
-    this.displayMillis = displayMillis;
-  }
-
   private void setEffect(Effect effect) {
     this.effect = effect;
+    BeeKeeper.getStorage().set(EFFECT_KEY, effect.ordinal());
   }
 
   private void setForwardId(String forwardId) {
     this.forwardId = forwardId;
+  }
+
+  private void setIdleMillis(int idleMillis) {
+    this.idleMillis = idleMillis;
+    BeeKeeper.getStorage().set(IDLE_MILLIS_KEY, idleMillis);
   }
 
   private void setLabelId(String labelId) {
@@ -949,8 +998,13 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     this.progressId = progressId;
   }
 
+  private void setSettingsPanel(Flow settingsPanel) {
+    this.settingsPanel = settingsPanel;
+  }
+
   private void setTransitionMillis(int transitionMillis) {
     this.transitionMillis = transitionMillis;
+    BeeKeeper.getStorage().set(TRANSITION_MILLIS_KEY, transitionMillis);
   }
 
   private void togglePlay() {
@@ -964,6 +1018,15 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
     updateStyle();
     updatePlayIcon();
+  }
+
+  private void toggleSettingsPanel() {
+    if (getSettingsPanel() == null) {
+      setSettingsPanel(renderSettingsPanel());
+      add(getSettingsPanel());
+    } else {
+      getSettingsPanel().getElement().toggleClassName(STYLE_SETTINGS_HIDDEN);
+    }
   }
 
   private void updateActiveWrapper(int slideIndex) {
@@ -983,7 +1046,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   }
 
   private void updateNavigation(int value) {
-    if (!cycle()) {
+    if (!repeat()) {
       Widget backward = DomUtils.getChildById(controls, getBackwardId());
       if (backward != null) {
         backward.setStyleName(STYLE_NAV_DISABLED, value <= 0);
@@ -1007,11 +1070,25 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
           ? FontAwesome.PAUSE : FontAwesome.PLAY);
     }
   }
-
+  
   private void updateProgressControl(double value) {
     Widget progress = DomUtils.getChildById(controls, getProgressId());
     if (progress instanceof Progress) {
       ((Progress) progress).setValue(value);
+    }
+  }
+
+  private void updateRepeat(Element el) {
+    if (el != null) {
+      el.setTitle("Turn repeat " + (repeat() ? "off" : "on"));
+
+      if (repeat()) {
+        el.removeClassName(STYLE_REPEAT_OFF);
+        el.addClassName(STYLE_REPEAT_ON);
+      } else {
+        el.removeClassName(STYLE_REPEAT_ON);
+        el.addClassName(STYLE_REPEAT_OFF);
+      }
     }
   }
 

@@ -54,9 +54,9 @@ public interface LocalizableTransportConstants {
 
   String carriers();
 
-  String createInvoice();
-
   String createCreditInvoice();
+
+  String createInvoice();
 
   String createTripForCargoCaption();
 
@@ -125,10 +125,6 @@ public interface LocalizableTransportConstants {
   String transportationOrders();
 
   String transportationOrderStatuses();
-
-  String tripDuration();
-
-  String trips();
 
   String trAssessment();
 
@@ -204,11 +200,11 @@ public interface LocalizableTransportConstants {
 
   String trCreateTransportation();
 
-  String trDriverName();
-
   String trDriverEndingDate();
 
   String trDriverExperience();
+
+  String trDriverName();
 
   String trDriverStartingDate();
 
@@ -216,11 +212,19 @@ public interface LocalizableTransportConstants {
 
   String trInvoice();
 
+  String tripDuration();
+
+  String trips();
+
   String trLoadedKilometers();
 
   String trLoadingAddress();
 
   String trLoadingDate();
+
+  String trLoadingInfo();
+
+  String trLoadingNumber();
 
   String trNewExpedition();
 
@@ -239,6 +243,8 @@ public interface LocalizableTransportConstants {
   String trOrderStatusNew();
 
   String trOrderStatusRequest();
+
+  String trPreInvoice();
 
   String trProformaInvoice();
 
@@ -280,6 +286,8 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationPhone();
 
+  String trRegistrationReceived();
+
   String trRegistrationSwift();
 
   String trRegistrationVatCode();
@@ -288,17 +296,95 @@ public interface LocalizableTransportConstants {
 
   String trRequestActionFinish();
 
+  String trRequestActionSubmit();
+
+  String trRequestAdditionalInfo();
+
+  String trRequestCargoCurrency();
+
+  String trRequestCargoDescription();
+
+  String trRequestCargoHeight();
+
+  String trRequestCargoInfo();
+
+  String trRequestCargoLdm();
+
+  String trRequestCargoLength();
+
+  String trRequestCargoPalettes();
+
+  String trRequestCargoQuantity();
+
+  String trRequestCargoValue();
+
+  String trRequestCargoVolume();
+
+  String trRequestCargoWeight();
+
+  String trRequestCargoWidth();
+
+  String trRequestCustomerAddress();
+
+  String trRequestCustomerCode();
+
+  String trRequestCustomerContact();
+
+  String trRequestCustomerContactPosition();
+
+  String trRequestCustomerEmail();
+
+  String trRequestCustomerExchangeCode();
+
+  String trRequestCustomerInfo();
+
+  String trRequestCustomerName();
+
+  String trRequestCustomerPhone();
+
+  String trRequestCustomerVatCode();
+
+  String trRequestCustomsBrokerage();
+
+  String trRequestDate();
+
+  String trRequestDeliveryDate();
+
+  String trRequestDeliveryDateAndTime();
+
+  String trRequestDeliveryTime();
+
+  String trRequestExpeditionType();
+
   String trRequestFinishReason();
 
+  String trRequestFreightInsurance();
+
   String trRequestNew();
+  
+  String trRequestNotes();
+
+  String trRequestPlaceCompanyName();
+
+  String trRequestPlaceContact();
+
+  String trRequestPlaceFax();
+  
+  String trRequestResponsibleManager();
 
   String trRequests();
+
+  String trRequestShipmentInfo();
+
+  String trRequestShippingTerms();
 
   String trRequestStatusActive();
 
   String trRequestStatusNew();
 
   String trRequestTemplates();
+
+  String trRequestTermsOfDelivery();
 
   String trSelfServiceCommandHistory();
 
@@ -312,8 +398,6 @@ public interface LocalizableTransportConstants {
 
   String trSendToERPConfirm();
 
-  String trPreInvoice();
-
   String trTripStatusActive();
 
   String trTripStatusCanceled();
@@ -322,19 +406,23 @@ public interface LocalizableTransportConstants {
 
   String trTripStatusNew();
 
-  String trUnloadingAddress();
-
-  String trUnloadingDate();
-
-  String trWriteEmail();
-
   String trucks();
 
   String truckTimeBoard();
 
+  String trUnloadingAddress();
+
+  String trUnloadingDate();
+
+  String trUnloadingInfo();
+
+  String trUnloadingNumber();
+
   String trVehicleTypes();
 
   String trVehicleTypesShort();
+
+  String trWriteEmail();
 
   String unloading();
 

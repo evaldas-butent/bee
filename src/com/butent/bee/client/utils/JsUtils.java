@@ -82,21 +82,8 @@ public final class JsUtils {
   public static native String evalToString(String xpr) /*-{
     try {
       var z = eval(xpr);
-      if (typeof (z) == "object") {
-        var s = "";
-        var v = "";
-        for ( var p in z) {
-          if (s.length > 0) {
-            s = s + "; ";
-          }
-          try {
-            v = String(z[p]);
-          } catch (err) {
-            v = "ERROR " + String(err);
-          }
-          s = s + p + "=" + v;
-        }
-        return s;
+      if (typeof z == "object") {
+        return JSON.stringify(z);
       } else {
         return String(z);
       }

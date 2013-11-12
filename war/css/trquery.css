@@ -1,0 +1,102 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  background-color: WhiteSmoke;  
+}
+
+.bee-tr-query-panel {
+  margin-top: 1ex;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
+.bee-tr-query-caption {
+  font-size: 150%;
+  font-weight: bolder;
+}
+
+.bee-tr-query-fieldPanel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+}
+
+.bee-tr-query-group {
+  margin-top: 2ex;
+}
+.bee-tr-query-legend {
+  font-size: 120%;
+  font-weight: bolder;
+}
+
+.bee-tr-query-table {
+  border-collapse: collapse;
+}
+
+.bee-tr-query-table td {
+  padding: 2px 0.5em;
+}
+
+.bee-tr-query-label-cell {
+  text-align: right;
+}
+.bee-tr-query-required:after {
+  content: "*";
+  color: red;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bee-tr-query-input,
+.bee-tr-query-area {
+  width: 150px;
+}
+.bee-tr-query-check {
+  margin-top: 5px;
+  margin-left: 1em;
+  display: block;
+}
+
+#Quantity-input,
+#Weight-input,
+#Volume-input,
+#LDM-input,
+#Length-input,
+#Width-input,
+#Height-input,
+#Palettes-input,
+#Value-input {
+  width: 60px;
+  text-align: right;
+}
+
+.bee-tr-query-submit {
+  font-size: medium;
+  padding: 5px 10px;
+  display: block;
+  margin-top: 1ex;
+  margin-left: auto;
+  margin-right: auto;
+}

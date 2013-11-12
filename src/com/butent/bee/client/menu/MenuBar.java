@@ -4,13 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.UIObject;
@@ -138,7 +138,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
     Element container = getItemContainerElement();
     while (DOM.getChildCount(container) > 0) {
-      DOM.removeChild(container, DOM.getChild(container, 0));
+      container.removeChild(DOM.getChild(container, 0));
     }
 
     items.clear();
@@ -414,7 +414,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     }
 
     if (item != null) {
-      DOM.scrollIntoView(item.getElement());
+      item.getElement().scrollIntoView();
       item.setSelected(true);
     }
 
@@ -455,8 +455,8 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     int tdCount = DOM.getChildCount(tr);
     if (tdCount == 1) {
       Element td = DOM.createTD();
-      DOM.setElementProperty(td, "vAlign", "middle");
-      DOM.setInnerHTML(td, subMenuIcon.getHTML());
+      td.setPropertyString("vAlign", "middle");
+      td.setInnerHTML(subMenuIcon.getHTML());
       setStyleName(td, "subMenuIcon");
       DOM.appendChild(tr, td);
     }
@@ -552,7 +552,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
   private MenuItem findItem(Element elem) {
     for (MenuItem item : items) {
-      if (DOM.isOrHasChild(item.getElement(), elem) 
+      if (item.getElement().isOrHasChild(elem) 
           || DomUtils.isTdElement(elem) && elem.equals(item.getElement().getParentElement())) {
         return item;
       }

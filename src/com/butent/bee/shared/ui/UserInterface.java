@@ -85,7 +85,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public String getTitle() {
-      return "B-novo";
+      return TITLE;
     }
   },
 
