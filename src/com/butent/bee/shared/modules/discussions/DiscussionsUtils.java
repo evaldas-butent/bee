@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -30,6 +31,7 @@ public final class DiscussionsUtils {
 
     List<Long> members = DataUtils.parseIdList(row.getProperty(PROP_MEMBERS));
 
+    LogUtils.getRootLogger().debug("PROP_MEMBERS: ", row.getProperty(PROP_MEMBERS));
     for (Long member : members) {
       if (!users.contains(member)) {
         users.add(member);
@@ -41,6 +43,15 @@ public final class DiscussionsUtils {
 
   public static Set<String> getRelations() {
     return ensureDiscussionPropertyToRelation().inverse().keySet();
+  }
+
+  public static boolean sameMembers(IsRow oldRow, IsRow newRow) {
+    if (oldRow == null || newRow == null) {
+      return false;
+    } else {
+      return DataUtils
+          .sameIdSet(oldRow.getProperty(PROP_MEMBERS), newRow.getProperty(PROP_MEMBERS));
+    }
   }
 
   public static String translateDiscussionPropertyToRelation(String propertyName) {

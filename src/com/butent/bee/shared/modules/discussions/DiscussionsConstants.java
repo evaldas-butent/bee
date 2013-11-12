@@ -76,10 +76,12 @@ public final class DiscussionsConstants {
 
   public static final String DISCUSSIONS_METHOD = DISCUSSIONS_MODULE + "Method";
   public static final String DISCUSSIONS_PREFIX = "discuss_";
+  public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_FILE = "File";
@@ -87,6 +89,8 @@ public final class DiscussionsConstants {
   public static final String COL_MEMBER = "Member";
   public static final String COL_OWNER = "Owner";
   public static final String COL_PUBLISHER = "Publisher";
+  public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
+  public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
@@ -115,18 +119,22 @@ public final class DiscussionsConstants {
   public static final String PROP_TASKS = "Tasks";
   public static final String PROP_DOCUMENTS = "Documents";
 
+  public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
+
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
 
   public static final long VALUE_MEMBER = 1;
 
+  public static final String VAR_DISCUSSION_COMMENT = Service.RPC_VAR_PREFIX + "discuss_comment";
   public static final String VAR_DISCUSSION_DATA = Service.RPC_VAR_PREFIX + "discuss_data";
+  public static final String VAR_DISCUSSION_ID = Service.RPC_VAR_PREFIX + "discuss_id";
   public static final String VAR_DISCUSSION_RELATIONS = Service.RPC_VAR_PREFIX
       + "discuss_relations";
   public static final String VAR_DISCUSSION_USERS = Service.RPC_VAR_PREFIX + "discuss_users";
 
   public static final String VIEW_DISCUSSIONS = "Discussions";
-  public static final String VIEW_DISCUSSIONS_COMMENTS = "DiscussionComments";
+  public static final String VIEW_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String VIEW_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String VIEW_DISCUSSIONS_USERS = "DiscussionsUsers";
 

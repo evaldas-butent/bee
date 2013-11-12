@@ -20,6 +20,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -98,6 +99,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
     if (BeeUtils.isPrefix(svc, DISCUSSIONS_PREFIX)) {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_DATA)) {
+      response = getDiscussionData(reqInfo);
     } else {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);
       logger.warning(message);
@@ -287,7 +290,6 @@ public class DiscussionsModuleBean implements BeeModule {
     return qs.insertDataWithResponse(insert);
   }
 
-  @SuppressWarnings("unused")
   private ResponseObject commitDiscussionData(BeeRowSet data, Collection<Long> oldUsers,
       boolean checkUsers, Set<String> updatedRelations, Long commentId) {
 
@@ -371,10 +373,10 @@ public class DiscussionsModuleBean implements BeeModule {
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
 
-    /*
-     * Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
-     * Set<String> updateRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
-     */
+    Long commentId = null;
+
+    Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
+    Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
 
     switch (event) {
       case CREATE:
@@ -449,10 +451,19 @@ public class DiscussionsModuleBean implements BeeModule {
       case MARK:
         break;
       case MODIFY:
+        response = commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
         break;
       case REPLY:
         break;
       case VISIT:
+        if (oldMembers.contains(currentUser)) {
+          response = registerDiscussionVisit(discussionId, currentUser, now);
+        }
+
+        if (response == null || !response.hasErrors()) {
+          response =
+              commitDiscussionData(discussData, oldMembers, false, updatedRelations, commentId);
+        }
         break;
       default:
         break;
@@ -463,6 +474,17 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject getDiscussionData(RequestInfo reqInfo) {
+    long discussionId = BeeUtils.toLong(reqInfo.getParameter(VAR_DISCUSSION_ID));
+    if (!DataUtils.isId(discussionId)) {
+      String msg = BeeUtils.joinWords(SVC_GET_DISCUSSION_DATA, "discussion id not received");
+      logger.warning(msg);
+      return ResponseObject.error(msg);
+    }
+
+    return getDiscussionData(discussionId, null);
   }
 
   private ResponseObject getDiscussionData(long discussionId, Long commentId) {
@@ -511,6 +533,21 @@ public class DiscussionsModuleBean implements BeeModule {
     return result;
   }
 
+  private List<Long> getDiscussionMembers(long discussionId) {
+    if (!DataUtils.isId(discussionId)) {
+      return Lists.newArrayList();
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER)
+        .addFrom(TBL_DISCUSSIONS_USERS)
+        .setWhere(
+            SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId),
+                SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, VALUE_MEMBER))).addOrder(
+            TBL_DISCUSSIONS_USERS, sys.getIdName(TBL_DISCUSSIONS_USERS));
+    return Lists.newArrayList(qs.getLongColumn(query));
+  }
+
   private Multimap<String, Long> getDiscussionRelations(long discussionId) {
     Multimap<String, Long> res = HashMultimap.create();
 
@@ -531,19 +568,16 @@ public class DiscussionsModuleBean implements BeeModule {
     return res;
   }
 
-  private List<Long> getDiscussionMembers(long discussionId) {
-    if (!DataUtils.isId(discussionId)) {
-      return Lists.newArrayList();
-    }
-    
-    SqlSelect query = new SqlSelect()
-    .addFields(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER)
-    .addFrom(TBL_DISCUSSIONS_USERS)
-            .setWhere(
-                SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId),
-                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, VALUE_MEMBER))).addOrder(
-                TBL_DISCUSSIONS_USERS, sys.getIdName(TBL_DISCUSSIONS_USERS));
-    return Lists.newArrayList(qs.getLongColumn(query));
+  private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {
+    IsCondition where =
+        SqlUtils.and(
+        SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
+                CommonsConstants.COL_USER, userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS,
+                COL_MEMBER, new Integer(1)));
+
+    return qs.updateDataWithResponse(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(
+        COL_LAST_ACCESS, mills)
+        .setWhere(where));
   }
 
   private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,

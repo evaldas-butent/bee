@@ -24,5 +24,6 @@
     <DataColumn name="Status" itemKey="DiscussionStatus" visible="true" />
        
     <DataColumn name="Created" visible="true" /> 
+    <DataColumn name="Accessibility" visible="false" />
   </g:columns>
 </g:Grid>
