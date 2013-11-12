@@ -1319,7 +1319,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     BeeRowSet rowSet;
     List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
     if (isNew) {
-      rowSet = Queries.createRowSetForInsert(viewName, columns, row);
+      rowSet = DataUtils.createRowSetForInsert(viewName, columns, row);
     } else {
       rowSet = new BeeRowSet(viewName, columns);
       rowSet.addRow(row);

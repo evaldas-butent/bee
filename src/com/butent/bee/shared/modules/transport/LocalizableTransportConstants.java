@@ -370,6 +370,8 @@ public interface LocalizableTransportConstants {
 
   String trRequestPlaceFax();
   
+  String trRequestReceived();
+  
   String trRequestResponsibleManager();
 
   String trRequests();

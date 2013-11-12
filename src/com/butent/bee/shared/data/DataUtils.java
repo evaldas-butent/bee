@@ -182,7 +182,44 @@ public final class DataUtils {
   }
 
   public static BeeRow createEmptyRow(int columnCount) {
-    return new BeeRow(NEW_ROW_ID, new String[Assert.isPositive(columnCount)]);
+    return new BeeRow(NEW_ROW_ID, NEW_ROW_VERSION, new String[Assert.isPositive(columnCount)]);
+  }
+
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      IsRow row) {
+    return createRowSetForInsert(viewName, columns, row, null, false);
+  }
+
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      IsRow row, Collection<String> alwaysInclude, boolean addProperties) {
+    List<BeeColumn> newColumns = Lists.newArrayList();
+    List<String> values = Lists.newArrayList();
+
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+      if (!column.isEditable()) {
+        continue;
+      }
+
+      String value = row.getString(i);
+      if (!BeeUtils.isEmpty(value)
+          || alwaysInclude != null && alwaysInclude.contains(column.getId())) {
+        newColumns.add(column);
+        values.add(value);
+      }
+    }
+    if (newColumns.isEmpty()) {
+      return null;
+    }
+
+    BeeRow newRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+    if (addProperties && row.getProperties() != null) {
+      newRow.setProperties(row.getProperties().copy());
+    }
+
+    BeeRowSet rs = new BeeRowSet(viewName, newColumns);
+    rs.addRow(newRow);
+    return rs;
   }
 
   public static String defaultColumnId(int index) {
@@ -609,36 +646,13 @@ public final class DataUtils {
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
-
+  
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
   public static boolean isNull(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.isNull(getColumnIndex(columnId, rowSet.getColumns()));
-  }
-  
-  public static String join(IsRow row, List<Integer> indexes) {
-    return join(row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
-  }
-
-  public static String join(IsRow row, List<Integer> indexes, String separator) {
-    Assert.notNull(row);
-    Assert.notEmpty(indexes);
-
-    StringBuilder sb = new StringBuilder();
-    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
-
-    for (int index : indexes) {
-      String value = render(row, index, null);
-      if (!BeeUtils.isEmpty(value)) {
-        if (sb.length() > 0) {
-          sb.append(sep);
-        }
-        sb.append(value.trim());
-      }
-    }
-    return sb.toString();
   }
 
   public static String join(DataInfo dataInfo, IsRow row, List<String> colNames, String separator) {
@@ -681,6 +695,29 @@ public final class DataUtils {
       }
 
       String value = render(row, i, column.getType());
+      if (!BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(value.trim());
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String join(IsRow row, List<Integer> indexes) {
+    return join(row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
+  }
+
+  public static String join(IsRow row, List<Integer> indexes, String separator) {
+    Assert.notNull(row);
+    Assert.notEmpty(indexes);
+
+    StringBuilder sb = new StringBuilder();
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
+
+    for (int index : indexes) {
+      String value = render(row, index, null);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);
@@ -1215,7 +1252,7 @@ public final class DataUtils {
     }
     return !wh.matches(".*[\\(\\)].*");
   }
-
+  
   private DataUtils() {
   }
 }

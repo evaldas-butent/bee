@@ -82,6 +82,16 @@ public class DataEditorBean {
       this.newValue = newValue;
       this.locale = locale;
     }
+
+    @Override
+    public String toString() {
+      return BeeUtils.joinOptions("tableAlias", tableAlias,
+          "fieldAlias", fieldAlias,
+          "fieldName", fieldName,
+          "oldValue", oldValue,
+          "newValue", (newValue == null) ? null : newValue.toString(),
+          "locale", locale);
+    }
   }
 
   private static final class TableInfo {
@@ -978,8 +988,10 @@ public class DataEditorBean {
           if (BeeUtils.same(info.fieldAlias, fldInfo.fieldAlias)) {
             found = true;
           } else {
-            response.addError("Attempt to update field more than once:",
-                BeeUtils.bracket(fldInfo.fieldName));
+            String msg = "Attempt to update field more than once: "
+                + BeeUtils.bracket(fldInfo.toString());
+            logger.severe(msg);
+            response.addError(msg);
             ok = false;
             break;
           }

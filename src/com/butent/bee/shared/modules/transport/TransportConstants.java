@@ -253,6 +253,7 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
 
   public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
+  public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
@@ -578,12 +579,16 @@ public final class TransportConstants {
   public static final String ALS_ABSENCE_NAME = "AbsenceName";
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
 
+  public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
+  
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
   public static final String DATA_TYPE_TRIP = "Trip";
   public static final String DATA_TYPE_FREIGHT = "Freight";
   public static final String DATA_TYPE_TRUCK = "Truck";
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
+
+  public static final String DEFAULT_CARGO_DESCRIPTION = "*";
 
   public static final String STYLE_SHEET = "transport";
 

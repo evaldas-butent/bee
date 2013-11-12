@@ -5,46 +5,22 @@ body {
 }
 
 .bee-tr-query-panel {
-  margin-top: 1ex;
-  display: flex;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  flex-direction: column;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  justify-content: space-around;
-  -webkit-justify-content: space-around;
-  -ms-flex-pack: justify;
-  align-items: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
 }
 
 .bee-tr-query-caption {
   font-size: 150%;
   font-weight: bolder;
+  text-align: center;
 }
 
 .bee-tr-query-fieldPanel {
-  display: flex;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  flex-direction: row;
-  -webkit-flex-direction: row;
-  -ms-flex-direction: row;
-  justify-content: space-around;
-  -webkit-justify-content: space-around;
-  -ms-flex-pack: justify;
-  align-items: flex-start;
-  -webkit-align-items: flex-start;
-  -ms-flex-align: start;
-  flex-wrap: wrap;
-  -webkit-flex-wrap: wrap;
-  -ms-flex-wrap: wrap;
+  overflow: auto;
 }
 
 .bee-tr-query-group {
   margin-top: 2ex;
+  margin-right: 1em;
+  float: left;
 }
 .bee-tr-query-legend {
   font-size: 120%;
@@ -61,6 +37,7 @@ body {
 
 .bee-tr-query-label-cell {
   text-align: right;
+  vertical-align: top;
 }
 .bee-tr-query-required:after {
   content: "*";
@@ -71,7 +48,17 @@ body {
 
 .bee-tr-query-input,
 .bee-tr-query-area {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  margin: 0;
+  padding: 1px 2px;
   width: 150px;
+  font-family: inherit;
+  font-size: inherit;
+}
+.bee-tr-query-select {
+  margin: 0;
+  max-width: 200px;
 }
 .bee-tr-query-check {
   margin-top: 5px;
@@ -88,15 +75,20 @@ body {
 #Height-input,
 #Palettes-input,
 #Value-input {
-  width: 60px;
+  width: 80px;
   text-align: right;
+}
+
+#Notes-input {
+  width: 200px;
+  height: 100px;
 }
 
 .bee-tr-query-submit {
   font-size: medium;
   padding: 5px 10px;
   display: block;
-  margin-top: 1ex;
+  margin-top: 2ex;
   margin-left: auto;
   margin-right: auto;
 }
