@@ -82,8 +82,8 @@
         <row>
           <Label text="=city" class="bee-required" />
           <InputText source="LoadingCity" />
-          <Label text="=country" />
-          <DataSelector source="LoadingCountry" />
+          <Label text="=trLoadingDate" class="bee-required" />
+          <InputDateTime source="LoadingDate" required="true" />
         </row>
 
         <row>
@@ -94,8 +94,6 @@
         </row>
 
         <row>
-          <Label text="=trLoadingDate" class="bee-required" />
-          <InputDateTime source="LoadingDate" required="true" />
           <Label text="=trLoadingNumber" />
           <InputText source="LoadingNumber" />
         </row>
@@ -126,8 +124,8 @@
         <row>
           <Label text="=city" class="bee-required" />
           <InputText source="UnloadingCity" />
-          <Label text="=country" />
-          <DataSelector source="UnloadingCountry" />
+          <Label text="=trUnloadingDate" />
+          <InputDateTime source="UnloadingDate" />
         </row>
 
         <row>
@@ -138,8 +136,6 @@
         </row>
 
         <row>
-          <Label text="=trUnloadingDate" />
-          <InputDateTime source="UnloadingDate" />
           <Label text="=trUnloadingNumber" />
           <InputText source="UnloadingNumber" />
         </row>

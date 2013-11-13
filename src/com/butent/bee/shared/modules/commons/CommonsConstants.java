@@ -1,12 +1,29 @@
 package com.butent.bee.shared.modules.commons;
 
+import com.google.common.collect.Lists;
+
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 public final class CommonsConstants {
+
+  public static final List<BeeColumn> HISTORY_COLUMNS = Lists.newArrayList(
+      new BeeColumn(ValueType.DATE_TIME, SystemBean.AUDIT_FLD_TIME, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_USER, true),
+      new BeeColumn(ValueType.LONG, SystemBean.AUDIT_FLD_TX, false),
+      new BeeColumn(ValueType.TEXT, SystemBean.AUDIT_FLD_MODE, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_OBJECT, false),
+      new BeeColumn(ValueType.LONG, SystemBean.AUDIT_FLD_ID, false),
+      new BeeColumn(ValueType.TEXT, SystemBean.AUDIT_FLD_FIELD, false),
+      new BeeColumn(ValueType.TEXT, SystemBean.AUDIT_FLD_VALUE, true),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
 
   public enum RightsObjectType implements HasCaption {
     EVENT("Įvykis", EnumSet.of(RightsState.VISIBLE)),
@@ -78,6 +95,10 @@ public final class CommonsConstants {
   public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
   public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
 
+  public static final String SVC_GET_HISTORY = "get_history";
+  public static final String VAR_HISTORY_VIEW = Service.RPC_VAR_PREFIX + "history_view";
+  public static final String VAR_HISTORY_IDS = Service.RPC_VAR_PREFIX + "history_ids";
+
   public static final String COMMONS_ITEM_PREFIX = "item_";
 
   public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
@@ -144,6 +165,8 @@ public final class CommonsConstants {
   public static final String VIEW_CURRENCIES = "Currencies";
 
   public static final String GRID_PERSONS = "Persons";
+
+  public static final String GRID_HISTORY = "History";
 
   public static final String COL_RELATION = "Relation";
 

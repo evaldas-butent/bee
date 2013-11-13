@@ -5,7 +5,7 @@
   minColumnWidth="100"
   >
   <g:columns>
-    <RelColumn name="FirstName" caption="=name" visible="true"
+    <RelColumn name="FirstName" caption="=firstName" visible="true"
       choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName" />
     <RelColumn name="LastName" caption="=lastName" visible="true"
       choiceColumns="LastName FirstName CompanyName" searchableColumns="LastName" />

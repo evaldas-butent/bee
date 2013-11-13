@@ -2,6 +2,7 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -18,6 +19,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.commons.HistoryHandler;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -65,6 +67,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -74,6 +77,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
@@ -170,6 +174,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     return view;
   }
+
   private final GridContainerView gridContainer;
   private final Provider dataProvider;
 
@@ -329,6 +334,24 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (getMainView().isEnabled()) {
           addRow();
         }
+        break;
+
+      case AUDIT:
+        Set<Long> ids = Sets.newHashSet();
+
+        for (RowInfo row : getGridView().getSelectedRows(SelectedRows.ALL)) {
+          ids.add(row.getId());
+        }
+        if (ids.isEmpty() && getGridView().getActiveRow() != null) {
+          ids.add(getGridView().getActiveRow().getId());
+        }
+        if (ids.isEmpty()) {
+          getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          return;
+        }
+        GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
+            new HistoryHandler(getGridView().getViewName(), ids),
+            null, PresenterCallback.SHOW_IN_NEW_TAB);
         break;
 
       case BOOKMARK:

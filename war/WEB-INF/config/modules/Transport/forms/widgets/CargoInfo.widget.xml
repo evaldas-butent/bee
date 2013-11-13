@@ -62,6 +62,13 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
+    <Label text="=postIndex" style="&labelLeft;" />
+    <InputText source="LoadingPostIndex" style="&inline; width:90px; margin-right:20px;" />
+    <Label text="=postIndex" style="&labelRight; width:100px" />
+    <InputText source="UnloadingPostIndex" style="&inline; width:90px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
     <Label text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>

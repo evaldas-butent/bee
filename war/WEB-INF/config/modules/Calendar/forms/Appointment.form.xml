@@ -183,7 +183,7 @@
           </row>
 
           <row>
-            <InputArea source="Recurrence" caption="Recurrence" style="width: 320px;" 
+            <InputArea source="Recurrence" caption="=calRecurrence" style="width: 320px;" 
               decorator="caption-top" />
             <LongLabel source="RecurringEventId" caption="=calRecurringEventId" inline="true"
               style="width: 200px;" d:size="120" d:unit="px" />

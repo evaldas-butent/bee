@@ -107,7 +107,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     Data.setValue(VIEW_DISCUSSIONS, newRow, COL_ACCESSIBILITY, BeeUtils.toInt(discussPublic));
 
     BeeRowSet rowSet =
-        Queries.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
+        DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
             null, true);
     ParameterList args = DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE);
     args.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));

@@ -1,14 +1,17 @@
 package com.butent.bee.server.modules.commons;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
+import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.TableModifyEvent;
@@ -40,15 +43,18 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -56,6 +62,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -133,6 +140,10 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
           reqInfo.getParameter("locale"));
+
+    } else if (BeeUtils.same(svc, SVC_GET_HISTORY)) {
+      response = getHistory(reqInfo.getParameter(VAR_HISTORY_VIEW),
+          DataUtils.parseIdSet(reqInfo.getParameter(VAR_HISTORY_IDS)));
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -396,6 +407,143 @@ public class CommonsModuleBean implements BeeModule {
       info.put(col, Pair.of(translations.get(col), row.getValue(col)));
     }
     return ResponseObject.response(info);
+  }
+
+  private ResponseObject getHistory(String viewName, Collection<Long> idList) {
+    if (BeeUtils.isEmpty(idList)) {
+      return ResponseObject.error(Localized.getConstants().selectAtLeastOneRow());
+    }
+    BeeView view = sys.getView(viewName);
+
+    SqlSelect query = view.getQuery(ComparisonFilter.idIn(idList), null)
+        .resetFields().resetOrder();
+
+    Multimap<String, ViewColumn> columnMap = HashMultimap.create();
+    Map<String, Pair<String, String>> idMap = Maps.newHashMap();
+
+    for (ViewColumn col : view.getViewColumns()) {
+      if (!col.isHidden() && !col.isReadOnly()
+          && (col.getLevel() == 0 || BeeUtils.unbox(col.getEditable()))) {
+
+        String als = view.getColumnSource(col.getName());
+        columnMap.put(als, col);
+
+        if (!idMap.containsKey(als)) {
+          String parent = col.getParent();
+
+          if (!BeeUtils.isEmpty(parent)) {
+            String src = view.getColumnSource(parent);
+            String fld = view.getColumnField(parent);
+            query.addField(src, fld, parent);
+
+            if (!BeeUtils.isEmpty(query.getGroupBy())) {
+              query.addGroup(src, fld);
+            }
+          } else {
+            parent = view.getSourceIdName();
+            query.addFields(view.getSourceAlias(), parent);
+          }
+          idMap.put(als, Pair.of(col.getTable(), parent));
+        }
+      }
+    }
+    SimpleRowSet ids = qs.getData(query);
+    query = null;
+
+    for (String als : columnMap.keySet()) {
+      BeeTable table = sys.getTable(idMap.get(als).getA());
+
+      Set<Long> auditIds = Sets.newHashSet(ids.getLongColumn(idMap.get(als).getB()));
+      auditIds.remove(null);
+
+      if (BeeUtils.isEmpty(auditIds) || !table.isAuditable()) {
+        continue;
+      }
+      String src = sys.getAuditSource(table.getName());
+      SqlSelect subq = new SqlSelect();
+
+      List<String> fields = Lists.newArrayList();
+      List<Object> pairs = Lists.newArrayList();
+
+      for (ViewColumn col : columnMap.get(als)) {
+        fields.add(col.getField());
+
+        if (!BeeUtils.same(col.getField(), col.getName())) {
+          pairs.add(col.getField());
+          pairs.add(col.getName());
+        }
+      }
+      if (!BeeUtils.isEmpty(pairs)) {
+        pairs.add(SqlUtils.field(src, SystemBean.AUDIT_FLD_FIELD));
+
+        subq.addExpr(SqlUtils.sqlCase(SqlUtils.field(src, SystemBean.AUDIT_FLD_FIELD),
+            pairs.toArray()), SystemBean.AUDIT_FLD_FIELD);
+      } else {
+        subq.addFields(src, SystemBean.AUDIT_FLD_FIELD);
+      }
+      subq.addFields(src, SystemBean.AUDIT_FLD_TIME, SystemBean.AUDIT_FLD_TX,
+          SystemBean.AUDIT_FLD_MODE, SystemBean.AUDIT_FLD_ID, SystemBean.AUDIT_FLD_VALUE)
+          .addConstant(table.getName(), COL_OBJECT)
+          .addField(TBL_USERS, COL_LOGIN, COL_USER)
+          .addFrom(src)
+          .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, src, SystemBean.AUDIT_FLD_USER))
+          .setWhere(SqlUtils.and(SqlUtils.inList(src, SystemBean.AUDIT_FLD_ID, auditIds),
+              SqlUtils.or(SqlUtils.inList(src, SystemBean.AUDIT_FLD_FIELD, fields),
+                  SqlUtils.isNull(src, SystemBean.AUDIT_FLD_FIELD))));
+
+      if (query == null) {
+        query = subq.addOrder(src, SystemBean.AUDIT_FLD_TIME, SystemBean.AUDIT_FLD_ID)
+            .addOrder(null, COL_OBJECT);
+      } else {
+        query.setUnionAllMode(true).addUnion(subq);
+      }
+    }
+    BeeRowSet rs = new BeeRowSet(HISTORY_COLUMNS);
+
+    if (query != null) {
+      int fldIdx = rs.getColumnIndex(SystemBean.AUDIT_FLD_FIELD);
+      int valIdx = rs.getColumnIndex(SystemBean.AUDIT_FLD_VALUE);
+      int relIdx = rs.getColumnIndex(COL_RELATION);
+
+      for (SimpleRow row : qs.getData(query)) {
+        String[] values = new String[rs.getNumberOfColumns()];
+        String fld = row.getValue(SystemBean.AUDIT_FLD_FIELD);
+
+        for (int i = 0; i < values.length; i++) {
+          String value;
+
+          if (i == relIdx) {
+            value = BeeUtils.isEmpty(fld) ? null : view.getColumnRelation(fld);
+          } else {
+            value = row.getValue(rs.getColumnId(i));
+          }
+          if (value != null) {
+            if (i == fldIdx) {
+              value = BeeUtils.notEmpty(Localized.maybeTranslate(view.getColumnLabel(fld)), value);
+
+            } else if (i == valIdx) {
+              switch (view.getColumnType(fld)) {
+                case BOOLEAN:
+                  value = BeeUtils.toBoolean(value)
+                      ? Localized.getConstants().yes() : Localized.getConstants().no();
+                  break;
+                case DATE:
+                  value = TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)).toDateString();
+                  break;
+                case DATETIME:
+                  value = TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)).toCompactString();
+                  break;
+                default:
+                  break;
+              }
+            }
+          }
+          values[i] = value;
+        }
+        rs.addRow(new BeeRow(0L, values));
+      }
+    }
+    return ResponseObject.response(rs);
   }
 
   private static Collection<? extends BeeParameter> getSqlEngineParameters() {

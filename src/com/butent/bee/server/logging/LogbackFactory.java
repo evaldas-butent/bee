@@ -24,14 +24,15 @@ public class LogbackFactory implements BeeLoggerFactory {
     context = (LoggerContext) LoggerFactory.getILoggerFactory();
     context.reset();
     context.putProperty("LOG_DIR", Config.LOG_DIR.getAbsolutePath().replace("\\", "/"));
+    JoranConfigurator configurator = new JoranConfigurator();
 
     try {
-      JoranConfigurator configurator = new JoranConfigurator();
       configurator.setContext(context);
       configurator.doConfigure(FileUtils.isInputFile(Config.LOCAL_DIR, LOGBACK_PROPERTIES)
           ? new File(Config.LOCAL_DIR, LOGBACK_PROPERTIES)
           : new File(Config.CONFIG_DIR, LOGBACK_PROPERTIES));
     } catch (JoranException je) {
+      configurator = null;
       // StatusPrinter will handle this
     }
     StatusPrinter.printInCaseOfErrorsOrWarnings(context);

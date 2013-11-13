@@ -321,6 +321,7 @@
   <xs:simpleType name="viewAction">
     <xs:restriction base="xs:string">
       <xs:enumeration value="add" />
+      <xs:enumeration value="audit" />
       <xs:enumeration value="bookmark" />
       <xs:enumeration value="configure" />
       <xs:enumeration value="close" />

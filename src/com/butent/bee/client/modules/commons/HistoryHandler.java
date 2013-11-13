@@ -1,0 +1,131 @@
+package com.butent.bee.client.modules.commons;
+
+import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.LocalProvider;
+import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
+import java.util.List;
+
+public class HistoryHandler extends AbstractGridInterceptor implements ClickHandler {
+
+  private LocalProvider provider;
+  private final String viewName;
+  private final Collection<Long> ids;
+
+  public HistoryHandler(String viewName, Collection<Long> ids) {
+    this.viewName = viewName;
+    this.ids = ids;
+  }
+
+  @Override
+  public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+
+    if (BeeUtils.same(columnName, "Value")) {
+      column.getCell().addClickHandler(this);
+    }
+    return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
+  }
+
+  @Override
+  public String getCaption() {
+    return BeeUtils.joinWords(Localized.getConstants().actionAudit(),
+        BeeUtils.parenthesize(Data.getViewCaption(viewName)));
+  }
+
+  @Override
+  public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
+    return new BeeRowSet(CommonsConstants.HISTORY_COLUMNS);
+  }
+
+  @Override
+  public void onClick(ClickEvent event) {
+    if (event.getSource() instanceof AbstractCell<?>) {
+      CellContext context = ((AbstractCell<?>) event.getSource()).getEventContext();
+      IsRow row = context.getRowValue();
+      String relation = row.getString(provider.getColumnIndex(CommonsConstants.COL_RELATION));
+
+      if (!BeeUtils.isEmpty(relation)) {
+        Long id = row.getLong(provider.getColumnIndex("Value"));
+
+        if (DataUtils.isId(id)) {
+          GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
+              new HistoryHandler(relation, Lists.newArrayList(id)),
+              null, PresenterCallback.SHOW_IN_NEW_TAB);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void onShow(GridPresenter presenter) {
+    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
+      provider = (LocalProvider) presenter.getDataProvider();
+      requery();
+    }
+  }
+
+  private void requery() {
+    if (provider == null) {
+      return;
+    }
+    provider.clear();
+    final CellGrid grid = getGridView().getGrid();
+
+    ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_HISTORY);
+    args.addDataItem(CommonsConstants.VAR_HISTORY_VIEW, viewName);
+
+    if (!BeeUtils.isEmpty(ids)) {
+      args.addDataItem(CommonsConstants.VAR_HISTORY_IDS, DataUtils.buildIdList(ids));
+    }
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+
+        if (response.hasErrors()) {
+          Global.showError(Lists.newArrayList(response.getErrors()));
+          return;
+        }
+        BeeRowSet rowset = BeeRowSet.restore(response.getResponseAsString());
+
+        for (BeeRow row : rowset.getRows()) {
+          provider.addRow(row);
+        }
+        grid.setRowData(rowset.getRows().getList(), true);
+        grid.setRowCount(rowset.getNumberOfRows(), true);
+      }
+    });
+  }
+}

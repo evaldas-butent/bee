@@ -1,5 +1,6 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.SqlCreate.SqlField;
@@ -404,7 +405,14 @@ public abstract class SqlBuilder {
             expression, "IS", (operator == Operator.NOT_NULL) ? "NOT" : "", "NULL");
 
       case IN:
-        return BeeUtils.joinWords(expression, "IN", value);
+        List<String> vals = Lists.newArrayList();
+        int i = 0;
+
+        while (params.containsKey("value" + i)) {
+          vals.add(params.get("value" + i++));
+        }
+        return BeeUtils.joinWords(expression, "IN",
+            BeeUtils.parenthesize(BeeUtils.joinItems(vals)));
 
       case EQ:
       case NE:

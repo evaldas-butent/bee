@@ -3,7 +3,6 @@ package com.butent.bee.server.data;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -82,6 +81,16 @@ public class DataEditorBean {
       this.oldValue = oldValue;
       this.newValue = newValue;
       this.locale = locale;
+    }
+
+    @Override
+    public String toString() {
+      return BeeUtils.joinOptions("tableAlias", tableAlias,
+          "fieldAlias", fieldAlias,
+          "fieldName", fieldName,
+          "oldValue", oldValue,
+          "newValue", (newValue == null) ? null : newValue.toString(),
+          "locale", locale);
     }
   }
 
@@ -341,9 +350,7 @@ public class DataEditorBean {
     String tblName = table.getName();
     ResponseObject response = new ResponseObject();
 
-    if (cache == null) {
-      cache = Sets.newHashSet();
-    } else if (cache.contains(BeeUtils.normalize(tblName))) {
+    if (cache.contains(BeeUtils.normalize(tblName))) {
       return response.addWarning(tblName, "already generated");
     }
     cache.add(BeeUtils.normalize(tblName));
@@ -981,8 +988,10 @@ public class DataEditorBean {
           if (BeeUtils.same(info.fieldAlias, fldInfo.fieldAlias)) {
             found = true;
           } else {
-            response.addError("Attempt to update field more than once:",
-                BeeUtils.bracket(fldInfo.fieldName));
+            String msg = "Attempt to update field more than once: "
+                + BeeUtils.bracket(fldInfo.toString());
+            logger.severe(msg);
+            response.addError(msg);
             ok = false;
             break;
           }

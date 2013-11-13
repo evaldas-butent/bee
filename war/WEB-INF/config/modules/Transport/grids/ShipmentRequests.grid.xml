@@ -25,7 +25,6 @@
     <DataColumn name="LoadingContact" visible="false" />
 
     <DataColumn name="LoadingCity" />
-    <RelColumn name="LoadingCountry" />
 
     <DataColumn name="LoadingAddress" visible="false" />
     <DataColumn name="LoadingEmail" visible="false" />
@@ -38,7 +37,6 @@
     <DataColumn name="UnloadingContact" visible="false" />
 
     <DataColumn name="UnloadingCity" />
-    <RelColumn name="UnloadingCountry" />
 
     <DataColumn name="UnloadingAddress" visible="false" />
     <DataColumn name="UnloadingEmail" visible="false" />

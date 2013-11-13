@@ -344,15 +344,15 @@ public final class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridInterceptor(gridName), null);
+    openGrid(gridName, getGridInterceptor(gridName));
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
-    openGrid(gridName, gridInterceptor, null);
+    openGrid(gridName, gridInterceptor, null, PresenterCallback.SHOW_IN_ACTIVE_PANEL);
   }
 
   public static void openGrid(final String gridName, final GridInterceptor gridInterceptor,
-      final GridOptions gridOptions) {
+      final GridOptions gridOptions, PresenterCallback presenterCallback) {
 
     final String supplierKey = getSupplierKey(gridName, gridInterceptor);
     final Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
@@ -374,8 +374,7 @@ public final class GridFactory {
       WidgetFactory.registerSupplier(supplierKey, supplier);
     }
 
-    createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions,
-        PresenterCallback.SHOW_IN_ACTIVE_PANEL);
+    createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions, presenterCallback);
   }
 
   public static void registerGridInterceptor(String gridName, GridInterceptor interceptor) {
@@ -435,7 +434,7 @@ public final class GridFactory {
 
       String id = table.getColumnId(i);
       String label = table.getColumnLabel(i);
-      
+
       ColumnInfo columnInfo = new ColumnInfo(id, label, source, column,
           new ColumnHeader(id, label));
       grid.addColumn(columnInfo);
