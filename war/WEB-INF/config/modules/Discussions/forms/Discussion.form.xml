@@ -44,8 +44,7 @@
 
       <FlowPanel style="&section;">
         <Label text="=discussDescription" style="&top1;" />
-        <InputArea source="Description" style="width: 424px; height: 60px;"
-          readOnly="true" />
+        <Label name="Description" style="width: 424px; height: 60px;" />
       </FlowPanel>
 
       <FileGroup name="Files" />

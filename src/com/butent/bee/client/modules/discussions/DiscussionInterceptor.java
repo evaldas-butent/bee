@@ -14,21 +14,36 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.DndTarget;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -47,6 +62,133 @@ import java.util.List;
 
 class DiscussionInterceptor extends AbstractFormInterceptor {
   
+  private static final class CommentDialog extends DialogBox {
+
+    private static final String STYLE_DIALOG = DISCUSSIONS_STYLE_PREFIX + "commentDialog";
+    private static final String STYLE_CELL = "Cell";
+
+    private CommentDialog(String caption) {
+      super(caption, STYLE_DIALOG);
+
+      addDefaultCloseBox();
+
+      HtmlTable container = new HtmlTable();
+      container.addStyleName(STYLE_DIALOG + "-container");
+
+      setWidget(container);
+    }
+
+    private void addAction(String caption, ScheduledCommand command) {
+      String styleName = STYLE_DIALOG + "-action";
+
+      Button button = new Button(caption, command);
+      button.addStyleName(styleName);
+
+      HtmlTable table = getContainer();
+      int row = table.getRowCount();
+      int col = 0;
+
+      table.setWidget(row, col, button);
+
+      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+      table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.CENTER);
+
+      table.getCellFormatter().setColSpan(row, col, 2);
+    }
+
+    private String addComment(boolean required) {
+      String styleName = STYLE_DIALOG + "commentLabel";
+      Label label = new Label(Localized.getConstants().discussComment());
+      label.addStyleName(styleName);
+      if (required) {
+        label.addStyleName(StyleUtils.NAME_REQUIRED);
+      }
+
+      HtmlTable table = getContainer();
+      int row = table.getRowCount();
+      int col = 0;
+
+      table.setWidget(row, col, label);
+      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+      col++;
+
+      InputArea input = new InputArea();
+      styleName = STYLE_DIALOG + "-commentArea";
+
+      input.addStyleName(styleName);
+
+      table.setWidget(row, col, input);
+      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+
+      return input.getId();
+    }
+
+    private String addFileCollector() {
+      HtmlTable table = getContainer();
+      int row = table.getRowCount();
+      int col = 0;
+
+      String styleName = STYLE_DIALOG + "-filesLabel";
+      Label label = new Label(Localized.getConstants().discussFiles());
+      label.addStyleName(styleName);
+
+      table.setWidget(row, col, label);
+      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+      col++;
+
+      styleName = STYLE_DIALOG + "fileCillector";
+      FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
+      collector.addStyleName(styleName);
+
+      table.setWidget(row, col, collector);
+      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+
+      Widget panel = getWidget();
+      if (panel instanceof DndTarget) {
+        collector.bindDnd((DndTarget) panel);
+      }
+
+      return collector.getId();
+    }
+
+    private void dispaly() {
+      center();
+      UiHelper.focus(getContent());
+    }
+
+    @SuppressWarnings("unused")
+    private void display(String focusId) {
+      center();
+      UiHelper.focus(getChild(focusId));
+    }
+
+    private Widget getChild(String id) {
+      return DomUtils.getChildQuietly(getContent(), id);
+    }
+
+    private String getComment(String id) {
+      Widget child = getChild(id);
+      if (child instanceof InputArea) {
+        return ((InputArea) child).getValue();
+      } else {
+        return null;
+      }
+    }
+
+    private HtmlTable getContainer() {
+      return (HtmlTable) getContent();
+    }
+
+    private List<NewFileInfo> getFiles(String id) {
+      Widget child = getChild(id);
+      if (child instanceof FileCollector) {
+        return ((FileCollector) child).getFiles();
+      } else {
+        return Lists.newArrayList();
+      }
+    }
+  }
+
   private static final String STYLE_COMMENT = DISCUSSIONS_STYLE_PREFIX + "comment-";
   private static final String STYLE_COMMENT_ROW = STYLE_COMMENT + "row";
   private static final String STYLE_COMMENT_COL = STYLE_COMMENT + "col-";
@@ -175,6 +317,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         if (!BeeUtils.isEmpty(comments)) {
           showCommentsAndMarks(form, BeeRowSet.restore(comments), files);
         }
+        
+        form.getWidgetByName(COL_DESCRIPTION).getElement().setInnerHTML(
+            data.getString(form.getDataIndex(COL_DESCRIPTION)));
 
         form.updateRow(data, true);
       }
@@ -392,9 +537,59 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     // TODO: do discussion status closed;
   }
 
-  private static void doComment(Long replayedCommentId) {
+  private void doComment(Long replayedCommentId) {
+    final CommentDialog dialog = new CommentDialog(Localized.getConstants().discussComment());
+
+    final String cid = dialog.addComment(true);
+    final String fid = dialog.addFileCollector();
+
+    dialog.addAction(Localized.getConstants().actionSave(), new ScheduledCommand() {
+
+      @Override
+      public void execute() {
+        String comment = dialog.getComment(cid);
+        
+        if (BeeUtils.isEmpty(comment)) {
+          showError(Localized.getConstants().crmEnterComment());
+        }
+
+        final long discussionId = getDiscussionId();
+
+        ParameterList params = createParams(DiscussionEvent.COMMENT, comment);
+
+        final List<NewFileInfo> files = dialog.getFiles(fid);
+
+        dialog.close();
+        
+        sendRequest(params, new Callback<ResponseObject>() {
+          @Override
+          public void onFailure(String... reason) {
+            getFormView().notifySevere(reason);
+          }
+
+          @Override
+          public void onSuccess(ResponseObject result) {
+            BeeRow data = getResponseRow(DiscussionEvent.COMMENT.getCaption(), result, this);
+            if (data == null) {
+              return;
+            }
+
+            onResponse(data);
+            
+            Long commentId = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_COMMENT));
+            if (DataUtils.isId(commentId) && !files.isEmpty()) {
+              sendFiles(files, discussionId, commentId);
+            }
+          }
+          
+        });
+      }
+    });
+
+    dialog.dispaly();
+
     if (replayedCommentId == null) {
-      // TODO: do discussion comment
+      // dielog.setCapt
       return;
     }
     // TODO: do replay discussion comment
@@ -437,6 +632,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
     // TODO: do discussion comment mark
+  }
+
+  private long getDiscussionId() {
+    return getFormView().getActiveRow().getId();
   }
 
   private Long getLong(String colName) {
@@ -521,4 +720,74 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getBoolean(getFormView().getDataIndex(COL_ACCESSIBILITY));
   }
 
+  private void onResponse(BeeRow data) {
+    BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
+
+    FormView form = getFormView();
+
+    String comments = data.getProperty(PROP_COMMENTS);
+
+    if (!BeeUtils.isEmpty(comments)) {
+      List<StoredFile> files = StoredFile.restoreCollection(data.getProperty(PROP_FILES));
+      showCommentsAndMarks(form, BeeRowSet.restore(comments), files);
+    }
+  }
+
+  private void requeryComments(final long discussionId) {
+    ParameterList params = DiscussionsKeeper.createArgs(SVC_GET_DISCUSSION_DATA);
+    params.addDataItem(VAR_DISCUSSION_ID, discussionId);
+    
+    Callback<ResponseObject> callback = new Callback<ResponseObject>() {
+      @Override
+      public void onFailure(String... reason) {
+        getFormView().notifySevere(reason);
+      }
+
+      @Override
+      public void onSuccess(ResponseObject result) {
+        if (getFormView().getActiveRow().getId() != discussionId) {
+          return;
+        }
+
+        BeeRow data = getResponseRow(SVC_GET_DISCUSSION_DATA, result, this);
+        if (data != null) {
+          onResponse(data);
+        }
+      }
+    };
+
+    sendRequest(params, callback);
+  }
+
+  private void sendFiles(final List<NewFileInfo> files, final long discussionId,
+      final long commentId) {
+    
+    final Holder<Integer> counter = Holder.of(0);
+    
+    final List<BeeColumn> columns =
+        Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_COMMENT,
+            COL_FILE, COL_CAPTION));
+
+    for (final NewFileInfo fileInfo : files) {
+      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
+
+        @Override
+        public void onSuccess(Long result) {
+          List<String> values = Lists.newArrayList(BeeUtils.toString(discussionId),
+              BeeUtils.toString(commentId), BeeUtils.toString(result), fileInfo.getCaption());
+
+          Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow row) {
+              counter.set(counter.get() + 1);
+              if (counter.get() == files.size()) {
+                requeryComments(discussionId);
+              }
+            }
+          });
+        }
+
+      });
+    }
+  }
 }

@@ -27,7 +27,7 @@
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=discussDescription" style="&top1; padding-right:12px;" />
-      <RichTextEditor name="Description" source="Description" style="width: 540px; height: 200px;" />
+      <RichTextEditor name="Description" style="width: 540px; height: 200px;" />
     </FlowPanel>
 
     &separator;

@@ -16,6 +16,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -233,7 +234,9 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     List<StoredFile> files = getDiscussionFiles(discussionId);
+    logger.info("GETTING FILES");
     if (!files.isEmpty()) {
+      logger.info("GET FILES: ", Codec.beeSerialize(files));
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
     }
     
@@ -288,6 +291,20 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return qs.insertDataWithResponse(insert);
+  }
+
+  private ResponseObject commitDiscussionComemnt(long discussionId, long userId,
+      String comment, long mills) {
+    SqlInsert si = new SqlInsert(TBL_DISCUSSIONS_COMMENTS)
+        .addConstant(COL_DISCUSSION, discussionId)
+        .addConstant(COL_PUBLISHER, userId)
+        .addConstant(COL_PUBLISH_TIME, mills);
+
+    if (!BeeUtils.isEmpty(comment)) {
+      si.addConstant(COL_COMMENT_TEXT, comment);
+    }
+
+    return qs.insertDataWithResponse(si);
   }
 
   private ResponseObject commitDiscussionData(BeeRowSet data, Collection<Long> oldUsers,
@@ -375,6 +392,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
     Long commentId = null;
 
+    String commentText = reqInfo.getParameter(VAR_DISCUSSION_COMMENT);
+
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
 
@@ -444,20 +463,22 @@ public class DiscussionsModuleBean implements BeeModule {
         break;
       case CLOSE:
         break;
-      case COMMENT:
-        break;
       case DEACTIVATE:
         break;
       case MARK:
         break;
-      case MODIFY:
-        response = commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
-        break;
+
       case REPLY:
         break;
+      case COMMENT:
+      case MODIFY:
       case VISIT:
         if (oldMembers.contains(currentUser)) {
           response = registerDiscussionVisit(discussionId, currentUser, now);
+        }
+
+        if (!BeeUtils.isEmpty(commentText)) {
+          response = commitDiscussionComemnt(discussionId, currentUser, commentText, now);
         }
 
         if (response == null || !response.hasErrors()) {
@@ -506,6 +527,11 @@ public class DiscussionsModuleBean implements BeeModule {
     BeeRowSet rowSet =
         qs.getViewData(VIEW_DISCUSSIONS_FILES, ComparisonFilter.isEqual(COL_DISCUSSION,
             new LongValue(discussionId)));
+
+    /*
+     * logger.debug("ROWSET", rowSet); logger.debug("DiscussionId:", discussionId);
+     */
+
     if (rowSet == null || rowSet.isEmpty()) {
       return result;
     }
@@ -513,9 +539,9 @@ public class DiscussionsModuleBean implements BeeModule {
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf =
           new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE), DataUtils.getString(rowSet, row,
-              CommonsConstants.COL_FILE_NAME), DataUtils.getLong(rowSet, row,
-              CommonsConstants.COL_FILE_SIZE), DataUtils.getString(rowSet, row,
-              CommonsConstants.COL_FILE_TYPE));
+              COL_FILE_NAME), DataUtils.getLong(rowSet, row,
+              COL_FILE_SIZE), DataUtils.getString(rowSet, row,
+              COL_FILE_TYPE));
 
       Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
 
@@ -528,6 +554,9 @@ public class DiscussionsModuleBean implements BeeModule {
       if (!BeeUtils.isEmpty(caption)) {
         sf.setCaption(caption);
       }
+
+      sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
+      result.add(sf);
     }
 
     return result;

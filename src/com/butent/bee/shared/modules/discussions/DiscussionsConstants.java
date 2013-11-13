@@ -85,6 +85,9 @@ public final class DiscussionsConstants {
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_FILE = "File";
+  public static final String COL_FILE_NAME = "FileName";
+  public static final String COL_FILE_SIZE = "FileSize";
+  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_LAST_ACCESS = "LastAccess";
   public static final String COL_MEMBER = "Member";
   public static final String COL_OWNER = "Owner";

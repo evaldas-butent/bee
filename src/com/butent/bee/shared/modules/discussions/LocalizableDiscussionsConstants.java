@@ -18,7 +18,11 @@ public interface LocalizableDiscussionsConstants {
 
   String discussAll();
 
+  String discussComment();
+
   String discussCreatedNewDiscussion();
+
+  String discussEnterComment();
 
   String discussEventActivated();
 
@@ -37,6 +41,8 @@ public interface LocalizableDiscussionsConstants {
   String discussEventReplied();
 
   String discussEventVisited();
+
+  String discussFiles();
 
   String discussFilterStarred();
 

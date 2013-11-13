@@ -15,7 +15,6 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -23,6 +22,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
@@ -90,7 +90,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     boolean discussPublic = BeeUtils.toBoolean(
         ((InputBoolean) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY)).getValue());
     
-    String description = ((RichTextEditor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
+    String description = ((Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
         .getValue();
     
     if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
