@@ -15,7 +15,6 @@ import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.SqlInsert;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -251,17 +250,11 @@ public class TransportSelfService extends LoginServlet {
         meta().encodingDeclarationUtf8(),
         title().text(constants.trRequestNew()));
     
-    BeeRowSet rowSet = qs.getViewData(VIEW_SHIPMENT_REQUESTS, Filter.isFalse());
-    Assert.notNull(rowSet);
-    if (!rowSet.isEmpty()) {
-      rowSet.clearRows();
-    }
+    List<BeeColumn> columns = sys.getView(VIEW_SHIPMENT_REQUESTS).getRowSetColumns();
+    BeeRow row = DataUtils.createEmptyRow(columns.size());
     
-    BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
-    rowSet.addRow(row);
-    
-    for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
-      BeeColumn column = rowSet.getColumns().get(i);
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
       String colId = column.getId();
       String value = null;
       
@@ -324,8 +317,7 @@ public class TransportSelfService extends LoginServlet {
       }
     }
     
-    BeeRowSet insert = DataUtils.createRowSetForInsert(rowSet.getViewName(), rowSet.getColumns(),
-        row);
+    BeeRowSet insert = DataUtils.createRowSetForInsert(VIEW_SHIPMENT_REQUESTS, columns, row);
     ResponseObject response = proxy.commitRow(insert);
 
     if (response.hasErrors()) {
@@ -338,12 +330,12 @@ public class TransportSelfService extends LoginServlet {
 
       Tbody fields = tbody();
 
-      for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
+      for (int i = 0; i < columns.size(); i++) {
         if (row.isNull(i)) {
           continue;
         }
 
-        BeeColumn column = rowSet.getColumns().get(i);
+        BeeColumn column = columns.get(i);
         String value;
 
         switch (column.getId()) {

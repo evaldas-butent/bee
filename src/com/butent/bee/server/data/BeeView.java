@@ -345,28 +345,54 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private static BeeLogger logger = LogUtils.getLogger(BeeView.class);
 
+  private static void initColumn(ColumnInfo info, BeeColumn column) {
+    column.setId(info.getName());
+    column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
+
+    column.setType(info.getType().toValueType());
+    column.setNullable(info.isNullable());
+
+    column.setPrecision(info.getPrecision());
+    column.setScale(info.getScale());
+
+    boolean ro = info.isReadOnly();
+    column.setReadOnly(ro);
+
+    int level = info.getLevel();
+    column.setLevel(level);
+
+    Boolean editable = info.isEditable();
+    if (editable == null) {
+      editable = !ro && level <= 0;
+    }
+    column.setEditable(editable);
+
+    column.setDefaults(info.getDefaults());
+  }
+
   private final String moduleName;
   private final String name;
   private final BeeTable source;
   private final String sourceAlias;
+
   private final boolean readOnly;
 
   private final String caption;
-
   private final String editForm;
-  private final String rowCaption;
 
+  private final String rowCaption;
   private final String newRowForm;
   private final String newRowColumns;
+
   private final String newRowCaption;
-
   private final Integer cacheMaximumSize;
-  private final String cacheEviction;
 
+  private final String cacheEviction;
   private boolean hasAggregate;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
   private Filter filter;
+
   private Order order;
 
   BeeView(String moduleName, XmlView xmlView, Map<String, BeeTable> tables) {
@@ -613,6 +639,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return newRowForm;
   }
 
+  public SqlSelect getQuery() {
+    return getQuery(null, null);
+  }
+
   public SqlSelect getQuery(Filter flt, Order ord, List<String> cols, ViewFinder viewFinder) {
 
     SqlSelect ss = query.copyOf();
@@ -685,12 +715,22 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getQuery(flt, null, null, viewFinder);
   }
 
-  public SqlSelect getQuery() {
-    return getQuery(null, null);
-  }
-
   public String getRowCaption() {
     return rowCaption;
+  }
+
+  public List<BeeColumn> getRowSetColumns() {
+    List<BeeColumn> result = Lists.newArrayList();
+
+    for (ColumnInfo info : columns.values()) {
+      if (!info.isHidden()) {
+        BeeColumn column = new BeeColumn();
+        initColumn(info, column);
+        result.add(column);
+      }
+    }
+
+    return result;
   }
 
   public String getSourceAlias() {
@@ -725,30 +765,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public void initColumn(String colName, BeeColumn column) {
-    ColumnInfo info = getColumnInfo(colName);
-
-    column.setId(info.getName());
-    column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
-
-    column.setType(info.getType().toValueType());
-    column.setNullable(info.isNullable());
-
-    column.setPrecision(info.getPrecision());
-    column.setScale(info.getScale());
-
-    boolean ro = info.isReadOnly();
-    column.setReadOnly(ro);
-
-    int level = info.getLevel();
-    column.setLevel(level);
-
-    Boolean editable = info.isEditable();
-    if (editable == null) {
-      editable = !ro && level <= 0;
-    }
-    column.setEditable(editable);
-
-    column.setDefaults(info.getDefaults());
+    initColumn(getColumnInfo(colName), column);
   }
 
   public boolean isColAggregate(String colName) {

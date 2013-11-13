@@ -218,17 +218,8 @@ public class SystemBean {
     BeeView view = getView(viewName);
     BeeTable source = getTable(view.getSourceName());
 
-    List<BeeColumn> columns = null;
-    List<ViewColumn> viewColumns = null;
-
-    columns = Lists.newArrayList();
-
-    for (String col : view.getColumnNames()) {
-      BeeColumn column = new BeeColumn();
-      view.initColumn(col, column);
-      columns.add(column);
-    }
-    viewColumns = view.getViewColumns();
+    List<BeeColumn> columns = view.getRowSetColumns();
+    List<ViewColumn> viewColumns = view.getViewColumns();
 
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
         view.getCaption(), view.getEditForm(), view.getRowCaption(),
