@@ -33,6 +33,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -60,6 +61,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -67,6 +70,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.util.Collection;
@@ -82,6 +86,7 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -120,6 +125,23 @@ public class SystemBean {
     }
   }
 
+  private static final class IpFilter {
+    private final String host;
+    private final DateTime blockAfter;
+    private final DateTime blockBefore;
+
+    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
+      this.host = host;
+      this.blockAfter = blockAfter;
+      this.blockBefore = blockBefore;
+    }
+
+    private boolean isBlocked(String addr, DateTime dt) {
+      return Wildcards.isLike(addr, host)
+          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
+    }
+  }
+
   public static final String AUDIT_PREFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
   public static final String AUDIT_FLD_TIME = "Time";
@@ -130,6 +152,11 @@ public class SystemBean {
   public static final String AUDIT_FLD_FIELD = "Field";
   public static final String AUDIT_FLD_VALUE = "Value";
 
+  private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
+    if (!BeeUtils.isEmpty(objectName)) {
+      cache.remove(BeeUtils.normalize(objectName));
+    }
+  }
   @EJB
   DataSourceBean dsb;
   @EJB
@@ -138,17 +165,20 @@ public class SystemBean {
   UserServiceBean usr;
   @EJB
   ModuleHolderBean moduleBean;
+
   @EJB
   ParamHolderBean prm;
 
   private final BeeLogger logger = LogUtils.getLogger(getClass());
-
   private String dbName;
   private String dbSchema;
   private String dbAuditSchema;
   private final Map<String, BeeTable> tableCache = Maps.newHashMap();
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
+
   private final EventBus dataEventBus = new EventBus();
+
+  private final List<IpFilter> ipFilters = Lists.newArrayList();
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
@@ -366,6 +396,33 @@ public class SystemBean {
     return SqlUtils.inList(tblName, getIdName(tblName), ids);
   }
 
+  public void initIpFilters() {
+    List<IpFilter> filters = Lists.newArrayList();
+
+    SimpleRowSet data =
+        qs.getData(new SqlSelect()
+            .addFields(CommonsConstants.TBL_IP_FILTERS, CommonsConstants.COL_IP_FILTER_HOST,
+                CommonsConstants.COL_IP_FILTER_BLOCK_AFTER,
+                CommonsConstants.COL_IP_FILTER_BLOCK_BEFORE)
+            .addFrom(CommonsConstants.TBL_IP_FILTERS));
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        filters.add(new IpFilter(row.getValue(CommonsConstants.COL_IP_FILTER_HOST),
+            row.getDateTime(CommonsConstants.COL_IP_FILTER_BLOCK_AFTER),
+            row.getDateTime(CommonsConstants.COL_IP_FILTER_BLOCK_BEFORE)));
+      }
+    }
+
+    if (!ipFilters.isEmpty()) {
+      ipFilters.clear();
+    }
+    if (!filters.isEmpty()) {
+      ipFilters.addAll(filters);
+      logger.info("Loaded", filters.size(), "ip filters");
+    }
+  }
+
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
@@ -487,6 +544,25 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void registerDataEventHandler(DataEventHandler eventHandler) {
     dataEventBus.register(eventHandler);
+  }
+
+  public boolean validateHost(HttpServletRequest request) {
+    if (ipFilters.isEmpty()) {
+      return true;
+    }
+
+    Assert.notNull(request);
+    String addr = request.getRemoteAddr();
+    DateTime now = TimeUtils.nowMinutes();
+
+    for (IpFilter ipFilter : ipFilters) {
+      if (ipFilter.isBlocked(addr, now)) {
+        logger.warning("remote address", addr, "blocked", BeeUtils.bracket(ipFilter.host));
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private void createAuditTables(BeeTable table) {
@@ -1454,12 +1530,6 @@ public class SystemBean {
       } else {
         cache.put(BeeUtils.normalize(objectName), object);
       }
-    }
-  }
-
-  private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
-    if (!BeeUtils.isEmpty(objectName)) {
-      cache.remove(BeeUtils.normalize(objectName));
     }
   }
 }
