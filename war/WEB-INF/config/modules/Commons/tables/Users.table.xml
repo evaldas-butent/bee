@@ -9,8 +9,8 @@
     <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true"
       label="=companyPerson" />
     
-    <Integer name="Locale" label="=userLocale" />
-    <Integer name="Interface" label="=userInterface" />
+    <Enum name="Locale" key="SupportedLocale" label="=userLocale" />
+    <Enum name="Interface" key="UserInterface" label="=userInterface" />
     
     <DateTime name="BlockAfter" label="=blockAfter" />
     <DateTime name="BlockBefore" label="=blockBefore" />

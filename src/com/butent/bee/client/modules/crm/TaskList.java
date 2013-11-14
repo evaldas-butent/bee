@@ -66,7 +66,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -696,7 +696,7 @@ final class TaskList {
         return null;
       }
 
-      TaskStatus status = NameUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
+      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
 
       DateTime start = row.getDateTime(startIndex);
       DateTime finish = row.getDateTime(finishIndex);

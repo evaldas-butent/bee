@@ -45,7 +45,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -871,7 +871,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     effectWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
       @Override
       public void onValueChange(ValueChangeEvent<String> event) {
-        Effect eff = NameUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
+        Effect eff = EnumUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
         if (eff != null && eff != getEffect()) {
           animation.onEffectChanged(getEffect(), eff);
           setEffect(eff);

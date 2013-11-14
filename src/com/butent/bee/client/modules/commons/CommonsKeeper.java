@@ -24,13 +24,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.i18n.SupportedLocale;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class CommonsKeeper {
 
@@ -69,7 +67,7 @@ public final class CommonsKeeper {
 
       } else if (event.hasView(VIEW_PERSONS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
-            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS, 
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS,
                 COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
       }
     }
@@ -91,18 +89,14 @@ public final class CommonsKeeper {
 
     SelectorEvent.register(new CommonsSelectorHandler());
 
-    Captions.register(RightsObjectType.class);
-    Captions.register(RightsState.class);
-    Captions.register(ParameterType.class);
+    Captions.registerColumn(VIEW_REMINDER_TYPES, COL_REMINDER_METHOD,
+        EnumUtils.getRegistrationKey(ReminderMethod.class));
 
-    String key = Captions.register(ReminderMethod.class);
-    Captions.registerColumn(VIEW_REMINDER_TYPES, COL_REMINDER_METHOD, key);
+    Captions.registerColumn(VIEW_USERS, COL_USER_LOCALE,
+        EnumUtils.getRegistrationKey(SupportedLocale.class));
 
-    key = Captions.register(SupportedLocale.class);
-    Captions.registerColumn(VIEW_USERS, COL_USER_LOCALE, key);
-
-    key = Captions.register(UserInterface.class);
-    Captions.registerColumn(VIEW_USERS, COL_USER_INTERFACE, key);
+    Captions.registerColumn(VIEW_USERS, COL_USER_INTERFACE,
+        EnumUtils.getRegistrationKey(UserInterface.class));
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }

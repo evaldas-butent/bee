@@ -160,6 +160,7 @@ import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -1231,7 +1232,7 @@ public final class CliWorker {
       return;
     }
 
-    Direction dir = NameUtils.getEnumByName(Direction.class, p1);
+    Direction dir = EnumUtils.getEnumByName(Direction.class, p1);
     if (dir == null) {
       Global.sayHuh(p1, p2);
       return;
@@ -1423,7 +1424,7 @@ public final class CliWorker {
       }
     });
   }
-  
+
   private static void getTables(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
     if (!BeeUtils.isEmpty(args)) {
@@ -1862,7 +1863,7 @@ public final class CliWorker {
   }
 
   private static void showCaptions() {
-    Set<String> keys = Captions.getRegisteredKeys();
+    Set<String> keys = EnumUtils.getRegisteredKeys();
     if (BeeUtils.isEmpty(keys)) {
       logger.debug("no captions registered");
       return;
@@ -1872,7 +1873,7 @@ public final class CliWorker {
         BeeUtils.bracket(keys.size()));
 
     for (String key : keys) {
-      for (String caption : Captions.getCaptions(key)) {
+      for (String caption : EnumUtils.getCaptions(key)) {
         props.add(new Property(key, caption));
       }
     }

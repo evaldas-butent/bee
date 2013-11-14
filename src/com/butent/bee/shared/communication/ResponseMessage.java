@@ -7,7 +7,7 @@ import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 /**
  * Manages response message object with it's date, level and message parameters and methods for
@@ -74,7 +74,7 @@ public class ResponseMessage implements BeeSerializable {
           setDate(new DateTime(Long.parseLong(v)));
           break;
         case 1:
-          setLevel(NameUtils.getEnumByName(LogLevel.class, v));
+          setLevel(EnumUtils.getEnumByName(LogLevel.class, v));
           break;
         case 2:
           setMessage(v);

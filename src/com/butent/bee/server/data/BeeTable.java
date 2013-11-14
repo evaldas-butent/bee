@@ -29,16 +29,18 @@ import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
 import com.butent.bee.shared.data.XmlTable;
+import com.butent.bee.shared.data.XmlTable.XmlEnum;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
@@ -97,10 +99,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     private final boolean translatable;
     private final String label;
     private final boolean auditable;
+    private final String enumKey;
 
     protected BeeField(XmlField xmlField, boolean extended) {
       this.name = xmlField.name;
-      this.type = NameUtils.getEnumByName(SqlDataType.class, xmlField.type);
+      this.type = EnumUtils.getEnumByName(SqlDataType.class, xmlField.type);
 
       Assert.notEmpty(this.name);
       Assert.notNull(this.type);
@@ -114,6 +117,17 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.translatable = xmlField.translatable;
       this.defExpr = xmlField.defExpr;
       this.auditable = xmlField.audit;
+
+      String key = (xmlField instanceof XmlEnum) ? ((XmlEnum) xmlField).key : null;
+
+      if (!BeeUtils.isEmpty(key)) {
+        if (!EnumUtils.isRegistered(key)) {
+          LogUtils.getRootLogger().severe("Table:", getOwner().getName(), "Field:", this.getName(),
+              "Enum class not registerred:", key);
+          key = null;
+        }
+      }
+      this.enumKey = key;
 
       switch (this.type) {
         case DATE:
@@ -152,6 +166,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
         defaults = Pair.of(defExpr, defValue);
       }
       return defaults;
+    }
+
+    public String getEnumKey() {
+      return enumKey;
     }
 
     public String getLabel() {
@@ -296,7 +314,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       super(xmlField, extended);
 
       this.relation = xmlField.relation;
-      this.cascade = NameUtils.getEnumByName(SqlKeyword.class, xmlField.cascade);
+      this.cascade = EnumUtils.getEnumByName(SqlKeyword.class, xmlField.cascade);
       this.editable = xmlField.editable;
 
       Assert.notEmpty(this.relation);
@@ -1010,7 +1028,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
           "Defaults", field.getDefaults(),
           "Extended", field.isExtended(), "Translatable", field.isTranslatable(),
-          "Label", field.getLabel(), "Auditable", isAuditable() ? field.isAuditable() : false);
+          "Label", field.getLabel(), "Auditable", isAuditable() ? field.isAuditable() : false,
+          "Enum key", field.getEnumKey());
 
       if (field instanceof BeeRelation) {
         PropertyUtils.addChildren(info,

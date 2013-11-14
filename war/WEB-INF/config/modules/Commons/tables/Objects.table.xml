@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <Integer name="Type" notNull="true" label="=objectType" />
+    <Enum name="Type" key="RightsObjectType" notNull="true" label="=objectType" />
     <String name="Name" precision="100" notNull="true" label="=object" />
   </Fields>
 

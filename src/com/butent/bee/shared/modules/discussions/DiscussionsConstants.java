@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.discussions;
 
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class DiscussionsConstants {
 
@@ -32,7 +33,10 @@ public final class DiscussionsConstants {
     public String getCaption() {
       return caption;
     }
+  }
 
+  public static void register() {
+    EnumUtils.register(DiscussionStatus.class);
   }
 
   public static final String DISCUSSIONS_MODULE = "Discussions";

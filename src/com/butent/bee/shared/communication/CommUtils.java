@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Map;
@@ -106,7 +107,7 @@ public final class CommUtils {
   }
 
   public static ContentType getContentType(String s) {
-    return NameUtils.getEnumByName(ContentType.class, s);
+    return EnumUtils.getEnumByName(ContentType.class, s);
   }
 
   public static ResponseObject getFormResonse(String result) {

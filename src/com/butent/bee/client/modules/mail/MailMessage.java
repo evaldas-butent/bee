@@ -47,7 +47,7 @@ import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class MailMessage extends AbstractFormInterceptor {
     if (widget instanceof HasClickHandlers) {
       HasClickHandlers clickWidget = (HasClickHandlers) widget;
 
-      NewMailMode mode = NameUtils.getEnumByName(NewMailMode.class, name);
+      NewMailMode mode = EnumUtils.getEnumByName(NewMailMode.class, name);
 
       if (mode != null) {
         initCreateAction(clickWidget, mode);

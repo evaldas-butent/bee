@@ -150,6 +150,7 @@ import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.XmlHelper;
 
@@ -1810,7 +1811,7 @@ public enum FormWidget {
     } else if (this == SPLIT_PANEL) {
       IdentifiableWidget w = createOneChild(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof Split) {
-        Direction direction = NameUtils.getEnumByName(Direction.class, childTag);
+        Direction direction = EnumUtils.getEnumByName(Direction.class, childTag);
 
         if (direction == Direction.CENTER) {
           ((Split) parent).add(w);

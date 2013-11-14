@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -29,7 +31,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -52,7 +53,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
 
-    if (BeeUtils.same(columnName, "Value")) {
+    if (BeeUtils.same(columnName, AUDIT_FLD_VALUE)) {
       column.getCell().addClickHandler(this);
     }
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
@@ -66,7 +67,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
 
   @Override
   public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-    return new BeeRowSet(CommonsConstants.HISTORY_COLUMNS);
+    return new BeeRowSet(HISTORY_COLUMNS);
   }
 
   @Override
@@ -74,15 +75,15 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
     if (event.getSource() instanceof AbstractCell<?>) {
       CellContext context = ((AbstractCell<?>) event.getSource()).getEventContext();
       IsRow row = context.getRowValue();
-      String relation = row.getString(provider.getColumnIndex(CommonsConstants.COL_RELATION));
+      String relation = row.getString(provider.getColumnIndex(COL_RELATION));
 
       if (!BeeUtils.isEmpty(relation)) {
-        Long id = row.getLong(provider.getColumnIndex("Value"));
+        Long id = row.getLong(provider.getColumnIndex(AUDIT_FLD_VALUE));
 
         if (DataUtils.isId(id)) {
-          GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
+          GridFactory.openGrid(GRID_HISTORY,
               new HistoryHandler(relation, Lists.newArrayList(id)),
-              null, PresenterCallback.SHOW_IN_NEW_TAB);
+              null, PresenterCallback.SHOW_IN_POPUP);
         }
       }
     }
@@ -103,11 +104,11 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
     provider.clear();
     final CellGrid grid = getGridView().getGrid();
 
-    ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_HISTORY);
-    args.addDataItem(CommonsConstants.VAR_HISTORY_VIEW, viewName);
+    ParameterList args = CommonsKeeper.createArgs(SVC_GET_HISTORY);
+    args.addDataItem(VAR_HISTORY_VIEW, viewName);
 
     if (!BeeUtils.isEmpty(ids)) {
-      args.addDataItem(CommonsConstants.VAR_HISTORY_IDS, DataUtils.buildIdList(ids));
+      args.addDataItem(VAR_HISTORY_IDS, DataUtils.buildIdList(ids));
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override

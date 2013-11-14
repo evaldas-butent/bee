@@ -9,7 +9,7 @@
     <Relation name="Publisher" notNull="true" relation="Users" defExpr="CURRENT_USER" label="=user" />
     <DateTime name="PublishTime" notNull="true" defExpr="CURRENT_TIME" label="=calPublishTime" />
 
-    <Integer name="Status" label="=calAppointmentStatus" />
+    <Enum name="Status" key="AppointmentStatus" label="=calAppointmentStatus" />
     <Integer name="Hours" label="=unitHours" />
     <Integer name="Minutes" label="=unitMinutes" />
 

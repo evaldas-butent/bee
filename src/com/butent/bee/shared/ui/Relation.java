@@ -23,6 +23,7 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -499,11 +500,11 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
     String cache = getAttribute(ATTR_CACHING);
     if (!BeeUtils.isEmpty(cache)) {
-      setCaching(NameUtils.getEnumByName(Caching.class, cache));
+      setCaching(EnumUtils.getEnumByName(Caching.class, cache));
     }
     String op = getAttribute(ATTR_OPERATOR);
     if (!BeeUtils.isEmpty(op)) {
-      setOperator(NameUtils.getEnumByName(Operator.class, op));
+      setOperator(EnumUtils.getEnumByName(Operator.class, op));
     }
     
     String sc = getAttribute(ATTR_SELECTOR_CLASS);
@@ -512,7 +513,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
     String it = getAttribute(ATTR_ITEM_TYPE);
     if (!BeeUtils.isEmpty(it)) {
-      setItemType(NameUtils.getEnumByName(MenuConstants.ITEM_TYPE.class, it));
+      setItemType(EnumUtils.getEnumByName(MenuConstants.ITEM_TYPE.class, it));
     }
     String lines = getAttribute(HasVisibleLines.ATTR_VISIBLE_LINES);
     if (BeeUtils.isPositiveInt(lines)) {

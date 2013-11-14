@@ -16,7 +16,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -158,10 +158,10 @@ public class UserData implements BeeSerializable, HasInfo {
               String[] oArr = Codec.beeDeserializeCollection(entry[j + 1]);
 
               for (int k = 0; k < oArr.length; k += 2) {
-                RightsObjectType type = NameUtils.getEnumByName(RightsObjectType.class, oArr[k]);
+                RightsObjectType type = EnumUtils.getEnumByName(RightsObjectType.class, oArr[k]);
                 x.putAll(type, Lists.newArrayList(Codec.beeDeserializeCollection(oArr[k + 1])));
               }
-              rights.put(NameUtils.getEnumByName(RightsState.class, entry[j]), x);
+              rights.put(EnumUtils.getEnumByName(RightsState.class, entry[j]), x);
             }
           }
           break;

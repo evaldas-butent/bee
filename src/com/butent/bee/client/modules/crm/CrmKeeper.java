@@ -17,12 +17,12 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskPriority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public final class CrmKeeper {
     }
 
     private String getTaskStatus(BeeRow row) {
-      TaskStatus status = NameUtils.getEnumByIndex(TaskStatus.class,
+      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
           row.getInteger(getTaskViewInfo().getColumnIndex(COL_STATUS)));
       return (status == null) ? null : status.getCaption();
     }
@@ -101,16 +101,15 @@ public final class CrmKeeper {
 
     DocumentHandler.register();
 
-    String key = Captions.register(CrmConstants.TaskPriority.class);
+    String key = EnumUtils.getRegistrationKey(TaskPriority.class);
     Captions.registerColumn(VIEW_TASKS, COL_PRIORITY, key);
     Captions.registerColumn(VIEW_TASK_TEMPLATES, COL_PRIORITY, key);
     Captions.registerColumn(VIEW_RECURRING_TASKS, COL_PRIORITY, key);
 
-    key = Captions.register(CrmConstants.TaskEvent.class);
-    Captions.registerColumn(VIEW_TASK_EVENTS, COL_EVENT, key);
+    Captions.registerColumn(VIEW_TASK_EVENTS, COL_EVENT,
+        EnumUtils.getRegistrationKey(TaskEvent.class));
 
-    key = Captions.register(CrmConstants.TaskStatus.class);
-    Captions.registerColumn(VIEW_TASKS, COL_STATUS, key);
+    Captions.registerColumn(VIEW_TASKS, COL_STATUS, EnumUtils.getRegistrationKey(TaskStatus.class));
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }

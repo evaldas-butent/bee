@@ -22,10 +22,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -53,7 +53,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public BeeListBox() {
     super();
     init();
@@ -63,7 +63,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     super(isMultipleSelect);
     init();
   }
-  
+
   public BeeListBox(Element element) {
     super(element);
     init();
@@ -71,12 +71,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(Captions.getCaptions(clazz));
+    addItems(EnumUtils.getCaptions(clazz));
   }
 
   @Override
   public void addCaptions(String captionKey) {
-    addItems(Captions.getCaptions(captionKey));
+    addItems(EnumUtils.getCaptions(captionKey));
   }
 
   @Override
@@ -127,12 +127,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "list";
   }
-  
+
   @Override
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
@@ -145,7 +145,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public int getMaxSize() {
     return maxSize;
   }
-  
+
   public int getMinSize() {
     return minSize;
   }
@@ -172,7 +172,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public String getOptions() {
     return options;
   }
-  
+
   @Override
   public String getValue() {
     int index = getSelectedIndex();
@@ -209,7 +209,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isEditing() {
     return editing;
   }
-  
+
   @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
@@ -219,7 +219,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-  
+
   @Override
   public boolean isNullable() {
     return nullable;
@@ -233,7 +233,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isValueNumeric() {
     return valueNumeric;
   }
-  
+
   @Override
   public void normalizeDisplay(String normalizedValue) {
   }
@@ -255,7 +255,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
     super.onBrowserEvent(event);
   }
-  
+
   @Override
   public void removeItem(int index) {
     super.removeItem(index);
@@ -361,7 +361,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
+
   private int getIndex(String text) {
     int index = BeeConst.UNDEF;
     if (text == null) {
@@ -389,7 +389,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   private SelectElement getSelectElement() {
     return getElement().cast();
   }
-  
+
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     addStyleName("bee-ListBox");

@@ -29,9 +29,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.css.values.VerticalAlign;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -65,9 +65,9 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       if (!isEnabled()) {
         return;
       }
-      
+
       int index = TabBar.this.getTabIndex(this);
-      
+
       switch (event.getTypeInt()) {
         case Event.ONCLICK:
           selectTab(index);
@@ -96,8 +96,8 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
               navigateTo = size - 1;
               break;
           }
-          
-          if (!BeeConst.isUndef(navigateTo) && navigateTo != index 
+
+          if (!BeeConst.isUndef(navigateTo) && navigateTo != index
               && isKeyboardNavigationEnabled()) {
             TabBar.this.focusTab(navigateTo);
           }
@@ -129,13 +129,13 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   private final String stylePrefix;
 
   private Tab selectedTab;
-  
+
   private boolean keyboardNavigationEnabled = true;
 
   public TabBar(Orientation orientation) {
     this(DEFAULT_STYLE_PREFIX, orientation);
   }
-  
+
   public TabBar(String stylePrefix, Orientation orientation) {
     Assert.notNull(orientation);
 
@@ -147,9 +147,9 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
     addStyleName(stylePrefix + STYLE_PANEL);
     addStyleName(getStyle(STYLE_PANEL));
-    
+
     panel.setVerticalAlign(VerticalAlign.BOTTOM);
-    
+
     sinkEvents(Event.ONCLICK);
   }
 
@@ -160,12 +160,12 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(Captions.getCaptions(clazz));
+    addItems(EnumUtils.getCaptions(clazz));
   }
 
   @Override
   public void addCaptions(String captionKey) {
-    addItems(Captions.getCaptions(captionKey));
+    addItems(EnumUtils.getCaptions(captionKey));
   }
 
   @Override
@@ -180,7 +180,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void addItem(Widget widget) {
     addItem(widget, null);
   }
-  
+
   public void addItem(Widget widget, String styleName) {
     insertTab(widget, getItemCount(), styleName);
   }
@@ -197,7 +197,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
-  
+
   public void clear() {
     for (int i = getItemCount() - 1; i >= 0; i--) {
       removeTab(i);
@@ -229,7 +229,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public int getItemCount() {
     return panel.getWidgetCount();
   }
-  
+
   @Override
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
@@ -253,7 +253,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     return selectedTab.getWidget();
   }
 
-  public Widget getTabWidget(int index)  {
+  public Widget getTabWidget(int index) {
     if (index < 0 || index >= getItemCount()) {
       return null;
     } else {
@@ -282,7 +282,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
-  
+
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
@@ -364,11 +364,11 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       addItems(items);
     }
   }
-  
+
   public void setKeyboardNavigationEnabled(boolean keyboardNavigationEnabled) {
     this.keyboardNavigationEnabled = keyboardNavigationEnabled;
   }
-  
+
   public void setTabEnabled(int index, boolean enabled) {
     checkTabIndex(index, 0);
 
@@ -376,14 +376,14 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     wrapper.setEnabled(enabled);
     setStyleName(wrapper.getElement(), stylePrefix + STYLE_DISABLED, !enabled);
   }
-  
+
   protected void insertTabWidget(Widget widget, int beforeIndex, String styleName) {
     checkInsertBeforeTabIndex(beforeIndex);
 
     Tab wrapper = new Tab(widget);
     wrapper.addStyleName(stylePrefix + STYLE_ITEM);
     wrapper.addStyleName(getStyle(STYLE_ITEM));
-    
+
     if (!BeeUtils.isEmpty(styleName)) {
       wrapper.addStyleName(styleName);
     }
@@ -400,7 +400,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
 
   private String getStyle(String stem) {
-    return stylePrefix + stem 
+    return stylePrefix + stem
         + (orientation.isVertical() ? STYLE_SUFFIX_VERTICAL : STYLE_SUFFIX_HORIZONTAL);
   }
 

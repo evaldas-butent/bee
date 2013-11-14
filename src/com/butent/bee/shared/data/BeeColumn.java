@@ -11,8 +11,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -135,7 +135,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
           String[] def = Codec.beeDeserializeCollection(value);
 
           if (ArrayUtils.length(def) == 2) {
-            setDefaults(Pair.of(NameUtils.getEnumByName(DefaultExpression.class, def[0]),
+            setDefaults(Pair.of(EnumUtils.getEnumByName(DefaultExpression.class, def[0]),
                 (Object) def[1]));
           }
           break;

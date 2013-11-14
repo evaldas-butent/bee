@@ -40,7 +40,7 @@ import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Map;
 
@@ -312,7 +312,7 @@ public class EcServlet extends LoginServlet {
             break;
 
           case COL_REGISTRATION_TYPE:
-            EcClientType type = NameUtils.getEnumByIndex(EcClientType.class, row.getInteger(i));
+            EcClientType type = EnumUtils.getEnumByIndex(EcClientType.class, row.getInteger(i));
             value = (type == null) ? null : type.getCaption(constants);
             break;
 

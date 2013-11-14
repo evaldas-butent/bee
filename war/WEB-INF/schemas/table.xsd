@@ -74,6 +74,7 @@
   <xs:element name="Date" type="dateType" substitutionGroup="field" />
   <xs:element name="DateTime" type="datetimeType" substitutionGroup="field" />
   <xs:element name="Relation" type="relationType" substitutionGroup="field" />
+  <xs:element name="Enum" type="enumType" substitutionGroup="field" />
 
   <xs:complexType name="fieldType">
     <xs:attribute name="name" type="type:fieldNameType" use="required" />
@@ -176,6 +177,17 @@
         <xs:attribute name="relation" type="type:tableNameType" use="required" />
         <xs:attribute name="cascade" type="cascadeType" />
         <xs:attribute name="editable" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="enumType">
+    <xs:complexContent>
+      <xs:extension base="fieldType">
+        <xs:attribute name="type" type="type:dataType" fixed="DECIMAL" />
+        <xs:attribute name="key" type="xs:string" use="required" />
+        <xs:attribute name="precision" type="xs:positiveInteger" default="1" />
+        <xs:attribute name="scale" type="xs:byte" fixed="0" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

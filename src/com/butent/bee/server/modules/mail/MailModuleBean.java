@@ -42,7 +42,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -140,7 +140,7 @@ public class MailModuleBean implements BeeModule {
         response = ResponseObject.response(setMessageFlag(mail
             .getAccount(BeeUtils.toLong(reqInfo.getParameter(COL_ACCOUNT))),
             BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
-            NameUtils.getEnumByName(MessageFlag.class, reqInfo.getParameter(COL_FLAGS)),
+            EnumUtils.getEnumByName(MessageFlag.class, reqInfo.getParameter(COL_FLAGS)),
             Codec.unpack(reqInfo.getParameter("on"))));
 
       } else if (BeeUtils.same(svc, SVC_COPY_MESSAGES)) {

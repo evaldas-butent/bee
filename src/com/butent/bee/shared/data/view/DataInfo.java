@@ -17,8 +17,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
@@ -196,7 +196,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   }
 
   public ReplacementPolicy getCacheReplacementPolicy() {
-    return NameUtils.getEnumByName(ReplacementPolicy.class, getCacheEviction());
+    return EnumUtils.getEnumByName(ReplacementPolicy.class, getCacheEviction());
   }
 
   public String getCaption() {

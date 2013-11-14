@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.crm;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class CrmConstants {
 
@@ -94,6 +95,12 @@ public final class CrmConstants {
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
+  }
+
+  public static void register() {
+    EnumUtils.register(TaskPriority.class);
+    EnumUtils.register(TaskEvent.class);
+    EnumUtils.register(TaskStatus.class);
   }
 
   public static final String CRM_MODULE = "Crm";
@@ -286,7 +293,7 @@ public final class CrmConstants {
   public static final String LABEL_OBSERVERS = Localized.getConstants().crmTaskObservers();
 
   public static final String STYLE_SHEET = "crm";
-  
+
   private CrmConstants() {
   }
 }

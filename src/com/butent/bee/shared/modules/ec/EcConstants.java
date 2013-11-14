@@ -4,6 +4,8 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class EcConstants {
 
@@ -31,7 +33,7 @@ public final class EcConstants {
     }
   }
 
-  public enum EcClientType implements HasCaption {
+  public enum EcClientType implements HasLocalizedCaption {
     COMPANY {
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -49,8 +51,6 @@ public final class EcConstants {
     public String getCaption() {
       return getCaption(Localized.getConstants());
     }
-
-    public abstract String getCaption(LocalizableConstants constants);
   }
 
   public enum EcDisplayedPrice implements HasCaption {
@@ -163,6 +163,13 @@ public final class EcConstants {
     public String getShortName() {
       return shortName;
     }
+  }
+
+  public static void register() {
+    EnumUtils.register(EcClientType.class);
+    EnumUtils.register(EcOrderStatus.class);
+    EnumUtils.register(EcDisplayedPrice.class);
+    EnumUtils.register(EcSupplier.class);
   }
 
   public static final String EC_MODULE = "Ec";

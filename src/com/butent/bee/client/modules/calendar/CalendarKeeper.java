@@ -43,7 +43,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ResponseStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
@@ -55,6 +54,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -182,12 +182,10 @@ public final class CalendarKeeper {
   }
 
   public static void register() {
-    String key = Captions.register(AppointmentStatus.class);
+    String key = EnumUtils.getRegistrationKey(AppointmentStatus.class);
     Captions.registerColumn(VIEW_APPOINTMENTS, COL_STATUS, key);
 
-    Captions.register(ResponseStatus.class);
-
-    key = Captions.register(Transparency.class);
+    key = EnumUtils.getRegistrationKey(Transparency.class);
     Captions.registerColumn(VIEW_APPOINTMENTS, COL_TRANSPARENCY, key);
     Captions.registerColumn(VIEW_ATTENDEES, COL_TRANSPARENCY, key);
     Captions.registerColumn(VIEW_ATTENDEE_TYPES, COL_TRANSPARENCY, key);
@@ -196,11 +194,11 @@ public final class CalendarKeeper {
     Captions.registerColumn(VIEW_ATTENDEES, COL_TYPE_TRANSPARENCY, key);
     Captions.registerColumn(VIEW_CAL_ATTENDEE_TYPES, COL_TYPE_TRANSPARENCY, key);
 
-    key = Captions.register("Calendar_Visibility", Visibility.class);
+    key = EnumUtils.getRegistrationKey(Visibility.class);
     Captions.registerColumn(VIEW_APPOINTMENTS, COL_VISIBILITY, key);
     Captions.registerColumn(VIEW_CALENDARS, COL_VISIBILITY, key);
 
-    key = Captions.register(TimeBlockClick.class);
+    key = EnumUtils.getRegistrationKey(TimeBlockClick.class);
     Captions.registerColumn(VIEW_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
     Captions.registerColumn(VIEW_USER_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
 

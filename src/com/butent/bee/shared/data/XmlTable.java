@@ -29,7 +29,7 @@ public class XmlTable {
       XmlInteger.class, XmlLong.class, XmlDouble.class, XmlNumeric.class,
       XmlChar.class, XmlString.class, XmlText.class,
       XmlDate.class, XmlDateTime.class,
-      XmlRelation.class })
+      XmlRelation.class, XmlEnum.class})
   public abstract static class XmlField {
     @XmlAttribute
     public String name;
@@ -144,6 +144,12 @@ public class XmlTable {
     public boolean editable;
   }
 
+  @XmlRootElement(name = "Enum", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlEnum extends XmlField {
+    @XmlAttribute
+    public String key;
+  }
+
   /**
    * Handles table key information storage in XML structure.
    */
@@ -190,7 +196,7 @@ public class XmlTable {
     }
   }
 
-  @XmlSeeAlso({XmlCheck.class, XmlUnique.class, XmlReference.class })
+  @XmlSeeAlso({XmlCheck.class, XmlUnique.class, XmlReference.class})
   public abstract static class XmlConstraint {
   }
 

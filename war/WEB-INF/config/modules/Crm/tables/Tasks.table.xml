@@ -7,7 +7,7 @@
   <Fields>
     <String name="Summary" notNull="true" precision="100" label="=crmTaskSubject" />
     <Text name="Description" label="=crmTaskDescription" />
-    <Integer name="Priority" notNull="true" defValue="1" label="=crmTaskPriority" />
+    <Enum name="Priority" key="TaskPriority" notNull="true" defValue="1" label="=crmTaskPriority" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=crmTaskCreated" />
     <DateTime name="StartTime" label="=crmStartDate" />
@@ -24,7 +24,7 @@
 
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
 
-    <Integer name="Status" notNull="true" defValue="0" label="=crmTaskStatus" />
+    <Enum name="Status" key="TaskStatus" notNull="true" defValue="0" label="=crmTaskStatus" />
     
     <Relation name="RecurringTask" relation="RecurringTasks" cascade="SET_NULL" label="=crmRecurringTask" />
   </Fields>

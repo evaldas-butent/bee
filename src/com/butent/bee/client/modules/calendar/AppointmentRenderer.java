@@ -11,8 +11,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.ui.Captions;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -164,7 +165,7 @@ class AppointmentRenderer {
       String value = row.getString(i);
 
       if (key.equals(COL_STATUS) && BeeUtils.isInt(value)) {
-        value = Captions.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
+        value = EnumUtils.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
       } else if (value != null && ValueType.DATE_TIME.equals(columns.get(i).getType())) {
         value = CalendarUtils.renderDateTime(row.getDateTime(i));
       }

@@ -12,7 +12,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -72,7 +72,7 @@ public class BeeParameter implements BeeSerializable {
           name = val;
           break;
         case TYPE:
-          setType(NameUtils.getEnumByName(ParameterType.class, val));
+          setType(EnumUtils.getEnumByName(ParameterType.class, val));
           break;
         case DESCRIPTION:
           setDescription(val);

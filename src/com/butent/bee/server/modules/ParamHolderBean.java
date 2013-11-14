@@ -22,7 +22,7 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -219,7 +219,7 @@ public class ParamHolderBean {
 
     for (SimpleRow row : data) {
       BeeParameter parameter = new BeeParameter(module, row.getValue(FLD_NAME),
-          NameUtils.getEnumByName(ParameterType.class, row.getValue(FLD_TYPE)),
+          EnumUtils.getEnumByName(ParameterType.class, row.getValue(FLD_TYPE)),
           row.getValue(FLD_DESCRIPTION), BeeUtils.unbox(row.getBoolean(FLD_USER_MODE)),
           row.getValue(FLD_VALUE));
       putModuleParameter(parameter);

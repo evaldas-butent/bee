@@ -34,7 +34,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.FooterDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -317,7 +317,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
       }
 
       if (!BeeUtils.isEmpty(footerDescription.getAggregate())) {
-        setAggregate(NameUtils.getEnumByName(Aggregate.class, footerDescription.getAggregate()));
+        setAggregate(EnumUtils.getEnumByName(Aggregate.class, footerDescription.getAggregate()));
       }
 
       String expression = footerDescription.getExpression();

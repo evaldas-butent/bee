@@ -7,9 +7,9 @@
   >
   <g:north size="40">
     <w:HorizontalPanel>
-      <w:CheckBox name="Active" text="=trOrdersStatusActive" checked="true" />
-      <w:CheckBox name="Completed" text="=trOrdersStatusCompleted" />
-      <w:CheckBox name="Canceled" text="=trOrdersStatusCanceled" checked="true" />
+      <w:CheckBox name="Active" text="=trOrderStatusActive" checked="true" />
+      <w:CheckBox name="Completed" text="=trOrderStatusCompleted" />
+      <w:CheckBox name="Canceled" text="=trOrderStatusCanceled" checked="true" />
     </w:HorizontalPanel>
   </g:north>
   <g:columns>

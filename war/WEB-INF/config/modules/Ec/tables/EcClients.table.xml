@@ -9,7 +9,7 @@
 
     <DateTime name="Registered" notNull="true" label="=ecClientRegistrationDate"
         defExpr="CURRENT_TIME" />
-    <Integer name="Type" notNull="true" label="=ecClientType" />
+    <Enum name="Type" key="EcClientType" notNull="true" label="=ecClientType" />
 
     <Relation name="PrimaryBranch" relation="Branches" notNull="true" label="=ecBranchPrimary" />
     <Relation name="SecondaryBranch" relation="Branches" label="=ecBranchSecondary" />
@@ -25,7 +25,7 @@
     <Numeric name="DiscountPercent" precision="7" scale="3" label="=ecDiscountPercent" />
     <Relation name="DiscountParent" relation="EcClients" label="=ecDiscountParent" />
     
-    <Integer name="DisplayedPrice" label="=ecDisplayedPrice" />
+    <Enum name="DisplayedPrice" key="EcDisplayedPrice" label="=ecDisplayedPrice" />
     
     <Boolean name="KeyboardShortcuts" label="=ecKeyboardShortcuts" />
 

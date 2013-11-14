@@ -62,6 +62,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -133,6 +134,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         defaults = field.getDefaults();
       }
       return defaults;
+    }
+
+    public String getEnumKey() {
+      String key = null;
+
+      if (field != null) {
+        key = field.getEnumKey();
+      }
+      return key;
     }
 
     public IsExpression getExpression() {
@@ -223,7 +233,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     public SqlDataType getType() {
       if (xmlExpression != null) {
-        return NameUtils.getEnumByName(SqlDataType.class, xmlExpression.type);
+        return EnumUtils.getEnumByName(SqlDataType.class, xmlExpression.type);
       } else {
         return field.getType();
       }
@@ -461,6 +471,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnInfo(colName).getDefaults();
   }
 
+  public String getColumnEnumKey(String colName) {
+    return getColumnInfo(colName).getEnumKey();
+  }
+
   public IsExpression getColumnExpression(String colName) {
     return getColumnInfo(colName).getExpression();
   }
@@ -600,7 +614,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Expression", isColCalculated(col) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),
-          "Label", getColumnLabel(col));
+          "Label", getColumnLabel(col), "Enum key", getColumnEnumKey(col));
     }
     if (order != null) {
       info.add(new ExtendedProperty("Orders", BeeUtils.toString(order.getSize())));

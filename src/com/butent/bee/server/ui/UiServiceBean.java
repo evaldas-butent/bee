@@ -65,6 +65,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -1313,7 +1314,7 @@ public class UiServiceBean {
       }
     } else if (BeeUtils.startsSame(cmd, "setState")) {
       String[] arr = cmd.split(" ", 5);
-      RightsState state = NameUtils.getEnumByName(RightsState.class, arr[1]);
+      RightsState state = EnumUtils.getEnumByName(RightsState.class, arr[1]);
       String tbl = arr[2];
       long id = BeeUtils.toLong(arr[3]);
       long[] bits = null;

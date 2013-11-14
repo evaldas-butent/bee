@@ -20,7 +20,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   static OrderCargo create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     OrderCargo orderCargo =
         new OrderCargo(row.getLong(COL_ORDER),
-            NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
+            EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
             row.getDateTime(COL_ORDER_DATE), row.getValue(COL_ORDER_NO),
             row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
             row.getLong(COL_CARGO_ID), row.getValue(COL_CARGO_DESCRIPTION),

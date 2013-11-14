@@ -18,7 +18,7 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public class ActionCell extends AbstractCell<String> implements HasOptions, HasViewName {
 
@@ -51,7 +51,7 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   private static final Type DEFAULT_TYPE = Type.LINK;
 
   public static ActionCell create(String viewName, ColumnDescription columnDescription) {
-    ActionCell cell = new ActionCell(NameUtils.getEnumByName(Type.class,
+    ActionCell cell = new ActionCell(EnumUtils.getEnumByName(Type.class,
         columnDescription.getElementType()));
 
     cell.setViewName(viewName);

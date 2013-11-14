@@ -1,27 +1,49 @@
 package com.butent.bee.shared.modules.transport;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TransportConstants {
 
-  public enum OrderStatus implements HasCaption {
-    NEW(Localized.getConstants().trOrderStatusNew()),
-    ACTIVE(Localized.getConstants().trOrderStatusActive()),
-    CANCELED(Localized.getConstants().trOrderStatusCanceled()),
-    COMPLETED(Localized.getConstants().trOrderStatusCompleted()),
-    REQUEST(Localized.getConstants().trOrderStatusRequest());
-
-    private final String caption;
-
-    private OrderStatus(String caption) {
-      this.caption = caption;
-    }
+  public enum OrderStatus implements HasLocalizedCaption {
+    NEW {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusNew();
+      }
+    },
+    ACTIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusActive();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusCanceled();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusCompleted();
+      }
+    },
+    REQUEST {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusRequest();
+      }
+    };
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
   }
 
@@ -152,6 +174,13 @@ public final class TransportConstants {
     public abstract String getTripVehicleNumberColumnName();
   }
 
+  public static void register() {
+    EnumUtils.register(OrderStatus.class);
+    EnumUtils.register(AssessmentStatus.class);
+    EnumUtils.register(CargoRequestStatus.class);
+    EnumUtils.register(TripStatus.class);
+  }
+
   public static final String TRANSPORT_MODULE = "Transport";
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
@@ -257,7 +286,7 @@ public final class TransportConstants {
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
-  
+
   public static final String COL_GROUP = "Group";
 
   public static final String COL_TRIP = "Trip";
@@ -527,10 +556,10 @@ public final class TransportConstants {
 
   public static final String COL_EXPEDITION_TYPE_NAME = "Name";
   public static final String COL_EXPEDITION_TYPE_SELF_SERVICE = "SelfService";
-  
+
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
-  
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -580,7 +609,7 @@ public final class TransportConstants {
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
-  
+
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
   public static final String DATA_TYPE_TRIP = "Trip";
   public static final String DATA_TYPE_FREIGHT = "Freight";

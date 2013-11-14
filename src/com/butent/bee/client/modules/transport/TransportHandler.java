@@ -67,10 +67,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
@@ -78,6 +75,7 @@ import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -640,12 +638,8 @@ public final class TransportHandler {
   }
 
   public static void register() {
-    Captions.register(OrderStatus.class);
-    Captions.register(AssessmentStatus.class);
-    Captions.register(TripStatus.class);
-
-    String key = Captions.register(CargoRequestStatus.class);
-    Captions.registerColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS, key);
+    Captions.registerColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS,
+        EnumUtils.getRegistrationKey(CargoRequestStatus.class));
 
     SelectorEvent.register(new TransportSelectorHandler());
 

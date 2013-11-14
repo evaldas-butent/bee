@@ -30,10 +30,10 @@ import com.butent.bee.client.modules.ec.render.CategoryFullNameRenderer;
 import com.butent.bee.client.modules.ec.view.EcView;
 import com.butent.bee.client.modules.ec.view.ShoppingCart;
 import com.butent.bee.client.modules.ec.widget.CartList;
-import com.butent.bee.client.modules.ec.widget.Promo;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
+import com.butent.bee.client.modules.ec.widget.Promo;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.FormFactory;
@@ -61,15 +61,15 @@ import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
+import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
-import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -198,7 +198,7 @@ public final class EcKeeper {
     Assert.notNull(callback);
     data.ensureWarehouses(callback);
   }
-  
+
   public static void finalizeRequest(EcRequest request, boolean remove) {
     if (request.hasProgress()) {
       BeeKeeper.getScreen().closeProgress(request.getProgressId());
@@ -296,7 +296,7 @@ public final class EcKeeper {
   public static String getWarehouseLabel(String code) {
     return data.getWarehouseLabel(code);
   }
-  
+
   public static boolean isDebug() {
     return debug;
   }
@@ -415,17 +415,15 @@ public final class EcKeeper {
   }
 
   public static void register() {
-    String key = Captions.register(EcClientType.class);
+    String key = EnumUtils.getRegistrationKey(EcClientType.class);
     Captions.registerColumn(VIEW_REGISTRATIONS, COL_REGISTRATION_TYPE, key);
     Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_TYPE, key);
 
-    key = Captions.register(EcOrderStatus.class);
-    Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS, key);
+    Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS,
+        EnumUtils.getRegistrationKey(EcOrderStatus.class));
 
-    key = Captions.register(EcDisplayedPrice.class);
-    Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_DISPLAYED_PRICE, key);
-
-    Captions.register(EcSupplier.class);
+    Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_DISPLAYED_PRICE,
+        EnumUtils.getRegistrationKey(EcDisplayedPrice.class));
 
     BeeKeeper.getMenu().registerMenuCallback("ensure_categories_and_open_grid", new MenuCallback() {
       @Override
@@ -544,7 +542,7 @@ public final class EcKeeper {
               Integer type = BeeUtils.toIntOrNull(cartItem.getNote());
 
               if (BeeUtils.isOrdinal(CartType.class, type)) {
-                CartType cartType = NameUtils.getEnumByIndex(CartType.class, type);
+                CartType cartType = EnumUtils.getEnumByIndex(CartType.class, type);
                 cartList.getCart(cartType).add(cartItem.getEcItem(), cartItem.getQuantity());
 
                 restoredTypes.add(cartType);
@@ -645,9 +643,9 @@ public final class EcKeeper {
         if (DataUtils.isEmpty(pictures.getBanners()) && BeeUtils.isEmpty(items)) {
           return;
         }
-        
+
         resetActiveCommand();
-        
+
         if (items == null) {
           items = Lists.newArrayList();
         }
