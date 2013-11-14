@@ -206,6 +206,13 @@ public class CommonsModuleBean implements BeeModule {
       }
 
       @Subscribe
+      public void refreshIpFilterCache(TableModifyEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
+          sys.initIpFilters();
+        }
+      }
+
+      @Subscribe
       public void storeEmail(ViewModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
             && !(event instanceof ViewDeleteEvent)) {

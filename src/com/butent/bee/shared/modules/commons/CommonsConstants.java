@@ -143,6 +143,8 @@ public final class CommonsConstants {
   public static final String TBL_BRANCHES = "Branches";
   public static final String TBL_WAREHOUSES = "Warehouses";
 
+  public static final String TBL_IP_FILTERS = "IpFilters";
+
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
@@ -164,6 +166,8 @@ public final class CommonsConstants {
 
   public static final String VIEW_CURRENCIES = "Currencies";
 
+  public static final String VIEW_IP_FILTERS = "IpFilters";
+  
   public static final String GRID_PERSONS = "Persons";
 
   public static final String GRID_HISTORY = "History";
@@ -270,6 +274,10 @@ public final class CommonsConstants {
 
   public static final String COL_CURRENCY_NAME = "Name";
 
+  public static final String COL_IP_FILTER_HOST = "Host";
+  public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
+  public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
+  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 
