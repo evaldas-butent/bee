@@ -29,6 +29,15 @@
   </security-role>
 
   <data-source>
+    <name>BeeOsamaDS</name>
+    <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
+    <server-name>192.168.0.16</server-name>
+    <port-number>5432</port-number>
+    <database-name>b_novo</database-name>
+    <user>postgres</user>
+    <password>Butent@127##</password>
+  </data-source>
+  <data-source>
     <name>BeeDS</name>
     <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
     <server-name>127.0.0.1</server-name>

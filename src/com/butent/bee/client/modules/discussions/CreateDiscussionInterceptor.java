@@ -23,6 +23,7 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
@@ -45,15 +46,26 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_ACCESSIBILITY = "Accessibility";
   private static final String WIDGET_DESCRIPTION = "Description";
   private static final String WIDGET_FILES = "Files";
-  private static final String WIDGET_MEMBERS = "Members";
 
   CreateDiscussionInterceptor() {
     super();
   }
 
   @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    Widget widget = getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
+    if (widget instanceof InputBoolean) {
+      InputBoolean ac = (InputBoolean) widget;
+      getMultiSelector(getFormView(), PROP_MEMBERS).setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+    }
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
+
+    final FormView form = getFormView();
+
     if (widget instanceof FileCollector) {
       ((FileCollector) widget).bindDnd(getFormView());
     }
@@ -65,15 +77,13 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       ac.addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
-          MultiSelector ms = (MultiSelector) getFormView().getWidgetByName(WIDGET_MEMBERS);
-          ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+          MultiSelector ms = getMultiSelector(form, PROP_MEMBERS);
+
+          if (ms != null) {
+            ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+          }
         }
       });
-    }
-    
-    if (BeeUtils.same(name, WIDGET_MEMBERS) && widget instanceof MultiSelector) {
-      MultiSelector ms = (MultiSelector) widget;
-      ms.setEnabled(false);
     }
   }
 
@@ -145,6 +155,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         }
       }
     });
+  }
+
+  private static MultiSelector getMultiSelector(FormView form, String source) {
+    Widget widget = form.getWidgetBySource(source);
+    return (widget instanceof MultiSelector) ? (MultiSelector) widget : null;
   }
 
   private void createFiles(final List<Long> discussions) {

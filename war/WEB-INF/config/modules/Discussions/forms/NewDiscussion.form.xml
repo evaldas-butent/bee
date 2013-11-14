@@ -44,7 +44,7 @@
       <CheckBox name="Accessibility" text="=discussPublic" style="&top1; min-width:70px; padding-right:18px;" />
       <Label text="=discussMembers" style="&top1; min-width:70px; padding-right:18px;" />
       <MultiSelector name="Members" viewName="Users" property="Members" renderColumns="FirstName LastName"
-        editPopup="true" editSource="CompanyPerson" style="&inp1x;" label="=discussMembers" />
+        editPopup="true" editSource="CompanyPerson" disablable="true" style="&inp1x;" label="=discussMembers" />
     </FlowPanel>
 
     &separator;
