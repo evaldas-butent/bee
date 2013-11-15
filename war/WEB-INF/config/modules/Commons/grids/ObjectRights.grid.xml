@@ -6,7 +6,7 @@
   >
   <g:columns>
     <RelColumn name="Role" caption="=role" visible="true" />
-    <DataColumn name="State" caption="=roleState" itemKey="RightsState" visible="true">
+    <DataColumn name="State" caption="=roleState" visible="true">
       <style>
         <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>
       </style>

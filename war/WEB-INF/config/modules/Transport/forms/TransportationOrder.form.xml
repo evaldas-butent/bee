@@ -13,7 +13,7 @@
           <Label text="=date" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputDateTime source="Date" />
           <Label text="=status" horizontalAlignment="right" />
-          <ListBox source="Status" itemKey="OrderStatus" />
+          <ListBox source="Status" />
           <Label text="=notes" />
         </row>
         <row>

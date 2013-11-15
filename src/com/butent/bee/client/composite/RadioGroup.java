@@ -86,9 +86,21 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this(NameUtils.createUniqueName("optiongroup"), orientation);
   }
 
+  public RadioGroup(Orientation orientation, Enum<?> value, Class<? extends Enum<?>> clazz) {
+    this(orientation);
+
+    List<String> opt = EnumUtils.getCaptions(clazz);
+    int z = (value == null) ? BeeConst.UNDEF : value.ordinal();
+    addButtons(opt, z);
+  }
+
   public RadioGroup(Orientation orientation, int value, List<String> opt) {
     this(orientation);
     addButtons(opt, value);
+  }
+
+  public RadioGroup(String name, int value, List<String> opt) {
+    this(name, Orientation.HORIZONTAL, value, opt);
   }
 
   public RadioGroup(String name, Orientation orientation) {
@@ -96,14 +108,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     Assert.notEmpty(name);
     this.name = name;
     this.orientation = orientation;
-  }
-
-  public RadioGroup(Orientation orientation, Enum<?> value, Class<? extends Enum<?>> clazz) {
-    this(orientation);
-
-    List<String> opt = EnumUtils.getCaptions(clazz);
-    int z = (value == null) ? BeeConst.UNDEF : value.ordinal();
-    addButtons(opt, z);
   }
 
   public RadioGroup(String name, Orientation orientation, int value, List<String> opt) {
@@ -115,23 +119,9 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this(name, orientation, BeeConst.UNDEF, opt);
   }
 
-  public RadioGroup(String name, int value, List<String> opt) {
-    this(name, Orientation.HORIZONTAL, value, opt);
-  }
-
   @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
-  }
-
-  @Override
-  public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addButtons(EnumUtils.getCaptions(clazz));
-  }
-
-  @Override
-  public void addCaptions(String captionKey) {
-    addButtons(EnumUtils.getCaptions(captionKey));
   }
 
   @Override
@@ -299,6 +289,22 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   public void setAccessKey(char key) {
+  }
+
+  @Override
+  public void setCaptions(Class<? extends Enum<?>> clazz) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addButtons(EnumUtils.getCaptions(clazz));
+  }
+
+  @Override
+  public void setCaptions(String captionKey) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addButtons(EnumUtils.getCaptions(captionKey));
   }
 
   @Override

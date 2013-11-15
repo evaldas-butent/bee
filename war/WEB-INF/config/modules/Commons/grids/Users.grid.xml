@@ -12,8 +12,8 @@
     <DataColumn name="CompanyName" caption="=company" visible="false" />
     <DataColumn name="Position" visible="false" />
 
-    <DataColumn name="Locale" itemKey="SupportedLocale" />
-    <DataColumn name="Interface" itemKey="UserInterface" />
+    <DataColumn name="Locale" />
+    <DataColumn name="Interface" />
 
     <DataColumn name="BlockAfter" />
     <DataColumn name="BlockBefore" />

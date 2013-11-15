@@ -164,7 +164,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         if (renderer == null) {
           renderer = RendererFactory.getRenderer(result.getRendererDescription(),
-              result.getRender(), result.getRenderTokens(), result.getItemKey(),
+              result.getRender(), result.getRenderTokens(), result.getEnumKey(),
               NameUtils.toList(result.getRenderColumns()), getDataColumns(), cellSource,
               result.getRelation());
         }

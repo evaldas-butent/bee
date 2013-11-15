@@ -71,7 +71,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private enum Serial {
     COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
-    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
+    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ENUM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
@@ -123,7 +123,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private EditorDescription editor;
 
-  private String itemKey;
+  private String enumKey;
 
   private String minValue;
   private String maxValue;
@@ -320,8 +320,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case RENDER_TOKENS:
           setRenderTokens(RenderableToken.restoreList(value));
           break;
-        case ITEM_KEY:
-          setItemKey(value);
+        case ENUM_KEY:
+          setEnumKey(value);
           break;
         case AUTO_FIT:
           setAutoFit(value);
@@ -401,6 +401,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return elementType;
   }
 
+  public String getEnumKey() {
+    return enumKey;
+  }
+
   public String getFilterOptions() {
     return filterOptions;
   }
@@ -470,7 +474,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Cell Type", getCellType(),
         "Cell Resizable", getCellResizable(),
         "Update Mode", getUpdateMode(),
-        "Item Key", getItemKey(),
+        "Enum Key", getEnumKey(),
         "Element Type", getElementType(),
         "Options", getOptions(),
         "Dynamic", getDynamic());
@@ -538,10 +542,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
-  }
-
-  public String getItemKey() {
-    return itemKey;
   }
 
   public String getLabel() {
@@ -846,8 +846,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case RENDER_TOKENS:
           arr[i++] = getRenderTokens();
           break;
-        case ITEM_KEY:
-          arr[i++] = getItemKey();
+        case ENUM_KEY:
+          arr[i++] = getEnumKey();
           break;
         case AUTO_FIT:
           arr[i++] = getAutoFit();
@@ -919,6 +919,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.elementType = elementType;
   }
 
+  public void setEnumKey(String enumKey) {
+    this.enumKey = enumKey;
+  }
+
   public void setFilterOptions(String filterOptions) {
     this.filterOptions = filterOptions;
   }
@@ -953,10 +957,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public void setItemKey(String itemKey) {
-    this.itemKey = itemKey;
   }
 
   public void setLabel(String label) {

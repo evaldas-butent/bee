@@ -76,7 +76,7 @@
       <Table>
         <row>    
           <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;">
-            <ListBox source="Status" itemKey="TripStatus" caption="=status" style="margin-bottom: 20px"/>
+            <ListBox source="Status" caption="=status" style="margin-bottom: 20px"/>
             <Button name="profit"  text="=cargoProfit" style="width: 80px" />
           </FlowPanel>
         </row>

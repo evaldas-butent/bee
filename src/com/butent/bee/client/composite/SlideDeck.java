@@ -863,7 +863,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     table.setWidgetAndStyle(row, 0, effLabel, STYLE_SETTINGS_LABEL);
 
     final BeeListBox effectWidget = new BeeListBox();
-    effectWidget.addCaptions(Effect.class);
+    effectWidget.setCaptions(Effect.class);
     if (getEffect() != null) {
       effectWidget.setSelectedIndex(getEffect().ordinal());
     }

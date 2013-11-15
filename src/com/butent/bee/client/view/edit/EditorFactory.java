@@ -155,7 +155,7 @@ public final class EditorFactory {
     return editor;
   }
 
-  public static Editor createEditor(EditorDescription description, String itemKey,
+  public static Editor createEditor(EditorDescription description, String enumKey,
       ValueType valueType, Relation relation, boolean embedded) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
@@ -251,8 +251,8 @@ public final class EditorFactory {
     if (editor instanceof HasItems && description.getItems() != null) {
       ((HasItems) editor).setItems(description.getItems());
     }
-    if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(itemKey)) {
-      ((AcceptsCaptions) editor).addCaptions(itemKey);
+    if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(enumKey)) {
+      ((AcceptsCaptions) editor).setCaptions(enumKey);
     }
 
     if (editor instanceof HasVisibleLines && BeeUtils.isPositive(description.getVisibleLines())) {

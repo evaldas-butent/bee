@@ -159,16 +159,6 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
 
   @Override
-  public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(EnumUtils.getCaptions(clazz));
-  }
-
-  @Override
-  public void addCaptions(String captionKey) {
-    addItems(EnumUtils.getCaptions(captionKey));
-  }
-
-  @Override
   public void addItem(String text) {
     addItem(text, null);
   }
@@ -261,6 +251,10 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
   }
 
+  public void insertTab(String text, int beforeIndex) {
+    insertTab(text, beforeIndex, null);
+  }
+
   public void insertTab(String text, int beforeIndex, String styleName) {
     checkInsertBeforeTabIndex(beforeIndex);
 
@@ -268,10 +262,6 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     StyleUtils.setWordWrap(item.getElement(), false);
 
     insertTabWidget(item, beforeIndex, styleName);
-  }
-
-  public void insertTab(String text, int beforeIndex) {
-    insertTab(text, beforeIndex, null);
   }
 
   public void insertTab(Widget widget, int beforeIndex, String styleName) {
@@ -338,6 +328,22 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   @Override
   public void setBorderSpacing(int spacing) {
     panel.setBorderSpacing(spacing);
+  }
+
+  @Override
+  public void setCaptions(Class<? extends Enum<?>> clazz) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addItems(EnumUtils.getCaptions(clazz));
+  }
+
+  @Override
+  public void setCaptions(String captionKey) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addItems(EnumUtils.getCaptions(captionKey));
   }
 
   @Override

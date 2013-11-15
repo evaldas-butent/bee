@@ -6,7 +6,7 @@
   readOnly="true"
   >
   <g:columns>
-    <DataColumn name="Supplier" itemKey="EcSupplier" />
+    <DataColumn name="Supplier" />
     <DataColumn name="BrandName" />
     <DataColumn name="ArticleNr" />
     <DataColumn name="SupplierId" />

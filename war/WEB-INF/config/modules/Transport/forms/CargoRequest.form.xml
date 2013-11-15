@@ -33,7 +33,7 @@
 
       <row>
         <Label text="=trRequestStatus" />
-        <ListBox source="Status" itemKey="CargoRequestStatus" readOnly="true" />
+        <ListBox source="Status" readOnly="true" />
       </row>
     </Table>
     &separator;

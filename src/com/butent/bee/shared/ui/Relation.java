@@ -7,7 +7,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -237,7 +236,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   private Calculation rowRender;
   private List<RenderableToken> rowRenderTokens;
 
-  private String itemKey;
+  private String enumKey;
   private final List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
   private final List<String> choiceColumns = Lists.newArrayList();
@@ -350,6 +349,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     return getAttribute(UiConstants.ATTR_EDIT_VIEW_NAME);
   }
 
+  public String getEnumKey() {
+    return enumKey;
+  }
+
   public Filter getFilter() {
     return filter;
   }
@@ -366,7 +369,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
         "Selector Class", getSelectorClass(),
         "Item Type", getItemType(),
         "Visible Lines", getVisibleLines(),
-        "Item Key", getItemKey(),
+        "Enum Key", getEnumKey(),
         "Render Mode", getRenderMode(),
         "Target View Name", getTargetViewName());
 
@@ -393,10 +396,6 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
 
     return info;
-  }
-
-  public String getItemKey() {
-    return itemKey;
   }
 
   public MenuConstants.ITEM_TYPE getItemType() {
@@ -478,7 +477,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   public boolean hasRowRenderer() {
     return getRowRendererDescription() != null || getRowRender() != null
-        || !BeeUtils.isEmpty(getRowRenderTokens()) || !BeeUtils.isEmpty(getItemKey());
+        || !BeeUtils.isEmpty(getRowRenderTokens()) || !BeeUtils.isEmpty(getEnumKey());
   }
 
   public void initialize(DataInfo.Provider provider, String targetView, Holder<String> target,
@@ -520,9 +519,9 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
       setVisibleLines(BeeUtils.toInt(lines));
     }
 
-    String key = getAttribute(HasItems.ATTR_ITEM_KEY);
+    String key = getAttribute(EnumUtils.ATTR_ENUM_KEY);
     if (!BeeUtils.isEmpty(key)) {
-      setItemKey(key);
+      setEnumKey(key);
     }
 
     String flt = getAttribute(UiConstants.ATTR_FILTER);
@@ -734,12 +733,12 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
   }
 
-  public void setFilter(Filter filter) {
-    this.filter = filter;
+  public void setEnumKey(String enumKey) {
+    this.enumKey = enumKey;
   }
 
-  public void setItemKey(String itemKey) {
-    this.itemKey = itemKey;
+  public void setFilter(Filter filter) {
+    this.filter = filter;
   }
 
   public void setItemType(MenuConstants.ITEM_TYPE itemType) {

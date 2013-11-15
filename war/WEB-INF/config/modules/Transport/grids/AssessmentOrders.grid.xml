@@ -17,7 +17,7 @@
     <IdColumn name="ID" width="40" />
     <DataColumn name="Assessor" caption="PID" width="40" />
     <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />
-    <DataColumn name="Status" itemKey="AssessmentStatus" width="70" />
+    <DataColumn name="Status" width="70" />
     <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     

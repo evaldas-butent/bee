@@ -377,6 +377,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     } else {
       label = BeeUtils.notEmpty(Localized.maybeTranslate(cd.getLabel()), columnId);
     }
+    
+    String enumKey = cd.getEnumKey();
 
     CellSource cellSource;
 
@@ -405,7 +407,11 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
 
       default:
         if (dataIndex >= 0) {
-          cellSource = CellSource.forColumn(dataColumns.get(dataIndex), dataIndex);
+          BeeColumn dataColumn = dataColumns.get(dataIndex);
+          cellSource = CellSource.forColumn(dataColumn, dataIndex);
+          if (BeeUtils.isEmpty(enumKey)) {
+            enumKey = dataColumn.getEnumKey();
+          }
         } else {
           cellSource = null;
         }
@@ -419,9 +425,8 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       renderer = RendererFactory.getGridColumnRenderer(getGridName(), columnId, dataColumns, cd);
     }
     if (renderer == null) {
-      renderer = RendererFactory.getRenderer(cd.getRendererDescription(),
-          cd.getRender(), cd.getRenderTokens(), cd.getItemKey(),
-          renderColumns, dataColumns, cellSource, cd.getRelation());
+      renderer = RendererFactory.getRenderer(cd.getRendererDescription(), cd.getRender(),
+          cd.getRenderTokens(), enumKey, renderColumns, dataColumns, cellSource, cd.getRelation());
     }
 
     FilterSupplierType filterSupplierType = cd.getFilterSupplierType();
@@ -568,7 +573,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
     }
 
     EditableColumn editableColumn = colType.isReadOnly() ? null
-        : new EditableColumn(getViewName(), dataColumns, dataIndex, column, label, cd);
+        : new EditableColumn(getViewName(), dataColumns, dataIndex, column, label, cd, enumKey);
 
     if (gridInterceptor != null && !gridInterceptor.afterCreateColumn(columnId, dataColumns,
         column, header, footer, editableColumn)) {
@@ -592,7 +597,7 @@ public class CellGridImpl extends Absolute implements GridView, EditStartEvent.H
       filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataColumns,
           gridDescription.getIdName(), gridDescription.getVersionName(), dataIndex, label,
           column.getSearchBy(), filterSupplierType, renderColumns, column.getSortBy(),
-          cd.getItemKey(), cd.getRelation(), cd.getFilterOptions());
+          enumKey, cd.getRelation(), cd.getFilterOptions());
     }
 
     ColumnInfo columnInfo = new ColumnInfo(columnId, label, cellSource, column, header, footer,

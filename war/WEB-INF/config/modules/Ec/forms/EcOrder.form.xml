@@ -19,7 +19,7 @@
         <RowIdLabel style="border: 1px solid silver; padding: 1px 2px;" class="bee-disabled" />
 
         <Label text="=ecOrderStatus" style="margin-left: 3em; margin-right: 10px;" />
-        <ListBox source="Status" itemKey="EcOrderStatus" readOnly="true" />
+        <ListBox source="Status" readOnly="true" />
       </FlowPanel>
       &separator;
 

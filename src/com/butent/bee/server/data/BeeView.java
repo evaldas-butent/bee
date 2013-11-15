@@ -378,6 +378,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     column.setEditable(editable);
 
     column.setDefaults(info.getDefaults());
+    
+    column.setEnumKey(info.getEnumKey());
   }
 
   private final String moduleName;

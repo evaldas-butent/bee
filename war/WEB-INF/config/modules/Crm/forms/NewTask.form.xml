@@ -31,7 +31,7 @@
       <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
         newRowEnabled="false" style="&inp2;" />
       <Label text="=priority" style="&inline; width: 128px; text-align:right; padding-right:8px; padding-top: 1px; " />
-      <Radio source="Priority" itemKey="TaskPriority" style="&inp4; min-width:200px;" />
+      <Radio source="Priority" style="&inp4; min-width:200px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">

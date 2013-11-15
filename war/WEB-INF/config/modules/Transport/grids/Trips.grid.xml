@@ -9,7 +9,7 @@
   <g:columns>
     <DataColumn name="Date" caption="=date" />
     <DataColumn name="TripNo" caption="=trTripNo" flexGrow="1" flexShrink="1" />
-    <DataColumn name="Status" caption="=status" itemKey="TripStatus" />
+    <DataColumn name="Status" caption="=status" />
     <CalcColumn name="Vehicle" type="string" caption="=transport" flexGrow="1" flexShrink="1"
       searchBy="VehicleNumber TrailerNumber">
       <render>

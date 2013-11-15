@@ -684,7 +684,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         (dataColumn == null) ? null : CellSource.forColumn(dataColumn, dataIndex);
 
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
-        relation.getRowRender(), relation.getRowRenderTokens(), relation.getItemKey(),
+        relation.getRowRender(), relation.getRowRenderTokens(), relation.getEnumKey(),
         choiceColumns, dataInfo.getColumns(), cellSource);
 
     if (rowRenderer instanceof EnumRenderer && relation.getSearchableColumns().size() == 1) {
@@ -1469,7 +1469,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           ? null : CellSource.forColumn(dataInfo.getColumns().get(index), index);
 
       AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),
-          sc.getRender(), sc.getRenderTokens(), sc.getItemKey(), sc.getRenderColumns(),
+          sc.getRender(), sc.getRenderTokens(), sc.getEnumKey(), sc.getRenderColumns(),
           dataInfo.getColumns(), cellSource);
 
       if (renderer != null) {

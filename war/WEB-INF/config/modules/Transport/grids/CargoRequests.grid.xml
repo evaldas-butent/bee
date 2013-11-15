@@ -6,7 +6,7 @@
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
-    <DataColumn name="Status" itemKey="CargoRequestStatus" visible="true" />
+    <DataColumn name="Status" visible="true" />
     <DataColumn name="Finished" visible="false" />
     <DataColumn name="Result" visible="false" />
     

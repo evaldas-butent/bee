@@ -11,7 +11,7 @@
     <DataColumn name="LastName" visible="true" />
     <DataColumn name="CompanyName" caption="=company" />
 
-    <DataColumn name="Type" itemKey="EcClientType" />
+    <DataColumn name="Type" />
 
     <RelColumn name="PrimaryBranch" visible="true" />
     <RelColumn name="SecondaryBranch" />

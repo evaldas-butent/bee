@@ -49,11 +49,11 @@ public final class RendererFactory {
   }
 
   public static AbstractCellRenderer getRenderer(RendererDescription description,
-      Calculation calculation, List<RenderableToken> tokens, String itemKey,
+      Calculation calculation, List<RenderableToken> tokens, String enumKey,
       List<String> renderColumns, List<? extends IsColumn> dataColumns, CellSource source) {
 
     if (description != null) {
-      return createRenderer(description, itemKey, renderColumns, dataColumns, source);
+      return createRenderer(description, enumKey, renderColumns, dataColumns, source);
 
     } else if (calculation != null) {
       return createRenderer(calculation, dataColumns, source);
@@ -61,8 +61,8 @@ public final class RendererFactory {
     } else if (!BeeUtils.isEmpty(tokens)) {
       return createRenderer(tokens, dataColumns);
 
-    } else if (!BeeUtils.isEmpty(itemKey) && source != null) {
-      return new EnumRenderer(source, itemKey);
+    } else if (!BeeUtils.isEmpty(enumKey) && source != null) {
+      return new EnumRenderer(source, enumKey);
 
     } else if (!BeeUtils.isEmpty(renderColumns)) {
       if (renderColumns.size() == 1) {
@@ -78,7 +78,7 @@ public final class RendererFactory {
   }
 
   public static AbstractCellRenderer getRenderer(RendererDescription description,
-      Calculation calculation, List<RenderableToken> tokens, String itemKey,
+      Calculation calculation, List<RenderableToken> tokens, String enumKey,
       List<String> renderColumns, List<? extends IsColumn> dataColumns, CellSource cellSource,
       Relation relation) {
 
@@ -90,10 +90,10 @@ public final class RendererFactory {
       source = null;
     } else {
       columns = dataColumns;
-      source = getDataSource(description, calculation, itemKey, dataColumns, cellSource, relation);
+      source = getDataSource(description, calculation, enumKey, dataColumns, cellSource, relation);
     }
 
-    return getRenderer(description, calculation, tokens, itemKey, renderColumns, columns, source);
+    return getRenderer(description, calculation, tokens, enumKey, renderColumns, columns, source);
   }
 
   public static void registerGcrProvider(String gridName, String columnName,
@@ -166,7 +166,7 @@ public final class RendererFactory {
   }
 
   private static AbstractCellRenderer createRenderer(RendererDescription description,
-      String itemKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
+      String enumKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
       CellSource source) {
 
     Assert.notNull(description);
@@ -193,10 +193,10 @@ public final class RendererFactory {
         break;
 
       case ENUM:
-        if (!BeeUtils.isEmpty(itemKey)) {
-          renderer = new EnumRenderer(source, itemKey);
+        if (!BeeUtils.isEmpty(enumKey)) {
+          renderer = new EnumRenderer(source, enumKey);
         } else {
-          logger.warning("EnumRenderer: item key not specified");
+          logger.warning("EnumRenderer: key not specified");
         }
         break;
 
@@ -262,8 +262,8 @@ public final class RendererFactory {
   }
 
   private static CellSource getDataSource(RendererDescription description, Calculation calculation,
-      String itemKey, List<? extends IsColumn> dataColumns, CellSource source, Relation relation) {
-    if (relation == null || BeeUtils.isEmpty(itemKey)) {
+      String enumKey, List<? extends IsColumn> dataColumns, CellSource source, Relation relation) {
+    if (relation == null || BeeUtils.isEmpty(enumKey)) {
       return source;
     }
     if (description != null && !RendererType.ENUM.equals(description.getType())) {

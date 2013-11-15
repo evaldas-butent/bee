@@ -23,6 +23,8 @@ import java.util.Set;
 
 public final class EnumUtils {
 
+  public static final String ATTR_ENUM_KEY = "enumKey";
+  
   private static final BeeLogger logger = LogUtils.getLogger(EnumUtils.class);
 
   private static final BiMap<String, Class<? extends Enum<?>>> CLASSES = HashBiMap.create();

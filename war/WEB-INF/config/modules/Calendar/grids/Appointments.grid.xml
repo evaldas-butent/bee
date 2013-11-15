@@ -20,7 +20,7 @@
     <DataColumn name="Summary" caption="=summary" visible="true" />
     <DataColumn name="Description" caption="=calDescription" />
 
-    <DataColumn name="Status" caption="=calAppointmentStatus" itemKey="AppointmentStatus" />
+    <DataColumn name="Status" caption="=calAppointmentStatus" />
 
     <RelColumn name="Organizer" caption="=responsibleEmployee">
       <renderToken source="OrganizerFirstName" />

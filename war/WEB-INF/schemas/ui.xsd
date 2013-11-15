@@ -404,7 +404,7 @@
     <xs:attribute name="source" type="type:nameType" use="required" />
     <xs:attributeGroup ref="appearance" />
     <xs:attributeGroup ref="alignment" />
-    <xs:attribute name="itemKey" type="xs:normalizedString" />
+    <xs:attribute name="enumKey" type="xs:normalizedString" />
     <xs:attribute name="renderColumns" type="type:nameList" />
   </xs:complexType>
 

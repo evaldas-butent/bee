@@ -70,16 +70,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   }
 
   @Override
-  public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(EnumUtils.getCaptions(clazz));
-  }
-
-  @Override
-  public void addCaptions(String captionKey) {
-    addItems(EnumUtils.getCaptions(captionKey));
-  }
-
-  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -267,6 +257,22 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     if (cnt > 0) {
       setVisibleItemCount(cnt);
     }
+  }
+
+  @Override
+  public void setCaptions(Class<? extends Enum<?>> clazz) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addItems(EnumUtils.getCaptions(clazz));
+  }
+
+  @Override
+  public void setCaptions(String captionKey) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addItems(EnumUtils.getCaptions(captionKey));
   }
 
   @Override

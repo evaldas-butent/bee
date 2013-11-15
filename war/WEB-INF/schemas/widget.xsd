@@ -98,7 +98,7 @@
         <xs:attribute name="source" type="type:nameType" />
         <xs:attribute name="property" type="type:nameType" />
         <xs:attribute name="format" type="xs:normalizedString" />
-        <xs:attribute name="itemKey" type="xs:normalizedString" />
+        <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="type:nameList" />
       </xs:extension>
     </xs:complexContent>
@@ -302,7 +302,7 @@
           </xs:choice>
           <xs:attribute name="vertical" type="xs:boolean" default="false" />
           <xs:attribute name="valueStartIndex" type="xs:int" />
-          <xs:attribute name="itemKey" type="xs:normalizedString" />
+          <xs:attribute name="enumKey" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -322,7 +322,7 @@
           <xs:attribute name="maxSize" type="xs:positiveInteger" />
           <xs:attribute name="valueNumeric" type="xs:boolean" />
           <xs:attribute name="valueStartIndex" type="xs:int" />
-          <xs:attribute name="itemKey" type="xs:normalizedString" />
+          <xs:attribute name="enumKey" type="xs:normalizedString" />
           <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
         </xs:extension>
       </xs:complexContent>
@@ -701,7 +701,7 @@
         </xs:sequence>
         <xs:attributeGroup ref="ui:relation" />
         <xs:attribute name="label" type="xs:string" />
-        <xs:attribute name="itemKey" type="xs:normalizedString" />
+        <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="type:nameList" />
         <xs:attribute name="upperCase" type="xs:boolean" />
       </xs:extension>

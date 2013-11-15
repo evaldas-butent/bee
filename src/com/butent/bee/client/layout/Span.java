@@ -3,17 +3,17 @@ package com.butent.bee.client.layout;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Enables to manage span elements from Document Object Model.
  */
 
-public class Span extends ComplexPanel implements InsertPanel, IdentifiableWidget {
+public class Span extends ComplexPanel implements HasIndexedWidgets, IdentifiableWidget {
 
   public Span() {
     setElement(Document.get().createSpanElement());
@@ -41,6 +41,11 @@ public class Span extends ComplexPanel implements InsertPanel, IdentifiableWidge
     insert(w, Element.as(getElement()), beforeIndex, true);
   }
 
+  @Override
+  public boolean isEmpty() {
+    return getWidgetCount() <= 0;
+  }
+  
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);

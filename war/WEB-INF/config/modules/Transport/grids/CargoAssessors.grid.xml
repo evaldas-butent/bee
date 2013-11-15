@@ -16,6 +16,6 @@
     <DataColumn name="Notes" caption="=notes" />
     <PropColumn name="Income" type="decimal" caption="=income" format="#.00" />
     <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="#.00" />
-    <DataColumn name="Status" itemKey="AssessmentStatus" readOnly="true" />
+    <DataColumn name="Status" readOnly="true" />
   </g:columns>
 </g:Grid>

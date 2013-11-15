@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
@@ -16,6 +15,7 @@ import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -48,7 +48,7 @@ public class WidgetDescription implements HasInfo {
   private List<RenderableToken> renderTokens;
 
   private String renderColumns;
-  private String itemKey;
+  private String enumKey;
 
   private String caption;
   private Boolean readOnly;
@@ -107,6 +107,10 @@ public class WidgetDescription implements HasInfo {
     return editable;
   }
 
+  public String getEnumKey() {
+    return enumKey;
+  }
+
   public Boolean getHasDefaults() {
     return hasDefaults;
   }
@@ -126,7 +130,7 @@ public class WidgetDescription implements HasInfo {
         "Nullable", getNullable(),
         "Has Defaults", getHasDefaults(),
         "Render Columns", getRenderColumns(),
-        "Item Key", getItemKey(),
+        "Enum Key", getEnumKey(),
         "On Focus", getOnFocus(),
         "Update Mode", getUpdateMode());
 
@@ -170,10 +174,6 @@ public class WidgetDescription implements HasInfo {
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
-  }
-
-  public String getItemKey() {
-    return itemKey;
   }
 
   public Boolean getNullable() {
@@ -282,8 +282,8 @@ public class WidgetDescription implements HasInfo {
 
       } else if (BeeUtils.same(key, RendererDescription.ATTR_RENDER_COLUMNS)) {
         setRenderColumns(value.trim());
-      } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
-        setItemKey(value.trim());
+      } else if (BeeUtils.same(key, EnumUtils.ATTR_ENUM_KEY)) {
+        setEnumKey(value.trim());
 
       } else if (BeeUtils.same(key, ATTR_ON_FOCUS)) {
         setOnFocus(EditorAction.getByCode(value));
@@ -313,12 +313,12 @@ public class WidgetDescription implements HasInfo {
     this.editable = editable;
   }
 
-  public void setHasDefaults(Boolean hasDefaults) {
-    this.hasDefaults = hasDefaults;
+  public void setEnumKey(String enumKey) {
+    this.enumKey = enumKey;
   }
 
-  public void setItemKey(String itemKey) {
-    this.itemKey = itemKey;
+  public void setHasDefaults(Boolean hasDefaults) {
+    this.hasDefaults = hasDefaults;
   }
 
   public void setNullable(Boolean nullable) {
@@ -383,7 +383,7 @@ public class WidgetDescription implements HasInfo {
     setNullable(editableColumn.isNullable());
     setHasDefaults(editableColumn.hasDefaults());
 
-    setItemKey(editableColumn.getItemKey());
+    setEnumKey(editableColumn.getEnumKey());
     setRelation(editableColumn.getRelation());
 
     setUpdateMode(editableColumn.getUpdateMode());

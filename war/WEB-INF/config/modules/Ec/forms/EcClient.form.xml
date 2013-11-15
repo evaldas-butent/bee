@@ -28,7 +28,7 @@
         <InputDateTime source="Registered" style="&inp;" />
 
         <Label text="=ecClientType" class="bee-required" style="&lbl;" />
-        <ListBox source="Type" itemKey="EcClientType" />
+        <ListBox source="Type" />
       </FlowPanel>
       &separator;
 
@@ -92,7 +92,7 @@
             </DataSelector>
 
             <Label text="=ecDisplayedPrice" style="margin-left: 2em; margin-right: 10px;" />
-            <ListBox source="DisplayedPrice" itemKey="EcDisplayedPrice" style="margin-right: 2em;" />
+            <ListBox source="DisplayedPrice" style="margin-right: 2em;" />
           </FlowPanel>
           &separator;
 
