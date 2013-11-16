@@ -23,10 +23,10 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
@@ -670,7 +670,7 @@ public final class DataUtils {
         continue;
       }
       
-      String value = render(row, i, dataInfo.getColumnType(i));
+      String value = render(dataInfo.getColumns().get(i), row, i);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);
@@ -694,7 +694,7 @@ public final class DataUtils {
         continue;
       }
 
-      String value = render(row, i, column.getType());
+      String value = render(column, row, i);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);
@@ -717,7 +717,7 @@ public final class DataUtils {
     String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
     for (int index : indexes) {
-      String value = render(row, index, null);
+      String value = render(null, row, index);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);
@@ -1005,19 +1005,12 @@ public final class DataUtils {
       if (!columns.isEmpty()) {
         return join(dataInfo, row, columns, BeeConst.STRING_SPACE);
       }
-
-    } else if (ValueType.INTEGER.equals(column.getType())
-        && Captions.isColumnRegistered(dataInfo.getViewName(), column.getId())) {
-      Integer value = row.getInteger(index);
-      if (BeeUtils.isNonNegative(value)) {
-        return Captions.getValueCaption(dataInfo.getViewName(), column.getId(), value);
-      }
     }
 
-    return render(row, index, column.getType());
+    return render(column, row, index);
   }
 
-  public static String render(IsRow row, int index, ValueType type) {
+  public static String render(BeeColumn column, IsRow row, int index) {
     if (row == null) {
       return null;
     } else if (index == ID_INDEX) {
@@ -1026,12 +1019,14 @@ public final class DataUtils {
       return new DateTime(row.getVersion()).toString();
     } else if (row.isNull(index)) {
       return null;
-    } else if (type == null || ValueType.isString(type)) {
+    } else if (column == null || ValueType.isString(column.getType())) {
       return row.getString(index);
-    } else if (ValueType.DATE_TIME.equals(type)) {
+    } else if (ValueType.DATE_TIME.equals(column.getType())) {
       return row.getDateTime(index).toCompactString();
+    } else if (!BeeUtils.isEmpty(column.getEnumKey())) {
+      return EnumUtils.getCaption(column.getEnumKey(), row.getInteger(index));
     } else {
-      return row.getValue(index, type).toString();
+      return row.getValue(index, column.getType()).toString();
     }
   }
 

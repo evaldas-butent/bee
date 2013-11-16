@@ -9,6 +9,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -50,7 +51,7 @@ public final class RendererFactory {
 
   public static AbstractCellRenderer getRenderer(RendererDescription description,
       Calculation calculation, List<RenderableToken> tokens, String enumKey,
-      List<String> renderColumns, List<? extends IsColumn> dataColumns, CellSource source) {
+      List<String> renderColumns, List<BeeColumn> dataColumns, CellSource source) {
 
     if (description != null) {
       return createRenderer(description, enumKey, renderColumns, dataColumns, source);
@@ -79,10 +80,10 @@ public final class RendererFactory {
 
   public static AbstractCellRenderer getRenderer(RendererDescription description,
       Calculation calculation, List<RenderableToken> tokens, String enumKey,
-      List<String> renderColumns, List<? extends IsColumn> dataColumns, CellSource cellSource,
+      List<String> renderColumns, List<BeeColumn> dataColumns, CellSource cellSource,
       Relation relation) {
 
-    List<? extends IsColumn> columns;
+    List<BeeColumn> columns;
     CellSource source;
 
     if (relation != null && relation.renderSource()) {
@@ -166,7 +167,7 @@ public final class RendererFactory {
   }
 
   private static AbstractCellRenderer createRenderer(RendererDescription description,
-      String enumKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
+      String enumKey, List<String> renderColumns, List<BeeColumn> dataColumns,
       CellSource source) {
 
     Assert.notNull(description);

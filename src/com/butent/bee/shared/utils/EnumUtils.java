@@ -38,11 +38,11 @@ public final class EnumUtils {
     TransportConstants.register();
   }
 
-  public static String getCaption(String key, int index) {
+  public static String getCaption(String key, Integer index) {
     return getLocalizedCaption(key, index, Localized.getConstants());
   }
 
-  public static String getCaption(Class<? extends Enum<?>> clazz, int index) {
+  public static String getCaption(Class<? extends Enum<?>> clazz, Integer index) {
     return getLocalizedCaption(clazz, index, Localized.getConstants());
   }
 
@@ -118,11 +118,17 @@ public final class EnumUtils {
     return result;
   }
 
-  public static String getLocalizedCaption(String key, int index, LocalizableConstants constants) {
+  public static String getLocalizedCaption(String key, Integer index,
+      LocalizableConstants constants) {
+
     if (BeeUtils.isEmpty(key)) {
       logger.severe("Caption key not specified");
       return null;
     }
+    if (index == null) {
+      return null;
+    }
+
     List<String> list = getLocalizedCaptions(key, constants);
 
     if (!BeeUtils.isIndex(list, index)) {
@@ -133,8 +139,12 @@ public final class EnumUtils {
     }
   }
 
-  public static String getLocalizedCaption(Class<? extends Enum<?>> clazz, int index,
+  public static String getLocalizedCaption(Class<? extends Enum<?>> clazz, Integer index,
       LocalizableConstants constants) {
+
+    if (index == null) {
+      return null;
+    }
 
     List<String> list = getLocalizedCaptions(clazz, constants);
 

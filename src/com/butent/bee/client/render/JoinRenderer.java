@@ -5,10 +5,9 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,16 +20,13 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   
   private final class Item {
     private final int index;
-    private final ValueType type;
 
-    private Item(int index, ValueType type) {
-      super();
+    private Item(int index) {
       this.index = index;
-      this.type = type;
     }
     
     private String getValue(IsRow row) {
-      return DataUtils.render(row, index, type);
+      return DataUtils.render(dataColumns.get(index), row, index);
     }
   }
 
@@ -38,13 +34,13 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   
   public static final String DEFAULT_SEPARATOR = BeeConst.STRING_SPACE;
   
-  private final List<? extends IsColumn> dataColumns;
+  private final List<BeeColumn> dataColumns;
   
   private final List<Item> list = Lists.newArrayList();
 
   private final String separator;
 
-  public JoinRenderer(List<? extends IsColumn> dataColumns, String sep, List<String> items) {
+  public JoinRenderer(List<BeeColumn> dataColumns, String sep, List<String> items) {
     super(null);
     this.dataColumns = dataColumns;
     
@@ -71,7 +67,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
       return;
     }
     
-    list.add(new Item(index, dataColumns.get(index).getType()));
+    list.add(new Item(index));
   }
 
   @Override

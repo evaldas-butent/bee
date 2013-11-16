@@ -60,13 +60,9 @@ import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
-import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
-import com.butent.bee.shared.modules.ec.EcConstants.EcDisplayedPrice;
-import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -415,16 +411,6 @@ public final class EcKeeper {
   }
 
   public static void register() {
-    String key = EnumUtils.getRegistrationKey(EcClientType.class);
-    Captions.registerColumn(VIEW_REGISTRATIONS, COL_REGISTRATION_TYPE, key);
-    Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_TYPE, key);
-
-    Captions.registerColumn(VIEW_ORDERS, COL_ORDER_STATUS,
-        EnumUtils.getRegistrationKey(EcOrderStatus.class));
-
-    Captions.registerColumn(VIEW_CLIENTS, COL_CLIENT_DISPLAYED_PRICE,
-        EnumUtils.getRegistrationKey(EcDisplayedPrice.class));
-
     BeeKeeper.getMenu().registerMenuCallback("ensure_categories_and_open_grid", new MenuCallback() {
       @Override
       public void onSelection(final String parameters) {

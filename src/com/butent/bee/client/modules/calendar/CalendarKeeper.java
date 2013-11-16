@@ -42,19 +42,14 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -182,26 +177,6 @@ public final class CalendarKeeper {
   }
 
   public static void register() {
-    String key = EnumUtils.getRegistrationKey(AppointmentStatus.class);
-    Captions.registerColumn(VIEW_APPOINTMENTS, COL_STATUS, key);
-
-    key = EnumUtils.getRegistrationKey(Transparency.class);
-    Captions.registerColumn(VIEW_APPOINTMENTS, COL_TRANSPARENCY, key);
-    Captions.registerColumn(VIEW_ATTENDEES, COL_TRANSPARENCY, key);
-    Captions.registerColumn(VIEW_ATTENDEE_TYPES, COL_TRANSPARENCY, key);
-    Captions.registerColumn(VIEW_CALENDARS, COL_TRANSPARENCY, key);
-
-    Captions.registerColumn(VIEW_ATTENDEES, COL_TYPE_TRANSPARENCY, key);
-    Captions.registerColumn(VIEW_CAL_ATTENDEE_TYPES, COL_TYPE_TRANSPARENCY, key);
-
-    key = EnumUtils.getRegistrationKey(Visibility.class);
-    Captions.registerColumn(VIEW_APPOINTMENTS, COL_VISIBILITY, key);
-    Captions.registerColumn(VIEW_CALENDARS, COL_VISIBILITY, key);
-
-    key = EnumUtils.getRegistrationKey(TimeBlockClick.class);
-    Captions.registerColumn(VIEW_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
-    Captions.registerColumn(VIEW_USER_CALENDARS, COL_TIME_BLOCK_CLICK_NUMBER, key);
-
     GridFactory.registerGridInterceptor(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);

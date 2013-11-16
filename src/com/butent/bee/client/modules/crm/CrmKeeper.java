@@ -13,16 +13,11 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskPriority;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -35,22 +30,16 @@ public final class CrmKeeper {
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
     private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY, COL_COMPANY_NAME,
-        COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME, COL_FINISH_TIME);
+        COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME, COL_FINISH_TIME, COL_STATUS);
 
     private DataInfo taskViewInfo;
 
     @Override
     public void onRowTransform(RowTransformEvent event) {
       if (event.hasView(VIEW_TASKS)) {
-        event.setResult(BeeUtils.joinWords(DataUtils.join(getTaskViewInfo(), event.getRow(),
-            taskColumns, BeeConst.STRING_SPACE), getTaskStatus(event.getRow())));
+        event.setResult(DataUtils.join(getTaskViewInfo(), event.getRow(), taskColumns,
+            BeeConst.STRING_SPACE));
       }
-    }
-
-    private String getTaskStatus(BeeRow row) {
-      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
-          row.getInteger(getTaskViewInfo().getColumnIndex(COL_STATUS)));
-      return (status == null) ? null : status.getCaption();
     }
 
     private DataInfo getTaskViewInfo() {
@@ -100,16 +89,6 @@ public final class CrmKeeper {
     SelectorEvent.register(new TaskSelectorHandler());
 
     DocumentHandler.register();
-
-    String key = EnumUtils.getRegistrationKey(TaskPriority.class);
-    Captions.registerColumn(VIEW_TASKS, COL_PRIORITY, key);
-    Captions.registerColumn(VIEW_TASK_TEMPLATES, COL_PRIORITY, key);
-    Captions.registerColumn(VIEW_RECURRING_TASKS, COL_PRIORITY, key);
-
-    Captions.registerColumn(VIEW_TASK_EVENTS, COL_EVENT,
-        EnumUtils.getRegistrationKey(TaskEvent.class));
-
-    Captions.registerColumn(VIEW_TASKS, COL_STATUS, EnumUtils.getRegistrationKey(TaskStatus.class));
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
   }

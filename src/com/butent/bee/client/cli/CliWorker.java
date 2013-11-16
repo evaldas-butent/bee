@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -154,7 +153,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -1875,15 +1873,6 @@ public final class CliWorker {
     for (String key : keys) {
       for (String caption : EnumUtils.getCaptions(key)) {
         props.add(new Property(key, caption));
-      }
-    }
-
-    Table<String, String, String> columnKeys = Captions.getColumnKeys();
-    props.add(new Property("Column Keys", BeeUtils.bracket(columnKeys.size())));
-
-    for (String viewName : columnKeys.rowKeySet()) {
-      for (Map.Entry<String, String> entry : columnKeys.row(viewName).entrySet()) {
-        props.add(new Property(BeeUtils.joinWords(viewName, entry.getKey()), entry.getValue()));
       }
     }
 
