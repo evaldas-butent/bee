@@ -44,7 +44,7 @@
       </row>
       <row>
         <Label text="=trdManager" style="&lbl;" />
-        <DataSelector source="Manager" editSource="ManagerPerson" />
+        <DataSelector source="Manager" editEnabled="false" />
         <Label text="=trdPayer" style="&lbl;" />
         <DataSelector source="Payer" />
       </row>

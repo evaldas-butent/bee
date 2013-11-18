@@ -18,6 +18,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
@@ -37,7 +38,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class CargoTripsGridHandler extends CargoPlaceRenderer {
+class CargoTripsGridHandler extends AbstractGridInterceptor {
 
   private static class Action {
 
@@ -86,18 +87,18 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
       container.setWidget(0, 1, selector);
       container.setWidget(1, 0, new Button(Localized.getConstants().trNewTrip(),
           new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          createNewTrip(VIEW_TRIPS);
-        }
-      }));
+            @Override
+            public void onClick(ClickEvent event) {
+              createNewTrip(VIEW_TRIPS);
+            }
+          }));
       container.setWidget(1, 1, new Button(Localized.getConstants().trNewExpedition(),
           new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          createNewTrip(VIEW_EXPEDITION_TRIPS);
-        }
-      }));
+            @Override
+            public void onClick(ClickEvent event) {
+              createNewTrip(VIEW_EXPEDITION_TRIPS);
+            }
+          }));
       dialog.setWidget(container);
       dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
     }
@@ -107,7 +108,7 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
         return;
       }
       dialog.close();
-      
+
       gridView.ensureRelId(new IdCallback() {
         @Override
         public void onSuccess(Long result) {
@@ -115,7 +116,7 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
               DataUtils.getColumns(gridView.getDataColumns(), cargoIndex, tripIndex);
           List<String> values = Lists.newArrayList(BeeUtils.toString(result),
               BeeUtils.toString(tripId));
-          
+
           Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
             @Override
             public void onSuccess(BeeRow row) {
@@ -145,5 +146,10 @@ class CargoTripsGridHandler extends CargoPlaceRenderer {
     Action action = new Action(presenter.getGridView());
     UiHelper.focus(action.dialog.getContent());
     return false;
+  }
+
+  @Override
+  public String getRowCaption(IsRow row, boolean edit) {
+    return Localized.getConstants().trCargoActualPlaces();
   }
 }

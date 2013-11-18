@@ -2,13 +2,13 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintCargoInvoice">
+  <!ENTITY form "PrintCargoInvoiceShort">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
   
-  name="&form;" caption="=trInvoice" disabledActions="save"
+  name="&form;" caption="Trumpa sąskaita" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
   <FlowPanel style="padding: 10px; background-color: white;">
@@ -61,55 +61,29 @@
     <Table name="InvoiceDetails" style="&section; width:100%">
       <properties rateCurrency="EUR" />
       <row>
-        <cell rowSpan="2">
-          <Label text="Paslauga">
-            <properties name="Name" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
-          <Label text="Užsakymo Nr.">
-            <properties name="OrderNo" />
-          </Label>
-        </cell>
-        <Label text="Pakrovimas">
-          <properties name="LoadingPlace" />
+        <Label text="Paslauga">
+          <properties name="Name" />
         </Label>
-        <cell rowSpan="2">
-          <Label text="CMR Nr.">
-            <properties name="Cmr" />
-          </Label>
-        </cell>
-        <Label text="Vairuotojas">
-          <properties name="Driver" />
+        <Label text="Užsakymo Nr.">
+          <properties name="OrderNo" />
         </Label>
-        <cell rowSpan="2">
-          <Label text="=trdAmountWoVat">
-            <properties name="Amount" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
-          <Label text="=trdVat" horizontalAlignment="right">
-            <properties name="Vat" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
-          <FlowPanel>
-            <properties name="RateAmount" />
-            <InlineLabel text="=trdAmount" />
-            <InlineLabel html="EUR" style="padding-left:3px;" />
-          </FlowPanel>
-        </cell>
+        <Label text="CMR Nr.">
+          <properties name="Cmr" />
+        </Label>
+        <Label text="=trdAmountWoVat">
+          <properties name="Amount" />
+        </Label>
+        <Label text="=trdVat" horizontalAlignment="right">
+          <properties name="Vat" />
+        </Label>
+        <FlowPanel>
+          <properties name="RateAmount" />
+          <InlineLabel text="=trdAmount" />
+          <InlineLabel html="EUR" style="padding-left:3px;" />
+        </FlowPanel>
       </row>
       <row>
-        <Label text="Iškrovimas">
-          <properties name="UnloadingPlace" />
-        </Label>
-        <Label text="Transporto valst.Nr.">
-          <properties name="Vehicle" />
-        </Label>
-      </row>
-      <row>
-        <cell colSpan="5">
+        <cell colSpan="3">
           <FlowPanel style="text-align:right;">
             <Label text="Bendra suma:" />
             <Label text="PVM suma:" />

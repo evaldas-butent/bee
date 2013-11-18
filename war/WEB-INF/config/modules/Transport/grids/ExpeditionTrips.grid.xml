@@ -6,7 +6,7 @@
   >
 
   <g:columns>
-    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="Date" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
     <DataColumn name="TripNo" caption="=trTripNo" />
     <DataColumn name="Status" caption="=status" />

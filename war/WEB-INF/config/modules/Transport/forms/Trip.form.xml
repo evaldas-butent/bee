@@ -17,7 +17,7 @@
         <row> 
           <FlowPanel  class="flexBox-vertical">
             <SimplePanel style="margin-top: 10px;"> 
-              <InputDateTime source="Date" caption="=date" style="width: 140px;" 
+              <InputDateTime source="Date" caption="=trTripDate" style="width: 140px;" 
                   decorator="flex-left" d:unit="px" d:align="left" d:size="60" />
             </SimplePanel>  
             <SimplePanel style="margin-top: 10px"> 

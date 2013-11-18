@@ -160,6 +160,8 @@ public interface LocalizableTransportConstants {
 
   String trAssignCargo();
 
+  String trCargoActualPlaces();
+
   String trCargoRequestCreateTransportationOrderQuestion();
 
   String trCargoRequestFinish();

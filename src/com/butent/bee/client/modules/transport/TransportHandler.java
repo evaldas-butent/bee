@@ -35,6 +35,7 @@ import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
@@ -104,7 +105,7 @@ public final class TransportHandler {
     }
   }
 
-  private static class CargoGridHandler extends CargoPlaceRenderer {
+  private static class CargoGridHandler extends AbstractGridInterceptor {
     @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
@@ -648,8 +649,23 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
-    GridFactory.registerGridInterceptor(VIEW_ALL_CARGO, new CargoPlaceRenderer());
+
+    CargoPlaceRenderer.Provider provider = new CargoPlaceRenderer.Provider();
+    String loading = "Loading";
+    String unloading = "Unloading";
+
+    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
 
     // GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
 

@@ -31,6 +31,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_TRADE_SUPPLIER = "Supplier";
   public static final String COL_TRADE_CUSTOMER = "Customer";
+  public static final String COL_TRADE_MANAGER = "Manager";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
 
@@ -41,7 +42,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
   public static final String STYLE_SHEET = "trade";
-  
+
   private TradeConstants() {
   }
 }
