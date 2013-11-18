@@ -40,7 +40,11 @@
     <DataColumn name="Registered" visible="false" />
     <DataColumn name="PersonCode" visible="false" />
     <DataColumn name="Activity" visible="false" />
-    <DataColumn name="KeyboardShortcuts" visible="false" />
+
+    <DataColumn name="ToggleListPrice" visible="false" />
+    <DataColumn name="TogglePrice" visible="false" />
+    <DataColumn name="ToggleStockLimit" visible="false" />
+
     <DataColumn name="Notes" visible="false" />
   </g:columns>
 </g:Grid>

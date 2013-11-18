@@ -108,11 +108,20 @@ public final class EcKeeper {
   public static HandlerRegistration bindKeyPress(HasKeyPressHandlers source) {
     if (eventHandler.getEnabled() == null) {
       eventHandler.setEnabled(false);
+      
+      List<String> keys = Lists.newArrayList(COL_CLIENT_TOGGLE_LIST_PRICE, COL_CLIENT_TOGGLE_PRICE,
+          COL_CLIENT_TOGGLE_STOCK_LIMIT);
 
-      getClientValue(COL_CLIENT_KEYBOARD_SHORTCUTS, new Consumer<String>() {
+      getClientValues(keys, new Consumer<List<String>>() {
         @Override
-        public void accept(String input) {
-          eventHandler.setEnabled(BeeConst.isTrue(input));
+        public void accept(List<String> input) {
+          eventHandler.setListPriceEnabled(BeeConst.isTrue(BeeUtils.getQuietly(input, 0)));
+          eventHandler.setPriceEnabled(BeeConst.isTrue(BeeUtils.getQuietly(input, 1)));
+          eventHandler.setStockLimitEnabled(BeeConst.isTrue(BeeUtils.getQuietly(input, 2)));
+
+          eventHandler.setEnabled(eventHandler.isListPriceEnabled() 
+              || eventHandler.isPriceEnabled() 
+              || eventHandler.isStockLimitEnabled());
         }
       });
     }
@@ -257,10 +266,10 @@ public final class EcKeeper {
     return data.getCategoryNames(item);
   }
 
-  public static void getClientValue(String key, Consumer<String> callback) {
-    Assert.notEmpty(key);
+  public static void getClientValues(List<String> keys, Consumer<List<String>> callback) {
+    Assert.notEmpty(keys);
     Assert.notNull(callback);
-    data.getClientValue(key, callback);
+    data.getClientValues(keys, callback);
   }
 
   public static void getConfiguration(Consumer<Map<String, String>> callback) {

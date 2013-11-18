@@ -32,6 +32,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
@@ -67,9 +68,35 @@ public class ItemList extends Flow implements KeyDownHandler {
   private static final String STYLE_ITEM_BRAND = EcStyles.name(STYLE_PRIMARY, "brand");
   private static final String STYLE_ITEM_DESCRIPTION = EcStyles.name(STYLE_PRIMARY, "description");
 
+  private static final String STYLE_CRITERIA_PREFIX = EcStyles.name(STYLE_PRIMARY, "criteria-");
+  private static final String STYLE_CRITERIA_PANEL = STYLE_CRITERIA_PREFIX + "panel";
+  private static final String STYLE_CRITERIA_ENTRY = STYLE_CRITERIA_PREFIX + "entry";
+  private static final String STYLE_CRITERIA_NAME = STYLE_CRITERIA_PREFIX + "name";
+  private static final String STYLE_CRITERIA_VALUE = STYLE_CRITERIA_PREFIX + "value";
+
   private static final String STYLE_LABEL = "-label";
 
   private static final int PAGE_SIZE = 50;
+  
+  private static Widget renderCriteria(List<ArticleCriteria> criteria) {
+    Flow panel = new Flow(STYLE_CRITERIA_PANEL);
+    
+    for (ArticleCriteria criterion : criteria) {
+      Flow entry = new Flow(STYLE_CRITERIA_ENTRY);
+      
+      InlineLabel nameLabel = new InlineLabel(criterion.getName());
+      nameLabel.addStyleName(STYLE_CRITERIA_NAME);
+      entry.add(nameLabel);
+
+      InlineLabel valueLabel = new InlineLabel(criterion.getValue());
+      valueLabel.addStyleName(STYLE_CRITERIA_VALUE);
+      entry.add(valueLabel);
+      
+      panel.add(entry);
+    }
+    
+    return panel;
+  }
 
   private static Widget renderInfo(final EcItem item) {
     Flow panel = new Flow();
@@ -166,6 +193,13 @@ public class ItemList extends Flow implements KeyDownHandler {
       CustomDiv descriptionWidget = new CustomDiv(STYLE_ITEM_DESCRIPTION);
       descriptionWidget.setHtml(description);
       panel.add(descriptionWidget);
+    }
+    
+    if (!item.getCriteria().isEmpty()) {
+      Widget criteriaWidget = renderCriteria(item.getCriteria());
+      if (criteriaWidget != null) {
+        panel.add(criteriaWidget);
+      }
     }
 
     return panel;

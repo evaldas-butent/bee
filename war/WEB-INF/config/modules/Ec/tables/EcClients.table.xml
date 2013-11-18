@@ -27,7 +27,9 @@
     
     <Enum name="DisplayedPrice" key="EcDisplayedPrice" label="=ecDisplayedPrice" />
     
-    <Boolean name="KeyboardShortcuts" label="=ecKeyboardShortcuts" />
+    <Boolean name="ToggleListPrice" label="=ecToggleListPrice" />
+    <Boolean name="TogglePrice" label="=ecTogglePrice" />
+    <Boolean name="ToggleStockLimit" label="=ecToggleStockLimit" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

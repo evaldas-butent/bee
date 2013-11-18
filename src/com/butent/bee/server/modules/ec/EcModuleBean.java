@@ -1,8 +1,10 @@
 package com.butent.bee.server.modules.ec;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -55,6 +57,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
@@ -133,6 +136,33 @@ public class EcModuleBean implements BeeModule {
     return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
   }
 
+  private static IsCondition getCodeCondition(String code, Operator defOperator) {
+    if (BeeUtils.isEmpty(code)) {
+      return null;
+    }
+    
+    Operator operator;
+    String value;
+    
+    if (code.contains(Operator.CHAR_ANY) || code.contains(Operator.CHAR_ONE)) {
+      operator = Operator.MATCHES;
+      value = code.trim().toUpperCase();
+
+    } else if (BeeUtils.isPrefixOrSuffix(code, BeeConst.CHAR_EQ)) {
+      operator = Operator.EQ;
+      value = BeeUtils.removePrefixAndSuffix(code, BeeConst.CHAR_EQ).trim().toUpperCase();
+    
+    } else {
+      operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
+      value = normalizeCode(code);
+      if (BeeUtils.length(value) < MIN_SEARCH_QUERY_LENGTH) {
+        return null;
+      }
+    }
+
+    return SqlUtils.compare(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, operator, value);
+  }
+
   private static Double getMarginPercent(Collection<Long> categories, Map<Long, Long> parents,
       Map<Long, Long> roots, Map<Long, Double> margins) {
 
@@ -170,7 +200,6 @@ public class EcModuleBean implements BeeModule {
       return result;
     }
   }
-
   @EJB
   SystemBean sys;
   @EJB
@@ -181,6 +210,7 @@ public class EcModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   TecDocBean tcd;
+
   @EJB
   MailModuleBean mail;
 
@@ -219,7 +249,7 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_SEARCH_BY_ITEM_CODE)) {
       query = reqInfo.getParameter(VAR_QUERY);
-      response = searchByItemCode(query, null);
+      response = searchByItemCode(query, null, Operator.STARTS);
       log = true;
 
     } else if (BeeUtils.same(svc, SVC_SEARCH_BY_OE_NUMBER)) {
@@ -726,6 +756,33 @@ public class EcModuleBean implements BeeModule {
     return result;
   }
 
+  private ListMultimap<Long, ArticleCriteria> getArticleCriteria(String tempArticleIds) {
+    ListMultimap<Long, ArticleCriteria> criteria = ArrayListMultimap.create();
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE, COL_TCD_CRITERIA_VALUE)
+        .addFields(TBL_TCD_CRITERIA, COL_TCD_CRITERIA_NAME)
+        .addFrom(TBL_TCD_ARTICLE_CRITERIA)
+        .addFromInner(tempArticleIds,
+            SqlUtils.joinUsing(tempArticleIds, TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE))
+        .addFromInner(TBL_TCD_CRITERIA,
+            sys.joinTables(TBL_TCD_CRITERIA, TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA))
+        .setWhere(SqlUtils.notNull(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_VALUE))
+        .addOrder(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_ARTICLE)
+        .addOrder(TBL_TCD_CRITERIA, COL_TCD_CRITERIA_NAME)
+        .addOrder(TBL_TCD_ARTICLE_CRITERIA, COL_TCD_CRITERIA_VALUE));
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        criteria.put(row.getLong(COL_TCD_ARTICLE),
+            new ArticleCriteria(row.getValue(COL_TCD_CRITERIA_NAME),
+                row.getValue(COL_TCD_CRITERIA_VALUE)));
+      }
+    }
+
+    return criteria;
+  }
+
   private Multimap<Long, ArticleSupplier> getArticleSuppliers(String tempArticleIds,
       Collection<Long> articleIds) {
 
@@ -1145,7 +1202,7 @@ public class EcModuleBean implements BeeModule {
 
     return result;
   }
-
+  
   private List<String> getClientWarehouses(Long client, String table) {
     List<String> result = Lists.newArrayList();
 
@@ -1845,10 +1902,7 @@ public class EcModuleBean implements BeeModule {
 
     if (!items.isEmpty()) {
       Map<Long, String> articleCategories = getArticleCategories(tempArticleIds);
-      for (EcItem item : items) {
-        item.setCategories(articleCategories.get(item.getArticleId()));
-      }
-
+      ListMultimap<Long, ArticleCriteria> articleCriteria = getArticleCriteria(tempArticleIds);
       Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(tempArticleIds, null);
 
       Pair<Set<String>, Set<String>> clientWarehouses = getClientWarehouses();
@@ -1858,7 +1912,12 @@ public class EcModuleBean implements BeeModule {
       Map<Long, Integer> analogCount = countAnalogs(tempArticleIds);
 
       for (EcItem item : items) {
-        Collection<ArticleSupplier> itemSuppliers = articleSuppliers.get(item.getArticleId());
+        long articleId = item.getArticleId();
+
+        item.setCategories(articleCategories.get(articleId));
+        item.setCriteria(articleCriteria.get(articleId));
+
+        Collection<ArticleSupplier> itemSuppliers = articleSuppliers.get(articleId);
 
         if (!itemSuppliers.isEmpty()) {
           item.setSuppliers(itemSuppliers);
@@ -1879,7 +1938,7 @@ public class EcModuleBean implements BeeModule {
           item.setSecondaryStock(secondaryStock);
         }
 
-        Integer ac = analogCount.get(item.getArticleId());
+        Integer ac = analogCount.get(articleId);
         if (ac != null) {
           item.setAnalogCount(ac);
         }
@@ -2543,22 +2602,21 @@ public class EcModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject searchByItemCode(String code, IsCondition clause) {
+  private ResponseObject searchByItemCode(String code, IsCondition clause, Operator defOperator) {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_ITEM_CODE, VAR_QUERY);
     }
-
-    String search = normalizeCode(code);
-    if (BeeUtils.length(search) < MIN_SEARCH_QUERY_LENGTH) {
-      return ResponseObject.error(search,
+    
+    IsCondition codeCondition = getCodeCondition(code, defOperator);
+    if (codeCondition == null) {
+      return ResponseObject.error(normalizeCode(code),
           usr.getLocalizableMesssages().minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
     }
 
     SqlSelect articleIdQuery = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE)
         .addFrom(TBL_TCD_ARTICLE_CODES)
-        .setWhere(SqlUtils.and(SqlUtils.contains(TBL_TCD_ARTICLE_CODES, COL_TCD_SEARCH_NR, search),
-            clause));
+        .setWhere((clause == null) ? codeCondition : SqlUtils.and(codeCondition, clause));
 
     List<EcItem> items = getItems(articleIdQuery, code);
     if (items.isEmpty()) {
@@ -2572,7 +2630,7 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_OE_NUMBER, VAR_QUERY);
     }
-    return searchByItemCode(code, oeNumberCondition);
+    return searchByItemCode(code, oeNumberCondition, Operator.CONTAINS);
   }
 
   private ResponseObject sendToERP(RequestInfo reqInfo) {

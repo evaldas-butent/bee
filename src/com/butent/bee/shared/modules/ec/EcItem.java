@@ -14,13 +14,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public class EcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
     ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
-    DESCRIPTION, NOVELTY, FEATURED, UNIT, PRIMARY_STOCK, SECONDARY_STOCK, ANALOG_COUNT
+    DESCRIPTION, CRITERIA, NOVELTY, FEATURED, UNIT, PRIMARY_STOCK, SECONDARY_STOCK, ANALOG_COUNT
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -53,6 +54,7 @@ public class EcItem implements BeeSerializable, HasCaption {
   private int listPrice;
 
   private String description;
+  private final List<ArticleCriteria> criteria = Lists.newArrayList();
 
   private boolean novelty;
   private boolean featured;
@@ -129,6 +131,15 @@ public class EcItem implements BeeSerializable, HasCaption {
         case DESCRIPTION:
           setDescription(value);
           break;
+        
+        case CRITERIA:
+          if (!criteria.isEmpty()) {
+            criteria.clear();
+          }
+          for (String crit : Codec.beeDeserializeCollection(value)) {
+            criteria.add(ArticleCriteria.restore(crit));
+          }
+          break;
 
         case NOVELTY:
           setNovelty(Codec.unpack(value));
@@ -193,6 +204,10 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   public String getCode() {
     return code;
+  }
+
+  public List<ArticleCriteria> getCriteria() {
+    return criteria;
   }
 
   public String getDescription() {
@@ -342,6 +357,10 @@ public class EcItem implements BeeSerializable, HasCaption {
         case DESCRIPTION:
           arr[i++] = description;
           break;
+          
+        case CRITERIA:
+          arr[i++] = criteria;
+          break;
 
         case NOVELTY:
           arr[i++] = Codec.pack(novelty);
@@ -387,6 +406,10 @@ public class EcItem implements BeeSerializable, HasCaption {
     this.code = code;
   }
 
+  public void setCriteria(List<ArticleCriteria> criteria) {
+    BeeUtils.overwrite(this.criteria, criteria);
+  }
+  
   public void setDescription(String description) {
     this.description = description;
   }

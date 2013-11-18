@@ -691,7 +691,6 @@
 .bee-Notification-error {
   background-color: #ffcccc;
 }
-
 .bee-Notification-warning {
   background-color: yellow;
 }
@@ -855,7 +854,8 @@
   bottom: 0;
 }
 
-.bee-GridFormContainer-newRow .bee-hasDefaults:after {
+.bee-GridFormContainer-newRow .bee-hasDefaults:after,
+.bee-NewRowContainer .bee-hasDefaults:after {
   content: "*";
   font-weight: bold;
   color: #4d90fe;

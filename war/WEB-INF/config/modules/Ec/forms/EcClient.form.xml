@@ -3,6 +3,7 @@
   <!ENTITY separator '<div style="height: 1ex;"></div>'>
   <!ENTITY lbl "width: 140px; margin-right: 10px; text-align: right;">
   <!ENTITY inp "width: 200px;">
+  <!ENTITY toggle "display: block; margin-top: 1ex;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" 
     xmlns:f="http://www.butent.com/form"
@@ -37,10 +38,11 @@
 
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecManager" style="&lbl;" />
-        <DataSelector source="Manager" style="&inp;" renderColumns="ManagerFirstName ManagerLastName" />
+        <DataSelector source="Manager" style="&inp;"
+          renderColumns="ManagerFirstName ManagerLastName" />
 
-        <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning" style="margin-left: 30px;" />
-        <CheckBox text="=ecKeyboardShortcuts" source="KeyboardShortcuts" style="margin-left: 30px;" />
+        <CheckBox text="=ecClientCreditLimitWarning" source="CreditLimitWarning"
+          style="margin-left: 150px;" />
       </FlowPanel>
       &separator;
       &separator;
@@ -64,15 +66,6 @@
           newRowEnabled="false" label="=ecWarehousesSecondary" style="&inp;" />
       </FlowPanel>
       &separator;
-      &separator;
-
-      <FlowPanel class="flexBox-horizontal-top">
-        <Label text="=ecClientPersonCode" style="&lbl;" />
-        <InputText source="PersonCode" style="&inp;" />
-
-        <Label text="=ecClientActivity" style="&lbl;" />
-        <InputArea source="Activity" style="&inp; height: 40px;" />
-      </FlowPanel>
     </FlowPanel>
 
     <TabbedPages class="flexible">
@@ -85,7 +78,8 @@
             <InputDecimal source="DiscountPercent" style="width: 80px;" />
 
             <Label text="=ecDiscountParent" style="margin-left: 2em; margin-right: 10px;" />
-            <DataSelector source="DiscountParent" class="flexible" style="min-width: 100px; max-width: 400px;">
+            <DataSelector source="DiscountParent" class="flexible" 
+              style="min-width: 100px; max-width: 400px;">
               <renderToken source="ParentFirstName" />
               <renderToken source="ParentLastName" />
               <renderToken source="ParentCompanyName" prefix=", " />
@@ -103,6 +97,28 @@
       <page>
         <text>=ecUnsuppliedItems</text>
         <ChildGrid name="ClientUnsuppliedItems" relColumn="Client" />
+      </page>
+
+      <page>
+        <text>=additionalInfo</text>
+        <FlowPanel>
+	      <FlowPanel class="flexBox-horizontal-top" 
+	        style="margin-top: 2ex; margin-bottom: 1ex;">
+	        <Label text="=ecClientPersonCode" style="&lbl;" />
+	        <InputText source="PersonCode" style="&inp;" />
+	
+	        <Label text="=ecClientActivity" style="&lbl;" />
+	        <InputArea source="Activity" style="&inp; height: 40px;" />
+	      </FlowPanel>
+	      
+	      <FlowPanel style="margin-left: 2em;">
+	        <Label text="=ecKeyboardShortcuts" />
+  
+            <CheckBox text="=ecToggleListPrice" source="ToggleListPrice" style="&toggle;" />
+            <CheckBox text="=ecTogglePrice" source="TogglePrice" style="&toggle;" />
+            <CheckBox text="=ecToggleStockLimit" source="ToggleStockLimit" style="&toggle;" />
+	      </FlowPanel>
+        </FlowPanel>
       </page>
 
       <page>

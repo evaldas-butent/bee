@@ -15,6 +15,10 @@ class EcEventHandler implements KeyPressHandler {
 
   private Boolean enabled;
 
+  private boolean listPriceEnabled;
+  private boolean priceEnabled;
+  private boolean stockLimitEnabled;
+
   EcEventHandler() {
     super();
   }
@@ -27,17 +31,23 @@ class EcEventHandler implements KeyPressHandler {
 
         switch (ch) {
           case 'b':
-            EcKeeper.toggleListPriceVisibility();
+            if (isListPriceEnabled()) {
+              EcKeeper.toggleListPriceVisibility();
+            }
             break;
 
           case 'j':
           case 'k':
-            EcKeeper.togglePriceVisibility();
+            if (isPriceEnabled()) {
+              EcKeeper.togglePriceVisibility();
+            }
             break;
 
           case 'l':
           case 's':
-            EcKeeper.toggleStockLimited();
+            if (isStockLimitEnabled()) {
+              EcKeeper.toggleStockLimited();
+            }
             break;
         }
 
@@ -45,16 +55,23 @@ class EcEventHandler implements KeyPressHandler {
         HtmlTable table = new HtmlTable(EcStyles.name("keyboard", "shortcuts"));
 
         int row = 0;
-        table.setHtml(row, 0, "B");
-        table.setHtml(row, 1, Localized.getConstants().ecToggleListPrice());
 
-        row++;
-        table.setHtml(row, 0, "K");
-        table.setHtml(row, 1, Localized.getConstants().ecTogglePrice());
+        if (isListPriceEnabled()) {
+          table.setHtml(row, 0, "B");
+          table.setHtml(row, 1, Localized.getConstants().ecToggleListPrice());
+          row++;
+        }
 
-        row++;
-        table.setHtml(row, 0, "S");
-        table.setHtml(row, 1, Localized.getConstants().ecToggleStockLimit());
+        if (isPriceEnabled()) {
+          table.setHtml(row, 0, "K");
+          table.setHtml(row, 1, Localized.getConstants().ecTogglePrice());
+          row++;
+        }
+
+        if (isStockLimitEnabled()) {
+          table.setHtml(row, 0, "S");
+          table.setHtml(row, 1, Localized.getConstants().ecToggleStockLimit());
+        }
 
         Popup popup = new Popup(OutsideClick.CLOSE);
         popup.setWidget(table);
@@ -70,7 +87,31 @@ class EcEventHandler implements KeyPressHandler {
     return enabled;
   }
 
+  boolean isListPriceEnabled() {
+    return listPriceEnabled;
+  }
+
+  boolean isPriceEnabled() {
+    return priceEnabled;
+  }
+
+  boolean isStockLimitEnabled() {
+    return stockLimitEnabled;
+  }
+
   void setEnabled(Boolean enabled) {
     this.enabled = enabled;
+  }
+
+  void setListPriceEnabled(boolean listPriceEnabled) {
+    this.listPriceEnabled = listPriceEnabled;
+  }
+
+  void setPriceEnabled(boolean priceEnabled) {
+    this.priceEnabled = priceEnabled;
+  }
+
+  void setStockLimitEnabled(boolean stockLimitEnabled) {
+    this.stockLimitEnabled = stockLimitEnabled;
   }
 }

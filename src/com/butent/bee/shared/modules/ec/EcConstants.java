@@ -343,7 +343,9 @@ public final class EcConstants {
   public static final String COL_CLIENT_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_CLIENT_DISCOUNT_PARENT = "DiscountParent";
   public static final String COL_CLIENT_DISPLAYED_PRICE = "DisplayedPrice";
-  public static final String COL_CLIENT_KEYBOARD_SHORTCUTS = "KeyboardShortcuts";
+  public static final String COL_CLIENT_TOGGLE_LIST_PRICE = "ToggleListPrice";
+  public static final String COL_CLIENT_TOGGLE_PRICE = "TogglePrice";
+  public static final String COL_CLIENT_TOGGLE_STOCK_LIMIT = "ToggleStockLimit";
   public static final String COL_CLIENT_NOTES = "Notes";
 
   public static final String COL_CONFIG_ID = "ConfigurationID";
