@@ -6,7 +6,7 @@
   audit="false"
   >
   <Fields>
-    <Numeric name="Supplier" precision="1" notNull="true" label="=ecItemSupplier"/>
+    <Enum name="Supplier" key="EcSupplier" notNull="true" label="=ecItemSupplier" />
     <String name="SupplierBrand" precision="50" notNull="true" label="=tcdSupplierBrand" />
     <Relation name="Brand" relation="TcdBrands" label="=tcdBrand" />
   </Fields>

@@ -36,7 +36,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStat
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +50,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    AssessmentStatus status = NameUtils.getEnumByName(AssessmentStatus.class, name);
+    AssessmentStatus status = EnumUtils.getEnumByName(AssessmentStatus.class, name);
 
     if (widget instanceof InputBoolean && status != null) {
       checks.put(status, (InputBoolean) widget);

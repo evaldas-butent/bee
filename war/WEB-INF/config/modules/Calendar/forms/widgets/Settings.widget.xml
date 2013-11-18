@@ -41,7 +41,7 @@
 
   <row>
     <Label text="=calTimeBlockClickNumber" />
-    <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
+    <Radio source="TimeBlockClickNumber" />
     <CheckBox source="ResourceView" text="=calResourceView" />
   </row>
 

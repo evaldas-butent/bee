@@ -2,6 +2,7 @@ package com.butent.bee.client.layout;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
@@ -727,9 +728,9 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     }
 
     if (BeeConst.isUndef(before)) {
-      super.add(child.asWidget(), getElement());
+      super.add(child.asWidget(), Element.as(getElement()));
     } else {
-      super.insert(child.asWidget(), getElement(), before, true);
+      super.insert(child.asWidget(), Element.as(getElement()), before, true);
     }
 
     LayoutData data = new LayoutData(direction, size);

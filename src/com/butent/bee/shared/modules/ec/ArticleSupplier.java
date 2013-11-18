@@ -7,7 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -64,7 +64,7 @@ public class ArticleSupplier implements BeeSerializable {
 
       switch (member) {
         case SUPPLIER:
-          setSupplier(NameUtils.getEnumByIndex(EcSupplier.class, BeeUtils.toIntOrNull(value)));
+          setSupplier(EnumUtils.getEnumByIndex(EcSupplier.class, BeeUtils.toIntOrNull(value)));
           break;
 
         case SUPPLIER_ID:

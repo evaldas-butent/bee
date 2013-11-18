@@ -24,10 +24,10 @@
     <FlowPanel style="margin-left: 5px;">
       <FlowPanel style="&section;">
         <Label text="=crmTaskStatus" style="&lbl1;" />
-        <ListBox source="Status" itemKey="TaskStatus" style="&inp2;" readOnly="true" />
+        <ListBox source="Status" style="&inp2;" readOnly="true" />
         <Label text="=crmTaskPriority" style="&inline; margin-left: 16px;" />
-        <Radio source="Priority" itemKey="TaskPriority"
-          style="&inline; font-size: 12px; margin-left: 8px;" disablable="true" />
+        <Radio source="Priority" style="&inline; font-size: 12px; margin-left: 8px;"
+          disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

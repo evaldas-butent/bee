@@ -4,7 +4,7 @@
   name="TcdBrandsMapping" viewName="TcdBrandsMapping" caption="=tcdBrandsMapping"
   >
   <g:columns>
-    <DataColumn name="Supplier" itemKey="EcSupplier" />
+    <DataColumn name="Supplier" />
     <DataColumn name="SupplierBrand" />
     <RelColumn name="Brand" />
   </g:columns>

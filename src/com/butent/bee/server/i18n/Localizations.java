@@ -34,17 +34,18 @@ public final class Localizations {
     CONSTANTS, MESSAGES
   }
 
-  private static Locale defaultLocale = Locale.getDefault();
-
   private static BeeLogger logger = LogUtils.getLogger(Localizations.class);
 
-  private static Locale rootLocale = Locale.ROOT;
+  private static final Locale defaultLocale = Locale.getDefault();
+  private static final Locale rootLocale = Locale.ROOT;
 
   private static Map<Locale, File> availableConstants;
   private static Map<Locale, File> availableMessages;
 
-  private static Map<Locale, LocalizableConstants> localizedConstants = Maps.newHashMap();
-  private static Map<Locale, LocalizableMessages> localizedMessages = Maps.newHashMap();
+  private static final Map<Locale, LocalizableConstants> localizedConstants = Maps.newHashMap();
+  private static final Map<Locale, LocalizableMessages> localizedMessages = Maps.newHashMap();
+
+  private static final Map<Locale, Map<String, String>> dictionaries = Maps.newHashMap();
 
   public static Map<Locale, File> getAvailableConstants() {
     return availableConstants;
@@ -81,6 +82,10 @@ public final class Localizations {
       logger.severe(LocalizableType.CONSTANTS, I18nUtils.toString(locale), "not available");
       return null;
     }
+    
+    if (dictionaries.containsKey(z)) {
+      return dictionaries.get(z);
+    }
 
     Properties properties = FileUtils.readProperties(availableConstants.get(z));
 
@@ -88,6 +93,11 @@ public final class Localizations {
     for (String name : properties.stringPropertyNames()) {
       dictionary.put(name, properties.getProperty(name));
     }
+    
+    dictionaries.put(z, dictionary);
+    logger.debug("loaded", I18nUtils.toString(z), "dictionary",
+        BeeUtils.bracket(dictionary.size()));
+    
     return dictionary;
   }
 

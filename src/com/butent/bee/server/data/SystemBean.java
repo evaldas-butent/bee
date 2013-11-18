@@ -9,6 +9,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeCheck;
@@ -33,6 +35,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -60,13 +63,17 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.util.Collection;
@@ -82,6 +89,7 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -120,16 +128,28 @@ public class SystemBean {
     }
   }
 
-  public static final String AUDIT_PREFIX = "AUDIT";
-  public static final String AUDIT_USER = "bee.user";
-  public static final String AUDIT_FLD_TIME = "Time";
-  public static final String AUDIT_FLD_USER = "UserId";
-  public static final String AUDIT_FLD_TX = "TransactionId";
-  public static final String AUDIT_FLD_MODE = "Mode";
-  public static final String AUDIT_FLD_ID = "RecordId";
-  public static final String AUDIT_FLD_FIELD = "Field";
-  public static final String AUDIT_FLD_VALUE = "Value";
+  private static final class IpFilter {
+    private final String host;
+    private final DateTime blockAfter;
+    private final DateTime blockBefore;
 
+    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
+      this.host = host;
+      this.blockAfter = blockAfter;
+      this.blockBefore = blockBefore;
+    }
+
+    private boolean isBlocked(String addr, DateTime dt) {
+      return Wildcards.isLike(addr, host)
+          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
+    }
+  }
+
+  private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
+    if (!BeeUtils.isEmpty(objectName)) {
+      cache.remove(BeeUtils.normalize(objectName));
+    }
+  }
   @EJB
   DataSourceBean dsb;
   @EJB
@@ -138,17 +158,20 @@ public class SystemBean {
   UserServiceBean usr;
   @EJB
   ModuleHolderBean moduleBean;
+
   @EJB
   ParamHolderBean prm;
 
   private final BeeLogger logger = LogUtils.getLogger(getClass());
-
   private String dbName;
   private String dbSchema;
   private String dbAuditSchema;
   private final Map<String, BeeTable> tableCache = Maps.newHashMap();
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
+
   private final EventBus dataEventBus = new EventBus();
+
+  private final List<IpFilter> ipFilters = Lists.newArrayList();
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
@@ -187,6 +210,11 @@ public class SystemBean {
         usr.getUserRoles(usr.getCurrentUserId()));
   }
 
+  public String getAuditSource(String tableName) {
+    return BeeUtils.join(".", dbAuditSchema, BeeUtils.join("_", tableName,
+        CommonsConstants.AUDIT_SUFFIX));
+  }
+
   public List<DataInfo> getDataInfo() {
     SimpleRowSet dbTables = qs.dbTables(dbName, dbSchema, null);
     String[] tables = dbTables.getColumn(SqlConstants.TBL_NAME);
@@ -214,17 +242,8 @@ public class SystemBean {
     BeeView view = getView(viewName);
     BeeTable source = getTable(view.getSourceName());
 
-    List<BeeColumn> columns = null;
-    List<ViewColumn> viewColumns = null;
-
-    columns = Lists.newArrayList();
-
-    for (String col : view.getColumnNames()) {
-      BeeColumn column = new BeeColumn();
-      view.initColumn(col, column);
-      columns.add(column);
-    }
-    viewColumns = view.getViewColumns();
+    List<BeeColumn> columns = view.getRowSetColumns();
+    List<ViewColumn> viewColumns = view.getViewColumns();
 
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
         view.getCaption(), view.getEditForm(), view.getRowCaption(),
@@ -371,6 +390,33 @@ public class SystemBean {
     return SqlUtils.inList(tblName, getIdName(tblName), ids);
   }
 
+  public void initIpFilters() {
+    List<IpFilter> filters = Lists.newArrayList();
+
+    SimpleRowSet data =
+        qs.getData(new SqlSelect()
+            .addFields(CommonsConstants.TBL_IP_FILTERS, CommonsConstants.COL_IP_FILTER_HOST,
+                CommonsConstants.COL_IP_FILTER_BLOCK_AFTER,
+                CommonsConstants.COL_IP_FILTER_BLOCK_BEFORE)
+            .addFrom(CommonsConstants.TBL_IP_FILTERS));
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        filters.add(new IpFilter(row.getValue(CommonsConstants.COL_IP_FILTER_HOST),
+            row.getDateTime(CommonsConstants.COL_IP_FILTER_BLOCK_AFTER),
+            row.getDateTime(CommonsConstants.COL_IP_FILTER_BLOCK_BEFORE)));
+      }
+    }
+
+    if (!ipFilters.isEmpty()) {
+      ipFilters.clear();
+    }
+    if (!filters.isEmpty()) {
+      ipFilters.addAll(filters);
+      logger.info("Loaded", filters.size(), "ip filters");
+    }
+  }
+
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
@@ -494,6 +540,25 @@ public class SystemBean {
     dataEventBus.register(eventHandler);
   }
 
+  public boolean validateHost(HttpServletRequest request) {
+    if (ipFilters.isEmpty()) {
+      return true;
+    }
+
+    Assert.notNull(request);
+    String addr = request.getRemoteAddr();
+    DateTime now = TimeUtils.nowMinutes();
+
+    for (IpFilter ipFilter : ipFilters) {
+      if (ipFilter.isBlocked(addr, now)) {
+        logger.warning("remote address", addr, "blocked", BeeUtils.bracket(ipFilter.host));
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   private void createAuditTables(BeeTable table) {
     if (!table.isAuditable()) {
       return;
@@ -501,7 +566,7 @@ public class SystemBean {
     if (!qs.dbSchemaExists(dbName, dbAuditSchema)) {
       makeStructureChanges(SqlUtils.createSchema(dbAuditSchema));
     }
-    String auditName = BeeUtils.join("_", table.getName(), AUDIT_PREFIX);
+    String auditName = BeeUtils.join("_", table.getName(), AUDIT_SUFFIX);
     String auditPath = BeeUtils.join(".", dbAuditSchema, auditName);
 
     if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
@@ -839,7 +904,7 @@ public class SystemBean {
       }
       if (!update && table.isAuditable() && isTable(tblName)) {
         logger.debug("Checking audit tables...");
-        String auditName = BeeUtils.join("_", tblName, AUDIT_PREFIX);
+        String auditName = BeeUtils.join("_", tblName, CommonsConstants.AUDIT_SUFFIX);
 
         if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
           String msg = BeeUtils.joinWords("AUDIT TABLE",
@@ -1003,7 +1068,7 @@ public class SystemBean {
   private void initDatabase() {
     dbName = qs.dbName();
     dbSchema = qs.dbSchema();
-    dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_PREFIX);
+    dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_SUFFIX);
 
     String[] dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
     Set<String> names = Sets.newHashSet();
@@ -1067,7 +1132,7 @@ public class SystemBean {
         for (String tblName : fields.keySet()) {
           table.addTrigger(tblName, SqlTriggerType.AUDIT,
               ImmutableMap.of("auditSchema", dbAuditSchema,
-                  "auditTable", BeeUtils.join("_", table.getName(), AUDIT_PREFIX),
+                  "auditTable", BeeUtils.join("_", table.getName(), AUDIT_SUFFIX),
                   "idName", table.getIdName(),
                   "fields", fields.get(tblName)),
               SqlTriggerTiming.AFTER,
@@ -1223,7 +1288,7 @@ public class SystemBean {
                     "Field count doesn't match");
 
                 table.addForeignKey(tableName, fields, ((XmlReference) constraint).refTable,
-                    refFields, NameUtils.getEnumByName(SqlKeyword.class,
+                    refFields, EnumUtils.getEnumByName(SqlKeyword.class,
                         ((XmlReference) constraint).cascade));
               }
             }
@@ -1235,7 +1300,7 @@ public class SystemBean {
             List<SqlTriggerEvent> events = Lists.newArrayList();
 
             for (String event : trigger.events) {
-              events.add(NameUtils.getEnumByName(SqlTriggerEvent.class, event));
+              events.add(EnumUtils.getEnumByName(SqlTriggerEvent.class, event));
             }
             switch (SqlBuilderFactory.getBuilder().getEngine()) {
               case POSTGRESQL:
@@ -1253,9 +1318,9 @@ public class SystemBean {
             if (!BeeUtils.isEmpty(body)) {
               table.addTrigger(tableName, SqlTriggerType.CUSTOM,
                   ImmutableMap.of("body", body),
-                  NameUtils.getEnumByName(SqlTriggerTiming.class, trigger.timing),
+                  EnumUtils.getEnumByName(SqlTriggerTiming.class, trigger.timing),
                   EnumSet.copyOf(events),
-                  NameUtils.getEnumByName(SqlTriggerScope.class, trigger.scope));
+                  EnumUtils.getEnumByName(SqlTriggerScope.class, trigger.scope));
             }
           }
         }
@@ -1459,12 +1524,6 @@ public class SystemBean {
       } else {
         cache.put(BeeUtils.normalize(objectName), object);
       }
-    }
-  }
-
-  private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
-    if (!BeeUtils.isEmpty(objectName)) {
-      cache.remove(BeeUtils.normalize(objectName));
     }
   }
 }

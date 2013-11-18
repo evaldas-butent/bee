@@ -20,7 +20,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -100,7 +100,7 @@ public class ModuleHolderBean {
   public void initModules() {
     prm.refreshParameters(COMMONS_MODULE);
 
-    TABLE_ACTIVATION_MODE mode = NameUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
+    TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
         Config.getProperty("TableActivationMode"));
 
     for (String mod : getModules()) {

@@ -11,8 +11,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -30,7 +30,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
    */
 
   private enum Serial {
-    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, EDITABLE, LEVEL, DEFAULTS
+    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, EDITABLE, LEVEL, DEFAULTS, ENUM_KEY
   }
 
   public static BeeColumn forRowId(String id) {
@@ -53,6 +53,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
 
   private int level;
   private Pair<DefaultExpression, Object> defaults;
+  
+  private String enumKey;
 
   public BeeColumn() {
     super(ValueType.TEXT);
@@ -135,9 +137,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
           String[] def = Codec.beeDeserializeCollection(value);
 
           if (ArrayUtils.length(def) == 2) {
-            setDefaults(Pair.of(NameUtils.getEnumByName(DefaultExpression.class, def[0]),
+            setDefaults(Pair.of(EnumUtils.getEnumByName(DefaultExpression.class, def[0]),
                 (Object) def[1]));
           }
+          break;
+        case ENUM_KEY:
+          setEnumKey(value);
           break;
       }
     }
@@ -145,6 +150,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
 
   public Pair<DefaultExpression, Object> getDefaults() {
     return defaults;
+  }
+
+  public String getEnumKey() {
+    return enumKey;
   }
 
   @Override
@@ -174,7 +183,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
         "Read Only", isReadOnly(),
         "Editable", isEditable(),
         "Level", getLevel(),
-        "Defaults", getDefaults());
+        "Defaults", getDefaults(),
+        "Enum Key", getEnumKey());
   }
 
   public int getLevel() {
@@ -244,6 +254,9 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
           arr[i++] = (getDefaults() == null) ? null
               : new Object[] {getDefaults().getA(), getDefaults().getB()};
           break;
+        case ENUM_KEY:
+          arr[i++] = getEnumKey();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -255,6 +268,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
 
   public void setEditable(boolean editable) {
     this.editable = editable;
+  }
+
+  public void setEnumKey(String enumKey) {
+    this.enumKey = enumKey;
   }
 
   public void setLevel(int level) {

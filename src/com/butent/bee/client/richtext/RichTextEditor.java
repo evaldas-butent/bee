@@ -36,6 +36,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.List;
 
+import elemental.js.dom.JsElement;
+
 /**
  * Enables usage of formatted text editor user interface component.
  */
@@ -87,7 +89,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
-    return addDomHandler(handler, BlurEvent.getType());
+    if (isEmbedded()) {
+      return getArea().addBlurHandler(handler);
+    } else {
+      return addDomHandler(handler, BlurEvent.getType());
+    }
   }
   
   @Override
@@ -97,7 +103,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
-    return addDomHandler(handler, FocusEvent.getType());
+    if (isEmbedded()) {
+      return getArea().addFocusHandler(handler);
+    } else {
+      return addDomHandler(handler, FocusEvent.getType());
+    }
   }
 
   @Override
@@ -159,7 +169,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public FormWidget getWidgetType() {
-    return null;
+    return FormWidget.RICH_TEXT_EDITOR;
   }
 
   @Override
@@ -194,7 +204,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public boolean isOrHasPartner(Node node) {
-    return node != null && getElement().isOrHasChild(node);
+    return node != null && (getElement().isOrHasChild(node) || getArea().contains(node));
   }
 
   @Override
@@ -202,17 +212,17 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
-    if (isEditing() && !toolbar.isWaiting()
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
+    if (isEditing() && !isEmbedded() && !toolbar.isWaiting()
         && EventUtils.isMouseDown(event.getNativeEvent().getType())
-        && !EventUtils.equalsOrIsChild(getElement(), event.getNativeEvent().getEventTarget())) {
+        && !isOrHasPartner(targetNode)) {
       fireEvent(new EditStopEvent(State.CANCELED));
     }
   }
-  
+
   @Override
   public void setAccessKey(char key) {
-    getArea().setAccessKey(key);
+    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key)); 
   }
 
   @Override
@@ -286,12 +296,12 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   public List<String> validate(boolean checkForNull) {
     return Collections.emptyList();
   }
-
+  
   @Override
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
+
   @Override
   protected void onUnload() {
     closePreview();

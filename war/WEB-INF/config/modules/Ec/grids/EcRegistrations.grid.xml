@@ -6,7 +6,7 @@
   <g:columns>
     <DataColumn name="Date" visible="true" />
 
-    <DataColumn name="Type" itemKey="EcClientType" visible="true" />
+    <DataColumn name="Type" visible="true" />
     <RelColumn name="Branch" visible="true" />
 
     <DataColumn name="FirstName" visible="true" />

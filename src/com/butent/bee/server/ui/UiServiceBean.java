@@ -65,6 +65,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -322,11 +323,14 @@ public class UiServiceBean {
     designer.types.add(typeGroup);
 
     Set<String> tables = Sets.newHashSet();
+    Iterable<String> r;
 
     if (roots == null || !roots.iterator().hasNext()) {
-      roots = sys.getTableNames();
+      r = sys.getTableNames();
+    } else {
+      r = roots;
     }
-    for (String root : roots) {
+    for (String root : r) {
       buildDbList(root, tables, true);
     }
     for (String tableName : tables) {
@@ -458,7 +462,8 @@ public class UiServiceBean {
     } else if (rowCount <= 0 || rowCount > 100000) {
       response = ResponseObject.error("Invalid row count:", rowCount);
     } else {
-      response = deb.generateData(tableName, rowCount, refCount, childCount, null);
+      Set<String> cache = Sets.newHashSet();
+      response = deb.generateData(tableName, rowCount, refCount, childCount, cache);
     }
     return response;
   }
@@ -1309,7 +1314,7 @@ public class UiServiceBean {
       }
     } else if (BeeUtils.startsSame(cmd, "setState")) {
       String[] arr = cmd.split(" ", 5);
-      RightsState state = NameUtils.getEnumByName(RightsState.class, arr[1]);
+      RightsState state = EnumUtils.getEnumByName(RightsState.class, arr[1]);
       String tbl = arr[2];
       long id = BeeUtils.toLong(arr[3]);
       long[] bits = null;

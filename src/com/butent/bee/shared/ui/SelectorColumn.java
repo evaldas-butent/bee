@@ -5,10 +5,10 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -20,7 +20,7 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
 
   private enum Serial {
     SOURCE, CLASSES, STYLE, HOR_ALIGN, VERT_ALIGN, RENDERER_DESCR, RENDER, RENDER_TOKENS, 
-    ITEM_KEY, RENDER_COLUMNS
+    ENUM_KEY, RENDER_COLUMNS
   }
 
   public static SelectorColumn create(Map<String, String> attributes,
@@ -64,7 +64,7 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
   private Calculation render;
   private List<RenderableToken> renderTokens;
 
-  private String itemKey;
+  private String enumKey;
   private List<String> renderColumns;
 
   private SelectorColumn() {
@@ -108,8 +108,8 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
         case RENDER_TOKENS:
           setRenderTokens(RenderableToken.restoreList(value));
           break;
-        case ITEM_KEY:
-          setItemKey(value);
+        case ENUM_KEY:
+          setEnumKey(value);
           break;
         case RENDER_COLUMNS:
           String[] cols = Codec.beeDeserializeCollection(value);
@@ -127,6 +127,10 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
     return classes;
   }
 
+  public String getEnumKey() {
+    return enumKey;
+  }
+
   public String getHorAlign() {
     return horAlign;
   }
@@ -139,7 +143,7 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
         "Style", getStyle(),
         "Horizontal Alignment", getHorAlign(),
         "Vertical Alignment", getVertAlign(),
-        "Item Key", getItemKey(),
+        "Enum Key", getEnumKey(),
         "Render Columns", getRenderColumns());
 
     if (getRendererDescription() != null) {
@@ -155,10 +159,6 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
-  }
-
-  public String getItemKey() {
-    return itemKey;
   }
 
   public Calculation getRender() {
@@ -244,8 +244,8 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
         case RENDER_TOKENS:
           arr[i++] = getRenderTokens();
           break;
-        case ITEM_KEY:
-          arr[i++] = getItemKey();
+        case ENUM_KEY:
+          arr[i++] = getEnumKey();
           break;
         case RENDER_COLUMNS:
           arr[i++] = getRenderColumns();
@@ -282,8 +282,8 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
 
       } else if (BeeUtils.same(key, RendererDescription.ATTR_RENDER_COLUMNS)) {
         setRenderColumns(NameUtils.toList(value.trim()));
-      } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
-        setItemKey(value.trim());
+      } else if (BeeUtils.same(key, EnumUtils.ATTR_ENUM_KEY)) {
+        setEnumKey(value.trim());
       }
     }
   }
@@ -292,12 +292,12 @@ public final class SelectorColumn implements BeeSerializable, HasInfo {
     this.classes = classes;
   }
 
-  public void setHorAlign(String horAlign) {
-    this.horAlign = horAlign;
+  public void setEnumKey(String enumKey) {
+    this.enumKey = enumKey;
   }
 
-  public void setItemKey(String itemKey) {
-    this.itemKey = itemKey;
+  public void setHorAlign(String horAlign) {
+    this.horAlign = horAlign;
   }
 
   public void setRender(Calculation render) {

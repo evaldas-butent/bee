@@ -1,12 +1,32 @@
 package com.butent.bee.shared.modules.commons;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 public final class CommonsConstants {
+
+  public static final List<BeeColumn> HISTORY_COLUMNS = Lists.newArrayList(
+      new BeeColumn(ValueType.DATE_TIME, CommonsConstants.AUDIT_FLD_TIME, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_USER, true),
+      new BeeColumn(ValueType.LONG, CommonsConstants.AUDIT_FLD_TX, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_MODE, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_OBJECT, false),
+      new BeeColumn(ValueType.LONG, CommonsConstants.AUDIT_FLD_ID, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_FIELD, false),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_VALUE, true),
+      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
 
   public enum RightsObjectType implements HasCaption {
     EVENT("Įvykis", EnumSet.of(RightsState.VISIBLE)),
@@ -64,6 +84,15 @@ public final class CommonsConstants {
     }
   }
 
+  public static void register() {
+    EnumUtils.register(RightsObjectType.class);
+    EnumUtils.register(RightsState.class);
+    EnumUtils.register(ParameterType.class);
+    EnumUtils.register(ReminderMethod.class);
+    EnumUtils.register(SupportedLocale.class);
+    EnumUtils.register(UserInterface.class);
+  }
+
   public static final String COMMONS_MODULE = "Commons";
   public static final String COMMONS_METHOD = COMMONS_MODULE + "Method";
 
@@ -78,6 +107,10 @@ public final class CommonsConstants {
   public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
   public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
 
+  public static final String SVC_GET_HISTORY = "get_history";
+  public static final String VAR_HISTORY_VIEW = Service.RPC_VAR_PREFIX + "history_view";
+  public static final String VAR_HISTORY_IDS = Service.RPC_VAR_PREFIX + "history_ids";
+
   public static final String COMMONS_ITEM_PREFIX = "item_";
 
   public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
@@ -89,6 +122,16 @@ public final class CommonsConstants {
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
+
+  public static final String AUDIT_SUFFIX = "AUDIT";
+  public static final String AUDIT_USER = "bee.user";
+  public static final String AUDIT_FLD_TIME = "Time";
+  public static final String AUDIT_FLD_USER = "UserId";
+  public static final String AUDIT_FLD_TX = "TransactionId";
+  public static final String AUDIT_FLD_MODE = "Mode";
+  public static final String AUDIT_FLD_ID = "RecordId";
+  public static final String AUDIT_FLD_FIELD = "Field";
+  public static final String AUDIT_FLD_VALUE = "Value";
 
   public static final String TBL_USERS = "Users";
   public static final String TBL_ROLES = "Roles";
@@ -122,6 +165,8 @@ public final class CommonsConstants {
   public static final String TBL_BRANCHES = "Branches";
   public static final String TBL_WAREHOUSES = "Warehouses";
 
+  public static final String TBL_IP_FILTERS = "IpFilters";
+
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
@@ -141,7 +186,13 @@ public final class CommonsConstants {
   public static final String VIEW_BRANCHES = "Branches";
   public static final String VIEW_WAREHOUSES = "Warehouses";
 
+  public static final String VIEW_CURRENCIES = "Currencies";
+
+  public static final String VIEW_IP_FILTERS = "IpFilters";
+
   public static final String GRID_PERSONS = "Persons";
+
+  public static final String GRID_HISTORY = "History";
 
   public static final String COL_RELATION = "Relation";
 
@@ -242,6 +293,12 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+
+  public static final String COL_CURRENCY_NAME = "Name";
+
+  public static final String COL_IP_FILTER_HOST = "Host";
+  public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
+  public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";

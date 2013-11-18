@@ -76,6 +76,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -425,7 +426,7 @@ class TaskEditor extends AbstractFormInterceptor {
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
-    TaskStatus oldStatus = NameUtils.getEnumByIndex(TaskStatus.class,
+    TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
 
     DateTime start = row.getDateTime(form.getDataIndex(COL_START_TIME));
@@ -1435,7 +1436,7 @@ class TaskEditor extends AbstractFormInterceptor {
     col0.addStyleName(STYLE_EVENT_COL + BeeUtils.toString(c));
 
     Integer ev = row.getInteger(DataUtils.getColumnIndex(COL_EVENT, columns));
-    TaskEvent event = NameUtils.getEnumByIndex(TaskEvent.class, ev);
+    TaskEvent event = EnumUtils.getEnumByIndex(TaskEvent.class, ev);
     if (event != null) {
       col0.add(createEventCell(COL_EVENT, event.getCaption()));
     }

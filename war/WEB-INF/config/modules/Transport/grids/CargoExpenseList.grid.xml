@@ -10,7 +10,7 @@
   <g:columns>
     <DataColumn name="OrderDate" caption="=orderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
-    <DataColumn name="Status" itemKey="OrderStatus" />    
+    <DataColumn name="Status" />    
 
     <DataColumn name="Date" />
     <RelColumn name="Service" />

@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class LeftTabPanel extends Composite implements IdentifiableWidget {
 
   private final Map<String, WidgetProvider> cogs = new HashMap<String, WidgetProvider>();
   private final Horizontal main = new Horizontal();
-  private final BeeListBox left = new BeeListBox();
+  private final ListBox left = new ListBox();
   private final Simple right = new Simple();
 
   public LeftTabPanel() {

@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <Integer name="Status" notNull="true" defValue="0" label="=status" />
+    <Enum name="Status" key="AssessmentStatus" notNull="true" defValue="0" label="=status" />
     <DateTime name="Date" defExpr="CURRENT_TIME" notNull="true" label="=date" />
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
     <Relation name="Manager" relation="Users" label="=manager" notNull="true" defExpr="CURRENT_USER" />

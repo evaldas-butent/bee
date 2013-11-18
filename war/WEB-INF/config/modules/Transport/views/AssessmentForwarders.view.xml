@@ -26,15 +26,15 @@
     </SimpleJoin>
 
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="LoadingDate" />
-      <SimpleColumn name="Contact" alias="LoadingContact" />
-      <SimpleColumn name="Address" alias="LoadingAddress" />
+      <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
+      <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
+      <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" />
     </SimpleJoin>
 
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="UnloadingDate" />
-      <SimpleColumn name="Contact" alias="UnloadingContact" />
-      <SimpleColumn name="Address" alias="UnloadingAddress" />
+      <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
+      <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" />
+      <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" />
     </SimpleJoin>
 
     <SimpleJoin joinType="LEFT" name="CargoExpense">

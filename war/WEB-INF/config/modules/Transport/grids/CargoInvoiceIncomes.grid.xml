@@ -11,7 +11,7 @@
     <RelColumn name="Assessor" editEnabled="true" editViewName="Assessments" />
     <DataColumn name="OrderDate" caption="=orderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
-    <DataColumn name="Status" itemKey="OrderStatus" />    
+    <DataColumn name="Status" />    
     <DataColumn name="CustomerName" caption="=customer" />
     <DataColumn name="Payer" caption="=payer">
       <render>

@@ -47,6 +47,6 @@ public final class BodyPanel extends ComplexPanel {
 
   @Override
   public void add(Widget w) {
-    add(w, getElement());
+    add(w, Element.as(getElement()));
   }
 }

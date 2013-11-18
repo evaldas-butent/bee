@@ -2,14 +2,14 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="AllCargo" viewName="AllCargo" caption="=cargos" disabledActions="delete"
+  name="AllCargo" viewName="AllCargo" caption="=cargos" disabledActions="delete audit"
   flexGrow="1" newRowPopup="true" order="OrderID desc"
   >
   <g:body height="50" />
 
   <g:columns>
     <DataColumn name="OrderNo" caption="=orderNumber" />
-    <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />    
+    <DataColumn name="Status" caption="=status" />    
     <RelColumn name="Customer" caption="=customer" />
     <RelColumn name="Manager" caption="=manager" />
 

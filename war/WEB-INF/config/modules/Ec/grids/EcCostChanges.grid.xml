@@ -8,7 +8,7 @@
   >
   <g:columns>
     <SelectionColumn name="Select" label="=selectionColumnLabel" width="20" />
-    <DataColumn name="Supplier" itemKey="EcSupplier" />
+    <DataColumn name="Supplier" />
     <DataColumn name="ArticleName" />
     <DataColumn name="BrandName" />
     <DataColumn name="ArticleNr" />

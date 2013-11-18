@@ -14,7 +14,7 @@ public final class FilterSupplierFactory {
       String idColumnName, String versionColumnName, int sourceIndex, String label,
       List<String> searchColumns, FilterSupplierType type,
       List<String> renderColumns, List<String> orderColumns,
-      String itemKey, Relation relation, String options) {
+      String enumKey, Relation relation, String options) {
 
     BeeColumn sourceColumn = BeeUtils.getQuietly(dataColumns, sourceIndex);
     BeeColumn filterColumn = BeeUtils.isEmpty(searchColumns) 
@@ -39,7 +39,7 @@ public final class FilterSupplierFactory {
           break;
 
         case ENUM:
-          supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, itemKey);
+          supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, enumKey);
           break;
 
         case ID:
@@ -55,8 +55,8 @@ public final class FilterSupplierFactory {
     }
 
     if (supplier == null) {
-      if (!BeeUtils.isEmpty(itemKey)) {
-        supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, itemKey);
+      if (!BeeUtils.isEmpty(enumKey)) {
+        supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, enumKey);
       } else if (relation != null) {
         supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, label,
             renderColumns, orderColumns, relation, options);

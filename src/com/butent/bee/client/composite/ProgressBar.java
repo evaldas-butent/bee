@@ -1,9 +1,10 @@
 package com.butent.bee.client.composite;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.RequiresResize;
 
@@ -66,7 +67,7 @@ public class ProgressBar extends FocusWidget implements IdentifiableWidget, Requ
     this.curProgress = curProgress;
     setTextFormatter(textFormatter);
 
-    setElement(DOM.createDiv());
+    setElement(Document.get().createDivElement());
     setStyleName(styleNameShell);
 
     barElement = DOM.createDiv();

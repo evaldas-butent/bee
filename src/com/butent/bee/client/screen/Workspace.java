@@ -2,7 +2,6 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -206,26 +205,23 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
-    EventTarget target = event.getNativeEvent().getEventTarget();
-    if (target == null) {
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
+    if (targetNode == null) {
       return;
     }
 
-    Node node = Node.as(target);
-
     TilePanel activePanel = getActivePanel();
     if (activePanel == null || activePanel.getWidgetCount() <= 1
-        || !activePanel.getElement().isOrHasChild(node)) {
+        || !activePanel.getElement().isOrHasChild(targetNode)) {
       return;
     }
 
     Tile activeTile = activePanel.getActiveTile();
-    if (activeTile == null || activeTile.getElement().isOrHasChild(node)) {
+    if (activeTile == null || activeTile.getElement().isOrHasChild(targetNode)) {
       return;
     }
 
-    Tile eventTile = activePanel.getEventTile(node);
+    Tile eventTile = activePanel.getEventTile(targetNode);
     if (eventTile == null || eventTile.getId().equals(activeTile.getId())) {
       return;
     }

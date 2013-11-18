@@ -14,7 +14,7 @@
     <Boolean name="ReadOnly" label="=calReadOnly" />
     <Integer name="Visibility" label="=calVisibility" />
 
-    <Integer name="Transparency" label="=calTransparency" />
+    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
 
     <Integer name="DefaultDisplayedDays" defValue="3" label="=calDefaultDisplayedDays" />
 
@@ -25,7 +25,7 @@
     <Integer name="WorkingHourEnd" defValue="17" label="=calWorkingHourEnd" />
     <Integer name="ScrollToHour" defValue="8" label="=calScrollToHour"/>
 
-    <Integer name="TimeBlockClickNumber" defValue="1" label="=calTimeBlockClickNumber" />
+    <Enum name="TimeBlockClickNumber" key="TimeBlockClick" defValue="1" label="=calTimeBlockClickNumber" />
 
     <Boolean name="SeparateAttendees" label="=calSeparateAttendees" />
 

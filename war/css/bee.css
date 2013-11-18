@@ -126,6 +126,7 @@
   left: 1ex;
   top: 3ex;
   max-width: 100px;
+  height: auto;
 }
 
 .bee-NorthContainer > div {
@@ -690,21 +691,13 @@
 .bee-Notification-error {
   background-color: #ffcccc;
 }
-
 .bee-Notification-warning {
   background-color: yellow;
 }
 
 .bee-Toggle {
   text-align: center;
-}
-
-.bee-Toggle-up-hovering {
-  color: red;
-}
-
-.bee-Toggle-down-hovering {
-  color: green;
+  cursor: pointer;
 }
 
 .bee-StringPicker {
@@ -777,7 +770,7 @@
   -ms-flex-align: center;
   margin-bottom: 5px;
 }
-.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+.bee-RichTextToolbar-row .bee-Toggle-down {
   background-color: #faac58;
 }
 
@@ -861,7 +854,8 @@
   bottom: 0;
 }
 
-.bee-GridFormContainer-newRow .bee-hasDefaults:after {
+.bee-GridFormContainer-newRow .bee-hasDefaults:after,
+.bee-NewRowContainer .bee-hasDefaults:after {
   content: "*";
   font-weight: bold;
   color: #4d90fe;
@@ -2181,7 +2175,6 @@
   -webkit-flex: 1;
   -ms-flex: 1;
   margin-left: 1em;
-  margin-right: 1em;
   cursor: pointer;
 }
 
@@ -2195,6 +2188,12 @@
 /*   background-color: #bada55; */
 } 
 
+.bee-SlideDeck-repeat {
+  margin-left: 0.5em;
+  margin-right: 1em;
+  cursor: pointer;
+}
+
 .bee-SlideDeck-backward {
   font-size: 16px;
   cursor: pointer;
@@ -2207,36 +2206,39 @@
   font-size: 16px;
   cursor: pointer;
 }
+.bee-SlideDeck-nav-disabled {
+  visibility: hidden;
+  cursor: default;
+}
 
-.bee-SlideDeck-settings {
+.bee-SlideDeck-settings-toggle {
   font-size: 17px;
   margin-left: 1em;
   margin-right: 0.5em;
   cursor: pointer;
 }
 
-.bee-SlideDeck-nav-disabled {
-  visibility: hidden;
-  cursor: default;
+.bee-SlideDeck-settings-panel {
+  position: absolute;
+  right: 0;
+  color: white;  
+  background-color: rgba(20, 20, 20, 0.8);
+}
+.bee-SlideDeck-settings-hidden {
+  display: none;
 }
 
-.bee-SlideDeck-config-popup {
-  background-color: rgba(20, 20, 20, 0.8);
-  color: white;  
-}
-.bee-SlideDeck-config-panel {
-  position: relative;
-}
-.bee-SlideDeck-config-table {
+.bee-SlideDeck-settings-table {
   border-collapse: collapse;
 }
-.bee-SlideDeck-config-table td {
+.bee-SlideDeck-settings-table td {
   padding: 5px 8px;
 }
-.bee-SlideDeck-config-effect {
+
+.bee-SlideDeck-settings-effect {
   color: black;
 }
-.bee-SlideDeck-config-close {
+.bee-SlideDeck-settings-close {
   position: absolute;
   top: 2px;
   right: 2px;

@@ -30,7 +30,7 @@
       <renderToken source="CompanyName" prefix=", " />
     </DataSelector>   
 
-    <Radio source="Transparency" itemKey="Transparency" vertical="false"
+    <Radio source="Transparency" vertical="false"
        style="position: absolute; left: 360px; top: 300px" />
 
     <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 360px;" />

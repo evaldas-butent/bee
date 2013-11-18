@@ -54,6 +54,15 @@ public final class UiConstants {
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";
 
+  public static final int MAX_PASSWORD_LENGTH = 30;
+
+  public static final String PATTERN_UNSIGNED_INT = "\\d*";
+  public static final String PATTERN_UNSIGNED_NUM = "(\\d*|\\d+\\.\\d+)";
+  public static final String PATTERN_DATE =
+      "([0-9]{2}|[0-9]{4})[- .](0[1-9]|1[012])[- .](0[1-9]|1[0-9]|2[0-9]|3[01])";
+  public static final String PATTERN_DATE_TIME = PATTERN_DATE 
+      + "(\\s+(0[0-9]|1[0-9]|2[0-3])([: ][0-5][0-9])?)?";
+  
   public static String wtfplLabel() {
     return "UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear();
   }
@@ -63,7 +72,7 @@ public final class UiConstants {
   }
 
   public static String wtfplUrl() {
-    return "http://www.wtfpl.net";
+    return "http://www.butent.com";
   }
   
   private UiConstants() {

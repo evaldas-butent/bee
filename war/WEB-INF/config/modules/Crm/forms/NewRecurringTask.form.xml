@@ -27,7 +27,7 @@
 
     <FlowPanel style="&section;">
       <Label text="=crmTaskPriority" style="&lbl3;" />
-      <Radio source="Priority" itemKey="TaskPriority" style="&inp4;" />
+      <Radio source="Priority" style="&inp4;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

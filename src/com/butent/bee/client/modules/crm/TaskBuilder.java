@@ -110,7 +110,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
 
-    BeeRowSet rowSet = Queries.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
+    BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS, COL_START_TIME), true);
 
     ParameterList args = CrmKeeper.createTaskRequestParameters(TaskEvent.CREATE);

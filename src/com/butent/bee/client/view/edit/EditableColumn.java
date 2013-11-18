@@ -30,7 +30,7 @@ import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -82,7 +82,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   private final Boolean required;
 
   private final EditorDescription editorDescription;
-  private final String itemKey;
+  private final String enumKey;
 
   private final RefreshType updateMode;
   private final Relation relation;
@@ -99,7 +99,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   private EditEndEvent.Handler closeHandler;
 
   public EditableColumn(String viewName, List<BeeColumn> dataColumns, int colIndex,
-      AbstractColumn<?> uiColumn, String caption, ColumnDescription columnDescr) {
+      AbstractColumn<?> uiColumn, String caption, ColumnDescription columnDescr, String enumKey) {
     Assert.isIndex(dataColumns, colIndex);
     Assert.notNull(uiColumn);
     Assert.notNull(columnDescr);
@@ -130,7 +130,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.required = columnDescr.getRequired();
 
     this.editorDescription = columnDescr.getEditor();
-    this.itemKey = columnDescr.getItemKey();
+    this.enumKey = enumKey;
 
     this.updateMode = columnDescr.getUpdateMode();
     this.relation = columnDescr.getRelation();
@@ -146,18 +146,18 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     String format = null;
     if (getEditorDescription() != null) {
-      result = EditorFactory.createEditor(getEditorDescription(), getItemKey(), getDataType(),
+      result = EditorFactory.createEditor(getEditorDescription(), getEnumKey(), getDataType(),
           getRelation(), embedded);
       format = getEditorDescription().getFormat();
 
     } else if (getRelation() != null) {
       result = new DataSelector(getRelation(), embedded);
 
-    } else if (!BeeUtils.isEmpty(getItemKey())) {
-      result = new BeeListBox();
-      ((BeeListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
-      if (result instanceof AcceptsCaptions && !BeeUtils.isEmpty(getItemKey())) {
-        ((AcceptsCaptions) result).addCaptions(getItemKey());
+    } else if (!BeeUtils.isEmpty(getEnumKey())) {
+      result = new ListBox();
+      ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
+      if (result instanceof AcceptsCaptions) {
+        ((AcceptsCaptions) result).setCaptions(getEnumKey());
       }
 
     } else if (embedded && ValueType.isBoolean(getDataType())) {
@@ -276,8 +276,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return editorDescription;
   }
 
-  public String getItemKey() {
-    return itemKey;
+  public String getEnumKey() {
+    return enumKey;
   }
 
   public String getMaxValue() {

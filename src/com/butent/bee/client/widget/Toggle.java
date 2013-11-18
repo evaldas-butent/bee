@@ -1,14 +1,18 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.event.dom.client.DomEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.CustomButton;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -25,12 +29,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Implements a user interface component for visibly switching values on and off.
- */
+import elemental.js.dom.JsElement;
 
-public class Toggle extends CustomButton implements Editor {
+public class Toggle extends CustomWidget implements Editor {
 
+  private final String upFace;
+  private final String downFace;
+
+  private boolean down;
+
+  private boolean enabled = true;
   private boolean nullable = true;
 
   private boolean editing;
@@ -38,27 +46,43 @@ public class Toggle extends CustomButton implements Editor {
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public Toggle() {
-    super();
-    init(null);
-    setDefaultFaces();
+    this(BeeUtils.toString(BeeConst.BALLOT), BeeUtils.toString(BeeConst.HEAVY_CHECK_MARK));
   }
 
-  public Toggle(Image upImage) {
-    super();
-    getUpFace().setHTML(DomUtils.getOuterHtml(upImage.getElement()));
-    init(null);
+  public Toggle(String upFace, String downFace) {
+    this(upFace, downFace, null);
   }
 
-  public Toggle(String upText, String downText, String styleName) {
-    super(upText, downText);
-    init(styleName);
+  public Toggle(String upFace, String downFace, String styleName) {
+    super(Document.get().createDivElement(), BeeUtils.notEmpty(styleName, "bee-Toggle"));
+
+    this.upFace = upFace;
+    this.downFace = downFace;
+
+    getElement().setInnerHTML(upFace);
+    sinkEvents(Event.ONCLICK);
+  }
+
+  @Override
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return addDomHandler(handler, BlurEvent.getType());
   }
 
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   @Override
@@ -94,12 +118,17 @@ public class Toggle extends CustomButton implements Editor {
     }
     return BooleanValue.pack(v);
   }
-  
+
   @Override
   public String getOptions() {
     return options;
   }
-  
+
+  @Override
+  public int getTabIndex() {
+    return getElement().getTabIndex();
+  }
+
   @Override
   public String getValue() {
     return BooleanValue.pack(isDown());
@@ -123,15 +152,19 @@ public class Toggle extends CustomButton implements Editor {
   public void invert() {
     setDown(!isDown());
   }
-  
-  @Override
+
   public boolean isDown() {
-    return super.isDown();
+    return down;
   }
 
   @Override
   public boolean isEditing() {
     return editing;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return enabled;
   }
 
   @Override
@@ -153,47 +186,46 @@ public class Toggle extends CustomButton implements Editor {
     if (!isEnabled()) {
       return;
     }
-    int type = event.getTypeInt();
-
-    if (EventUtils.isKeyEvent(type)) {
-      if (type == Event.ONKEYDOWN) {
-        switch (event.getKeyCode()) {
-          case KeyCodes.KEY_ENTER:
-            event.preventDefault();
-            onClick();
-            break;
-          case KeyCodes.KEY_ESCAPE:
-            if (isEditing()) {
-              event.preventDefault();
-              fireEvent(new EditStopEvent(State.CANCELED));
-            }
-        }
-      } else if (type == Event.ONKEYPRESS && event.getCharCode() >= BeeConst.CHAR_SPACE) {
-        event.preventDefault();
-        invert();
-        return;
-      } else {
-        DomEvent.fireNativeEvent(event, this, this.getElement());
-      }
-      return;
-    }
 
     if (EventUtils.isClick(event)) {
-      DomEvent.fireNativeEvent(event, this, this.getElement());
-      return;
+      invert();
+      fire();
     }
 
     super.onBrowserEvent(event);
   }
-  
+
   @Override
-  public void setDown(boolean down) {
-    super.setDown(down);
+  public void setAccessKey(char key) {
+    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }
-  
+
+  public void setDown(boolean down) {
+    if (down != isDown()) {
+      this.down = down;
+
+      getElement().setInnerHTML(down ? downFace : upFace);
+      setStyleDependentName("down", down);
+    }
+  }
+
   @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  @Override
+  public void setFocus(boolean focused) {
+    if (focused) {
+      getElement().focus();
+    } else {
+      getElement().blur();
+    }
   }
 
   @Override
@@ -217,6 +249,11 @@ public class Toggle extends CustomButton implements Editor {
   }
 
   @Override
+  public void setTabIndex(int index) {
+    getElement().setTabIndex(index);
+  }
+
+  @Override
   public void setValue(String value) {
     setDown(BeeUtils.toBoolean(value));
   }
@@ -236,23 +273,12 @@ public class Toggle extends CustomButton implements Editor {
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
-  @Override
-  protected void onClick() {
+
+  private void fire() {
     if (isEditing()) {
       fireEvent(new EditStopEvent(State.CHANGED));
     } else {
       ValueChangeEvent.fire(this, BooleanValue.pack(isDown()));
     }
-  }
-
-  private void init(String styleName) {
-    DomUtils.createId(this, getIdPrefix());
-    setStyleName(BeeUtils.notEmpty(styleName, "bee-Toggle"));
-  }
-
-  private void setDefaultFaces() {
-    getUpFace().setHTML(BeeUtils.toString(BeeConst.BALLOT));
-    getDownFace().setHTML(BeeUtils.toString(BeeConst.HEAVY_CHECK_MARK));
   }
 }

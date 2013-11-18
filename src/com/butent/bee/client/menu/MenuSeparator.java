@@ -1,7 +1,7 @@
 package com.butent.bee.client.menu;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.dom.DomUtils;

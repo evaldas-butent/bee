@@ -76,6 +76,10 @@ public final class Paths {
     }
   }
   
+  public static boolean isAbsolute(String path) {
+    return !BeeUtils.isEmpty(path) && path.startsWith(SEGMENT_SEPARATOR);
+  }
+  
   private static String normalizePath(String dir, String name, String ext) {
     if (FileNameUtils.hasSeparator(name)) {
       return FileNameUtils.defaultExtension(name, ext);

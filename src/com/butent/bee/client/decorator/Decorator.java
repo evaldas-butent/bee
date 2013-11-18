@@ -549,9 +549,9 @@ class Decorator implements HasEnabled, HasExtendedInfo {
           continue;
         }
 
-        EventListener eventListener = DOM.getEventListener(DomUtils.upcast(target));
+        EventListener eventListener = DOM.getEventListener(target);
         if (eventListener == null) {
-          DOM.setEventListener(DomUtils.upcast(target), decorated);
+          DOM.setEventListener(target, decorated);
         } else if (!decorated.equals(eventListener)) {
           continue;
         }

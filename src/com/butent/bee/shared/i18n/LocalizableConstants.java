@@ -18,6 +18,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionAppend();
 
+  String actionAudit();
+
   String actionBookmark();
 
   String actionCancel();
@@ -168,16 +170,16 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String delete();
 
-  String deleteActiveRow(); 
-  
-  String deleteQuestion(); 
-  
-  String deleteRecordQuestion(); 
-  
-  String deleteRowQuestion(); 
-  
-  String deleteSelectedRow(); 
-  
+  String deleteActiveRow();
+
+  String deleteQuestion();
+
+  String deleteRecordQuestion();
+
+  String deleteRowQuestion();
+
+  String deleteSelectedRow();
+
   String description();
 
   String deselectAll();
@@ -189,7 +191,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String enterColor();
 
   String enterDate();
- 
+
   String enterTime();
 
   String ended();
@@ -225,7 +227,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String filterRemove();
 
   String goods();
-
 
   String group();
 
@@ -264,11 +265,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String loginFailed();
 
   String loginPassword();
-  
+
   String loginSubmit();
-  
+
   String loginUserName();
-  
+
   String mainEmail();
 
   String maxValue();
@@ -306,15 +307,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String nothingFound();
 
   String objectEvent();
-  
+
   String objectGrid();
-  
+
   String objectForm();
-  
+
   String objectMenu();
 
   String objectModule();
-  
+
   String ok();
 
   String oldPassword();
@@ -368,7 +369,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String responsibleEmployee();
 
   String responsiblePerson();
-  
+
   String rightStateAmendable();
 
   String rightStateVisible();

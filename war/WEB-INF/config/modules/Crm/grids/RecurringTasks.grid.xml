@@ -9,7 +9,7 @@
   <g:columns>
     <IdColumn name="Id" caption="ID" />
 
-    <DataColumn name="Priority" itemKey="TaskPriority" />
+    <DataColumn name="Priority" />
     <DataColumn name="Summary" />
     <DataColumn name="Description" />
 

@@ -18,12 +18,12 @@
 
     <IdColumn name="Id" caption="ID" />
 
-    <DataColumn name="Priority" itemKey="TaskPriority" />
+    <DataColumn name="Priority" />
     <DataColumn name="Summary" maxWidth="200" visible="true" />
 
     <RelColumn name="Company" editEnabled="true" />
 
-    <DataColumn name="Status" itemKey="TaskStatus" visible="true" />
+    <DataColumn name="Status" visible="true" />
     <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="=crmTaskDelayPlannedShort" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"

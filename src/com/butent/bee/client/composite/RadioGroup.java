@@ -26,11 +26,11 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.RadioButton;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collections;
@@ -81,16 +81,28 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public RadioGroup(Orientation orientation) {
     this(NameUtils.createUniqueName("optiongroup"), orientation);
+  }
+
+  public RadioGroup(Orientation orientation, Enum<?> value, Class<? extends Enum<?>> clazz) {
+    this(orientation);
+
+    List<String> opt = EnumUtils.getCaptions(clazz);
+    int z = (value == null) ? BeeConst.UNDEF : value.ordinal();
+    addButtons(opt, z);
   }
 
   public RadioGroup(Orientation orientation, int value, List<String> opt) {
     this(orientation);
     addButtons(opt, value);
   }
-  
+
+  public RadioGroup(String name, int value, List<String> opt) {
+    this(name, Orientation.HORIZONTAL, value, opt);
+  }
+
   public RadioGroup(String name, Orientation orientation) {
     super();
     Assert.notEmpty(name);
@@ -98,14 +110,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this.orientation = orientation;
   }
 
-  public RadioGroup(Orientation orientation, Enum<?> value, Class<? extends Enum<?>> clazz) {
-    this(orientation);
-
-    List<String> opt = Captions.getCaptions(clazz);
-    int z = (value == null) ? BeeConst.UNDEF : value.ordinal();
-    addButtons(opt, z);
-  }
-  
   public RadioGroup(String name, Orientation orientation, int value, List<String> opt) {
     this(name, orientation);
     addButtons(opt, value);
@@ -115,23 +119,9 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this(name, orientation, BeeConst.UNDEF, opt);
   }
 
-  public RadioGroup(String name, int value, List<String> opt) {
-    this(name, Orientation.HORIZONTAL, value, opt);
-  }
-
   @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
-  }
-
-  @Override
-  public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addButtons(Captions.getCaptions(clazz));
-  }
-
-  @Override
-  public void addCaptions(String captionKey) {
-    addButtons(Captions.getCaptions(captionKey));
   }
 
   @Override
@@ -209,7 +199,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public String getOptions() {
     return options;
   }
-  
+
   public int getSelectedIndex() {
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget widget = getWidget(i);
@@ -296,11 +286,27 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       ValueChangeEvent.fire(this, BeeUtils.toString(index));
     }
   }
-  
+
   @Override
   public void setAccessKey(char key) {
   }
-  
+
+  @Override
+  public void setCaptions(Class<? extends Enum<?>> clazz) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addButtons(EnumUtils.getCaptions(clazz));
+  }
+
+  @Override
+  public void setCaptions(String captionKey) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addButtons(EnumUtils.getCaptions(captionKey));
+  }
+
   @Override
   public void setEditing(boolean editing) {
   }
@@ -384,7 +390,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
+
   @Override
   protected String getDefaultStyleName() {
     return "bee-RadioGroup";

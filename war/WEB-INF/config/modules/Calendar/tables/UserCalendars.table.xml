@@ -17,7 +17,7 @@
     <Integer name="WorkingHourEnd" label="=calWorkingHourEnd"/>
     <Integer name="ScrollToHour" label="=calScrollToHour" />
 
-    <Integer name="TimeBlockClickNumber" label="=calTimeBlockClickNumber" />
+    <Enum name="TimeBlockClickNumber" key="TimeBlockClick" label="=calTimeBlockClickNumber" />
     
     <Boolean name="SeparateAttendees" label="=calSeparateAttendees" />
 

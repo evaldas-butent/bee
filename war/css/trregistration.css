@@ -1,0 +1,58 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  background-color: WhiteSmoke;  
+}
+
+.bee-tr-registration-panel {
+  margin-top: 3ex;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: column;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
+.bee-tr-registration-caption {
+  font-size: large;
+  font-weight: bolder;
+  margin-bottom: 3ex;
+}
+
+.bee-tr-registration-table {
+  border-collapse: collapse;
+}
+
+.bee-tr-registration-table td {
+  padding: 2px 1em;
+}
+
+.bee-tr-registration-label-cell {
+  text-align: right;
+}
+.bee-tr-registration-required:after {
+  content: "*";
+  color: red;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bee-tr-registration-input {
+  width: 200px;
+}
+
+.bee-tr-registration-submit {
+  font-size: medium;
+  padding: 5px 10px;
+  display: block;
+  margin-top: 3ex;
+  margin-left: auto;
+  margin-right: auto;
+}

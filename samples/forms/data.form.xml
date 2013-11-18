@@ -13,7 +13,7 @@
         <Toggle source="Boolean" />
         <InputInteger source="Integer" readOnly="true" />
         <InputRange source="Integer" minValue="-10" maxValue="10" />
-        <TabBar source="Integer" itemKey="TaskPriority" />
+        <TabBar source="Integer" enumKey="TaskPriority" />
       </row>
 
       <row>
@@ -34,7 +34,7 @@
         <cell horizontalAlignment="right">
           <InputSpinner source="Integer" />
         </cell>
-        <Radio source="Integer" valueStartIndex="1" itemKey="TaskPriority" />
+        <Radio source="Integer" valueStartIndex="1" enumKey="TaskPriority" />
         <ListBox source="Integer" valueNumeric="true">
           <item>aaa</item>
           <item>bbb</item>

@@ -7,7 +7,7 @@
     <DataColumn name="PublishTime" caption="=calPublishTime" />
     <RelColumn name="Publisher" caption="=user" renderColumns="FirstName LastName" />
 
-    <DataColumn name="Status" caption="=calAppointmentStatus" itemKey="AppointmentStatus" />
+    <DataColumn name="Status" caption="=calAppointmentStatus" />
     <DataColumn name="Hours" caption="=unitHours" />
     <DataColumn name="Minutes" caption="=unitMinutes" />
     

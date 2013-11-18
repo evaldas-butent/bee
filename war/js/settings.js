@@ -1,4 +1,4 @@
- var BeeSettings = {
+var BeeSettings = {
   appName: "B-novo",
   version: "0.9.9",
   logoImage: "images/logo.png",

@@ -35,6 +35,7 @@ import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
@@ -67,11 +68,6 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
@@ -109,7 +105,7 @@ public final class TransportHandler {
     }
   }
 
-  private static class CargoGridHandler extends CargoPlaceRenderer {
+  private static class CargoGridHandler extends AbstractGridInterceptor {
     @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
@@ -640,13 +636,6 @@ public final class TransportHandler {
   }
 
   public static void register() {
-    Captions.register(OrderStatus.class);
-    Captions.register(AssessmentStatus.class);
-    Captions.register(TripStatus.class);
-
-    String key = Captions.register(CargoRequestStatus.class);
-    Captions.registerColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_STATUS, key);
-
     SelectorEvent.register(new TransportSelectorHandler());
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
@@ -660,8 +649,23 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoPlaceRenderer());
-    GridFactory.registerGridInterceptor(VIEW_ALL_CARGO, new CargoPlaceRenderer());
+
+    CargoPlaceRenderer.Provider provider = new CargoPlaceRenderer.Provider();
+    String loading = "Loading";
+    String unloading = "Unloading";
+
+    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
+    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
 
     // GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
 

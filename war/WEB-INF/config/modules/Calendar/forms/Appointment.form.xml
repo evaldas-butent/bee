@@ -50,7 +50,7 @@
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
 
-          <ListBox source="Status" itemKey="AppointmentStatus" caption="=calAppointmentStatus"
+          <ListBox source="Status" caption="=calAppointmentStatus"
             style="width: 120px;" d:size="180" d:unit="px" />
         </FlowPanel>
       </layer>
@@ -162,8 +162,8 @@
         <text>=additionalInfo</text>
         <Table style="margin-top: 2ex;" cellStyle="padding: 5px;">
           <row>
-            <Radio source="Transparency" itemKey="Transparency" vertical="false" />
-            <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false" />
+            <Radio source="Transparency" vertical="false" />
+            <Radio source="Visibility" vertical="false" />
             <CheckBox source="ReadOnly" text="=calReadOnly" />
           </row>
 
@@ -183,7 +183,7 @@
           </row>
 
           <row>
-            <InputArea source="Recurrence" caption="Recurrence" style="width: 320px;" 
+            <InputArea source="Recurrence" caption="=calRecurrence" style="width: 320px;" 
               decorator="caption-top" />
             <LongLabel source="RecurringEventId" caption="=calRecurringEventId" inline="true"
               style="width: 200px;" d:size="120" d:unit="px" />

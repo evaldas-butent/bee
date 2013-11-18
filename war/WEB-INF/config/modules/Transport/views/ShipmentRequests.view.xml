@@ -51,13 +51,6 @@
         <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" 
           editable="true" />
 
-        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" 
-          editable="true" />
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
-        </SimpleJoin>
-
         <SimpleColumn name="Phone" alias="LoadingPhone" editable="true" label="=trLoadingPhone" />
         <SimpleColumn name="Fax" alias="LoadingFax" editable="true" label="=trLoadingFax" />
         <SimpleColumn name="Number" alias="LoadingNumber" editable="true" 
@@ -70,13 +63,6 @@
           editable="true" />
         <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" 
           editable="true" />
-
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" 
-          editable="true" />
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
-        </SimpleJoin>
 
         <SimpleColumn name="Phone" alias="UnloadingPhone" editable="true" 
           label="=trUnloadingPhone" />

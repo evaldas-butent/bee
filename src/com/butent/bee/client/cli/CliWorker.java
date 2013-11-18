@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -154,12 +153,12 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -290,7 +289,7 @@ public final class CliWorker {
       getResource(arr);
 
     } else if ("eval".equals(z)) {
-      eval(v, arr);
+      eval(args);
 
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
@@ -1231,7 +1230,7 @@ public final class CliWorker {
       return;
     }
 
-    Direction dir = NameUtils.getEnumByName(Direction.class, p1);
+    Direction dir = EnumUtils.getEnumByName(Direction.class, p1);
     if (dir == null) {
       Global.sayHuh(p1, p2);
       return;
@@ -1293,11 +1292,9 @@ public final class CliWorker {
     }
   }
 
-  private static void eval(String v, String[] arr) {
-    String xpr = v.substring(arr[0].length()).trim();
-
+  private static void eval(String xpr) {
     if (BeeUtils.isEmpty(xpr)) {
-      Global.sayHuh(v);
+      Global.sayHuh();
     } else {
       inform(xpr, JsUtils.evalToString(xpr));
     }
@@ -1425,7 +1422,7 @@ public final class CliWorker {
       }
     });
   }
-  
+
   private static void getTables(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
     if (!BeeUtils.isEmpty(args)) {
@@ -1864,7 +1861,7 @@ public final class CliWorker {
   }
 
   private static void showCaptions() {
-    Set<String> keys = Captions.getRegisteredKeys();
+    Set<String> keys = EnumUtils.getRegisteredKeys();
     if (BeeUtils.isEmpty(keys)) {
       logger.debug("no captions registered");
       return;
@@ -1874,17 +1871,8 @@ public final class CliWorker {
         BeeUtils.bracket(keys.size()));
 
     for (String key : keys) {
-      for (String caption : Captions.getCaptions(key)) {
+      for (String caption : EnumUtils.getCaptions(key)) {
         props.add(new Property(key, caption));
-      }
-    }
-
-    Table<String, String, String> columnKeys = Captions.getColumnKeys();
-    props.add(new Property("Column Keys", BeeUtils.bracket(columnKeys.size())));
-
-    for (String viewName : columnKeys.rowKeySet()) {
-      for (Map.Entry<String, String> entry : columnKeys.row(viewName).entrySet()) {
-        props.add(new Property(BeeUtils.joinWords(viewName, entry.getKey()), entry.getValue()));
       }
     }
 
@@ -3506,7 +3494,7 @@ public final class CliWorker {
         BeeKeeper.getStorage().clear();
         inform(BeeUtils.joinWords(len, "items cleared"));
       } else {
-        String z = BeeKeeper.getStorage().getItem(key);
+        String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
           showError(Localized.getMessages().keyNotFound(key));
         } else {
@@ -3519,10 +3507,10 @@ public final class CliWorker {
     String value = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
-      BeeKeeper.getStorage().removeItem(value);
+      BeeKeeper.getStorage().remove(value);
       inform(value, "removed");
     } else {
-      BeeKeeper.getStorage().setItem(key, value);
+      BeeKeeper.getStorage().set(key, value);
       inform("Storage", NameUtils.addName(key, value));
     }
   }

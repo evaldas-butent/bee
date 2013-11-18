@@ -1,7 +1,7 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -46,7 +46,7 @@ public class Horizontal extends CellVector {
     Element td = DOM.getParent(w.getElement());
     boolean removed = super.remove(w);
     if (removed) {
-      DOM.removeChild(tableRow, td);
+      tableRow.removeChild(td);
     }
     return removed;
   }

@@ -62,6 +62,11 @@ public class Body extends FertileElement {
     return this;
   }
 
+  public Body onLoad(String value) {
+    setAttribute(Attributes.ON_LOAD, value);
+    return this;
+  }
+
   public Body onMessage(String value) {
     setAttribute(Attributes.ON_MESSAGE, value);
     return this;

@@ -13,6 +13,7 @@
   margin-left: 1em;
   margin-top: 1ex;
   max-width: 100px;
+  height: auto;
 }
 
 .bee-ec-GlobalSearch-container {
@@ -191,6 +192,10 @@
   position: absolute;
   right: 0px;
   top: 0px;
+}
+.bee-Notification-error,
+.bee-Notification-warning {
+  font-size: x-large;
 }
 
 .bee-ec-Promo {
@@ -412,6 +417,26 @@
 .bee-ec-ItemList-description {
   font-size: 12px;
   white-space: pre-line;
+}
+
+.bee-ec-ItemList-criteria-panel {
+  margin-top: 5px;
+  line-height: 14px;
+  font-size: 11px;
+  max-width: 500px;
+}
+.bee-ec-ItemList-criteria-entry {
+  display: inline-block;
+  margin-right: 3px;
+}
+.bee-ec-ItemList-criteria-name:after {
+  content: ": ";
+}
+.bee-ec-ItemList-criteria-value {
+  font-weight: bolder;
+}
+.bee-ec-ItemList-criteria-value:after {
+  content: ";";
 }
 
 .bee-ec-ItemList-hasStock {

@@ -1,0 +1,94 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  background-color: WhiteSmoke;  
+}
+
+.bee-tr-query-panel {
+}
+
+.bee-tr-query-caption {
+  font-size: 150%;
+  font-weight: bolder;
+  text-align: center;
+}
+
+.bee-tr-query-fieldPanel {
+  overflow: auto;
+}
+
+.bee-tr-query-group {
+  margin-top: 2ex;
+  margin-right: 1em;
+  float: left;
+}
+.bee-tr-query-legend {
+  font-size: 120%;
+  font-weight: bolder;
+}
+
+.bee-tr-query-table {
+  border-collapse: collapse;
+}
+
+.bee-tr-query-table td {
+  padding: 2px 0.5em;
+}
+
+.bee-tr-query-label-cell {
+  text-align: right;
+  vertical-align: top;
+}
+.bee-tr-query-required:after {
+  content: "*";
+  color: red;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bee-tr-query-input,
+.bee-tr-query-area {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  margin: 0;
+  padding: 1px 2px;
+  width: 150px;
+  font-family: inherit;
+  font-size: inherit;
+}
+.bee-tr-query-select {
+  margin: 0;
+  max-width: 200px;
+}
+.bee-tr-query-check {
+  margin-top: 5px;
+  margin-left: 1em;
+  display: block;
+}
+
+#Quantity-input,
+#Weight-input,
+#Volume-input,
+#LDM-input,
+#Length-input,
+#Width-input,
+#Height-input,
+#Palettes-input,
+#Value-input {
+  width: 80px;
+  text-align: right;
+}
+
+#Notes-input {
+  width: 200px;
+  height: 100px;
+}
+
+.bee-tr-query-submit {
+  font-size: medium;
+  padding: 5px 10px;
+  display: block;
+  margin-top: 2ex;
+  margin-left: auto;
+  margin-right: auto;
+}

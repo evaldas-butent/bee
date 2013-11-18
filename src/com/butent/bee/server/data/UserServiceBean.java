@@ -39,7 +39,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -331,6 +331,14 @@ public class UserServiceBean {
     return Localizations.getPreferredConstants(getLanguage(userId));
   }
 
+  public Map<String, String> getLocalizableDictionary() {
+    return getLocalizableDictionary(getCurrentUserId());
+  }
+
+  public Map<String, String> getLocalizableDictionary(Long userId) {
+    return Localizations.getPreferredDictionary(getLanguage(userId));
+  }
+
   public LocalizableMessages getLocalizableMesssages() {
     return getLocalizableMesssages(getCurrentUserId());
   }
@@ -468,7 +476,7 @@ public class UserServiceBean {
           rightsCache.put(tp, rightsObjects);
         }
         for (int i = 0; i < res.getNumberOfRows(); i++) {
-          RightsState state = NameUtils.getEnumByIndex(RightsState.class, res.getInt(i, COL_STATE));
+          RightsState state = EnumUtils.getEnumByIndex(RightsState.class, res.getInt(i, COL_STATE));
           String objectName = BeeUtils.normalize(res.getValue(i, COL_OBJECT_NAME));
           Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
 
@@ -538,9 +546,9 @@ public class UserServiceBean {
       UserInfo user = new UserInfo(userData, row.getValue(COL_PASSWORD))
           .setRoles(userRoles.get(userId))
           .setProperties(row.getValue(COL_USER_PROPERTIES))
-          .setUserLocale(NameUtils.getEnumByIndex(SupportedLocale.class,
+          .setUserLocale(EnumUtils.getEnumByIndex(SupportedLocale.class,
               row.getInt(COL_USER_LOCALE)))
-          .setUserInterface(NameUtils.getEnumByIndex(UserInterface.class,
+          .setUserInterface(EnumUtils.getEnumByIndex(UserInterface.class,
               row.getInt(COL_USER_INTERFACE)))
           .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_AFTER)))
           .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_BEFORE)));

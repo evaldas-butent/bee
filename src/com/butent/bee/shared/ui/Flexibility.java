@@ -7,7 +7,7 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -182,7 +182,7 @@ public class Flexibility implements BeeSerializable, HasInfo {
           setBasisWidth(BeeUtils.toInt(value));
           break;
         case BASIS_UNIT:
-          setBasisUnit(NameUtils.getEnumByName(CssUnit.class, value));
+          setBasisUnit(EnumUtils.getEnumByName(CssUnit.class, value));
           break;
         case BASIS_AUTO:
           setBasisAuto(BeeUtils.toBoolean(value));

@@ -16,8 +16,8 @@ import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -44,7 +44,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(EnumFilterSupplier.class);
-  
+
   private final List<String> captions;
   private final int nullIndex;
 
@@ -55,7 +55,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
       String key) {
     super(viewName, column, label, options);
 
-    this.captions = Captions.getCaptions(key);
+    this.captions = EnumUtils.getCaptions(key);
     this.nullIndex = (captions == null) ? BeeConst.UNDEF : captions.size();
   }
 
@@ -153,9 +153,9 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     for (int row : getSelectedItems()) {
       newValues.add(data.get(row).getIndex());
     }
-    
+
     boolean changed = !BeeUtils.sameElements(values, newValues);
-    
+
     BeeUtils.overwrite(values, newValues);
     update(changed);
   }
@@ -169,7 +169,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     if (BeeUtils.isEmpty(ordinals)) {
       return null;
     }
-    
+
     List<Filter> filters = Lists.newArrayList();
 
     for (Integer ordinal : ordinals) {
@@ -194,11 +194,11 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
       int col = 0;
       display.setHtml(row, col++, getCaption(dataItem.getIndex()));
       addBinSize(display, row, col, dataItem.getCount());
-      
+
       if (values.contains(dataItem.getIndex())) {
         selectRow(display, row);
       }
-      
+
       row++;
     }
 

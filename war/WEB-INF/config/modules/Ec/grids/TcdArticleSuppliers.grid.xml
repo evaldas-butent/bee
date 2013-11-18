@@ -5,7 +5,7 @@
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <DataColumn name="Supplier" itemKey="EcSupplier" visible="true" />
+    <DataColumn name="Supplier" visible="true" />
     <DataColumn name="SupplierID" />
 
     <DataColumn name="Cost" />

@@ -66,7 +66,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private String headerId;
   private String scrollerId;
 
-  private int scrollerWidth = DomUtils.getScrollBarWidth() + 1;
+  private final int scrollerWidth = DomUtils.getScrollBarWidth() + 1;
 
   private boolean hasPaging;
   private boolean hasSearch;
@@ -82,7 +82,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private IsRow lastRow;
   private boolean lastEnabled;
 
-  private List<String> favorite = Lists.newArrayList();
+  private final List<String> favorite = Lists.newArrayList();
 
   private boolean resizeSuspended;
 
@@ -168,6 +168,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
       if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
+      }
+      if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.AUDIT)) {
+        enabledActions.add(Action.AUDIT);
       }
 
       header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,

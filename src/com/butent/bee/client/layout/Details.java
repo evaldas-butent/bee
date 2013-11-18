@@ -1,10 +1,8 @@
 package com.butent.bee.client.layout;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.widget.Summary;
-import com.butent.bee.shared.Assert;
 
 import elemental.client.Browser;
 import elemental.html.DetailsElement;
@@ -31,12 +29,6 @@ public class Details extends CustomComplex {
     if (summary != null) {
       add(summary);
     }
-  }
-
-  @Override
-  public void add(Widget child) {
-    Assert.notNull(child);
-    super.add(child, getElement());
   }
 
   @Override

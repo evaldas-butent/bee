@@ -8,7 +8,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SALE;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -45,8 +46,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -94,16 +93,17 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
         Map<Long, String> currencies = Maps.newHashMap();
 
         boolean itemEmpty = false;
+        DataInfo info = Data.getDataInfo(VIEW_CARGO_INVOICE_INCOMES);
 
-        int item = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, CommonsConstants.COL_ITEM);
-        int order = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, COL_ORDER_NO);
-        int vehicle = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, COL_VEHICLE);
-        int trailer = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, COL_TRAILER);
-        int driver = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, COL_DRIVER);
-        int custId = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, COL_CUSTOMER);
-        int custName = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, COL_CUSTOMER_NAME);
-        int currId = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, ExchangeUtils.COL_CURRENCY);
-        int currName = Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, ExchangeUtils.COL_CURRENCY
+        int item = info.getColumnIndex(COL_ITEM);
+        int order = info.getColumnIndex(COL_ORDER_NO);
+        int vehicle = info.getColumnIndex(COL_VEHICLE);
+        int trailer = info.getColumnIndex(COL_TRAILER);
+        int driver = info.getColumnIndex(COL_DRIVER);
+        int custId = info.getColumnIndex(COL_CUSTOMER);
+        int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
+        int currId = info.getColumnIndex(ExchangeUtils.COL_CURRENCY);
+        int currName = info.getColumnIndex(ExchangeUtils.COL_CURRENCY
             + ExchangeUtils.COL_CURRENCY_NAME);
 
         for (BeeRow row : result.getRows()) {
@@ -119,18 +119,15 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
 
           for (String fld : new String[] {"Company", "Payer", "Customer"}) {
             name = fld;
-            id = row.getLong(Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES, name));
+            id = row.getLong(info.getColumnIndex(name));
 
             if (DataUtils.isId(id)) {
               break;
             }
           }
           if (DataUtils.isId(id)) {
-            payers.put(id,
-                Pair.of(row.getString(Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES,
-                    name + "Name")),
-                    row.getInteger(Data.getColumnIndex(VIEW_CARGO_INVOICE_INCOMES,
-                        name + "CreditDays"))));
+            payers.put(id, Pair.of(row.getString(info.getColumnIndex(name + "Name")),
+                row.getInteger(info.getColumnIndex(name + "CreditDays"))));
           }
           customers.put(row.getLong(custId), row.getString(custName));
 
@@ -148,7 +145,14 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
         newRow.setValue(saleInfo.getColumnIndex(COL_NUMBER), BeeUtils.joinItems(orders));
         newRow.setValue(saleInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
         newRow.setValue(saleInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
-        newRow.setValue(saleInfo.getColumnIndex(TradeConstants.COL_TRADE_VAT_INCL), true);
+        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_VAT_INCL), true);
+
+        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER),
+            BeeKeeper.getUser().getUserId());
+        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER + COL_FIRST_NAME),
+            BeeKeeper.getUser().getFirstName());
+        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
+            BeeKeeper.getUser().getLastName());
 
         if (customers.size() == 1) {
           for (Entry<Long, String> entry : customers.entrySet()) {
@@ -168,7 +172,7 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
             Integer days = entry.getValue().getB();
 
             if (BeeUtils.isPositive(days)) {
-              newRow.setValue(saleInfo.getColumnIndex(TradeConstants.COL_TRADE_TERM),
+              newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_TERM),
                   TimeUtils.nextDay(newRow.getDateTime(saleInfo.getColumnIndex(COL_DATE)),
                       days));
             }
@@ -216,13 +220,13 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
               @Override
               public void onSuccess(final BeeRow row) {
                 ParameterList args = TransportHandler.createArgs(SVC_CREATE_INVOICE_ITEMS);
-                args.addDataItem(TradeConstants.COL_SALE, row.getId());
+                args.addDataItem(COL_SALE, row.getId());
                 args.addDataItem(ExchangeUtils.COL_CURRENCY,
                     row.getLong(saleInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY)));
                 args.addDataItem("IdList", DataUtils.buildIdList(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
-                  args.addDataItem(CommonsConstants.COL_ITEM, mainItem.getRelatedId());
+                  args.addDataItem(COL_ITEM, mainItem.getRelatedId());
                 }
                 BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
                   @Override
@@ -237,7 +241,7 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
                     if (popup != null) {
                       popup.close();
                     }
-                    Data.onViewChange(presenter.getViewName(), 
+                    Data.onViewChange(presenter.getViewName(),
                         DataChangeEvent.CANCEL_RESET_REFRESH);
                     RowEditor.openRow(FORM_CARGO_INVOICE, saleInfo, row.getId());
                   }

@@ -460,6 +460,10 @@ public class QueryServiceBean {
     return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
   }
 
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, List<String> columns) {
+    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, columns);
+  }
+
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       List<String> columns) {
 
@@ -578,7 +582,7 @@ public class QueryServiceBean {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
-    doSql(SqlUtils.setSqlParameter(SystemBean.AUDIT_USER, usr.getCurrentUserId()).getQuery());
+    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER, usr.getCurrentUserId()).getQuery());
 
     activateTables(query);
 

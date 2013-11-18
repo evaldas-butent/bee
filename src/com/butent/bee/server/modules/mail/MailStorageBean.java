@@ -476,20 +476,23 @@ public class MailStorageBean {
     if (part.isMimeType("multipart/*")) {
       Multipart multiPart = (Multipart) part.getContent();
       boolean hasAlternative = alternative == null && part.isMimeType("multipart/alternative");
+      Pair<String, String> alt;
 
       if (hasAlternative) {
-        alternative = Pair.of(null, null);
+        alt = Pair.of(null, null);
+      } else {
+        alt = alternative;
       }
       for (int i = 0; i < multiPart.getCount(); i++) {
-        storePart(messageId, multiPart.getBodyPart(i), alternative);
+        storePart(messageId, multiPart.getBodyPart(i), alt);
       }
       if (hasAlternative) {
         qs.insertData(new SqlInsert(TBL_PARTS)
             .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_CONTENT_TYPE, alternative.getB() != null ? "text/html" : "text/plain")
-            .addConstant(COL_CONTENT, HtmlUtils.stripHtml(alternative.getA() != null
-                ? alternative.getA() : alternative.getB()))
-            .addConstant(COL_HTML_CONTENT, alternative.getB()));
+            .addConstant(COL_CONTENT_TYPE, alt.getB() != null ? "text/html" : "text/plain")
+            .addConstant(COL_CONTENT,
+                HtmlUtils.stripHtml(alt.getA() != null ? alt.getA() : alt.getB()))
+            .addConstant(COL_HTML_CONTENT, alt.getB()));
       }
     } else if (part.isMimeType("message/rfc822")) {
       storePart(messageId, (Message) part.getContent(), alternative);

@@ -57,8 +57,9 @@
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Contact" alias="Shipper" editable="true" />
-        <SimpleColumn name="Date" alias="LoadingDate" label="Pakrovimo data" editable="true" />
+        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
         <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" editable="true" />
+        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" editable="true" />
         <SimpleColumn name="Terminal" alias="LoadingTerminal" label="=transportationNumber1" editable="true" />
         <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
@@ -69,6 +70,7 @@
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
         <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" editable="true" />
+        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" editable="true" />
         <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="=transportationNumber2" editable="true" />
         <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">

@@ -111,43 +111,6 @@ public final class Queries {
     }
   }
 
-  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
-      IsRow row) {
-    return createRowSetForInsert(viewName, columns, row, null, false);
-  }
-
-  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
-      IsRow row, Collection<String> alwaysInclude, boolean addProperties) {
-    List<BeeColumn> newColumns = Lists.newArrayList();
-    List<String> values = Lists.newArrayList();
-
-    for (int i = 0; i < columns.size(); i++) {
-      BeeColumn column = columns.get(i);
-      if (!column.isEditable()) {
-        continue;
-      }
-
-      String value = row.getString(i);
-      if (!BeeUtils.isEmpty(value)
-          || alwaysInclude != null && alwaysInclude.contains(column.getId())) {
-        newColumns.add(column);
-        values.add(value);
-      }
-    }
-    if (newColumns.isEmpty()) {
-      return null;
-    }
-
-    BeeRow newRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
-    if (addProperties && row.getProperties() != null) {
-      newRow.setProperties(row.getProperties().copy());
-    }
-
-    BeeRowSet rs = new BeeRowSet(viewName, newColumns);
-    rs.addRow(newRow);
-    return rs;
-  }
-
   public static void delete(final String viewName, Filter filter, final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(filter, "Delete: filter required");
@@ -499,7 +462,7 @@ public final class Queries {
     Assert.notEmpty(columns);
     Assert.notNull(row);
 
-    BeeRowSet rs = createRowSetForInsert(viewName, columns, row);
+    BeeRowSet rs = DataUtils.createRowSetForInsert(viewName, columns, row);
     if (rs == null) {
       if (callback != null) {
         callback.onFailure(viewName, "nothing to insert");

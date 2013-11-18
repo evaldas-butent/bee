@@ -6,7 +6,7 @@
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" label="=reminderName"/>
-    <Integer name="Method" notNull="true" label="=reminderMethod" />
+    <Enum name="Method" key="ReminderMethod" notNull="true" label="=reminderMethod" />
 
     <Integer name="Hours" label="=unitHours" />
     <Integer name="Minutes" label="=unitMinutes" />

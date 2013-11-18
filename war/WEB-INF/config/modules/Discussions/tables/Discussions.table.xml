@@ -11,6 +11,6 @@
     <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="=discussOwner" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=discussCreated" />    
-    <Integer name="Status" notNull="true" defValue="0" label="=discussStatus" />    
+    <Enum name="Status" key="DiscussionStatus" notNull="true" defValue="0" label="=discussStatus" />    
   </Fields>
 </Table>

@@ -20,7 +20,7 @@
     <FlowPanel style="height:65%; overflow:auto;">
       <FlowPanel style="&section;">
         <Label text="=status" style="&labelLeft;" />
-        <TextLabel source="Status" itemKey="AssessmentStatus" style="&input; font-weight:bold;" />
+        <TextLabel source="Status" style="&input; font-weight:bold;" />
         <Label text="=customer" class="bee-required" style="&labelRight; width:120px;" />
         <DataSelector source="Customer" style="&input; width:200px;" />
       </FlowPanel>

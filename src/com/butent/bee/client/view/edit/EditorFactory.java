@@ -10,7 +10,7 @@ import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
@@ -155,7 +155,7 @@ public final class EditorFactory {
     return editor;
   }
 
-  public static Editor createEditor(EditorDescription description, String itemKey,
+  public static Editor createEditor(EditorDescription description, String enumKey,
       ValueType valueType, Relation relation, boolean embedded) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
@@ -188,8 +188,8 @@ public final class EditorFactory {
         break;
 
       case LIST:
-        editor = new BeeListBox();
-        ((BeeListBox) editor).setValueNumeric(ValueType.isNumeric(valueType));
+        editor = new ListBox();
+        ((ListBox) editor).setValueNumeric(ValueType.isNumeric(valueType));
         break;
 
       case LONG:
@@ -251,8 +251,8 @@ public final class EditorFactory {
     if (editor instanceof HasItems && description.getItems() != null) {
       ((HasItems) editor).setItems(description.getItems());
     }
-    if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(itemKey)) {
-      ((AcceptsCaptions) editor).addCaptions(itemKey);
+    if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(enumKey)) {
+      ((AcceptsCaptions) editor).setCaptions(enumKey);
     }
 
     if (editor instanceof HasVisibleLines && BeeUtils.isPositive(description.getVisibleLines())) {

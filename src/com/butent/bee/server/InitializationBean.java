@@ -1,5 +1,6 @@
 package com.butent.bee.server;
 
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.logging.LogbackFactory;
@@ -23,6 +24,8 @@ public class InitializationBean {
   ModuleHolderBean moduleBean;
   @EJB
   UserServiceBean usr;
+  @EJB
+  SystemBean sys;
 
   @PostConstruct
   public void init() {
@@ -39,6 +42,7 @@ public class InitializationBean {
     moduleBean.initModules();
 
     usr.initRights();
+    sys.initIpFilters();
   }
 
   @PreDestroy

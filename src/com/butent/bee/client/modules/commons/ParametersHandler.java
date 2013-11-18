@@ -39,7 +39,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -151,7 +151,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
 
     } else {
       update(gridView, 0, new BeeParameter(module, data.get(NAME),
-          NameUtils.getEnumByName(ParameterType.class, data.get(TYPE)),
+          EnumUtils.getEnumByName(ParameterType.class, data.get(TYPE)),
           data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)),
           event.getCallback());
     }
@@ -190,7 +190,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
       data.put(event.getColumns().get(i).getId(), event.getNewValues().get(i));
     }
     if (data.containsKey(TYPE)) {
-      prm.setType(NameUtils.getEnumByName(ParameterType.class, data.get(TYPE)));
+      prm.setType(EnumUtils.getEnumByName(ParameterType.class, data.get(TYPE)));
     }
     if (data.containsKey(DESCRIPTION)) {
       prm.setDescription(data.get(DESCRIPTION));

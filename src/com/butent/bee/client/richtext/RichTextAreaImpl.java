@@ -1,7 +1,9 @@
 package com.butent.bee.client.richtext;
 
 import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.richtext.RichTextArea.FontSize;
@@ -13,6 +15,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import elemental.js.dom.JsNode;
 import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.js.dom.JsElement;
@@ -36,9 +39,8 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
   private boolean isPendingFocus;
   private boolean isReady;
 
-  RichTextAreaImpl() {
-    super();
-    this.element = Browser.getDocument().createIFrameElement();
+  RichTextAreaImpl(Element el) {
+    this.element = (IFrameElement) el;
   }
 
   @Override
@@ -225,6 +227,19 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
   public void undo() {
     execCommand("Undo");
   }
+  
+  boolean contains(Node node) {
+    if (node == null) {
+      return false;
+    }
+    
+    JsNode jsNode = node.cast();
+    if (element.contains(jsNode)) {
+      return true;
+    } else {
+      return element.getContentDocument().getBody().contains(jsNode);
+    }
+  }
 
   Element getElement() {
     return Element.as((JsIFrameElement) element);
@@ -233,7 +248,7 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
   void initElement() {
     initializing = true;
     
-    element.addEventListener("load", new EventListener() {
+    element.addEventListener(BrowserEvents.LOAD, new EventListener() {
       @Override
       public void handleEvent(Event evt) {
         if (getBody() != null) {
@@ -294,17 +309,12 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
 
   private void execCommand(String cmd, String param) {
     if (isReady) {
-      setFocus(true);
       try {
-        execCommandAssumingFocus(cmd, param);
+        element.getContentDocument().execCommand(cmd, false, param);
       } catch (JavaScriptException ex) {
         logger.warning(NameUtils.getName(this), "error executing", cmd, param);
       }
     }
-  }
-
-  private void execCommandAssumingFocus(String cmd, String param) {
-    element.getContentDocument().execCommand(cmd, false, param);
   }
 
   private Element getBody() {
@@ -321,11 +331,7 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
     var wnd = elem.contentWindow;
 
     elem.__gwt_handler = $entry(function(evt) {
-      if (elem.__listener) {
-        if (@com.google.gwt.user.client.impl.DOMImpl::isMyListener(Ljava/lang/Object;)(elem.__listener)) {
-          @com.google.gwt.user.client.DOM::dispatchEvent(Lcom/google/gwt/user/client/Event;Lcom/google/gwt/user/client/Element;Lcom/google/gwt/user/client/EventListener;)(evt, elem, elem.__listener);
-        }
-      }
+      @com.google.gwt.user.client.DOM::dispatchEvent(Lcom/google/gwt/user/client/Event;Lcom/google/gwt/dom/client/Element;)(evt, elem);
     });
 
     elem.__gwt_focusHandler = function(evt) {
@@ -384,9 +390,8 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
 
   private boolean queryCommandState(String cmd) {
     if (isReady) {
-      setFocus(true);
       try {
-        return queryCommandStateAssumingFocus(cmd);
+        return element.getContentDocument().queryCommandState(cmd);
       } catch (JavaScriptException e) {
         return false;
       }
@@ -394,24 +399,15 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
     return false;
   }
   
-  private boolean queryCommandStateAssumingFocus(String cmd) {
-    return element.getContentDocument().queryCommandState(cmd);
-  }
-
   private String queryCommandValue(String cmd) {
     if (isReady) {
-      setFocus(true);
       try {
-        return queryCommandValueAssumingFocus(cmd);
+        return element.getContentDocument().queryCommandValue(cmd);
       } catch (JavaScriptException e) {
         return BeeConst.STRING_EMPTY;
       }
     }
     return BeeConst.STRING_EMPTY;
-  }
-
-  private String queryCommandValueAssumingFocus(String cmd) {
-    return element.getContentDocument().queryCommandValue(cmd);
   }
 
   private void setEnabledImpl(boolean enbl) {

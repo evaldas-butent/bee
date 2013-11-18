@@ -1,13 +1,13 @@
 package com.butent.bee.client.datepicker;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -228,7 +228,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
           DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
       
       while (cellElement != null) {
-        Cell cell = elementToCell.get(DomUtils.upcast(cellElement));
+        Cell cell = elementToCell.get(cellElement);
         if (cell != null) {
           return cell;
         }

@@ -1,16 +1,25 @@
 package com.butent.bee.client.widget;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ListBox;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -22,21 +31,23 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import elemental.js.dom.JsElement;
+
 /**
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements Editor, HasItems, HasValueStartIndex,
-    AcceptsCaptions {
+public class ListBox extends CustomWidget implements Editor, HasItems, HasValueStartIndex,
+    AcceptsCaptions, HasChangeHandlers {
 
   private boolean nullable = true;
 
@@ -53,40 +64,47 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   private String options;
 
   private boolean handlesTabulation;
-  
-  public BeeListBox() {
-    super();
-    init();
+
+  public ListBox() {
+    this(false);
   }
 
-  public BeeListBox(boolean isMultipleSelect) {
-    super(isMultipleSelect);
-    init();
-  }
-  
-  public BeeListBox(Element element) {
-    super(element);
+  public ListBox(boolean isMultipleSelect) {
+    super(Document.get().createSelectElement(isMultipleSelect));
     init();
   }
 
   @Override
-  public void addCaptions(Class<? extends Enum<?>> clazz) {
-    addItems(Captions.getCaptions(clazz));
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return addDomHandler(handler, BlurEvent.getType());
   }
 
   @Override
-  public void addCaptions(String captionKey) {
-    addItems(Captions.getCaptions(captionKey));
+  public HandlerRegistration addChangeHandler(ChangeHandler handler) {
+    return addDomHandler(handler, ChangeEvent.getType());
   }
-
+  
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
   @Override
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+
+  @Override
   public void addItem(String item) {
-    super.addItem(item);
+    addItem(item, item);
+  }
+  
+  public void addItem(String item, String value) {
+    OptionElement option = Document.get().createOptionElement();
+    option.setText(item);
+    option.setValue(value);
+    
+    getSelectElement().add(option, null);
     updateSize();
   }
 
@@ -99,13 +117,17 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   }
 
   @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   @Override
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    return addHandler(handler, ValueChangeEvent.getType());
+  }
+  
   public void clear() {
-    super.clear();
+    getSelectElement().clear();
     updateSize();
   }
 
@@ -124,15 +146,15 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   }
 
   @Override
-  public String getId() {
-    return DomUtils.getId(this);
-  }
-  
-  @Override
   public String getIdPrefix() {
     return "list";
   }
   
+  @Override
+  public int getItemCount() {
+    return getSelectElement().getOptions().getLength();
+  }
+
   @Override
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
@@ -142,10 +164,15 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return items;
   }
 
+  public String getItemText(int index) {
+    checkIndex(index);
+    return getSelectElement().getOptions().getItem(index).getText();
+  }
+
   public int getMaxSize() {
     return maxSize;
   }
-  
+
   public int getMinSize() {
     return minSize;
   }
@@ -167,10 +194,19 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
       return null;
     }
   }
-
+  
   @Override
   public String getOptions() {
     return options;
+  }
+  
+  public int getSelectedIndex() {
+    return getSelectElement().getSelectedIndex();
+  }
+
+  @Override
+  public int getTabIndex() {
+    return getElement().getTabIndex();
   }
   
   @Override
@@ -185,9 +221,18 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     }
   }
 
+  public String getValue(int index) {
+    checkIndex(index);
+    return getSelectElement().getOptions().getItem(index).getValue();
+  }
+  
   @Override
   public int getValueStartIndex() {
     return valueStartIndex;
+  }
+
+  public int getVisibleItemCount() {
+    return getSelectElement().getSize();
   }
 
   @Override
@@ -209,17 +254,22 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isEditing() {
     return editing;
   }
-  
+
   @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
 
   @Override
+  public boolean isEnabled() {
+    return !getSelectElement().isDisabled();
+  }
+
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-  
+
   @Override
   public boolean isNullable() {
     return nullable;
@@ -233,11 +283,11 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isValueNumeric() {
     return valueNumeric;
   }
-  
+
   @Override
   public void normalizeDisplay(String normalizedValue) {
   }
-
+  
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isChange(event.getType())) {
@@ -255,11 +305,16 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
     super.onBrowserEvent(event);
   }
-  
-  @Override
+
   public void removeItem(int index) {
-    super.removeItem(index);
+    checkIndex(index);
+    getSelectElement().remove(index);
     updateSize();
+  }
+
+  @Override
+  public void setAccessKey(char key) {
+    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key)); 
   }
 
   public void setAllVisible() {
@@ -270,8 +325,38 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   }
 
   @Override
+  public void setCaptions(Class<? extends Enum<?>> clazz) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addItems(EnumUtils.getCaptions(clazz));
+  }
+
+  @Override
+  public void setCaptions(String captionKey) {
+    if (!isEmpty()) {
+      clear();
+    }
+    addItems(EnumUtils.getCaptions(captionKey));
+  }
+
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    getSelectElement().setDisabled(!enabled);
+  }
+
+  @Override
+  public void setFocus(boolean focused) {
+    if (focused) {
+      getElement().focus();
+    } else {
+      getElement().blur();
+    }
   }
 
   @Override
@@ -312,6 +397,15 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     this.options = options;
   }
 
+  public void setSelectedIndex(int index) {
+    getSelectElement().setSelectedIndex(index);
+  }
+  
+  @Override
+  public void setTabIndex(int index) {
+    getElement().setTabIndex(index);
+  }
+
   @Override
   public void setValue(String value) {
     setSelectedIndex(getIndex(value));
@@ -324,6 +418,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   @Override
   public void setValueStartIndex(int valueStartIndex) {
     this.valueStartIndex = valueStartIndex;
+  }
+
+  public void setVisibleItemCount(int visibleItems) {
+    getSelectElement().setSize(visibleItems);
   }
 
   @Override
@@ -361,7 +459,18 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
+
+  @Override
+  protected void init() {
+    super.init();
+    addStyleName("bee-ListBox");
+    sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
+  }
+
+  private void checkIndex(int index) {
+    Assert.isIndex(index, getItemCount());
+  }
+
   private int getIndex(String text) {
     int index = BeeConst.UNDEF;
     if (text == null) {
@@ -388,12 +497,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   private SelectElement getSelectElement() {
     return getElement().cast();
-  }
-  
-  private void init() {
-    DomUtils.createId(this, getIdPrefix());
-    addStyleName("bee-ListBox");
-    sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
   }
 
   private boolean isChangePending() {

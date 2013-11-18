@@ -70,7 +70,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -1171,7 +1171,7 @@ public class CalendarModuleBean implements BeeModule {
         error = "No reminder message specified";
       }
       if (BeeUtils.isEmpty(error)) {
-        ReminderMethod method = NameUtils.getEnumByIndex(ReminderMethod.class,
+        ReminderMethod method = EnumUtils.getEnumByIndex(ReminderMethod.class,
             data.getInt(CommonsConstants.COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {

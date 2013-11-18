@@ -8,32 +8,39 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.SqlInsert;
-import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.Node;
 import com.butent.bee.shared.html.builder.elements.Datalist;
 import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Select;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Map;
 
@@ -58,12 +65,7 @@ public class EcServlet extends LoginServlet {
 
   private static final String REG_STYLE_REQUIRED = REG_STYLE_PREFIX + "required";
 
-  private static final String REG_STYLE_TYPE_PREFIX = "bee-ec-registration-type-";
-
-  private static final String ID_SUFFIX_FIELD = "-field";
-  private static final String ID_SUFFIX_LABEL = "-label";
-  private static final String ID_SUFFIX_INPUT = "-input";
-  private static final String ID_SUFFIX_LIST = "-list";
+  private static final String REG_STYLE_TYPE_PREFIX = REG_STYLE_PREFIX + "type-";
 
   private static Node clientTypeSelector(LocalizableConstants constants, EcClientType defaultType) {
     String name = COL_REGISTRATION_TYPE;
@@ -73,8 +75,8 @@ public class EcServlet extends LoginServlet {
     for (EcClientType clientType : EcClientType.values()) {
       Input input = input().addClass(REG_STYLE_TYPE_PREFIX + "input").type(Type.RADIO)
           .name(name).value(clientType.ordinal()).id(clientType.name().toLowerCase())
-          .onChange("onSelectType()");
-      
+          .onChange("onSelectType(this.value)");
+
       if (clientType == defaultType) {
         input.checked();
       }
@@ -99,7 +101,7 @@ public class EcServlet extends LoginServlet {
     element.addClassName(className);
     return element;
   }
-  
+
   private static Element registrationField(String label, Type type, String name, boolean required) {
     return tr().id(name + ID_SUFFIX_FIELD).append(
         registrationLabelCell(name + ID_SUFFIX_LABEL, label, required),
@@ -127,9 +129,10 @@ public class EcServlet extends LoginServlet {
 
   @EJB
   ProxyBean proxy;
-
   @EJB
   QueryServiceBean qs;
+  @EJB
+  SystemBean sys;
 
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
@@ -140,12 +143,14 @@ public class EcServlet extends LoginServlet {
       html = getInitialPage(req, UserInterface.E_COMMERCE);
 
     } else if (BeeUtils.same(path, PATH_REGISTER)) {
-      String language = HttpUtils.getLanguage(req);
-      LocalizableConstants constants = Localizations.getPreferredConstants(language);
       Map<String, String> parameters = HttpUtils.getParameters(req, false);
 
-      if (parameters.size() > 3) {
-        html = register(req, parameters, constants);
+      String language = getLanguage(req);
+      LocalizableConstants constants = Localizations.getPreferredConstants(language);
+
+      if (parameters.containsKey(COL_REGISTRATION_BRANCH)) {
+        Map<String, String> dictionary = Localizations.getPreferredDictionary(language);
+        html = register(req, parameters, constants, dictionary);
       } else {
         html = getRegistrationForm(req.getServletContext().getContextPath(), constants);
       }
@@ -154,25 +159,23 @@ public class EcServlet extends LoginServlet {
       HttpUtils.sendError(resp, HttpServletResponse.SC_NOT_FOUND, path);
       return;
     }
+
     HttpUtils.sendResponse(resp, html);
   }
 
   @Override
-  protected Node getLoginExtension(HttpServletRequest req,
-      LocalizableConstants localizableConstants) {
-
-    String stylePrefix = "bee-SignIn-";
-    String styleName = stylePrefix + "Command-container";
-    Div commandContainer = div().addClass(styleName);
-
-    commandContainer.append(form()
-        .addClass(stylePrefix + "Command-Form-register")
+  protected Node getLoginExtension(HttpServletRequest req) {
+    Form form = form().addClass(STYLE_PREFIX + "Command-Form-register")
+        .name("register")
+        .acceptCharsetUtf8()
         .methodPost()
         .action(req.getServletContext().getContextPath() + req.getServletPath() + PATH_REGISTER)
-        .append(input().type(Type.SUBMIT).addClass(stylePrefix + "Register")
-            .value(localizableConstants.loginCommandRegister())));
+        .onSubmit("setSelectedLanguage(this)")
+        .append(
+            button().typeSubmit().addClass(STYLE_PREFIX + "Register").id(COMMAND_REGISTER_ID),
+            input().type(Type.HIDDEN).id("register-language").name(HttpConst.PARAM_LOCALE));
 
-    return commandContainer;
+    return div().addClass(STYLE_PREFIX + "Command-container").append(form);
   }
 
   private Node branchSelector(String label) {
@@ -191,26 +194,6 @@ public class EcServlet extends LoginServlet {
     return tr().id(name + ID_SUFFIX_FIELD).append(
         registrationLabelCell(name + ID_SUFFIX_LABEL, label, true),
         td().addClass(REG_STYLE_INPUT_CELL).append(select));
-  }
-
-  private Datalist getDataList(String tblName, String fldName) {
-    String[] values = qs.getColumn(new SqlSelect().setDistinctMode(true)
-        .addFields(tblName, fldName)
-        .addFrom(tblName)
-        .setWhere(SqlUtils.notNull(tblName, fldName))
-        .addOrder(tblName, fldName));
-
-    if (values == null || values.length <= 0) {
-      return null;
-    }
-
-    Datalist datalist = datalist();
-
-    for (String value : values) {
-      datalist.append(option().value(value));
-    }
-
-    return datalist;
   }
 
   private String getRegistrationForm(String contextPath, LocalizableConstants constants) {
@@ -243,12 +226,15 @@ public class EcServlet extends LoginServlet {
     doc.getBody().append(
         div().addClass(REG_STYLE_PREFIX + "panel").append(
             div().addClass(REG_STYLE_PREFIX + "caption").text(constants.ecRegistrationNew()),
-            form().addClass(REG_STYLE_PREFIX + "form").methodPost().append(
+            form().addClass(REG_STYLE_PREFIX + "form").acceptCharsetUtf8().methodPost().append(
                 table().addClass(REG_STYLE_PREFIX + "table").append(fields),
-                input().type(Type.SUBMIT).addClass(REG_STYLE_PREFIX + "submit")
-                    .value(constants.ecRegister()))));
+                input().type(Type.HIDDEN).name(HttpConst.PARAM_LOCALE)
+                    .value(constants.languageTag()),
+                button().typeSubmit().addClass(REG_STYLE_PREFIX + "submit")
+                    .text(constants.ecRegister()))));
 
-    Datalist cities = getDataList(CommonsConstants.TBL_CITIES, CommonsConstants.COL_CITY_NAME);
+    Datalist cities = proxy.getDataList(CommonsConstants.TBL_CITIES,
+        CommonsConstants.COL_CITY_NAME);
     if (cities != null) {
       String listId = COL_REGISTRATION_CITY + ID_SUFFIX_LIST;
       cities.id(listId);
@@ -260,7 +246,7 @@ public class EcServlet extends LoginServlet {
       }
     }
 
-    Datalist countries = getDataList(CommonsConstants.TBL_COUNTRIES,
+    Datalist countries = proxy.getDataList(CommonsConstants.TBL_COUNTRIES,
         CommonsConstants.COL_COUNTRY_NAME);
     if (countries != null) {
       String listId = COL_REGISTRATION_COUNTRY + ID_SUFFIX_LIST;
@@ -273,11 +259,11 @@ public class EcServlet extends LoginServlet {
       }
     }
 
-    return doc.build(0, 2);
+    return doc.buildLines();
   }
 
   private String register(HttpServletRequest req, Map<String, String> parameters,
-      LocalizableConstants constants) {
+      LocalizableConstants constants, Map<String, String> dictionary) {
 
     Document doc = new Document();
 
@@ -286,20 +272,12 @@ public class EcServlet extends LoginServlet {
         title().text(constants.ecRegistrationNew()));
 
     SqlInsert si = new SqlInsert(TBL_REGISTRATIONS);
-    int cnt = 0;
 
     for (Map.Entry<String, String> entry : parameters.entrySet()) {
-      String text = BeeUtils.toString(++cnt) + "  "
-          + BeeUtils.join(": ", entry.getKey(), entry.getValue());
-
-      doc.getBody().append(div().text(text));
-
-      if (!BeeUtils.isEmpty(entry.getValue()) && proxy.isField(TBL_REGISTRATIONS, entry.getKey())) {
-        si.addConstant(entry.getKey(), entry.getValue());
+      if (!BeeUtils.isEmpty(entry.getValue()) && sys.hasField(TBL_REGISTRATIONS, entry.getKey())) {
+        si.addConstant(entry.getKey(), entry.getValue().trim());
       }
     }
-
-    doc.getBody().append(hr());
 
     si.addConstant(COL_REGISTRATION_DATE, TimeUtils.nowMinutes());
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
@@ -311,10 +289,63 @@ public class EcServlet extends LoginServlet {
         doc.getBody().append(div().text(message));
       }
 
+    } else if (response.hasResponse(Long.class)) {
+      BeeRowSet data = qs.getViewData(VIEW_REGISTRATIONS,
+          IdFilter.compareId((Long) response.getResponse()));
+      BeeRow row = data.getRow(0);
+
+      Tbody fields = tbody();
+
+      for (int i = 0; i < data.getNumberOfColumns(); i++) {
+        BeeColumn column = data.getColumn(i);
+        String value;
+
+        switch (column.getId()) {
+          case COL_REGISTRATION_DATE:
+            value = row.getDateTime(i).toCompactString();
+            break;
+
+          case COL_REGISTRATION_BRANCH:
+          case COL_REGISTRATION_HOST:
+          case COL_REGISTRATION_AGENT:
+            value = null;
+            break;
+
+          case COL_REGISTRATION_TYPE:
+            EcClientType type = EnumUtils.getEnumByIndex(EcClientType.class, row.getInteger(i));
+            value = (type == null) ? null : type.getCaption(constants);
+            break;
+
+          default:
+            value = row.getString(i);
+        }
+
+        if (!BeeUtils.isEmpty(value)) {
+          String label;
+          if (column.getId().startsWith(COL_REGISTRATION_BRANCH)) {
+            label = constants.branch();
+          } else {
+            label = Localized.maybeTranslate(column.getLabel(), dictionary);
+          }
+
+          fields.append(tr().append(
+              td().alignRight().paddingRight(1, CssUnit.EM).text(label),
+              td().text(value)));
+        }
+      }
+
+      doc.getBody().append(h3().text(constants.ecRegistrationReceived()), table().append(fields));
+
+    } else if (response.hasMessages()) {
+      for (ResponseMessage message : response.getMessages()) {
+        doc.getBody().append(div().text(message.getMessage()));
+      }
+
     } else {
-      doc.getBody().append(div().text("OK"));
+      doc.getBody().append(div().text(BeeUtils.joinWords("response", response.getType(),
+          response.getResponse())));
     }
 
-    return doc.build();
+    return doc.buildLines();
   }
 }

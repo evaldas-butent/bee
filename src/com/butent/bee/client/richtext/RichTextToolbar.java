@@ -26,8 +26,9 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.css.CssUnit;
 
@@ -88,17 +89,19 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       Widget sender = (Widget) event.getSource();
 
       if (sender == backColors) {
-        formatter.setBackColor(backColors.getValue(backColors.getSelectedIndex()));
-        backColors.setSelectedIndex(0);
+        formatter.setBackColor(backColors.getValue());
+        area.setFocus(true);
       } else if (sender == foreColors) {
-        formatter.setForeColor(foreColors.getValue(foreColors.getSelectedIndex()));
-        foreColors.setSelectedIndex(0);
+        formatter.setForeColor(foreColors.getValue());
+        area.setFocus(true);
       } else if (sender == fonts) {
-        formatter.setFontName(fonts.getValue(fonts.getSelectedIndex()));
-        fonts.setSelectedIndex(0);
+        formatter.setFontName(fonts.getValue());
+        area.setFocus(true);
       } else if (sender == fontSizes) {
-        formatter.setFontSize(fontSizesConstants[fontSizes.getSelectedIndex() - 1]);
-        fontSizes.setSelectedIndex(0);
+        if (fontSizes.getSelectedIndex() > 0) {
+          formatter.setFontSize(fontSizesConstants[fontSizes.getSelectedIndex() - 1]);
+          area.setFocus(true);
+        }
       }
     }
 
@@ -107,40 +110,46 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       Widget sender = (Widget) event.getSource();
 
       if (sender == bold) {
-        bold.invert();
         formatter.toggleBold();
+        area.setFocus(true);
       } else if (sender == italic) {
-        italic.invert();
         formatter.toggleItalic();
+        area.setFocus(true);
       } else if (sender == underline) {
-        underline.invert();
         formatter.toggleUnderline();
+        area.setFocus(true);
       } else if (sender == subscript) {
-        subscript.invert();
         formatter.toggleSubscript();
+        area.setFocus(true);
       } else if (sender == superscript) {
-        superscript.invert();
         formatter.toggleSuperscript();
+        area.setFocus(true);
       } else if (sender == strikethrough) {
-        strikethrough.invert();
         formatter.toggleStrikethrough();
+        area.setFocus(true);
 
       } else if (sender == indent) {
         formatter.rightIndent();
+        area.setFocus(true);
       } else if (sender == outdent) {
         formatter.leftIndent();
+        area.setFocus(true);
       } else if (sender == justifyLeft) {
         formatter.setJustification(RichTextArea.Justification.LEFT);
+        area.setFocus(true);
       } else if (sender == justifyCenter) {
         formatter.setJustification(RichTextArea.Justification.CENTER);
+        area.setFocus(true);
       } else if (sender == justifyRight) {
         formatter.setJustification(RichTextArea.Justification.RIGHT);
+        area.setFocus(true);
 
       } else if (sender == insertImage) {
         getInput("Image URL", "http://", new Consumer<String>() {
           @Override
           public void accept(String parameter) {
             formatter.insertImage(parameter);
+            area.setFocus(true);
           }
         });
 
@@ -149,18 +158,23 @@ public class RichTextToolbar extends Flow implements HasEnabled {
           @Override
           public void accept(String parameter) {
             formatter.createLink(parameter);
+            area.setFocus(true);
           }
         });
 
       } else if (sender == hr) {
         formatter.insertHorizontalRule();
+        area.setFocus(true);
       } else if (sender == ol) {
         formatter.insertOrderedList();
+        area.setFocus(true);
       } else if (sender == ul) {
         formatter.insertUnorderedList();
+        area.setFocus(true);
 
       } else if (sender == removeFormat) {
         formatter.removeFormat();
+        area.setFocus(true);
       } else if (sender == area) {
         updateStatus();
 
@@ -169,13 +183,16 @@ public class RichTextToolbar extends Flow implements HasEnabled {
           @Override
           public void accept(String parameter) {
             formatter.insertHTML(parameter);
+            area.setFocus(true);
           }
         });
 
       } else if (sender == undo) {
         formatter.undo();
+        area.setFocus(true);
       } else if (sender == redo) {
         formatter.redo();
+        area.setFocus(true);
       }
     }
 
@@ -235,10 +252,10 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   private final Image undo;
   private final Image redo;
 
-  private final BeeListBox backColors;
-  private final BeeListBox foreColors;
-  private final BeeListBox fonts;
-  private final BeeListBox fontSizes;
+  private final ListBox backColors;
+  private final ListBox foreColors;
+  private final ListBox fonts;
+  private final ListBox fontSizes;
 
   private final Command accept;
   
@@ -391,28 +408,31 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     return ib;
   }
 
-  private BeeListBox createColorList(String caption) {
-    BeeListBox lb = new BeeListBox();
+  private ListBox createColorList(String caption) {
+    ListBox lb = new ListBox();
     lb.addChangeHandler(handler);
     lb.setVisibleItemCount(1);
+    lb.setTabIndex(BeeConst.UNDEF);
 
-    lb.addItem(caption);
+    lb.addItem(caption, BeeConst.STRING_EMPTY);
     lb.addItem("White", "white");
     lb.addItem("Black", "black");
     lb.addItem("Red", "red");
     lb.addItem("Green", "green");
     lb.addItem("Yellow", "yellow");
     lb.addItem("Blue", "blue");
+    
     return lb;
   }
 
-  private BeeListBox createFontList() {
-    BeeListBox lb = new BeeListBox();
+  private ListBox createFontList() {
+    ListBox lb = new ListBox();
     lb.addChangeHandler(handler);
     lb.setVisibleItemCount(1);
+    lb.setTabIndex(BeeConst.UNDEF);
 
-    lb.addItem("Font Name", "");
-    lb.addItem("Normal", "");
+    lb.addItem("Font Name", BeeConst.STRING_EMPTY);
+    lb.addItem("Normal", BeeConst.STRING_EMPTY);
     lb.addItem("Times New Roman", "Times New Roman");
     lb.addItem("Arial", "Arial");
     lb.addItem("Courier New", "Courier New");
@@ -422,12 +442,13 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     return lb;
   }
 
-  private BeeListBox createFontSizes() {
-    BeeListBox lb = new BeeListBox();
+  private ListBox createFontSizes() {
+    ListBox lb = new ListBox();
     lb.addChangeHandler(handler);
     lb.setVisibleItemCount(1);
+    lb.setTabIndex(BeeConst.UNDEF);
 
-    lb.addItem("Font Size");
+    lb.addItem("Font Size", BeeConst.STRING_EMPTY);
     lb.addItem("XX-Small");
     lb.addItem("X-Small");
     lb.addItem("Small");
@@ -448,11 +469,15 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     return spacer;
   }
 
-  private Toggle createToggle(ImageResource img, String tip) {
-    Toggle tb = new Toggle(new Image(img));
-    tb.addClickHandler(handler);
-    tb.setTitle(tip);
-    return tb;
+  private Toggle createToggle(ImageResource ir, String tip) {
+    Image image = new Image(ir);
+    String html = DomUtils.getOuterHtml(image.getElement());
+    
+    Toggle toggle = new Toggle(html, html);
+    toggle.addClickHandler(handler);
+    toggle.setTitle(tip);
+
+    return toggle;
   }
 
   private void getInput(String caption, String defaultValue, final Consumer<String> procedure) {

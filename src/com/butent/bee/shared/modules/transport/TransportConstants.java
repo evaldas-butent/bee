@@ -1,27 +1,49 @@
 package com.butent.bee.shared.modules.transport;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TransportConstants {
 
-  public enum OrderStatus implements HasCaption {
-    NEW(Localized.getConstants().trOrderStatusNew()),
-    ACTIVE(Localized.getConstants().trOrderStatusActive()),
-    CANCELED(Localized.getConstants().trOrderStatusCanceled()),
-    COMPLETED(Localized.getConstants().trOrderStatusCompleted()),
-    REQUEST(Localized.getConstants().trOrderStatusRequest());
-
-    private final String caption;
-
-    private OrderStatus(String caption) {
-      this.caption = caption;
-    }
+  public enum OrderStatus implements HasLocalizedCaption {
+    NEW {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusNew();
+      }
+    },
+    ACTIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusActive();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusCanceled();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusCompleted();
+      }
+    },
+    REQUEST {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusRequest();
+      }
+    };
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
   }
 
@@ -152,6 +174,13 @@ public final class TransportConstants {
     public abstract String getTripVehicleNumberColumnName();
   }
 
+  public static void register() {
+    EnumUtils.register(OrderStatus.class);
+    EnumUtils.register(AssessmentStatus.class);
+    EnumUtils.register(CargoRequestStatus.class);
+    EnumUtils.register(TripStatus.class);
+  }
+
   public static final String TRANSPORT_MODULE = "Transport";
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
@@ -252,6 +281,12 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
 
+  public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
+  public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
+
+  public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
+  public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
+
   public static final String COL_GROUP = "Group";
 
   public static final String COL_TRIP = "Trip";
@@ -265,7 +300,6 @@ public final class TransportConstants {
   public static final String COL_TRIP_NOTES = "Notes";
 
   public static final String COL_EXPEDITION = "Expedition";
-  public static final String COL_EXPEDITION_TYPE = "Name";
   public static final String COL_FORWARDER = "Forwarder";
   public static final String COL_FORWARDER_VEHICLE = "ForwarderVehicle";
 
@@ -276,6 +310,17 @@ public final class TransportConstants {
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
+  public static final String COL_CARGO_SHIPPING_TERM = "ShippingTerm";
+  public static final String COL_CARGO_QUANTITY = "Quantity";
+  public static final String COL_CARGO_WEIGHT = "Weight";
+  public static final String COL_CARGO_VOLUME = "Volume";
+  public static final String COL_CARGO_LDM = "LDM";
+  public static final String COL_CARGO_LENGTH = "Length";
+  public static final String COL_CARGO_WIDTH = "Width";
+  public static final String COL_CARGO_HEIGHT = "Height";
+  public static final String COL_CARGO_PALETTES = "Palettes";
+  public static final String COL_CARGO_VALUE = "Value";
+  public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
@@ -317,6 +362,9 @@ public final class TransportConstants {
   public static final String COL_PLACE_ADDRESS = "Address";
   public static final String COL_PLACE_POST_INDEX = "PostIndex";
   public static final String COL_PLACE_TERMINAL = "Terminal";
+  public static final String COL_PLACE_PHONE = "Phone";
+  public static final String COL_PLACE_FAX = "Fax";
+  public static final String COL_PLACE_NUMBER = "Number";
 
   public static final String COL_VEHICLE_ID = "VehicleID";
   public static final String COL_VEHICLE = "Vehicle";
@@ -478,6 +526,40 @@ public final class TransportConstants {
   public static final String COL_REGISTRATION_HOST = "Host";
   public static final String COL_REGISTRATION_AGENT = "Agent";
 
+  public static final String COL_QUERY_DATE = "Date";
+  public static final String COL_QUERY_CUSTOMER_NAME = "CustomerName";
+  public static final String COL_QUERY_CUSTOMER_CODE = "CustomerCode";
+  public static final String COL_QUERY_CUSTOMER_VAT_CODE = "CustomerVatCode";
+  public static final String COL_QUERY_CUSTOMER_ADDRESS = "CustomerAddress";
+  public static final String COL_QUERY_CUSTOMER_PHONE = "CustomerPhone";
+  public static final String COL_QUERY_CUSTOMER_EMAIL = "CustomerEmail";
+  public static final String COL_QUERY_CUSTOMER_CONTACT = "CustomerContact";
+  public static final String COL_QUERY_CUSTOMER_CONTACT_POSITION = "CustomerContactPosition";
+  public static final String COL_QUERY_CUSTOMER_EXCHANGE_CODE = "CustomerExchangeCode";
+  public static final String COL_QUERY_LOADING_COMPANY_NAME = "LoadingCompanyName";
+  public static final String COL_QUERY_LOADING_EMAIL = "LoadingEmail";
+  public static final String COL_QUERY_LOADING_CITY = "LoadingCity";
+  public static final String COL_QUERY_UNLOADING_COMPANY_NAME = "UnloadingCompanyName";
+  public static final String COL_QUERY_UNLOADING_EMAIL = "UnloadingEmail";
+  public static final String COL_QUERY_UNLOADING_CITY = "UnloadingCity";
+  public static final String COL_QUERY_EXPEDITION = "Expedition";
+  public static final String COL_QUERY_DELIVERY_DATE = "DeliveryDate";
+  public static final String COL_QUERY_DELIVERY_TIME = "DeliveryTime";
+  public static final String COL_QUERY_TERMS_OF_DELIVERY = "TermsOfDelivery";
+  public static final String COL_QUERY_CUSTOMS_BROKERAGE = "CustomsBrokerage";
+  public static final String COL_QUERY_FREIGHT_INSURANCE = "FreightInsurance";
+  public static final String COL_QUERY_CARGO = "Cargo";
+  public static final String COL_QUERY_MANAGER = "Manager";
+  public static final String COL_QUERY_NOTES = "Notes";
+  public static final String COL_QUERY_HOST = "Host";
+  public static final String COL_QUERY_AGENT = "Agent";
+
+  public static final String COL_EXPEDITION_TYPE_NAME = "Name";
+  public static final String COL_EXPEDITION_TYPE_SELF_SERVICE = "SelfService";
+
+  public static final String COL_SHIPPING_TERM_NAME = "Name";
+  public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -526,12 +608,16 @@ public final class TransportConstants {
   public static final String ALS_ABSENCE_NAME = "AbsenceName";
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
 
+  public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
+
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
   public static final String DATA_TYPE_TRIP = "Trip";
   public static final String DATA_TYPE_FREIGHT = "Freight";
   public static final String DATA_TYPE_TRUCK = "Truck";
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
+
+  public static final String DEFAULT_CARGO_DESCRIPTION = "*";
 
   public static final String STYLE_SHEET = "transport";
 

@@ -23,7 +23,7 @@
 
     <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
 
-    <Integer name="Status" notNull="true" defValue="0" label="=trRequestStatus" />
+    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0" label="=trRequestStatus" />
     <DateTime name="Finished" label="=trRequestFinished" />
     <Text name="Result" label="=trRequestResult" />
 
