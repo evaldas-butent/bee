@@ -10,7 +10,7 @@ import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
@@ -188,8 +188,8 @@ public final class EditorFactory {
         break;
 
       case LIST:
-        editor = new BeeListBox();
-        ((BeeListBox) editor).setValueNumeric(ValueType.isNumeric(valueType));
+        editor = new ListBox();
+        ((ListBox) editor).setValueNumeric(ValueType.isNumeric(valueType));
         break;
 
       case LONG:

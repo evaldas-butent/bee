@@ -30,7 +30,7 @@ import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -154,8 +154,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       result = new DataSelector(getRelation(), embedded);
 
     } else if (!BeeUtils.isEmpty(getEnumKey())) {
-      result = new BeeListBox();
-      ((BeeListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
+      result = new ListBox();
+      ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
       if (result instanceof AcceptsCaptions) {
         ((AcceptsCaptions) result).setCaptions(getEnumKey());
       }

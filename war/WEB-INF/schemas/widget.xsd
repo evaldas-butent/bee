@@ -186,24 +186,10 @@
   <xs:complexType name="customButton">
     <xs:complexContent>
       <xs:extension base="editableWidget">
-        <xs:sequence>
-          <xs:element name="upFace" type="buttonFace" minOccurs="0" />
-          <xs:element name="downFace" type="buttonFace" minOccurs="0" />
-          <xs:element name="upHoveringFace" type="buttonFace" minOccurs="0" />
-          <xs:element name="downHoveringFace" type="buttonFace" minOccurs="0" />
-          <xs:element name="upDisabledFace" type="buttonFace" minOccurs="0" />
-          <xs:element name="downDisabledFace" type="buttonFace" minOccurs="0" />
-        </xs:sequence>
+        <xs:attribute name="upFace" type="xs:string" />
+        <xs:attribute name="downFace" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="buttonFace">
-    <xs:attribute name="html" type="xs:string" />
-    <xs:attribute name="text" type="xs:string" />
-    <xs:attribute name="resource" type="ui:imageResource" />
-    <xs:attribute name="url" type="xs:anyURI" />
-    <xs:attributeGroup ref="ui:appearance" />
   </xs:complexType>
 
   <xs:element name="Toggle" type="customButton" substitutionGroup="widget" />
@@ -902,6 +888,14 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+
+  <xs:complexType name="buttonFace">
+    <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="text" type="xs:string" />
+    <xs:attribute name="resource" type="ui:imageResource" />
+    <xs:attribute name="url" type="xs:anyURI" />
+    <xs:attributeGroup ref="ui:appearance" />
+  </xs:complexType>
 
   <xs:element name="FileCollector" substitutionGroup="widget">
     <xs:complexType>

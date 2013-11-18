@@ -1,10 +1,27 @@
 package com.butent.bee.client.richtext;
 
-import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.HasEnabled;
 
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.HasHtml;
 
-class RichTextArea extends FocusWidget implements HasHtml {
+class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers, HasEnabled {
 
   enum FontSize {
     XX_SMALL(1),
@@ -115,8 +132,32 @@ class RichTextArea extends FocusWidget implements HasHtml {
   private final RichTextAreaImpl impl;
 
   RichTextArea() {
-    this.impl = new RichTextAreaImpl();
-    setElement(impl.getElement());
+    super(Document.get().createIFrameElement());
+    this.impl = new RichTextAreaImpl(getElement());
+    
+    setTabIndex(0);
+  }
+
+  @Override
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return addDomHandler(handler, BlurEvent.getType());
+  }
+  
+  @Override
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+  
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return addDomHandler(handler, KeyDownEvent.getType());
+  }
+  
+  public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
+    return addDomHandler(handler, KeyUpEvent.getType());
+  }
+  
+  public boolean contains(Node node) {
+    return impl.contains(node); 
   }
 
   @Override
@@ -124,21 +165,44 @@ class RichTextArea extends FocusWidget implements HasHtml {
     return impl.getHtml();
   }
 
+  public int getTabIndex() {
+    return getElement().getTabIndex();
+  }
+  
   @Override
   public boolean isEnabled() {
     return impl.isEnabled();
   }
 
   @Override
+  public void onBrowserEvent(Event event) {
+    String type = event.getType();
+    if (EventUtils.isMouseButtonEvent(type) || EventUtils.isKeyEvent(type)) {
+      EventTarget target = event.getEventTarget();
+
+      if (Node.is(target) && contains(Node.as(target)) && !target.equals(getElement())) {
+        if (!Previewer.preview(event, getElement())) {
+          return;
+        }
+      }
+    }
+
+    super.onBrowserEvent(event);
+  }
+  
+  @Override
   public void setEnabled(boolean enabled) {
     impl.setEnabled(enabled);
   }
 
-  @Override
   public void setFocus(boolean focused) {
     if (isAttached()) {
       impl.setFocus(focused);
     }
+  }
+  
+  public void setTabIndex(int index) {
+    getElement().setTabIndex(index);
   }
 
   @Override

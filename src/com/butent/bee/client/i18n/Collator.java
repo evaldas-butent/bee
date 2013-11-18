@@ -173,7 +173,14 @@ public final class Collator implements Comparator<String> {
   }-*/;
 
   private native int compareImpl(String source, String target, String loc) /*-{
-    return source.localeCompare(target, loc);
+// chromium issue 314210    
+    var z;
+    try {
+      z = source.localeCompare(target, loc);
+    } catch (err) {
+      z = source.localeCompare(target);
+    }
+    return z;
   }-*/;
 
   private native int compareImpl(String source, String target, String loc, Options opt) /*-{

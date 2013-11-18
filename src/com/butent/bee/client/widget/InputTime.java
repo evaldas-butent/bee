@@ -347,7 +347,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
       return;
     }
 
-    final BeeListBox widget = new BeeListBox();
+    final ListBox widget = new ListBox();
     widget.addStyleName(STYLE_TIME_PICKER);
 
     for (int i = start; i < end; i += step) {
@@ -493,7 +493,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     return State.OPEN.equals(getPickerState());
   }
   
-  private void onPick(Popup popup, BeeListBox widget) {
+  private void onPick(Popup popup, ListBox widget) {
     if (widget.getSelectedIndex() >= 0) {
       String text = widget.getItemText(widget.getSelectedIndex());
       popup.close();

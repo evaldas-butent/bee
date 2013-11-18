@@ -62,7 +62,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
@@ -294,7 +294,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     public void onKeyDown(KeyDownEvent event) {
       if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DELETE) {
         event.preventDefault();
-        ((BeeListBox) event.getSource()).deselect();
+        ((ListBox) event.getSource()).deselect();
       }
     }
   };
@@ -407,8 +407,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     if (BeeUtils.same(name, NAME_SERVICE_TYPE)) {
       setServiceTypeWidgetId(widget.getId());
-      if (widget instanceof BeeListBox) {
-        ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
+      if (widget instanceof ListBox) {
+        ((ListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
     } else if (BeeUtils.same(name, NAME_REPAIR_TYPE)) {
@@ -416,8 +416,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       if (widget instanceof Editor) {
         ((Editor) widget).addValueChangeHandler(propWidgetHandler);
       }
-      if (widget instanceof BeeListBox) {
-        ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
+      if (widget instanceof ListBox) {
+        ((ListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
@@ -500,8 +500,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_REMINDER)) {
       setReminderWidgetId(widget.getId());
-      if (widget instanceof BeeListBox) {
-        ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
+      if (widget instanceof ListBox) {
+        ((ListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
     } else if (BeeUtils.same(name, NAME_BUILD)) {
@@ -869,12 +869,12 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     return lastCheckStart;
   }
 
-  private BeeListBox getListBox(String id) {
+  private ListBox getListBox(String id) {
     if (BeeUtils.isEmpty(id)) {
       return null;
     }
     Widget widget = getWidget(id);
-    return (widget instanceof BeeListBox) ? (BeeListBox) widget : null;
+    return (widget instanceof ListBox) ? (ListBox) widget : null;
   }
 
   private Long getMillis(String id) {
@@ -907,7 +907,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private Long getSelectedId(String widgetId, List<Long> rowIds) {
-    BeeListBox listBox = getListBox(widgetId);
+    ListBox listBox = getListBox(widgetId);
 
     if (listBox != null) {
       int index = listBox.getSelectedIndex();
@@ -952,8 +952,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private boolean hasValue(String widgetId) {
     Widget widget = getWidget(widgetId);
 
-    if (widget instanceof BeeListBox) {
-      return ((BeeListBox) widget).getSelectedIndex() >= 0;
+    if (widget instanceof ListBox) {
+      return ((ListBox) widget).getSelectedIndex() >= 0;
     } else {
       return false;
     }
@@ -1025,8 +1025,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private void initPropWidget(Widget widget, BeeRowSet rowSet, List<Long> rowIds, Long def) {
-    if (widget instanceof BeeListBox && !rowIds.isEmpty()) {
-      final BeeListBox listBox = (BeeListBox) widget;
+    if (widget instanceof ListBox && !rowIds.isEmpty()) {
+      final ListBox listBox = (ListBox) widget;
       if (listBox.getItemCount() > 0) {
         listBox.clear();
       }
@@ -1045,8 +1045,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private void initReminderWidget(Widget widget, BeeRowSet rowSet) {
-    if (widget instanceof BeeListBox && !reminderTypes.isEmpty()) {
-      final BeeListBox listBox = (BeeListBox) widget;
+    if (widget instanceof ListBox && !reminderTypes.isEmpty()) {
+      final ListBox listBox = (ListBox) widget;
       if (listBox.getItemCount() > 0) {
         listBox.clear();
       }
@@ -1211,7 +1211,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     StringBuilder info = new StringBuilder();
     String separator = BeeConst.DEFAULT_LIST_SEPARATOR;
 
-    BeeListBox listBox = getListBox(getRepairTypeWidgetId());
+    ListBox listBox = getListBox(getRepairTypeWidgetId());
     if (listBox != null) {
       int index = listBox.getSelectedIndex();
       if (index >= 0) {
@@ -1458,7 +1458,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     this.saving = saving;
   }
 
-  private static void setSelectedIndex(final BeeListBox listBox, int index) {
+  private static void setSelectedIndex(final ListBox listBox, int index) {
     if (listBox == null || listBox.isEmpty()) {
       return;
     }

@@ -698,14 +698,7 @@
 
 .bee-Toggle {
   text-align: center;
-}
-
-.bee-Toggle-up-hovering {
-  color: red;
-}
-
-.bee-Toggle-down-hovering {
-  color: green;
+  cursor: pointer;
 }
 
 .bee-StringPicker {
@@ -778,7 +771,7 @@
   -ms-flex-align: center;
   margin-bottom: 5px;
 }
-.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+.bee-RichTextToolbar-row .bee-Toggle-down {
   background-color: #faac58;
 }
 

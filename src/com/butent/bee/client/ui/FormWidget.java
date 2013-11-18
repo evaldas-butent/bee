@@ -5,8 +5,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.CustomButton;
-import com.google.gwt.user.client.ui.CustomButton.Face;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -80,7 +78,7 @@ import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
@@ -233,7 +231,7 @@ public enum FormWidget {
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
-  RICH_TEXT_EDITOR("RichTextEditor", EnumSet.of(Type.DISPLAY)),
+  RICH_TEXT_EDITOR("RichTextEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   ROW_ID_LABEL("RowIdLabel", EnumSet.of(Type.DISPLAY)),
   SCROLL_PANEL("ScrollPanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_INLINE_PANEL("SimpleInlinePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
@@ -413,6 +411,9 @@ public enum FormWidget {
 
   private static final String ATTR_TEXT_ONLY = "textOnly";
 
+  private static final String ATTR_UP_FACE = "upFace";
+  private static final String ATTR_DOWN_FACE = "downFace";
+  
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -433,13 +434,6 @@ public enum FormWidget {
   private static final String TAG_OPTION = "option";
   private static final String TAG_TREE_ITEM = "TreeItem";
   private static final String TAG_TAB = "tab";
-
-  private static final String TAG_UP_FACE = "upFace";
-  private static final String TAG_DOWN_FACE = "downFace";
-  private static final String TAG_UP_HOVERING_FACE = "upHoveringFace";
-  private static final String TAG_DOWN_HOVERING_FACE = "downHoveringFace";
-  private static final String TAG_UP_DISABLED_FACE = "upDisabledFace";
-  private static final String TAG_DOWN_DISABLED_FACE = "downDisabledFace";
 
   private static final String TAG_FACE = "face";
 
@@ -902,12 +896,12 @@ public enum FormWidget {
         break;
 
       case LIST_BOX:
-        widget = new BeeListBox(BeeUtils.toBoolean(attributes.get(ATTR_MULTI_SELECT)));
+        widget = new ListBox(BeeUtils.toBoolean(attributes.get(ATTR_MULTI_SELECT)));
         String isNum = attributes.get(ATTR_VALUE_NUMERIC);
         if (BeeUtils.isBoolean(isNum)) {
-          ((BeeListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
+          ((ListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
         } else if (column != null && ValueType.isNumeric(column.getType())) {
-          ((BeeListBox) widget).setValueNumeric(true);
+          ((ListBox) widget).setValueNumeric(true);
         }
         break;
 
@@ -1080,7 +1074,13 @@ public enum FormWidget {
         break;
 
       case TOGGLE:
-        widget = new Toggle();
+        String upFace = attributes.get(ATTR_UP_FACE);
+        String downFace = attributes.get(ATTR_DOWN_FACE);
+        if (BeeUtils.allEmpty(upFace, downFace)) {
+          widget = new Toggle();
+        } else {
+          widget = new Toggle(upFace, downFace);
+        }
         break;
 
       case UNBOUND_SELECTOR:
@@ -1281,26 +1281,26 @@ public enum FormWidget {
     }
 
     if (!attributes.isEmpty()) {
-      if (this == LIST_BOX && widget instanceof BeeListBox) {
+      if (this == LIST_BOX && widget instanceof ListBox) {
         int z = BeeUtils.toInt(attributes.get(ATTR_MIN_SIZE));
         if (z > 0) {
-          ((BeeListBox) widget).setMinSize(z);
+          ((ListBox) widget).setMinSize(z);
         }
         z = BeeUtils.toInt(attributes.get(ATTR_MAX_SIZE));
         if (z > 0) {
-          ((BeeListBox) widget).setMaxSize(z);
+          ((ListBox) widget).setMaxSize(z);
         }
 
         int cnt;
         if (BeeUtils.toBoolean(attributes.get(ATTR_ALL_ITEMS_VISIBLE))) {
-          cnt = ((BeeListBox) widget).getItemCount();
+          cnt = ((ListBox) widget).getItemCount();
         } else {
           cnt = BeeUtils.toInt(attributes.get(ATTR_SIZE));
         }
         if (cnt > 0) {
-          ((BeeListBox) widget).setVisibleItemCount(cnt);
+          ((ListBox) widget).setVisibleItemCount(cnt);
         } else {
-          ((BeeListBox) widget).updateSize();
+          ((ListBox) widget).updateSize();
         }
       }
     }
@@ -1883,11 +1883,6 @@ public enum FormWidget {
         }
       }
 
-    } else if (this == TOGGLE && parent instanceof CustomButton
-        && BeeUtils.inListSame(childTag, TAG_UP_FACE, TAG_DOWN_FACE, TAG_UP_HOVERING_FACE,
-            TAG_DOWN_HOVERING_FACE, TAG_UP_DISABLED_FACE, TAG_DOWN_DISABLED_FACE)) {
-      setFace((CustomButton) parent, childTag, child);
-
     } else if (this == TREE && parent instanceof Tree) {
       processTree((Tree) parent, child);
 
@@ -2030,43 +2025,6 @@ public enum FormWidget {
           ((HasCapsLock) widget).setUpperCase(true);
         }
       }
-    }
-  }
-
-  private static void setFace(CustomButton button, String faceName, Element element) {
-    Pair<String, Image> options = getFaceOptions(element);
-    if (options == null) {
-      return;
-    }
-
-    String html = options.getA();
-    Image image = options.getB();
-    if (BeeUtils.isEmpty(html) && image == null) {
-      return;
-    }
-
-    Face face = null;
-    if (BeeUtils.same(faceName, TAG_UP_FACE)) {
-      face = button.getUpFace();
-    } else if (BeeUtils.same(faceName, TAG_DOWN_FACE)) {
-      face = button.getDownFace();
-    } else if (BeeUtils.same(faceName, TAG_UP_HOVERING_FACE)) {
-      face = button.getUpHoveringFace();
-    } else if (BeeUtils.same(faceName, TAG_DOWN_HOVERING_FACE)) {
-      face = button.getDownHoveringFace();
-    } else if (BeeUtils.same(faceName, TAG_UP_DISABLED_FACE)) {
-      face = button.getUpDisabledFace();
-    } else if (BeeUtils.same(faceName, TAG_DOWN_DISABLED_FACE)) {
-      face = button.getDownDisabledFace();
-    }
-    if (face == null) {
-      return;
-    }
-
-    if (image != null) {
-      face.setHTML(DomUtils.getOuterHtml(image.getElement()));
-    } else {
-      face.setHTML(html);
     }
   }
 

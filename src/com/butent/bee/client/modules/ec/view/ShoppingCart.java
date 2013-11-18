@@ -24,7 +24,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.CustomDiv;
@@ -280,7 +280,7 @@ public class ShoppingCart extends Split {
     label.addStyleName(STYLE_DELIVERY_METHOD + STYLE_LABEL);
     panel.add(label);
 
-    final BeeListBox input = new BeeListBox();
+    final ListBox input = new ListBox();
     input.addStyleName(STYLE_DELIVERY_METHOD + STYLE_INPUT);
 
     for (DeliveryMethod deliveryMethod : deliveryMethods) {

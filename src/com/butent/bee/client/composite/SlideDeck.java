@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -28,7 +29,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.CustomComplex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputRange;
@@ -557,7 +558,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
     if (EventUtils.isKeyDown(event.getNativeEvent().getType())) {
       int keyCode = event.getNativeEvent().getKeyCode();
 
@@ -862,7 +863,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     Label effLabel = new Label("Effect");
     table.setWidgetAndStyle(row, 0, effLabel, STYLE_SETTINGS_LABEL);
 
-    final BeeListBox effectWidget = new BeeListBox();
+    final ListBox effectWidget = new ListBox();
     effectWidget.setCaptions(Effect.class);
     if (getEffect() != null) {
       effectWidget.setSelectedIndex(getEffect().ordinal());

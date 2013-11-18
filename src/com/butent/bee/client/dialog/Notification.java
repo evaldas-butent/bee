@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -223,7 +224,7 @@ public class Notification extends Composite implements PreviewHandler, Identifia
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
     Assert.notNull(event);
     String type = event.getNativeEvent().getType();
 
