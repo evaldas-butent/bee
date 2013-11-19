@@ -128,20 +128,26 @@ public final class TransportConstants {
   }
 
   public enum TripStatus implements HasCaption {
-    NEW(Localized.getConstants().trTripStatusNew()),
-    ACTIVE(Localized.getConstants().trTripStatusActive()),
-    CANCELED(Localized.getConstants().trTripStatusCanceled()),
-    COMPLETED(Localized.getConstants().trTripStatusCompleted());
+    NEW(Localized.getConstants().trTripStatusNew(), true),
+    ACTIVE(Localized.getConstants().trTripStatusActive(), true),
+    CANCELED(Localized.getConstants().trTripStatusCanceled(), false),
+    COMPLETED(Localized.getConstants().trTripStatusCompleted(), false);
 
     private final String caption;
+    private final boolean editable;
 
-    private TripStatus(String caption) {
+    private TripStatus(String caption, boolean editable) {
       this.caption = caption;
+      this.editable = editable;
     }
 
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public boolean isEditable() {
+      return editable;
     }
   }
 
@@ -298,6 +304,7 @@ public final class TransportConstants {
   public static final String COL_TRIP_PLANNED_END_DATE = "PlannedEndDate";
   public static final String COL_TRIP_PERCENT = "TripPercent";
   public static final String COL_TRIP_NOTES = "Notes";
+  public static final String COL_TRIP_STATUS = "Status";
 
   public static final String COL_EXPEDITION = "Expedition";
   public static final String COL_FORWARDER = "Forwarder";

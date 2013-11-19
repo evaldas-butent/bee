@@ -71,6 +71,8 @@ final class Freight extends OrderCargo {
   private final Long cargoTripVersion;
 
   private String tripTitle;
+  
+  private boolean editable;
 
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
@@ -139,6 +141,10 @@ final class Freight extends OrderCargo {
     }
   }
 
+  boolean isEditable() {
+    return editable;
+  }
+
   void makeTarget(final DndTarget widget, final String overStyle) {
     DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
         new Predicate<Object>() {
@@ -153,6 +159,10 @@ final class Freight extends OrderCargo {
             Freight.this.acceptDrop(u);
           }
         });
+  }
+
+  void setEditable(boolean editable) {
+    this.editable = editable;
   }
 
   void setTripTitle(String tripTitle) {

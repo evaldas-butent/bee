@@ -154,6 +154,8 @@ public final class RelationUtils {
       logger.warning(targetInfo.getViewName(), targetColumn, "no descendants found");
       return result;
     }
+    
+    int tcLevel = Math.max(targetInfo.getViewColumnLevel(targetColumn), 0); 
 
     for (ViewColumn tc : targetColumns) {
       int targetIndex = targetInfo.getColumnIndex(tc.getName());
@@ -170,7 +172,7 @@ public final class RelationUtils {
 
       } else {
         int sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField(),
-            tc.getLevel() - 1);
+            tc.getLevel() + tcLevel - 1);
         if (!BeeConst.isUndef(sourceIndex) 
             && !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
                 sourceRow.getString(sourceIndex))) {

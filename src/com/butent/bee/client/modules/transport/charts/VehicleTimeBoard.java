@@ -415,7 +415,9 @@ abstract class VehicleTimeBoard extends ChartBase {
 
           for (Freight freight : freights.get(tripId)) {
             freight.adjustRange(trip.getRange());
+
             freight.setTripTitle(trip.getTitle());
+            freight.setEditable(trip.isEditable());
           }
 
         } else {
@@ -821,9 +823,11 @@ abstract class VehicleTimeBoard extends ChartBase {
     panel.setTitle(freight.getCargoAndTripTitle());
 
     bindOpener(panel, VIEW_ORDER_CARGO, freight.getCargoId());
-
-    DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG);
-    freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
+    
+    if (freight.isEditable()) {
+      DndHelper.makeSource(panel, DATA_TYPE_FREIGHT, freight, STYLE_FREIGHT_DRAG);
+      freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
+    }
 
     renderCargoShipment(panel, freight, freight.getTripTitle());
 
@@ -881,8 +885,10 @@ abstract class VehicleTimeBoard extends ChartBase {
     Long tripId = trip.getTripId();
     bindOpener(panel, VIEW_TRIPS, tripId);
 
-    DndHelper.makeSource(panel, DATA_TYPE_TRIP, trip, STYLE_TRIP_DRAG);
-    trip.makeTarget(panel, STYLE_TRIP_DRAG_OVER);
+    if (trip.isEditable()) {
+      DndHelper.makeSource(panel, DATA_TYPE_TRIP, trip, STYLE_TRIP_DRAG);
+      trip.makeTarget(panel, STYLE_TRIP_DRAG_OVER);
+    }
 
     Range<JustDate> tripRange =
         ChartHelper.normalizedIntersection(trip.getRange(), getVisibleRange());
