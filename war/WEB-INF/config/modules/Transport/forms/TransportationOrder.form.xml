@@ -19,8 +19,9 @@
         <row>
           <Label text="=orderNumber" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputText source="OrderNo" />
+          <cell colSpan="2">
             <Button name="profit" text="=cargoProfit" />
-            <Button name="trips" text="=transportAssignTrip" />
+          </cell>
           <cell rowSpan="3">
             <InputArea source="Notes" visibleLines="5" style="width:150px;" />
           </cell>
@@ -32,7 +33,7 @@
           <DataSelector source="Payer" />
         </row>
         <row>
-          <Label text="=contact" horizontalAlignment="right" />
+          <Label text="=personContact" horizontalAlignment="right" />
           <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
             choiceColumns="FirstName LastName CompanyName" options="Customer" />
           <Label text="=manager" horizontalAlignment="right" />

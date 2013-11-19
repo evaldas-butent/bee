@@ -6,8 +6,6 @@ public interface LocalizableTransportConstants {
 
   String assessments();
 
-  String assignCargosToTripCaption();
-
   String assignCargoToTripCaption();
 
   String assignCargoToTripQuestion();
@@ -160,6 +158,8 @@ public interface LocalizableTransportConstants {
 
   String trAssignCargo();
 
+  String trAssignTrip();
+
   String trCargoActualPlaces();
 
   String trCargoRequestCreateTransportationOrderQuestion();
@@ -175,8 +175,6 @@ public interface LocalizableTransportConstants {
   String trCargoSelectCargo();
 
   String trCargoSelectTrip();
-
-  String trCargoTripsAssignTrip();
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
