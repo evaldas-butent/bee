@@ -79,10 +79,15 @@
       </row>
 
       <row>
-        <Label text="=trRegistrationDate" />
-        <InputDateTime source="Date" />
         <Label text="=remoteHost" />
         <InputArea source="Host" style="&area;" />
+        <Label text="=userAgent" />
+        <InputArea source="Agent" style="&area;" />
+      </row>
+
+      <row>
+        <Label text="=trRegistrationDate" class="bee-required bee-hasDefaults" />
+        <InputDateTime source="Date" />
       </row>
     </Table>
   </FlowPanel>

@@ -1,20 +1,27 @@
 package com.butent.bee.client.modules.commons;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -26,6 +33,41 @@ public final class CommonsUtils {
   private static final String STYLE_COMPANY = "bee-co-companyInfo";
   private static final String STYLE_COMPANY_ITEM = STYLE_COMPANY + "-item";
   private static final String STYLE_COMPANY_LABEL = STYLE_COMPANY + "-label";
+
+  public static void blockHost(String caption, final String host,
+      final NotificationListener notificationListener) {
+    if (BeeUtils.isEmpty(host)) {
+      return;
+    }
+
+    Global.confirm(caption, Icon.WARNING, Lists.newArrayList(host),
+        Localized.getConstants().actionBlock(), Localized.getConstants().actionCancel(),
+        new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            ParameterList args = CommonsKeeper.createArgs(SVC_BLOCK_HOST);
+            args.addDataItem(COL_IP_FILTER_HOST, host);
+
+            BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                if (response.hasResponse()) {
+                  DataChangeEvent.fireRefresh(VIEW_IP_FILTERS);
+                }
+                
+                if (notificationListener != null) {
+                  response.notify(notificationListener);
+
+                  if (response.hasResponse() 
+                      && BeeUtils.same(host, response.getResponseAsString())) {
+                    notificationListener.notifyInfo(Localized.getConstants().ipBlocked(), host);
+                  }
+                }
+              }
+            });
+          }
+        });
+  }
 
   public static void getCompanyInfo(Long companyId, final Widget target) {
     Assert.notNull(target);

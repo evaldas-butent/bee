@@ -125,12 +125,19 @@ public class Global implements Module {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, callback, null, null, null);
+    confirm(caption, icon, messages, Localized.getConstants().yes(), Localized.getConstants().no(),
+        callback);
+  }
+
+  public static void confirm(String caption, Icon icon, List<String> messages,
+      String optionYes, String optionNo, ConfirmationCallback callback) {
+    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null);
   }
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, callback, null,
+    msgBoxen.confirm(caption, icon, messages, Localized.getConstants().delete(),
+        Localized.getConstants().cancel(), callback, null,
         StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM));
   }
 

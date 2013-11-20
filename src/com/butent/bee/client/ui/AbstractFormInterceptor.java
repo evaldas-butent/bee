@@ -83,6 +83,11 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public String getDataValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getDataValue(source);
+  }
+  
+  @Override
   public Domain getDomain() {
     return null;
   }

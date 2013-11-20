@@ -62,6 +62,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   int getDataIndex(String source);
 
+  String getDataValue(String source);
+
   HasDataTable getDisplay();
 
   FormInterceptor getFormInterceptor();

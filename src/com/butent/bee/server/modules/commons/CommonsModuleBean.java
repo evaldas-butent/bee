@@ -146,6 +146,9 @@ public class CommonsModuleBean implements BeeModule {
       response = getHistory(reqInfo.getParameter(VAR_HISTORY_VIEW),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_HISTORY_IDS)));
 
+    } else if (BeeUtils.same(svc, SVC_BLOCK_HOST)) {
+      response = blockHost(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -243,6 +246,29 @@ public class CommonsModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject blockHost(RequestInfo reqInfo) {
+    String host = BeeUtils.trim(reqInfo.getParameter(COL_IP_FILTER_HOST));
+    if (BeeUtils.isEmpty(host)) {
+      return ResponseObject.parameterNotFound(SVC_BLOCK_HOST, COL_IP_FILTER_HOST);
+    }
+
+    if (qs.sqlExists(TBL_IP_FILTERS,
+        SqlUtils.and(SqlUtils.equals(TBL_IP_FILTERS, COL_IP_FILTER_HOST, host),
+            SqlUtils.isNull(TBL_IP_FILTERS, COL_IP_FILTER_BLOCK_AFTER),
+            SqlUtils.isNull(TBL_IP_FILTERS, COL_IP_FILTER_BLOCK_BEFORE)))) {
+      return ResponseObject.response(host);
+    }
+
+    SqlInsert insert = new SqlInsert(TBL_IP_FILTERS).addConstant(COL_IP_FILTER_HOST, host);
+    ResponseObject response = qs.insertDataWithResponse(insert);
+
+    if (response.hasErrors()) {
+      return response;
+    } else {
+      return ResponseObject.response(host);
+    }
   }
 
   private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {

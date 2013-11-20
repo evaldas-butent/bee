@@ -641,6 +641,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public String getDataValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public HasDataTable getDisplay() {
     return this;
   }
@@ -852,7 +862,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       setDataObserver(new DataObserver());
     }
   }
-  
+
   @Override
   public boolean observesData() {
     return getDataObserver() != null;

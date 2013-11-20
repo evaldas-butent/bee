@@ -123,6 +123,8 @@ public final class CommonsConstants {
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
 
+  public static final String SVC_BLOCK_HOST = "block_host";
+
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
   public static final String AUDIT_FLD_TIME = "Time";
