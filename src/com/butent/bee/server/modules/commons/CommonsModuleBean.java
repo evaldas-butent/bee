@@ -73,6 +73,8 @@ import javax.ejb.Stateless;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import lt.lb.webservices.exchangerates.ExchangeRatesWS;
+
 @Stateless
 @LocalBean
 public class CommonsModuleBean implements BeeModule {
@@ -145,6 +147,18 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_HISTORY)) {
       response = getHistory(reqInfo.getParameter(VAR_HISTORY_VIEW),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_HISTORY_IDS)));
+    } else if (BeeUtils.same(svc, SVC_GET_LIST_OF_CURRENCIES)) {
+      response = getListOfCurrencies();
+    } else if (BeeUtils.same(svc, SVC_GET_CURRENT_EXCHANGE_RATE)) {
+      response = getCurrentExchangeRate(reqInfo.getParameter(COL_CURRENCY_NAME));
+    } else if (BeeUtils.same(svc, SVC_GET_EXCHANGE_RATE)) {
+      response =
+          getExchangeRate(reqInfo.getParameter(COL_CURRENCY_NAME), reqInfo
+              .getParameter(COL_EXCHANGE_RATE_DATE));
+    } else if (BeeUtils.same(svc, SVC_GET_EXCHANGE_RATES_BY_CURRENCIES)) {
+        response =
+          getExchangeRatesByCurrency(reqInfo.getParameter(COL_CURRENCY_NAME), reqInfo
+              .getParameter(VAR_DATE_LOW), reqInfo.getParameter(VAR_DATE_HIGH));
 
     } else if (BeeUtils.same(svc, SVC_BLOCK_HOST)) {
       response = blockHost(reqInfo);
@@ -443,6 +457,53 @@ public class CommonsModuleBean implements BeeModule {
     return ResponseObject.response(info);
   }
 
+  private ResponseObject getCurrentExchangeRate(String currency) {
+
+    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    ResponseObject response;
+    if (BeeUtils.isEmpty(remoteWSDL)) {
+      response = ExchangeRatesWS.getCurrentExchangeRate(currency);
+      return ResponseObject.response(response.getResponse());
+    }
+
+    return ResponseObject.response(ExchangeRatesWS.getCurrentExchangeRate(remoteWSDL,
+        currency)
+        .getResponse());
+
+  }
+
+  private ResponseObject getExchangeRate(String currency, String date) {
+
+    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    ResponseObject response;
+    if (BeeUtils.isEmpty(remoteWSDL)) {
+      response = ExchangeRatesWS.getExchangeRate(currency, TimeUtils.parseDate(date));
+      return ResponseObject.response(response.getResponse());
+    }
+
+    return ResponseObject.response(ExchangeRatesWS.getExchangeRate(remoteWSDL, currency,
+        TimeUtils.parseDate(date))
+        .getResponse());
+
+  }
+
+  private ResponseObject getExchangeRatesByCurrency(String currency, String dateLow,
+      String dateHigh) {
+    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    ResponseObject response;
+
+    if (BeeUtils.isEmpty(remoteWSDL)) {
+      response =
+          ExchangeRatesWS.getExchangeRatesByCurrency(currency, TimeUtils.parseDate(dateLow),
+              TimeUtils.parseDate(dateHigh));
+      return ResponseObject.response(response.getResponse());
+    }
+
+    return ResponseObject.response(ExchangeRatesWS.getExchangeRatesByCurrency(remoteWSDL, currency,
+        TimeUtils.parseDate(dateLow),
+        TimeUtils.parseDate(dateHigh)).getResponse());
+  }
+
   private ResponseObject getHistory(String viewName, Collection<Long> idList) {
     LocalizableConstants loc = usr.getLocalizableConstants();
 
@@ -614,5 +675,19 @@ public class CommonsModuleBean implements BeeModule {
       params.add(param);
     }
     return params;
+  }
+
+  private ResponseObject getListOfCurrencies() {
+
+    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    ResponseObject response;
+    if (BeeUtils.isEmpty(remoteWSDL)) {
+      response = ExchangeRatesWS.getListOfCurrencies();
+      return ResponseObject.response(response.getResponse());
+    }
+
+    return ResponseObject.response(ExchangeRatesWS.getListOfCurrencies(remoteWSDL)
+        .getResponse());
+
   }
 }

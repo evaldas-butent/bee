@@ -117,11 +117,20 @@ public final class CommonsConstants {
   public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
 
+  public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
+  public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
+
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
+  
+  public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
+  public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
+  public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
+  public static final String SVC_GET_EXCHANGE_RATES_BY_CURRENCIES =
+      "get_exchange_rates_by_currency";
 
   public static final String SVC_BLOCK_HOST = "block_host";
 
@@ -297,6 +306,12 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
 
   public static final String COL_CURRENCY_NAME = "Name";
+  public static final String COL_CURRENCY_DESCRIPTION = "Description";
+  public static final String COL_CURRENCY_EN_DESCRIPTION = "DescriptionEn";
+  public static final String COL_EXCHANGE_RATE = "ExchangeRate";
+  public static final String COL_EXCHANGE_RATE_DATE = "ExchangeRateDate";
+  public static final String COL_CURRENCY_QUANTITY = "Quantity";
+  public static final String COL_CURRENCY_UNIT = "Unit";
 
   public static final String COL_IP_FILTER_HOST = "Host";
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
@@ -318,6 +333,8 @@ public final class CommonsConstants {
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
+
+  public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
 
   public static final String PROP_CATEGORIES = "CategList";
 

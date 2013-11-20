@@ -137,6 +137,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -150,6 +151,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -486,6 +488,18 @@ public final class CliWorker {
 
     } else if ("wf".equals(z) || z.startsWith("suppl")) {
       showWidgetSuppliers();
+
+    } else if ("ws_get_current_exchange_rate".equals(z)) {
+      showCurrentExchangeRate(args);
+      
+    } else if ("ws_get_exchange_rate".equals(z)) {
+      showExchangeRate(arr[1], arr[2]);
+
+    } else if ("ws_get_exchange_rates_by_currency".equals(z)) {
+      showExchangeRates(arr[1], arr[2], arr[3]);
+
+    } else if ("ws_get_list_of_currencies".equals(z)) {
+      showListOfCurrencies();
 
     } else if ("mail".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
@@ -2048,6 +2062,33 @@ public final class CliWorker {
     }
   }
 
+  private static void showCurrentExchangeRate(String currency) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(CommonsConstants.COMMONS_MODULE);
+    params.addQueryItem(CommonsConstants.COMMONS_METHOD,
+        CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE);
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+
+        if (response.hasErrors()) {
+          Global.showError(Lists.newArrayList(response.getErrors()));
+          return;
+        }
+
+        if (response.hasResponse(SimpleRowSet.class)) {
+          SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+          showSimpleRowSet(rs);
+        } else {
+          Global.showError(response.getType() + "{" + response.getResponseAsString() + "}");
+
+        }
+      }
+    });
+
+  }
+
   private static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
       List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
@@ -2294,6 +2335,61 @@ public final class CliWorker {
 
   private static void showError(String... messages) {
     Global.showError(null, Lists.newArrayList(messages), null, "kthxbai");
+  }
+
+  private static void showExchangeRate(String currency, String date) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(CommonsConstants.COMMONS_MODULE);
+    params.addQueryItem(CommonsConstants.COMMONS_METHOD,
+        CommonsConstants.SVC_GET_EXCHANGE_RATE);
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    params.addQueryItem(CommonsConstants.COL_EXCHANGE_RATE_DATE, date);
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+
+        if (response.hasErrors()) {
+          Global.showError(Lists.newArrayList(response.getErrors()));
+          return;
+        }
+
+        if (response.hasResponse(SimpleRowSet.class)) {
+          SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+          showSimpleRowSet(rs);
+        } else {
+          Global.showError(response.getType() + "{" + response.getResponseAsString() + "}");
+
+        }
+      }
+    });
+  }
+
+  private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(CommonsConstants.COMMONS_MODULE);
+    params.addQueryItem(CommonsConstants.COMMONS_METHOD,
+        CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCIES);
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    params.addQueryItem(CommonsConstants.VAR_DATE_LOW, dateLow);
+    params.addQueryItem(CommonsConstants.VAR_DATE_HIGH, dateHigh);
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+
+        if (response.hasErrors()) {
+          Global.showError(Lists.newArrayList(response.getErrors()));
+          return;
+        }
+
+        if (response.hasResponse(SimpleRowSet.class)) {
+          SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+          showSimpleRowSet(rs);
+        } else {
+          Global.showError(response.getType() + "{" + response.getResponseAsString() + "}");
+
+        }
+      }
+    });
   }
 
   private static void showExtData(List<ExtendedProperty> data) {
@@ -2617,6 +2713,31 @@ public final class CliWorker {
             return widget;
           }
         });
+  }
+
+  private static void showListOfCurrencies() {
+    ParameterList params = BeeKeeper.getRpc().createParameters(CommonsConstants.COMMONS_MODULE);
+    params.addQueryItem(CommonsConstants.COMMONS_METHOD,
+        CommonsConstants.SVC_GET_LIST_OF_CURRENCIES);
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+       
+        if (response.hasErrors()) {
+          Global.showError(Lists.newArrayList(response.getErrors()));
+          return;
+        }
+
+        if (response.hasResponse(SimpleRowSet.class)) {
+          SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+          showSimpleRowSet(rs);
+        } else {
+          Global.showError(response.getType() + "{" + response.getResponseAsString() + "}");
+
+        }
+      }
+    });
   }
 
   private static void showInputTypes() {
@@ -3004,6 +3125,26 @@ public final class CliWorker {
       Global.showGrid(new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));
     }
+  }
+  
+  private static void showSimpleRowSet(SimpleRowSet rs) {
+    Assert.notNull(rs);
+
+    if (rs.isEmpty()) {
+      Global.showInfo("Simple rowset is empty");
+      return;
+    }
+    String matrix[][] = new String[rs.getNumberOfRows()][rs.getNumberOfColumns()];
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      for (int j = 0; j < rs.getNumberOfColumns(); j++) {
+        LogUtils.getRootLogger().debug(rs.getValue(i, j));
+        matrix[i][j] = rs.getValue(i, j);
+      }
+    }
+
+    showMatrix(matrix, rs.getColumnNames());
+
   }
 
   private static void showSize(String[] arr) {
