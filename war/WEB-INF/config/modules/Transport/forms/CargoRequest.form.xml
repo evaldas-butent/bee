@@ -24,7 +24,8 @@
         <Label text="=trRequestDate" />
         <InputDateTime source="Date" />
         <Label text="=trRequestCustomer" />
-        <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
+        <DataSelector source="User" editSource="CustomerCompany" newRowEnabled="false"
+          style="width: 300px;">
           <renderToken source="CustomerCompanyName" suffix=", " />
           <renderToken source="CustomerFirstName" />
           <renderToken source="CustomerLastName" />
@@ -135,9 +136,11 @@
 
           <row>
             <Label text="=trRequestExpeditionType" class="bee-required" />
-            <DataSelector source="Expedition" />
+            <DataSelector source="Expedition" filter="SelfService" order="SelfService, Name" 
+              newRowEnabled="false" />
             <Label text="=trRequestShippingTerms" class="bee-required" />
-            <DataSelector source="ShippingTerm" required="true" />
+            <DataSelector source="ShippingTerm" required="true" filter="SelfService"
+              order="SelfService, Name" newRowEnabled="false" />
           </row>
 
           <row>
@@ -202,7 +205,7 @@
           <Label text="=trRequestCargoValue" />
           <InputCurrency source="Value" />
           <Label text="=trRequestCargoCurrency" />
-          <DataSelector source="ValueCurrency" style="width: 60px;" />
+          <DataSelector source="ValueCurrency" newRowEnabled="false" style="width: 60px;" />
         </row>
 
       </Table>
@@ -217,7 +220,7 @@
 
         <row>
           <Label text="=trRequestResponsibleManager" />
-          <DataSelector source="Manager" />
+          <DataSelector source="Manager" newRowEnabled="false" />
           <Label text="=trRequestNotes" />
           <InputArea source="Notes" style="&area;" />
         </row>

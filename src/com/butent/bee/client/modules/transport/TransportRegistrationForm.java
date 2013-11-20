@@ -15,7 +15,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class TransportRegistrationForm extends AbstractFormInterceptor {
+class TransportRegistrationForm extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(final FormView form, IsRow row) {
@@ -47,5 +47,8 @@ public class TransportRegistrationForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TransportRegistrationForm();
+  }
+  
+  TransportRegistrationForm() {
   }
 }

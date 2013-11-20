@@ -15,8 +15,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class ShipmentRequestForm extends AbstractFormInterceptor {
-
+class ShipmentRequestForm extends AbstractFormInterceptor {
+  
   @Override
   public void afterRefresh(final FormView form, IsRow row) {
     HeaderView header = form.getViewPresenter().getHeader();
@@ -48,5 +48,18 @@ public class ShipmentRequestForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new ShipmentRequestForm();
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    SelfServiceUtils.setDefaultExpeditionType(form, newRow,
+        TransportConstants.COL_QUERY_EXPEDITION);
+    SelfServiceUtils.setDefaultShippingTerm(form, newRow,
+        TransportConstants.COL_CARGO_SHIPPING_TERM);
+
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+  
+  ShipmentRequestForm() {
   }
 }
