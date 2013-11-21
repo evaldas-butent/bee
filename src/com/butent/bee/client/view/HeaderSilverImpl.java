@@ -2,6 +2,8 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -9,16 +11,18 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -36,7 +40,7 @@ import java.util.Set;
 
 public class HeaderSilverImpl extends Flow implements HeaderView {
 
-  private final class ActionListener extends Command {
+  private final class ActionListener implements ClickHandler {
     private final Action action;
     private long lastTime;
 
@@ -46,7 +50,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     }
 
     @Override
-    public void execute() {
+    public void onClick(ClickEvent event) {
       if (getViewPresenter() != null) {
         long now = System.currentTimeMillis();
         long last = getLastTime();
@@ -83,9 +87,18 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
 
-  private Presenter viewPresenter;
+  private static boolean hasAction(Action action, boolean def,
+      Set<Action> enabledActions, Set<Action> disabledActions) {
+    if (def) {
+      return !BeeUtils.contains(disabledActions, action);
+    } else {
+      return BeeUtils.contains(enabledActions, action);
+    }
+  }
 
+  private Presenter viewPresenter;
   private final Label captionWidget = new Label();
+
   private final Label messageWidget = new Label();
 
   private boolean enabled = true;
@@ -134,48 +147,52 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     add(commandPanel);
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverReload(), Action.REFRESH, hiddenActions));
+      add(createImage(Global.getImages().silverReload(), Action.REFRESH, hiddenActions));
     }
 
     if (hasAction(Action.FILTER, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
+      add(createImage(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
+      add(createImage(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
 
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
+      add(createImage(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
     }
+    if (hasAction(Action.COPY, false, enabledActions, disabledActions)) {
+      add(createFa(FontAwesome.COPY, Action.COPY, hiddenActions));
+    }
+
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverDelete(), Action.DELETE, hiddenActions));
+      add(createImage(Global.getImages().silverDelete(), Action.DELETE, hiddenActions));
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK, hiddenActions));
+      add(createImage(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK, hiddenActions));
     }
 
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverEdit(), Action.EDIT, hiddenActions));
+      add(createImage(Global.getImages().silverEdit(), Action.EDIT, hiddenActions));
     }
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverSave(), Action.SAVE, hiddenActions));
+      add(createImage(Global.getImages().silverSave(), Action.SAVE, hiddenActions));
     }
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
+      add(createImage(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
     }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverChatIcon(), Action.AUDIT, hiddenActions));
+      add(createImage(Global.getImages().silverChatIcon(), Action.AUDIT, hiddenActions));
     }
 
     if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverPrint(), Action.PRINT, hiddenActions));
+      add(createImage(Global.getImages().silverPrint(), Action.PRINT, hiddenActions));
     }
 
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
-      add(createControl(Global.getImages().silverClose(), Action.CLOSE, hiddenActions));
+      add(createImage(Global.getImages().silverClose(), Action.CLOSE, hiddenActions));
     }
   }
 
@@ -212,7 +229,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       return getActionControls().containsKey(action);
     }
   }
-  
+
   @Override
   public boolean hasCommands() {
     return !commandPanel.isEmpty();
@@ -319,20 +336,15 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     }
   }
 
-  private Widget createControl(ImageResource image, Action action, Set<Action> hiddenActions) {
-    Image control = new Image(image, new ActionListener(action));
-    control.addStyleName(STYLE_CONTROL);
+  private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {
+    FaLabel control = new FaLabel(fa);
+    initControl(control, action, hiddenActions);
+    return control;
+  }
 
-    if (action != null) {
-      control.addStyleName(action.getStyleName());
-      control.setTitle(action.getCaption());
-
-      if (hiddenActions != null && hiddenActions.contains(action)) {
-        StyleUtils.hideDisplay(control);
-      }
-
-      getActionControls().put(action, control.getId());
-    }
+  private Widget createImage(ImageResource image, Action action, Set<Action> hiddenActions) {
+    Image control = new Image(image);
+    initControl(control, action, hiddenActions);
     return control;
   }
 
@@ -344,12 +356,18 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     return commandPanel;
   }
 
-  private static boolean hasAction(Action action, boolean def,
-      Set<Action> enabledActions, Set<Action> disabledActions) {
-    if (def) {
-      return !BeeUtils.contains(disabledActions, action);
-    } else {
-      return BeeUtils.contains(enabledActions, action);
+  private void initControl(IdentifiableWidget control, Action action, Set<Action> hiddenActions) {
+    Binder.addClickHandler(control.asWidget(), new ActionListener(action));
+
+    control.addStyleName(STYLE_CONTROL);
+    control.addStyleName(action.getStyleName());
+
+    control.getElement().setTitle(action.getCaption());
+
+    if (hiddenActions != null && hiddenActions.contains(action)) {
+      StyleUtils.hideDisplay(control.getElement());
     }
+
+    getActionControls().put(action, control.getId());
   }
 }

@@ -487,7 +487,7 @@ public class TransportSelfService extends LoginServlet {
     fieldPanel.append(qGroup(constants.trLoadingInfo(), loadingFields));
 
     Tbody unloadingFields = tbody().append(
-        qField(constants.trUnloadingDate(), unloadingColumnAlias(COL_PLACE_DATE), true),
+        qField(constants.trUnloadingDate(), unloadingColumnAlias(COL_PLACE_DATE), false),
         qField(constants.trRequestPlaceCompanyName(), COL_QUERY_UNLOADING_COMPANY_NAME, true),
         qField(constants.trRequestPlaceContact(), unloadingColumnAlias(COL_PLACE_CONTACT), true),
         qField(constants.address(), unloadingColumnAlias(COL_PLACE_ADDRESS), true),

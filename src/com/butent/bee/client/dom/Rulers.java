@@ -17,7 +17,6 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.ui.Orientation;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.client.Browser;
@@ -31,11 +30,9 @@ import elemental.js.dom.JsElement;
  */
 public final class Rulers {
 
-  private static final double unitRulerScale = 10.0;
-
-  private static final double cmToPx = 1.0 / unitRulerScale;
-  private static final double mmToPx = 0.1 / unitRulerScale;
-  private static final double inToPx = 2.54 / unitRulerScale;
+  private static final double cmToPx = 1.0;
+  private static final double mmToPx = 0.1;
+  private static final double inToPx = 2.54;
   private static final double ptToPx = inToPx / 72.0;
   private static final double pcToPx = ptToPx * 12.0;
 
@@ -66,17 +63,13 @@ public final class Rulers {
     DomUtils.createId(fixedUnitRuler, idPrefix);
     fixedUnitRuler.setInnerHTML(BeeConst.HTML_NBSP);
 
-    StyleUtils.setWidth(fixedUnitRuler, unitRulerScale, CssUnit.CM);
-    StyleUtils.setHeight(fixedUnitRuler, unitRulerScale, CssUnit.CM);
+    StyleUtils.setWidth(fixedUnitRuler, BeeConst.DOUBLE_ONE, CssUnit.CM);
+    StyleUtils.setHeight(fixedUnitRuler, BeeConst.DOUBLE_ONE, CssUnit.CM);
 
     BodyPanel.conceal(fixedUnitRuler);
 
     relativeUnitRuler = Document.get().createDivElement();
     DomUtils.createId(relativeUnitRuler, idPrefix);
-    relativeUnitRuler.setInnerHTML(BeeConst.HTML_NBSP);
-
-    StyleUtils.setWidth(relativeUnitRuler, unitRulerScale, CssUnit.EM);
-    StyleUtils.setHeight(relativeUnitRuler, unitRulerScale, CssUnit.EX);
 
     BodyPanel.conceal(relativeUnitRuler);
   }
@@ -154,66 +147,76 @@ public final class Rulers {
 
   public static double getPixels(double value, CssUnit unit, Font font, double containerSize) {
     Assert.notNull(unit);
+    
+    switch (unit.getType()) {
+      case ABSOLUTE:
+        return value * getFixedUnitSizeInPixels(unit);
 
-    if (isUnitSizeFixed(unit)) {
-      return value * getFixedUnitSizeInPixels(unit);
-    } else if (isUnitFontDependent(unit)) {
-      return value * getFontDependentUnitSizeInPixels(unit, font);
-    } else if (isUnitContainerDependent(unit)) {
-      return value * getContainerDependentUnitSizeInPixels(unit, containerSize);
-    } else {
-      Assert.untouchable();
-      return 0;
+      case CONTAINER_PERCENTAGE:
+        return value * getContainerDependentUnitSizeInPixels(containerSize);
+
+      case FONT_RELATIVE:
+        return value * getFontDependentUnitSizeInPixels(unit, font);
+      
+      case VIEWPORT_PERCENTAGE:
+        return value * getViewportPercentageUnitSizeInPixels(unit).getWidth();
     }
+
+    Assert.untouchable();
+    return BeeConst.DOUBLE_ZERO;
   }
 
   public static double getUnitSize(Element element, CssUnit unit, Orientation orientation) {
     Assert.notNull(unit);
 
-    if (isUnitSizeFixed(unit)) {
-      return getFixedUnitSizeInPixels(unit);
+    switch (unit.getType()) {
+      case ABSOLUTE:
+        return getFixedUnitSizeInPixels(unit);
 
-    } else if (isUnitFontDependent(unit)) {
-      Font font = (element == null) ? null : Font.getComputed(element);
-      return getFontDependentUnitSizeInPixels(unit, font);
-
-    } else if (isUnitContainerDependent(unit)) {
-      Assert.notNull(element);
-      Assert.notNull(orientation);
+      case CONTAINER_PERCENTAGE:
+        Assert.notNull(element);
+        Assert.notNull(orientation);
+        
+        double size = orientation.isVertical() 
+            ? element.getClientHeight() : element.getClientWidth();
+        return getContainerDependentUnitSizeInPixels(size) / 100;
       
-      double size = orientation.isVertical() ? element.getClientHeight() : element.getClientWidth();
-      return getContainerDependentUnitSizeInPixels(unit, size) / 100;
-
-    } else {
-      Assert.untouchable();
-      return 0;
+      case FONT_RELATIVE:
+        Font font = (element == null) ? null : Font.getComputed(element);
+        return getFontDependentUnitSizeInPixels(unit, font);
+      
+      case VIEWPORT_PERCENTAGE:
+        ClientRect rect = getViewportPercentageUnitSizeInPixels(unit);
+        return (orientation != null && orientation.isVertical())
+            ? rect.getHeight() : rect.getWidth();
     }
+    
+    Assert.untouchable();
+    return BeeConst.DOUBLE_ZERO;
   }
   
-  private static double getContainerDependentUnitSizeInPixels(CssUnit unit, double containerSize) {
-    switch (unit) {
-      case PCT:
-        return containerSize / 100.0;
-      default:
-        Assert.untouchable();
-        return 0;
-    }
+  private static double getContainerDependentUnitSizeInPixels(double containerSize) {
+    return containerSize / 100.0;
   }
 
   private static double getFixedUnitSizeInPixels(CssUnit unit) {
+    if (unit == CssUnit.PX) {
+      return 1;
+    }
+    
+    double width = ClientRect.createBounding(fixedUnitRuler).getWidth();
+    
     switch (unit) {
-      case PX:
-        return 1;
       case CM:
-        return fixedUnitRuler.getOffsetWidth() * cmToPx;
+        return width * cmToPx;
       case MM:
-        return fixedUnitRuler.getOffsetWidth() * mmToPx;
+        return width * mmToPx;
       case IN:
-        return fixedUnitRuler.getOffsetWidth() * inToPx;
+        return width * inToPx;
       case PT:
-        return fixedUnitRuler.getOffsetWidth() * ptToPx;
+        return width * ptToPx;
       case PC:
-        return fixedUnitRuler.getOffsetWidth() * pcToPx;
+        return width * pcToPx;
       default:
         Assert.untouchable();
         return 0;
@@ -224,17 +227,27 @@ public final class Rulers {
     double size;
     prepareRuler(relativeUnitRuler, font);
 
+    StyleUtils.setWidth(relativeUnitRuler, BeeConst.DOUBLE_ONE, unit);
+    StyleUtils.setHeight(relativeUnitRuler, BeeConst.DOUBLE_ONE, unit);
+    
+    ClientRect rect = ClientRect.createBounding(relativeUnitRuler);
+    
     switch (unit) {
       case EM:
-        size = relativeUnitRuler.getOffsetWidth() / unitRulerScale;
+      case CH:
+      case REM:
+        size = rect.getWidth();
         break;
       case EX:
-        size = relativeUnitRuler.getOffsetHeight() / unitRulerScale;
+        size = rect.getHeight();
         break;
       default:
         Assert.untouchable();
         size = 0;
     }
+    
+    relativeUnitRuler.getStyle().clearWidth();
+    relativeUnitRuler.getStyle().clearHeight();
 
     resetRuler(relativeUnitRuler, font);
     return size;
@@ -267,6 +280,18 @@ public final class Rulers {
     return new Size(width, height);
   }
 
+  private static ClientRect getViewportPercentageUnitSizeInPixels(CssUnit unit) {
+    StyleUtils.setWidth(relativeUnitRuler, BeeConst.DOUBLE_ONE, unit);
+    StyleUtils.setHeight(relativeUnitRuler, BeeConst.DOUBLE_ONE, unit);
+    
+    ClientRect rect = ClientRect.createBounding(relativeUnitRuler);
+    
+    relativeUnitRuler.getStyle().clearWidth();
+    relativeUnitRuler.getStyle().clearHeight();
+    
+    return rect;
+  }
+
   private static int getWidth(Element ruler, Font font, String content, boolean asHtml) {
     if (content == null) {
       return 0;
@@ -277,25 +302,6 @@ public final class Rulers {
     resetRuler(ruler, font);
 
     return width;
-  }
-
-  private static boolean inList(CssUnit unit, CssUnit... units) {
-    if (unit == null || units == null) {
-      return false;
-    }
-    return ArrayUtils.contains(units, unit);
-  }
-
-  private static boolean isUnitContainerDependent(CssUnit unit) {
-    return inList(unit, CssUnit.PCT);
-  }
-
-  private static boolean isUnitFontDependent(CssUnit unit) {
-    return inList(unit, CssUnit.EM, CssUnit.EX);
-  }
-
-  private static boolean isUnitSizeFixed(CssUnit unit) {
-    return inList(unit, CssUnit.PX, CssUnit.CM, CssUnit.MM, CssUnit.IN, CssUnit.PC, CssUnit.PT);
   }
 
   private static void prepareRuler(Element ruler, Font font) {

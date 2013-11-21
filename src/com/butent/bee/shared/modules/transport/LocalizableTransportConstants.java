@@ -186,8 +186,6 @@ public interface LocalizableTransportConstants {
 
   String trCommandConvertToRequest();
 
-  String trCommandCopyRequest();
-
   String trCommandCreateNewUser();
 
   String trCommandSaveRequestAsTemplate();

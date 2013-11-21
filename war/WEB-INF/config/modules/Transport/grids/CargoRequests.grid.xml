@@ -3,6 +3,7 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
+  enableCopy="-Date, Time, Status, Finished, Result, Cargo=, Order*"
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
@@ -69,7 +70,5 @@
     <RelColumn name="Manager" />
     
     <DataColumn name="Notes" visible="false" />
-    <DataColumn name="Host" visible="false" />
-    <DataColumn name="Agent" visible="false" />
   </g:columns>
 </g:Grid>

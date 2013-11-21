@@ -463,8 +463,17 @@
 }
 
 .bee-Header-control {
-  margin-right: 1em;
+  margin-right: 10px;
 }
+.bee-Header-control.bee-fa-label {
+  font-size: 18px;
+  color: #888;
+  cursor: pointer;
+}
+.bee-Header-control.bee-fa-label:hover {
+  color: black;
+}
+
 .bee-Header-control.bee-Action-removeFilter {
   margin-right: 0;
   position: relative;

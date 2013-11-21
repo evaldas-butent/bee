@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 class CargoTripsGrid extends AbstractGridInterceptor {
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter) {
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     final GridView gridView = presenter.getGridView();
 
     gridView.ensureRelId(new IdCallback() {

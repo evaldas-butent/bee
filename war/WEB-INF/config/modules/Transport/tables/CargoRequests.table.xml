@@ -28,7 +28,5 @@
     <Text name="Result" label="=trRequestResult" />
 
     <Text name="Notes" label="=trRequestNotes" />
-    <Text name="Host" label="=remoteHost" />
-    <Text name="Agent" label="=userAgent" />
   </Fields>
 </Table>

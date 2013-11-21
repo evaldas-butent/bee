@@ -36,7 +36,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.CellGridImpl;
+import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
 import com.butent.bee.client.view.grid.GridInterceptor;
@@ -214,7 +214,7 @@ public final class GridFactory {
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor, Order order) {
 
-    GridView gridView = new CellGridImpl(gridDescription, supplierKey, dataColumns, relColumn,
+    GridView gridView = new GridImpl(gridDescription, supplierKey, dataColumns, relColumn,
         gridInterceptor);
     gridView.create(order);
 

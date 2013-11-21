@@ -183,7 +183,7 @@
         &cols;
 
         <row>
-          <Label text="=trRequestCargoDescription" class="bee-required" />
+          <Label text="=trRequestCargoDescription" class="bee-required bee-hasDefaults" />
           <InputArea source="CargoDescription" required="true" style="width: 100%; height: 40px;" />
           <Label text="=trRequestCargoQuantity" />
           <InputInteger source="Quantity" />
