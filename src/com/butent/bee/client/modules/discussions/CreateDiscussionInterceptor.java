@@ -113,8 +113,6 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(description)) {
       Data.setValue(VIEW_DISCUSSIONS, newRow, COL_DESCRIPTION, description);
     }
-    
-    Data.setValue(VIEW_DISCUSSIONS, newRow, COL_ACCESSIBILITY, BeeUtils.toInt(discussPublic));
 
     BeeRowSet rowSet =
         DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,

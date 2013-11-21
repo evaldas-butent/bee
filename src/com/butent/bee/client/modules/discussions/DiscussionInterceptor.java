@@ -5,6 +5,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
@@ -16,6 +18,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -26,9 +29,12 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.utils.FileUtils;
@@ -40,6 +46,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -55,6 +62,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -204,6 +212,22 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
   
   @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
+    if (BeeUtils.same(COL_ACCESSIBILITY, name) && widget instanceof InputBoolean) {
+      final InputBoolean ac = (InputBoolean) widget;
+      ac.addValueChangeHandler(new ValueChangeHandler<String>() {
+        @Override
+        public void onValueChange(ValueChangeEvent<String> event) {
+          boolean value = BeeUtils.toBoolean(ac.getValue());
+          getMultiSelector(getFormView(), PROP_MEMBERS).setEnabled(!value);
+        }
+      });
+    }
+  }
+
+  @Override
   public void afterRefresh(FormView form, IsRow row) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
@@ -229,12 +253,40 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }));
       }
     }
+
+    Widget widget = form.getWidgetBySource(COL_ACCESSIBILITY);
+
+    if (widget instanceof InputBoolean) {
+      InputBoolean ac = (InputBoolean) widget;
+      boolean val = BeeUtils.toBoolean(ac.getValue());
+      getMultiSelector(form, PROP_MEMBERS).setEnabled(!val);
+    }
   }
 
   @Override
   public FormInterceptor getInstance() {
     return new DiscussionInterceptor();
   }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+   /* if (action.equals(Action.SAVE)) {
+      Widget widget = getFormView().getWidgetBySource(COL_ACCESSIBILITY);
+
+      if (widget instanceof InputBoolean) {
+        InputBoolean ac = (InputBoolean) widget;
+
+        if (!BeeUtils.toBoolean(ac.getValue())
+            && BeeUtils.isEmpty(getMultiSelector(getFormView(), PROP_MEMBERS).getValue())) {
+          showError(Localized.getConstants().discussSelectMembers());
+
+          return false;
+        }
+      }
+    }*/
+    return super.beforeAction(action, presenter);
+  }
+
 
   @Override
   public void onSaveChanges(SaveChangesEvent event) {
@@ -354,6 +406,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private static String getDiscussionMembers(FormView form, IsRow row) {
     return DataUtils.buildIdList(DiscussionsUtils.getDiscussionMembers(row, form.getDataColumns()));
+  }
+
+  private static MultiSelector getMultiSelector(FormView form, String source) {
+    Widget widget = form.getWidgetBySource(source);
+    return (widget instanceof MultiSelector) ? (MultiSelector) widget : null;
   }
 
   private static BeeRow getResponseRow(String caption, ResponseObject ro, Callback<?> callback) {

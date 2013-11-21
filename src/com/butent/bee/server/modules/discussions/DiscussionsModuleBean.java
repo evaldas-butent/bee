@@ -483,7 +483,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if (response == null || !response.hasErrors()) {
           response =
-              commitDiscussionData(discussData, oldMembers, false, updatedRelations, commentId);
+              commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
         }
         break;
       default:

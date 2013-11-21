@@ -12,6 +12,6 @@
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=discussCreated" />    
     <Integer name="Status" notNull="true" defValue="0" label="=discussStatus" />
-    <Integer name="Accessibility" defValue="1" notNull="true" label="=discussAccessibility" />    
+    <Boolean name="Accessibility" defValue="true" notNull="true" label="=discussAccessibility" />    
   </Fields>
 </Table>

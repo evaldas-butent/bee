@@ -18,7 +18,7 @@
   xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
   caption="=discussion" printHeader="true">
 
-  <FlowPanel class="flexBox-horizontal">
+  <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-left: 5px;">
       <FlowPanel style="&section;">
         <Label text="=discussStatus" style="&lbl1;" />
@@ -51,7 +51,7 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <CheckBox name="Accessibility" text="=discussPublic" style="&lbl1;" />
+        <CheckBox name="Accessibility" source="Accessibility" text="=discussPublic" style="&lbl1;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
