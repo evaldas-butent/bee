@@ -6,7 +6,7 @@
   >
   <Fields>
     <DateTime name="Date" notNull="true" label="=ecClientRegistrationDate" defExpr="CURRENT_TIME" />
-    <Integer name="Type" notNull="true" label="=ecClientType" />
+    <Enum name="Type" key="EcClientType" notNull="true" label="=ecClientType" />
 
     <Relation name="Branch" relation="Branches" notNull="true" label="=branch" />
 

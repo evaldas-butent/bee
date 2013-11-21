@@ -44,6 +44,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -364,7 +365,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject doDiscussionEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    DiscussionEvent event = NameUtils.getEnumByName(DiscussionEvent.class, svc);
+    DiscussionEvent event = EnumUtils.getEnumByName(DiscussionEvent.class, svc);
 
     if (event == null) {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);

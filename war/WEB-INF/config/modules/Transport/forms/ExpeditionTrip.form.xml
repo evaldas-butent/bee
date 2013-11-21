@@ -16,7 +16,7 @@
         <row>
           <FlowPanel  class="flexBox-vertical" style="margin-bottom: 1ex">
             <SimplePanel style="margin-top: 10px"> 
-              <InputDateTime source="Date" caption="=date" style="width: 120px;" 
+              <InputDateTime source="Date" caption="=trTripDate" style="width: 120px;" 
                   decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
             </SimplePanel>      
             <SimplePanel style="margin-top: 10px"> 
@@ -76,7 +76,7 @@
       <Table>
         <row>    
           <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;">
-            <ListBox source="Status" itemKey="TripStatus" caption="=status" style="margin-bottom: 20px"/>
+            <ListBox source="Status" caption="=status" style="margin-bottom: 20px"/>
             <Button name="profit"  text="=cargoProfit" style="width: 80px" />
           </FlowPanel>
         </row>

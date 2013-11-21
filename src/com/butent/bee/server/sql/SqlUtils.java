@@ -58,6 +58,10 @@ public final class SqlUtils {
     return new ComparisonCondition(op, expr, value);
   }
 
+  public static IsCondition compare(String source, String field, Operator op, Object value) {
+    return compare(field(source, field), op, constant(value));
+  }
+  
   public static IsExpression concat(Object... members) {
     Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);

@@ -8,7 +8,7 @@
     <String name="Name" precision="100" notNull="true" unique="true" label="=calAttendeeName" />
     <Text name="Description" label="=calAppointmentTypeDescription" />
 
-    <Integer name="Transparency" label="=calTransparency" />
+    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
     <Boolean name="Resource" label="=resource" />
     
     <String name="AttendeeCreator" precision="30" />

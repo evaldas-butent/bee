@@ -1546,7 +1546,7 @@ public class TransportModuleBean implements BeeModule {
             SqlUtils.join(trailerJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_TRAILER))
         .addFields(TBL_TRIPS, COL_TRIP_ID, COL_TRIP_NO, COL_VEHICLE, COL_TRAILER,
             COL_TRIP_DATE, COL_TRIP_PLANNED_END_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO,
-            COL_TRIP_NOTES)
+            COL_TRIP_STATUS, COL_TRIP_NOTES)
         .addField(TBL_TRIPS, sys.getVersionName(TBL_TRIPS), ALS_TRIP_VERSION)
         .addField(truckJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER)
         .addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER)

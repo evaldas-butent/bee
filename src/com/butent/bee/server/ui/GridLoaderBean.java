@@ -38,6 +38,7 @@ import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Document;
@@ -603,8 +604,8 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, RefreshType.ATTR_UPDATE_MODE)) {
           dst.setUpdateMode(RefreshType.getByCode(value));
 
-        } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
-          dst.setItemKey(value.trim());
+        } else if (BeeUtils.same(key, EnumUtils.ATTR_ENUM_KEY)) {
+          dst.setEnumKey(value.trim());
 
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());

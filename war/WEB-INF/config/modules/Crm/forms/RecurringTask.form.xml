@@ -23,7 +23,7 @@
     <FlowPanel style="margin-left: 5px;">
       <FlowPanel style="&section;">
         <Label text="=crmTaskPriority" style="&lbl3;" />
-        <ListBox source="Priority" itemKey="TaskPriority" style="&inp4;" />
+        <ListBox source="Priority" style="&inp4;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

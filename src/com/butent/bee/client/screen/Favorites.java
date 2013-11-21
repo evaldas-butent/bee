@@ -41,7 +41,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -414,7 +414,7 @@ public class Favorites implements HandlesDeleteEvents {
     String lastKey = null;
 
     for (BeeRow row : rowSet.getRows()) {
-      Group group = NameUtils.getEnumByIndex(Group.class, row.getInteger(groupIndex));
+      Group group = EnumUtils.getEnumByIndex(Group.class, row.getInteger(groupIndex));
       if (group == null) {
         continue;
       }

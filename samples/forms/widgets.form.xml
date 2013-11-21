@@ -239,10 +239,7 @@
             </layer>
 
             <layer right="5" bottom="5">
-              <Toggle>
-                <upFace resource="cancel" />
-                <downFace resource="ok" />
-              </Toggle>
+              <Toggle upFace="+" downFace="-" class="bee-FontSize-xx-large" />
             </layer>
           </ComplexPanel>
         </page>

@@ -6,9 +6,9 @@
   x="741" y="101"
   >
   <Fields>
-    <Integer name="Status" notNull="true" label="=status" defValue="0" />
+    <Enum name="Status" key="OrderStatus" notNull="true" label="=trOrderStatus" defValue="0" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
-    <String name="OrderNo" precision="20" unique="true" notNull="true" label="=orderNumber"
+    <String name="OrderNo" precision="50" unique="true" notNull="true" label="=orderNumber"
       defExpr="NEXT_NUMBER" defValue="U/" />
     <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
     <Relation name="CustomerPerson" relation="CompanyPersons" label="=contact" />

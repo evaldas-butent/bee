@@ -125,12 +125,19 @@ public class Global implements Module {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, callback, null, null, null);
+    confirm(caption, icon, messages, Localized.getConstants().yes(), Localized.getConstants().no(),
+        callback);
+  }
+
+  public static void confirm(String caption, Icon icon, List<String> messages,
+      String optionYes, String optionNo, ConfirmationCallback callback) {
+    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null);
   }
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, callback, null,
+    msgBoxen.confirm(caption, icon, messages, Localized.getConstants().delete(),
+        Localized.getConstants().cancel(), callback, null,
         StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM));
   }
 
@@ -405,7 +412,6 @@ public class Global implements Module {
   // CHECKSTYLE:OFF
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
-    $wnd.Bee_getCaption = $entry(@com.butent.bee.shared.ui.Captions::getCaption(Ljava/lang/String;I));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));

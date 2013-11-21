@@ -11,7 +11,7 @@ import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -218,7 +218,7 @@ public enum UserInterface implements HasCaption {
       }
     }
 
-    return NameUtils.getEnumByName(UserInterface.class, input);
+    return EnumUtils.getEnumByName(UserInterface.class, input);
   }
 
   public static UserInterface normalize(UserInterface ui) {

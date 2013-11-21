@@ -2,6 +2,9 @@ package com.butent.bee.client.event;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
@@ -73,6 +76,16 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   public static Previewer getInstance() {
     return INSTANCE;
   }
+  
+  public static boolean preview(Event event, Node target) {
+    Assert.notNull(event);
+
+    INSTANCE.setTargetNode(target);
+    boolean result = DOM.previewEvent(event);
+    INSTANCE.setTargetNode(null);
+    
+    return result;
+  }
 
   public static void register(PreviewHandler handler) {
     Assert.notNull(handler);
@@ -103,6 +116,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   private final List<PreviewHandler> mouseDownPriorHandlers = Lists.newArrayList();
 
   private int modalCount;
+  
+  private Node targetNode;
 
   private Previewer() {
     Event.addNativePreviewHandler(this);
@@ -132,7 +147,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
       if (EventUtils.EVENT_TYPE_MOUSE_DOWN.equals(type)) {
         for (int i = 0; i < mouseDownPriorHandlers.size(); i++) {
-          mouseDownPriorHandlers.get(i).onEventPreview(event);
+          mouseDownPriorHandlers.get(i).onEventPreview(event, getTargetNode(event));
           if (event.isCanceled() || event.isConsumed()) {
             return;
           }
@@ -144,11 +159,11 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       return;
 
     } else if (handlers.size() == 1) {
-      handlers.get(0).onEventPreview(event);
+      handlers.get(0).onEventPreview(event, getTargetNode(event));
 
     } else {
       for (int i = handlers.size() - 1; i >= 0; i--) {
-        handlers.get(i).onEventPreview(event);
+        handlers.get(i).onEventPreview(event, getTargetNode(event));
         if (event.isCanceled() || event.isConsumed()) {
           break;
         }
@@ -167,6 +182,19 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     return !BeeConst.isUndef(indexOf(handler));
   }
 
+  private Node getTargetNode() {
+    return targetNode;
+  }
+  
+  private Node getTargetNode(NativePreviewEvent event) {
+    if (getTargetNode() != null || event == null) {
+      return getTargetNode();
+    } else {
+      EventTarget eventTarget = event.getNativeEvent().getEventTarget();
+      return (eventTarget == null) ? null : EventUtils.getTargetNode(eventTarget);
+    }
+  }
+  
   private int indexOf(PreviewHandler handler) {
     for (int i = 0; i < handlers.size(); i++) {
       if (BeeUtils.same(handler.getId(), handlers.get(i).getId())) {
@@ -175,7 +203,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     }
     return BeeConst.UNDEF;
   }
-  
+
   private void maybeSortHandlers() {
     if (handlers.size() < 2) {
       return;
@@ -192,11 +220,15 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       handlers.add(ch.handler);
     }
   }
-  
+
   private void remove(PreviewHandler handler) {
     handlers.remove(indexOf(handler));
     if (handler.isModal()) {
       modalCount--;
     }
+  }
+
+  private void setTargetNode(Node targetNode) {
+    this.targetNode = targetNode;
   }
 }

@@ -21,7 +21,7 @@
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />
       
-    <DataColumn name="Status" itemKey="DiscussionStatus" visible="true" />
+    <DataColumn name="Status" visible="true" />
        
     <DataColumn name="Created" visible="true" /> 
     <DataColumn name="Accessibility" visible="false" />

@@ -57,6 +57,7 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -144,6 +145,9 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_HISTORY)) {
       response = getHistory(reqInfo.getParameter(VAR_HISTORY_VIEW),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_HISTORY_IDS)));
+
+    } else if (BeeUtils.same(svc, SVC_BLOCK_HOST)) {
+      response = blockHost(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -242,6 +246,29 @@ public class CommonsModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject blockHost(RequestInfo reqInfo) {
+    String host = BeeUtils.trim(reqInfo.getParameter(COL_IP_FILTER_HOST));
+    if (BeeUtils.isEmpty(host)) {
+      return ResponseObject.parameterNotFound(SVC_BLOCK_HOST, COL_IP_FILTER_HOST);
+    }
+
+    if (qs.sqlExists(TBL_IP_FILTERS,
+        SqlUtils.and(SqlUtils.equals(TBL_IP_FILTERS, COL_IP_FILTER_HOST, host),
+            SqlUtils.isNull(TBL_IP_FILTERS, COL_IP_FILTER_BLOCK_AFTER),
+            SqlUtils.isNull(TBL_IP_FILTERS, COL_IP_FILTER_BLOCK_BEFORE)))) {
+      return ResponseObject.response(host);
+    }
+
+    SqlInsert insert = new SqlInsert(TBL_IP_FILTERS).addConstant(COL_IP_FILTER_HOST, host);
+    ResponseObject response = qs.insertDataWithResponse(insert);
+
+    if (response.hasErrors()) {
+      return response;
+    } else {
+      return ResponseObject.response(host);
+    }
   }
 
   private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {
@@ -417,8 +444,10 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   private ResponseObject getHistory(String viewName, Collection<Long> idList) {
+    LocalizableConstants loc = usr.getLocalizableConstants();
+
     if (BeeUtils.isEmpty(idList)) {
-      return ResponseObject.error(Localized.getConstants().selectAtLeastOneRow());
+      return ResponseObject.error(loc.selectAtLeastOneRow());
     }
     BeeView view = sys.getView(viewName);
 
@@ -481,26 +510,25 @@ public class CommonsModuleBean implements BeeModule {
         }
       }
       if (!BeeUtils.isEmpty(pairs)) {
-        pairs.add(SqlUtils.field(src, SystemBean.AUDIT_FLD_FIELD));
+        pairs.add(SqlUtils.field(src, AUDIT_FLD_FIELD));
 
-        subq.addExpr(SqlUtils.sqlCase(SqlUtils.field(src, SystemBean.AUDIT_FLD_FIELD),
-            pairs.toArray()), SystemBean.AUDIT_FLD_FIELD);
+        subq.addExpr(SqlUtils.sqlCase(SqlUtils.field(src, AUDIT_FLD_FIELD),
+            pairs.toArray()), AUDIT_FLD_FIELD);
       } else {
-        subq.addFields(src, SystemBean.AUDIT_FLD_FIELD);
+        subq.addFields(src, AUDIT_FLD_FIELD);
       }
-      subq.addFields(src, SystemBean.AUDIT_FLD_TIME, SystemBean.AUDIT_FLD_TX,
-          SystemBean.AUDIT_FLD_MODE, SystemBean.AUDIT_FLD_ID, SystemBean.AUDIT_FLD_VALUE)
+      subq.addFields(src, AUDIT_FLD_TIME, AUDIT_FLD_TX, AUDIT_FLD_MODE, AUDIT_FLD_ID,
+          AUDIT_FLD_VALUE)
           .addConstant(table.getName(), COL_OBJECT)
           .addField(TBL_USERS, COL_LOGIN, COL_USER)
           .addFrom(src)
-          .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, src, SystemBean.AUDIT_FLD_USER))
-          .setWhere(SqlUtils.and(SqlUtils.inList(src, SystemBean.AUDIT_FLD_ID, auditIds),
-              SqlUtils.or(SqlUtils.inList(src, SystemBean.AUDIT_FLD_FIELD, fields),
-                  SqlUtils.isNull(src, SystemBean.AUDIT_FLD_FIELD))));
+          .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, src, AUDIT_FLD_USER))
+          .setWhere(SqlUtils.and(SqlUtils.inList(src, AUDIT_FLD_ID, auditIds),
+              SqlUtils.or(SqlUtils.inList(src, AUDIT_FLD_FIELD, fields),
+                  SqlUtils.isNull(src, AUDIT_FLD_FIELD))));
 
       if (query == null) {
-        query = subq.addOrder(src, SystemBean.AUDIT_FLD_TIME, SystemBean.AUDIT_FLD_ID)
-            .addOrder(null, COL_OBJECT);
+        query = subq.addOrder(src, AUDIT_FLD_TIME, AUDIT_FLD_ID).addOrder(null, COL_OBJECT);
       } else {
         query.setUnionAllMode(true).addUnion(subq);
       }
@@ -508,13 +536,14 @@ public class CommonsModuleBean implements BeeModule {
     BeeRowSet rs = new BeeRowSet(HISTORY_COLUMNS);
 
     if (query != null) {
-      int fldIdx = rs.getColumnIndex(SystemBean.AUDIT_FLD_FIELD);
-      int valIdx = rs.getColumnIndex(SystemBean.AUDIT_FLD_VALUE);
+      int fldIdx = rs.getColumnIndex(AUDIT_FLD_FIELD);
+      int valIdx = rs.getColumnIndex(AUDIT_FLD_VALUE);
       int relIdx = rs.getColumnIndex(COL_RELATION);
+      Map<String, String> dict = usr.getLocalizableDictionary();
 
       for (SimpleRow row : qs.getData(query)) {
         String[] values = new String[rs.getNumberOfColumns()];
-        String fld = row.getValue(SystemBean.AUDIT_FLD_FIELD);
+        String fld = row.getValue(AUDIT_FLD_FIELD);
 
         for (int i = 0; i < values.length; i++) {
           String value;
@@ -526,19 +555,27 @@ public class CommonsModuleBean implements BeeModule {
           }
           if (value != null) {
             if (i == fldIdx) {
-              value = BeeUtils.notEmpty(Localized.maybeTranslate(view.getColumnLabel(fld)), value);
+              value = BeeUtils.notEmpty(Localized.maybeTranslate(view.getColumnLabel(fld), dict),
+                  value);
 
             } else if (i == valIdx) {
               switch (view.getColumnType(fld)) {
                 case BOOLEAN:
-                  value = BeeUtils.toBoolean(value)
-                      ? Localized.getConstants().yes() : Localized.getConstants().no();
+                  value = BeeUtils.toBoolean(value) ? loc.yes() : loc.no();
                   break;
                 case DATE:
                   value = TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)).toDateString();
                   break;
                 case DATETIME:
                   value = TimeUtils.toDateTimeOrNull(BeeUtils.toLong(value)).toCompactString();
+                  break;
+                case DECIMAL:
+                  String enumKey = view.getColumnEnumKey(fld);
+
+                  if (!BeeUtils.isEmpty(enumKey)) {
+                    value = BeeUtils.notEmpty(EnumUtils.getLocalizedCaption(enumKey,
+                        BeeUtils.toInt(value), loc), value);
+                  }
                   break;
                 default:
                   break;

@@ -5,7 +5,7 @@
   >
   <g:columns>
     <DataColumn name="Date" visible="true" width="120" />
-    <DataColumn name="Status" itemKey="EcOrderStatus" visible="true" width="100" />
+    <DataColumn name="Status" visible="true" width="100" />
 
     <RelColumn name="User" editEnabled="true" editSource="CompanyPerson" minWidth="200">
       <renderToken source="FirstName" />

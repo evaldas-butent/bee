@@ -42,12 +42,12 @@
 
     <FlowPanel name="Colors" style="&absolute; left: 360px; top: 192px; width: 380px;" />
 
-    <ListBox source="Status" itemKey="AppointmentStatus" caption="=calAppointmentStatus" style="width: 160px;"
+    <ListBox source="Status" caption="=calAppointmentStatus" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 240px;" />
     <ListBox name="Reminder" caption="=calReminder" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 280px;" />
       
-    <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false"
+    <Radio source="Visibility" vertical="false"
       style="&absolute; left: 0; top: 324px;" />
 
     <DataSelector source="CompanyName" caption="=calClient" style="width: 300px;"

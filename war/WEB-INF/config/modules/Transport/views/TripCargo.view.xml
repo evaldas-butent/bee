@@ -26,7 +26,41 @@
       <SimpleColumn name="Notes" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <HiddenColumn name="Date" alias="PlannedLoadingDate" />
+        <SimpleColumn name="Date" alias="CargoLoadingDate" label="=trLoadingDate" />
+        <SimpleColumn name="Terminal" alias="CargoLoadingTerminal" />
+        <SimpleColumn name="Contact" alias="CargoLoadingContact" label="=trLoadingContact" />
+        <SimpleJoin  name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CargoLoadingCompanyName"/>
+        </SimpleJoin>
+        <SimpleColumn name="Address" alias="CargoLoadingAddress" label="=trLoadingAddress" />
+        <SimpleColumn name="PostIndex" alias="CargoLoadingPostIndex" label="=trLoadingPostIndex" />
+  
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="CargoLoadingCityName" />
+        </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="CargoLoadingCountryName" />
+          <SimpleColumn name="Code" alias="CargoLoadingCountryCode" />
+        </SimpleJoin>
+      </SimpleJoin>
+  
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="CargoUnloadingDate" label="=trUnloadingDate" />
+        <SimpleColumn name="Terminal" alias="CargoUnloadingTerminal" />
+        <SimpleColumn name="Contact" alias="CargoUnloadingContact" label="=trUnloadingContact" />
+        <SimpleJoin  name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CargoUnloadingCompanyName"/>
+        </SimpleJoin>
+        <SimpleColumn name="Address" alias="CargoUnloadingAddress" label="=trUnloadingAddress" />
+        <SimpleColumn name="PostIndex" alias="CargoUnloadingPostIndex" label="=trUnloadingPostIndex" />
+  
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="CargoUnloadingCityName" />
+        </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="CargoUnloadingCountryName" />
+          <SimpleColumn name="Code" alias="CargoUnloadingCountryCode" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     
@@ -76,6 +110,6 @@
   </Columns>
   <Order>
     <OrderBy column="CargoOrder" />
-    <OrderBy column="PlannedLoadingDate" />
+    <OrderBy column="CargoLoadingDate" />
   </Order>
 </View>

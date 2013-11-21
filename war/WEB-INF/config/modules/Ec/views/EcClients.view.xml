@@ -102,7 +102,9 @@
 
     <SimpleColumn name="DisplayedPrice" />
 
-    <SimpleColumn name="KeyboardShortcuts" />
+    <SimpleColumn name="ToggleListPrice" />
+    <SimpleColumn name="TogglePrice" />
+    <SimpleColumn name="ToggleStockLimit" />
 
     <SimpleColumn name="Notes" />
   </Columns>

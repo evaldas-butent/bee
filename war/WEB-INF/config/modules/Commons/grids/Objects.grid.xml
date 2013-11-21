@@ -4,7 +4,7 @@
   name="Objects" viewName="Objects" caption="=objects" newRowPopup="true"
   >
   <g:columns>
-    <DataColumn name="Type" caption="=objectType" itemKey="RightsObjectType" visible="true" />
+    <DataColumn name="Type" caption="=objectType" visible="true" />
     <DataColumn name="Name" caption="=object" visible="true" />
   </g:columns>
 </g:Grid>

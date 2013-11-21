@@ -73,7 +73,6 @@ public class Tablet extends Mobile {
       @Override
       public void onClick(ClickEvent event) {
         ClientLogManager.setPanelVisible(toggle.isDown());
-        toggle.invert();
       }
     });
 

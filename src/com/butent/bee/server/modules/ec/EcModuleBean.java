@@ -100,7 +100,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -759,7 +759,7 @@ public class EcModuleBean implements BeeModule {
       String id = row.getValue(idName);
 
       if (!BeeUtils.same(id, lastId)) {
-        supplier = new ArticleSupplier(NameUtils.getEnumByIndex(EcSupplier.class,
+        supplier = new ArticleSupplier(EnumUtils.getEnumByIndex(EcSupplier.class,
             row.getInt(COL_TCD_SUPPLIER)), row.getValue(COL_TCD_SUPPLIER_ID),
             row.getDouble(COL_TCD_COST), row.getDouble(COL_TCD_PRICE));
 
@@ -2776,7 +2776,7 @@ public class EcModuleBean implements BeeModule {
     if (clientInfo == null) {
       displayedPrice = null;
     } else {
-      displayedPrice = NameUtils.getEnumByIndex(EcDisplayedPrice.class,
+      displayedPrice = EnumUtils.getEnumByIndex(EcDisplayedPrice.class,
           clientInfo.getInt(COL_CLIENT_DISPLAYED_PRICE));
     }
 

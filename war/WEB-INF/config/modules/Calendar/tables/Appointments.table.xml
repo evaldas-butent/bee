@@ -16,7 +16,7 @@
     <Relation name="Color" relation="Colors" label="=color" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
 
-    <Integer name="Status" defValue="0" label="=calAppointmentStatus" />
+    <Enum name="Status" key="AppointmentStatus" defValue="0" label="=calAppointmentStatus" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=calCreated" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" />
@@ -34,8 +34,8 @@
     <Text name="Recurrence" label="=calRecurrence" />
     <Relation name="RecurringEventId" relation="Appointments" label="=calRecurringEventId" />
 
-    <Integer name="Transparency" label="=calTransparency" />
-    <Integer name="Visibility" label="=calVisibility" />
+    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
+    <Enum name="Visibility" key="Calendar_Visibility" label="=calVisibility" />
     <Boolean name="ReadOnly" label="=calReadOnly" />
 
     <String name="ICalUID" precision="100" label="=calICalUID" />

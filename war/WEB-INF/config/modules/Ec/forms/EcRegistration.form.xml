@@ -17,7 +17,7 @@
 
       <row>
         <Label text="=ecClientType" class="bee-required" />
-        <ListBox source="Type" itemKey="EcClientType" />
+        <ListBox source="Type" />
         <Label text="=ecBranchPrimary" class="bee-required" />
         <DataSelector source="Branch" />
       </row>

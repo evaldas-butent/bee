@@ -345,8 +345,7 @@ public class TransportSelfService extends LoginServlet {
             break;
 
           default:
-            ValueType type = column.getType();
-            value = (type == ValueType.LONG) ? null : DataUtils.render(row, i, type);
+            value = (column.getType() == ValueType.LONG) ? null : DataUtils.render(column, row, i);
         }
 
         if (!BeeUtils.isEmpty(value)) {

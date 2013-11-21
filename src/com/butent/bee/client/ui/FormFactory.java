@@ -79,6 +79,8 @@ public final class FormFactory {
 
     int getDataIndex(String source);
     
+    String getDataValue(String source);
+    
     FormView getFormView();
 
     HeaderView getHeaderView();

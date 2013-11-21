@@ -25,7 +25,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -37,7 +37,7 @@ final class Freight extends OrderCargo {
 
   static Freight create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     return new Freight(row.getLong(COL_ORDER),
-        NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
+        EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
         row.getDateTime(ALS_ORDER_DATE), row.getValue(COL_ORDER_NO),
         row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
         row.getLong(COL_CARGO), row.getValue(COL_CARGO_DESCRIPTION),
@@ -71,6 +71,8 @@ final class Freight extends OrderCargo {
   private final Long cargoTripVersion;
 
   private String tripTitle;
+  
+  private boolean editable;
 
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
@@ -139,6 +141,10 @@ final class Freight extends OrderCargo {
     }
   }
 
+  boolean isEditable() {
+    return editable;
+  }
+
   void makeTarget(final DndTarget widget, final String overStyle) {
     DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
         new Predicate<Object>() {
@@ -153,6 +159,10 @@ final class Freight extends OrderCargo {
             Freight.this.acceptDrop(u);
           }
         });
+  }
+
+  void setEditable(boolean editable) {
+    this.editable = editable;
   }
 
   void setTripTitle(String tripTitle) {

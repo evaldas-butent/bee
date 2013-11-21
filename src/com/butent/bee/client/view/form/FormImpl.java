@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -164,7 +165,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         if (renderer == null) {
           renderer = RendererFactory.getRenderer(result.getRendererDescription(),
-              result.getRender(), result.getRenderTokens(), result.getItemKey(),
+              result.getRender(), result.getRenderTokens(), result.getEnumKey(),
               NameUtils.toList(result.getRenderColumns()), getDataColumns(), cellSource,
               result.getRelation());
         }
@@ -640,6 +641,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public String getDataValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public HasDataTable getDisplay() {
     return this;
   }
@@ -851,7 +862,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       setDataObserver(new DataObserver());
     }
   }
-  
+
   @Override
   public boolean observesData() {
     return getDataObserver() != null;
@@ -1073,7 +1084,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
     if (isAttached() && !isClosed() && DomUtils.isVisible(getElement())) {
       String type = event.getNativeEvent().getType();
 
@@ -1085,10 +1096,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       } else if (EventUtils.isMouseDown(type)) {
         if (!BeeConst.isUndef(getActiveEditableIndex())) {
-          Element targetElement = EventUtils.getEventTargetElement(event);
           EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
 
-          if (!editableWidget.getEditor().isOrHasPartner(targetElement)) {
+          if (!editableWidget.getEditor().isOrHasPartner(targetNode)) {
             if (!editableWidget.checkForUpdate(true)) {
               setPreviewId(editableWidget.getWidgetId());
               event.cancel();

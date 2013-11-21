@@ -15,7 +15,7 @@
     </DataColumn>
 
     <RelColumn name="TypeName" caption="=type" newRowEnabled="false" />
-    <DataColumn name="Method" caption="=reminderMethod" itemKey="ReminderMethod" />
+    <DataColumn name="Method" caption="=reminderMethod" />
 
     <DataColumn name="Hours" caption="=calHoursTo" />
     <DataColumn name="Minutes" caption="=calMinutesTo" />

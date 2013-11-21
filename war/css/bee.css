@@ -701,21 +701,13 @@
 .bee-Notification-error {
   background-color: #ffcccc;
 }
-
 .bee-Notification-warning {
   background-color: yellow;
 }
 
 .bee-Toggle {
   text-align: center;
-}
-
-.bee-Toggle-up-hovering {
-  color: red;
-}
-
-.bee-Toggle-down-hovering {
-  color: green;
+  cursor: pointer;
 }
 
 .bee-StringPicker {
@@ -788,7 +780,7 @@
   -ms-flex-align: center;
   margin-bottom: 5px;
 }
-.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+.bee-RichTextToolbar-row .bee-Toggle-down {
   background-color: #faac58;
 }
 
@@ -872,7 +864,8 @@
   bottom: 0;
 }
 
-.bee-GridFormContainer-newRow .bee-hasDefaults:after {
+.bee-GridFormContainer-newRow .bee-hasDefaults:after,
+.bee-NewRowContainer .bee-hasDefaults:after {
   content: "*";
   font-weight: bold;
   color: #4d90fe;

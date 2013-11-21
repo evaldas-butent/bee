@@ -16,7 +16,7 @@ import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -80,7 +80,7 @@ public class MailAccount {
       accountId = null;
       addressId = null;
     } else {
-      storeProtocol = NameUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_STYPE));
+      storeProtocol = EnumUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_STYPE));
       storeHost = data.getValue(COL_STORE_SERVER);
       storePort = data.getInt(COL_STORE_SPORT);
       storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),

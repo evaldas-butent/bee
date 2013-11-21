@@ -12,7 +12,7 @@
       </FlowPanel>
       <FlowPanel class="flexBox-horizontal-center">
         <InlineLabel text="=type" class="bee-required" />
-        <ListBox source="Type" itemKey="ParameterType" />
+        <ListBox source="Type" enumKey="ParameterType" />
       </FlowPanel>
       <InputText source="Value" caption="=valueParameter" />
       <CheckBox source="UserMode" text="=userMode" />

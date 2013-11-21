@@ -13,7 +13,9 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Label;
@@ -32,7 +34,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class TripCargoGridHandler extends CargoPlaceRenderer {
+class TripCargoGrid extends AbstractGridInterceptor {
 
   private static class Action {
 
@@ -118,5 +120,19 @@ class TripCargoGridHandler extends CargoPlaceRenderer {
     Action action = new Action(presenter.getGridView());
     UiHelper.focus(action.dialog.getContent());
     return false;
+  }
+
+  @Override
+  public String getRowCaption(IsRow row, boolean edit) {
+    return Localized.getConstants().trCargoActualPlaces();
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (!BeeUtils.inListSame(event.getColumnId(), "Loading", "Unloading", "CargoOrder",
+        COL_CARGO_PERCENT, COL_ORDER_NO, COL_DESCRIPTION)) {
+      event.consume();
+    }
+    super.onEditStart(event);
   }
 }

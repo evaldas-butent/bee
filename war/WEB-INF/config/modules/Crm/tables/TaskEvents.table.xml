@@ -9,7 +9,7 @@
     <Relation name="Publisher" notNull="true" relation="Users" label="=user" />
     <DateTime name="PublishTime" notNull="true" label="=crmTaskPublishTime" />
     <Text name="Comment" label="=crmTaskComment" />
-    <Integer name="Event" notNull="true" label="=crmTaskEvent" />
+    <Enum name="Event" key="TaskEvent" precision="2" notNull="true" label="=crmTaskEvent" />
     <Text name="EventNote" label="=crmTaskEventNote" />
     <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" label="=crmTaskDuration" />
     <DateTime name="FinishTime" label="=crmFinishDate" />

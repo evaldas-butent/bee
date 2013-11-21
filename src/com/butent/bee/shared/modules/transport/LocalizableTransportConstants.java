@@ -6,8 +6,6 @@ public interface LocalizableTransportConstants {
 
   String assessments();
 
-  String assignCargosToTripCaption();
-
   String assignCargoToTripCaption();
 
   String assignCargoToTripQuestion();
@@ -124,8 +122,6 @@ public interface LocalizableTransportConstants {
 
   String transportationOrders();
 
-  String transportationOrderStatuses();
-
   String trAssessment();
 
   String trAssessmentCancelOrderQuestion();
@@ -162,6 +158,10 @@ public interface LocalizableTransportConstants {
 
   String trAssignCargo();
 
+  String trAssignTrip();
+
+  String trCargoActualPlaces();
+
   String trCargoRequestCreateTransportationOrderQuestion();
 
   String trCargoRequestFinish();
@@ -175,8 +175,6 @@ public interface LocalizableTransportConstants {
   String trCargoSelectCargo();
 
   String trCargoSelectTrip();
-
-  String trCargoTripsAssignTrip();
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
@@ -233,6 +231,8 @@ public interface LocalizableTransportConstants {
   String trNewVehicle();
 
   String trOrder();
+
+  String trOrderStatus();
 
   String trOrderStatusActive();
 
@@ -361,7 +361,7 @@ public interface LocalizableTransportConstants {
   String trRequestFreightInsurance();
 
   String trRequestNew();
-  
+
   String trRequestNotes();
 
   String trRequestPlaceCompanyName();
@@ -369,9 +369,9 @@ public interface LocalizableTransportConstants {
   String trRequestPlaceContact();
 
   String trRequestPlaceFax();
-  
+
   String trRequestReceived();
-  
+
   String trRequestResponsibleManager();
 
   String trRequests();

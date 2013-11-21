@@ -18,9 +18,8 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -37,7 +36,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   static OrderCargo create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     OrderCargo orderCargo =
         new OrderCargo(row.getLong(COL_ORDER),
-            NameUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
+            EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
             row.getDateTime(COL_ORDER_DATE), row.getValue(COL_ORDER_NO),
             row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
             row.getLong(COL_CARGO_ID), row.getValue(COL_CARGO_DESCRIPTION),
@@ -251,7 +250,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
   String getOrderTitle() {
     return ChartHelper.buildTitle(orderDateLabel, TimeUtils.renderCompact(getOrderDate()),
-        orderStatusLabel, Captions.getCaption(getOrderStatus()));
+        orderStatusLabel, (getOrderStatus() == null) ? null : getOrderStatus().getCaption());
   }
 
   String getTitle() {

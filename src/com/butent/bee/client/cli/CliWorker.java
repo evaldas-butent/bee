@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -154,12 +153,12 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -1231,7 +1230,7 @@ public final class CliWorker {
       return;
     }
 
-    Direction dir = NameUtils.getEnumByName(Direction.class, p1);
+    Direction dir = EnumUtils.getEnumByName(Direction.class, p1);
     if (dir == null) {
       Global.sayHuh(p1, p2);
       return;
@@ -1423,7 +1422,7 @@ public final class CliWorker {
       }
     });
   }
-  
+
   private static void getTables(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
     if (!BeeUtils.isEmpty(args)) {
@@ -1862,7 +1861,7 @@ public final class CliWorker {
   }
 
   private static void showCaptions() {
-    Set<String> keys = Captions.getRegisteredKeys();
+    Set<String> keys = EnumUtils.getRegisteredKeys();
     if (BeeUtils.isEmpty(keys)) {
       logger.debug("no captions registered");
       return;
@@ -1872,17 +1871,8 @@ public final class CliWorker {
         BeeUtils.bracket(keys.size()));
 
     for (String key : keys) {
-      for (String caption : Captions.getCaptions(key)) {
+      for (String caption : EnumUtils.getCaptions(key)) {
         props.add(new Property(key, caption));
-      }
-    }
-
-    Table<String, String, String> columnKeys = Captions.getColumnKeys();
-    props.add(new Property("Column Keys", BeeUtils.bracket(columnKeys.size())));
-
-    for (String viewName : columnKeys.rowKeySet()) {
-      for (Map.Entry<String, String> entry : columnKeys.row(viewName).entrySet()) {
-        props.add(new Property(BeeUtils.joinWords(viewName, entry.getKey()), entry.getValue()));
       }
     }
 

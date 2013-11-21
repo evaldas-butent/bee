@@ -13,7 +13,7 @@
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <InlineLabel text="=cargo" class="bee-required" />
+      <InlineLabel text="=cargo" class="bee-hasDefaults bee-required" />
       <InputArea source="Description" visibleLines="2" class="flexible"
         style="font-weight: bold; color: blue; display:inline-block;" />
       <HorizontalPanel>

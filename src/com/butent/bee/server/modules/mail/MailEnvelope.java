@@ -13,7 +13,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import javax.mail.Address;
 import javax.mail.Flags.Flag;
@@ -76,7 +76,7 @@ public class MailEnvelope {
 
       if (addresses != null) {
         for (Address address : addresses) {
-          recipients.put(NameUtils.getEnumByName(AddressType.class, type.toString()), address);
+          recipients.put(EnumUtils.getEnumByName(AddressType.class, type.toString()), address);
         }
       }
     }

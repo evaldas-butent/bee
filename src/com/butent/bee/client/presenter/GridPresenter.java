@@ -351,7 +351,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
             new HistoryHandler(getGridView().getViewName(), ids),
-            null, PresenterCallback.SHOW_IN_NEW_TAB);
+            null, PresenterCallback.SHOW_IN_POPUP);
         break;
 
       case BOOKMARK:

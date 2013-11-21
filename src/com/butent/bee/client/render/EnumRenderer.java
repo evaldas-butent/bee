@@ -6,9 +6,9 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
@@ -16,9 +16,9 @@ import java.util.List;
 public class EnumRenderer extends AbstractCellRenderer implements HasValueStartIndex {
 
   private static final BeeLogger logger = LogUtils.getLogger(EnumRenderer.class);
-  
+
   public static final int DEFAULT_VALUE_START_INDEX = 0;
-  
+
   private final List<String> captions = Lists.newArrayList();
   private int valueStartIndex;
 
@@ -27,7 +27,7 @@ public class EnumRenderer extends AbstractCellRenderer implements HasValueStartI
   }
 
   public EnumRenderer(CellSource cellSource, String key, int valueStartIndex) {
-    this(cellSource, Captions.getCaptions(key), valueStartIndex);
+    this(cellSource, EnumUtils.getCaptions(key), valueStartIndex);
   }
 
   public EnumRenderer(CellSource cellSource, Class<? extends Enum<?>> clazz) {
@@ -35,12 +35,12 @@ public class EnumRenderer extends AbstractCellRenderer implements HasValueStartI
   }
 
   public EnumRenderer(CellSource cellSource, Class<? extends Enum<?>> clazz, int valueStartIndex) {
-    this(cellSource, Captions.getCaptions(clazz), valueStartIndex);
+    this(cellSource, EnumUtils.getCaptions(clazz), valueStartIndex);
   }
 
   private EnumRenderer(CellSource cellSource, List<String> captions, int valueStartIndex) {
     super(cellSource);
-    
+
     if (BeeUtils.isEmpty(captions)) {
       logger.severe(NameUtils.getName(this), ": no captions available");
     } else {

@@ -1,6 +1,6 @@
 package com.butent.bee.server.sql;
 
-import static com.butent.bee.server.data.SystemBean.*;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

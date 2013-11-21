@@ -3,7 +3,6 @@ package com.butent.bee.client.composite;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -239,13 +238,12 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
     if (isPickerPending()) {
       String type = event.getNativeEvent().getType();
 
       if (EventUtils.isKeyEvent(type) || EventUtils.isMouseButtonEvent(type)) {
-        EventTarget target = event.getNativeEvent().getEventTarget();
-        boolean isTarget = EventUtils.equalsOrIsChild(getElement(), target);
+        boolean isTarget = (targetNode != null) && getElement().isOrHasChild(targetNode);
 
         closePicker();
         if (!isTarget) {

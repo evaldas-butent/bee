@@ -32,7 +32,7 @@
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="TripPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" minWidth="140" flexBasis="120" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading" minWidth="140" flexBasis="120" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="=trLoaded" minWidth="140" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="=trUnloaded" minWidth="140" />
   </g:columns>
 </g:Grid>

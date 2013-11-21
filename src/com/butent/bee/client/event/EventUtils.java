@@ -618,13 +618,6 @@ public final class EventUtils {
     return Document.get().createKeyUpEvent(false, false, false, false, keyCode);
   }
 
-  public static boolean equalsOrIsChild(Element parent, EventTarget target) {
-    if (parent == null || target == null) {
-      return false;
-    }
-    return parent.isOrHasChild(Node.as(target));
-  }
-
   public static void fireKeyDown(Element target, int keyCode) {
     Assert.notNull(target);
     target.dispatchEvent(createKeyDown(keyCode));
@@ -733,6 +726,15 @@ public final class EventUtils {
     }
   }
 
+  public static Node getTargetNode(EventTarget et) {
+    Assert.notNull(et);
+    if (Node.is(et)) {
+      return Node.as(et);
+    } else {
+      return null;
+    }
+  }
+  
   public static String getTargetTagName(EventTarget et) {
     Assert.notNull(et);
     if (Element.is(et)) {

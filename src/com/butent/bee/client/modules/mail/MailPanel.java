@@ -18,7 +18,6 @@ import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -60,7 +59,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
@@ -512,7 +511,7 @@ public class MailPanel extends AbstractFormInterceptor {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
 
-    BeeListBox accountsWidget = new BeeListBox();
+    ListBox accountsWidget = new ListBox();
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 

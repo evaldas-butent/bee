@@ -582,7 +582,7 @@ public class QueryServiceBean {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
-    doSql(SqlUtils.setSqlParameter(SystemBean.AUDIT_USER, usr.getCurrentUserId()).getQuery());
+    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER, usr.getCurrentUserId()).getQuery());
 
     activateTables(query);
 

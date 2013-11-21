@@ -83,7 +83,7 @@ import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -1385,7 +1385,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     RenderMode rm = null;
 
     if (!BeeUtils.isEmpty(mode)) {
-      rm = NameUtils.getEnumByName(RenderMode.class, mode);
+      rm = EnumUtils.getEnumByName(RenderMode.class, mode);
       if (rm != null) {
         setRenderMode(rm);
         return;

@@ -19,6 +19,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionAppend();
 
   String actionAudit();
+  
+  String actionBlock();
 
   String actionBookmark();
 
@@ -249,6 +251,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String invalidRange();
 
   String invalidTime();
+  
+  String ipBlocked();
 
   String item();
 

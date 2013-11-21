@@ -1,13 +1,12 @@
 package com.butent.bee.client.event.logical;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.Assert;
 
 public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
@@ -26,9 +25,9 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
 
   private static final Type<Handler> TYPE = new Type<Handler>();
   
-  public static void fire(HasCloseHandlers source, Cause cause, EventTarget eventTarget) {
+  public static void fire(HasCloseHandlers source, Cause cause, Node target) {
     Assert.notNull(source);
-    source.fireEvent(new CloseEvent(cause, eventTarget));
+    source.fireEvent(new CloseEvent(cause, target));
   }
 
   public static Type<Handler> getType() {
@@ -36,12 +35,12 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
   }
   
   private final Cause cause;
-  private final EventTarget eventTarget;
+  private final Node target;
 
-  public CloseEvent(Cause cause, EventTarget eventTarget) {
+  public CloseEvent(Cause cause, Node target) {
     super();
     this.cause = cause;
-    this.eventTarget = eventTarget;
+    this.target = target;
   }
 
   public boolean actionCancel() {
@@ -57,15 +56,15 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
     return cause;
   }
 
-  public EventTarget getEventTarget() {
-    return eventTarget;
+  public Node getTarget() {
+    return target;
   }
 
   public boolean isTarget(Element element) {
-    if (element == null || eventTarget == null) {
+    if (element == null || target == null) {
       return false;
     } else {
-      return EventUtils.equalsOrIsChild(element, eventTarget);
+      return element.isOrHasChild(target);
     }
   }
   

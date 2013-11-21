@@ -38,6 +38,7 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -192,6 +193,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   private final Long tripVersion;
   private final String tripNo;
 
+  private final TripStatus status;
+
   private final DateTime date;
   private final JustDate plannedEndDate;
   private final JustDate dateFrom;
@@ -220,6 +223,8 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     this.tripId = row.getLong(COL_TRIP_ID);
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
+  
+    this.status = EnumUtils.getEnumByIndex(TripStatus.class, row.getInt(COL_TRIP_STATUS));
 
     this.date = row.getDateTime(COL_TRIP_DATE);
     this.plannedEndDate = row.getDate(COL_TRIP_PLANNED_END_DATE);
@@ -244,6 +249,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
     this.title = ChartHelper.buildTitle(
         Localized.getConstants().tripDuration(), rangeLabel,
+        Localized.getConstants().status(), (this.status == null) ? null : this.status.getCaption(),
         tripNoLabel, this.tripNo,
         truckLabel, this.truckNumber,
         trailerLabel, this.trailerNumber,
@@ -340,6 +346,10 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   boolean hasDrivers() {
     return !BeeUtils.isEmpty(drivers);
+  }
+  
+  boolean isEditable() {
+    return status != null && status.isEditable();
   }
 
   void makeTarget(final DndTarget widget, final String overStyle) {

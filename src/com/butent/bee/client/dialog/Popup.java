@@ -3,8 +3,8 @@ package com.butent.bee.client.dialog;
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
@@ -340,7 +340,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public void center() {
     boolean initiallyShowing = isShowing();
-    boolean initiallyAnimated = isAnimationEnabled;
+    boolean initiallyAnimated = isAnimationEnabled();
 
     if (!initiallyShowing) {
       setVisible(false);
@@ -436,15 +436,13 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   @Override
-  public void onEventPreview(NativePreviewEvent event) {
+  public void onEventPreview(NativePreviewEvent event, Node targetNode) {
     if (!isShowing() || DOM.getCaptureElement() != null) {
       return;
     }
 
     NativeEvent nativeEvent = event.getNativeEvent();
-    EventTarget target = nativeEvent.getEventTarget();
-
-    boolean eventTargetsPopup = EventUtils.equalsOrIsChild(getElement(), target);
+    boolean eventTargetsPopup = (targetNode != null) && getElement().isOrHasChild(targetNode);
 
     String type = nativeEvent.getType();
 
@@ -454,7 +452,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       } else if (isModal()) {
         event.cancel();
       } else {
-        hide(CloseEvent.Cause.MOUSE_OUTSIDE, target, true);
+        hide(CloseEvent.Cause.MOUSE_OUTSIDE, targetNode, true);
       }
 
     } else if (EventUtils.isKeyEvent(type)) {
@@ -463,7 +461,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE) {
           if (hideOnEscape()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD_ESCAPE, target, true);
+            hide(CloseEvent.Cause.KEYBOARD_ESCAPE, targetNode, true);
           }
           if (getOnEscape() != null) {
             getOnEscape().accept(event);
@@ -472,14 +470,15 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         } else if (UiHelper.isSave(nativeEvent)) {
           if (hideOnSave()) {
             event.cancel();
-            hide(CloseEvent.Cause.KEYBOARD_SAVE, target, true);
+            hide(CloseEvent.Cause.KEYBOARD_SAVE, targetNode, true);
           }
           if (getOnSave() != null) {
             getOnSave().accept(event);
           }
 
         } else if (nativeEvent.getKeyCode() == KeyCodes.KEY_TAB) {
-          if (!eventTargetsPopup || handleTabulation(EventUtils.getTargetElement(target))) {
+          if (!eventTargetsPopup 
+              || Element.is(targetNode) && handleTabulation(Element.as(targetNode))) {
             event.cancel();
             UiHelper.moveFocus(getWidget(), !EventUtils.hasModifierKey(nativeEvent));
           }
@@ -487,8 +486,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
 
       if (!event.isCanceled()) {
-        if (eventTargetsPopup || getKeyboardPartner() != null
-            && EventUtils.equalsOrIsChild(getKeyboardPartner(), target)) {
+        if (eventTargetsPopup || getKeyboardPartner() != null && targetNode != null 
+            && getKeyboardPartner().isOrHasChild(targetNode)) {
           event.consume();
 
         } else {
@@ -633,7 +632,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  protected void hide(CloseEvent.Cause cause, EventTarget eventTarget, boolean fireEvent) {
+  protected void hide(CloseEvent.Cause cause, Node target, boolean fireEvent) {
     if (!isShowing()) {
       return;
     }
@@ -641,7 +640,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     resizeAnimation.setState(false, false);
     if (fireEvent) {
-      CloseEvent.fire(this, cause, eventTarget);
+      CloseEvent.fire(this, cause, target);
     }
   }
 

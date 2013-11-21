@@ -14,7 +14,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public final class ExtWidget {
     }
 
     String tagName = XmlUtils.getLocalName(root);
-    Direction direction = NameUtils.getEnumByName(Direction.class, tagName);
+    Direction direction = EnumUtils.getEnumByName(Direction.class, tagName);
     if (!Split.validDirection(direction, false)) {
       logger.severe("ext widget: invalid root tag name", tagName);
       return null;
@@ -67,7 +67,7 @@ public final class ExtWidget {
 
     Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
 
-    Component precedes = NameUtils.getEnumByName(Component.class, root.getAttribute(ATTR_PRECEDES));
+    Component precedes = EnumUtils.getEnumByName(Component.class, root.getAttribute(ATTR_PRECEDES));
     boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
 
     return new ExtWidget(widget, direction, size, splSize, precedes, hidable);

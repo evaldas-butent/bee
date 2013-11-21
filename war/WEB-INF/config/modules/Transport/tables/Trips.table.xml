@@ -6,8 +6,8 @@
   x="0" y="0"
   >
   <Fields>
-    <Integer name="Status" notNull="true" label="=status" defValue="0" />
-    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <Enum name="Status" key="TripStatus" notNull="true" label="=status" defValue="0" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trTripDate" />
     <String name="TripNo" precision="20" unique="true" notNull="true"
       defExpr="NEXT_NUMBER" defValue="R/" label="=trTripNo" />
     <Relation name="Vehicle" relation="Vehicles" label="=trTruck" />

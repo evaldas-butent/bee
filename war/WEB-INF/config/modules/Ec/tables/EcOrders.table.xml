@@ -8,7 +8,7 @@
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=ecOrderDate" />
     <String name="Number" precision="30" label="=ecOrderNumber" />
 
-    <Integer name="Status" notNull="true" defValue="0" label="=ecOrderStatus" />
+    <Enum name="Status" key="EcOrderStatus" notNull="true" defValue="0" label="=ecOrderStatus" />
 
     <Relation name="Client" relation="EcClients" notNull="true" cascade="DELETE" label="=ecClient" />
     <Relation name="Manager" relation="EcManagers" label="=ecManager" />

@@ -12,7 +12,7 @@
     <Numeric name="Cost" precision="10" scale="2" label="=ecItemCost" />
     <Numeric name="UpdatedCost" precision="10" scale="2" label="=ecUpdatedCost" />
     <DateTime name="UpdateTime" label="=ecUpdateTime" />
-    <Numeric name="Supplier" precision="1" notNull="true" label="=ecItemSupplier"/>
+    <Enum name="Supplier" key="EcSupplier" notNull="true" label="=ecItemSupplier" />
     <String name="SupplierID" precision="50" notNull="true" label="=ecItemSupplierCode" />
   </Fields>
   <Constraints>

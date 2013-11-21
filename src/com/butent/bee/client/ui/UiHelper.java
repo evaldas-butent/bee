@@ -92,7 +92,10 @@ public final class UiHelper {
   }
 
   public static boolean focus(Widget target) {
-    if (target instanceof HasOneWidget) {
+    if (DomUtils.focus(target)) {
+      return true;
+
+    } else if (target instanceof HasOneWidget) {
       return focus(((HasOneWidget) target).getWidget());
 
     } else if (target instanceof HasWidgets) {
@@ -104,7 +107,7 @@ public final class UiHelper {
       return false;
 
     } else {
-      return DomUtils.focus(target);
+      return false;
     }
   }
 

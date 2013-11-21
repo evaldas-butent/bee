@@ -194,14 +194,13 @@ public class MessageBoxes {
   }
 
   public void confirm(String caption, Icon icon, List<String> messages,
-      final ConfirmationCallback callback, String dialogStyle, String messageStyle,
-      String buttonStyle) {
+      String optionYes, String optionNo, final ConfirmationCallback callback,
+      String dialogStyle, String messageStyle, String buttonStyle) {
 
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
-    List<String> options = Lists.newArrayList(Localized.getConstants().yes(),
-        Localized.getConstants().no());
+    List<String> options = Lists.newArrayList(optionYes, optionNo);
 
     ChoiceCallback choice = new ChoiceCallback() {
       @Override

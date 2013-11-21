@@ -212,6 +212,11 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       return getActionControls().containsKey(action);
     }
   }
+  
+  @Override
+  public boolean hasCommands() {
+    return !commandPanel.isEmpty();
+  }
 
   @Override
   public boolean isActionEnabled(Action action) {

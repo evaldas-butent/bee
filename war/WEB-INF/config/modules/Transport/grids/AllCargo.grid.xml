@@ -9,7 +9,7 @@
 
   <g:columns>
     <DataColumn name="OrderNo" caption="=orderNumber" />
-    <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />    
+    <DataColumn name="Status" caption="=status" />    
     <RelColumn name="Customer" caption="=customer" />
     <RelColumn name="Manager" caption="=manager" />
 

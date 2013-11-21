@@ -8,7 +8,7 @@
   >
   <g:columns>
     <DataColumn name="Name" visible="true" />
-    <DataColumn name="Priority" itemKey="TaskPriority" />
+    <DataColumn name="Priority" />
     <DataColumn name="Summary" />
     <DataColumn name="ExpectedDuration" caption="=crmTaskDuration" flexBasis="5" flexBasisUnit="em">
       <editor type="time" />

@@ -112,7 +112,7 @@
       <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"
         style="&absolute; left: 480px; top: 128px; width: 40px;" />
 
-      <ListBox source="Status" itemKey="AppointmentStatus" caption="=calAppointmentStatus"
+      <ListBox source="Status" caption="=calAppointmentStatus"
         style="width: 120px;" d:size="60" d:unit="px"
         d:rootStyle="&absolute; left: 560px; top: 128px;" />
 

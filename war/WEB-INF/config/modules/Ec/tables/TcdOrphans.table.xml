@@ -9,7 +9,7 @@
   <Fields>
     <String name="ArticleNr" precision="50" notNull="true" label="=ecItemCode" />
     <Relation name="Brand" relation="TcdBrands" notNull="true" label="=ecItemBrand" />
-    <Numeric name="Supplier" precision="1" notNull="true" label="=ecItemSupplier"/>
+    <Enum name="Supplier" key="EcSupplier" notNull="true" label="=ecItemSupplier" />
     <String name="SupplierID" precision="50" notNull="true" label="=ecItemSupplierCode" />
   </Fields>
   <Constraints>

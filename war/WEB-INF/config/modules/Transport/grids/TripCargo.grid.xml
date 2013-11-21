@@ -14,6 +14,8 @@
       editPopup="true" editSource="Order" />
     <RelColumn name="Description" caption="=cargo" editEnabled="true" editPopup="true"
       maxWidth="300" />
+    <CalcColumn name="CargoLoading" type="string" cellType="html" caption="=cargoLoading" minWidth="140" />
+    <CalcColumn name="CargoUnloading" type="string" cellType="html" caption="=cargoUnloading" minWidth="140" />
     <DataColumn name="Weight" caption="=weight" />
     <DataColumn name="Volume" caption="=volume" />
     <DataColumn name="Quantity" caption="=quantity" />
@@ -21,10 +23,8 @@
     <DataColumn name="Cmr" caption="CMR" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
     <DataColumn name="CargoPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cellType="html" caption="=loading"
-      minWidth="140" flexBasis="120" />
-    <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
-      minWidth="140" flexBasis="120" />
+    <CalcColumn name="Loading" type="string" cellType="html" caption="=trLoaded" minWidth="140" />
+    <CalcColumn name="Unloading" type="string" cellType="html" caption="=trUnloaded" minWidth="140" />
     <PropColumn name="Income" type="decimal" caption="=income" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>

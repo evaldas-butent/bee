@@ -5,6 +5,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class CalendarConstants {
 
@@ -79,7 +80,7 @@ public final class CalendarConstants {
     PUBLIC(Localized.getConstants().calPublic()), PRIVATE(Localized.getConstants().calPrivate());
 
     private final String caption;
-    
+
     private Visibility(String caption) {
       this.caption = caption;
     }
@@ -133,6 +134,14 @@ public final class CalendarConstants {
     public String getColumnId() {
       return columnId;
     }
+  }
+
+  public static void register() {
+    EnumUtils.register(AppointmentStatus.class);
+    EnumUtils.register(ResponseStatus.class);
+    EnumUtils.register(Transparency.class);
+    EnumUtils.register(TimeBlockClick.class);
+    EnumUtils.register("Calendar_Visibility", Visibility.class);
   }
 
   public static final String CALENDAR_MODULE = "Calendar";
@@ -332,7 +341,7 @@ public final class CalendarConstants {
 
   public static final String COL_ENABLED = "Enabled";
   public static final String COL_ORDINAL = "Ordinal";
-    
+
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 
@@ -345,7 +354,7 @@ public final class CalendarConstants {
   public static final JustDate MAX_DATE = TimeUtils.endOfMonth(TimeUtils.today(), 12);
 
   public static final String STYLE_SHEET = "calendar";
-  
+
   private CalendarConstants() {
   }
 }

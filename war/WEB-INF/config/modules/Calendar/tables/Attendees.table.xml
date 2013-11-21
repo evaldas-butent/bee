@@ -13,7 +13,7 @@
 
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=responsiblePerson" />
 
-    <Integer name="Transparency" label="=calTransparency" />
+    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
     <Integer name="Ordinal" label="=ordinal" />
     
     <Relation name="Color" relation="Colors" label="=color" />

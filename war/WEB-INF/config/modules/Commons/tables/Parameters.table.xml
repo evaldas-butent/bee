@@ -8,7 +8,7 @@
   <Fields>
     <String name="Module" precision="20" notNull="true" label="=module"/>
     <String name="Name" precision="30" notNull="true" label="=parameterName" />
-    <String name="Type" precision="20" notNull="true" label="=parameterType"/>
+    <String name="Type" precision="20" notNull="true" label="=parameterType" />
     <Text name="Description" label="=description"/>
     <Boolean name="UserMode" label="=userMode" />
     <Text name="Value" label="=valueParameter"/>

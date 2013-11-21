@@ -51,6 +51,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -384,7 +385,7 @@ public class CrmModuleBean implements BeeModule {
   private ResponseObject doTaskEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    TaskEvent event = NameUtils.getEnumByName(TaskEvent.class, svc);
+    TaskEvent event = EnumUtils.getEnumByName(TaskEvent.class, svc);
     if (event == null) {
       String msg = BeeUtils.joinWords("Task service not recognized:", svc);
       logger.warning(msg);

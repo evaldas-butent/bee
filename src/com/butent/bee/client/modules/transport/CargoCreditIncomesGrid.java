@@ -29,7 +29,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
@@ -150,8 +150,8 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                 FormView form = getFormView();
                 Widget w = form.getWidgetByName("Cause");
 
-                if (w != null && w instanceof BeeListBox) {
-                  String cause = ((BeeListBox) w).getValue();
+                if (w != null && w instanceof ListBox) {
+                  String cause = ((ListBox) w).getValue();
                   int idx = -1;
 
                   for (int i = 0; i < ev.getColumns().size(); i++) {

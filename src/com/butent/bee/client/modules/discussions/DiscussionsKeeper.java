@@ -6,7 +6,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.shared.ui.Captions;
 
 public final class DiscussionsKeeper {
 
@@ -23,10 +22,6 @@ public final class DiscussionsKeeper {
             DiscussionsList.open(parameters);
           }
         });
-
-    /* Captions */
-    String key = Captions.register(DiscussionStatus.class);
-    Captions.registerColumn(VIEW_DISCUSSIONS, COL_STATUS, key);
 
     /* Row handlers */
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);

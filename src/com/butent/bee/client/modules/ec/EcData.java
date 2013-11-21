@@ -320,7 +320,7 @@ class EcData {
     return names;
   }
   
-  void getClientValue(final String key, final Consumer<String> callback) {
+  void getClientValues(final List<String> keys, final Consumer<List<String>> callback) {
     if (clientInfo.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(SVC_GET_CLIENT_INFO);
       BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
@@ -333,13 +333,18 @@ class EcData {
             clientInfo.clear();
             clientInfo.putAll(map);
 
-            callback.accept(clientInfo.get(key));
+            getClientValues(keys, callback);
           }
         }
       });
       
     } else {
-      callback.accept(clientInfo.get(key));
+      List<String> values = Lists.newArrayList();
+      for (String key : keys) {
+        values.add(clientInfo.get(key));
+      }
+
+      callback.accept(values);
     }
   }
 

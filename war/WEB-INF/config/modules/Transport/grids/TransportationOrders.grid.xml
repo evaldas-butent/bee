@@ -9,7 +9,7 @@
   <g:columns>
     <DataColumn name="Date" caption="=date" />
     <DataColumn name="OrderNo" caption="=orderNumber" />
-    <DataColumn name="Status" caption="=status" itemKey="OrderStatus" />
+    <DataColumn name="Status" caption="=status" />
     <DataColumn name="Partial" caption="D" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />

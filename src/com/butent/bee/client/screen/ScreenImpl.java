@@ -490,6 +490,7 @@ public class ScreenImpl implements Screen {
       public void execute() {
         Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
             Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
+            Localized.getConstants().yes(), Localized.getConstants().no(),
             new ConfirmationCallback() {
               @Override
               public void onConfirm() {

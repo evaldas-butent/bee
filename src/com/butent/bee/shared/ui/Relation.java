@@ -7,7 +7,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -23,6 +22,7 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -236,7 +236,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   private Calculation rowRender;
   private List<RenderableToken> rowRenderTokens;
 
-  private String itemKey;
+  private String enumKey;
   private final List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
   private final List<String> choiceColumns = Lists.newArrayList();
@@ -349,6 +349,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     return getAttribute(UiConstants.ATTR_EDIT_VIEW_NAME);
   }
 
+  public String getEnumKey() {
+    return enumKey;
+  }
+
   public Filter getFilter() {
     return filter;
   }
@@ -365,7 +369,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
         "Selector Class", getSelectorClass(),
         "Item Type", getItemType(),
         "Visible Lines", getVisibleLines(),
-        "Item Key", getItemKey(),
+        "Enum Key", getEnumKey(),
         "Render Mode", getRenderMode(),
         "Target View Name", getTargetViewName());
 
@@ -392,10 +396,6 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
 
     return info;
-  }
-
-  public String getItemKey() {
-    return itemKey;
   }
 
   public MenuConstants.ITEM_TYPE getItemType() {
@@ -477,7 +477,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   public boolean hasRowRenderer() {
     return getRowRendererDescription() != null || getRowRender() != null
-        || !BeeUtils.isEmpty(getRowRenderTokens()) || !BeeUtils.isEmpty(getItemKey());
+        || !BeeUtils.isEmpty(getRowRenderTokens()) || !BeeUtils.isEmpty(getEnumKey());
   }
 
   public void initialize(DataInfo.Provider provider, String targetView, Holder<String> target,
@@ -499,11 +499,11 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
     String cache = getAttribute(ATTR_CACHING);
     if (!BeeUtils.isEmpty(cache)) {
-      setCaching(NameUtils.getEnumByName(Caching.class, cache));
+      setCaching(EnumUtils.getEnumByName(Caching.class, cache));
     }
     String op = getAttribute(ATTR_OPERATOR);
     if (!BeeUtils.isEmpty(op)) {
-      setOperator(NameUtils.getEnumByName(Operator.class, op));
+      setOperator(EnumUtils.getEnumByName(Operator.class, op));
     }
     
     String sc = getAttribute(ATTR_SELECTOR_CLASS);
@@ -512,16 +512,16 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
     String it = getAttribute(ATTR_ITEM_TYPE);
     if (!BeeUtils.isEmpty(it)) {
-      setItemType(NameUtils.getEnumByName(MenuConstants.ITEM_TYPE.class, it));
+      setItemType(EnumUtils.getEnumByName(MenuConstants.ITEM_TYPE.class, it));
     }
     String lines = getAttribute(HasVisibleLines.ATTR_VISIBLE_LINES);
     if (BeeUtils.isPositiveInt(lines)) {
       setVisibleLines(BeeUtils.toInt(lines));
     }
 
-    String key = getAttribute(HasItems.ATTR_ITEM_KEY);
+    String key = getAttribute(EnumUtils.ATTR_ENUM_KEY);
     if (!BeeUtils.isEmpty(key)) {
-      setItemKey(key);
+      setEnumKey(key);
     }
 
     String flt = getAttribute(UiConstants.ATTR_FILTER);
@@ -602,13 +602,15 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
       if (!BeeUtils.isEmpty(renderColumns.get())) {
         if (sourceInfo != null && targetInfo != null && renderTarget()) {
+          int tcLevel = Math.max(targetInfo.getViewColumnLevel(target.get()), 0); 
+
           List<String> fields = Lists.newArrayList();
           for (String columnId : renderColumns.get()) {
             ViewColumn vc = targetInfo.getViewColumn(columnId);
 
             if (vc != null) {
               int index = sourceInfo.getColumnIndexBySource(vc.getTable(), vc.getField(),
-                  vc.getLevel() - 1);
+                  vc.getLevel() + tcLevel - 1);
               if (!BeeConst.isUndef(index)) {
                 fields.add(sourceInfo.getColumnId(index));
               }
@@ -733,12 +735,12 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
   }
 
-  public void setFilter(Filter filter) {
-    this.filter = filter;
+  public void setEnumKey(String enumKey) {
+    this.enumKey = enumKey;
   }
 
-  public void setItemKey(String itemKey) {
-    this.itemKey = itemKey;
+  public void setFilter(Filter filter) {
+    this.filter = filter;
   }
 
   public void setItemType(MenuConstants.ITEM_TYPE itemType) {

@@ -6,7 +6,7 @@
   name="Object" viewName="Objects" caption="=object" width="300" height="110"
   >
   <FlowPanel class="flexBox-vertical" style="margin: 10px">
-    <ListBox source="Type" caption="=type" itemKey="RightsObjectType" decorator="flex-left" d:size="60" />
+    <ListBox source="Type" caption="=type" decorator="flex-left" d:size="60" />
     <InputText source="Name" caption="=object" decorator="flex-left" d:size="60" d:rootStyle="margin-top: 10px" />
   </FlowPanel>
 </f:Form>
