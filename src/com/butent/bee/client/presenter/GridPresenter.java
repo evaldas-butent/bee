@@ -332,7 +332,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     switch (action) {
       case ADD:
         if (getMainView().isEnabled()) {
-          addRow();
+          addRow(false);
         }
         break;
 
@@ -369,6 +369,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             getHeaderElement());
         break;
 
+      case COPY:
+        if (getMainView().isEnabled() && getActiveRow() != null) {
+          addRow(true);
+        }
+        break;
+        
       case DELETE:
         if (getMainView().isEnabled()) {
           IsRow row = getActiveRow();
@@ -568,15 +574,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }, notify);
   }
 
-  private void addRow() {
+  private void addRow(boolean copy) {
     if (getGridView().likeAMotherlessChild() && !validateParent()) {
       return;
     }
 
-    if (getGridInterceptor() != null && !getGridInterceptor().beforeAddRow(this)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().beforeAddRow(this, copy)) {
       return;
     }
-    getGridView().startNewRow();
+    getGridView().startNewRow(copy);
   }
 
   private void afterDelete(long rowId) {

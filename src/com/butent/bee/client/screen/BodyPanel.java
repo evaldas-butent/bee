@@ -37,7 +37,8 @@ public final class BodyPanel extends ComplexPanel {
     
     this.concealment = Document.get().createDivElement();
     StyleUtils.makeAbsolute(concealment);
-    StyleUtils.setTop(concealment, -1000);
+    StyleUtils.setTop(concealment, -2000);
+    StyleUtils.fullWidth(concealment);
     concealment.addClassName("bee-Concealment");
     
     getElement().appendChild(concealment);

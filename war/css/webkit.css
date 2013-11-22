@@ -1,7 +1,7 @@
-.bee-Header-control:hover {
+.bee-Header-control.bee-Image:hover {
   -webkit-filter: contrast(10) invert(1) !important;
 }
-.bee-Header-control:active {
+.bee-Header-control.bee-Image:active {
   -webkit-filter: contrast(1) invert(1) !important;
 }
 

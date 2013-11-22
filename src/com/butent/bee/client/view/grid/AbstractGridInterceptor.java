@@ -102,7 +102,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter) {
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     return true;
   }
 

@@ -3357,7 +3357,7 @@ public final class CliWorker {
     Double value = null;
     CssUnit unit = null;
     Font font = null;
-    Integer containerSize = null;
+    Integer containerSize = BeeKeeper.getScreen().getActivePanelWidth();
 
     int i = 1;
     while (i < len) {
@@ -3401,8 +3401,8 @@ public final class CliWorker {
     }
 
     for (CssUnit u : units) {
-      int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
-      info.add(new Property(u.getCaption(), BeeUtils.toString(px)));
+      double px = Rulers.getPixels(value, u, font, BeeUtils.unbox(containerSize));
+      info.add(new Property(u.getCaption(), BeeUtils.toString(px, 5)));
     }
 
     showTable("Pixels", new PropertiesData(info));

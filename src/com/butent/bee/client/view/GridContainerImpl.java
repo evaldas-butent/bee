@@ -166,6 +166,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         disabledActions.add(Action.ADD);
       }
 
+      if (!BeeUtils.isEmpty(gridDescription.getEnableCopy()) 
+          && !disabledActions.contains(Action.COPY)) {
+        enabledActions.add(Action.COPY);
+      }
+
       if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
       }

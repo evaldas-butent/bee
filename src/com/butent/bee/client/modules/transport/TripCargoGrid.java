@@ -116,7 +116,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter) {
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     Action action = new Action(presenter.getGridView());
     UiHelper.focus(action.dialog.getContent());
     return false;

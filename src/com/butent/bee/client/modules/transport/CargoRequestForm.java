@@ -86,7 +86,6 @@ public class CargoRequestForm extends AbstractFormInterceptor {
             }));
       }
 
-      header.addCommandItem(new Button(Localized.getConstants().trCommandCopyRequest()));
       header.addCommandItem(new Button(Localized.getConstants().trCommandSaveRequestAsTemplate()));
     }
   }

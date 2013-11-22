@@ -111,16 +111,52 @@ public final class TransportConstants {
     }
   }
 
-  public enum CargoRequestStatus implements HasCaption {
-    NEW(Localized.getConstants().trRequestStatusNew()),
-    ACTIVE(Localized.getConstants().trRequestStatusActive());
+  public enum TranspRegStatus implements HasCaption {
+    NEW(Localized.getConstants().trRegistrationStatusNew()),
+    CONFIRMED(Localized.getConstants().trRegistrationStatusConfirmed()),
+    REJECTED(Localized.getConstants().trRegistrationStatusRejected());
 
     private final String caption;
 
-    private CargoRequestStatus(String caption) {
+    private TranspRegStatus(String caption) {
       this.caption = caption;
     }
 
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+
+  public enum CargoQueryStatus implements HasCaption {
+    NEW(Localized.getConstants().trRequestStatusNew()),
+    REGISTERED(Localized.getConstants().trRequestStatusRegistered()),
+    REJECTED(Localized.getConstants().trRequestStatusRejected());
+    
+    private final String caption;
+    
+    private CargoQueryStatus(String caption) {
+      this.caption = caption;
+    }
+    
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+
+  public enum CargoRequestStatus implements HasCaption {
+    NEW(Localized.getConstants().trRequestStatusNew()),
+    ACTIVE(Localized.getConstants().trRequestStatusActive()),
+    REJECTED(Localized.getConstants().trRequestStatusRejected()),
+    FINISHED(Localized.getConstants().trRequestStatusFinished());
+    
+    private final String caption;
+    
+    private CargoRequestStatus(String caption) {
+      this.caption = caption;
+    }
+    
     @Override
     public String getCaption() {
       return caption;
@@ -183,8 +219,11 @@ public final class TransportConstants {
   public static void register() {
     EnumUtils.register(OrderStatus.class);
     EnumUtils.register(AssessmentStatus.class);
-    EnumUtils.register(CargoRequestStatus.class);
     EnumUtils.register(TripStatus.class);
+
+    EnumUtils.register(TranspRegStatus.class);
+    EnumUtils.register(CargoQueryStatus.class);
+    EnumUtils.register(CargoRequestStatus.class);
   }
 
   public static final String TRANSPORT_MODULE = "Transport";
@@ -505,6 +544,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_REQUEST_TEMPLATE_NAME = "Name";
 
   public static final String COL_REGISTRATION_DATE = "Date";
+  public static final String COL_REGISTRATION_STATUS = "Status";
 
   public static final String COL_REGISTRATION_COMPANY_NAME = "CompanyName";
   public static final String COL_REGISTRATION_COMPANY_CODE = "CompanyCode";
@@ -534,6 +574,7 @@ public final class TransportConstants {
   public static final String COL_REGISTRATION_AGENT = "Agent";
 
   public static final String COL_QUERY_DATE = "Date";
+  public static final String COL_QUERY_STATUS = "Status";
   public static final String COL_QUERY_CUSTOMER_NAME = "CustomerName";
   public static final String COL_QUERY_CUSTOMER_CODE = "CustomerCode";
   public static final String COL_QUERY_CUSTOMER_VAT_CODE = "CustomerVatCode";

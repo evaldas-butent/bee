@@ -144,6 +144,7 @@ public class GridLoaderBean {
   private static final String ATTR_ID = "id";
 
   private static final String ATTR_FAVORITE = "favorite";
+  private static final String ATTR_ENABLE_COPY = "enableCopy";
 
   private static final String ATTR_MIN_NUMBER_OF_ROWS = "minNumberOfRows";
   private static final String ATTR_MAX_NUMBER_OF_ROWS = "maxNumberOfRows";
@@ -792,6 +793,10 @@ public class GridLoaderBean {
     String favorite = src.getAttribute(ATTR_FAVORITE);
     if (!BeeUtils.isEmpty(favorite)) {
       dst.setFavorite(favorite.trim());
+    }
+    String enableCopy = src.getAttribute(ATTR_ENABLE_COPY);
+    if (!BeeUtils.isEmpty(enableCopy)) {
+      dst.setEnableCopy(enableCopy.trim());
     }
 
     Integer minNumberOfRows = XmlUtils.getAttributeInteger(src, ATTR_MIN_NUMBER_OF_ROWS);

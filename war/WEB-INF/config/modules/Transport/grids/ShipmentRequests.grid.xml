@@ -5,7 +5,8 @@
   caption="=trRequestsUnregistered"
   >
   <g:columns>
-    <DataColumn name="Date" />
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="Status" visible="true" />
 
     <DataColumn name="CustomerName" visible="true" />
     <DataColumn name="CustomerCode" visible="false" />

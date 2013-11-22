@@ -8,6 +8,7 @@
   >
   <Columns>
     <SimpleColumn name="Date" />
+    <SimpleColumn name="Status" />
 
     <SimpleColumn name="User" />
     <SimpleJoin name="User" joinType="LEFT">
@@ -167,13 +168,8 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Status" />
-    <SimpleColumn name="Finished" />
-    <SimpleColumn name="Result" />
     
     <SimpleColumn name="Notes" />
-    <SimpleColumn name="Host" />
-    <SimpleColumn name="Agent" />
   </Columns>
 
   <Order>

@@ -1426,7 +1426,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void startNewRow() {
+  public void startNewRow(boolean copy) {
     setAdding(true);
     fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
 
@@ -1436,6 +1436,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       row = DataUtils.createEmptyRow(getDataColumns().size());
     }
     IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
+    
+    if (getActiveRow() != null && copy) {
+      for (int i = 0; i < getDataColumns().size(); i++) {
+        if (!row.isNull(i)) {
+          newRow.setValue(i, row.getString(i));
+        }
+      }
+    }
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.hasCarry() && editableWidget.hasColumn()) {

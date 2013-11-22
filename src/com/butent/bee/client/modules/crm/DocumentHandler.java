@@ -357,7 +357,7 @@ public final class DocumentHandler {
     }
 
     @Override
-    public boolean beforeAddRow(final GridPresenter presenter) {
+    public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
       RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
