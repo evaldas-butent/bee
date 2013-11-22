@@ -15,7 +15,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
@@ -83,6 +82,9 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
 
   private static final String STYLE_CONTROL = "bee-Header-control";
+  private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
+
+  private static final String STYLE_DISABLED = "bee-Header-disabled";
 
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
@@ -291,19 +293,14 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     }
     this.enabled = enabled;
 
+    setStyleName(STYLE_DISABLED, !enabled);
+
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget child = getWidget(i);
       String id = DomUtils.getId(child);
 
-      if (BeeUtils.containsSame(getActionControls().values(), id)) {
-        if (child instanceof HasEnabled) {
-          ((HasEnabled) child).setEnabled(enabled);
-        }
-        if (enabled) {
-          StyleUtils.unhideDisplay(child);
-        } else {
-          StyleUtils.hideDisplay(child);
-        }
+      if (BeeUtils.containsSame(getActionControls().values(), id) && child instanceof HasEnabled) {
+        ((HasEnabled) child).setEnabled(enabled);
       }
     }
   }
@@ -328,11 +325,12 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
       }
       return;
     }
-
+    
+    Element controlElement = DomUtils.getElement(widgetId);
     if (visible) {
-      StyleUtils.unhideDisplay(widgetId);
+      controlElement.removeClassName(STYLE_CONTROL_HIDDEN);
     } else {
-      StyleUtils.hideDisplay(widgetId);
+      controlElement.addClassName(STYLE_CONTROL_HIDDEN);
     }
   }
 
@@ -365,7 +363,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     control.getElement().setTitle(action.getCaption());
 
     if (hiddenActions != null && hiddenActions.contains(action)) {
-      StyleUtils.hideDisplay(control.getElement());
+      control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
     }
 
     getActionControls().put(action, control.getId());

@@ -3,13 +3,11 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
-  enableCopy="-Date, Time, Status, Finished, Result, Cargo=, Order*"
+  enableCopy="-Date, Time, Status, Cargo=, Order*"
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
     <DataColumn name="Status" visible="true" />
-    <DataColumn name="Finished" visible="false" />
-    <DataColumn name="Result" visible="false" />
     
     <RelColumn name="User" visible="true" editEnabled="true" editSource="CustomerCompany" >
       <renderToken source="CustomerCompanyName" suffix=", " />

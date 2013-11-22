@@ -6,6 +6,7 @@
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
+    <DataColumn name="Status" visible="true" />
 
     <DataColumn name="CompanyName" visible="true" />
     <DataColumn name="CompanyCode" />

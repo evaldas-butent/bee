@@ -285,6 +285,12 @@ public interface LocalizableTransportConstants {
   String trRegistrationPhone();
 
   String trRegistrationReceived();
+  
+  String trRegistrationStatusConfirmed();
+
+  String trRegistrationStatusNew();
+  
+  String trRegistrationStatusRejected();
 
   String trRegistrationSwift();
 
@@ -380,7 +386,13 @@ public interface LocalizableTransportConstants {
 
   String trRequestStatusActive();
 
+  String trRequestStatusFinished();
+
   String trRequestStatusNew();
+
+  String trRequestStatusRegistered();
+  
+  String trRequestStatusRejected();
 
   String trRequestTemplates();
 

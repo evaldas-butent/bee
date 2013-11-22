@@ -17,6 +17,18 @@
   <FlowPanel>
     <br/>
 
+    <Table style="&table;" cellStyle="&cells;">
+      &cols;
+
+      <row>
+        <Label text="=trRequestDate" class="bee-required bee-hasDefaults" />
+        <InputDateTime source="Date" />
+        <Label text="=trRequestStatus" class="bee-required bee-hasDefaults" />
+        <ListBox source="Status" />
+      </row>
+    </Table>
+    &separator;
+
     <Details open="true">
       <Summary text="=trRequestCustomerInfo" style="&summary;" />
       
@@ -245,12 +257,6 @@
           <Label text="=userAgent" />
           <InputArea source="Agent" style="&area;" />
         </row>
-
-        <row>
-          <Label text="=trRequestDate" class="bee-required bee-hasDefaults" />
-          <InputDateTime source="Date" />
-        </row>
-
       </Table>
     </Details>
     &separator;

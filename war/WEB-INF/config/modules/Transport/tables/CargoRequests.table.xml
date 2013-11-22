@@ -6,9 +6,11 @@
   >
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
+    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0" label="=trRequestStatus" />
+
     <Relation name="User" relation="Users" cascade="DELETE" notNull="true" defExpr="CURRENT_USER"
       label="=trRequestCustomer" />
-  
+
     <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
       label="=trRequestExpeditionType" />
   
@@ -22,10 +24,6 @@
     <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo" />
 
     <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
-
-    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0" label="=trRequestStatus" />
-    <DateTime name="Finished" label="=trRequestFinished" />
-    <Text name="Result" label="=trRequestResult" />
 
     <Text name="Notes" label="=trRequestNotes" />
   </Fields>

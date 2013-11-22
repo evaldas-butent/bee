@@ -481,6 +481,13 @@
   left: -10px;
 }
 
+.bee-Header-disabled .bee-Header-control {
+  display: none;
+}
+.bee-Header-control-hidden {
+  display: none;
+}
+
 .bee-CellGrid {
   position: absolute;
   left: 0;

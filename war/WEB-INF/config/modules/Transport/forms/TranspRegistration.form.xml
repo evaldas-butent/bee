@@ -16,6 +16,13 @@
       <col index="2" cellStyle="&colLabel;" />
 
       <row>
+        <Label text="=trRegistrationDate" class="bee-required bee-hasDefaults" />
+        <InputDateTime source="Date" />
+        <Label text="=trRegistrationStatus" class="bee-required bee-hasDefaults" />
+        <ListBox source="Status" />
+      </row>
+
+      <row>
         <Label text="=trRegistrationCompanyName" class="bee-required" />
         <InputText source="CompanyName" />
         <Label text="=trRegistrationCompanyCode" class="bee-required" />
@@ -83,11 +90,6 @@
         <InputArea source="Host" style="&area;" />
         <Label text="=userAgent" />
         <InputArea source="Agent" style="&area;" />
-      </row>
-
-      <row>
-        <Label text="=trRegistrationDate" class="bee-required bee-hasDefaults" />
-        <InputDateTime source="Date" />
       </row>
     </Table>
   </FlowPanel>

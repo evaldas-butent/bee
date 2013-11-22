@@ -6,6 +6,8 @@
   >
   <Fields>
     <DateTime name="Date" notNull="true" label="=trRegistrationDate" defExpr="CURRENT_TIME" />
+    <Enum name="Status" key="TranspRegStatus" notNull="true" defValue="0" 
+      label="=trRegistrationStatus" />
 
     <String name="CompanyName" notNull="true" precision="100" label="=trRegistrationCompanyName" />
     <String name="CompanyCode" notNull="true" precision="30" label="=trRegistrationCompanyCode" />
