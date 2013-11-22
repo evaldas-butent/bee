@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.transport;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -33,7 +34,11 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
                   String host = getDataValue(TransportConstants.COL_QUERY_HOST);
                   if (!BeeUtils.isEmpty(host)) {
                     CommonsUtils.blockHost(Localized.getConstants().trCommandBlockIpAddress(),
-                        host, getFormView());
+                        host, getFormView(), new Callback<String>() {
+                          @Override
+                          public void onSuccess(String result) {
+                          }
+                        });
                   }
                 }
               }));

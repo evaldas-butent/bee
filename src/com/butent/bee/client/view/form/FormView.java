@@ -80,6 +80,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Widget getWidgetBySource(String source);
 
+  boolean isInteractive();
+
   boolean isRowEditable(boolean warn);
   
   void observeData();

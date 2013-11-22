@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -35,8 +36,12 @@ public final class CommonsUtils {
   private static final String STYLE_COMPANY_LABEL = STYLE_COMPANY + "-label";
 
   public static void blockHost(String caption, final String host,
-      final NotificationListener notificationListener) {
+      final NotificationListener notificationListener, final Callback<String> callback) {
+
     if (BeeUtils.isEmpty(host)) {
+      if (callback != null) {
+        callback.onFailure("host not specified");
+      }
       return;
     }
 
@@ -54,13 +59,19 @@ public final class CommonsUtils {
                 if (response.hasResponse()) {
                   DataChangeEvent.fireRefresh(VIEW_IP_FILTERS);
                 }
-                
+
                 if (notificationListener != null) {
                   response.notify(notificationListener);
+                }
 
-                  if (response.hasResponse() 
-                      && BeeUtils.same(host, response.getResponseAsString())) {
+                if (response.hasResponse()
+                    && BeeUtils.same(host, response.getResponseAsString())) {
+                  if (notificationListener != null) {
                     notificationListener.notifyInfo(Localized.getConstants().ipBlocked(), host);
+                  }
+                  
+                  if (callback != null) {
+                    callback.onSuccess(host);
                   }
                 }
               }
