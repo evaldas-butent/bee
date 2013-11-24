@@ -2,14 +2,18 @@ package com.butent.bee.client.modules.transport;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
@@ -72,6 +76,27 @@ final class SelfServiceUtils {
     if (!Queries.isResponseFromCache(rpcId)) {
       callback.setRefresh(true);
     }
+  }
+  
+  static void updateStatus(final FormView form, String column, final Enum<?> status) {
+    BeeRow row = DataUtils.cloneRow(form.getActiveRow());
+    row.setValue(form.getDataIndex(column), status.ordinal());
+
+    Queries.update(form.getViewName(), form.getDataColumns(), form.getOldRow(), row,
+        form.getChildrenForUpdate(), new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            form.notifySevere(reason);
+          }
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (DataUtils.sameId(result, form.getActiveRow()) && !form.observesData()) {
+              form.updateRow(result, false);
+            }
+            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
+          }
+        });
   }
 
   private SelfServiceUtils() {

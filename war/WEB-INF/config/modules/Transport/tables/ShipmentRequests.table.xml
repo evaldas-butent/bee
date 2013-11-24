@@ -6,7 +6,7 @@
   >
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
-    <Enum name="Status" key="CargoQueryStatus" notNull="true" defValue="0" label="=trRequestStatus" />
+    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0" label="=trRequestStatus" />
   
     <String name="CustomerName" precision="100" notNull="true" label="=trRequestCustomerName" />
     <String name="CustomerCode" precision="30" notNull="true" label="=trRequestCustomerCode" />

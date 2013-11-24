@@ -17,7 +17,6 @@
     <Relation name="Expedition" relation="ExpeditionTypes" label="=trRequestExpeditionType" />
     <Relation name="ShippingTerm"  relation="ShippingTerms" label="=trRequestShippingTerms" />
   
-    <String name="DeliveryTime" precision="10" label="=trRequestDeliveryTime" />
     <String name="TermsOfDelivery" precision="30" label="=trRequestTermsOfDelivery" />
     
     <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />

@@ -142,8 +142,6 @@
           </row>
 
           <row>
-            <Label text="=trRequestDeliveryTime" />
-            <InputTimeOfDay source="DeliveryTime" style="width: 50px;" />
             <Label text="=trRequestTermsOfDelivery" />
             <InputText source="TermsOfDelivery" />
           </row>

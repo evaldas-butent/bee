@@ -6,11 +6,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -18,10 +15,8 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.TranspRegStatus;
@@ -33,11 +28,14 @@ import java.util.Map;
 
 class TransportRegistrationForm extends AbstractFormInterceptor {
 
-  private Button register;
-  private Button block;
+  private Button registerCommand;
+  private Button blockCommand;
+
+  TransportRegistrationForm() {
+  }
 
   @Override
-  public void afterRefresh(final FormView form, IsRow row) {
+  public void afterRefresh(FormView form, IsRow row) {
     TranspRegStatus status;
     if (DataUtils.hasId(row)) {
       status = EnumUtils.getEnumByIndex(TranspRegStatus.class,
@@ -52,45 +50,6 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TransportRegistrationForm();
-  }
-
-  private void refreshCommands(TranspRegStatus status) {
-    HeaderView header = getHeaderView();
-    if (header == null) {
-      return;
-    }
-
-    if (header.hasCommands()) {
-      header.clearCommandPanel();
-    }
-
-    if (status == null) {
-      return;
-    }
-
-    if (status == TranspRegStatus.NEW) {
-      if (this.register == null) {
-        this.register =
-            new Button(Localized.getConstants().trCommandCreateNewUser(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                onCreateUser();
-              }
-            });
-      }
-      header.addCommandItem(this.register);
-
-      if (this.block == null) {
-        this.block =
-            new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                onBlock();
-              }
-            });
-      }
-      header.addCommandItem(this.block);
-    }
   }
 
   private void onBlock() {
@@ -168,27 +127,46 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     }
   }
 
-  private void updateStatus(final TranspRegStatus status) {
-    BeeRow row = DataUtils.cloneRow(getActiveRow());
-    row.setValue(getDataIndex(COL_REGISTRATION_STATUS), status.ordinal());
+  private void refreshCommands(TranspRegStatus status) {
+    HeaderView header = getHeaderView();
+    if (header == null) {
+      return;
+    }
 
-    Queries.update(getViewName(), getFormView().getDataColumns(), getFormView().getOldRow(),
-        row, getFormView().getChildrenForUpdate(), new RowCallback() {
-          @Override
-          public void onFailure(String... reason) {
-            getFormView().notifySevere(reason);
-          }
+    if (header.hasCommands()) {
+      header.clearCommandPanel();
+    }
 
-          @Override
-          public void onSuccess(BeeRow result) {
-            if (DataUtils.sameId(result, getActiveRow()) && !getFormView().observesData()) {
-              getFormView().updateRow(result, false);
-            }
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
-          }
-        });
+    if (status == null) {
+      return;
+    }
+
+    if (status == TranspRegStatus.NEW) {
+      if (this.registerCommand == null) {
+        this.registerCommand =
+            new Button(Localized.getConstants().trCommandCreateNewUser(), new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                onCreateUser();
+              }
+            });
+      }
+      header.addCommandItem(this.registerCommand);
+
+      if (this.blockCommand == null) {
+        this.blockCommand =
+            new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                onBlock();
+              }
+            });
+      }
+      header.addCommandItem(this.blockCommand);
+    }
   }
 
-  TransportRegistrationForm() {
+  private void updateStatus(final TranspRegStatus status) {
+    SelfServiceUtils.updateStatus(getFormView(), COL_REGISTRATION_STATUS, status);
   }
 }

@@ -264,7 +264,7 @@ public class TransportSelfService extends LoginServlet {
           break;
 
         case COL_QUERY_STATUS:
-          row.setValue(i, CargoQueryStatus.NEW.ordinal());
+          row.setValue(i, CargoRequestStatus.NEW.ordinal());
           break;
           
         case ALS_CARGO_DESCRIPTION:

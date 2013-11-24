@@ -128,23 +128,6 @@ public final class TransportConstants {
     }
   }
 
-  public enum CargoQueryStatus implements HasCaption {
-    NEW(Localized.getConstants().trRequestStatusNew()),
-    REGISTERED(Localized.getConstants().trRequestStatusRegistered()),
-    REJECTED(Localized.getConstants().trRequestStatusRejected());
-    
-    private final String caption;
-    
-    private CargoQueryStatus(String caption) {
-      this.caption = caption;
-    }
-    
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-  }
-
   public enum CargoRequestStatus implements HasCaption {
     NEW(Localized.getConstants().trRequestStatusNew()),
     ACTIVE(Localized.getConstants().trRequestStatusActive()),
@@ -222,7 +205,6 @@ public final class TransportConstants {
     EnumUtils.register(TripStatus.class);
 
     EnumUtils.register(TranspRegStatus.class);
-    EnumUtils.register(CargoQueryStatus.class);
     EnumUtils.register(CargoRequestStatus.class);
   }
 

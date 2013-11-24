@@ -162,16 +162,6 @@ public interface LocalizableTransportConstants {
 
   String trCargoActualPlaces();
 
-  String trCargoRequestCreateTransportationOrderQuestion();
-
-  String trCargoRequestFinish();
-
-  String trCargoRequestReturn();
-
-  String trCargoRequestReturnToOrder();
-
-  String trCargoRequestsSetActiveRequestQuestion();
-
   String trCargoSelectCargo();
 
   String trCargoSelectTrip();
@@ -184,11 +174,13 @@ public interface LocalizableTransportConstants {
 
   String trCommandBlockIpAddress();
 
-  String trCommandConvertToRequest();
+  String trCommandCreateNewOrder();
 
   String trCommandCreateNewUser();
 
   String trCommandSaveRequestAsTemplate();
+
+  String trConfirmCreateNewOrder();
 
   String trConfirmProforma();
 
@@ -298,8 +290,6 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationVatPayer();
 
-  String trRequestActionFinish();
-
   String trRequestActionSubmit();
 
   String trRequestAdditionalInfo();
@@ -390,9 +380,11 @@ public interface LocalizableTransportConstants {
 
   String trRequestStatusNew();
 
-  String trRequestStatusRegistered();
-  
   String trRequestStatusRejected();
+  
+  String trRequestTemplateName();
+
+  String trRequestTemplateNew();
 
   String trRequestTemplates();
 

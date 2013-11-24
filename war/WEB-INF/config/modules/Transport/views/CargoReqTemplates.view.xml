@@ -116,7 +116,6 @@
       <SimpleColumn name="Description" alias="ShippingTermDescription" />
     </SimpleJoin>
 
-    <SimpleColumn name="DeliveryTime" />
     <SimpleColumn name="TermsOfDelivery" />
 
     <SimpleColumn name="CustomsBrokerage" />
