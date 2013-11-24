@@ -196,6 +196,10 @@ public class ResponseObject implements BeeSerializable {
     return res;
   }
 
+  public Long getResponseAsLong() {
+    return (Long) getResponse();
+  }
+
   public String getResponseAsString() {
     return (String) getResponse();
   }
@@ -238,6 +242,10 @@ public class ResponseObject implements BeeSerializable {
 
   public boolean hasWarnings() {
     return hasMessages(LogLevel.WARNING);
+  }
+
+  public boolean is(String value) {
+    return hasResponse(String.class) && BeeUtils.equalsTrim(getResponseAsString(), value);
   }
 
   public boolean isArrayType() {

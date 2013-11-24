@@ -17,17 +17,18 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 public final class CommonsUtils {
 
@@ -53,7 +54,7 @@ public final class CommonsUtils {
             ParameterList args = CommonsKeeper.createArgs(SVC_BLOCK_HOST);
             args.addDataItem(COL_IP_FILTER_HOST, host);
 
-            BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
                 if (response.hasResponse()) {
@@ -64,14 +65,75 @@ public final class CommonsUtils {
                   response.notify(notificationListener);
                 }
 
-                if (response.hasResponse()
-                    && BeeUtils.same(host, response.getResponseAsString())) {
+                if (response.is(host)) {
                   if (notificationListener != null) {
                     notificationListener.notifyInfo(Localized.getConstants().ipBlocked(), host);
                   }
-                  
                   if (callback != null) {
                     callback.onSuccess(host);
+                  }
+                }
+              }
+            });
+          }
+        });
+  }
+
+  public static void createUser(String caption, final String login, final String password,
+      final UserInterface userInterface, final Map<String, String> parameters,
+      final NotificationListener notificationListener, final Callback<String> callback) {
+
+    if (BeeUtils.isEmpty(login)) {
+      if (callback != null) {
+        callback.onFailure("login not specified");
+      }
+      return;
+    }
+
+    final String pswd = BeeUtils.notEmpty(password, login.trim().substring(0, 1));
+    
+    String separator = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
+    final String msgLogin = Localized.getConstants().userLogin() + separator + login.trim();
+    final String msgPswd = Localized.getConstants().password() + separator + pswd.trim();
+
+    Global.confirm(caption, Icon.QUESTION, Lists.newArrayList(msgLogin, msgPswd),
+        Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(),
+        new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            ParameterList args = CommonsKeeper.createArgs(SVC_CREATE_USER);
+            args.addDataItem(COL_LOGIN, login);
+            args.addDataItem(COL_PASSWORD, pswd);
+
+            if (userInterface != null) {
+              args.addDataItem(COL_USER_INTERFACE, userInterface.ordinal());
+            }
+            if (!BeeUtils.isEmpty(parameters)) {
+              for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
+                  args.addDataItem(entry.getKey(), entry.getValue());
+                }
+              }
+            }
+
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                if (response.hasResponse()) {
+                  DataChangeEvent.fireRefresh(VIEW_USERS);
+                }
+
+                if (notificationListener != null) {
+                  response.notify(notificationListener);
+                }
+
+                if (response.is(login)) {
+                  if (notificationListener != null) {
+                    notificationListener.notifyInfo(Localized.getConstants().newUser(), msgLogin,
+                        msgPswd);
+                  }
+                  if (callback != null) {
+                    callback.onSuccess(login);
                   }
                 }
               }
@@ -98,14 +160,13 @@ public final class CommonsUtils {
       @Override
       public void onResponse(ResponseObject response) {
         response.notify(BeeKeeper.getScreen());
-
         if (response.hasErrors()) {
           return;
         }
-        Map<String, Pair<String, String>> info = Maps.newHashMap();
 
-        for (Entry<String, String> entry : Codec.beeDeserializeMap(response.getResponseAsString())
-            .entrySet()) {
+        Map<String, Pair<String, String>> info = Maps.newHashMap();
+        for (Map.Entry<String, String> entry
+        : Codec.beeDeserializeMap(response.getResponseAsString()).entrySet()) {
           info.put(entry.getKey(), Pair.restore(entry.getValue()));
         }
         Flow flow = new Flow();

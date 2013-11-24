@@ -19,7 +19,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
@@ -35,7 +35,7 @@ public final class CommonsKeeper {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            PasswordService.changePassword(UiHelper.getForm(widget.asWidget()));
+            changePassword();
           }
         });
       }
@@ -44,6 +44,18 @@ public final class CommonsKeeper {
     @Override
     public FormInterceptor getInstance() {
       return this;
+    }
+    
+    @Override
+    public void onReadyForInsert(ReadyForInsertEvent event) {
+      if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
+        event.consume();
+        changePassword();
+      }
+    }
+
+    private void changePassword() {
+      PasswordService.changePassword(getFormView());
     }
   }
 
