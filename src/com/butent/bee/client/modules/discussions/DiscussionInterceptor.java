@@ -31,6 +31,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -40,6 +41,7 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
@@ -120,13 +122,19 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
       col++;
 
-      InputArea input = new InputArea();
-      styleName = STYLE_DIALOG + "-commentArea";
-
+      Editor input = new RichTextEditor(true);
+      styleName = STYLE_DIALOG + "-commentEditor";
       input.addStyleName(styleName);
-
-      table.setWidget(row, col, input);
+      table.setWidget(row, col, (Widget) input);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
+
+      // InputArea input = new InputArea();
+      // styleName = STYLE_DIALOG + "-commentArea";
+      //
+      // input.addStyleName(styleName);
+      //
+      // table.setWidget(row, col, input);
+      // table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
       return input.getId();
     }
@@ -178,6 +186,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       Widget child = getChild(id);
       if (child instanceof InputArea) {
         return ((InputArea) child).getValue();
+      } else if (child instanceof Editor) {
+        return ((Editor) child).getValue();
       } else {
         return null;
       }

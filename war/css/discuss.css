@@ -39,3 +39,20 @@
   padding-bottom: 2px;
   border-bottom: 1px solid #ccc;
 }
+
+.bee-discuss-commentDialog {
+  
+}
+
+.bee-discuss-commentDialog-commentEditorCell {
+  
+}
+
+.bee-discuss-commentDialogcommentLabelCell {
+  vertical-align: top;
+}
+
+.bee-discuss-commentDialog-commentEditor {
+  height: 250px;
+  vertical-align: top;
+}
