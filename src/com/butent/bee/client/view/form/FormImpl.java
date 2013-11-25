@@ -827,6 +827,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public boolean isFlushable() {
     return isAdding() || isEditing();
   }
+  
+  @Override
+  public boolean isInteractive() {
+    return isAttached() && !isClosed() && DomUtils.isVisible(getElement());
+  }
 
   @Override
   public boolean isModal() {
@@ -1085,7 +1090,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (isAttached() && !isClosed() && DomUtils.isVisible(getElement())) {
+    if (isInteractive()) {
       String type = event.getNativeEvent().getType();
 
       if (EventUtils.isClick(type)) {

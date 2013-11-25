@@ -24,6 +24,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -349,6 +350,16 @@ public class QueryServiceBean {
     return getData(ss);
   }
 
+  public Long getId(String tableName, String filterColumn, Object filterValue) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, sys.getIdName(tableName))
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+    
+    SimpleRowSet data = getData(query);
+    return DataUtils.isEmpty(data) ? null : data.getLong(0, 0);
+  }
+
   public Integer getInt(IsQuery query) {
     return getSingleValue(query).getInt(0, 0);
   }
@@ -558,6 +569,10 @@ public class QueryServiceBean {
   public boolean sqlExists(String source, IsCondition where) {
     return sqlCount(new SqlSelect()
         .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+  }
+
+  public boolean sqlExists(String source, String field, Object value) {
+    return sqlExists(source, SqlUtils.equals(source, field, value));
   }
 
   public void sqlIndex(String tmp, String... fields) {

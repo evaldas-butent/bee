@@ -26,7 +26,6 @@
     <DataColumn name="LoadingFax" visible="false" />
     <DataColumn name="LoadingNumber" visible="false" />
 
-    <DataColumn name="UnloadingDate" />
     <RelColumn name="UnloadingCompany" visible="false" />
     <DataColumn name="UnloadingContact" visible="false" />
 
@@ -42,7 +41,6 @@
     <RelColumn name="Expedition" visible="false" />
     <RelColumn name="ShippingTerm" visible="false" />
 
-    <DataColumn name="DeliveryTime" visible="false" />
     <DataColumn name="TermsOfDelivery" visible="false" />
 
     <DataColumn name="CustomsBrokerage" visible="false" />

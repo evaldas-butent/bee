@@ -46,7 +46,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-          <DataSelector source="LoadingCompany" />
+          <DataSelector source="LoadingCompany" required="true" />
           <Label text="=trRequestPlaceContact" class="bee-required" />
           <InputText source="LoadingContact" required="true" />
         </row>
@@ -60,7 +60,7 @@
 
         <row>
           <Label text="=city" class="bee-required" />
-          <DataSelector source="LoadingCity" />
+          <DataSelector source="LoadingCity" required="true" />
           <Label text="=country" />
           <DataSelector source="LoadingCountry" />
         </row>
@@ -90,7 +90,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-          <DataSelector source="UnloadingCompany" />
+          <DataSelector source="UnloadingCompany" required="true" />
           <Label text="=trRequestPlaceContact" class="bee-required" />
           <InputText source="UnloadingContact" required="true" />
         </row>
@@ -104,7 +104,7 @@
 
         <row>
           <Label text="=city" class="bee-required" />
-          <DataSelector source="UnloadingCity" />
+          <DataSelector source="UnloadingCity" required="true" />
           <Label text="=country" />
           <DataSelector source="UnloadingCountry" />
         </row>

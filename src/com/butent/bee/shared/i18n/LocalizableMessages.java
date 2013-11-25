@@ -34,4 +34,6 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
   String rowsRetrieved(int cnt);
 
   String rowsUpdated(int cnt);
+
+  String valueExists(String label, String value);
 }

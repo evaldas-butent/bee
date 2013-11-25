@@ -124,6 +124,7 @@ public final class CommonsConstants {
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
 
   public static final String SVC_BLOCK_HOST = "block_host";
+  public static final String SVC_CREATE_USER = "create_user";
 
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
@@ -148,13 +149,17 @@ public final class CommonsConstants {
   public static final String TBL_UNITS = "Units";
   public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
+
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
+  
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_PERSONS = "Persons";
+  public static final String TBL_POSITIONS = "Positions";
+  
   public static final String TBL_CITIES = "Cities";
   public static final String TBL_COUNTRIES = "Countries";
 
@@ -220,6 +225,9 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
   public static final String COL_PERSON = "Person";
+  
+  public static final String COL_POSITION = "Position";
+  public static final String COL_POSITION_NAME = "Name";
 
   public static final String COL_OBJECT_TYPE = "Type";
   public static final String COL_OBJECT = "Object";
@@ -303,10 +311,13 @@ public final class CommonsConstants {
   public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
+  public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";
+
+  public static final String ALS_EMAIL_ID = "EmailId";
 
   public static final String FORM_NEW_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
