@@ -796,6 +796,9 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
       @Override
       public void onSuccess(BeeRow result) {
+        if (form.getFormInterceptor() != null) {
+          form.getFormInterceptor().afterInsertRow(result);
+        }
         form.updateRow(result, true);
 
         IsRow copy = DataUtils.cloneRow(result);
@@ -909,6 +912,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
           @Override
           public void onSuccess(BeeRow result) {
+            if (form.getFormInterceptor() != null) {
+              form.getFormInterceptor().afterInsertRow(result);
+            }
+
             finishNewRow(result);
 
             if (getGridInterceptor() != null) {

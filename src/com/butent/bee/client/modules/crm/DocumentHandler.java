@@ -100,7 +100,7 @@ public final class DocumentHandler {
         return;
       }
 
-      if (getCollector().getFiles().isEmpty()) {
+      if (getCollector().isEmpty()) {
         event.getCallback().onFailure(Localized.getConstants().chooseFiles());
         return;
       }

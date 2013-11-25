@@ -1184,6 +1184,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       @Override
       public void onSuccess(BeeRow result) {
+        if (getFormInterceptor() != null) {
+          getFormInterceptor().afterInsertRow(result);
+        }
         finishNewRow(result);
       }
     };

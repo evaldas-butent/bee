@@ -93,16 +93,21 @@ public class TransportSelectorHandler implements Handler {
   }
 
   private static void handleRequestTemplate(SelectorEvent event) {
+    DataSelector selector = event.getSelector();
+    
+    if (event.isClosed()) {
+      selector.clearDisplay();
+      return;
+    }
     if (!event.isChanged()) {
       return;
     }
 
     IsRow sourceRow = event.getRelatedRow();
     if (sourceRow == null) {
+      selector.clearDisplay();
       return;
     }
-
-    DataSelector selector = event.getSelector();
 
     FormView form = UiHelper.getForm(selector);
     if (form == null) {
@@ -126,16 +131,28 @@ public class TransportSelectorHandler implements Handler {
 
     for (int i = 0; i < sourceColumns.size(); i++) {
       String colName = sourceColumns.get(i).getId();
-      String value = sourceRow.getString(i);
+      String newValue = sourceRow.getString(i);
 
-      if (BeeUtils.same(colName, COL_CARGO_REQUEST_TEMPLATE_NAME)) {
-        selector.setDisplayValue(BeeUtils.trim(value));
-      } else if (!BeeUtils.isEmpty(value)) {
+      if (COL_CARGO_REQUEST_TEMPLATE_NAME.equals(colName)) {
+        selector.setDisplayValue(BeeUtils.trim(newValue));
+
+      } else if (!BeeUtils.isEmpty(newValue)) {
         int index = form.getDataIndex(colName);
-        if (index >= 0 && targetRow.isNull(index)) {
-          targetRow.setValue(index, value);
-          if (sourceColumns.get(i).isEditable()) {
-            updatedColumns.add(colName);
+        boolean upd = index >= 0;
+        if (upd) {
+          String oldValue = targetRow.getString(index);
+          if (ALS_CARGO_DESCRIPTION.equals(colName)) {
+            upd = BeeUtils.isEmpty(oldValue)
+                || DEFAULT_CARGO_DESCRIPTION.equals(oldValue) && !newValue.equals(oldValue);
+          } else {
+            upd = BeeUtils.isEmpty(oldValue);
+          }
+
+          if (upd) {
+            targetRow.setValue(index, newValue);
+            if (sourceColumns.get(i).isEditable()) {
+              updatedColumns.add(colName);
+            }
           }
         }
       }
@@ -145,7 +162,7 @@ public class TransportSelectorHandler implements Handler {
       form.refreshBySource(colName);
     }
   }
-  
+
   private static void handleServices(SelectorEvent event) {
     if (!event.isChanged()) {
       return;

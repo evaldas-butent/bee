@@ -42,7 +42,7 @@
     <xi:include href="widgets/RequestInfo.widget.xml" />
 
     <FlowPanel class="flexBox-horizontal">
-      <Label text="=documentFiles" style="margin: 5px 2em 0 1em;" />
+      <Label text="=trRequestFiles" style="margin: 5px 2em 0 1em;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
       </FileCollector>

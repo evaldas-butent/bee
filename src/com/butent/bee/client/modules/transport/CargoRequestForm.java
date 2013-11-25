@@ -1,16 +1,20 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
@@ -22,6 +26,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -33,7 +38,27 @@ class CargoRequestForm extends AbstractFormInterceptor {
   private Button activateCommand;
   private Button templateCommand;
 
+  private FileCollector collector;
+  
   CargoRequestForm() {
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+    if (widget instanceof FileCollector) {
+      this.collector = (FileCollector) widget;
+      this.collector.bindDnd(getFormView());
+    }
+  }
+  
+  @Override
+  public void afterInsertRow(IsRow result) {
+    LogUtils.getRootLogger().debug("ins", result.getId());
+    if (getCollector() != null && !getCollector().isEmpty()) {
+      
+    }
+    super.afterInsertRow(result);
   }
 
   @Override
@@ -46,11 +71,6 @@ class CargoRequestForm extends AbstractFormInterceptor {
     
     } else {
       status = null;
-
-      Widget tWidget = form.getWidgetByName("Template");
-      if (tWidget instanceof Editor) {
-        ((Editor) tWidget).clearValue();
-      }
     }
 
     refreshCommands(status);
@@ -62,13 +82,34 @@ class CargoRequestForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    if (getCollector() != null) {
+      getCollector().clear();
+    }
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    Widget tWidget = form.getWidgetByName("Template");
+    if (tWidget instanceof Editor) {
+      ((Editor) tWidget).clearValue();
+    }
+
+    if (getCollector() != null) {
+      getCollector().clear();
+    }
+
     SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_CARGO_REQUEST_EXPEDITION);
     SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
 
     super.onStartNewRow(form, oldRow, newRow);
   }
 
+  private FileCollector getCollector() {
+    return collector;
+  }
+  
   private void onCreateOrder() {
   }
 

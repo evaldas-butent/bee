@@ -308,9 +308,8 @@ public final class RowFactory {
   }
 
   private static void getForm(String formName, final String caption,
-      FormInterceptor formInterceptor,
-      final DataInfo dataInfo, final BeeRow row, final UIObject target,
-      final RowCallback rowCallback) {
+      FormInterceptor formInterceptor, final DataInfo dataInfo, final BeeRow row,
+      final UIObject target, final RowCallback rowCallback) {
 
     FormInterceptor fcb =
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;
