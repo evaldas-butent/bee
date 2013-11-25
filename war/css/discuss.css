@@ -1,0 +1,41 @@
+.bee-discuss-comment-container {
+  margin-top: 2em;
+  border-top: 1px solid #ccc;
+}
+
+.bee-discuss-comment-rowPhoto {
+  display: inline-block;
+  vertical-align: top;
+  text-align: center;
+  width: 40px;
+  margin: 4px;
+}
+
+.bee-discuss-comment-Photo {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.bee-discuss-comment-PublishTime {
+    
+}
+
+.bee-discuss-comment-col-Publisher {
+  display: inline-block;
+  margin: 4px;
+  min-width: 150px;
+ 
+  vertical-align: top;
+}
+
+.bee-discuss-comment-col-CommentText {
+  display: inline-block;
+  padding: 4px; 
+  border-left: 1px solid #ccc;
+  min-height: 35px;
+}
+
+.bee-discuss-comment-row {
+  padding-bottom: 2px;
+  border-bottom: 1px solid #ccc;
+}

@@ -1,110 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
-
-  <!ENTITY section "margin-top: 2px;">
-  <!ENTITY header "font-style: italic;">
-  <!ENTITY separator "<br/>">
-
-  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px;">
-  <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
-  <!ENTITY top1r "float: right; width: 100px; padding-top: 1px;">
-  <!ENTITY inp1x "&inline; width: 424px;">
-  <!ENTITY inp2 "&inline; width: 140px;">
-  <!ENTITY inp2x "&inline; width: 424px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
-  <!ENTITY inp4 "&inline; width: 140px;">
+    
+  <!ENTITY lblRight "&inline; width: 90px; vertical-align: top; text-align: right; margin: 3px 4px 3px 4px;" >
+  <!ENTITY lblLeft "&inline; width: 90px; vertical-align: top; text-align: left; margin: 3px 4px 3px 4px;" >
+  <!ENTITY inpLeft "&inline; text-align: left; margin: 3px 7px 3px 4px;" >
+  <!ENTITY inpRight "&inline; text-align: rght; margin: 3px 7px 3px 4px;" >
+  <!ENTITY discussDataPanel "min-width: 550px;" >
+  <!ENTITY relDataPanel "overflow: auto;" >
+ 
+  <!ENTITY subjectLbl "&lblRight;">
+  <!ENTITY subjectInp "&inpLeft;  width: 400px;">
+  
+  <!ENTITY ownerLbl "&lblRight;">
+  <!ENTITY ownerInp "&inpLeft; width: 180px;">
+  
+  <!ENTITY createdLbl "&lblRight;">
+  <!ENTITY createdInp "&inpLeft; width: 110px;"> 
+  
+  <!ENTITY statusLbl "&lblRight;">
+  <!ENTITY statusInp "&inpLeft; width: 140px;">
+    
+  <!ENTITY membersLbl "&lblRight;">
+  <!ENTITY membersInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY descriptionLbl "&lblRight;">
+  <!ENTITY descriptionInp "&inpLeft; width: 950px; min-height: 1.5em;">
+  
+  <!ENTITY FilesInp "&inpLeft;">
+  
+  <!-- relations --> 
+  <!ENTITY relCompaniesLbl "&lblRight;">
+  <!ENTITY relCompaniesInp "&inpLeft;  width: 400px;">
+  
+  <!ENTITY relPersonsLbl "&lblRight;">
+  <!ENTITY relPersonsInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY relAppoitmentsLbl "&lblRight;">
+  <!ENTITY relAppoitmentsInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY relTasksLbl "&lblRight;">
+  <!ENTITY relTasksInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY relDocumentsLbl "&lblRight;">
+  <!ENTITY relDocumentsInp "&inpLeft; width: 400px;">
+  
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
   caption="=discussion" printHeader="true">
 
-  <FlowPanel class="flexBox-vertical">  
-    
+  <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
-      <FlowPanel style="margin-left: 5px;">
-        <FlowPanel style="&section;">
-          <Label text="=discussStatus" style="&lbl1;" />
-          <ListBox source="Status" style="&inp2;" readOnly="true" />
-          <Label text="=discussOwner" style="&lbl3;" />
-          <DataSelector source="Owner" editSource="OwnerPerson"
-            style="&inp4;" readOnly="true" />
-        </FlowPanel>
-  
-        &separator;
-        <FlowPanel style="&section;">
-          <Label text="=discussCreated" style="&lbl1;" />
-          <InputDateTime source="Created" style="&inp2;"
+
+      <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
+        <FlowPanel>
+          <Label text="=discussSubject" class="bee-required"
+            style="&subjectLbl;" />
+          <InputText source="Subject" style="&subjectInp;"
             readOnly="true" />
         </FlowPanel>
-  
-        &separator;
-        <FlowPanel style="&section;">
-          <Label text="=discussSubject" class="bee-required" style="&lbl1;" />
-          <InputText source="Subject" style="&inp2x;" readOnly="true" />
+
+        <FlowPanel>
+          <Label text="=discussOwner" style="&ownerLbl;" />
+          <DataSelector source="Owner" editSource="OwnerPerson"
+            style="&ownerInp;" readOnly="true" />
+          <Label text="=discussCreated" style="&createdLbl;" />
+          <InputDateTime source="Created" style="&createdInp;"
+            readOnly="true" />
         </FlowPanel>
-  
-        <FlowPanel style="&section;">
-          <Label text="=discussDescription" style="&top1;" />
-          <Label name="Description" style="width: 424px; height: 60px;" />
+
+        <FlowPanel>
+          <Label text="=discussStatus" style="&statusLbl;" />
+          <ListBox source="Status" style="&statusInp; margin-right: 14px"
+            readOnly="true" />
+
+          <CheckBox name="Accessibility" source="Accessibility"
+            text="=discussPublic" />
         </FlowPanel>
-  
-        <FileGroup name="Files" />
-  
-        &separator;
-        <FlowPanel style="&section;">
-          <CheckBox name="Accessibility" source="Accessibility" text="=discussPublic" style="&lbl1;" />
-        </FlowPanel>
-  
-        <FlowPanel style="&section;">
-          <Label text="=discussMembers" style="&top1;" />
+
+        <FlowPanel>
+          <Label text="=discussMembers" style="&membersLbl;" />
           <MultiSelector viewName="Users" property="Members"
-            renderColumns="FirstName LastName" editSource="CompanyPerson"
-            style="&inp2x;" disablable="true" label="=discussMembers" />
+            renderColumns="FirstName 
+      LastName" editSource="CompanyPerson"
+            style="&membersInp;" disablable="true" label="=discussMembers" />
         </FlowPanel>
-        
+
       </FlowPanel>
-      
-      <FlowPanel class="flexBox-vertical">
-      
-        &separator;
-        <FlowPanel style="&section;">
-          <Label text="=companies" style="&top1;" />
+
+      <!-- Top right -->
+      <FlowPanel class="flexBox-vertical" style="&relDataPanel;">
+
+        <FlowPanel>
+          <Label text="=companies" style="&relCompaniesLbl;" />
           <MultiSelector viewName="Companies" property="Companies"
-            renderColumns="Name" style="&inp2x;" disablable="true" />
+            renderColumns="Name" style="&relCompaniesInp;" disablable="true" />
         </FlowPanel>
-  
-        <FlowPanel style="&section;">
-          <Label text="=persons" style="&top1;" />
+
+        <FlowPanel>
+          <Label text="=persons" style="&relPersonsLbl;" />
           <MultiSelector viewName="Persons" property="Persons"
-            renderColumns="FirstName LastName" style="&inp2x;" disablable="true" />
+            renderColumns="FirstName LastName" style="&relPersonsInp;"
+            disablable="true" />
         </FlowPanel>
-  
-        <FlowPanel style="&section;">
-          <Label text="=appointments" style="&top1;" />
+
+        <FlowPanel>
+          <Label text="=appointments" style="&relAppoitmentsLbl;" />
           <MultiSelector viewName="Appointments" property="Appointments"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-            newRowEnabled="false" style="&inp2x;" disablable="true" />
+            newRowEnabled="false" style="&relAppoitmentsInp;"
+            disablable="true" />
         </FlowPanel>
-  
-        <FlowPanel style="&section;">
-          <Label text="=tasks" style="&top1;" />
+
+        <FlowPanel>
+          <Label text="=tasks" style="&relTasksLbl;" />
           <MultiSelector viewName="Tasks" property="Tasks"
-            renderColumns="Summary ExecutorFirstName ExecutorLastName"
-            choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-            newRowEnabled="false" style="&inp2x;" disablable="true" />
+            renderColumns="Summary 
+        ExecutorFirstName ExecutorLastName"
+            choiceColumns="Summary ExecutorFirstName 
+        ExecutorLastName StartTime FinishTime"
+            newRowEnabled="false" style="&relTasksInp;" disablable="true" />
         </FlowPanel>
-  
-        <FlowPanel style="&section;">
-          <Label text="=documents" style="&top1;" />
+
+        <FlowPanel>
+          <Label text="=documents" style="&relDocumentsLbl;" />
           <MultiSelector viewName="Documents" property="Documents"
             renderColumns="Name DocumentDate Number" choiceColumns="Name DocumentDate Number"
-            newRowEnabled="false" style="&inp2x;" disablable="true" />
+            newRowEnabled="false" style="&relDocumentsInp;" disablable="true" />
         </FlowPanel>
-  
-        &separator;
       </FlowPanel>
     </FlowPanel>
+
+    <FlowPanel>
+      <Label text="=discussDescription" style="&descriptionLbl;" />
+      <Label class="bee-InputArea" name="Description" style="&descriptionInp; " />
+    </FlowPanel>
+    
+    <FileGroup name="Files" />
 
     <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container" />
   </FlowPanel>
