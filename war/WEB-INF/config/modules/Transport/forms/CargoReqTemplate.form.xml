@@ -13,6 +13,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="CargoReqTemplate" viewName="CargoReqTemplate" caption="=trRequestTemplate"
+  width="700" height="80" heightUnit="vh"
   >
   <FlowPanel>
     <br/>
@@ -28,7 +29,7 @@
       </row>
 
       <row>
-        <Label text="=trRequestTemplateUser" class="bee-required" />
+        <Label text="=trRequestTemplateUser" class="bee-required bee-hasDefaults" />
         <cell colSpan="3">
           <DataSelector source="User" editSource="CustomerCompany" newRowEnabled="false"
             style="width: 300px;" >

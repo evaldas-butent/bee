@@ -86,7 +86,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     putUserField(parameters, COL_REGISTRATION_VAT_CODE, CommonsConstants.COL_COMPANY_VAT_CODE);
     putUserField(parameters, COL_REGISTRATION_EXCHANGE_CODE,
         CommonsConstants.COL_COMPANY_EXCHANGE_CODE);
-    
+
     String contact = BeeUtils.trim(getDataValue(COL_REGISTRATION_CONTACT));
     if (!BeeUtils.isEmpty(contact)) {
       int p = contact.lastIndexOf(BeeConst.CHAR_SPACE);
@@ -153,16 +153,18 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
       }
       header.addCommandItem(this.registerCommand);
 
-      if (this.blockCommand == null) {
-        this.blockCommand =
-            new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                onBlock();
-              }
-            });
+      if (!BeeUtils.isEmpty(getDataValue(COL_REGISTRATION_HOST))) {
+        if (this.blockCommand == null) {
+          this.blockCommand =
+              new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  onBlock();
+                }
+              });
+        }
+        header.addCommandItem(this.blockCommand);
       }
-      header.addCommandItem(this.blockCommand);
     }
   }
 

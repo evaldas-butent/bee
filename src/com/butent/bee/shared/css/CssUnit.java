@@ -71,4 +71,8 @@ public enum CssUnit implements HasCaption {
   public Type getType() {
     return type;
   }
+  
+  public boolean isPercentage() {
+    return type == Type.CONTAINER_PERCENTAGE || type == Type.VIEWPORT_PERCENTAGE; 
+  }
 }

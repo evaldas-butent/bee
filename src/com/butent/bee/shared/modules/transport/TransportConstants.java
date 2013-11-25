@@ -596,7 +596,6 @@ public final class TransportConstants {
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
-  public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_ASSESSMENT = "Assessment";
   public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
 
@@ -613,6 +612,7 @@ public final class TransportConstants {
 
   public static final String FORM_REGISTRATION = "TranspRegistration";
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
+  public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_CARGO_REQUEST = "CargoRequest";
 
   public static final String PROP_COLORS = "Colors";

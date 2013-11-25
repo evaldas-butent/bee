@@ -93,6 +93,15 @@ public class TransportSelectorHandler implements Handler {
   }
 
   private static void handleRequestTemplate(SelectorEvent event) {
+    if (!event.isChanged()) {
+      return;
+    }
+
+    IsRow sourceRow = event.getRelatedRow();
+    if (sourceRow == null) {
+      return;
+    }
+
     DataSelector selector = event.getSelector();
 
     FormView form = UiHelper.getForm(selector);
@@ -105,19 +114,6 @@ public class TransportSelectorHandler implements Handler {
 
     IsRow targetRow = form.getActiveRow();
     if (targetRow == null) {
-      return;
-    }
-
-    if (event.isClosed()) {
-      selector.clearDisplay();
-    }
-    if (!event.isChanged()) {
-      return;
-    }
-
-    IsRow sourceRow = event.getRelatedRow();
-    if (sourceRow == null) {
-      selector.clearDisplay();
       return;
     }
 
