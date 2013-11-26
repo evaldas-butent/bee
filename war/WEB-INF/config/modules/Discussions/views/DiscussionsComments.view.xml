@@ -19,5 +19,9 @@
     <SimpleColumn name="PublishTime" />
     <SimpleColumn name="CommentText" />
   </Columns>
+  <Order>
+    <OrderBy column="DiscussionComentID" />
+    <OrderBy column="Parent" />
+  </Order>
 </View>
  

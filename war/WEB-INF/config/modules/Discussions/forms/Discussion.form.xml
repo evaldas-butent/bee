@@ -9,6 +9,7 @@
   <!ENTITY discussDataPanel "min-width: 550px;" >
   <!ENTITY relDataPanel "overflow: auto;" >
   <!ENTITY commentsPanel "overflow: auto;" >
+  <!ENTITY discussionHeadPanel "max-height:150px">
  
   <!ENTITY subjectLbl "&lblRight;">
   <!ENTITY subjectInp "&inpLeft;  width: 400px;">
@@ -26,7 +27,7 @@
   <!ENTITY membersInp "&inpLeft; width: 400px;">
   
   <!ENTITY descriptionLbl "&lblRight;">
-  <!ENTITY descriptionInp "&inpLeft; width: 950px; min-height: 1.5em;">
+  <!ENTITY descriptionInp "&inpLeft; width: calc(100&#37; - 10em);  min-height: 1.5em;">
   
   <!ENTITY FilesInp "&inpLeft;">
   
@@ -52,7 +53,7 @@
   caption="=discussion" printHeader="true">
 
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal">
+    <FlowPanel class="flexBox-horizontal" style="&discussionHeadPanel;">
 
       <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
         <FlowPanel>

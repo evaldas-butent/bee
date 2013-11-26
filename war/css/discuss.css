@@ -7,8 +7,10 @@
   display: inline-block;
   vertical-align: top;
   text-align: center;
-  width: 40px;
-  margin: 4px;
+  min-width: 40px;
+  padding: 4px;
+  border-left: 1px solid #ccc;
+  margin-left: -1px;
 }
 
 .bee-discuss-comment-Photo {
@@ -17,7 +19,7 @@
 }
 
 .bee-discuss-comment-PublishTime {
-    
+    font-size: 1.5ex;
 }
 
 .bee-discuss-comment-col-Publisher {
@@ -28,16 +30,54 @@
   vertical-align: top;
 }
 
+.bee-discuss-comment-Publisher {
+  font-weight: bolder;
+}
+
 .bee-discuss-comment-col-CommentText {
   display: inline-block;
   padding: 4px; 
-  border-left: 1px solid #ccc;
+  border: 1px solid #ccc;
   min-height: 35px;
+  width: 100%/*calc(100% - 330px)*/;
+  min-width: 300px;
+  margin: -1px 0px -3px 0px;
 }
 
 .bee-discuss-comment-row {
   padding-bottom: 2px;
-  border-bottom: 1px solid #ccc;
+  border: 1px solid #ccc;
+  margin-bottom: -1px;
+  margin-top: -1px;
+  border-right: none;
+  margin-right: 0.5ex;
+}
+
+.bee-discuss-comment-col-Actions {
+  display: inline-block;
+  min-width: 95px;
+  vertical-align: top;
+  border: 1px solid #ccc;
+  border-left: none;
+  margin: -1px -1px -3px 0px;
+  text-align: center;
+}
+
+.bee-discuss-comment-col-Actions-reply, .bee-discuss-comment-col-Actions-trash {
+  padding:4px;
+  margin: 4px;  
+}
+
+.bee-discuss-comment-col-Actions-reply:hover, .bee-discuss-comment-col-Actions-trash:hover {
+  outline: #ccc dotted 1px;
+}
+
+.bee-discuss-comment-col-Actions-reply {
+  
+}
+
+.bee-discuss-comment-col-Actions-trash {
+  
 }
 
 .bee-discuss-commentDialog {

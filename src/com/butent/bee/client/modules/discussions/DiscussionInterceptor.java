@@ -28,6 +28,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
@@ -72,7 +73,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 
 class DiscussionInterceptor extends AbstractFormInterceptor {
-  
+
   private static final class CommentDialog extends DialogBox {
 
     private static final String STYLE_DIALOG = DISCUSSIONS_STYLE_PREFIX + "commentDialog";
@@ -212,6 +213,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_COMMENT_ROW = STYLE_COMMENT + "row";
   private static final String STYLE_COMMENT_COL = STYLE_COMMENT + "col-";
   private static final String STYLE_COMMENT_FILES = STYLE_COMMENT + "files";
+  private static final String STYLE_ACTIONS = "Actions";
+  private static final String STYLE_REPLY = "-reply";
+  private static final String STYLE_TRASH = "-trash";
+
+  private static final String IMAGE_REPLY = "replytoall";
+  private static final String IMAGE_TRASH = "silverdelete";
 
   private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_APPOINTMENTS, PROP_TASKS, PROP_DOCUMENTS);
@@ -221,7 +228,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     super();
     this.userId = BeeKeeper.getUser().getUserId();
   }
-  
+
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
@@ -249,7 +256,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
-    
+
     for (final DiscussionEvent event : DiscussionEvent.values()) {
       String label = event.getCommandLabel();
 
@@ -281,23 +288,19 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-   /* if (action.equals(Action.SAVE)) {
-      Widget widget = getFormView().getWidgetBySource(COL_ACCESSIBILITY);
-
-      if (widget instanceof InputBoolean) {
-        InputBoolean ac = (InputBoolean) widget;
-
-        if (!BeeUtils.toBoolean(ac.getValue())
-            && BeeUtils.isEmpty(getMultiSelector(getFormView(), PROP_MEMBERS).getValue())) {
-          showError(Localized.getConstants().discussSelectMembers());
-
-          return false;
-        }
-      }
-    }*/
+    /*
+     * if (action.equals(Action.SAVE)) { Widget widget =
+     * getFormView().getWidgetBySource(COL_ACCESSIBILITY);
+     * 
+     * if (widget instanceof InputBoolean) { InputBoolean ac = (InputBoolean) widget;
+     * 
+     * if (!BeeUtils.toBoolean(ac.getValue()) && BeeUtils.isEmpty(getMultiSelector(getFormView(),
+     * PROP_MEMBERS).getValue())) { showError(Localized.getConstants().discussSelectMembers());
+     * 
+     * return false; } } }
+     */
     return super.beforeAction(action, presenter);
   }
-
 
   @Override
   public void onSaveChanges(SaveChangesEvent event) {
@@ -380,7 +383,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         if (!BeeUtils.isEmpty(comments)) {
           showCommentsAndMarks(form, BeeRowSet.restore(comments), files);
         }
-        
+
         form.getWidgetByName(COL_DESCRIPTION).getElement().setInnerHTML(
             data.getString(form.getDataIndex(COL_DESCRIPTION)));
 
@@ -397,6 +400,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     return widget;
+  }
+
+  private static boolean commentActionReplyEnabled() {
+    return true;
+  }
+
+  private static boolean commentActionDeleteEnabled() {
+    return true;
   }
 
   private static List<StoredFile> filterCommentFiles(List<StoredFile> input, long commentId) {
@@ -462,7 +473,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     });
   }
-  
+
   private void sendRequest(ParameterList params, final DiscussionEvent event) {
     Callback<ResponseObject> callback = new Callback<ResponseObject>() {
 
@@ -489,30 +500,24 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     Flow container = new Flow();
     container.addStyleName(STYLE_COMMENT_ROW);
-    
+    container.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+
     Flow colPhoto = new Flow();
     colPhoto.addStyleName(STYLE_COMMENT_ROW + CommonsConstants.COL_PHOTO);
-    
+
     if (renderPhoto) {
       String photo = row.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns));
       if (!BeeUtils.isEmpty(photo)) {
         Image image = new Image(PhotoRenderer.getUrl(photo));
-        image.addStyleName(STYLE_COMMENT +  CommonsConstants.COL_PHOTO);
+        image.addStyleName(STYLE_COMMENT + CommonsConstants.COL_PHOTO);
         colPhoto.add(image);
       }
     }
-    
+
     container.add(colPhoto);
 
     Flow colPublisher = new Flow();
     colPublisher.addStyleName(STYLE_COMMENT_COL + COL_PUBLISHER);
-    
-    DateTime publishTime = row.getDateTime(DataUtils.getColumnIndex(COL_PUBLISH_TIME, columns));
-
-    if (publishTime != null) {
-      colPublisher.add(createCommentCell(COL_PUBLISH_TIME, Format.getDefaultDateTimeFormat()
-          .format(publishTime)));
-    }
 
     String publisher = BeeUtils.joinWords(
         row.getString(DataUtils.getColumnIndex(COL_PUBLISHER_FIRST_NAME, columns)),
@@ -520,6 +525,13 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     if (!BeeUtils.isEmpty(publisher)) {
       colPublisher.add(createCommentCell(COL_PUBLISHER, publisher));
+    }
+
+    DateTime publishTime = row.getDateTime(DataUtils.getColumnIndex(COL_PUBLISH_TIME, columns));
+
+    if (publishTime != null) {
+      colPublisher.add(createCommentCell(COL_PUBLISH_TIME, Format.getDefaultDateTimeFormat()
+          .format(publishTime)));
     }
 
     container.add(colPublisher);
@@ -535,12 +547,49 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     container.add(colComment);
 
+    Flow colActions = new Flow();
+    colActions.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS);
+
+    if (commentActionReplyEnabled()) {
+      Image imgReply = new Image(Images.get(IMAGE_REPLY));
+      imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
+      imgReply.setTitle(Localized.getConstants().discussActionReply());
+      imgReply.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+          Global.showError("reply not implemented");
+        }
+
+      });
+
+      colActions.add(imgReply);
+    }
+
+    if (commentActionDeleteEnabled()) {
+      Image imgTrash = new Image(Images.get(IMAGE_TRASH));
+      imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
+      imgTrash.setTitle(Localized.getConstants().actionDelete());
+      imgTrash.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+          Global.showError("trash not implemented");
+        }
+
+      });
+
+      colActions.add(imgTrash);
+    }
+
+    container.add(colActions);
+
     panel.add(container);
 
     if (!files.isEmpty()) {
       Simple fileContainer = new Simple();
       fileContainer.addStyleName(STYLE_COMMENT_FILES);
-      
+
       FileGroup fileGroup = new FileGroup();
       fileGroup.addFiles(files);
 
@@ -559,12 +608,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     Flow panel = (Flow) widget;
     panel.clear();
-   
+
     for (BeeRow row : rowSet.getRows()) {
       showComment(panel, row, rowSet.getColumns(), filterCommentFiles(files, row.getId()),
           isPhoto(row, rowSet));
     }
-    
+
     if (panel.getWidgetCount() > 0 && form.asWidget().isVisible()) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -622,14 +671,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Global.confirm(Localized.getConstants().discussActivationQuestion(),
         new ConfirmationCallback() {
 
-      @Override
-      public void onConfirm() {
-        BeeRow newRow = getNewRow(DiscussionStatus.ACTIVE);
+          @Override
+          public void onConfirm() {
+            BeeRow newRow = getNewRow(DiscussionStatus.ACTIVE);
 
-        ParameterList params = createParams(DiscussionEvent.ACTIVATE, newRow, null);
-        sendRequest(params, DiscussionEvent.ACTIVATE);
-      }
-    });
+            ParameterList params = createParams(DiscussionEvent.ACTIVATE, newRow, null);
+            sendRequest(params, DiscussionEvent.ACTIVATE);
+          }
+        });
   }
 
   private void doClose() {
@@ -655,7 +704,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       @Override
       public void execute() {
         String comment = dialog.getComment(cid);
-        
+
         if (BeeUtils.isEmpty(comment)) {
           showError(Localized.getConstants().crmEnterComment());
         }
@@ -667,7 +716,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         final List<NewFileInfo> files = dialog.getFiles(fid);
 
         dialog.close();
-        
+
         sendRequest(params, new Callback<ResponseObject>() {
           @Override
           public void onFailure(String... reason) {
@@ -682,13 +731,13 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             }
 
             onResponse(data);
-            
+
             Long commentId = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_COMMENT));
             if (DataUtils.isId(commentId) && !files.isEmpty()) {
               sendFiles(files, discussionId, commentId);
             }
           }
-          
+
         });
       }
     });
@@ -732,7 +781,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         break;
     }
   }
-  
+
   private static void doMark(Long commentId) {
     if (commentId == null) {
       // TODO: do discussion mark
@@ -766,23 +815,23 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private Integer getStatus() {
     return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
   }
-  
+
   private List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
     List<String> updatedRelations = Lists.newArrayList();
-    
+
     if (oldRow == null || newRow == null) {
       return updatedRelations;
     }
-    
+
     for (String relation : relations) {
       if (!DataUtils.sameIdSet(oldRow.getProperty(relation), newRow.getProperty(relation))) {
         updatedRelations.add(relation);
       }
     }
-    return updatedRelations; 
+    return updatedRelations;
   }
 
-  private boolean isEventEnabled(DiscussionEvent event, Integer status, Long owner) {   
+  private boolean isEventEnabled(DiscussionEvent event, Integer status, Long owner) {
 
     if (event == null || status == null || owner == null || (!isMember(userId) && !isPublic())) {
       return false;
@@ -790,7 +839,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     switch (event) {
       case ACTIVATE:
-        return DiscussionStatus.in(status, DiscussionStatus.INACTIVE) 
+        return DiscussionStatus.in(status, DiscussionStatus.INACTIVE)
             || (DiscussionStatus.in(status, DiscussionStatus.CLOSED) && isOwner(userId, owner));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && isOwner(userId, owner);
@@ -817,7 +866,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (!DataUtils.isId(user)) {
       return false;
     }
-    
+
     List<Long> members =
         DiscussionsUtils.getDiscussionMembers(getFormView().getActiveRow(), getFormView()
             .getDataColumns());
@@ -829,7 +878,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return members.contains(user);
   }
 
- 
   private boolean isPublic() {
     return getFormView().getActiveRow().getBoolean(getFormView().getDataIndex(COL_ACCESSIBILITY));
   }
@@ -850,7 +898,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private void requeryComments(final long discussionId) {
     ParameterList params = DiscussionsKeeper.createArgs(SVC_GET_DISCUSSION_DATA);
     params.addDataItem(VAR_DISCUSSION_ID, discussionId);
-    
+
     Callback<ResponseObject> callback = new Callback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
@@ -875,9 +923,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void sendFiles(final List<NewFileInfo> files, final long discussionId,
       final long commentId) {
-    
+
     final Holder<Integer> counter = Holder.of(0);
-    
+
     final List<BeeColumn> columns =
         Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_COMMENT,
             COL_FILE, COL_CAPTION));
