@@ -129,8 +129,10 @@ public final class CommonsConstants {
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
-  public static final String SVC_GET_EXCHANGE_RATES_BY_CURRENCIES =
+  public static final String SVC_GET_EXCHANGE_RATES_BY_CURRENCY =
       "get_exchange_rates_by_currency";
+
+  public static final String SVC_UPDATE_EXCHANGE_RATES = "update_exchange_rates";
 
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
@@ -183,6 +185,9 @@ public final class CommonsConstants {
 
   public static final String TBL_IP_FILTERS = "IpFilters";
 
+  public static final String TBL_CURRENCIES = "Currencies";
+  public static final String TBL_CURRENCY_RATES = "CurrencyRates";
+  
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
@@ -203,6 +208,7 @@ public final class CommonsConstants {
   public static final String VIEW_WAREHOUSES = "Warehouses";
 
   public static final String VIEW_CURRENCIES = "Currencies";
+  public static final String VIEW_CURRENCY_RATES = "CurrencyRates";
 
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
@@ -314,12 +320,12 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
 
   public static final String COL_CURRENCY_NAME = "Name";
-  public static final String COL_CURRENCY_DESCRIPTION = "Description";
-  public static final String COL_CURRENCY_EN_DESCRIPTION = "DescriptionEn";
-  public static final String COL_EXCHANGE_RATE = "ExchangeRate";
-  public static final String COL_EXCHANGE_RATE_DATE = "ExchangeRateDate";
-  public static final String COL_CURRENCY_QUANTITY = "Quantity";
-  public static final String COL_CURRENCY_UNIT = "Unit";
+  public static final String COL_CURRENCY_UPDATE_TAG = "UpdateTag";
+
+  public static final String COL_CURRENCY_RATE_CURRENCY = "Currency";
+  public static final String COL_CURRENCY_RATE_DATE = "Date";
+  public static final String COL_CURRENCY_RATE_QUANTITY = "Quantity";
+  public static final String COL_CURRENCY_RATE = "Rate";
 
   public static final String COL_IP_FILTER_HOST = "Host";
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";

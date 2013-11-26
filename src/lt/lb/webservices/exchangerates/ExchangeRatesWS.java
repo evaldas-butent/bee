@@ -100,7 +100,7 @@ public class ExchangeRatesWS
     String result =
         ((ExchangeRatesSoapPort) response.getResponse()).getCurrentExchangeRate(currency);
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_EXCHANGE_RATE});
+    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE});
     data.addRow(new String[] {result});
 
     logger.info("GetCurrentExchangeRate rows: ", data.getNumberOfRows());
@@ -169,7 +169,7 @@ public class ExchangeRatesWS
     String result =
         ((ExchangeRatesSoapPort) response.getResponse()).getExchangeRate(currency, date.toString());
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_EXCHANGE_RATE});
+    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE});
     data.addRow(new String[] {result});
 
     logger.info("GetExchangeRate rows: ", data.getNumberOfRows());
@@ -234,7 +234,6 @@ public class ExchangeRatesWS
 
     Assert.notEmpty(address);
     Assert.notEmpty(currency);
-    Assert.isPositive(dateHigh.compareTo(dateLow));
 
     ResponseObject response = getPort(address);
 
@@ -248,9 +247,9 @@ public class ExchangeRatesWS
         ((ExchangeRatesSoapPort) response.getResponse()).getExchangeRatesByCurrency(currency,
             dateLow.toString(), dateHigh.toString());
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_EXCHANGE_RATE_DATE,
-        CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_QUANTITY,
-        CommonsConstants.COL_EXCHANGE_RATE, CommonsConstants.COL_CURRENCY_UNIT});
+    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE_DATE,
+        CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_RATE_QUANTITY,
+        CommonsConstants.COL_CURRENCY_RATE, COL_CURRENCY_UNIT});
 
     for (Object xmlRoot : result) {
 
@@ -267,19 +266,19 @@ public class ExchangeRatesWS
             for (int j = 0; j < itemRow.getLength(); j++) {
 
               if (BeeUtils.same(TAG_DATE, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_EXCHANGE_RATE_DATE)] =
+                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_DATE)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_CURRENCY, itemRow.item(j).getLocalName())) {
                 dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_NAME)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_QUANTITY, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_QUANTITY)] =
+                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_QUANTITY)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_RATE, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_EXCHANGE_RATE)] =
+                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_UNIT, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_UNIT)] =
+                dataValues[data.getColumnIndex(COL_CURRENCY_UNIT)] =
                     itemRow.item(j).getTextContent().trim();
               }
             }
@@ -343,9 +342,9 @@ public class ExchangeRatesWS
         ((ExchangeRatesSoapPort) response.getResponse()).getExchangeRatesByCurrencyXmlString(
             currency, dateLow.toString(), dateHigh.toString());
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_EXCHANGE_RATE_DATE,
-        CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_QUANTITY,
-        CommonsConstants.COL_EXCHANGE_RATE, CommonsConstants.COL_CURRENCY_UNIT});
+    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE_DATE,
+        CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_RATE_QUANTITY,
+        CommonsConstants.COL_CURRENCY_RATE, COL_CURRENCY_UNIT});
 
     Node node = null;
     logger.info("ExchangeRatesByCurrency result:", result);
@@ -369,19 +368,19 @@ public class ExchangeRatesWS
         for (int j = 0; j < itemRow.getLength(); j++) {
 
           if (BeeUtils.same(TAG_DATE, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_EXCHANGE_RATE_DATE)] =
+            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_DATE)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_CURRENCY, itemRow.item(j).getLocalName())) {
             dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_NAME)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_QUANTITY, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_QUANTITY)] =
+            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_QUANTITY)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_RATE, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_EXCHANGE_RATE)] =
+            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_UNIT, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_UNIT)] =
+            dataValues[data.getColumnIndex(COL_CURRENCY_UNIT)] =
                 itemRow.item(j).getTextContent().trim();
           }
         }
@@ -443,9 +442,8 @@ public class ExchangeRatesWS
     List<Object> result =
         ((ExchangeRatesSoapPort) response.getResponse()).getListOfCurrencies();
     SimpleRowSet data =
-        new SimpleRowSet(new String[] {
-            CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_DESCRIPTION,
-            CommonsConstants.COL_CURRENCY_EN_DESCRIPTION});
+        new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_NAME,
+            COL_CURRENCY_DESCRIPTION, COL_CURRENCY_EN_DESCRIPTION});
 
     for (Object xmlRoot : result) {
       if (xmlRoot instanceof Element) {

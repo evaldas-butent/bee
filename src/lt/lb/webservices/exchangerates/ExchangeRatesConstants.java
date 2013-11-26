@@ -27,4 +27,8 @@ final class ExchangeRatesConstants {
   public static final String TAG_MESSAGE = "message";
 
   public static final String ATTR_LANG = "lang";
+  
+  public static final String COL_CURRENCY_DESCRIPTION = "Description";
+  public static final String COL_CURRENCY_EN_DESCRIPTION = "DescriptionEn";
+  public static final String COL_CURRENCY_UNIT = "Unit";
 }

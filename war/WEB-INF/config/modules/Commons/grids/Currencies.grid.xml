@@ -6,9 +6,10 @@
   newRowPopup="true" editPopup="true"
   >
   <g:columns>
-    <DataColumn name="Currency" source="Name" caption="=currency" visible="true" />
-    <DataColumn name="Caption" source="Caption" caption="=caption"  />
-    <DataColumn name="MinorName" source="MinorName" caption="=minorName" />
-    <DataColumn name="MinorCaption" source="MinorCaption" caption="=minorCaption" />
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Caption" />
+    <DataColumn name="MinorName" />
+    <DataColumn name="MinorCaption" />
+    <DataColumn name="UpdateTag" />
   </g:columns>
 </g:Grid>

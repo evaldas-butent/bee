@@ -54,12 +54,15 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -148,18 +151,18 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_HISTORY)) {
       response = getHistory(reqInfo.getParameter(VAR_HISTORY_VIEW),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_HISTORY_IDS)));
+
+    } else if (BeeUtils.same(svc, SVC_UPDATE_EXCHANGE_RATES)) {
+      response = updateExchangeRates(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_LIST_OF_CURRENCIES)) {
       response = getListOfCurrencies();
     } else if (BeeUtils.same(svc, SVC_GET_CURRENT_EXCHANGE_RATE)) {
-      response = getCurrentExchangeRate(reqInfo.getParameter(COL_CURRENCY_NAME));
+      response = getCurrentExchangeRate(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_EXCHANGE_RATE)) {
-      response =
-          getExchangeRate(reqInfo.getParameter(COL_CURRENCY_NAME), reqInfo
-              .getParameter(COL_EXCHANGE_RATE_DATE));
-    } else if (BeeUtils.same(svc, SVC_GET_EXCHANGE_RATES_BY_CURRENCIES)) {
-      response =
-          getExchangeRatesByCurrency(reqInfo.getParameter(COL_CURRENCY_NAME), reqInfo
-              .getParameter(VAR_DATE_LOW), reqInfo.getParameter(VAR_DATE_HIGH));
+      response = getExchangeRate(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_EXCHANGE_RATES_BY_CURRENCY)) {
+      response = getExchangeRatesByCurrency(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_USER)) {
       response = createUser(reqInfo);
@@ -653,51 +656,68 @@ public class CommonsModuleBean implements BeeModule {
     return ResponseObject.response(info);
   }
 
-  private ResponseObject getCurrentExchangeRate(String currency) {
-
-    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
-    ResponseObject response;
-    if (BeeUtils.isEmpty(remoteWSDL)) {
-      response = ExchangeRatesWS.getCurrentExchangeRate(currency);
-      return ResponseObject.response(response.getResponse());
+  private ResponseObject getCurrentExchangeRate(RequestInfo reqInfo) {
+    String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
+    if (BeeUtils.isEmpty(currency)) {
+      return ResponseObject.parameterNotFound(SVC_GET_CURRENT_EXCHANGE_RATE, COL_CURRENCY_NAME);
     }
 
-    return ResponseObject.response(ExchangeRatesWS.getCurrentExchangeRate(remoteWSDL,
-        currency)
-        .getResponse());
+    String address = getExchangeRatesRemoteAddress();
 
+    if (BeeUtils.isEmpty(address)) {
+      return ExchangeRatesWS.getCurrentExchangeRate(currency);
+    } else {
+      return ExchangeRatesWS.getCurrentExchangeRate(address, currency);
+    }
   }
 
-  private ResponseObject getExchangeRate(String currency, String date) {
-
-    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
-    ResponseObject response;
-    if (BeeUtils.isEmpty(remoteWSDL)) {
-      response = ExchangeRatesWS.getExchangeRate(currency, TimeUtils.parseDate(date));
-      return ResponseObject.response(response.getResponse());
+  private ResponseObject getExchangeRate(RequestInfo reqInfo) {
+    String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
+    if (BeeUtils.isEmpty(currency)) {
+      return ResponseObject.parameterNotFound(SVC_GET_EXCHANGE_RATE, COL_CURRENCY_NAME);
     }
 
-    return ResponseObject.response(ExchangeRatesWS.getExchangeRate(remoteWSDL, currency,
-        TimeUtils.parseDate(date))
-        .getResponse());
+    JustDate date = TimeUtils.parseDate(reqInfo.getParameter(COL_CURRENCY_RATE_DATE));
+    if (date == null) {
+      return ResponseObject.parameterNotFound(SVC_GET_EXCHANGE_RATE, COL_CURRENCY_RATE_DATE);
+    }
 
+    String address = getExchangeRatesRemoteAddress();
+
+    if (BeeUtils.isEmpty(address)) {
+      return ExchangeRatesWS.getExchangeRate(currency, date);
+    } else {
+      return ExchangeRatesWS.getExchangeRate(address, currency, date);
+    }
   }
 
-  private ResponseObject getExchangeRatesByCurrency(String currency, String dateLow,
-      String dateHigh) {
-    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
-    ResponseObject response;
-
-    if (BeeUtils.isEmpty(remoteWSDL)) {
-      response =
-          ExchangeRatesWS.getExchangeRatesByCurrency(currency, TimeUtils.parseDate(dateLow),
-              TimeUtils.parseDate(dateHigh));
-      return ResponseObject.response(response.getResponse());
+  private ResponseObject getExchangeRatesByCurrency(RequestInfo reqInfo) {
+    String currency = reqInfo.getParameter(COL_CURRENCY_NAME);
+    if (BeeUtils.isEmpty(currency)) {
+      return ResponseObject.parameterNotFound(SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
+          COL_CURRENCY_NAME);
     }
 
-    return ResponseObject.response(ExchangeRatesWS.getExchangeRatesByCurrency(remoteWSDL, currency,
-        TimeUtils.parseDate(dateLow),
-        TimeUtils.parseDate(dateHigh)).getResponse());
+    JustDate dateLow = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_LOW));
+    if (dateLow == null) {
+      return ResponseObject.parameterNotFound(SVC_GET_EXCHANGE_RATES_BY_CURRENCY, VAR_DATE_LOW);
+    }
+    JustDate dateHigh = TimeUtils.parseDate(reqInfo.getParameter(VAR_DATE_HIGH));
+    if (dateHigh == null) {
+      return ResponseObject.parameterNotFound(SVC_GET_EXCHANGE_RATES_BY_CURRENCY, VAR_DATE_HIGH);
+    }
+
+    if (TimeUtils.isMore(dateLow, dateHigh)) {
+      return ResponseObject.error(Localized.getConstants().invalidRange(), dateLow, dateHigh);
+    }
+
+    String address = getExchangeRatesRemoteAddress();
+
+    if (BeeUtils.isEmpty(address)) {
+      return ExchangeRatesWS.getExchangeRatesByCurrency(currency, dateLow, dateHigh);
+    } else {
+      return ExchangeRatesWS.getExchangeRatesByCurrency(address, currency, dateLow, dateHigh);
+    }
   }
 
   private ResponseObject getHistory(String viewName, Collection<Long> idList) {
@@ -873,17 +893,159 @@ public class CommonsModuleBean implements BeeModule {
     return params;
   }
 
-  private ResponseObject getListOfCurrencies() {
+  private String getExchangeRatesRemoteAddress() {
+    if (prm.hasModuleParameter(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS)) {
+      return prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    } else {
+      return null;
+    }
+  }
 
-    String remoteWSDL = prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
-    ResponseObject response;
-    if (BeeUtils.isEmpty(remoteWSDL)) {
-      response = ExchangeRatesWS.getListOfCurrencies();
-      return ResponseObject.response(response.getResponse());
+  private ResponseObject getListOfCurrencies() {
+    String address = getExchangeRatesRemoteAddress();
+
+    if (BeeUtils.isEmpty(address)) {
+      return ExchangeRatesWS.getListOfCurrencies();
+    } else {
+      return ExchangeRatesWS.getListOfCurrencies(address);
+    }
+  }
+
+  private ResponseObject updateExchangeRates(RequestInfo reqInfo) {
+    String low = reqInfo.getParameter(VAR_DATE_LOW);
+    if (!BeeUtils.isPositiveInt(low)) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_EXCHANGE_RATES, VAR_DATE_LOW);
+    }
+    JustDate dateLow = new JustDate(BeeUtils.toInt(low));
+
+    String high = reqInfo.getParameter(VAR_DATE_HIGH);
+    if (!BeeUtils.isPositiveInt(high)) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_EXCHANGE_RATES, VAR_DATE_HIGH);
+    }
+    JustDate dateHigh = new JustDate(BeeUtils.toInt(high));
+
+    if (TimeUtils.isMore(dateLow, dateHigh)) {
+      return ResponseObject.error(Localized.getConstants().invalidRange(), dateLow, dateHigh);
     }
 
-    return ResponseObject.response(ExchangeRatesWS.getListOfCurrencies(remoteWSDL)
-        .getResponse());
+    String currencyIdName = sys.getIdName(TBL_CURRENCIES);
 
+    SqlSelect currencyQuery = new SqlSelect()
+        .addFields(TBL_CURRENCIES, currencyIdName, COL_CURRENCY_NAME)
+        .addFrom(TBL_CURRENCIES)
+        .setWhere(SqlUtils.notNull(TBL_CURRENCIES, COL_CURRENCY_UPDATE_TAG))
+        .addOrder(TBL_CURRENCIES, COL_CURRENCY_NAME);
+
+    SimpleRowSet currencies = qs.getData(currencyQuery);
+    if (DataUtils.isEmpty(currencies)) {
+      return ResponseObject.warning(Localized.getConstants().noData());
+    }
+
+    String address = getExchangeRatesRemoteAddress();
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    for (SimpleRow currencyRow : currencies) {
+      Long currencyId = currencyRow.getLong(currencyIdName);
+      String currencyName = BeeUtils.trim(currencyRow.getValue(COL_CURRENCY_NAME));
+
+      ResponseObject currencyResponse;
+      if (BeeUtils.isEmpty(address)) {
+        currencyResponse = ExchangeRatesWS.getExchangeRatesByCurrency(currencyName, dateLow,
+            dateHigh);
+      } else {
+        currencyResponse = ExchangeRatesWS.getExchangeRatesByCurrency(address, currencyName,
+            dateLow, dateHigh);
+      }
+
+      if (currencyResponse.hasErrors()) {
+        response.addErrorsFrom(currencyResponse);
+        break;
+      }
+
+      SimpleRowSet rates;
+      if (currencyResponse.hasResponse(SimpleRowSet.class)) {
+        rates = (SimpleRowSet) currencyResponse.getResponse();
+      } else {
+        rates = null;
+      }
+
+      if (DataUtils.isEmpty(rates)) {
+        response.addInfo(currencyName, Localized.getConstants().noData());
+        continue;
+      }
+
+      String value = rates.getValue(0, COL_CURRENCY_RATE_DATE);
+      JustDate min = TimeUtils.parseDate(value);
+      if (min == null) {
+        response.addInfo(currencyName, Localized.getConstants().invalidDate(), value);
+        continue;
+      }
+
+      JustDate max = JustDate.copyOf(min);
+
+      if (rates.getNumberOfRows() > 1) {
+        for (int i = 1; i < rates.getNumberOfRows(); i++) {
+          JustDate date = TimeUtils.parseDate(rates.getValue(i, COL_CURRENCY_RATE_DATE));
+          if (date != null) {
+            min = TimeUtils.min(min, date);
+            max = TimeUtils.max(max, date);
+          }
+        }
+      }
+
+      SqlDelete delete = new SqlDelete(TBL_CURRENCY_RATES).setWhere(SqlUtils.and(
+          SqlUtils.equals(TBL_CURRENCY_RATES, COL_CURRENCY_RATE_CURRENCY, currencyId),
+          SqlUtils.moreEqual(TBL_CURRENCY_RATES, COL_CURRENCY_RATE_DATE,
+              min.getDateTime().getTime()),
+          SqlUtils.less(TBL_CURRENCY_RATES, COL_CURRENCY_RATE_DATE,
+              TimeUtils.nextDay(max).getDateTime().getTime())));
+
+      ResponseObject deleteResponse = qs.updateDataWithResponse(delete);
+      if (deleteResponse.hasErrors()) {
+        response.addErrorsFrom(deleteResponse);
+        break;
+      }
+
+      int deleteCount = (int) deleteResponse.getResponse();
+      int insertCount = 0;
+      
+      for (SimpleRow rateRow : rates) {
+        DateTime date = TimeUtils.parseDateTime(rateRow.getValue(COL_CURRENCY_RATE_DATE));
+        Integer quantity = rateRow.getInt(COL_CURRENCY_RATE_QUANTITY);
+        BigDecimal rate = rateRow.getDecimal(COL_CURRENCY_RATE);
+
+        if (date != null && rate != null) {
+          SqlInsert insert = new SqlInsert(TBL_CURRENCY_RATES)
+              .addConstant(COL_CURRENCY_RATE_CURRENCY, currencyId)
+              .addConstant(COL_CURRENCY_RATE_DATE, date.getTime())
+              .addNotNull(COL_CURRENCY_RATE_QUANTITY, quantity)
+              .addConstant(COL_CURRENCY_RATE, rate);
+
+          ResponseObject insertResponse = qs.insertDataWithResponse(insert);
+          if (insertResponse.hasErrors()) {
+            response.addErrorsFrom(insertResponse);
+            break;
+          }
+          
+          insertCount++;
+        }
+        
+        if (response.hasErrors()) {
+          break;
+        }
+      }
+
+      if (response.hasErrors()) {
+        break;
+      }
+      
+      String delMsg = (deleteCount > 0) ? BeeUtils.toString(-deleteCount) : null;
+      String insMsg = BeeConst.STRING_PLUS + insertCount;
+      
+      response.addInfo(currencyName, delMsg, insMsg);
+    }
+
+    return response;
   }
 }

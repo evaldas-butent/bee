@@ -64,6 +64,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionSave();
 
+  String actionUpdate();
+
   String actionWorkspaceEnlargeDown();
 
   String actionWorkspaceEnlargeToLeft();
@@ -455,6 +457,12 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String unitDaysShort();
 
   String unitWeekShort();
+  
+  String updateExchangeRatesDateHigh();
+
+  String updateExchangeRatesDateLow();
+
+  String updateExchangeRatesDialogCaption();
 
   String user();
 

@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.MenuManager;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -26,6 +26,27 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class CommonsKeeper {
+
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+    @Override
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_USERS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_USERS), event.getRow(),
+            Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
+            BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_COMPANIES)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
+            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+
+      } else if (event.hasView(VIEW_PERSONS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS,
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+      }
+    }
+  }
 
   private static class UserFormInterceptor extends AbstractFormInterceptor {
     @Override
@@ -59,50 +80,36 @@ public final class CommonsKeeper {
     }
   }
 
-  private static class RowTransformHandler implements RowTransformEvent.Handler {
-    @Override
-    public void onRowTransform(RowTransformEvent event) {
-      if (event.hasView(VIEW_USERS)) {
-        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_USERS), event.getRow(),
-            Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
-            BeeConst.STRING_SPACE));
-
-      } else if (event.hasView(VIEW_COMPANIES)) {
-        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
-            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
-
-      } else if (event.hasView(VIEW_PERSONS)) {
-        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
-            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
-      }
-    }
+  public static ParameterList createArgs(String name) {
+    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
+    args.addQueryItem(COMMONS_METHOD, name);
+    return args;
   }
 
   public static void register() {
-    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
-    FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
-    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
-
-    BeeKeeper.getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
+    BeeKeeper.getMenu().registerMenuCallback("items", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
         GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(parameters, "s")));
       }
     });
 
+    BeeKeeper.getMenu().registerMenuCallback(SVC_UPDATE_EXCHANGE_RATES, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        CommonsUtils.updateExchangeRates();
+      }
+    });
+    
+    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
+    FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
+    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
+
     FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
-  }
-
-  static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(COMMONS_METHOD, name);
-    return args;
   }
 
   private CommonsKeeper() {
