@@ -3,10 +3,7 @@ package com.butent.bee.client.modules.transport;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-// import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CARGO_SHIPPING_TERM;
-// import static com.butent.bee.shared.modules.transport.TransportConstants.COL_QUERY_EXPEDITION;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_QUERY_HOST;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_QUERY_STATUS;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
@@ -49,13 +46,13 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     return new ShipmentRequestForm();
   }
 
-  // @Override
-  // public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-  // SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_QUERY_EXPEDITION);
-  // SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
-  //
-  // super.onStartNewRow(form, oldRow, newRow);
-  // }
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    // SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_QUERY_EXPEDITION);
+    // SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
+
+    super.onStartNewRow(form, oldRow, newRow);
+  }
 
   private void onBlock() {
     String host = getDataValue(COL_QUERY_HOST);
@@ -104,16 +101,18 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
       }
       header.addCommandItem(this.activateCommand);
 
-      if (this.blockCommand == null) {
-        this.blockCommand =
-            new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                onBlock();
-              }
-            });
+      if (!BeeUtils.isEmpty(getDataValue(COL_QUERY_HOST))) {
+        if (this.blockCommand == null) {
+          this.blockCommand =
+              new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  onBlock();
+                }
+              });
+        }
+        header.addCommandItem(this.blockCommand);
       }
-      header.addCommandItem(this.blockCommand);
     }
   }
 

@@ -45,6 +45,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public void afterInsertRow(IsRow result) {
+  }
+  
+  @Override
   public void afterRefresh(FormView form, IsRow row) {
   }
 

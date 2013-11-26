@@ -76,6 +76,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="%" />
       <xs:enumeration value="in" />
+      <xs:enumeration value="ch" />
       <xs:enumeration value="cm" />
       <xs:enumeration value="mm" />
       <xs:enumeration value="em" />
@@ -83,6 +84,11 @@
       <xs:enumeration value="pt" />
       <xs:enumeration value="pc" />
       <xs:enumeration value="px" />
+      <xs:enumeration value="rem" />
+      <xs:enumeration value="vh" />
+      <xs:enumeration value="vmax" />
+      <xs:enumeration value="vmin" />
+      <xs:enumeration value="vw" />
     </xs:restriction>
   </xs:simpleType>
 

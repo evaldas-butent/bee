@@ -1,19 +1,22 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeColumn;
@@ -21,8 +24,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
@@ -32,15 +38,37 @@ class CargoRequestForm extends AbstractFormInterceptor {
   private Button activateCommand;
   private Button templateCommand;
 
+  private FileCollector collector;
+  
   CargoRequestForm() {
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+    if (widget instanceof FileCollector) {
+      this.collector = (FileCollector) widget;
+      this.collector.bindDnd(getFormView());
+    }
+  }
+  
+  @Override
+  public void afterInsertRow(IsRow result) {
+    LogUtils.getRootLogger().debug("ins", result.getId());
+    if (getCollector() != null && !getCollector().isEmpty()) {
+      
+    }
+    super.afterInsertRow(result);
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     CargoRequestStatus status;
+
     if (DataUtils.hasId(row)) {
       status = EnumUtils.getEnumByIndex(CargoRequestStatus.class,
           Data.getInteger(getViewName(), row, COL_CARGO_REQUEST_STATUS));
+    
     } else {
       status = null;
     }
@@ -54,54 +82,66 @@ class CargoRequestForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    if (getCollector() != null) {
+      getCollector().clear();
+    }
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    Widget tWidget = form.getWidgetByName("Template");
+    if (tWidget instanceof Editor) {
+      ((Editor) tWidget).clearValue();
+    }
+
+    if (getCollector() != null) {
+      getCollector().clear();
+    }
+
     // SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_CARGO_REQUEST_EXPEDITION);
     // SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
 
     super.onStartNewRow(form, oldRow, newRow);
   }
 
+  private FileCollector getCollector() {
+    return collector;
+  }
+  
   private void onCreateOrder() {
   }
 
   private void onSaveAsTemplate() {
-    int maxLen = Data.getColumnPrecision(VIEW_CARGO_REQUEST_TEMPLATES,
-        COL_CARGO_REQUEST_TEMPLATE_NAME);
+    DataInfo tInfo = Data.getDataInfo(VIEW_CARGO_REQUEST_TEMPLATES);
+    if (tInfo == null) {
+      return;
+    }
 
-    Global.inputString(Localized.getConstants().trRequestTemplateNew(),
-        Localized.getConstants().trRequestTemplateName(), new StringCallback() {
-          @Override
-          public void onSuccess(String value) {
-            List<BeeColumn> requestColumns = getFormView().getDataColumns();
-            List<BeeColumn> templateColumns = Data.getColumns(VIEW_CARGO_REQUEST_TEMPLATES);
+    IsRow rRow = getActiveRow();
+    if (rRow == null) {
+      return;
+    }
+    BeeRow tRow = RowFactory.createEmptyRow(tInfo, false);
 
-            IsRow row = getActiveRow();
+    List<BeeColumn> rColumns = getFormView().getDataColumns();
+    for (int tIndex = 0; tIndex < tInfo.getColumnCount(); tIndex++) {
+      int rIndex = DataUtils.getColumnIndex(tInfo.getColumns().get(tIndex).getId(), rColumns);
+      if (rIndex >= 0) {
+        String value = rRow.getString(rIndex);
+        if (!BeeUtils.isEmpty(value)) {
+          tRow.setValue(tIndex, value);
+        }
+      }
+    }
 
-            List<BeeColumn> columns = Lists.newArrayList();
-            List<String> values = Lists.newArrayList();
-
-            for (BeeColumn column : templateColumns) {
-              if (column.getId().equals(COL_CARGO_REQUEST_TEMPLATE_NAME)) {
-                columns.add(column);
-                values.add(value);
-
-              } else if (column.isEditable()) {
-                int index = DataUtils.getColumnIndex(column.getId(), requestColumns);
-                if (index >= 0 && !row.isNull(index)) {
-                  columns.add(column);
-                  values.add(row.getString(index));
-                }
-              }
-            }
-
-            Queries.insert(VIEW_CARGO_REQUEST_TEMPLATES, columns, values, null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                DataChangeEvent.fireRefresh(VIEW_CARGO_REQUEST_TEMPLATES);
-              }
-            });
-          }
-        }, null, maxLen);
+    RowFactory.createRow(tInfo, tRow, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        DataChangeEvent.fireRefresh(VIEW_CARGO_REQUEST_TEMPLATES);
+      }
+    });
   }
 
   private void refreshCommands(CargoRequestStatus status) {

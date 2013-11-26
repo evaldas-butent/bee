@@ -102,7 +102,7 @@ public class ModalForm extends Popup {
     if (dimensions.getWidthValue() != null) {
       v = dimensions.getWidthValue();
       u = Dimensions.normalizeUnit(dimensions.getWidthUnit());
-      if (CssUnit.PCT.equals(u)) {
+      if (u.isPercentage()) {
         v = Window.getClientWidth() * v / 100;
         u = CssUnit.PX;
       }
@@ -117,7 +117,7 @@ public class ModalForm extends Popup {
     if (dimensions.getHeightValue() != null) {
       v = dimensions.getHeightValue();
       u = Dimensions.normalizeUnit(dimensions.getHeightUnit());
-      if (CssUnit.PCT.equals(u)) {
+      if (u.isPercentage()) {
         v = Window.getClientHeight() * v / 100;
         u = CssUnit.PX;
       }

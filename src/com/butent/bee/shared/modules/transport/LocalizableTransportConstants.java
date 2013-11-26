@@ -350,8 +350,6 @@ public interface LocalizableTransportConstants {
 
   String trRequestExpeditionType();
 
-  String trRequestFinishReason();
-
   String trRequestFreightInsurance();
 
   String trRequestNew();

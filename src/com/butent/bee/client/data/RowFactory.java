@@ -153,13 +153,13 @@ public final class RowFactory {
   }
 
   public static void createRow(DataInfo dataInfo, BeeRow row) {
-    Assert.notNull(dataInfo);
-    createRow(dataInfo, row, dataInfo.getNewRowCaption());
+    createRow(dataInfo, row, null);
   }
 
-  public static void createRow(DataInfo dataInfo, BeeRow row, String caption) {
+  public static void createRow(DataInfo dataInfo, BeeRow row, RowCallback rowCallback) {
     Assert.notNull(dataInfo);
-    createRow(dataInfo.getNewRowForm(), caption, dataInfo, row, null, null, null);
+    createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo, row, null, null,
+        rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
@@ -308,9 +308,8 @@ public final class RowFactory {
   }
 
   private static void getForm(String formName, final String caption,
-      FormInterceptor formInterceptor,
-      final DataInfo dataInfo, final BeeRow row, final UIObject target,
-      final RowCallback rowCallback) {
+      FormInterceptor formInterceptor, final DataInfo dataInfo, final BeeRow row,
+      final UIObject target, final RowCallback rowCallback) {
 
     FormInterceptor fcb =
         (formInterceptor == null) ? FormFactory.getFormInterceptor(formName) : formInterceptor;

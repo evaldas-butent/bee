@@ -153,16 +153,18 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
       }
       header.addCommandItem(this.registerCommand);
 
-      if (this.blockCommand == null) {
-        this.blockCommand =
-            new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                onBlock();
-              }
-            });
+      if (!BeeUtils.isEmpty(getDataValue(COL_REGISTRATION_HOST))) {
+        if (this.blockCommand == null) {
+          this.blockCommand =
+              new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  onBlock();
+                }
+              });
+        }
+        header.addCommandItem(this.blockCommand);
       }
-      header.addCommandItem(this.blockCommand);
     }
   }
 
