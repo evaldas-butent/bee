@@ -348,6 +348,7 @@ public final class CommonsConstants {
   public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
 
   public static final String PROP_CATEGORIES = "CategList";
+  public static final String PROP_ICON = "Icon";
 
   public static final String STYLE_SHEET = "commons";
 

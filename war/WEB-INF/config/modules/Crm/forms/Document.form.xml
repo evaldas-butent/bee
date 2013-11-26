@@ -46,8 +46,8 @@
         <row>
           <Label text="=trRequestsShort" style="&chlabel;" />
           <ChildSelector viewName="CargoRequests" childTable="Relations" 
-            renderColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName"
-            choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName CargoDescription"
+            renderColumns="CustomerCompanyName LoadingDate"
+            choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName"
             style="&chselect;" />
         </row>
         

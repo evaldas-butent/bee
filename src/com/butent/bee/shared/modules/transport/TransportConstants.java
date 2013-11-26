@@ -270,8 +270,6 @@ public final class TransportConstants {
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
-  public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
-  public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
@@ -310,6 +308,9 @@ public final class TransportConstants {
 
   public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
+  public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
+  public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
+  public static final String VIEW_CARGO_REQUEST_FILES = "CargoRequestFiles";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
@@ -590,6 +591,10 @@ public final class TransportConstants {
 
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
+
+  public static final String COL_CRF_REQUEST = "CargoRequest";
+  public static final String COL_CRF_FILE = "File";
+  public static final String COL_CRF_CAPTION = "Caption";
 
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";

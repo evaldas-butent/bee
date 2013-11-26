@@ -38,10 +38,17 @@
     &separator;
 
     <xi:include href="widgets/RequestInfo.widget.xml" />
-    
-    <SimplePanel>
-      <ChildGrid name="RelatedDocuments" relColumn="CargoRequest" caption="=documents" />
-    </SimplePanel>
+
+    <TabbedPages style="height: 200px;">
+      <page>
+        <text>=trRequestFiles</text>
+        <ChildGrid name="CargoRequestFiles" relColumn="CargoRequest" />
+      </page>
+      <page>
+        <text>=documents</text>
+        <ChildGrid name="RelatedDocuments" relColumn="CargoRequest" />
+      </page>
+    </TabbedPages>
 
   </FlowPanel>
 </f:Form>

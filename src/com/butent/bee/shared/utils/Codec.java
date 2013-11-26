@@ -460,6 +460,10 @@ public final class Codec {
     return toBase64(toBytes(s));
   }
 
+  public static String encodePassword(String password) {
+    return BeeUtils.isEmpty(password) ? null : md5(password.trim());
+  }
+
   /**
    * Escapes HTML symbols.
    * 

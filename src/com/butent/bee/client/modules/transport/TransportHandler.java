@@ -496,6 +496,7 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES, new CargoRequestFilesGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());

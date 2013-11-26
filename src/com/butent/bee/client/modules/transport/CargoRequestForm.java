@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,9 +11,9 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
@@ -26,7 +25,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -39,7 +37,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
   private Button templateCommand;
 
   private FileCollector collector;
-  
+
   CargoRequestForm() {
   }
 
@@ -51,13 +49,13 @@ class CargoRequestForm extends AbstractFormInterceptor {
       this.collector.bindDnd(getFormView());
     }
   }
-  
+
   @Override
   public void afterInsertRow(IsRow result) {
-    LogUtils.getRootLogger().debug("ins", result.getId());
     if (getCollector() != null && !getCollector().isEmpty()) {
-      
+      SelfServiceUtils.sendFiles(result.getId(), getCollector().getFiles(), null);
     }
+
     super.afterInsertRow(result);
   }
 
@@ -68,7 +66,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
     if (DataUtils.hasId(row)) {
       status = EnumUtils.getEnumByIndex(CargoRequestStatus.class,
           Data.getInteger(getViewName(), row, COL_CARGO_REQUEST_STATUS));
-    
+
     } else {
       status = null;
     }
@@ -79,14 +77,6 @@ class CargoRequestForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new CargoRequestForm();
-  }
-
-  @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    if (getCollector() != null) {
-      getCollector().clear();
-    }
-    return super.onStartEdit(form, row, focusCommand);
   }
 
   @Override
@@ -109,7 +99,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
   private FileCollector getCollector() {
     return collector;
   }
-  
+
   private void onCreateOrder() {
   }
 

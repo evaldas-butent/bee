@@ -25,6 +25,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
+import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
@@ -328,6 +329,24 @@ public class TransportModuleBean implements BeeModule {
             for (BeeRow row : rowset.getRows()) {
               row.setProperty(VAR_INCOME, rs.getValueByKey(COL_CARGO, row.getString(cargoIndex),
                   "TripIncome"));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void getFileIcons(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (!rowSet.isEmpty()) {
+            int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
+
+            for (BeeRow row : rowSet.getRows()) {
+              String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
+              if (!BeeUtils.isEmpty(icon)) {
+                row.setProperty(PROP_ICON, icon);
+              }
             }
           }
         }

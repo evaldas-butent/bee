@@ -140,7 +140,7 @@ public final class PasswordService {
             inpOld.setFocus(true);
             return Localized.getConstants().oldPasswordIsRequired();
 
-          } else if (!Objects.equal(Codec.md5(old), oldPass)) {
+          } else if (!Objects.equal(Codec.encodePassword(old), oldPass)) {
             inpOld.setFocus(true);
             return Localized.getConstants().oldPasswordIsInvalid();
           }
@@ -162,7 +162,7 @@ public final class PasswordService {
 
       @Override
       public void onSuccess() {
-        callback.accept(Codec.md5(BeeUtils.trim(inpNew.getValue())));
+        callback.accept(Codec.encodePassword(BeeUtils.trim(inpNew.getValue())));
       }
     }, STYLE_DIALOG);
   }

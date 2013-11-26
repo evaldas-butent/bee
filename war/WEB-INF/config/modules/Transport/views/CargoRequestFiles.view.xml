@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CargoRequestFiles"
+  source="CargoRequestFiles"
+  >
+  <Columns>
+    <SimpleColumn name="CargoRequest" />
+
+    <SimpleColumn name="File" />
+    <SimpleJoin name="File" joinType="LEFT">
+      <SimpleColumn name="Name" />
+      <SimpleColumn name="Size" />
+      <SimpleColumn name="Type" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Caption" />
+  </Columns>
+  <Order>
+    <OrderBy column="File" />
+  </Order>
+</View>
+ 

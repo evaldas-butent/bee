@@ -252,7 +252,7 @@ public class CrmModuleBean implements BeeModule {
             for (BeeRow row : rowSet.getRows()) {
               String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
               if (!BeeUtils.isEmpty(icon)) {
-                row.setProperty(PROP_ICON, icon);
+                row.setProperty(CommonsConstants.PROP_ICON, icon);
               }
             }
           }

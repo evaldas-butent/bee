@@ -1,12 +1,19 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -17,6 +24,10 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
+import java.util.List;
 
 final class SelfServiceUtils {
   
@@ -49,6 +60,45 @@ final class SelfServiceUtils {
 
     private void setRefresh(boolean refresh) {
       this.refresh = refresh;
+    }
+  }
+
+  static void sendFiles(final Long reqId, Collection<NewFileInfo> files,
+      final ScheduledCommand onComplete) {
+
+    final String viewName = VIEW_CARGO_REQUEST_FILES;
+    final List<BeeColumn> columns = Data.getColumns(viewName);
+
+    final Holder<Integer> latch = Holder.of(files.size());
+    
+    for (final NewFileInfo fileInfo : files) {
+      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
+        @Override
+        public void onSuccess(Long result) {
+          BeeRow row = DataUtils.createEmptyRow(columns.size());
+
+          Data.setValue(viewName, row, COL_CRF_REQUEST, reqId);
+          Data.setValue(viewName, row, COL_CRF_FILE, result);
+
+          String caption = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+          Integer precision = Data.getColumnPrecision(viewName, COL_CRF_CAPTION);
+          if (BeeUtils.isPositive(precision) && BeeUtils.hasLength(caption, precision)) {
+            caption = BeeUtils.left(caption, precision);
+          }
+          
+          Data.setValue(viewName, row, COL_CRF_CAPTION, caption);
+
+          Queries.insert(viewName, columns, row, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow br) {
+              latch.set(latch.get() - 1);
+              if (!BeeUtils.isPositive(latch.get()) && onComplete != null) {
+                onComplete.execute();
+              }
+            }
+          });
+        }
+      });
     }
   }
   

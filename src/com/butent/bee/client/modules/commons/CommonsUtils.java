@@ -103,7 +103,7 @@ public final class CommonsUtils {
           public void onConfirm() {
             ParameterList args = CommonsKeeper.createArgs(SVC_CREATE_USER);
             args.addDataItem(COL_LOGIN, login);
-            args.addDataItem(COL_PASSWORD, Codec.md5(pswd.trim()));
+            args.addDataItem(COL_PASSWORD, Codec.encodePassword(pswd));
 
             if (userInterface != null) {
               args.addDataItem(COL_USER_INTERFACE, userInterface.ordinal());
