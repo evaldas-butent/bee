@@ -26,4 +26,8 @@
     <DataColumn name="Created" visible="true" /> 
     <DataColumn name="Accessibility" visible="false" />
   </g:columns>
+  <g:rowStyle>
+    <ui:inline>="background-color:#ccc"</ui:inline>
+    <ui:expression>row.Status == 1</ui:expression>
+  </g:rowStyle>
 </g:Grid>

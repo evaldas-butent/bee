@@ -22,6 +22,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
@@ -462,6 +463,27 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     });
   }
   
+  private void sendRequest(ParameterList params, final DiscussionEvent event) {
+    Callback<ResponseObject> callback = new Callback<ResponseObject>() {
+
+      @Override
+      public void onFailure(String... reason) {
+        getFormView().notifySevere(reason);
+      }
+
+      @Override
+      public void onSuccess(ResponseObject result) {
+        BeeRow data = getResponseRow(event.getCaption(), result, this);
+        if (data != null) {
+          onResponse(data);
+        }
+      }
+
+    };
+
+    sendRequest(params, callback);
+  }
+
   private static void showComment(Flow panel, BeeRow row, List<BeeColumn> columns,
       List<StoredFile> files, boolean renderPhoto) {
 
@@ -597,11 +619,29 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void doActivate() {
-    // TODO: do active deactivated discussion
+    Global.confirm(Localized.getConstants().discussActivationQuestion(),
+        new ConfirmationCallback() {
+
+      @Override
+      public void onConfirm() {
+        BeeRow newRow = getNewRow(DiscussionStatus.ACTIVE);
+
+        ParameterList params = createParams(DiscussionEvent.ACTIVATE, newRow, null);
+        sendRequest(params, DiscussionEvent.ACTIVATE);
+      }
+    });
   }
 
   private void doClose() {
-    // TODO: do discussion status closed;
+    Global.confirm(Localized.getConstants().discussCloseQuestion(), new ConfirmationCallback() {
+
+      @Override
+      public void onConfirm() {
+        BeeRow newRow = getNewRow(DiscussionStatus.CLOSED);
+        ParameterList params = createParams(DiscussionEvent.CLOSE, newRow, null);
+        sendRequest(params, DiscussionEvent.CLOSE);
+      }
+    });
   }
 
   private void doComment(Long replayedCommentId) {
@@ -713,6 +753,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return DataUtils.cloneRow(getFormView().getActiveRow());
   }
 
+  private BeeRow getNewRow(DiscussionStatus status) {
+    BeeRow row = getNewRow();
+    row.setValue(getFormView().getDataIndex(COL_STATUS), status.ordinal());
+    return row;
+  }
+
   private Long getOwner() {
     return getLong(COL_OWNER);
   }
@@ -744,7 +790,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     switch (event) {
       case ACTIVATE:
-        return DiscussionStatus.in(status, DiscussionStatus.INACTIVE);
+        return DiscussionStatus.in(status, DiscussionStatus.INACTIVE) 
+            || (DiscussionStatus.in(status, DiscussionStatus.CLOSED) && isOwner(userId, owner));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && isOwner(userId, owner);
       case COMMENT:

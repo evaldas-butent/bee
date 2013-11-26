@@ -16,7 +16,11 @@ public interface LocalizableDiscussionsConstants {
 
   String discussActionReply();
 
+  String discussActivationQuestion();
+
   String discussAll();
+
+  String discussCloseQuestion();
 
   String discussComment();
 

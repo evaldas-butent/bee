@@ -460,10 +460,7 @@ public class DiscussionsModuleBean implements BeeModule {
           }
         }
         break;
-      case ACTIVATE:
-        break;
-      case CLOSE:
-        break;
+
       case DEACTIVATE:
         break;
       case MARK:
@@ -471,6 +468,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
       case REPLY:
         break;
+      case ACTIVATE:
+      case CLOSE:
       case COMMENT:
       case MODIFY:
       case VISIT:
