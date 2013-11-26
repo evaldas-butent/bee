@@ -490,6 +490,44 @@ public class QueryServiceBean {
     return getViewData(ss, view);
   }
 
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
+    Assert.notNull(query);
+    Assert.state(!query.isEmpty());
+  
+    String tableName = view.getSourceName();
+    String tableAlias = view.getSourceAlias();
+  
+    sys.filterVisibleState(query, tableName, tableAlias);
+  
+    BeeTable table = sys.getTable(tableName);
+    String stateAlias = table.joinState(query, tableAlias, RightsState.EDITABLE);
+  
+    if (!BeeUtils.isEmpty(stateAlias)) {
+      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDITABLE,
+          table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
+          EDITABLE_STATE_COLUMN);
+    }
+  
+    activateTables(query);
+  
+    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
+    sys.postDataEvent(event);
+  
+    return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
+      @Override
+      public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
+        event.setRowset(rsToBeeRowSet(rs, view));
+        sys.postDataEvent(event);
+        return event.getRowset();
+      }
+  
+      @Override
+      public BeeRowSet processUpdateCount(int updateCount) {
+        throw new BeeRuntimeException("Query must return a ResultSet");
+      }
+    });
+  }
+
   public int getViewSize(String viewName, Filter filter) {
     return sqlCount(sys.getView(viewName).getQuery(filter, sys.getViewFinder()));
   }
@@ -666,44 +704,6 @@ public class QueryServiceBean {
     Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
     Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain zero or one row");
     return res;
-  }
-
-  private BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
-    Assert.notNull(query);
-    Assert.state(!query.isEmpty());
-
-    String tableName = view.getSourceName();
-    String tableAlias = view.getSourceAlias();
-
-    sys.filterVisibleState(query, tableName, tableAlias);
-
-    BeeTable table = sys.getTable(tableName);
-    String stateAlias = table.joinState(query, tableAlias, RightsState.EDITABLE);
-
-    if (!BeeUtils.isEmpty(stateAlias)) {
-      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDITABLE,
-          table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
-          EDITABLE_STATE_COLUMN);
-    }
-
-    activateTables(query);
-
-    final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
-    sys.postDataEvent(event);
-
-    return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
-      @Override
-      public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        event.setRowset(rsToBeeRowSet(rs, view));
-        sys.postDataEvent(event);
-        return event.getRowset();
-      }
-
-      @Override
-      public BeeRowSet processUpdateCount(int updateCount) {
-        throw new BeeRuntimeException("Query must return a ResultSet");
-      }
-    });
   }
 
   private <T> T processSql(DataSource ds, String sql, SqlHandler<T> callback) {

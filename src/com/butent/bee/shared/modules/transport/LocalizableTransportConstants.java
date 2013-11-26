@@ -198,6 +198,20 @@ public interface LocalizableTransportConstants {
 
   String trEmptyKilometers();
 
+  String trImport();
+
+  String trImportCosts();
+
+  String trImportInvoices();
+
+  String trImportNewMapping();
+
+  String trImportNewProperty();
+
+  String trImportProperty();
+
+  String trImportValue();
+
   String trInvoice();
 
   String tripDuration();
@@ -277,11 +291,11 @@ public interface LocalizableTransportConstants {
   String trRegistrationPhone();
 
   String trRegistrationReceived();
-  
+
   String trRegistrationStatusConfirmed();
 
   String trRegistrationStatusNew();
-  
+
   String trRegistrationStatusRejected();
 
   String trRegistrationSwift();
@@ -379,7 +393,7 @@ public interface LocalizableTransportConstants {
   String trRequestStatusNew();
 
   String trRequestStatusRejected();
-  
+
   String trRequestTemplateName();
 
   String trRequestTemplateNew();
@@ -419,6 +433,8 @@ public interface LocalizableTransportConstants {
   String trUnloadingInfo();
 
   String trUnloadingNumber();
+
+  String trVehicle();
 
   String trVehicleTypes();
 

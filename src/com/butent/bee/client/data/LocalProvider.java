@@ -16,7 +16,7 @@ public class LocalProvider extends CachedProvider {
       String viewName, List<BeeColumn> columns, BeeRowSet table) {
     this(display, actionHandler, notificationListener, viewName, columns, null, table, null, null);
   }
-  
+
   public LocalProvider(HasDataTable display, HandlesActions actionHandler,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
@@ -24,9 +24,10 @@ public class LocalProvider extends CachedProvider {
     super(display, actionHandler, notificationListener, viewName, columns, immutableFilter, table,
         parentFilters, userFilter);
   }
-  
+
   @Override
   public void refresh(boolean updateActiveRow) {
+    getDisplay().setRowCount(getTable().getNumberOfRows(), true);
     updateDisplay(updateActiveRow);
   }
 }

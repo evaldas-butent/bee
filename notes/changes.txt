@@ -31,3 +31,4 @@
 2013.11.01 logback-classic-1.0.13.jar
 2013.11.01 icu4j-52_1.jar
 2013.11.07 gwt-2.6.0-rc1
+2013.11.26 poi-3.10-beta2 (poi-ooxml, poi-ooxml-schemas, stax-api, xmlbeans, dom4j)

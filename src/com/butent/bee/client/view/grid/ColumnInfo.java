@@ -4,6 +4,7 @@ import com.google.gwt.safecss.shared.SafeStylesBuilder;
 
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.cell.HeaderCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -17,11 +18,11 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Orientation;
-import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   private static final int DEFAULT_MAX_WIDTH = 400;
 
   private final String columnId;
-  private final String label;
+  private String label;
 
   private final CellSource source;
 
@@ -69,7 +70,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   private boolean cellResizable = true;
 
   private boolean hidable = true;
-  
+
   public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
     this(columnId, label, source, column, header, null, null, null);
@@ -270,7 +271,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   int getWidth() {
     return getWidth(getResizedWidth(), getFlexWidth());
   }
-  
+
   boolean hasDynGroup(String group) {
     return !BeeUtils.isEmpty(group) && BeeUtils.same(dynGroup, group);
   }
@@ -357,7 +358,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   boolean isColReadOnly() {
     return colReadOnly;
   }
-  
+
   boolean isDynamic() {
     return dynGroup != null;
   }
@@ -386,6 +387,11 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   void setBodyWidth(int bodyWidth) {
     this.bodyWidth = bodyWidth;
+  }
+
+  void setLabel(String label) {
+    this.label = label;
+    ((HeaderCell) getHeader().getCell()).setCaption(label);
   }
 
   void setFooterFont(String fontDeclaration) {

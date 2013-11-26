@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Currencies" source="Currencies" newRowCaption="=newCurrency" editForm="Currency"
+  name="Currencies" source="Currencies" caption="=currencies"
+  newRowCaption="=newCurrency" editForm="Currency"
   >
   <Columns>
     <SimpleColumn name="Name" />
