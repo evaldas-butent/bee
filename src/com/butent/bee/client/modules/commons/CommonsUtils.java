@@ -13,6 +13,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
@@ -91,6 +92,35 @@ public final class CommonsUtils {
         });
   }
 
+  public static void createCompany(final Map<String, String> parameters,
+      final NotificationListener notificationListener, final IdCallback callback) {
+
+    Assert.notEmpty(parameters);
+
+    ParameterList args = CommonsKeeper.createArgs(SVC_CREATE_COMPANY);
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
+        args.addDataItem(entry.getKey(), entry.getValue());
+      }
+    }
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (notificationListener != null) {
+          response.notify(notificationListener);
+        }
+
+        if (response.hasResponse(Long.class)) {
+          DataChangeEvent.fireRefresh(VIEW_COMPANIES);
+          if (callback != null) {
+            callback.onSuccess(response.getResponseAsLong());
+          }
+        }
+      }
+    });
+  }
+
   public static void createUser(String caption, final String login, final String password,
       final UserInterface userInterface, final Map<String, String> parameters,
       final NotificationListener notificationListener, final Callback<String> callback) {
@@ -103,7 +133,7 @@ public final class CommonsUtils {
     }
 
     final String pswd = BeeUtils.notEmpty(password, login.trim().substring(0, 1));
-    
+
     String separator = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
     final String msgLogin = Localized.getConstants().userLogin() + separator + login.trim();
     final String msgPswd = Localized.getConstants().password() + separator + pswd.trim();
@@ -242,47 +272,47 @@ public final class CommonsUtils {
       }
     });
   }
-  
+
   public static void updateExchangeRates() {
     Flow panel = new Flow(STYLE_UPDATE_RATES_PREFIX + "panel");
-    
+
     Label lowLabel = new Label(Localized.getConstants().updateExchangeRatesDateLow());
     lowLabel.addStyleName(STYLE_UPDATE_RATES_PREFIX + "lowLabel");
     panel.add(lowLabel);
-    
+
     final InputDate lowInput = new InputDate();
     lowInput.addStyleName(STYLE_UPDATE_RATES_PREFIX + "lowInput");
     lowInput.setDate(TimeUtils.today());
     lowInput.setNullable(false);
     panel.add(lowInput);
-    
+
     CustomDiv rangeSeparator = new CustomDiv(STYLE_UPDATE_RATES_PREFIX + "rangeSeparator");
     panel.add(rangeSeparator);
 
     Label highLabel = new Label(Localized.getConstants().updateExchangeRatesDateHigh());
     highLabel.addStyleName(STYLE_UPDATE_RATES_PREFIX + "highLabel");
     panel.add(highLabel);
-    
+
     final InputDate highInput = new InputDate();
     highInput.addStyleName(STYLE_UPDATE_RATES_PREFIX + "highInput");
     highInput.setDate(TimeUtils.today());
     highInput.setNullable(false);
     panel.add(highInput);
-    
+
     final Flow output = new Flow(STYLE_UPDATE_RATES_PREFIX + "output");
     panel.add(output);
 
     CustomDiv actionSeparator = new CustomDiv(STYLE_UPDATE_RATES_PREFIX + "actionSeparator");
     panel.add(actionSeparator);
-    
+
     final Button submit = new Button(Localized.getConstants().actionUpdate());
     submit.addStyleName(STYLE_UPDATE_RATES_PREFIX + "submit");
     panel.add(submit);
-    
+
     Button cancel = new Button(Localized.getConstants().actionCancel());
     cancel.addStyleName(STYLE_UPDATE_RATES_PREFIX + "cancel");
     panel.add(cancel);
-    
+
     String caption = Localized.getConstants().updateExchangeRatesDialogCaption();
     final DialogBox dialog = DialogBox.create(caption, STYLE_UPDATE_RATES_PREFIX + "dialog");
     dialog.setWidget(panel);
@@ -291,7 +321,7 @@ public final class CommonsUtils {
     dialog.setHideOnEscape(true);
 
     dialog.center();
-    
+
     submit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -308,46 +338,46 @@ public final class CommonsUtils {
           highInput.setFocus(true);
           return;
         }
-        
+
         if (TimeUtils.isMore(lowDate, hightDate)) {
           BeeKeeper.getScreen().notifyWarning(Localized.getConstants().invalidRange(),
               BeeUtils.joinWords(lowDate, hightDate));
           return;
         }
-        
+
         submit.setEnabled(false);
 
         output.clear();
         output.add(new Image(Global.getImages().loading()));
-        
+
         ParameterList params = CommonsKeeper.createArgs(SVC_UPDATE_EXCHANGE_RATES);
         params.addQueryItem(VAR_DATE_LOW, lowDate.getDays());
         params.addQueryItem(VAR_DATE_HIGH, hightDate.getDays());
-        
+
         BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
             output.clear();
-            
+
             if (response.hasMessages()) {
               for (ResponseMessage rm : response.getMessages()) {
                 Label label = new Label(rm.getMessage());
-                String styleSuffix = (rm.getLevel() == null) 
+                String styleSuffix = (rm.getLevel() == null)
                     ? "message" : rm.getLevel().name().toLowerCase();
                 label.addStyleName(STYLE_UPDATE_RATES_PREFIX + styleSuffix);
-                
+
                 output.add(label);
               }
             }
-            
+
             DataChangeEvent.fireRefresh(VIEW_CURRENCY_RATES);
-            
+
             submit.setEnabled(true);
           }
         });
       }
     });
-    
+
     cancel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {

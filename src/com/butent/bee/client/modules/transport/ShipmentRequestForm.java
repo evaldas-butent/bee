@@ -1,24 +1,38 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.List;
+import java.util.Map;
 
 class ShipmentRequestForm extends AbstractFormInterceptor {
 
@@ -73,6 +87,55 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   }
 
   private void onCreateOrder() {
+    Global.confirm(Localized.getConstants().trConfirmCreateNewOrder(), new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        String companyName = getDataValue(COL_QUERY_CUSTOMER_NAME);
+        if (BeeUtils.isEmpty(companyName)) {
+          return;
+        }
+
+        Map<String, String> parameters = Maps.newHashMap();
+        parameters.put(CommonsConstants.COL_COMPANY_NAME, companyName);
+
+        putField(parameters, COL_QUERY_CUSTOMER_CODE, CommonsConstants.COL_COMPANY_CODE);
+        putField(parameters, COL_QUERY_CUSTOMER_VAT_CODE, CommonsConstants.COL_COMPANY_VAT_CODE);
+        putField(parameters, COL_QUERY_CUSTOMER_EXCHANGE_CODE,
+            CommonsConstants.COL_COMPANY_EXCHANGE_CODE);
+
+        putField(parameters, COL_QUERY_CUSTOMER_EMAIL, CommonsConstants.COL_EMAIL);
+        putField(parameters, COL_QUERY_CUSTOMER_ADDRESS, CommonsConstants.COL_ADDRESS);
+        putField(parameters, COL_QUERY_CUSTOMER_PHONE, CommonsConstants.COL_PHONE);
+
+        CommonsUtils.createCompany(parameters, getFormView(), new IdCallback() {
+          @Override
+          public void onSuccess(Long company) {
+            List<BeeColumn> columns = Data.getColumns(VIEW_ORDERS,
+                Lists.newArrayList(COL_CUSTOMER));
+
+            Queries.insert(VIEW_ORDERS, columns, Queries.asList(company), null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
+
+                CargoRequestStatus status = CargoRequestStatus.ACTIVE;
+                updateStatus(status);
+                refreshCommands(status);
+                
+                DataChangeEvent.fireRefresh(VIEW_ORDERS);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  private void putField(Map<String, String> parameters, String source, String destination) {
+    String value = getDataValue(source);
+    if (!BeeUtils.isEmpty(value)) {
+      parameters.put(destination, value.trim());
+    }
   }
 
   private void refreshCommands(CargoRequestStatus status) {
@@ -83,10 +146,6 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
 
     if (header.hasCommands()) {
       header.clearCommandPanel();
-    }
-
-    if (status == null) {
-      return;
     }
 
     if (status == CargoRequestStatus.NEW) {

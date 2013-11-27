@@ -121,8 +121,9 @@ class CargoRequestForm extends AbstractFormInterceptor {
 
                 CargoRequestStatus status = CargoRequestStatus.ACTIVE;
                 SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
-                
                 refreshCommands(status);
+                
+                DataChangeEvent.fireRefresh(VIEW_ORDERS);
               }
             });
       }
@@ -170,10 +171,6 @@ class CargoRequestForm extends AbstractFormInterceptor {
       header.clearCommandPanel();
     }
 
-    if (status == null) {
-      return;
-    }
-
     if (status == CargoRequestStatus.NEW) {
       if (this.activateCommand == null) {
         this.activateCommand =
@@ -185,7 +182,9 @@ class CargoRequestForm extends AbstractFormInterceptor {
             });
       }
       header.addCommandItem(this.activateCommand);
-
+    }
+    
+    if (status != null) {
       if (this.templateCommand == null) {
         this.templateCommand =
             new Button(Localized.getConstants().trCommandSaveRequestAsTemplate(),

@@ -197,7 +197,13 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public Long getResponseAsLong() {
-    return (Long) getResponse();
+    if (getResponse() instanceof Long) {
+      return (Long) getResponse();
+    } else if (getResponse() instanceof String) {
+      return BeeUtils.toLongOrNull(getResponseAsString());
+    } else {
+      return null;
+    }
   }
 
   public String getResponseAsString() {

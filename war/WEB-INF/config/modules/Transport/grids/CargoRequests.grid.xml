@@ -14,7 +14,7 @@
     </RelColumn>
 
     <DataColumn name="Status" visible="true" />
-    <RelColumn name="Order" editEnabled="true" editSource="Order" />
+    <RelColumn name="Order" editEnabled="true" />
 
     <DataColumn name="LoadingDate" />
     <RelColumn name="LoadingCompany" visible="false" />

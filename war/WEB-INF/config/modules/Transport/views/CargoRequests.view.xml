@@ -43,7 +43,7 @@
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
-      <SimpleColumn name="Order" />
+      <SimpleColumn name="Order" editable="true" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
       </SimpleJoin>
