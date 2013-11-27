@@ -12,3 +12,30 @@
 .bee-co-companyInfo-name .bee-co-companyInfo-item {
   font-weight: bold;
 }
+
+.bee-co-updateRates-panel {
+  margin: 2ex 1em 1ex;
+}
+.bee-co-updateRates-lowLabel,
+.bee-co-updateRates-highLabel {
+  min-width: 80px;
+  display: inline-block;
+}
+.bee-co-updateRates-lowInput,
+.bee-co-updateRates-highInput {
+  width: 100px;
+}
+.bee-co-updateRates-output {
+  margin-top: 1ex;
+  max-width: 200px;
+  max-height: 300px;
+}
+.bee-co-updateRates-rangeSeparator {
+  height: 1ex;
+}
+.bee-co-updateRates-actionSeparator {
+  height: 3ex;
+}
+.bee-co-updateRates-submit {
+  margin-left: 3em;
+}

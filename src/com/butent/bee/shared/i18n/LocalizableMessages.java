@@ -21,6 +21,8 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
 
   String endSession(String appName);
 
+  String fileNotFound(String file);
+
   String fileSizeExceeded(long size, long max);
 
   String invalidImageFileType(String fileName, String type);

@@ -10,10 +10,9 @@
     <SimpleColumn name="Item"/>
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
-    </SimpleJoin>
-    <SimpleColumn name="Unit"/>
-    <SimpleJoin joinType="LEFT" name="Unit">
-      <SimpleColumn name="Name" alias="UnitName" />
+      <SimpleJoin joinType="LEFT" name="Unit">
+        <SimpleColumn name="Name" alias="UnitName" />
+      </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />

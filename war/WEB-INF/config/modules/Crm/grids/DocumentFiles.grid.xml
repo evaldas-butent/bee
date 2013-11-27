@@ -3,18 +3,20 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="DocumentFiles" viewName="DocumentFiles" caption="=documentFiles"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1"
   >
   <g:columns>
     <DataColumn name="File" caption="=documentFileOpen" readOnly="true" cellType="html"
-      sortable="false" minWidth="100" />
+      sortable="false" minWidth="100" visible="true" />
 
     <DataColumn name="FileDate" required="true" width="128" visible="true" />
     <DataColumn name="FileVersion" />
-    <DataColumn name="Caption" required="true" updateMode="row" visible="true" />
+    <DataColumn name="Caption" required="true" updateMode="row" />
     <DataColumn name="Description" />
 
-    <DataColumn name="FileSize" readOnly="true" horizontalAlignment="right" width="60" />
+    <DataColumn name="FileSize" readOnly="true" horizontalAlignment="right" width="60">
+      <renderer type="fileSize" />
+    </DataColumn>    
 
     <PropColumn name="Icon" caption="-" type="string" cellType="html" horizontalAlignment="center"
       width="20" label="=fileIcon" >

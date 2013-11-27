@@ -1,51 +1,22 @@
 package com.butent.bee.shared.modules.transport;
 
+import com.google.common.collect.Lists;
+
+import com.butent.bee.server.modules.commons.ExchangeUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 public final class TransportConstants {
-
-  public enum OrderStatus implements HasLocalizedCaption {
-    NEW {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusNew();
-      }
-    },
-    ACTIVE {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusActive();
-      }
-    },
-    CANCELED {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusCanceled();
-      }
-    },
-    COMPLETED {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusCompleted();
-      }
-    },
-    REQUEST {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusRequest();
-      }
-    };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-  }
 
   public enum AssessmentStatus implements HasCaption {
     NEW(Localized.getConstants().trAssessmentStatusNew(), Localized.getConstants()
@@ -133,16 +104,192 @@ public final class TransportConstants {
     ACTIVE(Localized.getConstants().trRequestStatusActive()),
     REJECTED(Localized.getConstants().trRequestStatusRejected()),
     FINISHED(Localized.getConstants().trRequestStatusFinished());
-    
+
     private final String caption;
-    
+
     private CargoRequestStatus(String caption) {
       this.caption = caption;
     }
-    
+
     @Override
     public String getCaption() {
       return caption;
+    }
+  }
+
+  public enum FuelSeason implements HasLocalizedCaption {
+    SUMMER {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.summer();
+      }
+    },
+    WINTER {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.winter();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+  }
+
+  public enum ImportType implements HasLocalizedCaption {
+    COSTS {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trImportCosts();
+      }
+
+      @Override
+      protected void init() {
+        LocalizableConstants locale = Localized.getConstants();
+        properties.add(new ImportProperty(VAR_IMPORT_ROW, locale.startRow()));
+        properties.add(new ImportProperty(COL_COSTS_DATE, locale.date()));
+        properties.add(new ImportProperty(COL_COSTS_ITEM, locale.itemOrService(),
+            CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_NAME));
+        properties.add(new ImportProperty(COL_COSTS_QUANTITY, locale.quantity()));
+        properties.add(new ImportProperty(COL_COSTS_PRICE, locale.price()));
+        properties.add(new ImportProperty(COL_COSTS_CURRENCY, locale.currency(),
+            ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME));
+        properties.add(new ImportProperty(COL_COSTS_VAT, locale.vat()));
+        properties.add(new ImportProperty(COL_COSTS_SUPPLIER, locale.supplier(),
+            CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME));
+        properties.add(new ImportProperty(COL_NUMBER, locale.number()));
+        properties.add(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
+            TBL_VEHICLES, COL_VEHICLE_NUMBER));
+        properties.add(new ImportProperty(COL_COSTS_COUNTRY, locale.country(),
+            CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
+        properties.add(new ImportProperty(COL_COSTS_NOTE, locale.notes()));
+      }
+    },
+    INVOICES {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trImportInvoices();
+      }
+
+      @Override
+      protected void init() {
+      }
+    };
+
+    public static class ImportProperty {
+      private final String name;
+      private final String caption;
+      private String relTable;
+      private String relField;
+
+      public ImportProperty(String name, String caption) {
+        Assert.notEmpty(name);
+        this.name = name;
+        this.caption = BeeUtils.notEmpty(caption, name);
+      }
+
+      public ImportProperty(String name, String caption, String relTable, String relField) {
+        this(name, caption);
+        this.relTable = relTable;
+        this.relField = relField;
+      }
+
+      public String getCaption() {
+        return caption;
+      }
+
+      public String getName() {
+        return name;
+      }
+
+      public String getRelField() {
+        return relField;
+      }
+
+      public String getRelTable() {
+        return relTable;
+      }
+    }
+
+    final List<ImportProperty> properties = Lists.newArrayList();
+
+    private ImportType() {
+      init();
+    }
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+
+    public String[] getCaptions() {
+      String[] props = new String[properties.size()];
+
+      for (int i = 0; i < props.length; i++) {
+        props[i] = properties.get(i).getCaption();
+      }
+      return props;
+    }
+
+    public List<ImportProperty> getProperties() {
+      return Collections.unmodifiableList(properties);
+    }
+
+    public ImportProperty getProperty(Integer idx) {
+      if (BeeUtils.isIndex(properties, idx)) {
+        return properties.get(idx);
+      }
+      return null;
+    }
+
+    public ImportProperty getProperty(String name) {
+      for (ImportProperty prop : properties) {
+        if (BeeUtils.same(prop.getName(), name)) {
+          return prop;
+        }
+      }
+      return null;
+    }
+
+    protected abstract void init();
+  }
+
+  public enum OrderStatus implements HasLocalizedCaption {
+    NEW {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusNew();
+      }
+    },
+    ACTIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusActive();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusCanceled();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusCompleted();
+      }
+    },
+    REQUEST {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trOrderStatusRequest();
+      }
+    };
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
     }
   }
 
@@ -200,12 +347,15 @@ public final class TransportConstants {
   }
 
   public static void register() {
-    EnumUtils.register(OrderStatus.class);
     EnumUtils.register(AssessmentStatus.class);
     EnumUtils.register(TripStatus.class);
+    EnumUtils.register(OrderStatus.class);
 
     EnumUtils.register(TranspRegStatus.class);
     EnumUtils.register(CargoRequestStatus.class);
+
+    EnumUtils.register(FuelSeason.class);
+    EnumUtils.register(ImportType.class);
   }
 
   public static final String TRANSPORT_MODULE = "Transport";
@@ -223,6 +373,8 @@ public final class TransportConstants {
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
+  public static final String SVC_GET_IMPORT_MAPPINGS = "GetImportMappings";
+  public static final String SVC_DO_IMPORT = "DoImport";
 
   public static final String SVC_SEND_TO_ERP = "SendToERP";
 
@@ -236,6 +388,11 @@ public final class TransportConstants {
   public static final String VAR_EXPENSE = "Expense";
   public static final String VAR_TOTAL = "Total";
 
+  public static final String VAR_MAPPING_TABLE = "MappingTable";
+  public static final String VAR_MAPPING_FIELD = "MappingField";
+  public static final String VAR_IMPORT_FILE = "File";
+  public static final String VAR_IMPORT_ROW = "Row";
+
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
   public static final String TBL_VEHICLES = "Vehicles";
@@ -246,6 +403,8 @@ public final class TransportConstants {
 
   public static final String TBL_TRIPS = "Trips";
   public static final String TBL_TRIP_DRIVERS = "TripDrivers";
+  public static final String TBL_TRIP_COSTS = "TripCosts";
+  public static final String TBL_TRIP_FUEL_COSTS = "TripFuelCosts";
 
   public static final String TBL_TRANSPORT_SETTINGS = "TransportSettings";
 
@@ -264,14 +423,18 @@ public final class TransportConstants {
   public static final String TBL_DRIVER_ABSENCE = "DriverAbsence";
   public static final String TBL_ABSENCE_TYPES = "AbsenceTypes";
 
+  public static final String TBL_FUEL_TYPES = "FuelTypes";
+
   public static final String TBL_REGISTRATIONS = "TranspRegistrations";
+
+  public static final String TBL_IMPORT_OPTIONS = "ImportOptions";
+  public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
+  public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
 
   public static final String VIEW_ORDERS = "TransportationOrders";
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
-  public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
-  public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
   public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
@@ -310,6 +473,9 @@ public final class TransportConstants {
 
   public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
+  public static final String VIEW_CARGO_REQUESTS = "CargoRequests";
+  public static final String VIEW_CARGO_REQUEST_TEMPLATES = "CargoReqTemplates";
+  public static final String VIEW_CARGO_REQUEST_FILES = "CargoRequestFiles";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
   public static final String VIEW_SHIPPING_TERMS = "ShippingTerms";
@@ -366,6 +532,16 @@ public final class TransportConstants {
   public static final String COL_NUMBER = "Number";
   public static final String COL_TYPE_NAME = "TypeName";
 
+  public static final String COL_COSTS_DATE = "Date";
+  public static final String COL_COSTS_ITEM = "Item";
+  public static final String COL_COSTS_QUANTITY = "Quantity";
+  public static final String COL_COSTS_PRICE = "Price";
+  public static final String COL_COSTS_CURRENCY = "Currency";
+  public static final String COL_COSTS_VAT = "Vat";
+  public static final String COL_COSTS_COUNTRY = "Country";
+  public static final String COL_COSTS_SUPPLIER = "Supplier";
+  public static final String COL_COSTS_NOTE = "Note";
+
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDER_NO = "OrderNo";
   public static final String COL_ORDER_DATE = "Date";
@@ -398,6 +574,7 @@ public final class TransportConstants {
   public static final String COL_VEHICLE = "Vehicle";
   public static final String COL_TRAILER = "Trailer";
   public static final String COL_VEHICLE_NUMBER = "Number";
+  public static final String COL_FUEL = "Fuel";
 
   public static final String COL_VEHICLE_START_DATE = "StartDate";
   public static final String COL_VEHICLE_END_DATE = "EndDate";
@@ -590,6 +767,16 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
 
+  public static final String COL_CRF_REQUEST = "CargoRequest";
+  public static final String COL_CRF_FILE = "File";
+  public static final String COL_CRF_CAPTION = "Caption";
+
+  public static final String COL_IMPORT_OPTION = "Option";
+  public static final String COL_IMPORT_TYPE = "Type";
+  public static final String COL_IMPORT_PROPERTY = "Property";
+  public static final String COL_IMPORT_VALUE = "Value";
+  public static final String COL_IMPORT_MAPPING = "Mapping";
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
@@ -613,6 +800,8 @@ public final class TransportConstants {
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
   public static final String FORM_NEW_CARGO_REQUEST = "NewCargoRequest";
   public static final String FORM_CARGO_REQUEST = "CargoRequest";
+
+  public static final String FORM_IMPORT_OPTION = "ImportOption";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";

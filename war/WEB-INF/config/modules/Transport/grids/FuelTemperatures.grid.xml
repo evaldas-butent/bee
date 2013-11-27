@@ -4,15 +4,8 @@
 
   name="FuelTemperatures" viewName="FuelTemperatures" caption="=trFuelTemperatures"
   >
-
   <g:columns>
-    <DataColumn name="Season" caption="=trSeason">
-      <renderer type="list" />
-      <editor type="list">
-        <ui:item>=summer</ui:item>
-        <ui:item>=winter</ui:item>
-      </editor>
-    </DataColumn>
+    <DataColumn name="Season" caption="=trSeason" />
     <DataColumn name="TempFrom" caption="=trTemperatureFromShort" format="#.0" />
     <DataColumn name="TempTo" caption="=trTemparatureToShort" format="#.0" />
     <DataColumn name="Rate" caption="=trRatePercentShort" format="#.00" />

@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -25,13 +26,18 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
+import com.butent.bee.server.modules.commons.ExtensionIcons;
+import com.butent.bee.server.modules.commons.FileStorageBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlCreate;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -39,14 +45,18 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.modules.transport.TransportConstants.ImportType;
+import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.JustDate;
@@ -54,11 +64,23 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+
+import java.io.File;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,6 +115,8 @@ public class TransportModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  FileStorageBean fs;
 
   @Resource
   TimerService timerService;
@@ -192,12 +216,319 @@ public class TransportModuleBean implements BeeModule {
       response = sendToERP(reqInfo.getParameter("view_name"),
           DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
 
+    } else if (BeeUtils.same(svc, SVC_GET_IMPORT_MAPPINGS)) {
+      response = getImportMappings(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_PROPERTY)),
+          reqInfo.getParameter(VAR_MAPPING_TABLE), reqInfo.getParameter(VAR_MAPPING_FIELD));
+
+    } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
+      ImportType type = EnumUtils.getEnumByIndex(ImportType.class,
+          BeeUtils.toIntOrNull(reqInfo.getParameter(COL_IMPORT_TYPE)));
+
+      if (type != null) {
+        switch (type) {
+          case COSTS:
+            response = importCosts(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
+                BeeUtils.toLong(reqInfo.getParameter(VAR_IMPORT_FILE)));
+            break;
+
+          case INVOICES:
+            response = ResponseObject.error(Localized.getConstants().no());
+            break;
+        }
+      } else {
+        response = ResponseObject.error("Import type not recognized");
+      }
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  private ResponseObject importCosts(Long optionId, Long fileId) {
+    File file = fs.getFile(fileId);
+
+    if (file == null) {
+      return ResponseObject.error(Localized.getMessages().fileNotFound("ID=" + fileId));
+    }
+    Map<String, Pair<String, Long>> props = Maps.newHashMap();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(TBL_IMPORT_PROPERTIES, COL_IMPORT_PROPERTY, COL_IMPORT_VALUE)
+        .addField(TBL_IMPORT_PROPERTIES, sys.getIdName(TBL_IMPORT_PROPERTIES), COL_IMPORT_MAPPING)
+        .addFrom(TBL_IMPORT_PROPERTIES)
+        .setWhere(SqlUtils.equals(TBL_IMPORT_PROPERTIES, COL_IMPORT_OPTION, optionId)))) {
+
+      ImportProperty prop = ImportType.COSTS.getProperty(row.getInt(COL_IMPORT_PROPERTY));
+
+      if (prop != null) {
+        props.put(prop.getName(),
+            Pair.of(row.getValue(COL_IMPORT_VALUE), row.getLong(COL_IMPORT_MAPPING)));
+      }
+    }
+    Sheet shit;
+
+    try {
+      Workbook wb = WorkbookFactory.create(file);
+      wb.setMissingCellPolicy(Row.RETURN_BLANK_AS_NULL);
+      shit = wb.getSheetAt(0);
+    } catch (Exception e) {
+      fs.removeFile(fileId);
+      return ResponseObject.error(e);
+    }
+    int startRow = shit.getFirstRowNum();
+    Pair<String, Long> pair = props.get(VAR_IMPORT_ROW);
+
+    if (pair != null) {
+      startRow = BeeUtils.max(BeeUtils.toInt(pair.getA()) - 1, startRow);
+    }
+    Map<String, String> relations = ImmutableMap.of(TBL_ITEMS, COL_COSTS_ITEM,
+        ExchangeUtils.TBL_CURRENCIES, COL_COSTS_CURRENCY,
+        TBL_VEHICLES, COL_VEHICLE, TBL_COMPANIES, COL_COSTS_SUPPLIER,
+        TBL_COUNTRIES, COL_COSTS_COUNTRY);
+
+    String tmp = SqlUtils.temporaryName();
+    String prfx = "_";
+    SqlCreate create = new SqlCreate(tmp)
+        .addLong(prfx + COL_TRIP, false)
+        .addLong(COL_TRIP, false)
+        .addLong(COL_FUEL, false);
+
+    for (String relation : relations.keySet()) {
+      create.addLong(prfx + relations.get(relation), false);
+    }
+    Map<String, Pair<Integer, String>> flds = Maps.newHashMap();
+
+    for (ImportProperty prop : ImportType.COSTS.getProperties()) {
+      String name = prop.getName();
+
+      if (BeeUtils.same(name, VAR_IMPORT_ROW)) {
+        continue;
+      }
+      pair = props.get(name);
+      Integer colIndex = null;
+      String colValue = null;
+
+      if (pair != null) {
+        String val = pair.getA().trim().toUpperCase();
+
+        if (BeeUtils.isPrefix(val, '=')) {
+          val = val.substring(1);
+
+          if (BeeUtils.betweenInclusive(val.length(), 1, 2)) {
+            colIndex = 0;
+
+            for (int i = 0; i < Math.min(val.length(), 2); i++) {
+              if (BeeUtils.betweenInclusive(val.charAt(i), 'A', 'Z')) {
+                colIndex = (colIndex + 1) * i * ('Z' - 'A' + 1) + (val.charAt(i) - 'A');
+              } else {
+                colIndex = null;
+                break;
+              }
+            }
+          }
+        } else {
+          colValue = pair.getA();
+        }
+      }
+      flds.put(name, Pair.of(colIndex, colValue));
+      create.addString(name, 50, false);
+    }
+    qs.updateData(create);
+
+    for (int i = startRow; i <= shit.getLastRowNum(); i++) {
+      SqlInsert insert = new SqlInsert(tmp);
+      Row row = shit.getRow(i);
+
+      for (String fld : flds.keySet()) {
+        Pair<Integer, String> data = flds.get(fld);
+
+        if (data != null) {
+          String value = data.getB();
+          Integer col = data.getA();
+
+          if (col != null) {
+            Cell cell = row.getCell(col);
+
+            if (cell != null) {
+              switch (cell.getCellType()) {
+                case Cell.CELL_TYPE_STRING:
+                  value = cell.getStringCellValue();
+                  break;
+                case Cell.CELL_TYPE_NUMERIC:
+                  if (DateUtil.isCellDateFormatted(cell)) {
+                    Date date = cell.getDateCellValue();
+
+                    if (date != null) {
+                      value = BeeUtils.toString(date.getTime());
+                    } else {
+                      value = null;
+                    }
+                  } else {
+                    value = BeeUtils.toString(cell.getNumericCellValue());
+                  }
+                  break;
+                case Cell.CELL_TYPE_BOOLEAN:
+                  value = BeeUtils.toString(cell.getBooleanCellValue());
+                  break;
+                case Cell.CELL_TYPE_FORMULA:
+                  value = cell.getCellFormula();
+                  break;
+                default:
+                  value = null;
+              }
+            }
+          }
+          if (BeeUtils.inListSame(fld, COL_COSTS_QUANTITY, COL_COSTS_PRICE)) {
+            if (!BeeUtils.isPositiveDouble(value)) {
+              insert = null;
+              break;
+            }
+          } else if (BeeUtils.same(fld, COL_COSTS_DATE)) {
+            value = BeeUtils.toString(new JustDate(Integer.valueOf(value.substring(0, 4)),
+                Integer.valueOf(value.substring(4, 6)),
+                Integer.valueOf(value.substring(6, 8))).getTime());
+          }
+          insert.addNotEmpty(fld, value);
+        }
+      }
+      if (insert != null) {
+        qs.updateData(insert);
+      }
+    }
+    List<ExtendedProperty> info = Lists.newArrayList();
+    PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
+
+    for (String relation : relations.keySet()) {
+      String fld = relations.get(relation);
+      pair = props.get(fld);
+
+      if (pair != null) {
+        SqlSelect query = new SqlSelect()
+            .addField(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE, fld)
+            .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING)
+            .addFrom(TBL_IMPORT_MAPPINGS)
+            .addFromInner(relation,
+                sys.joinTables(relation, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+            .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, pair.getB()));
+        String subq = SqlUtils.uniqueName();
+
+        qs.updateData(new SqlUpdate(tmp)
+            .addExpression(prfx + fld, SqlUtils.field(subq, COL_IMPORT_MAPPING))
+            .setFrom(query, subq, SqlUtils.joinUsing(tmp, subq, fld)));
+      }
+      for (SimpleRow row : qs.getData(new SqlSelect()
+          .addFields(tmp, fld)
+          .addCount("cnt")
+          .addFrom(tmp)
+          .setWhere(SqlUtils.isNull(tmp, prfx + fld))
+          .addGroup(tmp, fld)
+          .addOrderDesc(null, "cnt"))) {
+
+        PropertyUtils.addExtended(info, ImportType.COSTS.getProperty(fld).getCaption(),
+            row.getValue(fld), row.getValue("cnt"));
+      }
+    }
+    int c = qs.updateData(new SqlDelete(tmp)
+        .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, prfx + COL_COSTS_ITEM),
+            SqlUtils.isNull(tmp, prfx + COL_COSTS_CURRENCY),
+            SqlUtils.isNull(tmp, prfx + COL_VEHICLE))));
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_FUEL, SqlUtils.field(TBL_FUEL_TYPES, sys.getIdName(TBL_FUEL_TYPES)))
+        .setFrom(TBL_FUEL_TYPES,
+            SqlUtils.join(tmp, prfx + COL_COSTS_ITEM, TBL_FUEL_TYPES, COL_ITEM)));
+
+    PropertyUtils.addExtended(info, "PAŠALINTA", null, c);
+
+    c = qs.updateData(new SqlUpdate(tmp)
+        .addExpression(prfx + COL_TRIP, SqlUtils.field(TBL_TRIP_COSTS, COL_TRIP))
+        .setFrom(TBL_TRIP_COSTS, SqlUtils.and(SqlUtils.isNull(tmp, COL_FUEL),
+            SqlUtils.notNull(TBL_TRIP_COSTS, COL_NUMBER),
+            SqlUtils.joinUsing(tmp, TBL_TRIP_COSTS, COL_NUMBER))));
+
+    PropertyUtils.addExtended(info, "BUVO", TBL_TRIP_COSTS, c);
+
+    c = qs.updateData(new SqlUpdate(tmp)
+        .addExpression(prfx + COL_TRIP, SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_TRIP))
+        .setFrom(TBL_TRIP_FUEL_COSTS, SqlUtils.and(SqlUtils.notNull(tmp, COL_FUEL),
+            SqlUtils.notNull(TBL_TRIP_FUEL_COSTS, COL_NUMBER),
+            SqlUtils.joinUsing(tmp, TBL_TRIP_FUEL_COSTS, COL_NUMBER))));
+
+    PropertyUtils.addExtended(info, "BUVO", TBL_TRIP_FUEL_COSTS, c);
+
+    IsExpression dt = SqlUtils.cast(SqlUtils.field(tmp, COL_COSTS_DATE), SqlDataType.DATE, 0, 0);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT,
+            COL_NUMBER, COL_COSTS_NOTE)
+        .addField(tmp, prfx + COL_COSTS_CURRENCY, COL_COSTS_CURRENCY)
+        .addField(tmp, prfx + COL_COSTS_COUNTRY, COL_COSTS_COUNTRY)
+        .addField(tmp, prfx + COL_COSTS_SUPPLIER, COL_COSTS_SUPPLIER)
+        .addMax(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
+        .addFrom(tmp)
+        .addFromInner(TBL_TRIPS,
+            SqlUtils.and(SqlUtils.join(tmp, prfx + COL_VEHICLE, TBL_TRIPS, COL_VEHICLE),
+                SqlUtils.moreEqual(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM)),
+                SqlUtils.or(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                    SqlUtils.less(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO)))))
+        .setWhere(SqlUtils.isNull(tmp, COL_TRIP))
+        .addGroup(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT,
+            COL_NUMBER, COL_COSTS_NOTE, prfx + COL_COSTS_CURRENCY, prfx + COL_COSTS_COUNTRY,
+            prfx + COL_COSTS_SUPPLIER);
+
+    qs.updateData(new SqlUpdate(tmp)
+        .addExpression(COL_TRIP, SqlUtils.field(TBL_TRIPS, sys.getIdName(TBL_TRIPS)))
+        .setFrom(TBL_TRIPS,
+            SqlUtils.and(SqlUtils.join(tmp, prfx + COL_VEHICLE, TBL_TRIPS, COL_VEHICLE),
+                SqlUtils.moreEqual(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM)),
+                SqlUtils.or(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+                    SqlUtils.less(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO))),
+                SqlUtils.isNull(tmp, prfx + COL_TRIP))));
+
+    for (String tt : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
+      query = new SqlSelect()
+          .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT,
+              COL_NUMBER, COL_COSTS_NOTE, COL_TRIP)
+          .addField(tmp, prfx + COL_COSTS_CURRENCY, COL_COSTS_CURRENCY)
+          .addField(tmp, prfx + COL_COSTS_COUNTRY, COL_COSTS_COUNTRY)
+          .addField(tmp, prfx + COL_COSTS_SUPPLIER, COL_COSTS_SUPPLIER)
+          .addFrom(tmp)
+          .setWhere(SqlUtils.notNull(tmp, COL_TRIP));
+
+      if (BeeUtils.same(tt, TBL_TRIP_COSTS)) {
+        query.addField(tmp, prfx + COL_COSTS_ITEM, COL_COSTS_ITEM)
+            .setWhere(SqlUtils.and(query.getWhere(), SqlUtils.isNull(tmp, COL_FUEL)));
+      } else {
+        query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.notNull(tmp, COL_FUEL)));
+      }
+      SimpleRowSet rs = qs.getData(query);
+
+      for (int i = 0; i < rs.getNumberOfRows(); i++) {
+        qs.insertData(new SqlInsert(tt)
+            .addFields(rs.getColumnNames())
+            .addValues((Object[]) rs.getValues(i)));
+      }
+      PropertyUtils.addExtended(info, "IMPORTUOTA", tt, rs.getNumberOfRows());
+    }
+    PropertyUtils.addExtended(info, "NAŠLAIČIAI", null,
+        qs.sqlCount(new SqlSelect()
+            .addFields(tmp, COL_TRIP)
+            .addFrom(tmp)
+            .setWhere(SqlUtils.and(SqlUtils.isNull(tmp, prfx + COL_TRIP),
+                SqlUtils.isNull(tmp, COL_TRIP)))));
+
+    Object res;
+
+    if (BeeUtils.isEmpty(info)) {
+      res = qs.doSql(new SqlSelect().addAllFields(tmp).addFrom(tmp).getQuery());
+    } else {
+      res = info;
+    }
+    qs.sqlDropTemp(tmp);
+    fs.removeFile(fileId);
+    return ResponseObject.response(res);
   }
 
   @Override
@@ -328,6 +659,24 @@ public class TransportModuleBean implements BeeModule {
             for (BeeRow row : rowset.getRows()) {
               row.setProperty(VAR_INCOME, rs.getValueByKey(COL_CARGO, row.getString(cargoIndex),
                   "TripIncome"));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void getFileIcons(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (!rowSet.isEmpty()) {
+            int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
+
+            for (BeeRow row : rowSet.getRows()) {
+              String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
+              if (!BeeUtils.isEmpty(icon)) {
+                row.setProperty(PROP_ICON, icon);
+              }
             }
           }
         }
@@ -1120,6 +1469,20 @@ public class TransportModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(settings);
+  }
+
+  private ResponseObject getImportMappings(long propId, String tbl, String fld) {
+    BeeRowSet rs = qs.getViewData(new SqlSelect()
+        .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, COL_IMPORT_VALUE, COL_IMPORT_MAPPING)
+        .addField(tbl, fld, COL_IMPORT_MAPPING + COL_IMPORT_VALUE)
+        .addFields(TBL_IMPORT_MAPPINGS,
+            sys.getIdName(TBL_IMPORT_MAPPINGS), sys.getVersionName(TBL_IMPORT_MAPPINGS))
+        .addFrom(TBL_IMPORT_MAPPINGS)
+        .addFromLeft(tbl, sys.joinTables(tbl, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+        .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, propId))
+        .addOrder(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE), sys.getView(TBL_IMPORT_MAPPINGS));
+
+    return ResponseObject.response(rs);
   }
 
   private BeeRowSet getSettings() {

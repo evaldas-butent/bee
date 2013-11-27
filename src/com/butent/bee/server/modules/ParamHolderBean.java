@@ -197,6 +197,11 @@ public class ParamHolderBean {
         ? parameter.getUserValue(usr.getCurrentUserId()) : parameter.getValue();
   }
 
+  public boolean hasModuleParameter(String module, String name) {
+    Map<String, BeeParameter> params = getParameters(module);
+    return params.containsKey(BeeUtils.normalize(name));
+  }
+
   public void postParameterEvent(ParameterEvent event) {
     parameterEventBus.post(event);
   }
@@ -319,11 +324,6 @@ public class ParamHolderBean {
     Map<String, BeeParameter> params = getParameters(module);
 
     return params.get(BeeUtils.normalize(name));
-  }
-
-  private boolean hasModuleParameter(String module, String name) {
-    Map<String, BeeParameter> params = getParameters(module);
-    return params.containsKey(BeeUtils.normalize(name));
   }
 
   private void putModuleParameter(BeeParameter parameter) {

@@ -15,7 +15,7 @@
     <Double name="Kilometers" label="=unitKilometers" />
     <Numeric name="MotoHours" precision="7" scale="2" label="=trMotoHourShort"/>
     <Numeric name="CargoWeight" precision="7" scale="3" label="=weight" />
-    <Numeric name="Season" precision="1" notNull="true" defValue="0" label="=trSeason" />
+    <Enum name="Season" key="FuelSeason" notNull="true" defValue="0" label="=trSeason" />
     <Numeric name="Temperature" precision="3" scale="0" label="=trTemperatureShort" />
     <Double name="Consumption" label="=trFuelConsumptions" />
     <Relation name="Item" relation="Items" label="=trProductService" />

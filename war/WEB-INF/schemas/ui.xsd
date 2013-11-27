@@ -378,6 +378,7 @@
       <xs:enumeration value="flag" />
       <xs:enumeration value="star" />
       <xs:enumeration value="fileIcon" />
+      <xs:enumeration value="fileSize" />
       <xs:enumeration value="photo" />
       <xs:enumeration value="mail" />
       <xs:enumeration value="url" />

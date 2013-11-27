@@ -7,6 +7,6 @@
   <Fields>
     <Relation name="CargoRequest" notNull="true" relation="CargoRequests" cascade="DELETE" />
     <Relation name="File" relation="Files" notNull="true" />
-    <String name="Caption" precision="100" />
+    <String name="Caption" precision="100" label="=caption" />
   </Fields>
 </Table>

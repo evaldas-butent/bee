@@ -7,7 +7,7 @@
   >
   <g:columns>
     <DataColumn name="ObjectType" caption="=objectType" readOnly="true" visible="true" />
-    <RelColumn name="ObjectName" caption="=object" visible="true" />
+    <DataColumn name="ObjectName" caption="=object" readOnly="true" visible="true" />
     <DataColumn name="State" caption="=roleState" visible="true">
       <style>
         <bodyStyle><ui:inline>text-decoration: line-through;</ui:inline></bodyStyle>

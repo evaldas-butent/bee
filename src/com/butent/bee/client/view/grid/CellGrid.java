@@ -79,9 +79,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Flexibility;
-import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -1620,7 +1620,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       if (!eventState.proceed()) {
         return;
       }
-      
+
       if (EventUtils.isClick(eventType)) {
         if (EventUtils.hasModifierKey(event) || columnInfo.isSelection()) {
           if (event.getShiftKey()) {
@@ -1990,6 +1990,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     Assert.notNull(info);
 
     info.setHeaderWidth(width);
+  }
+
+  public void setColumnLabel(String columnId, String label) {
+    ColumnInfo info = getColumnInfo(columnId);
+    Assert.notNull(info);
+
+    info.setLabel(label);
   }
 
   public void setColumnWidth(String columnId, double width, CssUnit unit) {

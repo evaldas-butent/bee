@@ -17,7 +17,6 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
@@ -301,10 +300,6 @@ public class ParametersHandler extends AbstractGridInterceptor {
     });
   }
 
-  private CellGrid getGrid() {
-    return getGridPresenter().getGridView().getGrid();
-  }
-
   private static int id(String colName) {
     return DataUtils.getColumnIndex(colName, columns);
   }
@@ -329,10 +324,9 @@ public class ParametersHandler extends AbstractGridInterceptor {
           ? prm.getUserValue(BeeKeeper.getUser().getUserId()) : prm.getValue();
 
       ref.put(++cnt, prm.getName());
-      BeeRow row = new BeeRow(cnt, values);
-      provider.addRow(row);
-      getGrid().insertRow(row, false); // TODO provider must do it
+      provider.addRow(new BeeRow(cnt, values));
     }
+    provider.refresh(false);
   }
 
   private void requery() {

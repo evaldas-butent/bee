@@ -12,6 +12,7 @@ public enum RendererType {
   FLAG("flag", true),
   STAR("star", true),
   FILE_ICON("fileIcon", true),
+  FILE_SIZE("fileSize", true),
   PHOTO("photo", true),
   MAIL("mail", false),
   URL("url", true);

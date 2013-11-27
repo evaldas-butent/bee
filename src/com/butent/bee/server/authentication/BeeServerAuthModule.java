@@ -159,7 +159,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
       try {
         usr = (UserServiceBean) InitialContext.doLookup("java:global" + BeeUtils.join("/",
             request.getServletContext().getContextPath(), UserServiceBean.class.getSimpleName()));
-        ok = usr.authenticateUser(userName, Codec.md5(password));
+        ok = usr.authenticateUser(userName, Codec.encodePassword(password));
       } catch (NamingException | ClassCastException ex) {
         logger.error(ex);
       }
