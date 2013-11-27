@@ -294,11 +294,13 @@ public class DiscussionsModuleBean implements BeeModule {
     return qs.insertDataWithResponse(insert);
   }
 
-  private ResponseObject commitDiscussionComemnt(long discussionId, long userId,
+  private ResponseObject commitDiscussionComment(long discussionId, long userId,
+      Long parentCommentId,
       String comment, long mills) {
     SqlInsert si = new SqlInsert(TBL_DISCUSSIONS_COMMENTS)
         .addConstant(COL_DISCUSSION, discussionId)
         .addConstant(COL_PUBLISHER, userId)
+        .addConstant(COL_PARENT_COMMENT, parentCommentId)
         .addConstant(COL_PUBLISH_TIME, mills);
 
     if (!BeeUtils.isEmpty(comment)) {
@@ -363,6 +365,15 @@ public class DiscussionsModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
+    SqlDelete del =
+        new SqlDelete(TBL_DISCUSSIONS_COMMENTS).setWhere(SqlUtils.and(SqlUtils.equals(
+            TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, discussionId), SqlUtils.equals(
+            TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS), commentId)));
+    
+    return qs.updateDataWithResponse(del);
+  }
+
   private ResponseObject doDiscussionEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
     DiscussionEvent event = EnumUtils.getEnumByName(DiscussionEvent.class, svc);
@@ -394,6 +405,9 @@ public class DiscussionsModuleBean implements BeeModule {
     Long commentId = null;
 
     String commentText = reqInfo.getParameter(VAR_DISCUSSION_COMMENT);
+    Long parentComment = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_PARENT_COMMENT));
+    Long deleteComment =
+        BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_DELETED_COMMENT));
 
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
@@ -465,26 +479,31 @@ public class DiscussionsModuleBean implements BeeModule {
         break;
       case MARK:
         break;
-
-      case REPLY:
-        break;
+      case COMMENT_DELETE:
       case ACTIVATE:
       case CLOSE:
       case COMMENT:
       case MODIFY:
+      case REPLY:
       case VISIT:
         if (oldMembers.contains(currentUser)) {
           response = registerDiscussionVisit(discussionId, currentUser, now);
         }
 
         if (!BeeUtils.isEmpty(commentText)) {
-          response = commitDiscussionComemnt(discussionId, currentUser, commentText, now);
+          response =
+              commitDiscussionComment(discussionId, currentUser, parentComment, commentText, now);
+        }
+
+        if ((response == null || !response.hasErrors()) && DataUtils.isId(deleteComment)) {
+          response = deleteDiscussionComment(discussionId, deleteComment);
         }
 
         if (response == null || !response.hasErrors()) {
           response =
               commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
         }
+
         break;
       default:
         break;

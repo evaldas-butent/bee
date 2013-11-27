@@ -20,8 +20,7 @@
     <SimpleColumn name="CommentText" />
   </Columns>
   <Order>
-    <OrderBy column="DiscussionComentID" />
-    <OrderBy column="Parent" />
+   <OrderBy column="PublishTime" />
   </Order>
 </View>
  

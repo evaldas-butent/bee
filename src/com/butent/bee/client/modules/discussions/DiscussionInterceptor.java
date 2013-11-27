@@ -1,8 +1,12 @@
 package com.butent.bee.client.modules.discussions;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -71,6 +75,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Set;
 
 class DiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -216,9 +221,13 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_ACTIONS = "Actions";
   private static final String STYLE_REPLY = "-reply";
   private static final String STYLE_TRASH = "-trash";
+  private static final String STYLE_CHATTER = "-chatter";
 
   private static final String IMAGE_REPLY = "replytoall";
   private static final String IMAGE_TRASH = "silverdelete";
+
+  private static final int INITIAL_COMMENT_ROW_PADDING_LEFT = 0;
+  private static final int MAX_COMMENT_ROW_PADDING_LEFT = 5;
 
   private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_APPOINTMENTS, PROP_TASKS, PROP_DOCUMENTS);
@@ -402,14 +411,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return widget;
   }
 
-  private static boolean commentActionReplyEnabled() {
-    return true;
-  }
-
-  private static boolean commentActionDeleteEnabled() {
-    return true;
-  }
-
   private static List<StoredFile> filterCommentFiles(List<StoredFile> input, long commentId) {
     if (input.isEmpty()) {
       return input;
@@ -495,15 +496,25 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     sendRequest(params, callback);
   }
 
-  private static void showComment(Flow panel, BeeRow row, List<BeeColumn> columns,
-      List<StoredFile> files, boolean renderPhoto) {
+  private void showComment(Flow panel, BeeRow row, List<BeeColumn> columns,
+      List<StoredFile> files, boolean renderPhoto, int paddingLeft) {
 
     Flow container = new Flow();
     container.addStyleName(STYLE_COMMENT_ROW);
     container.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
 
+    if (paddingLeft <= MAX_COMMENT_ROW_PADDING_LEFT) {
+      container.getElement().getStyle().setPaddingLeft(paddingLeft, Unit.EM);
+    } else {
+      container.getElement().getStyle().setPaddingLeft(MAX_COMMENT_ROW_PADDING_LEFT, Unit.EM);
+    }
+
     Flow colPhoto = new Flow();
     colPhoto.addStyleName(STYLE_COMMENT_ROW + CommonsConstants.COL_PHOTO);
+
+    if (paddingLeft > MAX_COMMENT_ROW_PADDING_LEFT) {
+      colPhoto.addStyleName(STYLE_COMMENT_ROW + CommonsConstants.COL_PHOTO + STYLE_CHATTER);
+    }
 
     if (renderPhoto) {
       String photo = row.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns));
@@ -550,15 +561,17 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Flow colActions = new Flow();
     colActions.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS);
 
-    if (commentActionReplyEnabled()) {
+    if (true /* isEventEnabled(DiscussionEvent.REPLY, getStatus(), getOwner(), false) */) {
       Image imgReply = new Image(Images.get(IMAGE_REPLY));
       imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
       imgReply.setTitle(Localized.getConstants().discussActionReply());
+
+      final long commentId = row.getId();
       imgReply.addClickHandler(new ClickHandler() {
 
         @Override
         public void onClick(ClickEvent event) {
-          Global.showError("reply not implemented");
+          doComment(commentId);
         }
 
       });
@@ -566,15 +579,17 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       colActions.add(imgReply);
     }
 
-    if (commentActionDeleteEnabled()) {
+    if (true/* isEventEnabled(DiscussionEvent.COMMENT_DELETE, getStatus(), getOwner(), false) */) {
       Image imgTrash = new Image(Images.get(IMAGE_TRASH));
       imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
       imgTrash.setTitle(Localized.getConstants().actionDelete());
+      final long commentId = row.getId();
+
       imgTrash.addClickHandler(new ClickHandler() {
 
         @Override
         public void onClick(ClickEvent event) {
-          Global.showError("trash not implemented");
+          doCommentDelete(commentId);
         }
 
       });
@@ -598,7 +613,20 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private static void showCommentsAndMarks(FormView form, BeeRowSet rowSet,
+  private void showAnsweredCommentsAndMarks(Flow panel, List<StoredFile> files,
+      Multimap<Long, Long> data, long parent, BeeRowSet rowSet, int paddingLeft) {
+    if (data.containsKey(parent)) {
+      for (long id : data.get(parent)) {
+        BeeRow row = rowSet.getRowById(id);
+        showComment(panel, row, rowSet.getColumns(), filterCommentFiles(files, row.getId()),
+            isPhoto(row, rowSet), paddingLeft);
+
+        showAnsweredCommentsAndMarks(panel, files, data, id, rowSet, paddingLeft + 1);
+      }
+    }
+  }
+
+  private void showCommentsAndMarks(FormView form, BeeRowSet rowSet,
       List<StoredFile> files) {
     Widget widget = form.getWidgetByName(VIEW_DISCUSSIONS_COMMENTS);
 
@@ -608,11 +636,31 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     Flow panel = (Flow) widget;
     panel.clear();
-
+    
+    Set<Long> roots = Sets.newHashSet();
+    Multimap<Long, Long> data = HashMultimap.create();
+    
     for (BeeRow row : rowSet.getRows()) {
-      showComment(panel, row, rowSet.getColumns(), filterCommentFiles(files, row.getId()),
-          isPhoto(row, rowSet));
+      Long parent = row.getLong(rowSet.getColumnIndex(COL_PARENT_COMMENT));
+      
+      if (parent == null) {
+        roots.add(row.getId());
+      } else {
+        data.put(parent, row.getId());
+      }
     }
+
+    for (long id : roots) {
+      BeeRow row = rowSet.getRowById(id);
+      showComment(panel, row, rowSet.getColumns(), filterCommentFiles(files, row
+          .getId()),
+          isPhoto(row, rowSet), INITIAL_COMMENT_ROW_PADDING_LEFT);
+
+      showAnsweredCommentsAndMarks(panel, files, data, id, rowSet,
+          INITIAL_COMMENT_ROW_PADDING_LEFT + 1);
+    }
+
+
 
     if (panel.getWidgetCount() > 0 && form.asWidget().isVisible()) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
@@ -693,9 +741,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     });
   }
 
-  private void doComment(Long replayedCommentId) {
-    final CommentDialog dialog = new CommentDialog(Localized.getConstants().discussComment());
-
+  private void doComment(final Long replayedCommentId) {
+    final CommentDialog dialog =
+        new CommentDialog(replayedCommentId == null
+            ? Localized.getConstants().discussComment() : Localized.getConstants()
+                .discussActionReply());
+    
+    
+    
     final String cid = dialog.addComment(true);
     final String fid = dialog.addFileCollector();
 
@@ -712,6 +765,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         final long discussionId = getDiscussionId();
 
         ParameterList params = createParams(DiscussionEvent.COMMENT, comment);
+
+        if (replayedCommentId != null) {
+          params.addDataItem(VAR_DISCUSSION_PARENT_COMMENT, replayedCommentId);
+        }
 
         final List<NewFileInfo> files = dialog.getFiles(fid);
 
@@ -743,12 +800,18 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     });
 
     dialog.dispaly();
+  }
 
-    if (replayedCommentId == null) {
-      // dielog.setCapt
-      return;
-    }
-    // TODO: do replay discussion comment
+  private void doCommentDelete(final long commentId) {
+    Global.confirm(Localized.getConstants().deleteQuestion(), new ConfirmationCallback() {
+
+      @Override
+      public void onConfirm() {
+        ParameterList params = createParams(DiscussionEvent.COMMENT_DELETE, null);
+        params.addDataItem(VAR_DISCUSSION_DELETED_COMMENT, commentId);
+        sendRequest(params, DiscussionEvent.COMMENT_DELETE);
+      }
+    });
   }
 
   private void doEvent(DiscussionEvent event) {
@@ -778,6 +841,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case REPLY:
         break;
       case VISIT:
+        break;
+      default:
         break;
     }
   }
@@ -832,6 +897,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private boolean isEventEnabled(DiscussionEvent event, Integer status, Long owner) {
+    return isEventEnabled(event, status, owner, true);
+  }
+
+  private boolean isEventEnabled(DiscussionEvent event, Integer status, Long owner,
+      boolean showInHeader) {
 
     if (event == null || status == null || owner == null || (!isMember(userId) && !isPublic())) {
       return false;
@@ -845,6 +915,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && isOwner(userId, owner);
       case COMMENT:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE);
+      case COMMENT_DELETE:
+        return !showInHeader;
       case CREATE:
         return false;
       case DEACTIVATE:
@@ -854,7 +926,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case MODIFY:
         return isOwner(userId, owner);
       case REPLY:
-        return false;
+        return !showInHeader;
       case VISIT:
         return false;
     }

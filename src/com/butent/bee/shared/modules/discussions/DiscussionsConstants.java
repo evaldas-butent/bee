@@ -14,6 +14,8 @@ public final class DiscussionsConstants {
         .discussActionActivate()),
     COMMENT(Localized.getConstants().discussEventCommented(), Localized.getConstants()
         .discussActionComment()),
+    COMMENT_DELETE(Localized.getConstants().discussEventCommentDeleted(), Localized.getConstants()
+        .actionDelete()),
     REPLY(Localized.getConstants().discussEventReplied(), Localized.getConstants()
         .discussActionReply()),
     MARK(Localized.getConstants().discussEventMarked(), Localized.getConstants()
@@ -100,6 +102,7 @@ public final class DiscussionsConstants {
   public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String COL_PUBLISH_TIME = "PublishTime";
+  public static final String COL_PARENT_COMMENT = "Parent";
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
   public static final String COL_SUBJECT = "Subject";
@@ -135,6 +138,10 @@ public final class DiscussionsConstants {
   public static final long VALUE_MEMBER = 1;
 
   public static final String VAR_DISCUSSION_COMMENT = Service.RPC_VAR_PREFIX + "discuss_comment";
+  public static final String VAR_DISCUSSION_PARENT_COMMENT = Service.RPC_VAR_PREFIX
+      + "discuss_parent_comment";
+  public static final String VAR_DISCUSSION_DELETED_COMMENT = Service.RPC_VAR_PREFIX
+      + "discuss_deleted_comment";
   public static final String VAR_DISCUSSION_DATA = Service.RPC_VAR_PREFIX + "discuss_data";
   public static final String VAR_DISCUSSION_ID = Service.RPC_VAR_PREFIX + "discuss_id";
   public static final String VAR_DISCUSSION_RELATIONS = Service.RPC_VAR_PREFIX

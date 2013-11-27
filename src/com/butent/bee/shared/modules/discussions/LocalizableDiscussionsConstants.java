@@ -34,6 +34,8 @@ public interface LocalizableDiscussionsConstants {
 
   String discussEventCommented();
 
+  String discussEventCommentDeleted();
+
   String discussEventCreated();
 
   String discussEventDeactivated();
