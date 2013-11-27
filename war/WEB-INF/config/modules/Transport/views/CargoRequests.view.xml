@@ -46,8 +46,6 @@
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
-        <SimpleColumn name="Date" alias="OrderDate" />
-        <SimpleColumn name="Status" alias="OrderStatus" />
       </SimpleJoin>
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">

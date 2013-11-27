@@ -2279,7 +2279,6 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (form != null) {
       form.onSaveChanges(event);
       if (event.isConsumed()) {
-        callback.onCancel();
         return;
       }
     }
@@ -2287,7 +2286,6 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (getGridInterceptor() != null) {
       getGridInterceptor().onSaveChanges(this, event);
       if (event.isConsumed()) {
-        callback.onCancel();
         return;
       }
     }

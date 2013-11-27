@@ -178,6 +178,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
         && BeeUtils.same(event.getColumns().get(0).getId(), USER_VALUE)) {
       change(gridView, event.getRowId(), prmName, event.getNewValues().get(0), event.getCallback());
       event.consume();
+      event.getCallback().onCancel();
       return;
     }
 
@@ -203,6 +204,7 @@ public class ParametersHandler extends AbstractGridInterceptor {
 
     update(gridView, event.getRowId(), prm, event.getCallback());
     event.consume();
+    event.getCallback().onCancel();
   }
 
   @Override

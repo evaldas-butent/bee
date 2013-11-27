@@ -404,7 +404,6 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
-    event.consume();
 
     ParameterList params = createParams(TaskEvent.EDIT, null);
 
@@ -418,6 +417,9 @@ class TaskEditor extends AbstractFormInterceptor {
         }
       }
     });
+
+    event.consume();
+    event.getCallback().onCancel();
   }
 
   @Override

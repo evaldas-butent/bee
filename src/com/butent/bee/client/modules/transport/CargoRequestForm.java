@@ -1,15 +1,19 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -101,6 +105,28 @@ class CargoRequestForm extends AbstractFormInterceptor {
   }
 
   private void onCreateOrder() {
+    Global.confirm(Localized.getConstants().trConfirmCreateNewOrder(), new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        String company = getDataValue(ALS_REQUEST_CUSTOMER_COMPANY);
+        if (!DataUtils.isId(BeeUtils.toLongOrNull(company))) {
+          return;
+        }
+        
+        Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS, Lists.newArrayList(COL_CUSTOMER)),
+            Lists.newArrayList(company), null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
+
+                CargoRequestStatus status = CargoRequestStatus.ACTIVE;
+                SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
+                
+                refreshCommands(status);
+              }
+            });
+      }
+    });
   }
 
   private void onSaveAsTemplate() {
