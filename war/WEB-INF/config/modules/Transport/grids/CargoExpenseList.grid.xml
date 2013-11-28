@@ -5,7 +5,7 @@
   name="CargoExpenseList" viewName="CargoExpenses"
   flexGrow="1"
   disabledActions="add delete"
-  editInPlace="Number" order="OrderDate desc"
+  order="OrderDate desc"
   >
   <g:columns>
     <DataColumn name="OrderDate" caption="=orderDate" />
@@ -14,17 +14,20 @@
 
     <DataColumn name="Date" />
     <RelColumn name="Service" />
-    <DataColumn name="Amount" format="#.00">
-      <style>
-        <headerStyle><ui:font>bold</ui:font></headerStyle>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" flexGrow="0" />
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+    </DataColumn>
     <DataColumn name="Vat" />
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
+    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </CalcColumn>
 
     <RelColumn name="Supplier" />
     <DataColumn name="Number" />

@@ -145,7 +145,6 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
         newRow.setValue(saleInfo.getColumnIndex(COL_NUMBER), BeeUtils.joinItems(orders));
         newRow.setValue(saleInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
         newRow.setValue(saleInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
-        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_VAT_INCL), true);
 
         newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER),
             BeeKeeper.getUser().getUserId());

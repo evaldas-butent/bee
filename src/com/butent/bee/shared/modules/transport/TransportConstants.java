@@ -375,6 +375,7 @@ public final class TransportConstants {
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_IMPORT_MAPPINGS = "GetImportMappings";
   public static final String SVC_DO_IMPORT = "DoImport";
+  public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
   public static final String SVC_SEND_TO_ERP = "SendToERP";
 
@@ -386,7 +387,6 @@ public final class TransportConstants {
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
-  public static final String VAR_TOTAL = "Total";
 
   public static final String VAR_MAPPING_TABLE = "MappingTable";
   public static final String VAR_MAPPING_FIELD = "MappingField";

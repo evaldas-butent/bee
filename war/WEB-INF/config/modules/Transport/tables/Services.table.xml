@@ -7,8 +7,8 @@
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" label="=trServiceName" />
-    <Boolean name="Vat" label="=vat" />
-    <Numeric name="VatPercent" precision="3" label="=vatPercent" />
+    <Boolean name="Transportation" label="=trTransportation" />
+    <Numeric name="VatPercent" precision="3" scale="1" label="=vatPercent" />
     <Relation name="Item" relation="Items" label="=trAccountItem" />
   </Fields>
 </Table>

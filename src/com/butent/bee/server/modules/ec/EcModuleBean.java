@@ -140,10 +140,10 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return null;
     }
-    
+
     Operator operator;
     String value;
-    
+
     if (code.contains(Operator.CHAR_ANY) || code.contains(Operator.CHAR_ONE)) {
       operator = Operator.MATCHES;
       value = code.trim().toUpperCase();
@@ -151,7 +151,7 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.isPrefixOrSuffix(code, BeeConst.CHAR_EQ)) {
       operator = Operator.EQ;
       value = BeeUtils.removePrefixAndSuffix(code, BeeConst.CHAR_EQ).trim().toUpperCase();
-    
+
     } else {
       operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
       value = normalizeCode(code);
@@ -200,6 +200,7 @@ public class EcModuleBean implements BeeModule {
       return result;
     }
   }
+
   @EJB
   SystemBean sys;
   @EJB
@@ -1202,7 +1203,7 @@ public class EcModuleBean implements BeeModule {
 
     return result;
   }
-  
+
   private List<String> getClientWarehouses(Long client, String table) {
     List<String> result = Lists.newArrayList();
 
@@ -2606,7 +2607,7 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_ITEM_CODE, VAR_QUERY);
     }
-    
+
     IsCondition codeCondition = getCodeCondition(code, defOperator);
     if (codeCondition == null) {
       return ResponseObject.error(normalizeCode(code),
@@ -2754,7 +2755,7 @@ public class EcModuleBean implements BeeModule {
                 data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
             docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, true);
+            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, false);
           }
         }
         if (!response.hasErrors()) {

@@ -18,7 +18,6 @@
 
     <Numeric name="Amount" precision="12" scale="2" label="=trdTotal" />
     <Relation name="Currency" relation="Currencies" notNull="true" />
-    <Boolean name="VatIncluded" label="=trdVatIncluded" />
 
     <Date name="Term" label="=trdTerm" />
     <DateTime name="PaymentTime" label="=trdPaymentTime" />
@@ -30,31 +29,4 @@
 
     <DateTime name="Exported" label="=trdExported" />
   </Fields>
-
-  <Triggers>
-    <Trigger events="UPDATE" scope="ROW" timing="AFTER">
-      <PostgreSql>
-        <![CDATA[
-DECLARE _id BIGINT;
-BEGIN
-  IF ((OLD."VatIncluded" IS NULL)!=(NEW."VatIncluded" IS NULL) OR
-      OLD."VatIncluded"!=NEW."VatIncluded") THEN
-    _id:=OLD."PurchaseID";
-    
-    UPDATE "Purchases" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
-        CASE WHEN "VatIncluded"=1 OR "Vat" IS NULL THEN 0
-             WHEN "VatPercent"=1 THEN "Quantity"*"Price"/100*"Vat"
-             ELSE "Vat" END)
-      FROM "PurchaseItems" INNER JOIN "Purchases"
-        ON "PurchaseItems"."Purchase"="Purchases"."PurchaseID"
-      WHERE "Purchase"=_id) WHERE "PurchaseID"=_id;
-  END IF;
-  RETURN NULL;
-END;
-        ]]>
-      </PostgreSql>
-      <MsSql />
-      <Oracle />
-    </Trigger>
-  </Triggers>
 </Table>

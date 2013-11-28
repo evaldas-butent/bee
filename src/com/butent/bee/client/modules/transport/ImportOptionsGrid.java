@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -87,7 +86,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
             Assert.notNull(response);
 
             if (response.hasErrors()) {
-              Global.showError(Lists.newArrayList(response.getErrors()));
+              response.notify(getGridView());
               return;
             }
             IsTable<?, ?> data;

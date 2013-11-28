@@ -10,6 +10,7 @@
     <String name="Article" precision="30" label="=article" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=trdQuantity" />
     <Numeric name="Price" precision="12" scale="2" label="=trdPrice" />
+    <Boolean name="VatPlus" label="=trdVatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=trdVat" />
     <Boolean name="VatPercent" label="=trdVatPercent" />
     <Text name="Note" label="=trdNote" />
@@ -28,12 +29,11 @@ BEGIN
   END IF;
 
   UPDATE "Purchases" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
-      CASE WHEN "VatIncluded"=1 OR "Vat" IS NULL THEN 0
-           WHEN "VatPercent"=1 THEN "Quantity"*"Price"/100*"Vat"
-           ELSE "Vat" END)
-    FROM "PurchaseItems" INNER JOIN "Purchases"
-      ON "PurchaseItems"."Purchase"="Purchases"."PurchaseID"
-    WHERE "Purchase"=_id) WHERE "PurchaseID"=_id;
+        CASE WHEN "VatPlus" IS NULL OR "Vat" IS NULL THEN 0
+             WHEN "VatPercent" IS NOT NULL THEN "Quantity"*"Price"/100*"Vat"
+             ELSE "Vat" END)
+      FROM "PurchaseItems" WHERE "Purchase"=_id)
+    WHERE "PurchaseID"=_id;
   RETURN NULL;
 END;
         ]]>

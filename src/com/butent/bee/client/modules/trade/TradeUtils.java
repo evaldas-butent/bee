@@ -22,6 +22,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.render.ProvidesGridColumnRenderer;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
@@ -46,8 +48,10 @@ public final class TradeUtils {
 
   private static final String COL_TOTAL = "Total";
   private static final String COL_RATE_AMOUNT = COL_RATES_RATE + COL_TRADE_AMOUNT;
-  private static final String COL_RATE_VAT = COL_RATES_RATE + COL_TRADE_ITEM_VAT;
+  private static final String COL_RATE_VAT = COL_RATES_RATE + COL_TRADE_VAT;
   private static final String COL_RATE_TOTAL = COL_RATES_RATE + COL_TOTAL;
+
+  private static ProvidesGridColumnRenderer totalRenderer;
 
   public static void getDocumentItems(String viewName, long tradeId, final HtmlTable table) {
     Assert.notNull(table);
@@ -82,7 +86,7 @@ public final class TradeUtils {
           cols.put(COL_UNIT, Localized.getConstants().unit());
           cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
           cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
-          cols.put(COL_TRADE_ITEM_VAT, Localized.getConstants().trdVat());
+          cols.put(COL_TRADE_VAT, Localized.getConstants().trdVat());
 
           if (rateExists) {
             cols.put(COL_RATE_AMOUNT,
@@ -109,7 +113,7 @@ public final class TradeUtils {
 
           for (Entry<String, String> row : ImmutableMap.of(
               COL_TRADE_AMOUNT + COL_TOTAL, Localized.getConstants().trdAmount(),
-              COL_TRADE_ITEM_VAT + COL_TOTAL, Localized.getConstants().trdVat(),
+              COL_TRADE_VAT + COL_TOTAL, Localized.getConstants().trdVat(),
               COL_TOTAL, Localized.getConstants().trdTotal()).entrySet()) {
 
             cell = new CustomDiv(STYLE_ITEMS + row.getKey() + "-caption");
@@ -166,18 +170,18 @@ public final class TradeUtils {
           qtyTotal += qty;
           double sum = qty * BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
           double currSum = 0;
-          double vat = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_VAT));
-          boolean vatInPercents = BeeUtils.unbox(row.getBoolean(COL_TRADE_ITEM_VAT_PERC));
+          double vat = BeeUtils.unbox(row.getDouble(COL_TRADE_VAT));
+          boolean vatInPercents = BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PERC));
 
-          if (BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_INCL))) {
+          if (BeeUtils.unbox(row.getBoolean(COL_TRADE_VAT_PLUS))) {
+            if (vatInPercents) {
+              vat = sum / 100 * vat;
+            }
+          } else {
             if (vatInPercents) {
               vat = sum - sum / (1 + vat / 100);
             }
             sum -= vat;
-          } else {
-            if (vatInPercents) {
-              vat = sum / 100 * vat;
-            }
           }
           sum = BeeUtils.round(sum, 2);
           sumTotal += sum;
@@ -212,7 +216,7 @@ public final class TradeUtils {
                 } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
                   value = BeeUtils.toString(BeeUtils.round(sum / qty, 5));
 
-                } else if (BeeUtils.same(fld, COL_TRADE_ITEM_VAT)) {
+                } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
                   value = row.getValue(fld);
 
                   if (value != null && vatInPercents) {
@@ -281,7 +285,7 @@ public final class TradeUtils {
               } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT + COL_TOTAL)) {
                 value = formater.format(sumTotal);
 
-              } else if (BeeUtils.same(fld, COL_TRADE_ITEM_VAT + COL_TOTAL)) {
+              } else if (BeeUtils.same(fld, COL_TRADE_VAT + COL_TOTAL)) {
                 value = formater.format(vatTotal);
 
               } else if (BeeUtils.same(fld, COL_TOTAL)) {
@@ -346,6 +350,13 @@ public final class TradeUtils {
             fraction, minorName));
       }
     });
+  }
+
+  public static void registerTotalRenderer(String gridName, String columnName) {
+    if (totalRenderer == null) {
+      totalRenderer = new TotalRenderer.Provider();
+    }
+    RendererFactory.registerGcrProvider(gridName, columnName, totalRenderer);
   }
 
   private TradeUtils() {

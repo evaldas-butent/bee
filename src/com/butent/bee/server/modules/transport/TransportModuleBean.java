@@ -28,6 +28,7 @@ import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlCreate;
@@ -37,6 +38,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -88,7 +90,6 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -238,12 +239,80 @@ public class TransportModuleBean implements BeeModule {
       } else {
         response = ResponseObject.error("Import type not recognized");
       }
+    } else if (BeeUtils.same(svc, SVC_GET_CREDIT_INFO)) {
+      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CUSTOMER)));
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  private ResponseObject getCreditInfo(Long companyId) {
+    Assert.notNull(companyId);
+
+    SimpleRow company = qs.getRow(new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, "CreditLimit1", "CreditDays", "LimitCurrency")
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ExchangeUtils.COL_CURRENCY)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_CURRENCIES,
+            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, "LimitCurrency"))
+        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+
+    Map<String, String> resp = Maps.newLinkedHashMap();
+
+    if (company != null) {
+      double limit = BeeUtils.unbox(company.getDouble("CreditLimit1"));
+      Long curr = company.getLong("LimitCurrency");
+      String currName = company.getValue(ExchangeUtils.COL_CURRENCY);
+      int days = BeeUtils.unbox(company.getInt("CreditDays"));
+
+      SqlSelect query = new SqlSelect()
+          .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
+          .addFrom(TBL_SALES)
+          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
+              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
+              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
+
+      if (DataUtils.isId(curr)) {
+        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_AMOUNT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
+            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_PAID,
+                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
+      } else {
+        query.addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_AMOUNT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
+            .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
+                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
+      }
+      double credit = 0.0;
+      double overdue = 0.0;
+
+      for (SimpleRow row : qs.getData(query)) {
+        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))
+            - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
+
+        int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
+            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
+
+        if (dayDiff > 0) {
+          overdue += xxx;
+        }
+        credit += xxx;
+      }
+      if (credit > 0) {
+        resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
+        resp.put("Kreditas", BeeUtils.joinWords(limit, currName));
+        resp.put("Atidėjimas", BeeUtils.joinWords(days, "d."));
+        resp.put("Skola", BeeUtils.joinWords(BeeUtils.round(credit, 2), currName));
+        resp.put("Pradelsta skola", BeeUtils.joinWords(BeeUtils.round(overdue, 2), currName));
+      }
+    }
+    return ResponseObject.response(resp);
   }
 
   private ResponseObject importCosts(Long optionId, Long fileId) {
@@ -386,9 +455,8 @@ public class TransportModuleBean implements BeeModule {
               break;
             }
           } else if (BeeUtils.same(fld, COL_COSTS_DATE)) {
-            value = BeeUtils.toString(new JustDate(Integer.valueOf(value.substring(0, 4)),
-                Integer.valueOf(value.substring(4, 6)),
-                Integer.valueOf(value.substring(6, 8))).getTime());
+            JustDate date = TimeUtils.parseDate(value);
+            value = date != null ? BeeUtils.toString(date.getTime()) : null;
           }
           insert.addNotEmpty(fld, value);
         }
@@ -583,7 +651,7 @@ public class TransportModuleBean implements BeeModule {
                 .addGroup(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS));
 
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
-                SqlUtils.field(tbl, COL_AMOUNT),
+                TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
                 SqlUtils.field(tbl, ExchangeUtils.COL_CURRENCY),
                 SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
                 SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY));
@@ -740,7 +808,7 @@ public class TransportModuleBean implements BeeModule {
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDER_NO)
         .addFields(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
-        .addFields(TBL_CARGO_INCOMES, COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC)
+        .addFields(TBL_CARGO_INCOMES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
@@ -752,7 +820,7 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(wh, SqlUtils.positive(TBL_CARGO_INCOMES, COL_AMOUNT)))
         .addGroup(TBL_ORDERS, COL_ORDER_NO)
         .addGroup(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
-        .addGroup(TBL_CARGO_INCOMES, COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC);
+        .addGroup(TBL_CARGO_INCOMES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
 
     if (DataUtils.isId(mainItem)) {
       ss.addConstant(mainItem, COL_ITEM);
@@ -786,8 +854,9 @@ public class TransportModuleBean implements BeeModule {
           .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
           .addConstant(COL_TRADE_ITEM_PRICE,
               BeeUtils.round(amount * row.getDouble(COL_AMOUNT) / totalAmount, 2))
-          .addConstant(COL_TRADE_ITEM_VAT, row.getDouble(COL_TRADE_ITEM_VAT))
-          .addConstant(COL_TRADE_ITEM_VAT_PERC, row.getBoolean(COL_TRADE_ITEM_VAT_PERC))
+          .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))
+          .addConstant(COL_TRADE_VAT, row.getDouble(COL_TRADE_VAT))
+          .addConstant(COL_TRADE_VAT_PERC, row.getBoolean(COL_TRADE_VAT_PERC))
           .addConstant(COL_TRADE_ITEM_NOTE, xml);
 
       qs.insertData(insert);
@@ -820,7 +889,8 @@ public class TransportModuleBean implements BeeModule {
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDER_NO)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_CMR)
-        .addFields(TBL_CARGO_INCOMES, COL_CARGO, COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC)
+        .addFields(TBL_CARGO_INCOMES,
+            COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addField(loadPlace, COL_DATE, COL_LOADING_PLACE)
         .addField(unloadPlace, COL_DATE, COL_UNLOADING_PLACE)
         .addField(loadPlace, COL_POST_INDEX, loadPlace)
@@ -851,7 +921,8 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(wh)
         .addGroup(TBL_ORDERS, COL_ORDER_NO)
         .addGroup(TBL_ORDER_CARGO, COL_CARGO_CMR)
-        .addGroup(TBL_CARGO_INCOMES, COL_CARGO, COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC)
+        .addGroup(TBL_CARGO_INCOMES,
+            COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addGroup(loadPlace, COL_DATE, COL_POST_INDEX)
         .addGroup(unloadPlace, COL_DATE, COL_POST_INDEX)
         .addGroup(loadCity, COL_CITY_NAME)
@@ -935,8 +1006,9 @@ public class TransportModuleBean implements BeeModule {
           .addConstant(COL_ITEM, row.getLong(COL_ITEM))
           .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
           .addConstant(COL_TRADE_ITEM_PRICE, row.getDouble(COL_AMOUNT))
-          .addConstant(COL_TRADE_ITEM_VAT, row.getDouble(COL_TRADE_ITEM_VAT))
-          .addConstant(COL_TRADE_ITEM_VAT_PERC, row.getBoolean(COL_TRADE_ITEM_VAT_PERC))
+          .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))
+          .addConstant(COL_TRADE_VAT, row.getDouble(COL_TRADE_VAT))
+          .addConstant(COL_TRADE_VAT_PERC, row.getBoolean(COL_TRADE_VAT_PERC))
           .addConstant(COL_TRADE_ITEM_NOTE, xml);
 
       qs.insertData(insert);
@@ -962,7 +1034,8 @@ public class TransportModuleBean implements BeeModule {
           .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
           .setWhere(SqlUtils.equals(tbl, COL_CARGO, cargoId));
 
-      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss, SqlUtils.field(tbl, COL_AMOUNT),
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+          TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
           SqlUtils.field(tbl, ExchangeUtils.COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
           SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY));
@@ -2078,7 +2151,7 @@ public class TransportModuleBean implements BeeModule {
     if (timerExists) {
       try {
         erpTimer.cancel();
-      } catch (NoSuchObjectLocalException e) {
+      } catch (Exception e) {
         logger.error(e, "ERP");
       }
       erpTimer = null;
@@ -2106,7 +2179,7 @@ public class TransportModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY, COL_TRADE_VAT_INCL,
+            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY,
             COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
         .addFrom(trade)
@@ -2190,6 +2263,8 @@ public class TransportModuleBean implements BeeModule {
       if (invoices.hasColumn(COL_SALE_PAYER)) {
         doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
       }
+      doc.setInvoice(invoice.getValue(COL_TRADE_INVOICE_PREFIX),
+          invoice.getValue(COL_TRADE_INVOICE_NO));
       doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
       doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
@@ -2197,7 +2272,7 @@ public class TransportModuleBean implements BeeModule {
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
           .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-              COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC, COL_TRADE_ITEM_NOTE)
+              COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
           .addFrom(tradeItems)
           .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
@@ -2212,8 +2287,8 @@ public class TransportModuleBean implements BeeModule {
             item.getValue(COL_TRADE_ITEM_QUANTITY));
 
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
-        wsItem.setVat(item.getValue(COL_TRADE_ITEM_VAT), invoice.getBoolean(COL_TRADE_VAT_INCL),
-            item.getBoolean(COL_TRADE_ITEM_VAT_PERC));
+        wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
+            item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
       }
       if (response.hasErrors()) {

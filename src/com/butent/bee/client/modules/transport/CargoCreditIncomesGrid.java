@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_ITEM;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -29,9 +30,9 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -90,13 +91,14 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
         Map<Long, String> currencies = Maps.newHashMap();
 
         boolean itemEmpty = false;
+        DataInfo info = Data.getDataInfo(VIEW_CARGO_CREDIT_INCOMES);
 
-        int item = Data.getColumnIndex(VIEW_CARGO_CREDIT_INCOMES, CommonsConstants.COL_ITEM);
-        int order = Data.getColumnIndex(VIEW_CARGO_CREDIT_INCOMES, COL_ORDER_NO);
-        int custId = Data.getColumnIndex(VIEW_CARGO_CREDIT_INCOMES, COL_CUSTOMER);
-        int custName = Data.getColumnIndex(VIEW_CARGO_CREDIT_INCOMES, COL_CUSTOMER_NAME);
-        int currId = Data.getColumnIndex(VIEW_CARGO_CREDIT_INCOMES, ExchangeUtils.COL_CURRENCY);
-        int currName = Data.getColumnIndex(VIEW_CARGO_CREDIT_INCOMES, ExchangeUtils.COL_CURRENCY
+        int item = info.getColumnIndex(COL_ITEM);
+        int order = info.getColumnIndex(COL_ORDER_NO);
+        int custId = info.getColumnIndex(COL_CUSTOMER);
+        int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
+        int currId = info.getColumnIndex(ExchangeUtils.COL_CURRENCY);
+        int currName = info.getColumnIndex(ExchangeUtils.COL_CURRENCY
             + ExchangeUtils.COL_CURRENCY_NAME);
 
         for (BeeRow row : result.getRows()) {
@@ -122,7 +124,6 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
         BeeRow newRow = RowFactory.createEmptyRow(purchaseInfo, true);
 
         newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
-        newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_VAT_INCL), true);
 
         if (customers.size() == 1) {
           for (Entry<Long, String> entry : customers.entrySet()) {

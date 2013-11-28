@@ -8,6 +8,8 @@ import com.butent.bee.client.communication.ParameterList;
 public final class TradeKeeper {
 
   public static void register() {
+    TradeUtils.registerTotalRenderer(TBL_SALE_ITEMS, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_PURCHASE_ITEMS, VAR_TOTAL);
   }
 
   static ParameterList createArgs(String name) {
