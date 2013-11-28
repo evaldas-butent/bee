@@ -136,6 +136,7 @@ public final class CommonsConstants {
 
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
+  public static final String SVC_CREATE_COMPANY = "create_company";
 
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";

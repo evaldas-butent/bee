@@ -6,13 +6,15 @@
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />
-    <DataColumn name="Status" visible="true" />
     
     <RelColumn name="User" visible="true" editEnabled="true" editSource="CustomerCompany" >
       <renderToken source="CustomerCompanyName" suffix=", " />
       <renderToken source="CustomerFirstName" />
       <renderToken source="CustomerLastName" />
     </RelColumn>
+
+    <DataColumn name="Status" visible="true" />
+    <RelColumn name="Order" editEnabled="true" />
 
     <DataColumn name="LoadingDate" />
     <RelColumn name="LoadingCompany" visible="false" />

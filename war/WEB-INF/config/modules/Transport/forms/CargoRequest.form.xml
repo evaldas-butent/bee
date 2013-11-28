@@ -33,6 +33,8 @@
       <row>
         <Label text="=trRequestStatus" class="bee-required" />
         <ListBox source="Status" />
+        <Label text="=trOrder" />
+        <DataSelector source="Order" readOnly="true" />
       </row>
     </Table>
     &separator;

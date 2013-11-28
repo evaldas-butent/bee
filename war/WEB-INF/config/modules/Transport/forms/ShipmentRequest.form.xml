@@ -3,7 +3,7 @@
   <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
   <!ENTITY table "border-collapse: collapse;">
   <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
-  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" />'>
+  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" /><col index="4" cellStyle="&colLabel;" />'>
   <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY area "width: 200px; height: 40px;">
@@ -25,6 +25,8 @@
         <InputDateTime source="Date" />
         <Label text="=trRequestStatus" class="bee-required bee-hasDefaults" />
         <ListBox source="Status" />
+        <Label text="=trOrder" />
+        <DataSelector source="Order" readOnly="true" />
       </row>
     </Table>
     &separator;

@@ -45,6 +45,11 @@
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
+      <SimpleColumn name="Order" editable="true" />
+      <SimpleJoin name="Order" joinType="LEFT">
+        <SimpleColumn name="OrderNo" />
+      </SimpleJoin>
+
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
         <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"

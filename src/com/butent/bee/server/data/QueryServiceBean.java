@@ -355,7 +355,17 @@ public class QueryServiceBean {
         .addFields(tableName, sys.getIdName(tableName))
         .addFrom(tableName)
         .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
-    
+
+    SimpleRowSet data = getData(query);
+    return DataUtils.isEmpty(data) ? null : data.getLong(0, 0);
+  }
+
+  public Long getId(String tableName, String f1, Object v1, String f2, Object v2) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, sys.getIdName(tableName))
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, f1, v1, f2, v2));
+
     SimpleRowSet data = getData(query);
     return DataUtils.isEmpty(data) ? null : data.getLong(0, 0);
   }
@@ -493,26 +503,26 @@ public class QueryServiceBean {
   public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
-  
+
     String tableName = view.getSourceName();
     String tableAlias = view.getSourceAlias();
-  
+
     sys.filterVisibleState(query, tableName, tableAlias);
-  
+
     BeeTable table = sys.getTable(tableName);
     String stateAlias = table.joinState(query, tableAlias, RightsState.EDITABLE);
-  
+
     if (!BeeUtils.isEmpty(stateAlias)) {
       query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDITABLE,
           table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
           EDITABLE_STATE_COLUMN);
     }
-  
+
     activateTables(query);
-  
+
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
     sys.postDataEvent(event);
-  
+
     return processSql(null, query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
@@ -520,7 +530,7 @@ public class QueryServiceBean {
         sys.postDataEvent(event);
         return event.getRowset();
       }
-  
+
       @Override
       public BeeRowSet processUpdateCount(int updateCount) {
         throw new BeeRuntimeException("Query must return a ResultSet");

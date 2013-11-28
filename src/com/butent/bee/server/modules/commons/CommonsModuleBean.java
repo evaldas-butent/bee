@@ -88,6 +88,31 @@ public class CommonsModuleBean implements BeeModule {
   private static final Splitter ID_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
+  private static Collection<? extends BeeParameter> getSqlEngineParameters() {
+    List<BeeParameter> params = Lists.newArrayList();
+
+    for (SqlEngine engine : SqlEngine.values()) {
+      BeeParameter param = new BeeParameter(COMMONS_MODULE,
+          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), ParameterType.MAP,
+          BeeUtils.joinWords("Duomenų bazės", engine, "klaidų pranešimai"), false, null);
+
+      switch (engine) {
+        case GENERIC:
+        case MSSQL:
+        case ORACLE:
+          break;
+        case POSTGRESQL:
+          param.setValue(ImmutableMap
+              .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
+                  "Tokia reikšmė jau egzistuoja: $1",
+                  ".+violates foreign key constraint.+from table \"(.+)\"\\.",
+                  "Įrašas naudojamas lentelėje \"$1\""));
+          break;
+      }
+      params.add(param);
+    }
+    return params;
+  }
   @EJB
   SystemBean sys;
   @EJB
@@ -98,6 +123,7 @@ public class CommonsModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   ParamHolderBean prm;
+
   @Resource
   EJBContext ctx;
 
@@ -164,6 +190,8 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_EXCHANGE_RATES_BY_CURRENCY)) {
       response = getExchangeRatesByCurrency(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY)) {
+      response = createCompany(reqInfo);
     } else if (BeeUtils.same(svc, SVC_CREATE_USER)) {
       response = createUser(reqInfo);
     } else if (BeeUtils.same(svc, SVC_BLOCK_HOST)) {
@@ -215,6 +243,13 @@ public class CommonsModuleBean implements BeeModule {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      public void refreshIpFilterCache(TableModifyEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
+          sys.initIpFilters();
+        }
+      }
+
+      @Subscribe
       public void refreshRightsCache(TableModifyEvent event) {
         if (usr.isRightsTable(event.getTargetName()) && event.isAfter()) {
           usr.initRights();
@@ -226,13 +261,6 @@ public class CommonsModuleBean implements BeeModule {
         if ((usr.isRoleTable(event.getTargetName()) || usr.isUserTable(event.getTargetName()))
             && event.isAfter()) {
           usr.initUsers();
-        }
-      }
-
-      @Subscribe
-      public void refreshIpFilterCache(TableModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
-          sys.initIpFilters();
         }
       }
 
@@ -289,6 +317,158 @@ public class CommonsModuleBean implements BeeModule {
     } else {
       return ResponseObject.response(host);
     }
+  }
+
+  private ResponseObject createCity(String name, Long country) {
+    Long city;
+    if (country == null) {
+      city = qs.getId(TBL_CITIES, COL_CITY_NAME, name);
+    } else {
+      city = qs.getId(TBL_CITIES, COL_CITY_NAME, name, COL_COUNTRY, country);
+    }
+
+    if (city == null && country != null) {
+      SqlInsert insert = new SqlInsert(TBL_CITIES)
+          .addConstant(COL_CITY_NAME, name)
+          .addConstant(COL_COUNTRY, country);
+      return qs.insertDataWithResponse(insert);
+    } else {
+      return ResponseObject.response(country);
+    }
+  }
+
+  private ResponseObject createCompany(RequestInfo reqInfo) {
+    String companyName = reqInfo.getParameter(COL_COMPANY_NAME);
+    if (BeeUtils.isEmpty(companyName)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_COMPANY, COL_COMPANY_NAME);
+    }
+
+    Long company = qs.getId(TBL_COMPANIES, COL_COMPANY_NAME, companyName);
+    if (company != null) {
+      return ResponseObject.response(company);
+    }
+
+    String companyCode = reqInfo.getParameter(COL_COMPANY_CODE);
+    if (!BeeUtils.isEmpty(companyCode)) {
+      company = qs.getId(TBL_COMPANIES, COL_COMPANY_CODE, companyCode);
+      if (company != null) {
+        logger.warning(SVC_CREATE_COMPANY, COL_COMPANY_NAME, companyName, "not found",
+            COL_COMPANY_CODE, companyCode, "found id", company);
+        return ResponseObject.response(company);
+      }
+    }
+
+    String vatCode = reqInfo.getParameter(COL_COMPANY_VAT_CODE);
+    String exchangeCode = reqInfo.getParameter(COL_COMPANY_EXCHANGE_CODE);
+
+    String email = reqInfo.getParameter(COL_EMAIL);
+    if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
+      logger.warning(usr.getLocalizableMesssages().valueExists(
+          usr.getLocalizableConstants().email(), email), "ignored");
+      email = null;
+    }
+
+    String address = reqInfo.getParameter(COL_ADDRESS);
+    String cityName = reqInfo.getParameter(COL_CITY);
+    String countryName = reqInfo.getParameter(COL_COUNTRY);
+
+    String phone = reqInfo.getParameter(COL_PHONE);
+    String mobile = reqInfo.getParameter(COL_MOBILE);
+    String fax = reqInfo.getParameter(COL_FAX);
+
+    List<BeeColumn> columns = sys.getView(VIEW_COMPANIES).getRowSetColumns();
+    BeeRow row = DataUtils.createEmptyRow(columns.size());
+
+    row.setValue(DataUtils.getColumnIndex(COL_COMPANY_NAME, columns), companyName);
+
+    if (!BeeUtils.isEmpty(companyCode)) {
+      row.setValue(DataUtils.getColumnIndex(COL_COMPANY_CODE, columns), companyCode);
+    }
+    if (!BeeUtils.isEmpty(vatCode)) {
+      row.setValue(DataUtils.getColumnIndex(COL_COMPANY_VAT_CODE, columns), vatCode);
+    }
+    if (!BeeUtils.isEmpty(exchangeCode)) {
+      row.setValue(DataUtils.getColumnIndex(COL_COMPANY_EXCHANGE_CODE, columns), exchangeCode);
+    }
+
+    ResponseObject response;
+
+    if (!BeeUtils.isEmpty(email)) {
+      response = createEmail(email, companyName);
+      if (response.hasErrors()) {
+        return response;
+      }
+      row.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, columns), response.getResponseAsLong());
+    }
+
+    Long country;
+    if (!BeeUtils.isEmpty(countryName)) {
+      response = createCountry(countryName);
+      if (response.hasErrors()) {
+        return response;
+      }
+
+      country = response.getResponseAsLong();
+      if (country != null) {
+        row.setValue(DataUtils.getColumnIndex(COL_COUNTRY, columns), country);
+      }
+    } else {
+      country = null;
+    }
+
+    if (!BeeUtils.isEmpty(cityName)) {
+      response = createCity(cityName, country);
+      if (response.hasErrors()) {
+        return response;
+      }
+ 
+      Long city = response.getResponseAsLong();
+      if (city != null) {
+        row.setValue(DataUtils.getColumnIndex(COL_CITY, columns), city);
+      }
+    }
+
+    if (!BeeUtils.isEmpty(address)) {
+      row.setValue(DataUtils.getColumnIndex(COL_ADDRESS, columns), address);
+    }
+
+    if (!BeeUtils.isEmpty(phone)) {
+      row.setValue(DataUtils.getColumnIndex(COL_PHONE, columns), phone);
+    }
+    if (!BeeUtils.isEmpty(mobile)) {
+      row.setValue(DataUtils.getColumnIndex(COL_MOBILE, columns), mobile);
+    }
+    if (!BeeUtils.isEmpty(fax)) {
+      row.setValue(DataUtils.getColumnIndex(COL_FAX, columns), fax);
+    }
+
+    BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_COMPANIES, columns, row);
+    response = deb.commitRow(rowSet, false);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    company = ((BeeRow) response.getResponse()).getId();
+    return ResponseObject.response(company);
+  }
+
+  private ResponseObject createCountry(String name) {
+    Long country = qs.getId(TBL_COUNTRIES, COL_COUNTRY_NAME, name);
+
+    if (country == null) {
+      SqlInsert insert = new SqlInsert(TBL_COUNTRIES).addConstant(COL_COUNTRY_NAME, name);
+      return qs.insertDataWithResponse(insert);
+    } else {
+      return ResponseObject.response(country);
+    }
+  }
+
+  private ResponseObject createEmail(String address, String label) {
+    SqlInsert insert = new SqlInsert(TBL_EMAILS)
+        .addConstant(COL_EMAIL_ADDRESS, address)
+        .addNotEmpty(COL_EMAIL_LABEL, label);
+
+    return qs.insertDataWithResponse(insert);
   }
 
   private ResponseObject createUser(RequestInfo reqInfo) {
@@ -372,11 +552,7 @@ public class CommonsModuleBean implements BeeModule {
     cpRow.setValue(DataUtils.getColumnIndex(COL_PERSON, cpColumns), person);
 
     if (!BeeUtils.isEmpty(email)) {
-      SqlInsert insEmail = new SqlInsert(TBL_EMAILS)
-          .addConstant(COL_EMAIL_ADDRESS, email)
-          .addNotEmpty(COL_EMAIL_LABEL, BeeUtils.joinWords(firstName, lastName));
-
-      response = qs.insertDataWithResponse(insEmail);
+      response = createEmail(email, BeeUtils.joinWords(firstName, lastName));
       if (response.hasErrors()) {
         return response;
       }
@@ -405,19 +581,12 @@ public class CommonsModuleBean implements BeeModule {
 
     Long country;
     if (!BeeUtils.isEmpty(countryName)) {
-      country = qs.getId(TBL_COUNTRIES, COL_COUNTRY_NAME, countryName);
-
-      if (country == null) {
-        SqlInsert insCountry = new SqlInsert(TBL_COUNTRIES)
-            .addConstant(COL_COUNTRY_NAME, countryName);
-
-        response = qs.insertDataWithResponse(insCountry);
-        if (response.hasErrors()) {
-          return response;
-        }
-        country = response.getResponseAsLong();
+      response = createCountry(countryName);
+      if (response.hasErrors()) {
+        return response;
       }
 
+      country = response.getResponseAsLong();
       if (country != null) {
         cpRow.setValue(DataUtils.getColumnIndex(COL_COUNTRY, cpColumns), country);
       }
@@ -426,20 +595,12 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     if (!BeeUtils.isEmpty(cityName)) {
-      Long city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName);
-
-      if (city == null && country != null) {
-        SqlInsert insCity = new SqlInsert(TBL_CITIES)
-            .addConstant(COL_CITY_NAME, cityName)
-            .addConstant(COL_COUNTRY, country);
-
-        response = qs.insertDataWithResponse(insCity);
-        if (response.hasErrors()) {
-          return response;
-        }
-        city = response.getResponseAsLong();
+      response = createCity(cityName, country);
+      if (response.hasErrors()) {
+        return response;
       }
 
+      Long city = response.getResponseAsLong();
       if (city != null) {
         cpRow.setValue(DataUtils.getColumnIndex(COL_CITY, cpColumns), city);
       }
@@ -720,6 +881,14 @@ public class CommonsModuleBean implements BeeModule {
     }
   }
 
+  private String getExchangeRatesRemoteAddress() {
+    if (prm.hasModuleParameter(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS)) {
+      return prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    } else {
+      return null;
+    }
+  }
+
   private ResponseObject getHistory(String viewName, Collection<Long> idList) {
     LocalizableConstants loc = usr.getLocalizableConstants();
 
@@ -867,40 +1036,6 @@ public class CommonsModuleBean implements BeeModule {
     return ResponseObject.response(rs);
   }
 
-  private static Collection<? extends BeeParameter> getSqlEngineParameters() {
-    List<BeeParameter> params = Lists.newArrayList();
-
-    for (SqlEngine engine : SqlEngine.values()) {
-      BeeParameter param = new BeeParameter(COMMONS_MODULE,
-          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), ParameterType.MAP,
-          BeeUtils.joinWords("Duomenų bazės", engine, "klaidų pranešimai"), false, null);
-
-      switch (engine) {
-        case GENERIC:
-        case MSSQL:
-        case ORACLE:
-          break;
-        case POSTGRESQL:
-          param.setValue(ImmutableMap
-              .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
-                  "Tokia reikšmė jau egzistuoja: $1",
-                  ".+violates foreign key constraint.+from table \"(.+)\"\\.",
-                  "Įrašas naudojamas lentelėje \"$1\""));
-          break;
-      }
-      params.add(param);
-    }
-    return params;
-  }
-
-  private String getExchangeRatesRemoteAddress() {
-    if (prm.hasModuleParameter(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS)) {
-      return prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
-    } else {
-      return null;
-    }
-  }
-
   private ResponseObject getListOfCurrencies() {
     String address = getExchangeRatesRemoteAddress();
 
@@ -1009,7 +1144,7 @@ public class CommonsModuleBean implements BeeModule {
 
       int deleteCount = (int) deleteResponse.getResponse();
       int insertCount = 0;
-      
+
       for (SimpleRow rateRow : rates) {
         DateTime date = TimeUtils.parseDateTime(rateRow.getValue(COL_CURRENCY_RATE_DATE));
         Integer quantity = rateRow.getInt(COL_CURRENCY_RATE_QUANTITY);
@@ -1027,10 +1162,10 @@ public class CommonsModuleBean implements BeeModule {
             response.addErrorsFrom(insertResponse);
             break;
           }
-          
+
           insertCount++;
         }
-        
+
         if (response.hasErrors()) {
           break;
         }
@@ -1039,10 +1174,10 @@ public class CommonsModuleBean implements BeeModule {
       if (response.hasErrors()) {
         break;
       }
-      
+
       String delMsg = (deleteCount > 0) ? BeeUtils.toString(-deleteCount) : null;
       String insMsg = BeeConst.STRING_PLUS + insertCount;
-      
+
       response.addInfo(currencyName, delMsg, insMsg);
     }
 
