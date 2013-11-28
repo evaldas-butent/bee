@@ -426,6 +426,8 @@ public final class TransportConstants {
   public static final String TBL_FUEL_TYPES = "FuelTypes";
 
   public static final String TBL_REGISTRATIONS = "TranspRegistrations";
+  public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
+  public static final String TBL_CARGO_REQUESTS = "CargoRequests";
 
   public static final String TBL_IMPORT_OPTIONS = "ImportOptions";
   public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
@@ -698,10 +700,13 @@ public final class TransportConstants {
   public static final String COL_TRAILER_ITEM_OPACITY = "TrailerItemOpacity";
   public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
 
+  public static final String COL_CARGO_REQUEST_USER = "User";
   public static final String COL_CARGO_REQUEST_STATUS = "Status";
   public static final String COL_CARGO_REQUEST_EXPEDITION = "Expedition";
+  public static final String COL_CARGO_REQUEST_CARGO = "Cargo";
 
   public static final String COL_CARGO_REQUEST_TEMPLATE_NAME = "Name";
+  public static final String COL_CARGO_REQUEST_TEMPLATE_USER = "User";
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_STATUS = "Status";

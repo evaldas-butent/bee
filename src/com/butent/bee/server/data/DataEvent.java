@@ -14,10 +14,6 @@ import java.util.List;
 
 public abstract class DataEvent {
 
-  private final String targetName;
-  private List<String> errors;
-  private boolean afterStage;
-
   public static class TableModifyEvent extends DataEvent {
     private final IsQuery query;
     private int updateCount;
@@ -40,13 +36,6 @@ public abstract class DataEvent {
       setAfter();
     }
   }
-
-  public abstract static class ViewModifyEvent extends DataEvent {
-    ViewModifyEvent(String viewName) {
-      super(viewName);
-    }
-  }
-
   public static class ViewDeleteEvent extends ViewModifyEvent {
     private final List<Long> ids;
 
@@ -61,7 +50,6 @@ public abstract class DataEvent {
       return ids;
     }
   }
-
   public static class ViewInsertEvent extends ViewModifyEvent {
     private final List<BeeColumn> columns;
     private final BeeRow row;
@@ -84,25 +72,9 @@ public abstract class DataEvent {
     }
   }
 
-  public static class ViewUpdateEvent extends ViewModifyEvent {
-    private final List<BeeColumn> columns;
-    private final BeeRow row;
-
-    ViewUpdateEvent(String viewName, List<BeeColumn> columns, BeeRow row) {
+  public abstract static class ViewModifyEvent extends DataEvent {
+    ViewModifyEvent(String viewName) {
       super(viewName);
-      Assert.notEmpty(columns);
-      Assert.notNull(row);
-
-      this.columns = columns;
-      this.row = row;
-    }
-
-    public List<BeeColumn> getColumns() {
-      return columns;
-    }
-
-    public BeeRow getRow() {
-      return row;
     }
   }
 
@@ -131,6 +103,36 @@ public abstract class DataEvent {
     }
   }
 
+  public static class ViewUpdateEvent extends ViewModifyEvent {
+    private final List<BeeColumn> columns;
+    private final BeeRow row;
+
+    ViewUpdateEvent(String viewName, List<BeeColumn> columns, BeeRow row) {
+      super(viewName);
+      Assert.notEmpty(columns);
+      Assert.notNull(row);
+
+      this.columns = columns;
+      this.row = row;
+    }
+
+    public List<BeeColumn> getColumns() {
+      return columns;
+    }
+
+    public BeeRow getRow() {
+      return row;
+    }
+  }
+
+  private final String targetName;
+
+  private List<String> errors;
+
+  private boolean afterStage;
+
+  private Object userObject;
+
   private DataEvent(String targetName) {
     Assert.notEmpty(targetName);
     this.targetName = targetName;
@@ -149,6 +151,10 @@ public abstract class DataEvent {
     return targetName;
   }
 
+  public Object getUserObject() {
+    return userObject;
+  }
+
   public boolean hasErrors() {
     return !BeeUtils.isEmpty(errors);
   }
@@ -159,6 +165,10 @@ public abstract class DataEvent {
 
   public boolean isBefore() {
     return !isAfter();
+  }
+
+  public void setUserObject(Object userObject) {
+    this.userObject = userObject;
   }
 
   List<String> getErrorMessages() {

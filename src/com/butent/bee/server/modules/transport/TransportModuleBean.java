@@ -15,6 +15,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -64,6 +65,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -661,6 +663,64 @@ public class TransportModuleBean implements BeeModule {
             for (BeeRow row : event.getRowset().getRows()) {
               row.setProperty((i == 0) ? VAR_INCOME : VAR_EXPENSE,
                   rs.getValueByKey(COL_ASSESSOR, BeeUtils.toString(row.getId()), VAR_TOTAL));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void deleteOrphanCargo(ViewDeleteEvent event) {
+        if (BeeUtils.inListSame(event.getTargetName(), VIEW_SHIPMENT_REQUESTS,
+            VIEW_CARGO_REQUESTS)) {
+
+          if (event.isBefore()) {
+            String tableName;
+            String columnName;
+
+            if (BeeUtils.same(event.getTargetName(), VIEW_SHIPMENT_REQUESTS)) {
+              tableName = TBL_SHIPMENT_REQUESTS;
+              columnName = COL_QUERY_CARGO;
+            } else if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUESTS)) {
+              tableName = TBL_CARGO_REQUESTS;
+              columnName = COL_CARGO_REQUEST_CARGO;
+            } else {
+              tableName = null;
+              columnName = null;
+            }
+
+            if (tableName == null) {
+              return;
+            }
+
+            SqlSelect query =
+                new SqlSelect().addFields(tableName, columnName).addFrom(tableName)
+                    .addFromInner(TBL_ORDER_CARGO,
+                        sys.joinTables(TBL_ORDER_CARGO, tableName, columnName))
+                    .setWhere(SqlUtils.and(
+                        SqlUtils.inList(tableName, sys.getIdName(tableName), event.getIds()),
+                        SqlUtils.isNull(TBL_ORDER_CARGO, COL_ORDER)));
+
+            Long[] cargos = qs.getLongColumn(query);
+            if (ArrayUtils.length(cargos) > 0) {
+              Set<Long> orphans = Sets.newHashSet(cargos);
+              event.setUserObject(orphans);
+            } else {
+              event.setUserObject(null);
+            }
+
+          } else if (event.isAfter() && event.getUserObject() instanceof Collection) {
+            Collection<?> orphans = (Collection<?>) event.getUserObject();
+
+            if (!BeeUtils.isEmpty(orphans)) {
+              SqlDelete delete =
+                  new SqlDelete(TBL_ORDER_CARGO)
+                      .setWhere(SqlUtils.inList(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO),
+                          orphans));
+
+              int deleteCount = qs.updateData(delete);
+              if (deleteCount > 0) {
+                logger.debug("deleted", deleteCount, "orphan cargo");
+              }
             }
           }
         }

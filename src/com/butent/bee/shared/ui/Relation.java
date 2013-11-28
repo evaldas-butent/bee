@@ -173,6 +173,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
     return result;
   }
+
   private static List<String> deriveRenderColumns(DataInfo targetInfo, String original,
       String resolved) {
     if (!BeeUtils.same(original, resolved) && targetInfo.containsColumn(original)) {
@@ -196,6 +197,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
     return result.isEmpty() ? DataUtils.getColumnNames(dataInfo.getColumns()) : result;
   }
+
   private static String resolveTarget(DataInfo dataInfo, String colName) {
     return dataInfo.getEditableRelationSource(colName);
   }
@@ -227,6 +229,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   private String viewName;
 
   private Filter filter;
+  private String currentUserFilter;
   private Order order;
 
   private Caching caching;
@@ -244,7 +247,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   private final List<String> searchableColumns = Lists.newArrayList();
 
   private String selectorClass;
-  
+
   private MenuConstants.ITEM_TYPE itemType;
 
   private Integer visibleLines;
@@ -333,6 +336,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     return choiceColumns;
   }
 
+  public String getCurrentUserFilter() {
+    return currentUserFilter;
+  }
+
   public String getEditForm() {
     return getAttribute(UiConstants.ATTR_EDIT_FORM);
   }
@@ -363,6 +370,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     PropertyUtils.addProperties(info,
         "View Name", getViewName(),
         "Filter", getFilter(),
+        "Current User Filter", getCurrentUserFilter(),
         "Order", getOrder(),
         "Caching", getCaching(),
         "Operator", getOperator(),
@@ -505,7 +513,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     if (!BeeUtils.isEmpty(op)) {
       setOperator(EnumUtils.getEnumByName(Operator.class, op));
     }
-    
+
     String sc = getAttribute(ATTR_SELECTOR_CLASS);
     if (!BeeUtils.isEmpty(sc)) {
       setSelectorClass(sc);
@@ -525,6 +533,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
 
     String flt = getAttribute(UiConstants.ATTR_FILTER);
+    String cuf = getAttribute(UiConstants.ATTR_CURRENT_USER_FILTER);
     String ord = getAttribute(UiConstants.ATTR_ORDER);
 
     List<String> displCols = NameUtils.toList(getAttribute(ATTR_CHOICE_COLUMNS));
@@ -556,11 +565,16 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     DataInfo sourceInfo = BeeUtils.isEmpty(getViewName())
         ? null : provider.getDataInfo(getViewName(), true);
 
-    if (sourceInfo != null && !BeeUtils.isEmpty(flt)) {
-      setFilter(sourceInfo.parseFilter(flt));
-    }
-    if (sourceInfo != null && !BeeUtils.isEmpty(ord)) {
-      setOrder(sourceInfo.parseOrder(ord));
+    if (sourceInfo != null) {
+      if (!BeeUtils.isEmpty(flt)) {
+        setFilter(sourceInfo.parseFilter(flt));
+      }
+      if (!BeeUtils.isEmpty(cuf)) {
+        setCurrentUserFilter(cuf);
+      }
+      if (!BeeUtils.isEmpty(ord)) {
+        setOrder(sourceInfo.parseOrder(ord));
+      }
     }
 
     if (!BeeUtils.isEmpty(displCols)) {
@@ -602,7 +616,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
       if (!BeeUtils.isEmpty(renderColumns.get())) {
         if (sourceInfo != null && targetInfo != null && renderTarget()) {
-          int tcLevel = Math.max(targetInfo.getViewColumnLevel(target.get()), 0); 
+          int tcLevel = Math.max(targetInfo.getViewColumnLevel(target.get()), 0);
 
           List<String> fields = Lists.newArrayList();
           for (String columnId : renderColumns.get()) {
@@ -668,7 +682,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   public void replaceTargeColumn(String oldId, String newId) {
     if (!BeeUtils.isEmpty(oldId) && !BeeUtils.isEmpty(newId)
         && !BeeUtils.equalsTrim(oldId, newId)) {
-      
+
       if (getRowRender() != null) {
         getRowRender().replaceColumn(oldId, newId);
       }
@@ -677,7 +691,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
           token.replaceSource(oldId, newId);
         }
       }
-      
+
       if (BeeUtils.same(getOriginalTarget(), oldId)) {
         setOriginalTarget(newId.trim());
       }
@@ -733,6 +747,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     if (!BeeUtils.isEmpty(choiceColumns)) {
       getChoiceColumns().addAll(choiceColumns);
     }
+  }
+
+  public void setCurrentUserFilter(String currentUserFilter) {
+    this.currentUserFilter = currentUserFilter;
   }
 
   public void setEnumKey(String enumKey) {

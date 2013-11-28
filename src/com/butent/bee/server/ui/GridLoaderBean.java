@@ -90,9 +90,6 @@ public class GridLoaderBean {
 
   private static final String ATTR_PARENT = "parent";
 
-  private static final String ATTR_FILTER = "filter";
-  private static final String ATTR_ORDER = "order";
-
   private static final String ATTR_MIN_COLUMN_WIDTH = "minColumnWidth";
   private static final String ATTR_MAX_COLUMN_WIDTH = "maxColumnWidth";
 
@@ -707,11 +704,17 @@ public class GridLoaderBean {
     }
 
     if (view != null) {
-      String filter = src.getAttribute(ATTR_FILTER);
+      String filter = src.getAttribute(UiConstants.ATTR_FILTER);
       if (!BeeUtils.isEmpty(filter)) {
         dst.setFilter(view.parseFilter(filter.trim()));
       }
-      String order = src.getAttribute(ATTR_ORDER);
+
+      String currentUserFilter = src.getAttribute(UiConstants.ATTR_CURRENT_USER_FILTER);
+      if (!BeeUtils.isEmpty(currentUserFilter)) {
+        dst.setCurrentUserFilter(currentUserFilter.trim());
+      }
+
+      String order = src.getAttribute(UiConstants.ATTR_ORDER);
       if (!BeeUtils.isEmpty(order)) {
         dst.setOrder(view.parseOrder(order.trim()));
       }

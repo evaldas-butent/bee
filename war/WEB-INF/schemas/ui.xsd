@@ -429,6 +429,7 @@
     <xs:attribute name="choiceColumns" type="type:nameList" />
     <xs:attribute name="searchableColumns" type="type:nameList" />
     <xs:attribute name="filter" type="xs:normalizedString" />
+    <xs:attribute name="currentUserFilter" type="type:nameType" />
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="caching" type="relationCaching" />
     <xs:attribute name="operator" type="type:operatorType" />

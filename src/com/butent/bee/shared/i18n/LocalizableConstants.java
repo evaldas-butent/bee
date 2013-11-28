@@ -463,6 +463,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String updateExchangeRatesDateLow();
 
   String updateExchangeRatesDialogCaption();
+  
+  String updateExchangeRatesNoCurrencies();
 
   String user();
 

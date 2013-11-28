@@ -3,9 +3,12 @@ package com.butent.bee.client.modules.transport;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -13,7 +16,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.UserInterface;
 
 public class SelfServiceScreen extends ScreenImpl {
@@ -35,7 +37,7 @@ public class SelfServiceScreen extends ScreenImpl {
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            RowFactory.createRow(TransportConstants.VIEW_CARGO_REQUESTS);
+            RowFactory.createRow(VIEW_CARGO_REQUESTS);
           }
         }));
 
@@ -43,7 +45,8 @@ public class SelfServiceScreen extends ScreenImpl {
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            GridFactory.openGrid(TransportConstants.VIEW_CARGO_REQUESTS);
+            GridFactory.openGrid(VIEW_CARGO_REQUESTS,
+                GridOptions.forCurrentUserFilter(COL_CARGO_REQUEST_USER));
           }
         }));
 
@@ -51,7 +54,8 @@ public class SelfServiceScreen extends ScreenImpl {
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            GridFactory.openGrid(TransportConstants.VIEW_CARGO_REQUEST_TEMPLATES);
+            GridFactory.openGrid(VIEW_CARGO_REQUEST_TEMPLATES,
+                GridOptions.forCurrentUserFilter(COL_CARGO_REQUEST_TEMPLATE_USER));
           }
         }));
 
