@@ -18,6 +18,7 @@
     </SimpleJoin>
     <SimpleColumn name="PublishTime" />
     <SimpleColumn name="CommentText" />
+    <SimpleColumn name="Deleted" />
   </Columns>
   <Order>
    <OrderBy column="PublishTime" />

@@ -42,6 +42,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -366,12 +367,22 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
-    SqlDelete del =
-        new SqlDelete(TBL_DISCUSSIONS_COMMENTS).setWhere(SqlUtils.and(SqlUtils.equals(
+    
+    String reasonText =
+        BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
+            .getLocalizableConstants().discussEventCommentDeleted()
+            + " )</i>:", new DateTime().toString() + ",",
+            usr.getCurrentUserData().getFirstName(), usr.getCurrentUserData().getLastName());
+
+    SqlUpdate update =
+        new SqlUpdate(TBL_DISCUSSIONS_COMMENTS)
+            .addConstant(COL_COMMENT_TEXT, reasonText)
+            .addConstant(COL_DELETED, true)
+    .setWhere(SqlUtils.and(SqlUtils.equals(
             TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, discussionId), SqlUtils.equals(
             TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS), commentId)));
     
-    return qs.updateDataWithResponse(del);
+    return qs.updateDataWithResponse(update);
   }
 
   private ResponseObject doDiscussionEvent(String svc, RequestInfo reqInfo) {

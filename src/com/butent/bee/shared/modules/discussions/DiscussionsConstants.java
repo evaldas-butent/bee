@@ -91,6 +91,7 @@ public final class DiscussionsConstants {
   public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_DELETED = "Deleted";
   public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "FileName";
   public static final String COL_FILE_SIZE = "FileSize";

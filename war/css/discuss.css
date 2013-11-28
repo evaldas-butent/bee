@@ -43,9 +43,12 @@
   padding: 4px; 
   border: 1px solid #ccc;
   min-height: 35px;
-  width: 100%/*calc(100% - 330px)*/;
+  width: 100%;
   min-width: 300px;
   margin: -1px 0px -3px 0px;
+ word-wrap: break-word;
+  max-height: 9em;
+  overflow: auto;
 }
 
 .bee-discuss-comment-row {

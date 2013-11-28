@@ -11,5 +11,6 @@
     
     <DateTime name="PublishTime" notNull="true" label="=discussCommentPublished" />
     <Text name="CommentText" label="=discussComment" />
+    <Boolean name="Deleted" defValue="false" />
   </Fields>
 </Table>

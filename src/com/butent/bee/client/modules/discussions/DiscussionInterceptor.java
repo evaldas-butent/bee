@@ -35,7 +35,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
@@ -70,7 +69,6 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -223,6 +221,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_TRASH = "-trash";
   private static final String STYLE_CHATTER = "-chatter";
 
+  private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
+
   private static final String IMAGE_REPLY = "replytoall";
   private static final String IMAGE_TRASH = "silverdelete";
 
@@ -249,6 +249,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         public void onValueChange(ValueChangeEvent<String> event) {
           boolean value = BeeUtils.toBoolean(ac.getValue());
           getMultiSelector(getFormView(), PROP_MEMBERS).setEnabled(!value);
+          getMultiSelector(getFormView(), PROP_MEMBERS).setNullable(value);
+          getLabel(getFormView(), WIDGET_LABEL_MEMBERS).setStyleName(StyleUtils.NAME_REQUIRED,
+              !BeeUtils.toBoolean(ac.getValue()));
+          if (value) {
+            getMultiSelector(getFormView(), PROP_MEMBERS).clearValue();
+          }
         }
       });
     }
@@ -293,22 +299,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new DiscussionInterceptor();
-  }
-
-  @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
-    /*
-     * if (action.equals(Action.SAVE)) { Widget widget =
-     * getFormView().getWidgetBySource(COL_ACCESSIBILITY);
-     * 
-     * if (widget instanceof InputBoolean) { InputBoolean ac = (InputBoolean) widget;
-     * 
-     * if (!BeeUtils.toBoolean(ac.getValue()) && BeeUtils.isEmpty(getMultiSelector(getFormView(),
-     * PROP_MEMBERS).getValue())) { showError(Localized.getConstants().discussSelectMembers());
-     * 
-     * return false; } } }
-     */
-    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -427,6 +417,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return result;
   }
 
+  private static Label getLabel(FormView form, String name) {
+    Widget widget = form.getWidgetByName(name);
+    return (widget instanceof Label) ? (Label) widget : null;
+  }
+
   private static String getDiscussionMembers(FormView form, IsRow row) {
     return DataUtils.buildIdList(DiscussionsUtils.getDiscussionMembers(row, form.getDataColumns()));
   }
@@ -499,6 +494,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private void showComment(Flow panel, BeeRow row, List<BeeColumn> columns,
       List<StoredFile> files, boolean renderPhoto, int paddingLeft) {
 
+    boolean deleted =
+        row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)) == null
+            ? false : row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)).booleanValue();
+
     Flow container = new Flow();
     container.addStyleName(STYLE_COMMENT_ROW);
     container.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
@@ -561,7 +560,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Flow colActions = new Flow();
     colActions.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS);
 
-    if (true /* isEventEnabled(DiscussionEvent.REPLY, getStatus(), getOwner(), false) */) {
+    if (!deleted
+    /* && isEventEnabled(DiscussionEvent.REPLY, getStatus(), getOwner(), false) */) {
       Image imgReply = new Image(Images.get(IMAGE_REPLY));
       imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
       imgReply.setTitle(Localized.getConstants().discussActionReply());
@@ -579,7 +579,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       colActions.add(imgReply);
     }
 
-    if (true/* isEventEnabled(DiscussionEvent.COMMENT_DELETE, getStatus(), getOwner(), false) */) {
+    if (!deleted
+    /* && isEventEnabled(DiscussionEvent.COMMENT_DELETE, getStatus(), getOwner(), false) */) {
       Image imgTrash = new Image(Images.get(IMAGE_TRASH));
       imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
       imgTrash.setTitle(Localized.getConstants().actionDelete());
@@ -926,7 +927,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case MODIFY:
         return isOwner(userId, owner);
       case REPLY:
-        return !showInHeader;
+        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && !showInHeader;
       case VISIT:
         return false;
     }

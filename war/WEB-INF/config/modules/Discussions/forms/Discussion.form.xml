@@ -27,7 +27,8 @@
   <!ENTITY membersInp "&inpLeft; width: 400px;">
   
   <!ENTITY descriptionLbl "&lblRight;">
-  <!ENTITY descriptionInp "&inpLeft; width: calc(100&#37; - 10em);  min-height: 1.5em;">
+  <!ENTITY descriptionInp "&inpLeft; width: calc(100&#37; - 10em); min-height: 1.5em;
+  max-height: 9em; overflow: auto;">
   
   <!ENTITY FilesInp "&inpLeft;">
   
@@ -82,7 +83,7 @@
         </FlowPanel>
 
         <FlowPanel>
-          <Label text="=discussMembers" style="&membersLbl;" />
+          <Label name="membersLabel" text="=discussMembers" style="&membersLbl;" />
           <MultiSelector viewName="Users" property="Members"
             renderColumns="FirstName 
       LastName" editSource="CompanyPerson"

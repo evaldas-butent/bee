@@ -15,6 +15,7 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -26,6 +27,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -46,6 +48,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_ACCESSIBILITY = "Accessibility";
   private static final String WIDGET_DESCRIPTION = "Description";
   private static final String WIDGET_FILES = "Files";
+  private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
 
   CreateDiscussionInterceptor() {
     super();
@@ -78,13 +81,20 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
           MultiSelector ms = getMultiSelector(form, PROP_MEMBERS);
+          Label lbl = getLabel(form, WIDGET_LABEL_MEMBERS);
 
           if (ms != null) {
             ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+            ms.setNullable(BeeUtils.toBoolean(ac.getValue()));
+          }
+
+          if (lbl != null) {
+            lbl.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.toBoolean(ac.getValue()));
           }
         }
       });
-    }
+    }   
+   
   }
 
   @Override
@@ -153,6 +163,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         }
       }
     });
+  }
+
+  private static Label getLabel(FormView form, String name) {
+    Widget widget = form.getWidgetByName(name);
+    return (widget instanceof Label) ? (Label) widget : null;
   }
 
   private static MultiSelector getMultiSelector(FormView form, String source) {
