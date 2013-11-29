@@ -1,11 +1,13 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -32,6 +34,11 @@ public class SelfServiceScreen extends ScreenImpl {
   @Override
   public void start() {
     super.start();
+    
+    Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
+        VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_ORDER_CARGO, VIEW_TRIPS));
+    Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
+        VIEW_CARGO_REQUEST_TEMPLATES));
     
     GridFactory.hideColumn(VIEW_CARGO_REQUESTS, COL_CARGO_REQUEST_USER);
     GridFactory.hideColumn(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);

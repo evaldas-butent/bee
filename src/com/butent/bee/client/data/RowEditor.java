@@ -179,6 +179,10 @@ public final class RowEditor {
               result.setEditing(true);
               result.start(null);
               result.observeData();
+              
+              if (!Data.isViewEditable(dataInfo.getViewName())) {
+                result.setEnabled(false);
+              }
 
               openForm(formDescription, result, dataInfo, row,
                   modal || Popup.getActivePopup() != null, target, rowCallback, presenterCallback);

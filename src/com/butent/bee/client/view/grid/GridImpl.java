@@ -339,7 +339,8 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       }
 
       originalSource = cd.getRelation().getOriginalTarget();
-      relationEditable = cd.getRelation().isEditEnabled(false);
+      relationEditable = cd.getRelation().isEditEnabled(false)
+          && Data.isViewVisible(cd.getRelation().getViewName());
 
     } else {
       originalSource = null;
@@ -660,7 +661,8 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       getGrid().setFooterComponent(gridDescription.getFooter());
     }
 
-    if (BeeUtils.isTrue(gridDescription.isReadOnly())) {
+    if (BeeUtils.isTrue(gridDescription.isReadOnly())
+        || !BeeUtils.isEmpty(getViewName()) && !Data.isViewEditable(getViewName())) {
       getGrid().setReadOnly(true);
     }
 
@@ -1902,8 +1904,8 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   private boolean maybeOpenRelatedData(final EditableColumn editableColumn, final IsRow row,
       int charCode) {
 
-    if (editableColumn == null || !editableColumn.hasRelation()
-        || !editableColumn.getRelation().isEditEnabled(false) || row == null) {
+    if (row == null || editableColumn == null || !editableColumn.hasRelation()
+        || !editableColumn.getRelation().isEditEnabled(false)) {
       return false;
     }
 
@@ -1941,6 +1943,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       }
     }
     if (BeeUtils.isEmpty(editViewName)) {
+      return false;
+    }
+    
+    if (!Data.isViewVisible(editViewName)) {
       return false;
     }
 

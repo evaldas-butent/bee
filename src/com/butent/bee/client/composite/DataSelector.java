@@ -722,7 +722,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowColumns());
     this.newRowCaption = BeeUtils.notEmpty(relation.getNewRowCaption(),
         dataInfo.getNewRowCaption());
-    this.newRowEnabled = relation.isNewRowEnabled();
+    this.newRowEnabled = relation.isNewRowEnabled() && Data.isViewEditable(relation.getViewName());
 
     if (relation.isEditEnabled(true)) {
       String es = relation.getEditSource();
@@ -760,7 +760,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.editForm = ef;
 
       this.editModal = relation.isEditModal();
-      this.editEnabled = !BeeUtils.isEmpty(ev) && !BeeUtils.isEmpty(ef);
+      this.editEnabled = !BeeUtils.isEmpty(ev) && !BeeUtils.isEmpty(ef)
+          && Data.isViewVisible(ev);
 
       int etIndex = BeeConst.UNDEF;
       int esIndex = BeeConst.UNDEF;

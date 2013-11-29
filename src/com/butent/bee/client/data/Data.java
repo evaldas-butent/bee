@@ -2,6 +2,7 @@ package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
@@ -22,12 +23,19 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public final class Data {
 
   private static final DataInfoProvider DATA_INFO_PROVIDER = new DataInfoProvider();
 
   private static final ColumnMapper COLUMN_MAPPER = new ColumnMapper(DATA_INFO_PROVIDER);
+  
+  private static final Set<String> visibleViews = Sets.newHashSet();
+  private static final Set<String> hiddenViews = Sets.newHashSet();
+
+  private static final Set<String> editableViews = Sets.newHashSet();
+  private static final Set<String> readOnlyViews = Sets.newHashSet();
 
   private static BeeLogger logger = LogUtils.getLogger(Data.class);
 
@@ -47,7 +55,7 @@ public final class Data {
     DataInfo dataInfo = getDataInfo(viewName);
     return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount();
   }
-
+  
   public static Boolean getBoolean(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }
@@ -164,6 +172,30 @@ public final class Data {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
 
+  public static boolean isViewEditable(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    } else if (!editableViews.isEmpty()) {
+      return editableViews.contains(viewName);
+    } else if (readOnlyViews.isEmpty()) {
+      return true;
+    } else {
+      return !readOnlyViews.contains(viewName);
+    }
+  }
+
+  public static boolean isViewVisible(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    } else if (!visibleViews.isEmpty()) {
+      return visibleViews.contains(viewName);
+    } else if (hiddenViews.isEmpty()) {
+      return true;
+    } else {
+      return !hiddenViews.contains(viewName);
+    }
+  }
+
   public static void onTableChange(String tableName, Collection<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
     for (String viewName : viewNames) {
@@ -173,6 +205,18 @@ public final class Data {
 
   public static void onViewChange(String viewName, Collection<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
+  }
+
+  public static void setEditableViews(Collection<String> views) {
+    BeeUtils.overwrite(editableViews, views);
+  }
+
+  public static void setHiddenViews(Collection<String> views) {
+    BeeUtils.overwrite(hiddenViews, views);
+  }
+
+  public static void setReadOnlyViews(Collection<String> views) {
+    BeeUtils.overwrite(readOnlyViews, views);
   }
 
   public static void setValue(String viewName, IsRow row, String colName, BigDecimal value) {
@@ -205,6 +249,10 @@ public final class Data {
 
   public static void setValue(String viewName, IsRow row, String colName, String value) {
     COLUMN_MAPPER.setValue(viewName, row, colName, value);
+  }
+
+  public static void setVisibleViews(Collection<String> views) {
+    BeeUtils.overwrite(visibleViews, views);
   }
 
   private Data() {
