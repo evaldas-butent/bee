@@ -113,6 +113,7 @@ public class CommonsModuleBean implements BeeModule {
     }
     return params;
   }
+
   @EJB
   SystemBean sys;
   @EJB
@@ -421,7 +422,7 @@ public class CommonsModuleBean implements BeeModule {
       if (response.hasErrors()) {
         return response;
       }
- 
+
       Long city = response.getResponseAsLong();
       if (city != null) {
         row.setValue(DataUtils.getColumnIndex(COL_CITY, columns), city);
@@ -869,7 +870,7 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     if (TimeUtils.isMore(dateLow, dateHigh)) {
-      return ResponseObject.error(Localized.getConstants().invalidRange(), dateLow, dateHigh);
+      return ResponseObject.error(usr.getLocalizableConstants().invalidRange(), dateLow, dateHigh);
     }
 
     String address = getExchangeRatesRemoteAddress();
@@ -1060,7 +1061,7 @@ public class CommonsModuleBean implements BeeModule {
     JustDate dateHigh = new JustDate(BeeUtils.toInt(high));
 
     if (TimeUtils.isMore(dateLow, dateHigh)) {
-      return ResponseObject.error(Localized.getConstants().invalidRange(), dateLow, dateHigh);
+      return ResponseObject.error(usr.getLocalizableConstants().invalidRange(), dateLow, dateHigh);
     }
 
     String currencyIdName = sys.getIdName(TBL_CURRENCIES);
@@ -1073,7 +1074,8 @@ public class CommonsModuleBean implements BeeModule {
 
     SimpleRowSet currencies = qs.getData(currencyQuery);
     if (DataUtils.isEmpty(currencies)) {
-      return ResponseObject.warning(Localized.getConstants().noData());
+      return ResponseObject
+          .warning(usr.getLocalizableConstants().updateExchangeRatesNoCurrencies());
     }
 
     String address = getExchangeRatesRemoteAddress();
@@ -1106,14 +1108,14 @@ public class CommonsModuleBean implements BeeModule {
       }
 
       if (DataUtils.isEmpty(rates)) {
-        response.addInfo(currencyName, Localized.getConstants().noData());
+        response.addInfo(currencyName, usr.getLocalizableConstants().noData());
         continue;
       }
 
       String value = rates.getValue(0, COL_CURRENCY_RATE_DATE);
       JustDate min = TimeUtils.parseDate(value);
       if (min == null) {
-        response.addInfo(currencyName, Localized.getConstants().invalidDate(), value);
+        response.addWarning(currencyName, usr.getLocalizableConstants().invalidDate(), value);
         continue;
       }
 

@@ -305,7 +305,7 @@ public final class CliWorker {
       } else {
         showListOfCurrencies();
       }
-      
+
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
 
@@ -387,7 +387,7 @@ public final class CliWorker {
 
     } else if ("mail".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
-      
+
     } else if ("menu".equals(z)) {
       doMenu(args);
 
@@ -2081,7 +2081,7 @@ public final class CliWorker {
   private static void showCurrentExchangeRate(String currency) {
     ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE);
     params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
-    
+
     getSimpleRowSet(params);
   }
 
@@ -2341,15 +2341,15 @@ public final class CliWorker {
 
     getSimpleRowSet(params);
   }
-  
+
   private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
-    ParameterList params = 
+    ParameterList params =
         CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
 
     params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
     params.addQueryItem(CommonsConstants.VAR_DATE_LOW, dateLow);
     params.addQueryItem(CommonsConstants.VAR_DATE_HIGH, dateHigh);
-    
+
     getSimpleRowSet(params);
   }
 
@@ -2722,8 +2722,9 @@ public final class CliWorker {
     getSimpleRowSet(CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
   }
 
+  @SuppressWarnings("rawtypes")
   private static void showMatrix(String[][] data, String... columnLabels) {
-    Global.showGrid(new StringMatrix<TableColumn>(data, columnLabels));
+    Global.showGrid(new StringMatrix(data, columnLabels));
   }
 
   private static void showMeter(String[] arr) {
@@ -3066,7 +3067,7 @@ public final class CliWorker {
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));
     }
   }
-  
+
   private static void showSimpleRowSet(SimpleRowSet rs) {
     if (DataUtils.isEmpty(rs)) {
       Global.showInfo("Simple rowset is empty");

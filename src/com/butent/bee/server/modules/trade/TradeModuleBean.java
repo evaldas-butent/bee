@@ -49,6 +49,23 @@ public class TradeModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeModuleBean.class);
 
+  public static IsExpression getTotalExpression(String tblName) {
+    return getTotalExpression(tblName,
+        SqlUtils.multiply(SqlUtils.field(tblName, COL_TRADE_ITEM_QUANTITY),
+            SqlUtils.field(tblName, COL_TRADE_ITEM_PRICE)));
+  }
+
+  public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
+    return SqlUtils.plus(amount,
+        SqlUtils.sqlCase(null,
+            SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
+                SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
+            SqlUtils.notNull(tblName, COL_TRADE_VAT_PERC),
+            SqlUtils.multiply(SqlUtils.divide(amount, 100),
+                SqlUtils.field(tblName, COL_TRADE_VAT)),
+            SqlUtils.field(tblName, COL_TRADE_VAT)));
+  }
+
   @EJB
   SystemBean sys;
   @EJB
@@ -162,9 +179,9 @@ public class TradeModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_ITEMS, COL_NAME)
         .addField(TBL_UNITS, COL_NAME, COL_UNIT)
-        .addFields(trade, COL_TRADE_VAT_INCL)
         .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
-            COL_TRADE_ITEM_PRICE, COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC, COL_TRADE_ITEM_NOTE)
+            COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
+            COL_TRADE_ITEM_NOTE)
         .addField(ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME,
             ExchangeUtils.COL_CURRENCY)
         .addFrom(tradeItems)

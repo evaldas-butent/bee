@@ -33,9 +33,9 @@
         </FlowPanel>
       </row>
       <row>
-        <cell><text /></cell>
-        <CheckBox source="VatIncluded" text="=trdVatIncluded" />
-        <Label text="=trdWarehouseTo" class="bee-required" style="&lbl;" />
+        <cell colSpan="3">
+          <Label text="=trdWarehouseTo" class="bee-required" style="&lbl;" />
+        </cell>
         <DataSelector source="WarehouseTo" />
       </row>
       <row>

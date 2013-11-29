@@ -40,18 +40,18 @@
     </CalcColumn>
 
     <DataColumn name="ServiceName" />
-    <DataColumn name="Amount">
-      <style>
-        <headerStyle><ui:font>bold</ui:font></headerStyle>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Amount" format="0.00" />
     <DataColumn name="CurrencyName" flexGrow="0" />
     <DataColumn name="Vat" horizontalAlignment="right">
       <render>
-        <ui:expression>row.Vat ? (row.Vat + (row.VatPercent ? '%' : '')) : ''</ui:expression>
+        <ui:expression>row.Vat ? ((row.VatPlus ? '+' : '') + row.Vat + (row.VatPercent ? '%' : '')) : ''</ui:expression>
       </render>
     </DataColumn>
+    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </CalcColumn>
 
     <DataColumn name="Note" />
   </g:columns>

@@ -455,19 +455,26 @@ public abstract class SqlBuilder {
             "END");
 
       case CASE:
-        StringBuilder xpr = new StringBuilder("CASE ")
-            .append(params.get("expression"));
+        StringBuilder xpr = new StringBuilder("CASE");
 
-        int cnt = (params.size() - 2) / 2;
-
-        for (int i = 0; i < cnt; i++) {
-          xpr.append(" WHEN ")
-              .append(params.get("case" + i))
-              .append(" THEN ")
-              .append(params.get("value" + i) == null ? "NULL" : params.get("value" + i));
+        if (params.containsKey("expression")) {
+          xpr.append(" " + params.get("expression"));
         }
+        int c = 0;
+
+        do {
+          Object value = params.get("value" + c);
+
+          xpr.append(" WHEN ")
+              .append(params.get("case" + c))
+              .append(" THEN ")
+              .append(value == null ? "NULL" : value);
+        } while (params.containsKey("case" + ++c));
+
+        Object elseValue = params.get("caseElse");
+
         xpr.append(" ELSE ")
-            .append(params.get("caseElse") == null ? "NULL" : params.get("caseElse"))
+            .append(elseValue == null ? "NULL" : elseValue)
             .append(" END");
 
         return xpr.toString();
@@ -870,7 +877,7 @@ public abstract class SqlBuilder {
         val = x;
       }
       if (val instanceof Boolean) {
-        s = (Boolean) val ? "1" : "0";
+        s = (Boolean) val ? "1" : "null";
 
       } else if (val instanceof JustDate) {
         s = BeeUtils.toString(((JustDate) val).getTime());

@@ -149,6 +149,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public void onLoad(FormView form) {
+  }
+
+  @Override
   public void onReadyForInsert(ReadyForInsertEvent event) {
   }
 
@@ -179,6 +183,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
 
   @Override
   public void onStateChange(State state) {
+  }
+
+  @Override
+  public void onUnload(FormView form) {
   }
 
   @Override

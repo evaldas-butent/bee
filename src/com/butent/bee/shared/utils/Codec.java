@@ -238,7 +238,7 @@ public final class Codec {
   }
 
   public static Map<String, String> beeDeserializeMap(String data) {
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = Maps.newLinkedHashMap();
 
     String[] arr = beeDeserializeCollection(data);
     if (arr != null) {

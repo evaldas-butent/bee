@@ -15,7 +15,6 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.IdFilter;
@@ -29,12 +28,8 @@ public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHan
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    int idx = DataUtils.getColumnIndex(COL_SALE_PROFORMA, form.getDataColumns());
-
-    if (idx == BeeConst.UNDEF) {
-      return;
-    }
-    boolean proforma = BeeUtils.unbox(row.getBoolean(idx));
+    int idx = form.getDataIndex(COL_SALE_PROFORMA);
+    boolean proforma = idx != BeeConst.UNDEF && BeeUtils.unbox(row.getBoolean(idx));
 
     form.getViewPresenter().getHeader().setCaption(proforma
         ? Localized.getConstants().trProformaInvoice()

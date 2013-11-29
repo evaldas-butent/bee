@@ -9,6 +9,7 @@ import com.google.common.collect.TreeMultimap;
 
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -130,6 +131,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.enumKey = key;
 
       switch (this.type) {
+        case BOOLEAN:
+          this.defValue = type.parse(xmlField.defValue);
+
+          IsExpression fld = SqlUtils.name(xmlField.name);
+          addCheck(getStorageTable(), SqlUtils.or(SqlUtils.isNull(fld), SqlUtils.equals(fld, 1))
+              .getSqlString(SqlBuilderFactory.getBuilder()));
+          break;
+
         case DATE:
           JustDate date = TimeUtils.parseDate(xmlField.defValue);
 

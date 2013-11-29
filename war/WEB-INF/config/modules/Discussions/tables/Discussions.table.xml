@@ -12,6 +12,6 @@
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=discussCreated" />    
     <Enum name="Status" key="DiscussionStatus" notNull="true" defValue="0" label="=discussStatus" />  
-    <Boolean name="Accessibility" defValue="true" notNull="true" label="=discussAccessibility" />    
+    <Boolean name="Accessibility" defValue="true" label="=discussAccessibility" />    
   </Fields>
 </Table>

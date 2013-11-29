@@ -125,7 +125,7 @@ public final class CommonsConstants {
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
-  
+
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
@@ -164,14 +164,14 @@ public final class CommonsConstants {
 
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
-  
+
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_POSITIONS = "Positions";
-  
+
   public static final String TBL_CITIES = "Cities";
   public static final String TBL_COUNTRIES = "Countries";
 
@@ -188,7 +188,7 @@ public final class CommonsConstants {
 
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
-  
+
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
@@ -241,7 +241,7 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
   public static final String COL_PERSON = "Person";
-  
+
   public static final String COL_POSITION = "Position";
   public static final String COL_POSITION_NAME = "Name";
 

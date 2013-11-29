@@ -1655,8 +1655,12 @@
   outline: #555 solid 1px;
 }
 
-.bee-disabled {
-  background-color: #ebebe4;
+.bee-Form-disabled .bee-disabled,
+.bee-Form-disabled .bee-disabled input {
+  background-color: #f3f3eb;
+}
+.bee-Form-disabled .bee-CheckBox.bee-disabled {
+  background-color: inherit;
 }
 
 .bee-FilterSupplier-dialog {

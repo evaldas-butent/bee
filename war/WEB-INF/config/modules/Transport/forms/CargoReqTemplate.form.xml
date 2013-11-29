@@ -31,7 +31,8 @@
       <row>
         <Label text="=trRequestTemplateUser" class="bee-required bee-hasDefaults" />
         <cell colSpan="3">
-          <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
+          <DataSelector source="User" editSource="CustomerCompany" newRowEnabled="false"
+            style="width: 300px;" >
             <renderToken source="CustomerFirstName" />
             <renderToken source="CustomerLastName" />
             <renderToken source="CustomerCompanyName" prefix=", " />
@@ -134,9 +135,11 @@
 
           <row>
             <Label text="=trRequestExpeditionType" />
-            <DataSelector source="Expedition" />
+            <DataSelector source="Expedition" filter="SelfService" order="SelfService, Name" 
+              newRowEnabled="false" />
             <Label text="=trRequestShippingTerms" />
-            <DataSelector source="ShippingTerm" />
+            <DataSelector source="ShippingTerm" filter="SelfService" order="SelfService, Name" 
+              newRowEnabled="false" />
           </row>
 
           <row>
@@ -196,7 +199,7 @@
           <Label text="=trRequestCargoValue" />
           <InputCurrency source="Value" />
           <Label text="=trRequestCargoCurrency" />
-          <DataSelector source="ValueCurrency" style="width: 60px;" />
+          <DataSelector source="ValueCurrency" newRowEnabled="false" style="width: 60px;" />
         </row>
 
       </Table>
@@ -211,7 +214,7 @@
 
         <row>
           <Label text="=trRequestResponsibleManager" />
-          <DataSelector source="Manager" />
+          <DataSelector source="Manager" newRowEnabled="false" />
         </row>
       </Table>
     </Disclosure>

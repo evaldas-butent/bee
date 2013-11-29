@@ -21,7 +21,6 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
       <SimpleColumn name="MinorName" />
     </SimpleJoin>
-    <SimpleColumn name="VatIncluded" />
 
     <SimpleColumn name="WarehouseTo" />
     <SimpleJoin joinType="LEFT" name="WarehouseTo">

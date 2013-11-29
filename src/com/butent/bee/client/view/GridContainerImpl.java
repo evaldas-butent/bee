@@ -363,7 +363,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       rowEnabled = false;
     } else {
       rowEnabled = !gridView.isReadOnly() && isEnabled() && gridView.isEnabled()
-          && gridView.isRowEditable(rowValue, false);
+          && gridView.isRowEditable(rowValue, null);
     }
 
     if (DataUtils.sameIdAndVersion(rowValue, getLastRow()) && rowEnabled == wasLastEnabled()) {

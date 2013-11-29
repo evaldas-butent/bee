@@ -34,7 +34,7 @@
       <row>
         <Label text="=trRequestTemplate" />
         <DataSelector name="Template" viewName="CargoReqTemplates" choiceColumns="Name"
-          newRowEnabled="false" />
+          newRowEnabled="false" currentUserFilter="User" />
       </row>
     </Table>
     &separator;

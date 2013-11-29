@@ -11,6 +11,7 @@ public final class UiConstants {
   public static final String ATTR_VIEW_NAME = "viewName";
 
   public static final String ATTR_FILTER = "filter";
+  public static final String ATTR_CURRENT_USER_FILTER = "currentUserFilter";
   public static final String ATTR_ORDER = "order";
   
   public static final String ATTR_CAPTION = "caption";

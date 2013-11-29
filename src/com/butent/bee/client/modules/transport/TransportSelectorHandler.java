@@ -3,12 +3,10 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -18,11 +16,12 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -94,7 +93,7 @@ public class TransportSelectorHandler implements Handler {
 
   private static void handleRequestTemplate(SelectorEvent event) {
     DataSelector selector = event.getSelector();
-    
+
     if (event.isClosed()) {
       selector.clearDisplay();
       return;
@@ -184,34 +183,21 @@ public class TransportSelectorHandler implements Handler {
     if (target == null) {
       return;
     }
-    final Value hasVat = source.getValue(sourceInfo.getColumnIndex(COL_TRADE_ITEM_VAT));
+    Double vat = source.getDouble(sourceInfo.getColumnIndex(COL_TRADE_VAT_PERC));
+    boolean vatPerc = vat != null;
 
-    if (BeeUtils.unbox(hasVat.getBoolean())) {
-      Consumer<String> consumer = new Consumer<String>() {
-        @Override
-        public void accept(String prm) {
-          Map<String, Value> updatedColumns = ImmutableMap
-              .of(COL_TRADE_ITEM_VAT, Value.getValue(BeeUtils.toIntOrNull(prm)),
-                  COL_TRADE_ITEM_VAT_PERC, hasVat);
+    Map<String, Value> updatedColumns = ImmutableMap
+        .of(COL_TRADE_VAT, vatPerc ? Value.getValue(vat) : DecimalValue.getNullValue(),
+            COL_TRADE_VAT_PERC, vatPerc ? Value.getValue(vatPerc) : BooleanValue.getNullValue());
 
-          for (String targetColumn : updatedColumns.keySet()) {
-            int targetIndex = targetInfo.getColumnIndex(targetColumn);
+    for (String targetColumn : updatedColumns.keySet()) {
+      int targetIndex = targetInfo.getColumnIndex(targetColumn);
 
-            if (BeeConst.isUndef(targetIndex)) {
-              continue;
-            }
-            target.setValue(targetIndex, updatedColumns.get(targetColumn));
-            dataView.refreshBySource(targetColumn);
-          }
-        }
-      };
-      String vat = source.getString(sourceInfo.getColumnIndex(COL_TRADE_ITEM_VAT_PERC));
-
-      if (BeeUtils.isPositiveInt(vat)) {
-        consumer.accept(vat);
-      } else {
-        Global.getParameter(COMMONS_MODULE, PRM_VAT_PERCENT, consumer);
+      if (BeeConst.isUndef(targetIndex)) {
+        continue;
       }
+      target.setValue(targetIndex, updatedColumns.get(targetColumn));
+      dataView.refreshBySource(targetColumn);
     }
   }
 }

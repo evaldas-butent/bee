@@ -34,7 +34,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
    */
 
   private enum Serial {
-    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HEADER_MODE, FOOTER_MODE,
+    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, CURRENT_USER_FILTER, ORDER,
+    HEADER_MODE, FOOTER_MODE,
     ASYNC_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
@@ -75,6 +76,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String versionName;
 
   private Filter filter;
+  private String currentUserFilter;
   private Order order;
 
   private String headerMode;
@@ -292,6 +294,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case FILTER:
           setFilter(Filter.restore(value));
           break;
+        case CURRENT_USER_FILTER:
+          setCurrentUserFilter(value);
+          break;
         case ORDER:
           setOrder(Order.restore(value));
           break;
@@ -453,6 +458,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return columns;
   }
 
+  public String getCurrentUserFilter() {
+    return currentUserFilter;
+  }
+
   public Set<Action> getDisabledActions() {
     return disabledActions;
   }
@@ -509,6 +518,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Id Name", getIdName(),
         "Version Name", getVersionName(),
         "Filter", getFilter(),
+        "Current User Filter", getCurrentUserFilter(),
         "Order", getOrder(),
         "Header Mode", getHeaderMode(),
         "Footer Mode", getFooterMode(),
@@ -902,6 +912,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case FILTER:
           arr[i++] = getFilter();
           break;
+        case CURRENT_USER_FILTER:
+          arr[i++] = getCurrentUserFilter();
+          break;
         case ORDER:
           arr[i++] = getOrder();
           break;
@@ -1004,6 +1017,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setCaption(String caption) {
     this.caption = caption;
+  }
+
+  public void setCurrentUserFilter(String currentUserFilter) {
+    this.currentUserFilter = currentUserFilter;
   }
 
   public void setDefaults() {
@@ -1118,7 +1135,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
-
+  
   public void setNewRowFormImmediate(Boolean newRowFormImmediate) {
     this.newRowFormImmediate = newRowFormImmediate;
   }
@@ -1126,7 +1143,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowPopup(Boolean newRowPopup) {
     this.newRowPopup = newRowPopup;
   }
-  
+
   public void setOptions(String options) {
     this.options = options;
   }
@@ -1174,7 +1191,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowValidation(Calculation rowValidation) {
     this.rowValidation = rowValidation;
   }
-
+  
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }

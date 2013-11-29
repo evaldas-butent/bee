@@ -218,8 +218,11 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         this.searchColumns.add(column);
       }
     }
+    
+    String cuf = relation.getCurrentUserFilter();
+    this.immutableFilter = BeeUtils.isEmpty(cuf) ? relation.getFilter() 
+        : Filter.and(relation.getFilter(), BeeKeeper.getUser().getFilter(cuf));
 
-    this.immutableFilter = relation.getFilter();
     this.viewOrder = relation.getOrder();
 
     this.caching = (relation.getCaching() == null) ? DEFAULT_CACHING : relation.getCaching();

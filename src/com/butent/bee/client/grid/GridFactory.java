@@ -1,7 +1,9 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -78,17 +80,36 @@ import java.util.Map;
 public final class GridFactory {
 
   public static final class GridOptions {
-
+    
+    public static GridOptions forCurrentUserFilter(String column) {
+      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, column);
+    }
+    
     private final String caption;
     private final String filter;
+    private final String currentUserFilter;
 
-    private GridOptions(String caption, String filter) {
+    private GridOptions(String caption, String filter, String currentUserFilter) {
       this.caption = caption;
       this.filter = filter;
+      this.currentUserFilter = currentUserFilter;
+    }
+    
+    public Filter buildFilter(String viewName) {
+      Filter f1 = BeeUtils.isEmpty(getFilter()) ? null 
+          : DataUtils.parseFilter(getFilter(), Data.getDataInfoProvider(), viewName);
+      Filter f2 = BeeUtils.isEmpty(getCurrentUserFilter()) ? null 
+          : BeeKeeper.getUser().getFilter(getCurrentUserFilter());
+      
+      return Filter.and(f1, f2);
     }
 
     public String getCaption() {
       return caption;
+    }
+    
+    public String getCurrentUserFilter() {
+      return currentUserFilter;
     }
 
     public String getFilter() {
@@ -96,7 +117,7 @@ public final class GridFactory {
     }
 
     public boolean hasFilter() {
-      return !BeeUtils.isEmpty(getFilter());
+      return !BeeUtils.isEmpty(getFilter()) || !BeeUtils.isEmpty(getCurrentUserFilter());
     }
   }
 
@@ -104,6 +125,8 @@ public final class GridFactory {
 
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, GridInterceptor> gridInterceptors = Maps.newHashMap();
+  
+  private static final Multimap<String, String> hiddenColumns = HashMultimap.create();
 
   public static void clearDescriptionCache() {
     descriptionCache.clear();
@@ -281,23 +304,28 @@ public final class GridFactory {
 
     String caption = attributes.get(UiConstants.ATTR_CAPTION);
     String filter = attributes.get(UiConstants.ATTR_FILTER);
+    String currentUserFilter = attributes.get(UiConstants.ATTR_CURRENT_USER_FILTER);
 
-    if (BeeUtils.allEmpty(caption, filter)) {
+    if (BeeUtils.allEmpty(caption, filter, currentUserFilter)) {
       return null;
     } else {
-      return new GridOptions(Localized.maybeTranslate(caption), filter);
+      return new GridOptions(Localized.maybeTranslate(caption), filter, currentUserFilter);
     }
   }
 
   public static Filter getImmutableFilter(GridDescription gridDescription,
       GridOptions gridOptions) {
     Assert.notNull(gridDescription);
+    
+    Filter f1 = gridDescription.getFilter();
+    Filter f2 = BeeUtils.isEmpty(gridDescription.getCurrentUserFilter()) ? null 
+        : BeeKeeper.getUser().getFilter(gridDescription.getCurrentUserFilter());
+    
     if (gridOptions == null || !gridOptions.hasFilter()) {
-      return gridDescription.getFilter();
+      return Filter.and(f1, f2);
+    } else {
+      return Filter.and(f1, f2, gridOptions.buildFilter(gridDescription.getViewName()));
     }
-
-    return Filter.and(gridDescription.getFilter(), DataUtils.parseFilter(gridOptions.getFilter(),
-        Data.getDataInfoProvider(), gridDescription.getViewName()));
   }
 
   public static Filter getInitialQueryFilter(Filter immutableFilter,
@@ -342,13 +370,33 @@ public final class GridFactory {
     }
     return key;
   }
+  
+  public static void hideColumn(String gridName, String columnName) {
+    Assert.notEmpty(gridName);
+    Assert.notEmpty(columnName);
+    
+    hiddenColumns.put(gridName, columnName);
+  }
 
+  public static boolean isHidden(String gridName, String columnName) {
+    return hiddenColumns.containsEntry(gridName, columnName);
+  }
+  
   public static void openGrid(String gridName) {
     openGrid(gridName, getGridInterceptor(gridName));
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
-    openGrid(gridName, gridInterceptor, null, PresenterCallback.SHOW_IN_ACTIVE_PANEL);
+    openGrid(gridName, gridInterceptor, null);
+  }
+
+  public static void openGrid(String gridName, GridOptions gridOptions) {
+    openGrid(gridName, getGridInterceptor(gridName), gridOptions);
+  }
+
+  public static void openGrid(String gridName, GridInterceptor gridInterceptor,
+      GridOptions gridOptions) {
+    openGrid(gridName, gridInterceptor, gridOptions, PresenterCallback.SHOW_IN_ACTIVE_PANEL);
   }
 
   public static void openGrid(final String gridName, final GridInterceptor gridInterceptor,

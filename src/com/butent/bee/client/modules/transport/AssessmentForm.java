@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -226,7 +227,8 @@ public class AssessmentForm extends PrintFormInterceptor {
 
     @Override
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
-      if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY)) {
+      if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
+          COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
         DataChangeEvent.fireRefresh(VIEW_ASSESSMENT_FORWARDERS);
         refreshTotals();
       }
@@ -400,7 +402,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     }
   }
 
-  public static void updateTotals(final FormView form, IsRow row,
+  private static void updateTotals(final FormView form, IsRow row,
       final Widget incomeTotalWidget, final Widget expenseTotalWidget, final Widget profitWidget,
       final Widget incomeWidget, final Widget expenseWidget) {
 

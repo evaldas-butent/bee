@@ -9,22 +9,25 @@
     <DataColumn name="Date" caption="=date">
       <carry><ui:expression>row.Date</ui:expression></carry>
     </DataColumn>
+
     <RelColumn name="Item" renderColumns="ItemName" />
     <DataColumn name="UnitName" />
-    <DataColumn name="Quantity" caption="=quantity" />
-    <DataColumn name="Price" caption="=price" format="#.00" />
-    <RelColumn name="Currency" caption="=currencyShort" />
+    <DataColumn name="Quantity" />
+    <DataColumn name="Price" format="0.00" />
+    <RelColumn name="Currency" />
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+    </DataColumn>
     <DataColumn name="Vat" />
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
-    <CalcColumn name="Total" type="decimal" caption="=total" format="#.00">
+    <CalcColumn name="Total" type="decimal" caption="=amount" format="#.00">
       <style>
-        <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
-      <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
+
     <DataColumn name="Number" caption="=number" />
     <RelColumn name="Supplier" caption="=trSupplier" />
     <RelColumn name="Country" caption="=country">

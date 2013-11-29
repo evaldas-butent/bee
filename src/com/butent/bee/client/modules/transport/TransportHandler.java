@@ -9,6 +9,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -24,9 +25,11 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
@@ -460,7 +463,7 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
+    GridFactory.registerGridInterceptor(TBL_TRIP_ROUTES, new TripRoutesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
@@ -470,7 +473,7 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGrid());
 
-    CargoPlaceRenderer.Provider provider = new CargoPlaceRenderer.Provider();
+    ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
     String unloading = "Unloading";
 
@@ -486,6 +489,14 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
+
+    TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_CARGO_EXPENSES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_INVOICE_INCOMES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_INCOMES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer("CargoExpenseList", VAR_TOTAL);
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());

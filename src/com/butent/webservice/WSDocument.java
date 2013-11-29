@@ -32,10 +32,12 @@ public class WSDocument {
       this.price = price;
     }
 
-    public void setVat(String vatAmount, Boolean isPercent, Boolean isIncluded) {
-      this.vatMode = BeeUtils.unbox(isIncluded) ? "T" : "S";
-      this.vat = vatAmount;
-      this.vatPercent = BeeUtils.unbox(isPercent) ? "%" : null;
+    public void setVat(String vatAmount, Boolean isPercent, Boolean isPlus) {
+      if (!BeeUtils.isEmpty(vatAmount)) {
+        this.vat = vatAmount;
+        this.vatPercent = BeeUtils.unbox(isPercent) ? "%" : null;
+        this.vatMode = BeeUtils.unbox(isPlus) ? "S" : "T";
+      }
     }
   }
 
@@ -44,6 +46,9 @@ public class WSDocument {
   private final String operation;
   private final String warehouse;
   private final String company;
+
+  private String invoicePrefix;
+  private String invoiceNumber;
 
   private JustDate term;
 
@@ -81,6 +86,8 @@ public class WSDocument {
           .append(ButentWS.tag("tiekejas", supplier))
           .append(ButentWS.tag("gavejas", customer))
           .append(ButentWS.tag("moketojas", payer))
+          .append(ButentWS.tag("dok_serija", invoicePrefix))
+          .append(ButentWS.tag("kitas_dok", invoiceNumber))
           .append(ButentWS.tag("terminas", term))
           .append(ButentWS.tag("preke", item.itemId))
           .append(ButentWS.tag("kiekis", item.quantity))
@@ -102,6 +109,11 @@ public class WSDocument {
 
   public void setCustomer(String customer) {
     this.customer = customer;
+  }
+
+  public void setInvoice(String prefix, String number) {
+    this.invoicePrefix = prefix;
+    this.invoiceNumber = number;
   }
 
   public void setPayer(String payer) {

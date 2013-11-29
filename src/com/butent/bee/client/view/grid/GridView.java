@@ -78,7 +78,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean isReadOnly();
 
-  boolean isRowEditable(IsRow row, boolean warn);
+  boolean isRowEditable(IsRow row, NotificationListener notificationListener);
 
   boolean isRowSelected(long rowId);
 

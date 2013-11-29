@@ -7,9 +7,7 @@
   >
   <g:columns>
     <DataColumn name="Name" />
-    <DataColumn name="Vat" width="40">
-      <carry><ui:expression>row.Vat</ui:expression></carry>
-    </DataColumn>
+    <DataColumn name="Transportation" width="90" />
     <DataColumn name="VatPercent" />
     <RelColumn name="Item" />
   </g:columns>

@@ -10,17 +10,20 @@
     <DataColumn name="Date" caption="=date" />
 
     <RelColumn name="Service" caption="=trServiceName" />
-    <DataColumn name="Amount" caption="=total" format="0.00">
-      <style>
-        <headerStyle><ui:font>bold</ui:font></headerStyle>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center">
+      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+    </DataColumn>
     <DataColumn name="Vat" />
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
+    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </CalcColumn>
 
     <RelColumn name="Customer" caption="=payer" />
     <DataColumn name="Number" caption="=number" />

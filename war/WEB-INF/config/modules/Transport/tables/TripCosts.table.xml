@@ -8,12 +8,15 @@
   <Fields>
     <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
     <Date name="Date" notNull="true" defExpr="CURRENT_DATE" label="=date" />
+
     <Relation name="Item" notNull="true" relation="Items" label="=trProductService" />
     <Double name="Quantity" notNull="true" label="=quantity" />
     <Numeric name="Price" precision="15" scale="5" label="=price" />
+    <Relation name="Currency" relation="Currencies" label="=currencyShort" />
+    <Boolean name="VatPlus" label="=vatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="%" />
-    <Relation name="Currency" relation="Currencies" label="=currency" />
+
     <String name="Number" precision="20" label="=number"/>
     <Relation name="Supplier" relation="Companies" label="=trSupplier" />
     <Relation name="Country" relation="Countries" label="=country" />

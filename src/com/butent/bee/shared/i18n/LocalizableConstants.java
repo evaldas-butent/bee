@@ -399,6 +399,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String rightStateAmendable();
 
   String rightStateVisible();
+  
+  String rowIsReadOnly();
 
   String saveChanges();
 
@@ -463,6 +465,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String updateExchangeRatesDateLow();
 
   String updateExchangeRatesDialogCaption();
+  
+  String updateExchangeRatesNoCurrencies();
 
   String user();
 
