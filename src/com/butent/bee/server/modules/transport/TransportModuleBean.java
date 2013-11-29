@@ -751,19 +751,19 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       public void fillFuelConsumptions(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), VIEW_TRIP_ROUTES) && event.isAfter()) {
+        if (BeeUtils.same(event.getTargetName(), TBL_TRIP_ROUTES) && event.isAfter()) {
           BeeRowSet rowset = event.getRowset();
 
           if (!rowset.isEmpty()) {
             SimpleRowSet rs = qs.getData(getFuelConsumptionsQuery(event.getQuery()
                 .resetFields().resetOrder().resetGroup()
-                .addFields(VIEW_TRIP_ROUTES, sys.getIdName(VIEW_TRIP_ROUTES))
-                .addGroup(VIEW_TRIP_ROUTES, sys.getIdName(VIEW_TRIP_ROUTES)), true));
+                .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+                .addGroup(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES)), true));
 
             int colIndex = rowset.getColumnIndex("Consumption");
 
             for (BeeRow row : rowset.getRows()) {
-              row.setValue(colIndex, rs.getValueByKey(sys.getIdName(VIEW_TRIP_ROUTES),
+              row.setValue(colIndex, rs.getValueByKey(sys.getIdName(TBL_TRIP_ROUTES),
                   BeeUtils.toString(row.getId()), "Quantity"));
             }
           }
@@ -1131,7 +1131,9 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_EXPENSES, COL_CARGO))
         .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
-    ss.addSum(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT),
+    ss.addSum(ExchangeUtils.exchangeField(ss,
+        TradeModuleBean.getTotalExpression(TBL_CARGO_EXPENSES,
+            SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT)),
         SqlUtils.field(TBL_CARGO_EXPENSES, ExchangeUtils.COL_CURRENCY),
         SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
             SqlUtils.field(TBL_ORDERS, COL_DATE))), VAR_EXPENSE);
@@ -1162,7 +1164,9 @@ public class TransportModuleBean implements BeeModule {
 
     ss.addMax(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_ORDER_CARGO, "Price"),
         SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY), dateExpr), "CargoIncome")
-        .addSum(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
+        .addSum(ExchangeUtils.exchangeField(ss,
+            TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)),
             SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr),
             "ServicesIncome");
 
@@ -1448,8 +1452,8 @@ public class TransportModuleBean implements BeeModule {
    * @return query with two columns: (TripRoutes ID or "Trip") and "Quantity"
    */
   private SqlSelect getFuelConsumptionsQuery(SqlSelect flt, boolean routeMode) {
-    String trips = VIEW_TRIPS;
-    String routes = VIEW_TRIP_ROUTES;
+    String trips = TBL_TRIPS;
+    String routes = TBL_TRIP_ROUTES;
     String fuel = VIEW_FUEL_CONSUMPTIONS;
     String temps = VIEW_FUEL_TEMPERATURES;
     String routeId = sys.getIdName(routes);
@@ -1674,10 +1678,10 @@ public class TransportModuleBean implements BeeModule {
     String[] resp = new String[2];
 
     if (date != 0) {
-      String trips = VIEW_TRIPS;
-      String routes = VIEW_TRIP_ROUTES;
-      String fuels = VIEW_TRIP_FUEL_COSTS;
-      String consumptions = VIEW_TRIP_FUEL_CONSUMPTIONS;
+      String trips = TBL_TRIPS;
+      String routes = TBL_TRIP_ROUTES;
+      String fuels = TBL_TRIP_FUEL_COSTS;
+      String consumptions = TBL_TRIP_FUEL_CONSUMPTIONS;
       String tripId = sys.getIdName(trips);
 
       SimpleRowSet rs = qs.getData(new SqlSelect()
@@ -1747,11 +1751,11 @@ public class TransportModuleBean implements BeeModule {
    *         "FuelCost" - total trip fuel cost considering remainder corrections
    */
   private String getTripCost(SqlSelect flt) {
-    String trips = VIEW_TRIPS;
-    String costs = VIEW_TRIP_COSTS;
-    String fuels = VIEW_TRIP_FUEL_COSTS;
-    String routes = VIEW_TRIP_ROUTES;
-    String consumptions = VIEW_TRIP_FUEL_CONSUMPTIONS;
+    String trips = TBL_TRIPS;
+    String costs = TBL_TRIP_COSTS;
+    String fuels = TBL_TRIP_FUEL_COSTS;
+    String routes = TBL_TRIP_ROUTES;
+    String consumptions = TBL_TRIP_FUEL_CONSUMPTIONS;
     String tripNativeId = sys.getIdName(trips);
     String alias = SqlUtils.uniqueName();
 
@@ -1766,9 +1770,8 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(costs, sys.joinTables(trips, costs, COL_TRIP))
         .addGroup(trips, tripNativeId, "Date", "Vehicle", "FuelBefore", "FuelAfter");
 
-    ss.addSum(SqlUtils.multiply(SqlUtils.field(costs, "Quantity"),
-        ExchangeUtils.exchangeField(ss, costs, "Price", "Currency", "Date")),
-        "TripCost");
+    ss.addSum(ExchangeUtils.exchangeField(ss, TradeModuleBean.getTotalExpression(costs),
+        SqlUtils.field(costs, "Currency"), SqlUtils.field(costs, "Date")), "TripCost");
 
     String tmpCosts = qs.sqlCreateTemp(ss);
     qs.sqlIndex(tmpCosts, COL_TRIP);
@@ -1781,9 +1784,8 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(fuels, SqlUtils.joinUsing(tmpCosts, fuels, COL_TRIP))
         .addGroup(tmpCosts, COL_TRIP);
 
-    ss.addSum(SqlUtils.multiply(SqlUtils.field(fuels, "Quantity"),
-        ExchangeUtils.exchangeField(ss, fuels, "Price", "Currency", "Date")),
-        "FuelCost");
+    ss.addSum(ExchangeUtils.exchangeField(ss, TradeModuleBean.getTotalExpression(fuels),
+        SqlUtils.field(fuels, "Currency"), SqlUtils.field(fuels, "Date")), "FuelCost");
 
     String tmp = qs.sqlCreateTemp(ss);
     qs.sqlIndex(tmp, COL_TRIP);
@@ -1854,9 +1856,8 @@ public class TransportModuleBean implements BeeModule {
         .addGroup(trips, "Vehicle", "Date")
         .addGroup(fuels, "Date");
 
-    ss.addSum(SqlUtils.multiply(SqlUtils.field(fuels, "Quantity"),
-        ExchangeUtils.exchangeField(ss, fuels, "Price", "Currency", "Date")),
-        "Sum");
+    ss.addSum(ExchangeUtils.exchangeField(ss, TradeModuleBean.getTotalExpression(fuels),
+        SqlUtils.field(fuels, "Currency"), SqlUtils.field(fuels, "Date")), "Sum");
 
     String tmpFuels = qs.sqlCreateTemp(ss);
     qs.sqlIndex(tmpFuels, "Vehicle");

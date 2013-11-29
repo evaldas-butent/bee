@@ -463,7 +463,7 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
+    GridFactory.registerGridInterceptor(TBL_TRIP_ROUTES, new TripRoutesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());

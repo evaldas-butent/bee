@@ -405,6 +405,8 @@ public final class TransportConstants {
   public static final String TBL_TRIP_DRIVERS = "TripDrivers";
   public static final String TBL_TRIP_COSTS = "TripCosts";
   public static final String TBL_TRIP_FUEL_COSTS = "TripFuelCosts";
+  public static final String TBL_TRIP_ROUTES = "TripRoutes";
+  public static final String TBL_TRIP_FUEL_CONSUMPTIONS = "TripFuelConsumptions";
 
   public static final String TBL_TRANSPORT_SETTINGS = "TransportSettings";
 
@@ -452,10 +454,8 @@ public final class TransportConstants {
 
   public static final String VIEW_TRIP_CARGO = "TripCargo";
   public static final String VIEW_TRIP_DRIVERS = "TripDrivers";
-  public static final String VIEW_TRIP_ROUTES = "TripRoutes";
   public static final String VIEW_TRIP_COSTS = "TripCosts";
   public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
-  public static final String VIEW_TRIP_FUEL_CONSUMPTIONS = "TripFuelConsumptions";
 
   public static final String VIEW_VEHICLES = "Vehicles";
   public static final String VIEW_VEHICLE_SERVICES = "VehicleServices";

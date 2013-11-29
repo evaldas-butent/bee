@@ -57,12 +57,13 @@ public class TradeModuleBean implements BeeModule {
 
   public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
     return SqlUtils.plus(amount,
-        SqlUtils.sqlIf(SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
-            SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
-            SqlUtils.sqlIf(SqlUtils.notNull(tblName, COL_TRADE_VAT_PERC),
-                SqlUtils.multiply(SqlUtils.divide(amount, 100),
-                    SqlUtils.field(tblName, COL_TRADE_VAT)),
-                SqlUtils.field(tblName, COL_TRADE_VAT))));
+        SqlUtils.sqlCase(null,
+            SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
+                SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
+            SqlUtils.notNull(tblName, COL_TRADE_VAT_PERC),
+            SqlUtils.multiply(SqlUtils.divide(amount, 100),
+                SqlUtils.field(tblName, COL_TRADE_VAT)),
+            SqlUtils.field(tblName, COL_TRADE_VAT)));
   }
 
   @EJB
