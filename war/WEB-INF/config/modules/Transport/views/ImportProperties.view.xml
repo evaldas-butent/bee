@@ -10,7 +10,4 @@
     <SimpleColumn name="Property"/>
     <SimpleColumn name="Value"/>
   </Columns>
-  <Order>
-    <OrderBy column="Property" />
-  </Order>
 </View>

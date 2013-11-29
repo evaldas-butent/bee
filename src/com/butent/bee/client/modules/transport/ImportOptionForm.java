@@ -16,6 +16,8 @@ import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.Imp
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collection;
+
 public class ImportOptionForm extends AbstractFormInterceptor {
 
   private GridInterceptor properties;
@@ -53,9 +55,9 @@ public class ImportOptionForm extends AbstractFormInterceptor {
 
       if (type != null) {
         target = type.getProperty(properties.getGridView().getActiveRow()
-            .getInteger(properties.getDataIndex(COL_IMPORT_PROPERTY)));
+            .getString(properties.getDataIndex(COL_IMPORT_PROPERTY)));
 
-        if (target != null && BeeUtils.anyEmpty(target.getRelTable(), target.getRelField())) {
+        if (target != null && BeeUtils.isEmpty(target.getRelTable())) {
           target = null;
         }
       }
@@ -63,11 +65,20 @@ public class ImportOptionForm extends AbstractFormInterceptor {
     return target;
   }
 
-  public String[] getProperties() {
+  public Collection<ImportProperty> getProperties() {
     ImportType type = getImportType();
 
     if (type != null) {
-      return type.getCaptions();
+      return type.getProperties();
+    }
+    return null;
+  }
+
+  public ImportProperty getProperty(String name) {
+    ImportType type = getImportType();
+
+    if (type != null) {
+      return type.getProperty(name);
     }
     return null;
   }

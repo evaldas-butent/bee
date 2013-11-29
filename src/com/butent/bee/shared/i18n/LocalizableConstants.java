@@ -94,6 +94,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String allowPhotoSize();
 
+  String amount();
+
   String article();
 
   String bookmarkName();
@@ -399,7 +401,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String rightStateAmendable();
 
   String rightStateVisible();
-  
+
   String rowIsReadOnly();
 
   String saveChanges();
@@ -459,13 +461,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String unitDaysShort();
 
   String unitWeekShort();
-  
+
   String updateExchangeRatesDateHigh();
 
   String updateExchangeRatesDateLow();
 
   String updateExchangeRatesDialogCaption();
-  
+
   String updateExchangeRatesNoCurrencies();
 
   String user();
@@ -479,6 +481,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String valueRequired();
 
   String vat();
+
+  String vatPercent();
+
+  String vatPlus();
 
   String volume();
 

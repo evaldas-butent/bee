@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.transport;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.Assert;
@@ -8,13 +8,15 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 public final class TransportConstants {
 
@@ -147,23 +149,26 @@ public final class TransportConstants {
       @Override
       protected void init() {
         LocalizableConstants locale = Localized.getConstants();
-        properties.add(new ImportProperty(VAR_IMPORT_ROW, locale.startRow()));
-        properties.add(new ImportProperty(COL_COSTS_DATE, locale.date()));
-        properties.add(new ImportProperty(COL_COSTS_ITEM, locale.itemOrService(),
-            CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_NAME));
-        properties.add(new ImportProperty(COL_COSTS_QUANTITY, locale.quantity()));
-        properties.add(new ImportProperty(COL_COSTS_PRICE, locale.price()));
-        properties.add(new ImportProperty(COL_COSTS_CURRENCY, locale.currency(),
-            ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME));
-        properties.add(new ImportProperty(COL_COSTS_VAT, locale.vat()));
-        properties.add(new ImportProperty(COL_COSTS_SUPPLIER, locale.supplier(),
-            CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME));
-        properties.add(new ImportProperty(COL_NUMBER, locale.number()));
-        properties.add(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
+        addProperty(new ImportProperty(VAR_IMPORT_ROW, locale.startRow()));
+        addProperty(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
             TBL_VEHICLES, COL_VEHICLE_NUMBER));
-        properties.add(new ImportProperty(COL_COSTS_COUNTRY, locale.country(),
+        addProperty(new ImportProperty(COL_COSTS_DATE, locale.date()));
+        addProperty(new ImportProperty(COL_COSTS_ITEM, locale.itemOrService(),
+            CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_NAME));
+        addProperty(new ImportProperty(COL_COSTS_QUANTITY, locale.quantity()));
+        addProperty(new ImportProperty(COL_COSTS_PRICE, locale.price()));
+        addProperty(new ImportProperty(COL_COSTS_CURRENCY, locale.currency(),
+            ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME));
+        addProperty(new ImportProperty(TradeConstants.COL_TRADE_VAT_PLUS, locale.vatPlus()));
+        addProperty(new ImportProperty(COL_COSTS_VAT, locale.vat()));
+        addProperty(new ImportProperty(TradeConstants.COL_TRADE_VAT_PERC, locale.vatPercent()));
+        addProperty(new ImportProperty(COL_AMOUNT, locale.amount()));
+        addProperty(new ImportProperty(COL_COSTS_SUPPLIER, locale.supplier(),
+            CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME));
+        addProperty(new ImportProperty(COL_NUMBER, locale.number()));
+        addProperty(new ImportProperty(COL_COSTS_COUNTRY, locale.country(),
             CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
-        properties.add(new ImportProperty(COL_COSTS_NOTE, locale.notes()));
+        addProperty(new ImportProperty(COL_COSTS_NOTE, locale.notes()));
       }
     },
     INVOICES {
@@ -191,6 +196,9 @@ public final class TransportConstants {
 
       public ImportProperty(String name, String caption, String relTable, String relField) {
         this(name, caption);
+        Assert.notEmpty(relTable);
+        Assert.notEmpty(relField);
+
         this.relTable = relTable;
         this.relField = relField;
       }
@@ -212,10 +220,14 @@ public final class TransportConstants {
       }
     }
 
-    final List<ImportProperty> properties = Lists.newArrayList();
+    private final Map<String, ImportProperty> properties = Maps.newLinkedHashMap();
 
     private ImportType() {
       init();
+    }
+
+    protected void addProperty(ImportProperty property) {
+      properties.put(property.getName(), property);
     }
 
     @Override
@@ -223,33 +235,12 @@ public final class TransportConstants {
       return getCaption(Localized.getConstants());
     }
 
-    public String[] getCaptions() {
-      String[] props = new String[properties.size()];
-
-      for (int i = 0; i < props.length; i++) {
-        props[i] = properties.get(i).getCaption();
-      }
-      return props;
-    }
-
-    public List<ImportProperty> getProperties() {
-      return Collections.unmodifiableList(properties);
-    }
-
-    public ImportProperty getProperty(Integer idx) {
-      if (BeeUtils.isIndex(properties, idx)) {
-        return properties.get(idx);
-      }
-      return null;
+    public Collection<ImportProperty> getProperties() {
+      return Collections.unmodifiableCollection(properties.values());
     }
 
     public ImportProperty getProperty(String name) {
-      for (ImportProperty prop : properties) {
-        if (BeeUtils.same(prop.getName(), name)) {
-          return prop;
-        }
-      }
-      return null;
+      return properties.get(name);
     }
 
     protected abstract void init();
