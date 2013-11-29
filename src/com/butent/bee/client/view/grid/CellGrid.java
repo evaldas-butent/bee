@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -57,7 +58,6 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleDescriptor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
@@ -920,7 +920,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private final RowChangeScheduler rowChangeScheduler =
       new RowChangeScheduler(defaultRowChangeSensitivityMillis);
 
-  private Evaluator rowEditable;
+  private Predicate<IsRow> rowEditable;
 
   public CellGrid() {
     setElement(Document.get().createDivElement());
@@ -1476,15 +1476,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public boolean isReadOnly() {
     return readOnly;
-  }
-
-  public boolean isRowEditable(IsRow rowValue) {
-    boolean ok = (rowValue != null) && rowValue.isEditable();
-    if (ok && getRowEditable() != null) {
-      getRowEditable().update(rowValue);
-      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
-    }
-    return ok;
   }
 
   public boolean isRowSelected(long rowId) {
@@ -2175,7 +2166,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  public void setRowEditable(Evaluator rowEditable) {
+  public void setRowEditable(Predicate<IsRow> rowEditable) {
     this.rowEditable = rowEditable;
   }
 
@@ -3089,7 +3080,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return resizerStatus;
   }
 
-  private Evaluator getRowEditable() {
+  private Predicate<IsRow> getRowEditable() {
     return rowEditable;
   }
 
@@ -3384,6 +3375,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private boolean isResizing() {
     return isResizing;
+  }
+
+  private boolean isRowEditable(IsRow rowValue) {
+    if (getRowEditable() == null) {
+      return (rowValue != null) && rowValue.isEditable();
+    } else {
+      return getRowEditable().apply(rowValue);
+    }
   }
 
   private boolean isRowSelected(IsRow rowValue) {

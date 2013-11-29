@@ -97,6 +97,8 @@ public final class FormFactory {
 
     void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
 
+    void onLoad(FormView form);
+    
     void onSetActiveRow(IsRow row);
 
     void onShow(Presenter presenter);
@@ -106,6 +108,8 @@ public final class FormFactory {
     boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
 
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
+
+    void onUnload(FormView form);
 
     void setFormView(FormView form);
   }

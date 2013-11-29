@@ -112,20 +112,30 @@ class CargoRequestForm extends AbstractFormInterceptor {
         if (!DataUtils.isId(BeeUtils.toLongOrNull(company))) {
           return;
         }
-        
-        Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS, Lists.newArrayList(COL_CUSTOMER)),
-            Lists.newArrayList(company), null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
 
-                CargoRequestStatus status = CargoRequestStatus.ACTIVE;
-                SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
-                refreshCommands(status);
-                
-                DataChangeEvent.fireRefresh(VIEW_ORDERS);
-              }
-            });
+        List<String> colNames = Lists.newArrayList(COL_CUSTOMER);
+        List<String> values = Lists.newArrayList(company);
+
+        String manager = getDataValue(COL_CARGO_REQUEST_MANAGER);
+        if (!BeeUtils.isEmpty(manager)) {
+          colNames.add(COL_ORDER_MANAGER);
+          values.add(manager);
+        }
+
+        List<BeeColumn> columns = Data.getColumns(VIEW_ORDERS, colNames);
+
+        Queries.insert(VIEW_ORDERS, columns, values, null, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
+
+            CargoRequestStatus status = CargoRequestStatus.ACTIVE;
+            SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
+            refreshCommands(status);
+
+            DataChangeEvent.fireRefresh(VIEW_ORDERS);
+          }
+        });
       }
     });
   }
@@ -183,7 +193,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
       }
       header.addCommandItem(this.activateCommand);
     }
-    
+
     if (status != null) {
       if (this.templateCommand == null) {
         this.templateCommand =

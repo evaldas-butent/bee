@@ -1535,10 +1535,18 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   protected void onLoad() {
     super.onLoad();
     Previewer.ensureRegistered(this);
+    
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onLoad(this);
+    }
   }
 
   @Override
   protected void onUnload() {
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onUnload(this);
+    }
+
     Previewer.ensureUnregistered(this);
     if (getDataObserver() != null) {
       getDataObserver().stop();

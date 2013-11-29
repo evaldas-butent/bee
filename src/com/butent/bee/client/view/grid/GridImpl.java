@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -198,6 +199,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   private final CellGrid grid = new CellGrid();
 
   private Evaluator rowValidation;
+  private Evaluator rowEditable;
 
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
@@ -671,9 +673,15 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     }
 
     if (gridDescription.getRowEditable() != null) {
-      getGrid().setRowEditable(Evaluator.create(gridDescription.getRowEditable(), null,
-          dataColumns));
+      setRowEditable(Evaluator.create(gridDescription.getRowEditable(), null, dataColumns));
     }
+    getGrid().setRowEditable(new Predicate<IsRow>() {
+      @Override
+      public boolean apply(IsRow input) {
+        return isRowEditable(input, null);
+      }
+    });
+    
     if (gridDescription.getRowValidation() != null) {
       setRowValidation(Evaluator.create(gridDescription.getRowValidation(), null, dataColumns));
     }
@@ -693,10 +701,12 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     String viewName = gridDescription.getViewName();
 
     for (ColumnDescription columnDescription : columnDescriptions) {
-      if (BeeUtils.isTrue(columnDescription.getDynamic())) {
-        dynamicColumnGroups.add(columnDescription.getId());
-      } else {
-        addColumn(columnDescription, null, BeeConst.UNDEF);
+      if (!GridFactory.isHidden(getGridName(), columnDescription.getId())) {
+        if (BeeUtils.isTrue(columnDescription.getDynamic())) {
+          dynamicColumnGroups.add(columnDescription.getId());
+        } else {
+          addColumn(columnDescription, null, BeeConst.UNDEF);
+        }
       }
     }
 
@@ -1103,14 +1113,24 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   }
 
   @Override
-  public boolean isRowEditable(IsRow rowValue, boolean warn) {
+  public boolean isRowEditable(IsRow rowValue, NotificationListener notificationListener) {
     if (rowValue == null) {
       return false;
     }
-
-    boolean ok = getGrid().isRowEditable(rowValue);
-    if (!ok && warn) {
-      notifyWarning("Row is read only");
+    
+    boolean ok = rowValue.isEditable();
+    
+    if (ok && getGridInterceptor() != null) {
+      ok = getGridInterceptor().isRowEditable(rowValue);
+    }
+    
+    if (ok && getRowEditable() != null) {
+      getRowEditable().update(rowValue);
+      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
+    }
+ 
+    if (!ok && notificationListener != null) {
+      notificationListener.notifyWarning(Localized.getConstants().rowIsReadOnly());
     }
     return ok;
   }
@@ -1759,6 +1779,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     return getGridInterceptor().getRowCaption(row, edit);
   }
 
+  private Evaluator getRowEditable() {
+    return rowEditable;
+  }
+
   private Evaluator getRowValidation() {
     return rowValidation;
   }
@@ -1997,13 +2021,13 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
     if (useForm) {
       if (editable) {
-        editable = isRowEditable(rowValue, true);
+        editable = isRowEditable(rowValue, BeeKeeper.getScreen());
       }
     } else {
       if (!editable || event.isReadOnly()) {
         return;
       }
-      if (!isRowEditable(rowValue, true)) {
+      if (!isRowEditable(rowValue, BeeKeeper.getScreen())) {
         return;
       }
       if (editableColumn == null) {
@@ -2125,7 +2149,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (!newRowDefaults.isEmpty()) {
       defCols.addAll(newRowDefaults);
     }
-    
+
     if (copy && oldRow != null) {
       if (copyColumns.isEmpty()) {
         for (int i = 0; i < getDataColumns().size(); i++) {
@@ -2138,7 +2162,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
         for (int i : copyColumns) {
           if (!oldRow.isNull(i)) {
             newRow.setValue(i, oldRow.getString(i));
-            
+
             if (!defCols.isEmpty()) {
               String colId = getDataColumns().get(i).getId();
               if (defCols.contains(colId)) {
@@ -2371,6 +2395,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
   private void setProperties(Map<String, String> properties) {
     BeeUtils.overwrite(this.properties, properties);
+  }
+
+  private void setRowEditable(Evaluator rowEditable) {
+    this.rowEditable = rowEditable;
   }
 
   private void setRowValidation(Evaluator rowValidation) {

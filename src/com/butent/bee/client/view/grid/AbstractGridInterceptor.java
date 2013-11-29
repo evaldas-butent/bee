@@ -254,6 +254,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public boolean isRowEditable(IsRow row) {
+    return row != null && row.isEditable();
+  }
+
+  @Override
   public void onAttach(GridView gridView) {
   }
 

@@ -110,10 +110,18 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         CommonsUtils.createCompany(parameters, getFormView(), new IdCallback() {
           @Override
           public void onSuccess(Long company) {
-            List<BeeColumn> columns = Data.getColumns(VIEW_ORDERS,
-                Lists.newArrayList(COL_CUSTOMER));
+            List<String> colNames = Lists.newArrayList(COL_CUSTOMER);
+            List<String> values = Queries.asList(company);
+            
+            String manager = getDataValue(COL_QUERY_MANAGER);
+            if (!BeeUtils.isEmpty(manager)) {
+              colNames.add(COL_ORDER_MANAGER);
+              values.add(manager);
+            }
+            
+            List<BeeColumn> columns = Data.getColumns(VIEW_ORDERS, colNames);
 
-            Queries.insert(VIEW_ORDERS, columns, Queries.asList(company), null, new RowCallback() {
+            Queries.insert(VIEW_ORDERS, columns, values, null, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
                 getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());

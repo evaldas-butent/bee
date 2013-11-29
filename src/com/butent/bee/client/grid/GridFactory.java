@@ -1,7 +1,9 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -123,6 +125,8 @@ public final class GridFactory {
 
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, GridInterceptor> gridInterceptors = Maps.newHashMap();
+  
+  private static final Multimap<String, String> hiddenColumns = HashMultimap.create();
 
   public static void clearDescriptionCache() {
     descriptionCache.clear();
@@ -366,7 +370,18 @@ public final class GridFactory {
     }
     return key;
   }
+  
+  public static void hideColumn(String gridName, String columnName) {
+    Assert.notEmpty(gridName);
+    Assert.notEmpty(columnName);
+    
+    hiddenColumns.put(gridName, columnName);
+  }
 
+  public static boolean isHidden(String gridName, String columnName) {
+    return hiddenColumns.containsEntry(gridName, columnName);
+  }
+  
   public static void openGrid(String gridName) {
     openGrid(gridName, getGridInterceptor(gridName));
   }

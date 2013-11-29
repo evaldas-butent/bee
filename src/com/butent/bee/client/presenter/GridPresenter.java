@@ -384,7 +384,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (getMainView().isEnabled()) {
           IsRow row = getActiveRow();
 
-          if (row != null && getGridView().isRowEditable(row, true)) {
+          if (row != null && getGridView().isRowEditable(row, getGridView())) {
             Collection<RowInfo> selectedRows = getGridView().getSelectedRows(SelectedRows.EDITABLE);
 
             GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows);
