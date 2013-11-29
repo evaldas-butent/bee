@@ -381,6 +381,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
         if (!BeeUtils.isEmpty(comments)) {
           showCommentsAndMarks(form, BeeRowSet.restore(comments), files);
+        } else {
+          clearCommentsCache(form);
         }
 
         form.getWidgetByName(COL_DESCRIPTION).getElement().setInnerHTML(
@@ -676,6 +678,17 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private static void showError(String message) {
     Global.showError(Localized.getConstants().error(), Lists.newArrayList(message));
+  }
+
+  private static void clearCommentsCache(FormView form) {
+    Widget widget = form.getWidgetByName(VIEW_DISCUSSIONS_COMMENTS);
+
+    if (!(widget instanceof Flow)) {
+      return;
+    }
+
+    Flow panel = (Flow) widget;
+    panel.clear();
   }
 
   private ParameterList createParams(DiscussionEvent event, BeeRow newRow, String comment) {
