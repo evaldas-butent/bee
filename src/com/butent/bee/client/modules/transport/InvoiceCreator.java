@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -10,7 +9,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
@@ -18,7 +17,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class InvoiceCreator extends Button implements ClickHandler {
@@ -41,8 +39,7 @@ class InvoiceCreator extends Button implements ClickHandler {
       @Override
       public void onSuccess(Integer result) {
         if (BeeUtils.isPositive(result)) {
-          GridPanel grid = new GridPanel(VIEW_CARGO_INVOICE_INCOMES,
-              GridFactory.getGridOptions(ImmutableMap.of(UiConstants.ATTR_FILTER, flt.toString())));
+          GridPanel grid = new GridPanel(VIEW_CARGO_INVOICE_INCOMES, GridOptions.forFilter(flt));
 
           StyleUtils.setSize(grid, 800, 600);
 

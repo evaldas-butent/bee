@@ -112,13 +112,13 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
           public void onSuccess(Long company) {
             List<String> colNames = Lists.newArrayList(COL_CUSTOMER);
             List<String> values = Queries.asList(company);
-            
+
             String manager = getDataValue(COL_QUERY_MANAGER);
             if (!BeeUtils.isEmpty(manager)) {
               colNames.add(COL_ORDER_MANAGER);
               values.add(manager);
             }
-            
+
             List<BeeColumn> columns = Data.getColumns(VIEW_ORDERS, colNames);
 
             Queries.insert(VIEW_ORDERS, columns, values, null, new RowCallback() {
@@ -129,7 +129,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
                 CargoRequestStatus status = CargoRequestStatus.ACTIVE;
                 updateStatus(status);
                 refreshCommands(status);
-                
+
                 DataChangeEvent.fireRefresh(VIEW_ORDERS);
               }
             });
@@ -157,18 +157,21 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     }
 
     if (status == CargoRequestStatus.NEW) {
-      if (this.activateCommand == null) {
-        this.activateCommand =
-            new Button(Localized.getConstants().trCommandCreateNewOrder(), new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                onCreateOrder();
-              }
-            });
+      if (Data.isViewEditable(VIEW_ORDERS)) {
+        if (this.activateCommand == null) {
+          this.activateCommand =
+              new Button(Localized.getConstants().trCommandCreateNewOrder(), new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  onCreateOrder();
+                }
+              });
+        }
+        header.addCommandItem(this.activateCommand);
       }
-      header.addCommandItem(this.activateCommand);
 
-      if (!BeeUtils.isEmpty(getDataValue(COL_QUERY_HOST))) {
+      if (!BeeUtils.isEmpty(getDataValue(COL_QUERY_HOST)) 
+          && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
               new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {

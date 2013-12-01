@@ -181,7 +181,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
       header.clearCommandPanel();
     }
 
-    if (status == CargoRequestStatus.NEW) {
+    if (status == CargoRequestStatus.NEW && Data.isViewEditable(VIEW_ORDERS)) {
       if (this.activateCommand == null) {
         this.activateCommand =
             new Button(Localized.getConstants().trCommandCreateNewOrder(), new ClickHandler() {
@@ -194,7 +194,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
       header.addCommandItem(this.activateCommand);
     }
 
-    if (status != null) {
+    if (status != null && Data.isViewEditable(VIEW_CARGO_REQUEST_TEMPLATES)) {
       if (this.templateCommand == null) {
         this.templateCommand =
             new Button(Localized.getConstants().trCommandSaveRequestAsTemplate(),

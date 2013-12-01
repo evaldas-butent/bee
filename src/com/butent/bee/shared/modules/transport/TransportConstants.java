@@ -692,6 +692,7 @@ public final class TransportConstants {
   public static final String COL_TRAILER_ITEM_OPACITY = "TrailerItemOpacity";
   public static final String COL_TRAILER_STRIP_OPACITY = "TrailerStripOpacity";
 
+  public static final String COL_CARGO_REQUEST_DATE = "Date";
   public static final String COL_CARGO_REQUEST_USER = "User";
   public static final String COL_CARGO_REQUEST_STATUS = "Status";
   public static final String COL_CARGO_REQUEST_EXPEDITION = "Expedition";

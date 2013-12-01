@@ -1,10 +1,13 @@
 package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -36,6 +39,8 @@ public final class Data {
 
   private static final Set<String> editableViews = Sets.newHashSet();
   private static final Set<String> readOnlyViews = Sets.newHashSet();
+
+  private static final Multimap<String, String> readOnlyColumns = HashMultimap.create();
 
   private static BeeLogger logger = LogUtils.getLogger(Data.class);
 
@@ -168,6 +173,10 @@ public final class Data {
     BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER, false);
   }
 
+  public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
+    return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId());
+  }
+
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
@@ -207,6 +216,13 @@ public final class Data {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 
+  public static void setColumnReadOnly(String viewName, String colName) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(colName);
+    
+    readOnlyColumns.put(viewName, colName);
+  }
+  
   public static void setEditableViews(Collection<String> views) {
     BeeUtils.overwrite(editableViews, views);
   }

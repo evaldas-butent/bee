@@ -2018,12 +2018,8 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       return;
     }
 
-    if (!isEnabled()) {
-      return;
-    }
-
     boolean useForm = useFormForEdit(columnId);
-    boolean editable = !isReadOnly();
+    boolean editable = isEnabled() && !isReadOnly();
 
     if (useForm) {
       if (editable) {

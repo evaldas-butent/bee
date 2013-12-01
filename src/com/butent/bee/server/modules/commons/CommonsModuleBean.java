@@ -334,7 +334,7 @@ public class CommonsModuleBean implements BeeModule {
           .addConstant(COL_COUNTRY, country);
       return qs.insertDataWithResponse(insert);
     } else {
-      return ResponseObject.response(country);
+      return ResponseObject.response(city);
     }
   }
 

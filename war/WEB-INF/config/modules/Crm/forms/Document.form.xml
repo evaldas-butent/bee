@@ -15,7 +15,7 @@
     <FlowPanel class="flexBox-horizontal-space-between">
       <xi:include href="widgets/DocumentFields.widget.xml" />
       
-      <Table style="margin-top: 5px; margin-right: 5px;">
+      <Table name="DocumentRelations" style="margin-top: 5px; margin-right: 5px;">
         <row>
           <Label text="=companies" style="&chlabel;" />
           <ChildSelector viewName="Companies" childTable="Relations" renderColumns="Name"
