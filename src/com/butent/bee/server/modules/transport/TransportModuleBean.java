@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -62,6 +61,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants.ImportType;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
@@ -331,7 +331,7 @@ public class TransportModuleBean implements BeeModule {
         .addFrom(TBL_IMPORT_PROPERTIES)
         .setWhere(SqlUtils.equals(TBL_IMPORT_PROPERTIES, COL_IMPORT_OPTION, optionId)))) {
 
-      ImportProperty prop = ImportType.COSTS.getProperty(row.getInt(COL_IMPORT_PROPERTY));
+      ImportProperty prop = ImportType.COSTS.getProperty(row.getValue(COL_IMPORT_PROPERTY));
 
       if (prop != null) {
         props.put(prop.getName(),
@@ -354,11 +354,6 @@ public class TransportModuleBean implements BeeModule {
     if (pair != null) {
       startRow = BeeUtils.max(BeeUtils.toInt(pair.getA()) - 1, startRow);
     }
-    Map<String, String> relations = ImmutableMap.of(TBL_ITEMS, COL_COSTS_ITEM,
-        ExchangeUtils.TBL_CURRENCIES, COL_COSTS_CURRENCY,
-        TBL_VEHICLES, COL_VEHICLE, TBL_COMPANIES, COL_COSTS_SUPPLIER,
-        TBL_COUNTRIES, COL_COSTS_COUNTRY);
-
     String tmp = SqlUtils.temporaryName();
     String prfx = "_";
     SqlCreate create = new SqlCreate(tmp)
@@ -366,9 +361,6 @@ public class TransportModuleBean implements BeeModule {
         .addLong(COL_TRIP, false)
         .addLong(COL_FUEL, false);
 
-    for (String relation : relations.keySet()) {
-      create.addLong(prfx + relations.get(relation), false);
-    }
     Map<String, Pair<Integer, String>> flds = Maps.newHashMap();
 
     for (ImportProperty prop : ImportType.COSTS.getProperties()) {
@@ -376,6 +368,9 @@ public class TransportModuleBean implements BeeModule {
 
       if (BeeUtils.same(name, VAR_IMPORT_ROW)) {
         continue;
+      }
+      if (!BeeUtils.isEmpty(prop.getRelTable())) {
+        create.addLong(prfx + name, false);
       }
       pair = props.get(name);
       Integer colIndex = null;
@@ -411,6 +406,9 @@ public class TransportModuleBean implements BeeModule {
     for (int i = startRow; i <= shit.getLastRowNum(); i++) {
       SqlInsert insert = new SqlInsert(tmp);
       Row row = shit.getRow(i);
+      Double qty = null;
+      Double prc = null;
+      Double sum = null;
 
       for (String fld : flds.keySet()) {
         Pair<Integer, String> data = flds.get(fld);
@@ -425,14 +423,14 @@ public class TransportModuleBean implements BeeModule {
             if (cell != null) {
               switch (cell.getCellType()) {
                 case Cell.CELL_TYPE_STRING:
-                  value = cell.getStringCellValue();
+                  value = cell.getRichStringCellValue().getString();
                   break;
                 case Cell.CELL_TYPE_NUMERIC:
                   if (DateUtil.isCellDateFormatted(cell)) {
                     Date date = cell.getDateCellValue();
 
                     if (date != null) {
-                      value = BeeUtils.toString(date.getTime());
+                      value = new DateTime(date).toDateString();
                     } else {
                       value = null;
                     }
@@ -451,11 +449,20 @@ public class TransportModuleBean implements BeeModule {
               }
             }
           }
-          if (BeeUtils.inListSame(fld, COL_COSTS_QUANTITY, COL_COSTS_PRICE)) {
-            if (!BeeUtils.isPositiveDouble(value)) {
+          if (BeeUtils.same(fld, COL_COSTS_QUANTITY)) {
+            qty = BeeUtils.toDoubleOrNull(value);
+
+            if (!BeeUtils.isPositive(qty)) {
               insert = null;
               break;
             }
+          } else if (BeeUtils.same(fld, COL_COSTS_PRICE)) {
+            prc = BeeUtils.toDoubleOrNull(value);
+            continue;
+
+          } else if (BeeUtils.same(fld, COL_AMOUNT)) {
+            sum = BeeUtils.toDoubleOrNull(value);
+
           } else if (BeeUtils.same(fld, COL_COSTS_DATE)) {
             JustDate date = TimeUtils.parseDate(value);
             value = date != null ? BeeUtils.toString(date.getTime()) : null;
@@ -464,14 +471,24 @@ public class TransportModuleBean implements BeeModule {
         }
       }
       if (insert != null) {
-        qs.updateData(insert);
+        if (!BeeUtils.isPositive(prc)) {
+          prc = sum / qty;
+        }
+        if (BeeUtils.isPositive(prc)) {
+          qs.updateData(insert.addConstant(COL_COSTS_PRICE, BeeUtils.round(prc, 5)));
+        }
       }
     }
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
 
-    for (String relation : relations.keySet()) {
-      String fld = relations.get(relation);
+    for (ImportProperty prop : ImportType.COSTS.getProperties()) {
+      String relTable = prop.getRelTable();
+
+      if (BeeUtils.isEmpty(relTable)) {
+        continue;
+      }
+      String fld = prop.getName();
       pair = props.get(fld);
 
       if (pair != null) {
@@ -479,8 +496,8 @@ public class TransportModuleBean implements BeeModule {
             .addField(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE, fld)
             .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING)
             .addFrom(TBL_IMPORT_MAPPINGS)
-            .addFromInner(relation,
-                sys.joinTables(relation, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+            .addFromInner(relTable,
+                sys.joinTables(relTable, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
             .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, pair.getB()));
         String subq = SqlUtils.uniqueName();
 
@@ -488,6 +505,11 @@ public class TransportModuleBean implements BeeModule {
             .addExpression(prfx + fld, SqlUtils.field(subq, COL_IMPORT_MAPPING))
             .setFrom(query, subq, SqlUtils.joinUsing(tmp, subq, fld)));
       }
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(prfx + fld, SqlUtils.field(relTable, sys.getIdName(relTable)))
+          .setFrom(relTable, SqlUtils.join(tmp, fld, relTable, prop.getRelField()))
+          .setWhere(SqlUtils.isNull(tmp, prfx + fld)));
+
       for (SimpleRow row : qs.getData(new SqlSelect()
           .addFields(tmp, fld)
           .addCount("cnt")
@@ -505,12 +527,12 @@ public class TransportModuleBean implements BeeModule {
             SqlUtils.isNull(tmp, prfx + COL_COSTS_CURRENCY),
             SqlUtils.isNull(tmp, prfx + COL_VEHICLE))));
 
+    PropertyUtils.addExtended(info, "PAŠALINTA", null, c);
+
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(COL_FUEL, SqlUtils.field(TBL_FUEL_TYPES, sys.getIdName(TBL_FUEL_TYPES)))
         .setFrom(TBL_FUEL_TYPES,
             SqlUtils.join(tmp, prfx + COL_COSTS_ITEM, TBL_FUEL_TYPES, COL_ITEM)));
-
-    PropertyUtils.addExtended(info, "PAŠALINTA", null, c);
 
     c = qs.updateData(new SqlUpdate(tmp)
         .addExpression(prfx + COL_TRIP, SqlUtils.field(TBL_TRIP_COSTS, COL_TRIP))
@@ -530,36 +552,20 @@ public class TransportModuleBean implements BeeModule {
 
     IsExpression dt = SqlUtils.cast(SqlUtils.field(tmp, COL_COSTS_DATE), SqlDataType.DATE, 0, 0);
 
-    SqlSelect query = new SqlSelect()
-        .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT,
-            COL_NUMBER, COL_COSTS_NOTE)
-        .addField(tmp, prfx + COL_COSTS_CURRENCY, COL_COSTS_CURRENCY)
-        .addField(tmp, prfx + COL_COSTS_COUNTRY, COL_COSTS_COUNTRY)
-        .addField(tmp, prfx + COL_COSTS_SUPPLIER, COL_COSTS_SUPPLIER)
-        .addMax(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
-        .addFrom(tmp)
-        .addFromInner(TBL_TRIPS,
-            SqlUtils.and(SqlUtils.join(tmp, prfx + COL_VEHICLE, TBL_TRIPS, COL_VEHICLE),
-                SqlUtils.moreEqual(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM)),
-                SqlUtils.or(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
-                    SqlUtils.less(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO)))))
-        .setWhere(SqlUtils.isNull(tmp, COL_TRIP))
-        .addGroup(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT,
-            COL_NUMBER, COL_COSTS_NOTE, prfx + COL_COSTS_CURRENCY, prfx + COL_COSTS_COUNTRY,
-            prfx + COL_COSTS_SUPPLIER);
-
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(COL_TRIP, SqlUtils.field(TBL_TRIPS, sys.getIdName(TBL_TRIPS)))
         .setFrom(TBL_TRIPS,
             SqlUtils.and(SqlUtils.join(tmp, prfx + COL_VEHICLE, TBL_TRIPS, COL_VEHICLE),
-                SqlUtils.moreEqual(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM)),
-                SqlUtils.or(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
-                    SqlUtils.less(dt, SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO))),
+                SqlUtils.moreEqual(dt, SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
+                    SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE))),
+                SqlUtils.less(dt, SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
+                    SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE), Long.MAX_VALUE)),
                 SqlUtils.isNull(tmp, prfx + COL_TRIP))));
 
     for (String tt : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
-      query = new SqlSelect()
-          .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT,
+      SqlSelect query = new SqlSelect()
+          .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE,
+              COL_TRADE_VAT_PLUS, COL_COSTS_VAT, COL_TRADE_VAT_PERC,
               COL_NUMBER, COL_COSTS_NOTE, COL_TRIP)
           .addField(tmp, prfx + COL_COSTS_CURRENCY, COL_COSTS_CURRENCY)
           .addField(tmp, prfx + COL_COSTS_COUNTRY, COL_COSTS_COUNTRY)

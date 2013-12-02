@@ -1,7 +1,9 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -140,6 +142,8 @@ public final class FormFactory {
   private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors =
       Maps.newHashMap();
 
+  private static final Multimap<String, String> hiddenWidgets = HashMultimap.create();
+  
   public static void clearDescriptionCache() {
     descriptionCache.clear();
   }
@@ -150,8 +154,8 @@ public final class FormFactory {
     Assert.notNull(formDescription);
     Assert.notNull(widgetDescriptionCallback);
 
-    return createWidget(formDescription.getFormElement(), viewName, columns,
-        widgetDescriptionCallback, formInterceptor, "createForm:");
+    return createWidget(formDescription.getName(), formDescription.getFormElement(), viewName,
+        columns, widgetDescriptionCallback, formInterceptor, "createForm:");
   }
 
   public static FormDescription createFormDescription(String formName,
@@ -195,7 +199,7 @@ public final class FormFactory {
         viewCallback);
   }
 
-  public static IdentifiableWidget createWidget(Element parent, String viewName,
+  public static IdentifiableWidget createWidget(String formName, Element parent, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       WidgetInterceptor widgetCallback, String messagePrefix) {
 
@@ -230,7 +234,7 @@ public final class FormFactory {
       return null;
     }
 
-    IdentifiableWidget widget = formWidget.create(root, viewName, columns,
+    IdentifiableWidget widget = formWidget.create(formName, root, viewName, columns,
         widgetDescriptionCallback, widgetCallback);
     if (widget == null) {
       logger.severe(messagePrefix, "cannot create root widget", formWidget);
@@ -379,6 +383,17 @@ public final class FormFactory {
     return widgetType;
   }
 
+  public static void hideWidget(String formName, String widgetName) {
+    Assert.notEmpty(formName);
+    Assert.notEmpty(widgetName);
+    
+    hiddenWidgets.put(formName, widgetName);
+  }
+
+  public static boolean isHidden(String formName, String widgetName) {
+    return hiddenWidgets.containsEntry(formName, widgetName);
+  }
+  
   public static void openForm(FormDescription formDescription, FormInterceptor formInterceptor,
       PresenterCallback presenterCallback) {
 

@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -35,8 +36,11 @@ class OrderCargoForm extends AbstractFormInterceptor {
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
     Presenter presenter = form.getViewPresenter();
     presenter.getHeader().clearCommandPanel();
-    presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
-        Value.getValue(row.getId()))));
+
+    if (Data.isViewEditable(VIEW_CARGO_INVOICES)) {
+      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
+          Value.getValue(row.getId()))));
+    }
 
     return true;
   }

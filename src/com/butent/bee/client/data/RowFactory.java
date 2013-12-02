@@ -419,6 +419,9 @@ public final class RowFactory {
     dialog.addOpenHandler(new OpenEvent.Handler() {
       @Override
       public void onOpen(OpenEvent event) {
+        if (formView.getFormInterceptor() != null) {
+          formView.getFormInterceptor().onStartNewRow(formView, null, row);
+        }
         formView.updateRow(row, true);
       }
     });

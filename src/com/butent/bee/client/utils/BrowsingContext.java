@@ -34,6 +34,7 @@ public final class BrowsingContext {
     Info info = JsBrowser.getInfo();
 
     return PropertyUtils.createProperties(
+        "Layout Engine", LayoutEngine.detect(),
         "Gecko", info.isGecko(),
         "Linux", info.isLinux(),
         "Mac", info.isMac(),

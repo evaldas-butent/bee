@@ -509,3 +509,11 @@
 .bee-tr-chart-filter-commandClear {
   margin-left: 2em;
 }
+
+.bee-tr-SelfService-screen .bee-MainCommandPanel {
+  left: 160px;
+}
+.bee-tr-SelfService-shell {
+  width: 100%;
+  height: 99%;
+}

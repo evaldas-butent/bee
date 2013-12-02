@@ -38,7 +38,7 @@ public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHan
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
-    if (proforma) {
+    if (proforma && form.isEnabled()) {
       header.addCommandItem(confirmAction);
     }
   }

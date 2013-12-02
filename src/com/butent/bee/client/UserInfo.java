@@ -22,6 +22,10 @@ public class UserInfo implements Module, HasInfo {
   private String sessionId;
   private UserData userData;
 
+  public Long getCompany() {
+    return isLoggedIn() ? userData.getCompany() : null;
+  }
+  
   public Filter getFilter(String column) {
     if (isLoggedIn() && !BeeUtils.isEmpty(column)) {
       return ComparisonFilter.isEqual(column, new LongValue(getUserId()));

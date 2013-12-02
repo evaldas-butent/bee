@@ -192,10 +192,17 @@
   left: 440px;
   top: 28px;
   right: 225px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
 }
 .bee-MainCommandPanelItem {
-  display: inline-block;
-  margin-left: 5%;
   height: 25px;
   background-color: #f2f2f2;
   padding: 0 10px;

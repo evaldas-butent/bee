@@ -286,6 +286,8 @@ public final class CrmConstants {
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
 
+  public static final String FORM_DOCUMENT = "Document";
+
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
   public static final String LABEL_OBSERVERS = Localized.getConstants().crmTaskObservers();

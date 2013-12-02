@@ -138,10 +138,14 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     HeaderView hdr = form.getViewPresenter().getHeader();
     hdr.clearCommandPanel();
 
-    hdr.addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_ORDER,
-        Value.getValue(row.getId()))));
+    if (Data.isViewEditable(VIEW_CARGO_INVOICES)) {
+      hdr.addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_ORDER,
+          Value.getValue(row.getId()))));
+    }
+    if (Data.isViewEditable(VIEW_CARGO_TRIPS)) {
+      hdr.addCommandItem(new Button(Localized.getConstants().trAssignTrip(), this));
+    }
 
-    hdr.addCommandItem(new Button(Localized.getConstants().trAssignTrip(), this));
     return true;
   }
 

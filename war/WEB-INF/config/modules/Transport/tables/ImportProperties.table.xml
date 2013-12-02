@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Option" notNull="true" relation="ImportOptions" cascade="DELETE" label="=trImportOption" />
-    <Integer name="Property" notNull="true" label="=trImportProperty" />
+    <String name="Property" precision="20" notNull="true" label="=trImportProperty" />
     <String name="Value" precision="30" notNull="true" label="=trImportValue" />
   </Fields>
   <Constraints>

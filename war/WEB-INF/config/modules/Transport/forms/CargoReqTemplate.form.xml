@@ -31,8 +31,7 @@
       <row>
         <Label text="=trRequestTemplateUser" class="bee-required bee-hasDefaults" />
         <cell colSpan="3">
-          <DataSelector source="User" editSource="CustomerCompany" newRowEnabled="false"
-            style="width: 300px;" >
+          <DataSelector source="User" newRowEnabled="false" style="width: 300px;" >
             <renderToken source="CustomerFirstName" />
             <renderToken source="CustomerLastName" />
             <renderToken source="CustomerCompanyName" prefix=", " />
@@ -199,7 +198,7 @@
           <Label text="=trRequestCargoValue" />
           <InputCurrency source="Value" />
           <Label text="=trRequestCargoCurrency" />
-          <DataSelector source="ValueCurrency" newRowEnabled="false" style="width: 60px;" />
+          <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false" style="width: 60px;" />
         </row>
 
       </Table>

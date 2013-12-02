@@ -184,7 +184,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getStyleSheets() {
-      return Lists.newArrayList(MAIN_STYLE_SHEET);
+      return Lists.newArrayList(MAIN_STYLE_SHEET, TransportConstants.STYLE_SHEET);
     }
 
     @Override
