@@ -12,7 +12,7 @@
   <!ENTITY discussionHeadPanel "max-height:150px">
  
   <!ENTITY subjectLbl "&lblRight;">
-  <!ENTITY subjectInp "&inpLeft;  width: 400px;">
+  <!ENTITY subjectInp "&inpLeft;  min-width: 400px;">
   
   <!ENTITY ownerLbl "&lblRight;">
   <!ENTITY ownerInp "&inpLeft; width: 180px;">
@@ -54,46 +54,38 @@
   caption="=discussion" printHeader="true">
 
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal" style="&discussionHeadPanel;">
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel>
+        <Label text="=discussSubject" class="bee-required" style="&subjectLbl;" />
+        <InputText source="Subject" style="&subjectInp;"
+          readOnly="true" />
+        <Label text="=discussCreated" style="&createdLbl;" />
+        <InputDateTime source="Created" style="&createdInp;"
+          readOnly="true" />
+        <Label text="=discussStatus" style="&statusLbl;" />
+        <ListBox source="Status" style="&statusInp; margin-right: 14px"
+          readOnly="true" />
+      </FlowPanel>
+    </FlowPanel>
+
+    <Disclosure xmlns="http://www.butent.com/widget"
+      xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
+      <Label text="=discussDetailInfo" style="text-transform: uppercase; " />
 
       <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
-        <FlowPanel>
-          <Label text="=discussSubject" class="bee-required"
-            style="&subjectLbl;" />
-          <InputText source="Subject" style="&subjectInp;"
-            readOnly="true" />
-        </FlowPanel>
-
         <FlowPanel>
           <Label text="=discussOwner" style="&ownerLbl;" />
           <DataSelector source="Owner" editSource="OwnerPerson"
             style="&ownerInp;" readOnly="true" />
-          <Label text="=discussCreated" style="&createdLbl;" />
-          <InputDateTime source="Created" style="&createdInp;"
-            readOnly="true" />
-        </FlowPanel>
-
-        <FlowPanel>
-          <Label text="=discussStatus" style="&statusLbl;" />
-          <ListBox source="Status" style="&statusInp; margin-right: 14px"
-            readOnly="true" />
-
           <CheckBox name="Accessibility" source="Accessibility"
             text="=discussPublic" />
         </FlowPanel>
-
         <FlowPanel>
           <Label name="membersLabel" text="=discussMembers" style="&membersLbl;" />
           <MultiSelector viewName="Users" property="Members"
-            renderColumns="FirstName 
-      LastName" editSource="CompanyPerson"
+            renderColumns="FirstName LastName" editSource="CompanyPerson"
             style="&membersInp;" disablable="true" label="=discussMembers" />
         </FlowPanel>
-
-      </FlowPanel>
-
-      <!-- Top right -->
-      <FlowPanel class="flexBox-vertical" style="&relDataPanel;">
 
         <FlowPanel>
           <Label text="=companies" style="&relCompaniesLbl;" />
@@ -132,16 +124,17 @@
             renderColumns="Name DocumentDate Number" choiceColumns="Name DocumentDate Number"
             newRowEnabled="false" style="&relDocumentsInp;" disablable="true" />
         </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=discussDescription" style="&descriptionLbl;" />
+          <Label class="bee-InputArea" name="Description" style="&descriptionInp; " />
+        </FlowPanel>
+
+        <FileGroup name="Files" />
       </FlowPanel>
-    </FlowPanel>
+    </Disclosure>
 
-    <FlowPanel>
-      <Label text="=discussDescription" style="&descriptionLbl;" />
-      <Label class="bee-InputArea" name="Description" style="&descriptionInp; " />
-    </FlowPanel>
-    
-    <FileGroup name="Files" />
-
-    <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container" style="&commentsPanel;" />
+    <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container"
+      style="&commentsPanel;" />
   </FlowPanel>
 </f:Form>

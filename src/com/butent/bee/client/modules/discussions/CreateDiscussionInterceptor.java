@@ -5,14 +5,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.COL_CAPTION;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.COL_DESCRIPTION;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.COL_DISCUSSION;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.COL_FILE;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.PROP_MEMBERS;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.VAR_DISCUSSION_DATA;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.VIEW_DISCUSSIONS;
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.VIEW_DISCUSSIONS_FILES;
+import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -44,7 +37,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -177,11 +169,9 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     Widget widget = getFormView().getWidgetByName(WIDGET_DESCRIPTION);
     if (widget instanceof Editor) {
-      LogUtils.getRootLogger().debug("on start new row");
       Editor editor = (Editor) widget;
       editor.clearValue();
       editor.setValue(BeeConst.STRING_EMPTY);
-      LogUtils.getRootLogger().debug(editor.getValue());
     }
   }
 

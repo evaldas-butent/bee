@@ -124,6 +124,7 @@ public final class DiscussionsConstants {
   public static final String PROP_MEMBERS = "Members";
   public static final String PROP_STAR = "Star";
   public static final String PROP_USER = "User";
+  public static final String PROP_ATTACHMENT = "Attachment";
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";

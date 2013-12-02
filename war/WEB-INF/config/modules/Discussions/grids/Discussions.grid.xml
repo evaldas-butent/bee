@@ -1,30 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
-  
-  name="Discussions" viewName="Discussions" caption="=discussions"
-  cacheData="false" asyncThreshold="-1" favorite="Subject"
-  order="DiscussionID desc"
-  >
-  <g:columns>
-    <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-" label="=discussColumnMode" />
+  xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 
-    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
+  name="Discussions" viewName="Discussions" caption="=discussions"
+  cacheData="false" asyncThreshold="-1" favorite="Subject" order="DiscussionID desc">
+  <g:columns>
+    <CalcColumn name="Mode" type="string" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20" caption="-"
+      label="=discussColumnMode" />
+
+    <PropColumn name="Star" type="integer" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20"
       label="=discussColumnStar">
       <renderer type="star" />
     </PropColumn>
-    
-    <DataColumn name="Subject" maxWidth="200" visible="true" />
-       
+
+    <DataColumn name="Subject" flexGrow="2" visible="true" />
+
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-      sortBy="OwnerLastName OwnerFirstName" />
-      
-    <DataColumn name="Status" visible="true" />
-       
-    <DataColumn name="Created" visible="true" /> 
-    <DataColumn name="Accessibility" visible="false" />
+      sortBy="OwnerLastName OwnerFirstName" autoFit="true" />
+
+    <DataColumn name="Status" visible="true" minWidth="70"
+      autoFit="true" />
+
+    <DataColumn name="Created" visible="true" minWidth="120"
+      autoFit="true" />
+
+    <!-- <PropColumn name="Attachment" type="string" cellType="html" horizontalAlignment="center" 
+      width="20" maxWidth="20"> <renderer type="attachment" /> </PropColumn> -->
+
+    <CalcColumn name="FilesCount" type="string" cellType="html"  visible="true" maxWidth="90"
+      horizontalAlignment="center" autoFit="true" caption="-" sortable="false">
+       <render>
+        <ui:function>
+          if (row.FilesCount > 0) {
+          return $wnd.Bee_getImageResourceHtml("attachment");
+          } else {
+          return " "
+          }
+        </ui:function>
+      </render>     
+     <!--  <renderer type="attachment" /> -->
+    </CalcColumn>
+
+    <CalcColumn name="LastComment" type="string" cellType="html"
+      minWidth="150" autoFit="true" caption="=discussLastComment">
+      <renderToken source="LastComment" format="date_time_short" />
+    </CalcColumn>
+
+
+
+    <DataColumn name="CommentCount" visible="true" maxWidth="90"
+      horizontalAlignment="center" autoFit="true" caption="=discussTotalComments" />
+
   </g:columns>
   <g:rowStyle>
     <ui:inline>="background-color:#ccc"</ui:inline>

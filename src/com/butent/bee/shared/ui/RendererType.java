@@ -11,6 +11,7 @@ public enum RendererType {
   TOKEN("token", false),
   FLAG("flag", true),
   STAR("star", true),
+  ATTACHMENT("attachment", true),
   FILE_ICON("fileIcon", true),
   FILE_SIZE("fileSize", true),
   PHOTO("photo", true),

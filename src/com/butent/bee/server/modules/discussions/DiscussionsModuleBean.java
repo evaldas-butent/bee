@@ -168,7 +168,7 @@ public class DiscussionsModuleBean implements BeeModule {
             SimpleRowSet discussUsersData = qs.getData(discussUsers);
 
             int discussIndex = discussUsersData.getColumnIndex(COL_DISCUSSION);
-            int acessIndex = discussUsersData.getColumnIndex(COL_LAST_ACCESS);
+            int accessIndex = discussUsersData.getColumnIndex(COL_LAST_ACCESS);
             int starIndex = discussUsersData.getColumnIndex(COL_STAR);
 
             for (SimpleRow discussUserRow : discussUsersData) {
@@ -181,7 +181,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
               row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
 
-              if (discussUserRow.getValue(acessIndex) != null) {
+              if (discussUserRow.getValue(accessIndex) != null) {
                 row.setProperty(PROP_LAST_ACCESS, discussUserRow.getValue(starIndex));
               }
               if (discussUserRow.getValue(starIndex) != null) {

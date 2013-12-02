@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-
-  name="Discussions" source="Discussions" caption="=discussions"
-  rowCaption="Subject" newRowForm="NewDiscussion" editForm="Discussion"
-  >
+<View xmlns="http://www.butent.com/view" name="Discussions" source="Discussions"
+  caption="=discussions" rowCaption="Subject" newRowForm="NewDiscussion"
+  editForm="Discussion">
   <Columns>
     <SimpleColumn name="Subject" />
     <SimpleColumn name="Description" />
-    
+
     <SimpleColumn name="Created" />
-    <SimpleColumn name="Status" />   
+    <SimpleColumn name="Status" />
 
     <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">
@@ -21,13 +19,32 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="Accessibility" />
+    
+    <ExternalJoin source="DiscussionsFiles" joinType="LEFT"
+      name="Discussion">
+      <AggregateColumn alias="FilesCount" aggregate="COUNT"
+        name="Discussion" />
+    </ExternalJoin>
+
+    <ExternalJoin source="DiscussionsComments" joinType="LEFT"
+      name="Discussion">
+      <AggregateColumn alias="CommentCount" aggregate="COUNT"
+        name="Discussion" />
+      <AggregateColumn alias="LastComment" aggregate="MAX"
+        name="PublishTime" />
+     <!--  <AggregateJoin name="Publisher" joinType="LEFT">
+        <AggregateJoin name="Users" joinType="LEFT">
+
+        </AggregateJoin>
+      </AggregateJoin> -->
+    </ExternalJoin>
   </Columns>
-  
+
   <Order>
     <OrderBy column="Status" />
-    <OrderBy column="Created" descending="true"/>
+    <OrderBy column="Created" descending="true" />
   </Order>
 </View>
  

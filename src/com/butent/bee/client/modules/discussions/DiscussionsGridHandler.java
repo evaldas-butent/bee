@@ -2,8 +2,10 @@ package com.butent.bee.client.modules.discussions;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
+import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
@@ -42,6 +44,8 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public String getColumnCaption(String columnName) {
     if (PROP_STAR.equals(columnName)) {
       return Stars.getDefaultHeader();
+    } else if (PROP_ATTACHMENT.equals(columnName)) {
+      return Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT));
     } else {
       return super.getColumnCaption(columnName);
     }
