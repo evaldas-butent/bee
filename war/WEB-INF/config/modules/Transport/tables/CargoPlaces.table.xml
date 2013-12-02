@@ -9,7 +9,7 @@
     <DateTime name="Date" label="=date" />
     <String name="Terminal" precision="30" label="=terminal" />
     <String name="Contact" precision="50" label="=contact" />
-    <Relation name="Company" relation="Companies" label="=company" />
+    <String name="Company" precision="100" label="=company" />
     <String name="Phone" precision="50" label="=phone" />
     <String name="Fax" precision="50" label="=fax" />
     <Relation name="Email" relation="Emails" label="=email" />

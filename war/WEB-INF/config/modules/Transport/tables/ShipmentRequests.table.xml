@@ -24,13 +24,9 @@
 
     <String name="CustomerExchangeCode" precision="30" label="=trRequestCustomerExchangeCode" />
 
-    <String name="LoadingCompanyName" precision="100" notNull="true"
-      label="=trLoadingCompanyName" />
     <String name="LoadingEmail" precision="255" label="=trLoadingEmail" />
     <String name="LoadingCity" precision="30" notNull="true" label="=trLoadingCity" />
 
-    <String name="UnloadingCompanyName" precision="100" notNull="true"
-      label="=trUnloadingCompanyName" />
     <String name="UnloadingEmail" precision="255" label="=trUnloadingEmail" />
     <String name="UnloadingCity" precision="30" notNull="true" label="=trUnloadingCity" />
 

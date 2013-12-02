@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.commons;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -23,6 +24,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -38,7 +40,7 @@ class ItemFormHandler extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onReadyForInsert(final ReadyForInsertEvent event) {
+  public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
     Assert.notNull(event);
 
     String price = null;
@@ -56,8 +58,10 @@ class ItemFormHandler extends AbstractFormInterceptor {
     }
 
     if (!BeeUtils.isEmpty(price) && BeeUtils.isEmpty(currency)) {
-      event.getCallback().onFailure("Currency required");
+      event.getCallback().onFailure(Localized.getConstants().currency(),
+          Localized.getConstants().valueRequired());
       event.consume();
+      return;
     }
 
     BeeRowSet rs = new BeeRowSet("Items", event.getColumns());

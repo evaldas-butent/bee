@@ -483,7 +483,8 @@ public class TransportSelfService extends LoginServlet {
     Tbody loadingFields =
         tbody().append(
             qField(constants.trLoadingDate(), loadingColumnAlias(COL_PLACE_DATE), true),
-            qField(constants.trRequestPlaceCompanyName(), COL_QUERY_LOADING_COMPANY_NAME, true),
+            qField(constants.trRequestPlaceCompanyName(), loadingColumnAlias(COL_PLACE_COMPANY),
+                true),
             qField(constants.trRequestPlaceContact(), loadingColumnAlias(COL_PLACE_CONTACT), true),
             qField(constants.address(), loadingColumnAlias(COL_PLACE_ADDRESS), true),
             qField(constants.city(), COL_QUERY_LOADING_CITY, true),
@@ -496,7 +497,8 @@ public class TransportSelfService extends LoginServlet {
 
     Tbody unloadingFields = tbody().append(
         qField(constants.trUnloadingDate(), unloadingColumnAlias(COL_PLACE_DATE), false),
-        qField(constants.trRequestPlaceCompanyName(), COL_QUERY_UNLOADING_COMPANY_NAME, true),
+        qField(constants.trRequestPlaceCompanyName(), unloadingColumnAlias(COL_PLACE_COMPANY),
+            true),
         qField(constants.trRequestPlaceContact(), unloadingColumnAlias(COL_PLACE_CONTACT), true),
         qField(constants.address(), unloadingColumnAlias(COL_PLACE_ADDRESS), true),
         qField(constants.city(), COL_QUERY_UNLOADING_CITY, true),

@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.Presenter;
@@ -153,11 +154,11 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public void onReadyForInsert(ReadyForInsertEvent event) {
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
   }
 
   @Override

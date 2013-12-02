@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -87,7 +88,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
   }
 
   @Override
-  public void onReadyForInsert(ReadyForInsertEvent event) {
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     Long customer = null;
     List<BeeColumn> cols = event.getColumns();
 
@@ -102,12 +103,12 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     }
     if (DataUtils.isId(customer)) {
       event.consume();
-      checkCreditInfo(event, customer);
+      checkCreditInfo(listener, event, customer);
     }
   }
 
   @Override
-  public void onSaveChanges(final SaveChangesEvent event) {
+  public void onSaveChanges(HasHandlers listener, final SaveChangesEvent event) {
     Long customer = null;
     int custIdx = -1;
     int payerIdx = -1;
@@ -129,7 +130,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     }
     if (DataUtils.isId(customer)) {
       event.consume();
-      checkCreditInfo(event, customer);
+      checkCreditInfo(listener, event, customer);
     }
   }
 
@@ -154,7 +155,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     form.getViewPresenter().getHeader().clearCommandPanel();
   }
 
-  private void checkCreditInfo(final GwtEvent<?> event, Long customer) {
+  private void checkCreditInfo(final HasHandlers listener, final GwtEvent<?> event, Long customer) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_CREDIT_INFO);
     args.addDataItem(COL_CUSTOMER, customer);
 
@@ -170,7 +171,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         Map<String, String> result = Codec.beeDeserializeMap(response.getResponseAsString());
 
         if (BeeUtils.isEmpty(result)) {
-          getGridView().fireEvent(event);
+          listener.fireEvent(event);
         } else {
           String cap = null;
           List<String> msgs = Lists.newArrayList();
@@ -186,7 +187,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
               Localized.getConstants().cancel(), new ConfirmationCallback() {
                 @Override
                 public void onConfirm() {
-                  getGridView().fireEvent(event);
+                  listener.fireEvent(event);
                 }
               });
         }

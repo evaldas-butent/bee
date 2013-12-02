@@ -49,7 +49,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" />
-          <DataSelector source="LoadingCompany" />
+          <InputText source="LoadingCompany" />
           <Label text="=trRequestPlaceContact" />
           <InputText source="LoadingContact" />
         </row>
@@ -91,7 +91,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" />
-          <DataSelector source="UnloadingCompany" />
+          <InputText source="UnloadingCompany" />
           <Label text="=trRequestPlaceContact" />
           <InputText source="UnloadingContact" />
         </row>

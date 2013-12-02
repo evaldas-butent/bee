@@ -14,7 +14,7 @@
       <renderToken source="CustomerCompanyName" prefix=", " />
     </RelColumn>
 
-    <RelColumn name="LoadingCompany" visible="false" />
+    <DataColumn name="LoadingCompany" visible="false" />
     <DataColumn name="LoadingContact" visible="false" />
 
     <RelColumn name="LoadingCity" />
@@ -26,7 +26,7 @@
     <DataColumn name="LoadingFax" visible="false" />
     <DataColumn name="LoadingNumber" visible="false" />
 
-    <RelColumn name="UnloadingCompany" visible="false" />
+    <DataColumn name="UnloadingCompany" visible="false" />
     <DataColumn name="UnloadingContact" visible="false" />
 
     <RelColumn name="UnloadingCity" />

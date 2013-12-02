@@ -22,7 +22,7 @@ import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
@@ -36,8 +36,8 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    HasDimensions, HasState, DndWidget, EditEndEvent.Handler, SaveChangesEvent.Handler,
-    RequiresResize, Printable {
+    HasDimensions, HasState, DndWidget, EditEndEvent.Handler, RequiresResize, Printable,
+    HasSaveChangesHandlers {
 
   void applyOptions(String options);
 

@@ -428,6 +428,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
+    return addHandler(handler, SaveChangesEvent.getType());
+  }
+  
+  @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
   }
@@ -1142,13 +1147,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
-    if (getFormInterceptor() != null) {
-      getFormInterceptor().onSaveChanges(event);
-    }
-  }
-
-  @Override
   public void prepareForInsert() {
     if (!validate(this, true)) {
       return;
@@ -1194,7 +1192,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, getChildrenForInsert(),
         callback);
     if (getFormInterceptor() != null) {
-      getFormInterceptor().onReadyForInsert(event);
+      getFormInterceptor().onReadyForInsert(this, event);
       if (event.isConsumed()) {
         return;
       }

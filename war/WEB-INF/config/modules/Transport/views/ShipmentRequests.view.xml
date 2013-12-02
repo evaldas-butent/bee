@@ -23,11 +23,9 @@
 
     <SimpleColumn name="CustomerExchangeCode" />
 
-    <SimpleColumn name="LoadingCompanyName" />
     <SimpleColumn name="LoadingEmail" />
     <SimpleColumn name="LoadingCity" />
 
-    <SimpleColumn name="UnloadingCompanyName" />
     <SimpleColumn name="UnloadingEmail" />
     <SimpleColumn name="UnloadingCity" />
 
@@ -52,6 +50,9 @@
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
+
+        <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany"
+          editable="true" />
         <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"
           editable="true" />
         <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" 
@@ -65,6 +66,9 @@
 
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
+
+        <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany"
+          editable="true" />
         <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"
           editable="true" />
         <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" 

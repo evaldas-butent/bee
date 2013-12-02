@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
@@ -89,7 +90,7 @@ public final class DocumentHandler {
     }
 
     @Override
-    public void onReadyForInsert(final ReadyForInsertEvent event) {
+    public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
       Assert.notNull(event);
       event.consume();
 

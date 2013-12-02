@@ -10,6 +10,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -391,7 +392,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();
 
@@ -403,7 +404,6 @@ class TaskEditor extends AbstractFormInterceptor {
         && getUpdatedRelations(oldRow, newRow).isEmpty()) {
       return;
     }
-
 
     ParameterList params = createParams(TaskEvent.EDIT, null);
 

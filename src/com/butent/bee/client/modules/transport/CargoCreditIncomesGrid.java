@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_ITEM;
@@ -147,7 +148,7 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
               }
 
               @Override
-              public void onReadyForInsert(ReadyForInsertEvent ev) {
+              public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent ev) {
                 FormView form = getFormView();
                 Widget w = form.getWidgetByName("Cause");
 
