@@ -262,7 +262,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void afterRefresh(FormView form, IsRow row) {
+  public void afterRefresh(final FormView form, final IsRow row) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
@@ -276,12 +276,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     for (final DiscussionEvent event : DiscussionEvent.values()) {
       String label = event.getCommandLabel();
 
-      if (!BeeUtils.isEmpty(label) && isEventEnabled(event, status, owner)) {
+      if (!BeeUtils.isEmpty(label) && isEventEnabled(form, row, event, status, owner)) {
         header.addCommandItem(new Button(label, new ClickHandler() {
 
           @Override
           public void onClick(ClickEvent e) {
-            doEvent(event);
+            doEvent(form, row, event);
           }
 
         }));
@@ -381,7 +381,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         String comments = data.getProperty(PROP_COMMENTS);
 
         if (!BeeUtils.isEmpty(comments)) {
-          showCommentsAndMarks(form, BeeRowSet.restore(comments), files);
+          showCommentsAndMarks(form, row, BeeRowSet.restore(comments), files);
         } else {
           clearCommentsCache(form);
         }
@@ -494,12 +494,19 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     sendRequest(params, callback);
   }
 
-  private void showComment(Flow panel, BeeRow row, List<BeeColumn> columns,
+  private void showComment(IsRow activeRow, Flow panel, BeeRow row, List<BeeColumn> columns,
       List<StoredFile> files, boolean renderPhoto, int paddingLeft) {
 
     boolean deleted =
         row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)) == null
             ? false : row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)).booleanValue();
+
+    boolean isCommentOwner =
+        row.getLong(DataUtils.getColumnIndex(COL_PUBLISHER, columns)) == null
+            ? false : row.getLong(DataUtils.getColumnIndex(COL_PUBLISHER, columns)) == userId;
+
+    Long ownerId = activeRow.getLong(getFormView().getDataIndex(COL_OWNER));
+    Integer statusId = activeRow.getInteger(getFormView().getDataIndex(COL_STATUS));
 
     Flow container = new Flow();
     container.addStyleName(STYLE_COMMENT_ROW);
@@ -564,7 +571,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     colActions.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS);
 
     if (!deleted
-    /* && isEventEnabled(DiscussionEvent.REPLY, getStatus(), getOwner(), false) */) {
+        && isEventEnabled(getFormView(), activeRow, DiscussionEvent.REPLY, statusId, ownerId,
+            false)) {
       Image imgReply = new Image(Images.get(IMAGE_REPLY));
       imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
       imgReply.setTitle(Localized.getConstants().discussActionReply());
@@ -583,7 +591,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (!deleted
-    /* && isEventEnabled(DiscussionEvent.COMMENT_DELETE, getStatus(), getOwner(), false) */) {
+        && isEventEnabled(getFormView(), activeRow, DiscussionEvent.COMMENT_DELETE, statusId,
+            ownerId, false) && isCommentOwner) {
       Image imgTrash = new Image(Images.get(IMAGE_TRASH));
       imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
       imgTrash.setTitle(Localized.getConstants().actionDelete());
@@ -617,23 +626,24 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private void showAnsweredCommentsAndMarks(Flow panel, List<StoredFile> files,
+  private void showAnsweredCommentsAndMarks(IsRow activeRow, Flow panel, List<StoredFile> files,
       Multimap<Long, Long> data, long parent, BeeRowSet rowSet, int paddingLeft) {
     if (data.containsKey(parent)) {
       for (long id : data.get(parent)) {
         BeeRow row = rowSet.getRowById(id);
-        showComment(panel, row, rowSet.getColumns(), filterCommentFiles(files, row.getId()),
+        showComment(activeRow, panel, row, rowSet.getColumns(), filterCommentFiles(files, row
+            .getId()),
             isPhoto(row, rowSet), paddingLeft);
 
-        showAnsweredCommentsAndMarks(panel, files, data, id, rowSet, paddingLeft + 1);
+        showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet, paddingLeft + 1);
       }
     }
   }
 
-  private void showCommentsAndMarks(FormView form, BeeRowSet rowSet,
+  private void showCommentsAndMarks(FormView form, IsRow activeRow, BeeRowSet rowSet,
       List<StoredFile> files) {
     Widget widget = form.getWidgetByName(VIEW_DISCUSSIONS_COMMENTS);
-
+    
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
       return;
     }
@@ -656,11 +666,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     for (long id : roots) {
       BeeRow row = rowSet.getRowById(id);
-      showComment(panel, row, rowSet.getColumns(), filterCommentFiles(files, row
+      showComment(activeRow, panel, row, rowSet.getColumns(), filterCommentFiles(files, row
           .getId()),
           isPhoto(row, rowSet), INITIAL_COMMENT_ROW_PADDING_LEFT);
 
-      showAnsweredCommentsAndMarks(panel, files, data, id, rowSet,
+      showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet,
           INITIAL_COMMENT_ROW_PADDING_LEFT + 1);
     }
 
@@ -829,8 +839,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     });
   }
 
-  private void doEvent(DiscussionEvent event) {
-    if (!isEventEnabled(event, getStatus(), getOwner())) {
+  private void doEvent(FormView form, IsRow row, DiscussionEvent event) {
+    if (!isEventEnabled(form, row, event, getStatus(), getOwner())) {
       showError(Localized.getConstants().actionNotAllowed());
     }
 
@@ -911,14 +921,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return updatedRelations;
   }
 
-  private boolean isEventEnabled(DiscussionEvent event, Integer status, Long owner) {
-    return isEventEnabled(event, status, owner, true);
+  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event, Integer status,
+      Long owner) {
+    return isEventEnabled(form, row, event, status, owner, true);
   }
 
-  private boolean isEventEnabled(DiscussionEvent event, Integer status, Long owner,
-      boolean showInHeader) {
+  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event, Integer status,
+      Long owner, boolean showInHeader) {
 
-    if (event == null || status == null || owner == null || (!isMember(userId) && !isPublic())) {
+    if (event == null || status == null || owner == null
+        || (!isMember(userId, form, row) && !isPublic(form, row))) {
       return false;
     }
 
@@ -931,7 +943,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case COMMENT:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE);
       case COMMENT_DELETE:
-        return !showInHeader;
+        return !showInHeader && DiscussionStatus.in(status, DiscussionStatus.ACTIVE);
       case CREATE:
         return false;
       case DEACTIVATE:
@@ -949,14 +961,13 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return false;
   }
 
-  private boolean isMember(Long user) {
+  private static boolean isMember(Long user, FormView form, IsRow row) {
     if (!DataUtils.isId(user)) {
       return false;
     }
 
     List<Long> members =
-        DiscussionsUtils.getDiscussionMembers(getFormView().getActiveRow(), getFormView()
-            .getDataColumns());
+        DiscussionsUtils.getDiscussionMembers(row, form.getDataColumns());
 
     if (BeeUtils.isEmpty(members)) {
       return false;
@@ -965,8 +976,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return members.contains(user);
   }
 
-  private boolean isPublic() {
-    return getFormView().getActiveRow().getBoolean(getFormView().getDataIndex(COL_ACCESSIBILITY));
+  private static boolean isPublic(FormView form, IsRow row) {
+    return row.getBoolean(form.getDataIndex(COL_ACCESSIBILITY));
   }
 
   private void onResponse(BeeRow data) {
@@ -978,7 +989,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     if (!BeeUtils.isEmpty(comments)) {
       List<StoredFile> files = StoredFile.restoreCollection(data.getProperty(PROP_FILES));
-      showCommentsAndMarks(form, BeeRowSet.restore(comments), files);
+      showCommentsAndMarks(form, form.getActiveRow(), BeeRowSet.restore(comments), files);
     }
   }
 
