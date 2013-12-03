@@ -53,10 +53,6 @@
 
         <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany"
           editable="true" />
-        <SimpleJoin name="Company" joinType="LEFT">
-          <SimpleColumn name="Name" alias="LoadingCompanyName" />
-        </SimpleJoin>
-
         <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"
           editable="true" />
 
@@ -91,10 +87,6 @@
 
         <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany"
           editable="true" />
-        <SimpleJoin name="Company" joinType="LEFT">
-          <SimpleColumn name="Name" alias="UnloadingCompanyName" />
-        </SimpleJoin>
-
         <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"
           editable="true" />
 

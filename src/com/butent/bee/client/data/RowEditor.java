@@ -29,11 +29,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowActionEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -179,7 +177,7 @@ public final class RowEditor {
               result.setEditing(true);
               result.start(null);
               result.observeData();
-              
+
               if (!Data.isViewEditable(dataInfo.getViewName())) {
                 result.setEnabled(false);
               }
@@ -303,16 +301,16 @@ public final class RowEditor {
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }
-        
+
         switch (action) {
           case CANCEL:
             close.onClose();
             break;
-            
+
           case CLOSE:
             formView.onClose(close);
             break;
-            
+
           case SAVE:
             close.onSave();
             break;
@@ -328,7 +326,7 @@ public final class RowEditor {
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }
-        
+
         if (interceptor != null) {
           interceptor.afterAction(action, presenter);
         }
@@ -392,38 +390,17 @@ public final class RowEditor {
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, dataInfo.getColumns(),
         formView.getChildrenForUpdate(), callback);
 
-    formView.onSaveChanges(event);
-    if (event.isConsumed() || event.isEmpty()) {
+    if (formView.getFormInterceptor() != null) {
+      formView.getFormInterceptor().onSaveChanges(formView, event);
+      if (event.isConsumed()) {
+        return;
+      }
+    }
+
+    if (event.isEmpty()) {
       callback.onCancel();
-      return;
-    }
-
-    BeeRowSet updated = DataUtils.getUpdated(dataInfo.getViewName(), oldRow.getId(),
-        oldRow.getVersion(), event.getColumns(), event.getOldValues(), event.getNewValues(),
-        event.getChildren());
-
-    if (DataUtils.isEmpty(updated) && BeeUtils.isEmpty(event.getChildren())) {
-      return;
-    }
-
-    RowCallback updateCallback = new RowCallback() {
-      @Override
-      public void onFailure(String... reason) {
-        formView.notifySevere(reason);
-      }
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
-        callback.onSuccess(result);
-      }
-    };
-
-    if (DataUtils.isEmpty(updated)) {
-      Queries.updateChildren(dataInfo.getViewName(), oldRow.getId(), event.getChildren(),
-          updateCallback);
     } else {
-      Queries.updateRow(updated, updateCallback);
+      formView.fireEvent(event);
     }
   }
 

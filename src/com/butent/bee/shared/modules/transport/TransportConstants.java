@@ -554,6 +554,7 @@ public final class TransportConstants {
   public static final String COL_LOADING_PLACE = "LoadingPlace";
 
   public static final String COL_PLACE_DATE = "Date";
+  public static final String COL_PLACE_COMPANY = "Company";
   public static final String COL_PLACE_CONTACT = "Contact";
   public static final String COL_PLACE_CITY = "City";
   public static final String COL_PLACE_COUNTRY = "Country";
@@ -743,10 +744,8 @@ public final class TransportConstants {
   public static final String COL_QUERY_CUSTOMER_CONTACT = "CustomerContact";
   public static final String COL_QUERY_CUSTOMER_CONTACT_POSITION = "CustomerContactPosition";
   public static final String COL_QUERY_CUSTOMER_EXCHANGE_CODE = "CustomerExchangeCode";
-  public static final String COL_QUERY_LOADING_COMPANY_NAME = "LoadingCompanyName";
   public static final String COL_QUERY_LOADING_EMAIL = "LoadingEmail";
   public static final String COL_QUERY_LOADING_CITY = "LoadingCity";
-  public static final String COL_QUERY_UNLOADING_COMPANY_NAME = "UnloadingCompanyName";
   public static final String COL_QUERY_UNLOADING_EMAIL = "UnloadingEmail";
   public static final String COL_QUERY_UNLOADING_CITY = "UnloadingCity";
   public static final String COL_QUERY_EXPEDITION = "Expedition";

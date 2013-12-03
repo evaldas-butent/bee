@@ -29,9 +29,7 @@
         <SimpleColumn name="Date" alias="CargoLoadingDate" label="=trLoadingDate" />
         <SimpleColumn name="Terminal" alias="CargoLoadingTerminal" />
         <SimpleColumn name="Contact" alias="CargoLoadingContact" label="=trLoadingContact" />
-        <SimpleJoin  name="Company" joinType="LEFT">
-          <SimpleColumn name="Name" alias="CargoLoadingCompanyName"/>
-        </SimpleJoin>
+        <SimpleColumn name="Company" alias="CargoLoadingCompany" label="=trLoadingCompany" />
         <SimpleColumn name="Address" alias="CargoLoadingAddress" label="=trLoadingAddress" />
         <SimpleColumn name="PostIndex" alias="CargoLoadingPostIndex" label="=trLoadingPostIndex" />
   
@@ -48,9 +46,7 @@
         <SimpleColumn name="Date" alias="CargoUnloadingDate" label="=trUnloadingDate" />
         <SimpleColumn name="Terminal" alias="CargoUnloadingTerminal" />
         <SimpleColumn name="Contact" alias="CargoUnloadingContact" label="=trUnloadingContact" />
-        <SimpleJoin  name="Company" joinType="LEFT">
-          <SimpleColumn name="Name" alias="CargoUnloadingCompanyName"/>
-        </SimpleJoin>
+        <SimpleColumn name="Company" alias="CargoUnloadingCompany" label="=trUnloadingCompany" />
         <SimpleColumn name="Address" alias="CargoUnloadingAddress" label="=trUnloadingAddress" />
         <SimpleColumn name="PostIndex" alias="CargoUnloadingPostIndex" label="=trUnloadingPostIndex" />
   
@@ -69,9 +65,6 @@
       <SimpleColumn name="Terminal" alias="LoadingTerminal" />
       <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
       <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany" />
-      <SimpleJoin  name="Company" joinType="LEFT">
-        <SimpleColumn name="Name" alias="LoadingCompanyName"/>
-      </SimpleJoin>
       <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" />
       <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" />
 
@@ -91,9 +84,6 @@
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
       <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" />
       <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany" />
-      <SimpleJoin  name="Company" joinType="LEFT">
-        <SimpleColumn name="Name" alias="UnloadingCompanyName"/>
-      </SimpleJoin>
       <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" />
       <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" />
 

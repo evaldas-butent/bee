@@ -13,8 +13,8 @@
       <InputDateTime source="LoadingDate" style="width: 110px;" />
     </row>
     <row>
-    <Label text="=company" horizontalAlignment="right"/>
-   <DataSelector source="LoadingCompany"/>
+      <Label text="=company" horizontalAlignment="right" />
+      <InputText source="LoadingCompany" />
     </row>
     <row>
       <Label text="=personContact" horizontalAlignment="right" />
@@ -70,8 +70,8 @@
       <InputDateTime source="UnloadingDate" style="width: 110px;" />
     </row>
     <row>
-      <Label text="=company" horizontalAlignment="right"/>
-      <DataSelector source="UnloadingCompany"/>
+      <Label text="=company" horizontalAlignment="right" />
+      <InputText source="UnloadingCompany" />
     </row>
     <row>
       <Label text="=personContact" horizontalAlignment="right" />
@@ -116,4 +116,3 @@
     </row>
   </Table>
 </HorizontalPanel>
-  

@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
@@ -302,7 +303,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();
 

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
@@ -68,7 +69,7 @@ public final class CommonsKeeper {
     }
     
     @Override
-    public void onReadyForInsert(ReadyForInsertEvent event) {
+    public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
       if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
         event.consume();
         changePassword();

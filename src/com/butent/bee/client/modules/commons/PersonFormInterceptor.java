@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -110,7 +111,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onReadyForInsert(ReadyForInsertEvent event) {
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     FormView form = getFormView();
     IsRow row = form.getActiveRow();
 
@@ -135,7 +136,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final FormView form = getFormView();
     final IsRow row = form.getActiveRow();
 

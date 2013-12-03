@@ -17,7 +17,7 @@
     <RelColumn name="Order" editEnabled="true" />
 
     <DataColumn name="LoadingDate" />
-    <RelColumn name="LoadingCompany" visible="false" />
+    <DataColumn name="LoadingCompany" visible="false" />
     <DataColumn name="LoadingContact" visible="false" />
 
     <RelColumn name="LoadingCity" />
@@ -30,7 +30,7 @@
     <DataColumn name="LoadingNumber" visible="false" />
 
     <DataColumn name="UnloadingDate" />
-    <RelColumn name="UnloadingCompany" visible="false" />
+    <DataColumn name="UnloadingCompany" visible="false" />
     <DataColumn name="UnloadingContact" visible="false" />
 
     <RelColumn name="UnloadingCity" />

@@ -2281,7 +2281,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
         form.getChildrenForInsert(), callback);
 
     if (form.getFormInterceptor() != null) {
-      form.getFormInterceptor().onReadyForInsert(event);
+      form.getFormInterceptor().onReadyForInsert(this, event);
       if (event.isConsumed()) {
         return;
       }
@@ -2302,8 +2302,8 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, getDataColumns(), children,
         callback);
 
-    if (form != null) {
-      form.onSaveChanges(event);
+    if (form != null && form.getFormInterceptor() != null) {
+      form.getFormInterceptor().onSaveChanges(this, event);
       if (event.isConsumed()) {
         return;
       }

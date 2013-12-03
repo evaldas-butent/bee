@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -61,16 +62,15 @@ import java.util.Map;
 
 public final class FormFactory {
 
-  public interface FormInterceptor extends WidgetInterceptor, ReadyForInsertEvent.Handler,
-      HasGridView, SaveChangesEvent.Handler, HandlesStateChange, HasDomain, HasActiveRow,
-      HasViewName {
+  public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
+      HasDomain, HasActiveRow, HasViewName {
 
     void afterAction(Action action, Presenter presenter);
 
     void afterCreate(FormView form);
 
     void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
-    
+
     void afterInsertRow(IsRow result);
 
     void afterRefresh(FormView form, IsRow row);
@@ -78,13 +78,13 @@ public final class FormFactory {
     boolean beforeAction(Action action, Presenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
-    
-    long getActiveRowId();    
+
+    long getActiveRowId();
 
     int getDataIndex(String source);
-    
+
     String getDataValue(String source);
-    
+
     FormView getFormView();
 
     HeaderView getHeaderView();
@@ -100,6 +100,10 @@ public final class FormFactory {
     void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
 
     void onLoad(FormView form);
+
+    void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event);
+
+    void onSaveChanges(HasHandlers listener, SaveChangesEvent event);
     
     void onSetActiveRow(IsRow row);
 
@@ -143,7 +147,7 @@ public final class FormFactory {
       Maps.newHashMap();
 
   private static final Multimap<String, String> hiddenWidgets = HashMultimap.create();
-  
+
   public static void clearDescriptionCache() {
     descriptionCache.clear();
   }
@@ -386,14 +390,14 @@ public final class FormFactory {
   public static void hideWidget(String formName, String widgetName) {
     Assert.notEmpty(formName);
     Assert.notEmpty(widgetName);
-    
+
     hiddenWidgets.put(formName, widgetName);
   }
 
   public static boolean isHidden(String formName, String widgetName) {
     return hiddenWidgets.containsEntry(formName, widgetName);
   }
-  
+
   public static void openForm(FormDescription formDescription, FormInterceptor formInterceptor,
       PresenterCallback presenterCallback) {
 

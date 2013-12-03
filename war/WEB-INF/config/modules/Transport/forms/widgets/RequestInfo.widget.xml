@@ -18,7 +18,7 @@
 
       <row>
         <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-        <DataSelector source="LoadingCompany" required="true" />
+        <InputText source="LoadingCompany" required="true" />
         <Label text="=trRequestPlaceContact" class="bee-required" />
         <InputText source="LoadingContact" required="true" />
       </row>
@@ -62,7 +62,7 @@
 
       <row>
         <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-        <DataSelector source="UnloadingCompany" required="true" />
+        <InputText source="UnloadingCompany" required="true" />
         <Label text="=trRequestPlaceContact" class="bee-required" />
         <InputText source="UnloadingContact" required="true" />
       </row>
