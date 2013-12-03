@@ -18,7 +18,11 @@ public interface LocalizableDiscussionsConstants {
 
   String discussActivationQuestion();
 
+  String discussActive();
+
   String discussAll();
+
+  String discussClosed();
 
   String discussCloseQuestion();
 
@@ -52,6 +56,8 @@ public interface LocalizableDiscussionsConstants {
 
   String discussFilterStarred();
 
+  String discussObserved();
+
   String discussNotCreated();
 
   String discussSelectMembers();
@@ -66,4 +72,5 @@ public interface LocalizableDiscussionsConstants {
 
   String discussStatusNew();
 
+  String discussStarred();
 }

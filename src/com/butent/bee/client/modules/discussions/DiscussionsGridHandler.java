@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class DiscussionsGridHandler extends AbstractGridInterceptor {
@@ -31,7 +32,6 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
 
-  @SuppressWarnings("unused")
   private final ListType type;
   private final Long userId;
 
@@ -81,6 +81,12 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
         }
       });
     }
+  }
+
+  @Override
+  public boolean onLoad(GridDescription gridDescription) {
+    gridDescription.setFilter(type.getFilter(new LongValue(userId)));
+    return true;
   }
 
   private void updateStar(final EditStartEvent event, final CellSource source,
