@@ -216,11 +216,11 @@ public class DiscussionsModuleBean implements BeeModule {
       }
     });
   }
-  
+
   private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,
       Collection<Long> discussionUsers, Long commentId) {
     long discussionId = row.getId();
-    
+
     if (!BeeUtils.isEmpty(discussionUsers)) {
       discussionUsers.remove(row.getLong(DataUtils.getColumnIndex(COL_OWNER, columns)));
 
@@ -238,7 +238,7 @@ public class DiscussionsModuleBean implements BeeModule {
     if (!files.isEmpty()) {
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
     }
-    
+
     BeeRowSet comments =
         qs.getViewData(VIEW_DISCUSSIONS_COMMENTS, ComparisonFilter.isEqual(COL_DISCUSSION,
             new LongValue(discussionId)));
@@ -258,7 +258,7 @@ public class DiscussionsModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(properties)) {
       return ResponseObject.response(count);
     }
-    
+
     ResponseObject response = new ResponseObject();
     List<RowChildren> children = Lists.newArrayList();
 
@@ -335,7 +335,7 @@ public class DiscussionsModuleBean implements BeeModule {
       List<BeeColumn> columns = Lists.newArrayList();
       List<String> oldValues = Lists.newArrayList();
       List<String> newValues = Lists.newArrayList();
-      
+
       for (Map.Entry<Integer, String> entry : shadow.entrySet()) {
         columns.add(data.getColumn(entry.getKey()));
 
@@ -364,7 +364,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
-    
+
     String reasonText =
         BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
             .getLocalizableConstants().discussEventCommentDeleted()
@@ -375,10 +375,10 @@ public class DiscussionsModuleBean implements BeeModule {
         new SqlUpdate(TBL_DISCUSSIONS_COMMENTS)
             .addConstant(COL_COMMENT_TEXT, reasonText)
             .addConstant(COL_DELETED, true)
-    .setWhere(SqlUtils.and(SqlUtils.equals(
-            TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, discussionId), SqlUtils.equals(
-            TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS), commentId)));
-    
+            .setWhere(SqlUtils.and(SqlUtils.equals(
+                TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, discussionId), SqlUtils.equals(
+                TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS), commentId)));
+
     return qs.updateDataWithResponse(update);
   }
 
@@ -419,11 +419,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
-
     switch (event) {
       case CREATE:
         Map<String, String> properties = discussRow.getProperties();
-        
+
         if (properties == null) {
           properties = new HashMap<>();
         }
@@ -485,31 +484,40 @@ public class DiscussionsModuleBean implements BeeModule {
         break;
       case MARK:
         break;
+      case VISIT:
+        if (oldMembers.contains(currentUser)) {
+          response = registerDiscussionVisit(discussionId, currentUser, now);
+        }
+
+        if (response == null || !response.hasErrors()) {
+          response =
+              commitDiscussionData(discussData, oldMembers, false, updatedRelations, commentId);
+        }
+
+        break;
       case COMMENT_DELETE:
       case ACTIVATE:
       case CLOSE:
       case COMMENT:
       case MODIFY:
       case REPLY:
-      case VISIT:
-        if (oldMembers.contains(currentUser)) {
-          response = registerDiscussionVisit(discussionId, currentUser, now);
-        }
-
         if (!BeeUtils.isEmpty(commentText)) {
           response =
               commitDiscussionComment(discussionId, currentUser, parentComment, commentText, now);
         }
 
-        if (response.hasResponse(Long.class)) {
-          commentId = (Long) response.getResponse();
+        if (response != null) {
+          if (response.hasResponse(Long.class)) {
+            commentId = (Long) response.getResponse();
+          }
         }
 
-        if (!response.hasErrors() && DataUtils.isId(deleteComment)) {
-          response = deleteDiscussionComment(discussionId, deleteComment);
-        }
+        if ((response == null || !response.hasErrors()) && DataUtils.isId(deleteComment)) {
+            response = deleteDiscussionComment(discussionId, deleteComment);
+          }
 
-        if (/* response == null || */!response.hasErrors()) {
+
+        if (response == null || !response.hasErrors()) {
           response =
               commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
         }
@@ -625,7 +633,7 @@ public class DiscussionsModuleBean implements BeeModule {
   private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {
     IsCondition where =
         SqlUtils.and(
-        SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
+            SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
                 CommonsConstants.COL_USER, userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS,
                 COL_MEMBER, new Integer(1)));
 
