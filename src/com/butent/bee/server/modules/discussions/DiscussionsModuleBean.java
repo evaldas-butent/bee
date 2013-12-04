@@ -88,8 +88,7 @@ public class DiscussionsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result =
         qs.getSearchResults(VIEW_DISCUSSIONS, Filter.anyContains(Sets.newHashSet(COL_SUBJECT,
-            COL_DESCRIPTION,
-            COL_PUBLISHER, COL_CAPTION), query));
+            COL_DESCRIPTION, ALS_OWNER_FIRST_NAME, ALS_OWNER_LAST_NAME), query));
 
     return result;
   }
@@ -236,9 +235,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     List<StoredFile> files = getDiscussionFiles(discussionId);
-    logger.info("GETTING FILES");
     if (!files.isEmpty()) {
-      logger.info("GET FILES: ", Codec.beeSerialize(files));
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
     }
     
@@ -430,9 +427,7 @@ public class DiscussionsModuleBean implements BeeModule {
         if (properties == null) {
           properties = new HashMap<>();
         }
-        /*
-         * logger.info("ROW", discussRow);
-         */
+
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
         List<Long> discussions = Lists.newArrayList();
 
@@ -506,11 +501,15 @@ public class DiscussionsModuleBean implements BeeModule {
               commitDiscussionComment(discussionId, currentUser, parentComment, commentText, now);
         }
 
-        if ((response == null || !response.hasErrors()) && DataUtils.isId(deleteComment)) {
+        if (response.hasResponse(Long.class)) {
+          commentId = (Long) response.getResponse();
+        }
+
+        if (!response.hasErrors() && DataUtils.isId(deleteComment)) {
           response = deleteDiscussionComment(discussionId, deleteComment);
         }
 
-        if (response == null || !response.hasErrors()) {
+        if (/* response == null || */!response.hasErrors()) {
           response =
               commitDiscussionData(discussData, oldMembers, true, updatedRelations, commentId);
         }
@@ -557,10 +556,6 @@ public class DiscussionsModuleBean implements BeeModule {
     BeeRowSet rowSet =
         qs.getViewData(VIEW_DISCUSSIONS_FILES, ComparisonFilter.isEqual(COL_DISCUSSION,
             new LongValue(discussionId)));
-
-    /*
-     * logger.debug("ROWSET", rowSet); logger.debug("DiscussionId:", discussionId);
-     */
 
     if (rowSet == null || rowSet.isEmpty()) {
       return result;

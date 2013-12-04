@@ -25,7 +25,8 @@ class RowTransformHandler implements RowTransformEvent.Handler {
   public void onRowTransform(RowTransformEvent event) {
     if (event.hasView(VIEW_DISCUSSIONS)) {
       event.setResult(BeeUtils.joinWords(DataUtils.join(getDiscussionsViewInfo(), event.getRow(),
-          discussionColumns, BeeConst.STRING_SPACE), getDiscussionStatus(event.getRow())));
+          discussionColumns, BeeConst.STRING_SPACE), getDiscussionOwner(event.getRow()),
+          getDiscussionStatus(event.getRow())));
     }
   }
 
@@ -34,6 +35,12 @@ class RowTransformHandler implements RowTransformEvent.Handler {
         EnumUtils.getEnumByIndex(DiscussionStatus.class, row.getInteger(getDiscussionsViewInfo()
             .getColumnIndex(COL_STATUS)));
     return (status == null) ? null : status.getCaption();
+  }
+
+  private String getDiscussionOwner(BeeRow row) {
+    return BeeUtils.joinWords(
+        row.getString(getDiscussionsViewInfo().getColumnIndex(ALS_OWNER_FIRST_NAME)),
+        row.getString(getDiscussionsViewInfo().getColumnIndex(ALS_OWNER_LAST_NAME)));
   }
 
   private DataInfo getDiscussionsViewInfo() {

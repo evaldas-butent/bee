@@ -526,12 +526,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (renderPhoto) {
-      String photo = row.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns));
-      if (!BeeUtils.isEmpty(photo)) {
-        Image image = new Image(PhotoRenderer.getUrl(photo));
-        image.addStyleName(STYLE_COMMENT + CommonsConstants.COL_PHOTO);
-        colPhoto.add(image);
-      }
+      renderPhoto(row, columns, colPhoto);
     }
 
     container.add(colPhoto);
@@ -565,6 +560,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       colComment.add(createCommentCell(COL_COMMENT, text));
     }
 
+    if (!files.isEmpty()) {
+      renderFiles(files, colComment);
+    }
+
     container.add(colComment);
 
     Flow colActions = new Flow();
@@ -573,57 +572,18 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (!deleted
         && isEventEnabled(getFormView(), activeRow, DiscussionEvent.REPLY, statusId, ownerId,
             false)) {
-      Image imgReply = new Image(Images.get(IMAGE_REPLY));
-      imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
-      imgReply.setTitle(Localized.getConstants().discussActionReply());
-
-      final long commentId = row.getId();
-      imgReply.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent event) {
-          doComment(commentId);
-        }
-
-      });
-
-      colActions.add(imgReply);
+      renderReply(row, colActions);
     }
 
     if (!deleted
         && isEventEnabled(getFormView(), activeRow, DiscussionEvent.COMMENT_DELETE, statusId,
             ownerId, false) && isCommentOwner) {
-      Image imgTrash = new Image(Images.get(IMAGE_TRASH));
-      imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
-      imgTrash.setTitle(Localized.getConstants().actionDelete());
-      final long commentId = row.getId();
-
-      imgTrash.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent event) {
-          doCommentDelete(commentId);
-        }
-
-      });
-
-      colActions.add(imgTrash);
+      renderTrash(row, colActions);
     }
 
     container.add(colActions);
 
     panel.add(container);
-
-    if (!files.isEmpty()) {
-      Simple fileContainer = new Simple();
-      fileContainer.addStyleName(STYLE_COMMENT_FILES);
-
-      FileGroup fileGroup = new FileGroup();
-      fileGroup.addFiles(files);
-
-      fileContainer.setWidget(fileGroup);
-      panel.add(fileContainer);
-    }
   }
 
   private void showAnsweredCommentsAndMarks(IsRow activeRow, Flow panel, List<StoredFile> files,
@@ -643,20 +603,20 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private void showCommentsAndMarks(FormView form, IsRow activeRow, BeeRowSet rowSet,
       List<StoredFile> files) {
     Widget widget = form.getWidgetByName(VIEW_DISCUSSIONS_COMMENTS);
-    
+
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
       return;
     }
 
     Flow panel = (Flow) widget;
     panel.clear();
-    
+
     Set<Long> roots = Sets.newHashSet();
     Multimap<Long, Long> data = HashMultimap.create();
-    
+
     for (BeeRow row : rowSet.getRows()) {
       Long parent = row.getLong(rowSet.getColumnIndex(COL_PARENT_COMMENT));
-      
+
       if (parent == null) {
         roots.add(row.getId());
       } else {
@@ -673,8 +633,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet,
           INITIAL_COMMENT_ROW_PADDING_LEFT + 1);
     }
-
-
 
     if (panel.getWidgetCount() > 0 && form.asWidget().isVisible()) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
@@ -771,9 +729,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         new CommentDialog(replayedCommentId == null
             ? Localized.getConstants().discussComment() : Localized.getConstants()
                 .discussActionReply());
-    
-    
-    
+
     final String cid = dialog.addComment(true);
     final String fid = dialog.addFileCollector();
 
@@ -949,7 +905,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case DEACTIVATE:
         return false;
       case MARK:
-        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE);
+        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && !showInHeader;
       case MODIFY:
         return isOwner(userId, owner);
       case REPLY:
@@ -991,6 +947,64 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       List<StoredFile> files = StoredFile.restoreCollection(data.getProperty(PROP_FILES));
       showCommentsAndMarks(form, form.getActiveRow(), BeeRowSet.restore(comments), files);
     }
+  }
+
+  private static void renderFiles(List<StoredFile> files, Flow container) {
+    Simple fileContainer = new Simple();
+    fileContainer.addStyleName(STYLE_COMMENT_FILES);
+
+    FileGroup fileGroup = new FileGroup();
+    fileGroup.addFiles(files);
+
+    fileContainer.setWidget(fileGroup);
+    container.add(fileContainer);
+  }
+
+  private static void renderPhoto(IsRow commentRow, List<BeeColumn> commentColumns,
+      Flow container) {
+    String photo =
+        commentRow.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, commentColumns));
+    if (!BeeUtils.isEmpty(photo)) {
+      Image image = new Image(PhotoRenderer.getUrl(photo));
+      image.addStyleName(STYLE_COMMENT + CommonsConstants.COL_PHOTO);
+      container.add(image);
+    }
+  }
+
+  private void renderReply(IsRow commentRow, Flow container) {
+    Image imgReply = new Image(Images.get(IMAGE_REPLY));
+    imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
+    imgReply.setTitle(Localized.getConstants().discussActionReply());
+
+    final long commentId = commentRow.getId();
+    imgReply.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        doComment(commentId);
+      }
+
+    });
+
+    container.add(imgReply);
+  }
+
+  private void renderTrash(IsRow commentRow, Flow container) {
+    Image imgTrash = new Image(Images.get(IMAGE_TRASH));
+    imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
+    imgTrash.setTitle(Localized.getConstants().actionDelete());
+    final long commentId = commentRow.getId();
+
+    imgTrash.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        doCommentDelete(commentId);
+      }
+
+    });
+
+    container.add(imgTrash);
   }
 
   private void requeryComments(final long discussionId) {

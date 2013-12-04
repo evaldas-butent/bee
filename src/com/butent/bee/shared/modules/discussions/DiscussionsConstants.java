@@ -85,6 +85,9 @@ public final class DiscussionsConstants {
   public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
   public static final String STYLE_SHEET = "discuss";
 
+  public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
