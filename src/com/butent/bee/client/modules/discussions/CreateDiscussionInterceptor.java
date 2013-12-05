@@ -88,6 +88,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           if (ms != null) {
             ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
             ms.setNullable(BeeUtils.toBoolean(ac.getValue()));
+            ms.clearValue();
           }
 
           if (lbl != null) {
@@ -124,6 +125,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(description)) {
       Data.setValue(VIEW_DISCUSSIONS, newRow, COL_DESCRIPTION, description);
     }
+
+    if (discussPublic) {
+      newRow.setProperty(PROP_MEMBERS, null);
+    }
+
+    newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);
 
     BeeRowSet rowSet =
         DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
