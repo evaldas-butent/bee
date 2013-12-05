@@ -202,7 +202,7 @@ public interface LocalizableTransportConstants {
 
   String trImportCosts();
 
-  String trImportInvoices();
+  String trImportTracking();
 
   String trImportNewMapping();
 

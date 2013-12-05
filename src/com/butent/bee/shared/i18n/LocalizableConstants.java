@@ -174,6 +174,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String date();
 
+  String dateFormat();
+
   String dateFromShort();
 
   String dateToShort();
@@ -211,6 +213,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String error();
 
   String exchangeCode();
+
+  String externalId();
 
   String fax();
 

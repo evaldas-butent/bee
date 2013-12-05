@@ -15,6 +15,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -24,13 +25,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
-import elemental.html.FileReader;
 import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.events.ProgressEvent;
 import elemental.html.File;
 import elemental.html.FileList;
+import elemental.html.FileReader;
 import elemental.html.Window;
 import elemental.js.dom.JsClipboard;
 import elemental.xml.XMLHttpRequest;
@@ -163,63 +164,36 @@ public final class FileUtils {
   }
 
   public static void uploadFile(NewFileInfo fileInfo, final Callback<Long> callback) {
-    Assert.notNull(fileInfo);
-    Assert.notNull(callback);
-
     final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
     final String fileType = fileInfo.getType();
     final long fileSize = fileInfo.getSize();
 
-    Map<String, String> parameters = createParameters(Service.UPLOAD_FILE, fileName);
-
-    parameters.put(Service.VAR_FILE_TYPE, fileType);
-    parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
-
-    final String progressId = maybeCreateProgress(fileName, fileSize);
-
-    final XMLHttpRequest xhr = createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
-
-    addSessionId(xhr);
-
     final long start = System.currentTimeMillis();
 
-    xhr.setOnload(new EventListener() {
+    upload(Service.UPLOAD_FILE, fileInfo, new Callback<String>() {
       @Override
-      public void handleEvent(Event evt) {
-        if (progressId != null) {
-          BeeKeeper.getScreen().closeProgress(progressId);
-        }
+      public void onSuccess(String response) {
+        if (BeeUtils.isLong(response)) {
+          long fileId = BeeUtils.toLong(response);
 
-        if (xhr.getStatus() == Response.SC_OK) {
-          String response = xhr.getResponseText();
+          logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
+          logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
+          logger.addSeparator();
 
-          if (BeeUtils.isLong(response)) {
-            long fileId = BeeUtils.toLong(response);
-
-            logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
-            logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
-            logger.addSeparator();
-
-            callback.onSuccess(fileId);
-
-          } else {
-            String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
-            logger.warning(msg);
-            callback.onFailure(msg);
-          }
+          callback.onSuccess(fileId);
 
         } else {
-          String msg = BeeUtils.joinWords("upload", fileName, "response status:",
-              BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-          logger.severe(msg);
+          String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
+          logger.warning(msg);
           callback.onFailure(msg);
         }
       }
-    });
 
-    addProgressListener(xhr, progressId);
-    xhr.send(fileInfo.getFile());
+      @Override
+      public void onFailure(String... reason) {
+        callback.onFailure(reason);
+      }
+    });
   }
 
   public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
@@ -284,6 +258,30 @@ public final class FileUtils {
     xhr.send(fileInfo.getFile());
   }
 
+  public static void uploadTempFile(NewFileInfo fileInfo, final Callback<String> callback) {
+    final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+    final String fileType = fileInfo.getType();
+    final long fileSize = fileInfo.getSize();
+
+    final long start = System.currentTimeMillis();
+
+    upload(Service.UPLOAD_TEMP_FILE, fileInfo, new Callback<String>() {
+      @Override
+      public void onSuccess(String response) {
+        logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
+        logger.info("type:", fileType, "size:", fileSize, "file:", response);
+        logger.addSeparator();
+
+        callback.onSuccess(response);
+      }
+
+      @Override
+      public void onFailure(String... reason) {
+        callback.onFailure(reason);
+      }
+    });
+  }
+
   static native double getLastModifiedMillis(File file) /*-{
     return file.lastModifiedDate.getTime();
   }-*/;
@@ -331,6 +329,54 @@ public final class FileUtils {
   private static String maybeCreateProgress(String caption, long size) {
     return (size > MIN_FILE_SIZE_FOR_PROGRESS)
         ? BeeKeeper.getScreen().createProgress(caption, (double) size, null) : null;
+  }
+
+  private static void upload(String srv, NewFileInfo fileInfo, final Callback<String> callback) {
+    Assert.notEmpty(srv);
+    Assert.notNull(fileInfo);
+    Assert.notNull(callback);
+
+    final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+    final String fileType = fileInfo.getType();
+    final long fileSize = fileInfo.getSize();
+
+    Map<String, String> parameters = createParameters(srv, fileName);
+
+    parameters.put(Service.VAR_FILE_TYPE, fileType);
+    parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
+
+    final String progressId = maybeCreateProgress(fileName, fileSize);
+
+    final XMLHttpRequest xhr = createXhr();
+    xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
+
+    addSessionId(xhr);
+
+    xhr.setOnload(new EventListener() {
+      @Override
+      public void handleEvent(Event evt) {
+        if (progressId != null) {
+          BeeKeeper.getScreen().closeProgress(progressId);
+        }
+        String msg = BeeUtils.joinWords("upload", fileName, "response status:");
+
+        if (xhr.getStatus() == Response.SC_OK) {
+          ResponseObject resp = ResponseObject.restore(xhr.getResponseText());
+
+          if (!resp.hasErrors()) {
+            callback.onSuccess(resp.getResponseAsString());
+            return;
+          }
+          msg = BeeUtils.joinWords(msg, resp.getErrors());
+        } else {
+          msg = BeeUtils.joinWords(msg, BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
+        }
+        logger.severe(msg);
+        callback.onFailure(msg);
+      }
+    });
+    addProgressListener(xhr, progressId);
+    xhr.send(fileInfo.getFile());
   }
 
   private FileUtils() {

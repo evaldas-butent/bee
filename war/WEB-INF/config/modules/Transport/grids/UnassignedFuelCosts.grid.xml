@@ -2,13 +2,13 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TripFuelCosts" viewName="TripFuelCosts" caption="=trFuelCosts"
+  name="UnassignedFuelCosts" viewName="TripFuelCosts" caption="=trUnassignedFuelCosts"
+  filter="!(Trip)" disabledActions="add"
   >
 
   <g:columns>
-    <DataColumn name="Date" caption="=date">
-      <carry><ui:expression>row.Date</ui:expression></carry>
-    </DataColumn>
+    <RelColumn name="Trip" caption="=trip" />
+    <DataColumn name="Date" caption="=date" />
 
     <DataColumn name="Quantity" />
     <DataColumn name="Price" format="0.00" />
@@ -26,15 +26,10 @@
       </style>
     </CalcColumn>
 
-    <DataColumn name="Number" />
-    <RelColumn name="Supplier" />
-    <RelColumn name="Country">
-      <carry><ui:expression>row.Country</ui:expression></carry>
-    </RelColumn>
-    <DataColumn name="Note" />
-    <RelColumn name="Item">
-      <carry><ui:expression>row.Item</ui:expression></carry>
-    </RelColumn>
-    <DataColumn name="ExternalID" visible="false" />
+    <DataColumn name="Number" caption="=number" />
+    <RelColumn name="Supplier" caption="=trSupplier" />
+    <RelColumn name="Country" caption="=country" />
+    <DataColumn name="Note" caption="=note" />
+    <RelColumn name="Item" caption="=trAccountItem" />
   </g:columns>
 </g:Grid>

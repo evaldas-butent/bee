@@ -10,6 +10,9 @@ name="Transport" label="=transport" order="60"
   <Item name="ExpeditionTrips" label="=trExpeditionTrips" service="grid" parameters="ExpeditionTrips" />
   <Item name="ImportOptions" label="=trImport" service="grid" parameters="ImportOptions" />
 
+  <Item name="UnassignedTripCosts" label="=trUnassignedTripCosts" service="grid" parameters="UnassignedTripCosts" separator="true" />
+  <Item name="UnassignedFuelCosts" label="=trUnassignedFuelCosts" service="grid" parameters="UnassignedFuelCosts" />
+
   <Item name="Drivers" label="=drivers" service="grid" parameters="Drivers" separator="true" />
 
   <Item name="Vehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true" />

@@ -149,7 +149,8 @@ public final class TransportConstants {
       @Override
       protected void init() {
         LocalizableConstants locale = Localized.getConstants();
-        addProperty(new ImportProperty(VAR_IMPORT_ROW, locale.startRow()));
+        addProperty(new ImportProperty(VAR_IMPORT_START_ROW, locale.startRow()));
+        addProperty(new ImportProperty(VAR_IMPORT_DATE_FORMAT, locale.dateFormat()));
         addProperty(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
             TBL_VEHICLES, COL_VEHICLE_NUMBER));
         addProperty(new ImportProperty(COL_COSTS_DATE, locale.date()));
@@ -169,12 +170,13 @@ public final class TransportConstants {
         addProperty(new ImportProperty(COL_COSTS_COUNTRY, locale.country(),
             CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
         addProperty(new ImportProperty(COL_COSTS_NOTE, locale.notes()));
+        addProperty(new ImportProperty(COL_COSTS_EXTERNAL_ID, locale.externalId()));
       }
     },
-    INVOICES {
+    TRACKING {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.trImportInvoices();
+        return constants.trImportTracking();
       }
 
       @Override
@@ -382,7 +384,8 @@ public final class TransportConstants {
   public static final String VAR_MAPPING_TABLE = "MappingTable";
   public static final String VAR_MAPPING_FIELD = "MappingField";
   public static final String VAR_IMPORT_FILE = "File";
-  public static final String VAR_IMPORT_ROW = "Row";
+  public static final String VAR_IMPORT_START_ROW = "Row";
+  public static final String VAR_IMPORT_DATE_FORMAT = "DateFormat";
 
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
@@ -534,6 +537,7 @@ public final class TransportConstants {
   public static final String COL_COSTS_COUNTRY = "Country";
   public static final String COL_COSTS_SUPPLIER = "Supplier";
   public static final String COL_COSTS_NOTE = "Note";
+  public static final String COL_COSTS_EXTERNAL_ID = "ExternalID";
 
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDER_NO = "OrderNo";

@@ -60,26 +60,29 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
       if (type != null) {
         switch (type) {
           case COSTS:
-            importCosts(row.getId(), typeIndex);
+            importCosts(row.getId(), typeIndex, event.isShiftKeyDown());
             break;
 
-          case INVOICES:
+          case TRACKING:
             break;
         }
       }
     }
   }
 
-  private void importCosts(final Long optionId, final Integer typeIndex) {
-    upload(new Callback<Long>() {
+  private void importCosts(final Long optionId, final Integer typeIndex, final boolean test) {
+    upload(new Callback<String>() {
       @Override
-      public void onSuccess(Long fileId) {
+      public void onSuccess(String fileName) {
         importButton.setVisible(false);
         ParameterList args = TransportHandler.createArgs(SVC_DO_IMPORT);
         args.addDataItem(COL_IMPORT_OPTION, optionId);
         args.addDataItem(COL_IMPORT_TYPE, typeIndex);
-        args.addDataItem(VAR_IMPORT_FILE, fileId);
+        args.addDataItem(VAR_IMPORT_FILE, fileName);
 
+        if (test) {
+          args.addDataItem("test", 1);
+        }
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -106,7 +109,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
     });
   }
 
-  private static void upload(final Callback<Long> fileCallback) {
+  private static void upload(final Callback<String> fileCallback) {
     final Popup popup = new Popup(OutsideClick.CLOSE);
 
     final InputFile widget = new InputFile(false);
@@ -117,7 +120,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
         List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
 
         for (final NewFileInfo fi : files) {
-          FileUtils.uploadFile(fi, fileCallback);
+          FileUtils.uploadTempFile(fi, fileCallback);
         }
       }
     });
