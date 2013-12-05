@@ -62,6 +62,10 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   int getDataIndex(String source);
 
+  Integer getDataInt(String source);
+
+  Long getDataLong(String source);
+
   String getDataValue(String source);
 
   HasDataTable getDisplay();

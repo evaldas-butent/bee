@@ -123,7 +123,7 @@ public final class CommonsUtils {
 
   public static void createUser(String caption, final String login, final String password,
       final UserInterface userInterface, final Map<String, String> parameters,
-      final NotificationListener notificationListener, final Callback<String> callback) {
+      final NotificationListener notificationListener, final IdCallback callback) {
 
     if (BeeUtils.isEmpty(login)) {
       if (callback != null) {
@@ -161,21 +161,19 @@ public final class CommonsUtils {
             BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
-                if (response.hasResponse()) {
-                  DataChangeEvent.fireRefresh(VIEW_USERS);
-                }
-
                 if (notificationListener != null) {
                   response.notify(notificationListener);
                 }
 
-                if (response.is(login)) {
+                if (response.hasResponse(Long.class)) {
+                  DataChangeEvent.fireRefresh(VIEW_USERS);
+
                   if (notificationListener != null) {
                     notificationListener.notifyInfo(Localized.getConstants().newUser(), msgLogin,
                         msgPswd);
                   }
                   if (callback != null) {
-                    callback.onSuccess(login);
+                    callback.onSuccess(response.getResponseAsLong());
                   }
                 }
               }

@@ -1238,6 +1238,10 @@ public final class BeeUtils {
     return isDouble(s, BeeConst.DOUBLE_ZERO, true);
   }
 
+  public static boolean isNonNegativeInt(String s) {
+    return isInt(s) && toInt(s) >= 0;
+  }
+
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check

@@ -244,6 +244,8 @@ public interface LocalizableEcConstants {
 
   String ecRegister();
 
+  String ecRegistrationCommandCreate();
+  
   String ecRegistrationFormCaption();
 
   String ecRegistrationNew();

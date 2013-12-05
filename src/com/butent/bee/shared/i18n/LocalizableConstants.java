@@ -265,6 +265,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String invalidRange();
 
   String invalidTime();
+  
+  String ipBlockCommand();
 
   String ipBlocked();
 

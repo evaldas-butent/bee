@@ -30,6 +30,8 @@
     <DataColumn name="Activity" />
     <DataColumn name="Notes" />
     
+    <DataColumn name="Language" />
+
     <DataColumn name="Host" />
     <DataColumn name="Agent" />
   </g:columns>

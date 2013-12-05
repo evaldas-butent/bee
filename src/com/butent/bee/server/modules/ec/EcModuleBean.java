@@ -18,11 +18,13 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
@@ -71,6 +73,7 @@ import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -207,6 +210,8 @@ public class EcModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  DataEditorBean deb;
   @EJB
   ParamHolderBean prm;
   @EJB
@@ -356,9 +361,11 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_UPLOAD_GRAPHICS)) {
       response = uploadGraphics(reqInfo);
-
     } else if (BeeUtils.same(svc, SVC_UPLOAD_BANNERS)) {
       response = uploadBanners(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_CREATE_CLIENT)) {
+      response = createClient(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -671,6 +678,64 @@ public class EcModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private ResponseObject createClient(RequestInfo reqInfo) {
+    List<BeeColumn> columns = sys.getView(VIEW_CLIENTS).getRowSetColumns();
+    BeeRow row = DataUtils.createEmptyRow(columns.size());
+
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+      if (column.isEditable()) {
+        String value = reqInfo.getParameter(column.getId());
+
+        if (!BeeUtils.isEmpty(value)) {
+          row.setValue(i, value);
+        } else if (!column.isNullable() && !column.hasDefaults()) {
+          return ResponseObject.parameterNotFound(SVC_CREATE_CLIENT, column.getId());
+        }
+      }
+    }
+
+    int managerIndex = DataUtils.getColumnIndex(COL_CLIENT_MANAGER, columns);
+    if (!DataUtils.isId(row.getLong(managerIndex))) {
+      Long manager = qs.getId(TBL_MANAGERS, COL_MANAGER_USER, usr.getCurrentUserId());
+      if (manager != null) {
+        row.setValue(managerIndex, manager);
+      }
+    }
+
+    BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_CLIENTS, columns, row);
+
+    ResponseObject response = deb.commitRow(rowSet, true);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    if (reqInfo.hasParameter(VAR_MAIL)) {
+      row = (BeeRow) response.getResponse();
+
+      Long sender = getSenderEmailId(row.getLong(managerIndex));
+      
+      Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
+      if (!DataUtils.isId(recipient)) {
+        Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
+        recipient = usr.getEmailId(userId);
+      }
+
+      String login = DataUtils.getString(columns, row, COL_LOGIN);
+      String password = reqInfo.getParameter(COL_PASSWORD);
+      
+      SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+          BeeUtils.toIntOrNull(reqInfo.getParameter(COL_USER_LOCALE)));
+
+      if (DataUtils.isId(sender) && DataUtils.isId(recipient) 
+          && !BeeUtils.anyEmpty(login, password)) {
+        response.addMessagesFrom(mailRegistration(sender, recipient, login, password, locale));
+      }
+    }
+
+    return response;
   }
 
   private String createTempArticleIds(SqlSelect query) {
@@ -2295,6 +2360,26 @@ public class EcModuleBean implements BeeModule {
     if (!isClient && !BeeUtils.isEmpty(incomingAddress)) {
       response.addInfo(incomingAddress);
     }
+
+    return response;
+  }
+
+  private ResponseObject mailRegistration(Long sender, Long recipient, String login,
+      String password, SupportedLocale locale) {
+    
+    LocalizableConstants constants = Localizations.getPreferredConstants(locale.getLanguage());
+
+    String subject = constants.ecRegistrationReceived();
+    String content = BeeUtils.joinWords(constants.loginUserName(), login,
+        constants.loginPassword(), password);
+
+    ResponseObject response = mail.sendMail(sender, recipient, subject, content);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    response.addInfo(usr.getLocalizableConstants().ecMailSent());
+    response.addInfo(getEmailAddress(recipient));
 
     return response;
   }

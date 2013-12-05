@@ -172,8 +172,6 @@ public interface LocalizableTransportConstants {
 
   String trChooseForwarder();
 
-  String trCommandBlockIpAddress();
-
   String trCommandCreateNewOrder();
 
   String trCommandCreateNewUser();

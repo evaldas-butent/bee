@@ -20,6 +20,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
@@ -88,6 +89,16 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public Integer getDataInt(String source) {
+    return (getFormView() == null) ? null : getFormView().getDataInt(source);
+  }
+  
+  @Override
+  public Long getDataLong(String source) {
+    return (getFormView() == null) ? null : getFormView().getDataLong(source);
+  }
+
+  @Override
   public String getDataValue(String source) {
     return (getFormView() == null) ? null : getFormView().getDataValue(source);
   }
@@ -143,6 +154,13 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   @Override
   public boolean hasFooter(int rowCount) {
     return true;
+  }
+
+  @Override
+  public void notifyRequired(String message) {
+    if (getFormView() != null) {
+      getFormView().notifyWarning(message, Localized.getConstants().valueRequired());
+    }
   }
 
   @Override
