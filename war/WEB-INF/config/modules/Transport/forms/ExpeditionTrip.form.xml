@@ -10,79 +10,50 @@
   width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
-
-    <FlowPanel class="flexBox-horizontal">
-      <Table>
-        <row>
-          <FlowPanel  class="flexBox-vertical" style="margin-bottom: 1ex">
-            <SimplePanel style="margin-top: 10px"> 
-              <InputDateTime source="Date" caption="=trTripDate" style="width: 120px;" 
-                  decorator="flex-left" d:unit="px" d:align="left" d:size="75" />
-            </SimplePanel>      
-            <SimplePanel style="margin-top: 10px"> 
-              <DataSelector source="Forwarder" caption="=carrier" style="width: 120px"
-                  decorator="flex-left" d:unit="px" d:align="left" required="true" d:size="75"/>
-            </SimplePanel>      
-            <SimplePanel style="margin-top: 10px"> 
-              <InputText source="ForwarderDriver" caption="=vehicleDriver" style="width: 120px" 
-                  decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
-            </SimplePanel>     
-            <SimplePanel style="margin-top: 10px"> 
-              <InputText source="ForwarderVehicle" caption="=transport" style="width: 120px"
-                  decorator="flex-left" d:unit="px" d:align="left" d:size="75"/>
-            </SimplePanel>    
-          </FlowPanel>
-        </row>  
-      </Table>   
-         
-      <Table>
-        <row>   
-          <FlowPanel class="flexBox-vertical"  style="margin-left: 11em;">
-            <SimplePanel style="margin-top: 10px; margin-bottom: 10px;"> 
-              <InputText source="TripNo" style="width: 10em;" caption="=trTripNo" />
-            </SimplePanel>  
-            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <Label text="=transportDeparture" style="font-weight: bold; margin-left: 20px" />
-              <Label text="=transportArrival" style="font-weight: bold; margin-left: 50px" />
-            </FlowPanel>
-            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <SimplePanel>
-                <InputDate source="DateFrom" style="width: 7em;" />
-              </SimplePanel>
-                <Label text="=date" style="margin: 0 5px 0 5px"/>
-              <SimplePanel>
-                <InputDate source="DateTo" style="width: 7em;" />
-              </SimplePanel>
-            </FlowPanel>
-          </FlowPanel> 
-        </row>
-      </Table>  
-      
-      <Table>
-        <row>
-          <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;"> 
-            <SimplePanel style="margin-bottom: 10px;"> 
-              <DataSelector source="Expedition" caption="=trExpeditionType" required="true"
-                  style="width: 120px"  d:unit="px" d:align="left" d:size="125" />
-            </SimplePanel>  
+    <Table>
+      <row>
+        <Label text="=trTripDate" class="bee-hasDefaults bee-required" />
+        <InputDateTime source="Date" style="width:110px;"  />
+        <Label text="=trTripNo" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
+        <InputText source="TripNo" />
+        <Label text="=trExpeditionType" class="bee-required" horizontalAlignment="right" />
+        <DataSelector source="Expedition" required="true" />
+      </row>
+      <row>
+        <Label text="=carrier" class="bee-required" />
+        <DataSelector source="Forwarder" required="true" />
+        <Label text="=status" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
+        <ListBox source="Status" />
+        <cell colSpan="2" rowSpan="3">
+          <FlowPanel>
             <Label text="=notes" />
-            <SimplePanel  style="position: relative; min-width: 5em;" class="flexible"> 
-              <InputArea source="Notes" style="height: 80px; width:250px;"/>
-            </SimplePanel>
+            <InputArea source="Notes" style="width:280px;" visibleLines="3" />
           </FlowPanel>
-        </row>
-      </Table>   
-      
-      <Table>
-        <row>    
-          <FlowPanel class="flexBox-vertical"  style="margin-top: 10px; margin-left: 1em;">
-            <ListBox source="Status" caption="=status" style="margin-bottom: 20px"/>
-            <Button name="profit"  text="=cargoProfit" style="width: 80px" />
-          </FlowPanel>
-        </row>
-      </Table>
-   
-    </FlowPanel>
+        </cell>
+      </row>
+      <row>
+        <Label text="=vehicleDriver" />
+        <InputText source="ForwarderDriver" />
+        <cell colSpan="2" rowSpan="2">
+          <Table>
+            <row style="font-weight: bold;">
+              <Label text="=transportDeparture" horizontalAlignment="center" />
+              <text />
+              <Label text="=transportArrival" horizontalAlignment="center" />
+            </row>
+            <row>
+              <InputDate source="DateFrom" style="width: 7em;" />
+              <Label text="=date" />
+              <InputDate source="DateTo" style="width: 7em;" />
+            </row>
+          </Table>
+        </cell>
+      </row>
+      <row>
+        <Label text="=transport" />
+        <InputText source="ForwarderVehicle" />
+      </row>  
+    </Table>         
     
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>

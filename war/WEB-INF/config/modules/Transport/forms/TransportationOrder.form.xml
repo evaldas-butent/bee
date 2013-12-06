@@ -20,7 +20,7 @@
           <Label text="=orderNumber" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputText source="OrderNo" />
           <cell colSpan="2">
-            <Button name="profit" text="=cargoProfit" />
+            <text />
           </cell>
           <cell rowSpan="3">
             <InputArea source="Notes" visibleLines="5" style="width:150px;" />

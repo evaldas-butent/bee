@@ -382,6 +382,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String priority();
 
+  String profit();
+
   String quantity();
 
   String questionLogout();

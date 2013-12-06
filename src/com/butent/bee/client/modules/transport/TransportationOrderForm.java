@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HasHandlers;
 
@@ -19,8 +18,6 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -43,14 +40,6 @@ import java.util.List;
 import java.util.Map;
 
 class TransportationOrderForm extends AbstractFormInterceptor implements ClickHandler {
-
-  @Override
-  public void afterCreateWidget(String name, IdentifiableWidget widget,
-      WidgetDescriptionCallback callback) {
-    if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(new Profit(COL_ORDER));
-    }
-  }
 
   @Override
   public FormInterceptor getInstance() {
@@ -146,6 +135,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
     if (Data.isViewEditable(VIEW_CARGO_TRIPS)) {
       hdr.addCommandItem(new Button(Localized.getConstants().trAssignTrip(), this));
     }
+    hdr.addCommandItem(new Profit(COL_ORDER, row.getId()));
 
     return true;
   }
