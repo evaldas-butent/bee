@@ -109,6 +109,9 @@ class OrderCargoForm extends AbstractFormInterceptor {
     if (widget != null) {
       widget.getElement().setInnerText(null);
 
+      if (!DataUtils.isId(getActiveRow().getId())) {
+        return;
+      }
       ParameterList args = TransportHandler.createArgs(SVC_GET_CARGO_TOTAL);
       args.addDataItem(COL_CARGO, getActiveRow().getId());
 

@@ -221,13 +221,6 @@ public class TransportModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject getCargoTotal(long cargoId, Long currency) {
-    SimpleRow row = qs.getRow(getCargoIncomeQuery(new SqlSelect().addConstant(cargoId, COL_CARGO),
-        currency));
-
-    return ResponseObject.response(BeeUtils.round(row.getValue("CargoIncome"), 2));
-  }
-
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
@@ -915,6 +908,17 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(new String[] {"CargoIncome:", res.getValue("CargoIncome"),
         "TripCost:", res.getValue("TripCost"), "ServicesIncome:", res.getValue("ServicesIncome"),
         "ServicesCost:", res.getValue("ServicesCost")});
+  }
+
+  private ResponseObject getCargoTotal(long cargoId, Long currency) {
+    String val = null;
+    SimpleRow row = qs.getRow(getCargoIncomeQuery(new SqlSelect().addConstant(cargoId, COL_CARGO),
+        currency));
+
+    if (row != null) {
+      val = BeeUtils.round(row.getValue("CargoIncome"), 2);
+    }
+    return ResponseObject.response(BeeUtils.notEmpty(val, "0.00"));
   }
 
   private ResponseObject getCargoUsage(String viewName, String[] ids) {
