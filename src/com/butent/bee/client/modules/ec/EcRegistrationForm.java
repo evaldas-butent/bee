@@ -154,7 +154,8 @@ class EcRegistrationForm extends AbstractFormInterceptor {
                 
                 if (response.hasResponse(BeeRow.class)) {
                   DataChangeEvent.fireRefresh(VIEW_CLIENTS);
-                  RowEditor.openRow(VIEW_CLIENTS, (BeeRow) response.getResponse(), true);
+                  RowEditor.openRow(VIEW_CLIENTS, BeeRow.restore(response.getResponseAsString()),
+                      true);
                 }
               }
             });
