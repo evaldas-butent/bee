@@ -497,6 +497,8 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer(VIEW_CARGO_INVOICE_INCOMES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_INCOMES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer("CargoExpenseList", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());

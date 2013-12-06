@@ -79,8 +79,10 @@
       </row>
 
       <row>
-        <Label text="=ecClientRegistrationDate" class="bee-required" />
+        <Label text="=ecClientRegistrationDate" class="bee-required bee-hasDefaults" />
         <InputDateTime source="Date" />
+        <Label text="=language" />
+        <ListBox source="Language" />
       </row>
     </Table>
   </FlowPanel>

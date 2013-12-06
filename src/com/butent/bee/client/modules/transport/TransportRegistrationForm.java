@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -58,7 +59,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
       return;
     }
 
-    String caption = Localized.getConstants().trCommandBlockIpAddress();
+    String caption = Localized.getConstants().ipBlockCommand();
     CommonsUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
       @Override
       public void onSuccess(String result) {
@@ -109,9 +110,9 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
 
     String caption = Localized.getConstants().trCommandCreateNewUser();
     CommonsUtils.createUser(caption, login, null, UserInterface.SELF_SERVICE, parameters,
-        getFormView(), new Callback<String>() {
+        getFormView(), new IdCallback() {
           @Override
-          public void onSuccess(String result) {
+          public void onSuccess(Long result) {
             if (getFormView().isInteractive()) {
               getHeaderView().clearCommandPanel();
             }
@@ -159,7 +160,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
           && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
-              new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
+              new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
                   onBlock();

@@ -74,7 +74,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
       return;
     }
 
-    String caption = Localized.getConstants().trCommandBlockIpAddress();
+    String caption = Localized.getConstants().ipBlockCommand();
     CommonsUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
       @Override
       public void onSuccess(String result) {
@@ -174,7 +174,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
           && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
-              new Button(Localized.getConstants().trCommandBlockIpAddress(), new ClickHandler() {
+              new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
                   onBlock();

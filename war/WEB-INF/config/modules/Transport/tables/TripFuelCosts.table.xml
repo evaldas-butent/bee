@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip" />
+    <Relation name="Trip" relation="Trips" cascade="DELETE" label="=trip" />
     <Date name="Date" notNull="true" defExpr="CURRENT_DATE" label="=date" />
 
     <Double name="Quantity" notNull="true" label="=quantity" />
@@ -20,6 +20,10 @@
     <Relation name="Supplier" relation="Companies" label="=trSupplier" />
     <Relation name="Country" relation="Countries" label="=country"/>
     <String name="Note" precision="50" label="=note" />
-    <Relation name="Item" relation="Items" label="=trProductService"/>
+    <Relation name="Item" relation="Items" label="=trAccountItem" />
+    <String name="ExternalID" precision="40" label="=externalId" />
   </Fields>
+  <Indexes>
+    <Index fields="ExternalID" />
+  </Indexes>
 </Table>

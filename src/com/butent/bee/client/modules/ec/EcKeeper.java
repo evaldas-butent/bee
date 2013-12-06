@@ -461,6 +461,7 @@ public final class EcKeeper {
     GridFactory.registerGridInterceptor(GRID_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
     GridFactory.registerGridInterceptor("EcBanners", new BannerGridInterceptor());
 
+    FormFactory.registerFormInterceptor("EcRegistration", new EcRegistrationForm());
     FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());
     FormFactory.registerFormInterceptor(FORM_CATEGORIES, new EcCategoriesForm());
   }

@@ -83,6 +83,10 @@ public final class FormFactory {
 
     int getDataIndex(String source);
 
+    Integer getDataInt(String source);
+
+    Long getDataLong(String source);
+    
     String getDataValue(String source);
 
     FormView getFormView();
@@ -96,6 +100,8 @@ public final class FormFactory {
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
+    
+    void notifyRequired(String message);
 
     void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
 

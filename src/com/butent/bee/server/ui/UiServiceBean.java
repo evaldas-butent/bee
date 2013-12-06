@@ -423,7 +423,12 @@ public class UiServiceBean {
     if (!DataUtils.isId(sender)) {
       return ResponseObject.error("No default mail account for user:", usr.getCurrentUser());
     }
-    return mail.sendMail(sender, to, subject, body);
+
+    ResponseObject response = mail.sendMail(sender, to, subject, body);
+    if (response.isEmpty()) {
+      response.addInfo("Mail sent");
+    }
+    return response;
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {

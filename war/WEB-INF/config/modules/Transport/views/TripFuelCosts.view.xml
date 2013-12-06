@@ -32,6 +32,7 @@
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
     </SimpleJoin>
+    <SimpleColumn name="ExternalID" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

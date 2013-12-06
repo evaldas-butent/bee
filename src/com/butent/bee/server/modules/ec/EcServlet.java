@@ -34,6 +34,7 @@ import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
@@ -282,6 +283,11 @@ public class EcServlet extends LoginServlet {
     si.addConstant(COL_REGISTRATION_DATE, TimeUtils.nowMinutes());
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
     si.addConstant(COL_REGISTRATION_AGENT, req.getHeader(HttpHeaders.USER_AGENT));
+    
+    SupportedLocale locale = SupportedLocale.getByLanguage(constants.languageTag());
+    if (locale != null) {
+      si.addConstant(COL_REGISTRATION_LANGUAGE, locale.ordinal());
+    }
 
     ResponseObject response = proxy.insert(si);
     if (response.hasErrors()) {

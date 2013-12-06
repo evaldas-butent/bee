@@ -646,6 +646,26 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public Integer getDataInt(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getInteger(index);
+    } else {
+      return null;
+    }
+  }
+  
+  @Override
+  public Long getDataLong(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getLong(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public String getDataValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {

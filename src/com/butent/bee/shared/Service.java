@@ -71,7 +71,7 @@ public final class Service {
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
-  
+
   public static final String IMPORT_OSAMA_TIEKEJAI = DATA_SERVICE_PREFIX + "import_osama_tiekejai";
   public static final String IMPORT_OSAMA_DARBUOTOJIAI = DATA_SERVICE_PREFIX + "import_osama_darb";
   public static final String IMPORT_OSAMA_PREK_SIST = DATA_SERVICE_PREFIX
@@ -79,7 +79,7 @@ public final class Service {
 
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
-  
+
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -150,12 +150,13 @@ public final class Service {
   public static final String VAR_VALUE_COLUMN = RPC_VAR_PREFIX + "value_column";
 
   public static final String VAR_CHILDREN = RPC_VAR_PREFIX + "children";
-  
+
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
+  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
   public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
   public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
 
@@ -166,10 +167,10 @@ public final class Service {
 
   public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
-  
+
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
   public static final String VAR_UI = RPC_VAR_PREFIX + "ui";
-  
+
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
    * 

@@ -28,11 +28,12 @@
       </style>
     </CalcColumn>
 
-    <DataColumn name="Number" caption="=number" />
-    <RelColumn name="Supplier" caption="=trSupplier" />
-    <RelColumn name="Country" caption="=country">
+    <DataColumn name="Number" />
+    <RelColumn name="Supplier" />
+    <RelColumn name="Country">
       <carry><ui:expression>row.Country</ui:expression></carry>
     </RelColumn>
-    <DataColumn name="Note" caption="=note" />
+    <DataColumn name="Note" />
+    <DataColumn name="ExternalID" visible="false" />
   </g:columns>
 </g:Grid>

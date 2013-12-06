@@ -102,6 +102,18 @@ public class ParameterList extends ArrayList<RpcParameter> {
     }
   }
 
+  public void addNotEmptyData(String name, String value) {
+    if (!BeeUtils.anyEmpty(name, value)) {
+      addDataItem(name, value);
+    }
+  }
+
+  public void addNotNullData(String name, Integer value) {
+    if (!BeeUtils.isEmpty(name) && value != null) {
+      addDataItem(name, value);
+    }
+  }
+  
   public void addPositionalData(String first, String... rest) {
     addPositionalItem(Section.DATA, first);
     if (rest != null) {

@@ -35,6 +35,7 @@
       <SimpleColumn name="Name" alias="CountryName" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
+    <SimpleColumn name="ExternalID" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

@@ -34,6 +34,8 @@
     <SimpleColumn name="Activity" />
     <SimpleColumn name="Notes" />
 
+    <SimpleColumn name="Language" />
+
     <SimpleColumn name="Host" />
     <SimpleColumn name="Agent" />
   </Columns>

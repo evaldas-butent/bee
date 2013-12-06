@@ -508,6 +508,8 @@ public class CommonsModuleBean implements BeeModule {
     String positionName = reqInfo.getParameter(COL_POSITION);
 
     String address = reqInfo.getParameter(COL_ADDRESS);
+    String postIndex = reqInfo.getParameter(COL_POST_INDEX);
+
     String cityName = reqInfo.getParameter(COL_CITY);
     String countryName = reqInfo.getParameter(COL_COUNTRY);
 
@@ -610,6 +612,9 @@ public class CommonsModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(address)) {
       cpRow.setValue(DataUtils.getColumnIndex(COL_ADDRESS, cpColumns), address);
     }
+    if (!BeeUtils.isEmpty(postIndex)) {
+      cpRow.setValue(DataUtils.getColumnIndex(COL_POST_INDEX, cpColumns), postIndex);
+    }
 
     if (!BeeUtils.isEmpty(phone)) {
       cpRow.setValue(DataUtils.getColumnIndex(COL_PHONE, cpColumns), phone);
@@ -637,13 +642,7 @@ public class CommonsModuleBean implements BeeModule {
       insUser.addConstant(COL_USER_INTERFACE, userInterface.ordinal());
     }
 
-    response = qs.insertDataWithResponse(insUser);
-
-    if (response.hasErrors()) {
-      return response;
-    } else {
-      return ResponseObject.response(login);
-    }
+    return qs.insertDataWithResponse(insUser);
   }
 
   private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {
