@@ -16,7 +16,8 @@
     <Relation name="Color" relation="Colors" label="=color" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
 
-    <Enum name="Status" key="AppointmentStatus" defValue="0" label="=calAppointmentStatus" />
+    <Enum name="Status" key="AppointmentStatus" defValue="0" notNull="true" 
+      label="=calAppointmentStatus" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=calCreated" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" />
