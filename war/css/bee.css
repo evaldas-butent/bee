@@ -229,18 +229,15 @@
   cursor: pointer;
 }
 .bee-UserExitContainer {
-  width: 20px;
-  height: 27px;
   margin-left: 1em;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
 }
 .bee-UserExit {
-  position: absolute;
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
 }
 .bee-UserExit:hover {
-  top: -50px;
+  color: black;
 }
 
 .bee-MainNotificationContainer {

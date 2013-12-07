@@ -31,8 +31,8 @@ import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.BrowsingContext;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
@@ -42,6 +42,7 @@ import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -496,22 +497,25 @@ public class ScreenImpl implements Screen {
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
-
-    Image exit = new Image(Global.getImages().exit(), new Command() {
+    
+    FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
+    exit.addStyleName("bee-UserExit");
+    exit.setTitle(Localized.getConstants().signOut());
+    
+    exit.addClickHandler(new ClickHandler() {
       @Override
-      public void execute() {
+      public void onClick(ClickEvent event) {
         Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
             Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
             Localized.getConstants().yes(), Localized.getConstants().no(),
             new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                Bee.exit();
-              }
-            }, null, StyleUtils.className(FontSize.MEDIUM), null);
+          @Override
+          public void onConfirm() {
+            Bee.exit();
+          }
+        }, null, StyleUtils.className(FontSize.MEDIUM), null);
       }
     });
-    exit.addStyleName("bee-UserExit");
 
     exitContainer.setWidget(exit);
     userContainer.add(exitContainer);

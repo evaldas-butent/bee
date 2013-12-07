@@ -10,8 +10,36 @@
   max-width: none;
 }
 
-.bee-ec-GlobalSearch-container {
-  display: none;
+.bee-ec-GlobalSearch-container .bee-ec-GlobalSearch-input {
+  background-color: transparent;
+  color: #ec373f;
+  border: 1px solid #ec373f;
+  border-top: 1px solid #ec373f;
+  box-shadow: none;
+}
+.bee-ec-GlobalSearch-container .bee-ec-GlobalSearch-input:focus {
+  outline-color: #ec373f;
+  background-color: #333;
+}
+
+.bee-ec-GlobalSearch-input::-webkit-input-placeholder {
+  color: #ec373f;
+  font-size: small;
+  text-align: center;
+}
+.bee-ec-GlobalSearch-input::-moz-placeholder {
+  color: #ec373f;
+  font-size: small;
+  opacity: 1;
+}
+.bee-ec-GlobalSearch-input:-ms-input-placeholder {
+  color: #ec373f;
+  font-size: small;
+  text-align: center;
+}
+
+.bee-UserExit:hover {
+  color: #ec373f;
 }
 
 .bee-ec-Command-link,
