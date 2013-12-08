@@ -353,16 +353,21 @@ public final class EcKeeper {
   }
 
   public static void openCart(final CartType cartType) {
-    data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
+    ensureBrands(new Consumer<Boolean>() {
       @Override
-      public void accept(List<DeliveryMethod> input) {
-        Cart cart = getCart(cartType);
-        ShoppingCart widget = new ShoppingCart(cartType, cart, input);
-
-        resetActiveCommand();
-        searchBox.clearValue();
-
-        BeeKeeper.getScreen().updateActivePanel(widget);
+      public void accept(Boolean input) {
+        data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
+          @Override
+          public void accept(List<DeliveryMethod> deliveryMethods) {
+            Cart cart = getCart(cartType);
+            ShoppingCart widget = new ShoppingCart(cartType, cart, deliveryMethods);
+            
+            resetActiveCommand();
+            searchBox.clearValue();
+            
+            BeeKeeper.getScreen().updateActivePanel(widget);
+          }
+        });
       }
     });
   }

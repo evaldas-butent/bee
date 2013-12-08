@@ -9,12 +9,16 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -24,6 +28,8 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.widget.ItemPicture;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
@@ -32,8 +38,8 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
@@ -159,10 +165,6 @@ public class ShoppingCart extends Split {
         }
       }
     });
-  }
-
-  private static int getInt(HasHtml widget) {
-    return BeeUtils.toInt(widget.getHtml());
   }
 
   private void initCenter() {
@@ -427,61 +429,59 @@ public class ShoppingCart extends Split {
 
     Horizontal panel = new Horizontal();
 
-    final CustomDiv valueWidget = new CustomDiv(stylePrefix + "value");
-    setInt(valueWidget, item.getQuantity());
+    final InputInteger input = new InputInteger();
+    input.setValue(item.getQuantity());
+    input.addStyleName(stylePrefix + "input");
 
-    panel.add(valueWidget);
+    input.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        switch (event.getNativeKeyCode()) {
+          case KeyCodes.KEY_ENTER:
+            int value = input.getIntValue();
+            if (value > 0 && DomUtils.isInView(input) && item.getQuantity() != value) {
+              updateQuantity(item, value);
+            }
+            break;
 
-    if (item.getEcItem().getUnit() != null) {
-      Label unitWidget = new Label(item.getEcItem().getUnit());
-      unitWidget.addStyleName(stylePrefix + "unit");
+          case KeyCodes.KEY_ESCAPE:
+            if (DomUtils.isInView(input) && item.getQuantity() != input.getIntValue()) {
+              input.setValue(item.getQuantity());
+            }
+            break;
+        }
+      }
+    });
 
-      panel.add(unitWidget);
-    }
+    panel.add(input);
 
     Flow spin = new Flow(stylePrefix + "spin");
 
-    Image plus = new Image(Global.getImages().silverPlus());
+    FaLabel plus = new FaLabel(FontAwesome.PLUS_SQUARE_O);
     plus.addStyleName(stylePrefix + "plus");
 
     plus.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        int value = getInt(valueWidget) + 1;
-        setInt(valueWidget, value);
+        int value = item.getQuantity() + 1;
 
-        item.setQuantity(value);
-
-        BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
-            .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
-
-        Cart cart = EcKeeper.refreshCart(cartType);
-        updateTotal(cart);
-
-        EcKeeper.persistCartItem(cartType, item);
+        input.setValue(value);
+        updateQuantity(item, value);
       }
     });
     spin.add(plus);
 
-    Image minus = new Image(Global.getImages().silverMinus());
+    FaLabel minus = new FaLabel(FontAwesome.MINUS_SQUARE_O);
     minus.addStyleName(stylePrefix + "minus");
 
     minus.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        int value = getInt(valueWidget) - 1;
+        int value = item.getQuantity() - 1;
+
         if (value > 0) {
-          setInt(valueWidget, value);
-
-          item.setQuantity(value);
-
-          BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
-              .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
-
-          Cart cart = EcKeeper.refreshCart(cartType);
-          updateTotal(cart);
-
-          EcKeeper.persistCartItem(cartType, item);
+          input.setValue(value);
+          updateQuantity(item, value);
         }
       }
     });
@@ -519,8 +519,17 @@ public class ShoppingCart extends Split {
         EcUtils.formatCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
-  private static void setInt(HasHtml widget, int value) {
-    widget.setHtml(BeeUtils.toString(value));
+  private void updateQuantity(CartItem item, int value) {
+    item.setQuantity(value);
+    
+    BeeKeeper.getScreen().clearNotifications();
+    BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+        .ecUpdateCartItem(cartType.getCaption(), item.getEcItem().getName(), value));
+
+    Cart cart = EcKeeper.refreshCart(cartType);
+    updateTotal(cart);
+
+    EcKeeper.persistCartItem(cartType, item);
   }
 
   private void updateTotal(Cart cart) {

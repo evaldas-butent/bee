@@ -106,6 +106,13 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void clearNotifications() {
+    if (getNotification() != null) {
+      getNotification().clear();
+    }
+  }
+  
+  @Override
   public void closeProgress(String id) {
     if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
       Widget item = DomUtils.getChildById(getProgressPanel(), id);

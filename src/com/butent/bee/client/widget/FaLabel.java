@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.font.FontAwesome;
 
@@ -36,6 +37,8 @@ public class FaLabel extends Label {
   @Override
   protected void init() {
     super.init();
+
     StyleUtils.setFontFamily(this, FontAwesome.FAMILY);
+    DomUtils.preventSelection(this);
   }
 }
