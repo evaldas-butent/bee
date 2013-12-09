@@ -39,14 +39,17 @@ import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains utility user interface creation functions like setting and getting horizontal alignment.
@@ -392,6 +395,44 @@ public final class UiHelper {
     }
   }
 
+  public static void maybeSetAutocomplete(HasAutocomplete obj, Map<String, String> attributes) {
+    if (obj == null || BeeUtils.isEmpty(attributes)) {
+      return;
+    }
+    
+    String value = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE);
+    if (!BeeUtils.isEmpty(value)) {
+      obj.setAutocomplete(value);
+      return;
+    }
+    
+    String field = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_FIELD);
+    if (BeeUtils.isEmpty(field)) {
+      return;
+    }
+    
+    Autocomplete autocomplete = new Autocomplete(); 
+    
+    String section = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_SECTION);
+    if (!BeeUtils.isEmpty(section)) {
+      autocomplete.section(section);
+    }
+
+    String hint = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_HINT);
+    if (!BeeUtils.isEmpty(hint)) {
+      autocomplete.hint(hint);
+    }
+
+    String contact = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_CONTACT);
+    if (BeeUtils.isEmpty(contact)) {
+      autocomplete.field(field);
+    } else {
+      autocomplete.contact(contact, field);
+    }
+    
+    obj.setAutocomplete(autocomplete);
+  }
+
   public static void maybeSetTitle(Widget widget, String title) {
     if (widget != null && !BeeUtils.isEmpty(title)) {
       widget.setTitle(title);
@@ -469,7 +510,7 @@ public final class UiHelper {
     widget.setText(newText);
     widget.setCursorPos(pos + 1);
   }
-
+  
   public static void selectDeferred(final ValueBoxBase<?> widget) {
     Assert.notNull(widget);
     final String text = widget.getText();

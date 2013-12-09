@@ -137,6 +137,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
@@ -2051,6 +2052,12 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, HasCapsLock.ATTR_UPPER_CASE)) {
         if (widget instanceof HasCapsLock && BeeConst.isTrue(value)) {
           ((HasCapsLock) widget).setUpperCase(true);
+        }
+
+      } else if (BeeUtils.same(name, HasAutocomplete.ATTR_AUTOCOMPLETE)
+          || BeeUtils.same(name, HasAutocomplete.ATTR_AUTOCOMPLETE_FIELD)) {
+        if (widget instanceof HasAutocomplete) {
+          UiHelper.maybeSetAutocomplete((HasAutocomplete) widget, attributes);
         }
       }
     }

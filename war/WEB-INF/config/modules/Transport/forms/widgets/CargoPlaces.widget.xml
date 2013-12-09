@@ -14,15 +14,17 @@
     </row>
     <row>
       <Label text="=company" horizontalAlignment="right" />
-      <InputText source="LoadingCompany" />
+      <InputText source="LoadingCompany" autocompleteSection="loading" 
+        autocompleteField="organization" />
     </row>
     <row>
       <Label text="=personContact" horizontalAlignment="right" />
-      <InputText source="LoadingContact" />
+      <InputText source="LoadingContact" autocompleteSection="loading" autocompleteField="name" />
     </row>
     <row>
       <Label text="=address" horizontalAlignment="right" />
-      <InputText source="LoadingAddress" />
+      <InputText source="LoadingAddress" autocompleteSection="loading" 
+        autocompleteField="address-line1" />
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
@@ -36,7 +38,8 @@
     </row>
     <row>
       <Label text="=postIndex" horizontalAlignment="right" />
-      <InputText source="LoadingPostIndex" style="width:90px;" />
+      <InputText source="LoadingPostIndex" style="width:90px;" autocompleteSection="loading" 
+        autocompleteField="postal-code" />
     </row>
     <row>
       <Label text="=country" horizontalAlignment="right" />
@@ -71,15 +74,18 @@
     </row>
     <row>
       <Label text="=company" horizontalAlignment="right" />
-      <InputText source="UnloadingCompany" />
+      <InputText source="UnloadingCompany" autocompleteSection="unloading" 
+        autocompleteField="organization" />
     </row>
     <row>
       <Label text="=personContact" horizontalAlignment="right" />
-      <InputText source="UnloadingContact" />
+      <InputText source="UnloadingContact" autocompleteSection="unloading" 
+        autocompleteField="name" />
     </row>
     <row>
       <Label text="=address" horizontalAlignment="right" />
-      <InputText source="UnloadingAddress" />
+      <InputText source="UnloadingAddress" autocompleteSection="unloading" 
+        autocompleteField="address-line1" />
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
@@ -93,7 +99,8 @@
     </row>
     <row>
       <Label text="=postIndex" horizontalAlignment="right" />
-      <InputText source="UnloadingPostIndex" style="width:90px;" />
+      <InputText source="UnloadingPostIndex" style="width:90px;" autocompleteSection="unloading" 
+        autocompleteField="postal-code" />
     </row>
     <row>
       <Label text="=country" horizontalAlignment="right" />

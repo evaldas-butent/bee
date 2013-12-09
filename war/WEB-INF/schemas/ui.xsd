@@ -908,4 +908,79 @@
     </xs:restriction>
   </xs:simpleType>
   
+  <xs:simpleType name="autocomplete">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="off" />
+      <xs:enumeration value="on" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="autofillHint">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="shipping" />
+      <xs:enumeration value="billing" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="autofillContact">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="home" />
+      <xs:enumeration value="work" />
+      <xs:enumeration value="mobile" />
+      <xs:enumeration value="fax" />
+      <xs:enumeration value="pager" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="autofillField">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="name" />
+      <xs:enumeration value="honorific-prefix" />
+      <xs:enumeration value="given-name" />
+      <xs:enumeration value="additional-name" />
+      <xs:enumeration value="family-name" />
+      <xs:enumeration value="honorific-suffix" />
+      <xs:enumeration value="nickname" />
+      <xs:enumeration value="organization-title" />
+      <xs:enumeration value="organization" />
+      <xs:enumeration value="street-address" />
+      <xs:enumeration value="address-line1" />
+      <xs:enumeration value="address-line2" />
+      <xs:enumeration value="address-line3" />
+      <xs:enumeration value="locality" />
+      <xs:enumeration value="region" />
+      <xs:enumeration value="country" />
+      <xs:enumeration value="country-name" />
+      <xs:enumeration value="postal-code" />
+      <xs:enumeration value="cc-name" />
+      <xs:enumeration value="cc-given-name" />
+      <xs:enumeration value="cc-additional-name" />
+      <xs:enumeration value="cc-family-name" />
+      <xs:enumeration value="cc-number" />
+      <xs:enumeration value="cc-exp" />
+      <xs:enumeration value="cc-exp-month" />
+      <xs:enumeration value="cc-exp-year" />
+      <xs:enumeration value="cc-csc" />
+      <xs:enumeration value="cc-type" />
+      <xs:enumeration value="language" />
+      <xs:enumeration value="bday" />
+      <xs:enumeration value="bday-day" />
+      <xs:enumeration value="bday-month" />
+      <xs:enumeration value="bday-year" />
+      <xs:enumeration value="sex" />
+      <xs:enumeration value="url" />
+      <xs:enumeration value="photo" />
+
+      <xs:enumeration value="tel" />
+      <xs:enumeration value="tel-country-code" />
+      <xs:enumeration value="tel-national" />
+      <xs:enumeration value="tel-area-code" />
+      <xs:enumeration value="tel-local" />
+      <xs:enumeration value="tel-local-prefix" />
+      <xs:enumeration value="tel-local-suffix" />
+      <xs:enumeration value="tel-extension" />
+      <xs:enumeration value="email" />
+      <xs:enumeration value="impp" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

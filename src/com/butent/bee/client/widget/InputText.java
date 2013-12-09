@@ -1,9 +1,9 @@
 package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
@@ -22,7 +22,9 @@ import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -30,12 +32,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.List;
 
+import elemental.html.InputElement;
+
 /**
  * Implements a text box that allows a single line of text to be entered.
  */
 
 public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers,
-    HasTextBox, HasCapsLock, HasMaxLength {
+    HasTextBox, HasCapsLock, HasMaxLength, HasAutocomplete {
 
   private CharMatcher charMatcher;
 
@@ -44,13 +48,13 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   private boolean editing;
 
   private String oldValue;
-  
+
   private boolean upperCase;
 
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public InputText() {
     super(Document.get().createTextInputElement());
     init();
@@ -60,7 +64,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     super(element);
     init();
   }
-  
+
   @Override
   public boolean acceptChar(char charCode) {
     if (getCharMatcher() == null) {
@@ -69,7 +73,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       return getCharMatcher().matches(charCode);
     }
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -88,6 +92,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public CharMatcher getCharMatcher() {
     return charMatcher;
   }
+  
+  @Override
+  public String getAutocomplete() {
+    return getInputElement().getAutocomplete();
+  }
 
   @Override
   public EditorAction getDefaultFocusAction() {
@@ -98,12 +107,12 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "txt";
   }
-  
+
   @Override
   public int getMaxLength() {
     return getInputElement().getMaxLength();
@@ -160,7 +169,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       return BeeUtils.equalsTrim(text, getSelectedText());
     }
   }
-  
+
   @Override
   public boolean isEditing() {
     return editing;
@@ -174,7 +183,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public boolean isNullable() {
     return nullable;
   }
-  
+
   @Override
   public boolean isOrHasPartner(Node node) {
     return getElement().equals(node);
@@ -187,7 +196,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public void normalizeDisplay(String normalizedValue) {
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isKeyPress(event.getType())) {
@@ -212,7 +221,23 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       setOldValue(getValue());
     }
   }
-  
+
+  @Override
+  public void setAutocomplete(Autocomplete autocomplete) {
+    String ac =
+        (autocomplete == null) ? BeeConst.STRING_EMPTY : Strings.nullToEmpty(autocomplete.build());
+    setAutocomplete(ac);
+    
+    if (!BeeUtils.isEmpty(ac)) {
+      setName(ac.replace(BeeConst.CHAR_SPACE, BeeConst.CHAR_MINUS));
+    }
+  }
+
+  @Override
+  public void setAutocomplete(String ac) {
+    getInputElement().setAutocomplete(ac);
+  }
+
   public void setCharMatcher(CharMatcher charMatcher) {
     this.charMatcher = charMatcher;
   }
@@ -278,7 +303,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
+
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.inRange(BeeConst.CHAR_SPACE, Character.MAX_VALUE);
   }
@@ -296,7 +321,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   }
 
   private InputElement getInputElement() {
-    return getElement().cast();
+    return (InputElement) getElement();
   }
 
   private void init() {
