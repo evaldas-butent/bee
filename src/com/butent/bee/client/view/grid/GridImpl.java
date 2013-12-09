@@ -640,6 +640,13 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   }
 
   @Override
+  public void clearNotifications() {
+    if (getNotification() != null) {
+      getNotification().clear();
+    }
+  }
+  
+  @Override
   public void create(Order order) {
     if (gridInterceptor != null) {
       gridInterceptor.beforeCreate(dataColumns, gridDescription);

@@ -70,6 +70,7 @@ import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -682,6 +683,8 @@ public class EcModuleBean implements BeeModule {
     if (response.hasErrors()) {
       return response;
     }
+    
+    response.clearMessages();
 
     if (reqInfo.hasParameter(VAR_MAIL)) {
       row = (BeeRow) response.getResponse();
@@ -756,29 +759,37 @@ public class EcModuleBean implements BeeModule {
         .addFrom(TBL_TCD_ARTICLE_CATEGORIES)
         .addFromInner(tempArticleIds, SqlUtils.joinUsing(tempArticleIds,
             TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE))
-        .addOrder(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE, COL_TCD_CATEGORY);
+        .addOrder(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE);
 
     SimpleRowSet data = qs.getData(query);
     if (!DataUtils.isEmpty(data)) {
-      long lastArt = 0;
-      StringBuilder sb = new StringBuilder();
+      Map<Long, Long> parents = getCategoryParents();
 
+      long lastArt = 0;
+      Set<Long> categories = Sets.newHashSet();
+      
       for (SimpleRow row : data) {
         long art = row.getLong(COL_TCD_ARTICLE);
         long cat = row.getLong(COL_TCD_CATEGORY);
 
         if (art != lastArt) {
-          if (sb.length() > 0) {
-            result.put(lastArt, sb.toString());
-            lastArt = art;
-            sb = new StringBuilder();
+          if (!categories.isEmpty()) {
+            result.put(lastArt, EcItem.joinCategories(categories));
+            categories.clear();
+          }
+
+          lastArt = art;
+        }
+        
+        for (Long id = cat; id != null; id = parents.get(id)) {
+          if (!categories.add(id)) {
+            break;
           }
         }
-        sb.append(CATEGORY_ID_SEPARATOR).append(cat);
       }
 
-      if (sb.length() > 0) {
-        result.put(lastArt, sb.toString());
+      if (!categories.isEmpty()) {
+        result.put(lastArt, EcItem.joinCategories(categories));
       }
     }
 
@@ -2295,11 +2306,13 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject mailRegistration(Long sender, Long recipient, String login,
       String password, SupportedLocale locale) {
     
-    LocalizableConstants constants = Localizations.getPreferredConstants(locale.getLanguage());
+    String companyName = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_COMPANY_NAME));
+    String url = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_URL));
+    
+    LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
 
-    String subject = constants.ecRegistrationReceived();
-    String content = BeeUtils.joinWords(constants.loginUserName(), login,
-        constants.loginPassword(), password);
+    String subject = BeeUtils.trim(messages.ecRegistrationMailSubject(companyName));
+    String content = BeeUtils.trim(messages.ecRegistrationMailContent(login, password, url));
 
     ResponseObject response = mail.sendMail(sender, recipient, subject, content);
     if (response.hasErrors()) {
@@ -2866,7 +2879,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     for (EcItem item : items) {
-      Double marginPercent = getMarginPercent(item.getCategoryList(), catParents, catRoots,
+      Double marginPercent = getMarginPercent(item.getCategorySet(), catParents, catRoots,
           catMargins);
       if (marginPercent == null) {
         marginPercent = defMargin;

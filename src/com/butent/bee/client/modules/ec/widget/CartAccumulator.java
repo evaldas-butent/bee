@@ -8,14 +8,15 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputInteger;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 
@@ -39,7 +40,7 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
           int value = input.getIntValue();
 
-          if (value > 0 && DomUtils.isInView(input.getElement())) {
+          if (value > 0 && DomUtils.isInView(input)) {
             EcKeeper.addToCart(item, value);
             input.setValue(0);
           }
@@ -53,7 +54,7 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
 
     Flow spin = new Flow(STYLE_PREFIX + "spin");
 
-    Image plus = new Image(Global.getImages().silverPlus());
+    FaLabel plus = new FaLabel(FontAwesome.PLUS_SQUARE_O);
     plus.addStyleName(STYLE_PREFIX + "plus");
 
     plus.addClickHandler(new ClickHandler() {
@@ -65,7 +66,7 @@ public class CartAccumulator extends Horizontal implements HasKeyDownHandlers {
     });
     spin.add(plus);
 
-    Image minus = new Image(Global.getImages().silverMinus());
+    FaLabel minus = new FaLabel(FontAwesome.MINUS_SQUARE_O);
     minus.addStyleName(STYLE_PREFIX + "minus");
 
     minus.addClickHandler(new ClickHandler() {

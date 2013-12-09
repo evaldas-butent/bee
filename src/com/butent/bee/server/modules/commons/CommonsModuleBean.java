@@ -224,7 +224,10 @@ public class CommonsModuleBean implements BeeModule {
         new BeeParameter(COMMONS_MODULE, "ERPOperation", ParameterType.TEXT,
             "Document operation name in ERP system", false, null),
         new BeeParameter(COMMONS_MODULE, "ERPWarehouse", ParameterType.TEXT,
-            "Document warehouse name in ERP system", false, null));
+            "Document warehouse name in ERP system", false, null),
+        new BeeParameter(COMMONS_MODULE, PRM_COMPANY_NAME, ParameterType.TEXT,
+            "Company name", false, null),
+        new BeeParameter(COMMONS_MODULE, PRM_URL, ParameterType.TEXT, "URL", false, null));
 
     params.addAll(getSqlEngineParameters());
     return params;

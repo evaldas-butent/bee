@@ -7,6 +7,10 @@ public interface LocalizableEcMessages {
   String ecOrderId(String id);
 
   String ecOrderTotal(String amount, String currency);
+  
+  String ecRegistrationMailContent(String login, String password, String url);
+
+  String ecRegistrationMailSubject(String companyName);
 
   String ecRemoveCartItem(String cart, String item);
 

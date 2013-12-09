@@ -67,7 +67,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +129,7 @@ public final class EcKeeper {
     return source.addKeyPressHandler(eventHandler);
   }
 
-  public static Tree buildCategoryTree(Collection<Long> categoryIds) {
+  public static Tree buildCategoryTree(Set<Long> categoryIds) {
     Assert.notEmpty(categoryIds);
     return data.buildCategoryTree(categoryIds);
   }
@@ -354,16 +353,21 @@ public final class EcKeeper {
   }
 
   public static void openCart(final CartType cartType) {
-    data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
+    ensureBrands(new Consumer<Boolean>() {
       @Override
-      public void accept(List<DeliveryMethod> input) {
-        Cart cart = getCart(cartType);
-        ShoppingCart widget = new ShoppingCart(cartType, cart, input);
-
-        resetActiveCommand();
-        searchBox.clearValue();
-
-        BeeKeeper.getScreen().updateActivePanel(widget);
+      public void accept(Boolean input) {
+        data.getDeliveryMethods(new Consumer<List<DeliveryMethod>>() {
+          @Override
+          public void accept(List<DeliveryMethod> deliveryMethods) {
+            Cart cart = getCart(cartType);
+            ShoppingCart widget = new ShoppingCart(cartType, cart, deliveryMethods);
+            
+            resetActiveCommand();
+            searchBox.clearValue();
+            
+            BeeKeeper.getScreen().updateActivePanel(widget);
+          }
+        });
       }
     });
   }

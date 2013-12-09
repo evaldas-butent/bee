@@ -432,6 +432,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String settings();
 
+  String signOut();
+
   String sorry();
 
   String startDate();

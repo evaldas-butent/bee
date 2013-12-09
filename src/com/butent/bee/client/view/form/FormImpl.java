@@ -477,6 +477,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void clearNotifications() {
+    if (getNotification() != null) {
+      getNotification().clear();
+    }
+  }
+  
+  @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
     Assert.notNull(formDescription);

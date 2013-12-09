@@ -568,7 +568,7 @@
       <xs:enumeration value="pencil_square_o" />
       <xs:enumeration value="share_square_o" />
       <xs:enumeration value="check_square_o" />
-      <xs:enumeration value="move" />
+      <xs:enumeration value="arrows" />
       <xs:enumeration value="step_backward" />
       <xs:enumeration value="fast_backward" />
       <xs:enumeration value="backward" />
@@ -597,8 +597,8 @@
       <xs:enumeration value="arrow_down" />
       <xs:enumeration value="mail_forward" />
       <xs:enumeration value="share" />
-      <xs:enumeration value="resize_full" />
-      <xs:enumeration value="resize_small" />
+      <xs:enumeration value="expand" />
+      <xs:enumeration value="compress" />
       <xs:enumeration value="plus" />
       <xs:enumeration value="minus" />
       <xs:enumeration value="asterisk" />
@@ -621,8 +621,8 @@
       <xs:enumeration value="shopping_cart" />
       <xs:enumeration value="folder" />
       <xs:enumeration value="folder_open" />
-      <xs:enumeration value="resize_vertical" />
-      <xs:enumeration value="resize_horizontal" />
+      <xs:enumeration value="arrows_v" />
+      <xs:enumeration value="arrows_h" />
       <xs:enumeration value="bar_chart_o" />
       <xs:enumeration value="twitter_square" />
       <xs:enumeration value="facebook_square" />
@@ -671,8 +671,9 @@
       <xs:enumeration value="tasks" />
       <xs:enumeration value="filter" />
       <xs:enumeration value="briefcase" />
-      <xs:enumeration value="fullscreen" />
+      <xs:enumeration value="arrows_alt" />
       <xs:enumeration value="group" />
+      <xs:enumeration value="users" />
       <xs:enumeration value="chain" />
       <xs:enumeration value="link" />
       <xs:enumeration value="cloud" />
@@ -685,7 +686,7 @@
       <xs:enumeration value="save" />
       <xs:enumeration value="floppy_o" />
       <xs:enumeration value="square" />
-      <xs:enumeration value="reorder" />
+      <xs:enumeration value="bars" />
       <xs:enumeration value="list_ul" />
       <xs:enumeration value="list_ol" />
       <xs:enumeration value="strikethrough" />
@@ -736,8 +737,8 @@
       <xs:enumeration value="coffee" />
       <xs:enumeration value="cutlery" />
       <xs:enumeration value="file_text_o" />
-      <xs:enumeration value="building" />
-      <xs:enumeration value="hospital" />
+      <xs:enumeration value="building_o" />
+      <xs:enumeration value="hospital_o" />
       <xs:enumeration value="ambulance" />
       <xs:enumeration value="medkit" />
       <xs:enumeration value="fighter_jet" />
@@ -767,8 +768,6 @@
       <xs:enumeration value="github_alt" />
       <xs:enumeration value="folder_o" />
       <xs:enumeration value="folder_open_o" />
-      <xs:enumeration value="expand_o" />
-      <xs:enumeration value="collapse_o" />
       <xs:enumeration value="smile_o" />
       <xs:enumeration value="frown_o" />
       <xs:enumeration value="meh_o" />
@@ -809,10 +808,10 @@
       <xs:enumeration value="html5" />
       <xs:enumeration value="css3" />
       <xs:enumeration value="anchor" />
-      <xs:enumeration value="unlock_o" />
+      <xs:enumeration value="unlock_alt" />
       <xs:enumeration value="bullseye" />
-      <xs:enumeration value="ellipsis_horizontal" />
-      <xs:enumeration value="ellipsis_vertical" />
+      <xs:enumeration value="ellipsis_h" />
+      <xs:enumeration value="ellipsis_v" />
       <xs:enumeration value="rss_square" />
       <xs:enumeration value="play_circle" />
       <xs:enumeration value="ticket" />
@@ -906,6 +905,7 @@
       <xs:enumeration value="vimeo_square" />
       <xs:enumeration value="turkish_lira" />
       <xs:enumeration value="try" />
+      <xs:enumeration value="plus_square_o" />
     </xs:restriction>
   </xs:simpleType>
   

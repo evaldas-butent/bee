@@ -168,6 +168,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
+import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -309,8 +310,8 @@ public final class CliWorker {
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
 
-    } else if (BeeUtils.inList(z, "fa", "fontawesome")) {
-      showFontAwesome(args);
+    } else if (z.startsWith("fa")) {
+      showFontAwesome(z.substring(2), args);
 
     } else if ("files".equals(z) || z.startsWith("repo")) {
       getFiles();
@@ -2437,10 +2438,17 @@ public final class CliWorker {
     showTable(id, new PropertiesData(Font.getComputed(el).getInfo()));
   }
 
-  private static void showFontAwesome(String args) {
+  private static void showFontAwesome(String names, String args) {
     Flow panel = new Flow();
     StyleUtils.setFontFamily(panel, FontAwesome.FAMILY);
     StyleUtils.setFontSize(panel, FontSize.MEDIUM);
+
+    Set<Pattern> patterns = Sets.newHashSet();
+    if (!BeeUtils.isEmpty(names)) {
+      for (String s : NameUtils.NAME_SPLITTER.split(names)) {
+        patterns.add(Wildcards.getDefaultPattern(s, false, BeeConst.CHAR_EQ));
+      }
+    }
 
     List<Property> styles = PropertyUtils.createProperties(
         CssProperties.DISPLAY, Display.INLINE_BLOCK.getCssName(),
@@ -2450,17 +2458,28 @@ public final class CliWorker {
       styles.addAll(StyleUtils.parseStyles(args));
     }
 
+    int count = 0;
     for (FontAwesome fa : FontAwesome.values()) {
+      if (!patterns.isEmpty() && !Wildcards.contains(patterns, fa.name())) {
+        continue;
+      }
+
       FaLabel label = new FaLabel(fa, true);
       label.setTitle(BeeUtils.joinWords(fa.name().toLowerCase(),
           Integer.toHexString(fa.getCode())));
 
       StyleUtils.updateStyle(label, styles);
       panel.add(label);
+      
+      count++;
     }
 
-    logger.debug(FontAwesome.FAMILY, FontAwesome.values().length);
-    BeeKeeper.getScreen().updateActivePanel(panel);
+    if (count > 0) {
+      logger.debug(FontAwesome.FAMILY, names, count);
+      BeeKeeper.getScreen().updateActivePanel(panel);
+    } else {
+      showError(FontAwesome.FAMILY, names, "not found");
+    }
   }
 
   private static void showFunctions(String v, String[] arr) {

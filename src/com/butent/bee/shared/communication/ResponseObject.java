@@ -123,6 +123,11 @@ public class ResponseObject implements BeeSerializable {
     messages.add(new ResponseMessage(LogLevel.WARNING, ArrayUtils.joinWords(obj)));
     return this;
   }
+  
+  public ResponseObject clearMessages() {
+    messages.clear();
+    return this;
+  }
 
   @Override
   public void deserialize(String s) {

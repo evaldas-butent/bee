@@ -33,17 +33,30 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 class EcData {
+  
+  private final class CategoryComparator implements Comparator<Long> {
+    private CategoryComparator() {
+    }
+
+    @Override
+    public int compare(Long o1, Long o2) {
+      return BeeUtils.compareNullsFirst(categoryNames.get(o1), categoryNames.get(o2));
+    }
+  }
 
   private final List<String> carManufacturers = Lists.newArrayList();
   private final Map<String, List<EcCarModel>> carModelsByManufacturer = Maps.newHashMap();
   private final Map<Long, List<EcCarType>> carTypesByModel = Maps.newHashMap();
 
   private final Map<Long, String> categoryNames = Maps.newHashMap();
+  private final CategoryComparator categoryComparator = new CategoryComparator();
 
   private final Set<Long> categoryRoots = Sets.newHashSet();
   private final Multimap<Long, Long> categoryByParent = HashMultimap.create();
@@ -65,8 +78,8 @@ class EcData {
     super();
   }
 
-  Tree buildCategoryTree(Collection<Long> ids) {
-    Set<Long> roots = Sets.newHashSet();
+  Tree buildCategoryTree(Set<Long> ids) {
+    List<Long> roots = Lists.newArrayList();
     Multimap<Long, Long> data = HashMultimap.create();
 
     for (long id : ids) {
@@ -82,6 +95,10 @@ class EcData {
 
     TreeItem rootItem = new TreeItem(Localized.getConstants().ecSelectCategory());
     tree.addItem(rootItem);
+    
+    if (roots.size() > 1) {
+      Collections.sort(roots, categoryComparator);
+    }
 
     for (long id : roots) {
       TreeItem treeItem = createCategoryTreeItem(id);
@@ -309,14 +326,17 @@ class EcData {
   List<String> getCategoryNames(EcItem item) {
     List<String> names = Lists.newArrayList();
 
-    List<Long> categoryIds = item.getCategoryList();
+    Set<Long> categoryIds = item.getCategorySet();
     for (Long categoryId : categoryIds) {
       String name = categoryNames.get(categoryId);
-      if (name != null) {
+      if (name != null && !names.contains(name)) {
         names.add(name);
       }
     }
-
+    
+    if (names.size() > 1) {
+      Collections.sort(names);
+    }
     return names;
   }
   
@@ -483,7 +503,12 @@ class EcData {
 
   private void fillTree(Multimap<Long, Long> data, long parent, TreeItem parentItem) {
     if (data.containsKey(parent)) {
-      for (long id : data.get(parent)) {
+      List<Long> children = Lists.newArrayList(data.get(parent));
+      if (children.size() > 1) {
+        Collections.sort(children, categoryComparator);
+      }
+
+      for (long id : children) {
         TreeItem childItem = createCategoryTreeItem(id);
         parentItem.addItem(childItem);
 
