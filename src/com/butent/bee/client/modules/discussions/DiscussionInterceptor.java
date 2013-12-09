@@ -67,6 +67,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -249,12 +250,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
           boolean value = BeeUtils.toBoolean(ac.getValue());
-          getMultiSelector(getFormView(), PROP_MEMBERS).setEnabled(!value);
-          getMultiSelector(getFormView(), PROP_MEMBERS).setNullable(value);
+          MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
+          ms.setEnabled(!value);
+          ms.setNullable(value);
           getLabel(getFormView(), WIDGET_LABEL_MEMBERS).setStyleName(StyleUtils.NAME_REQUIRED,
               !BeeUtils.toBoolean(ac.getValue()));
           if (value) {
-            getMultiSelector(getFormView(), PROP_MEMBERS).clearValue();
+            ms.clearValue();
+            ms.setValue(null);
           }
         }
       });
@@ -336,10 +339,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
+    // boolean accessCheckBoxValue = form.getWidgetByName(name)
 
     form.setEnabled(isOwner(userId, owner));
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
+    LogUtils.getRootLogger().debug("still public?", isPublic(form, row));
+    if (isPublic(form, row)) {
+      visitedRow.setProperty(PROP_MEMBERS, null);
+    }
+
     BeeRowSet rowSet = new BeeRowSet(form.getViewName(), form.getDataColumns());
     rowSet.addRow(visitedRow);
 
@@ -390,6 +399,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             data.getString(form.getDataIndex(COL_DESCRIPTION)));
 
         form.updateRow(data, true);
+        form.refresh();
       }
     });
     return false;
@@ -933,7 +943,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private static boolean isPublic(FormView form, IsRow row) {
-    return row.getBoolean(form.getDataIndex(COL_ACCESSIBILITY));
+    return BeeUtils.unbox(row.getBoolean(form.getDataIndex(COL_ACCESSIBILITY)));
   }
 
   private void onResponse(BeeRow data) {
