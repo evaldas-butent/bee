@@ -34,7 +34,6 @@
   border: 1px solid #d9d9d9;
   border-top: 1px solid silver;
   box-shadow: inset 3px 3px 10px silver;
-  color: #43494F;
 }
 
 .bee-ec-GlobalSearch-input,
@@ -717,6 +716,24 @@
   font-weight: bold;
 }
 
+.bee-ec-shoppingCart-method-panel {
+  position: absolute;
+  top: 16px;
+  left: 1em;
+  width: 15%;
+}
+.bee-ec-shoppingCart-method-label {
+  margin-left: 2px;
+}
+.bee-ec-shoppingCart-method-input {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  min-width: 50%;
+  box-shadow: inset 1px 1px 10px silver;
+  padding: 2px 0px 2px 2px;  
+}
+
 .bee-ec-shoppingCart-address-panel {
   position: absolute;
   top: 52px;
@@ -730,7 +747,7 @@
 }
 .bee-ec-shoppingCart-address-input {
   position: absolute;
-  left: 2px;
+  left: 0;
   top: 20px;
   width: calc(100% - 4px);
   height: calc(100% - 22px);
@@ -739,25 +756,6 @@
   box-shadow: inset 3px 3px 10px silver; 
   border: 1px solid #d9d9d9;
   border-top: 1px solid silver;
-}
-
-.bee-ec-shoppingCart-method-label {
-  margin-left: 2px;
-}
-
-.bee-ec-shoppingCart-method-panel {
-  position: absolute;
-  top: 16px;
-  left: 1em;
-  width: 15%;
-}
-.bee-ec-shoppingCart-method-input {
-  position: absolute;
-  top: 20px;
-  left: 0;
-  min-width: 50%;
-  box-shadow: inset 1px 1px 10px silver;
-  padding: 2px 0px 2px 2px;  
 }
 
 .bee-ec-shoppingCart-comment-panel {
@@ -773,14 +771,14 @@
 }
 .bee-ec-shoppingCart-comment-input {
   position: absolute;
-  left: 2px;
+  left: 0;
   top: 20px;
   width: calc(100% - 4px);
   height: calc(100% - 22px);
-  padding: 2px;
+  padding: 4px;
+  box-shadow: inset 3px 3px 10px silver; 
   border: 1px solid #d9d9d9;
   border-top: 1px solid silver;
-  color: #43494F
 }
 
 .bee-ec-shoppingCart-copyByMail {
@@ -896,7 +894,6 @@
 }
 .bee-ec-ItemDetails-info-criteria-name {
   max-width: 200px;
-  color: #43494F;
 }
 
 .bee-ec-ItemDetails-addToCart-cart {

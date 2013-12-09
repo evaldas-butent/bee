@@ -17,8 +17,9 @@
       <InputArea source="Description" visibleLines="2" class="flexible"
         style="font-weight: bold; color: blue; display:inline-block;" />
       <HorizontalPanel>
-        <InputCurrency source="Price" caption="=trTransportationPrice" style="width: 70px; font-weight: bold; color: green;" />
-        <DataSelector source="Currency" editEnabled="false"
+        <InlineLabel text="=trTransportationPrice" style="padding-top:1px;" />
+        <DecimalLabel name="Amount" style="padding-top:1px; font-weight:bold; color:green;" />
+        <DataSelector name="Currency" source="Currency" editEnabled="false" placeholder="=currencyShort"
           style="width: 40px; font-weight: bold; display: inline-block;" />
       </HorizontalPanel>
     </FlowPanel>
@@ -88,9 +89,6 @@
         <InputDecimal source="Width" format="#.00" />
         <cell rowSpan="3">
           <InputArea source="Notes" characterWidth="30" style="height: 100%" />
-        </cell>
-        <cell rowSpan="2">
-          <Button name="profit" text="=cargoProfit" />
         </cell>
       </row>
       <row>

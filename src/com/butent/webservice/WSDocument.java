@@ -47,6 +47,7 @@ public class WSDocument {
   private final String warehouse;
   private final String company;
 
+  private String number;
   private String invoicePrefix;
   private String invoiceNumber;
 
@@ -86,6 +87,7 @@ public class WSDocument {
           .append(ButentWS.tag("tiekejas", supplier))
           .append(ButentWS.tag("gavejas", customer))
           .append(ButentWS.tag("moketojas", payer))
+          .append(ButentWS.tag("kitas_dok2", number))
           .append(ButentWS.tag("dok_serija", invoicePrefix))
           .append(ButentWS.tag("kitas_dok", invoiceNumber))
           .append(ButentWS.tag("terminas", term))
@@ -111,9 +113,13 @@ public class WSDocument {
     this.customer = customer;
   }
 
-  public void setInvoice(String prefix, String number) {
+  public void setInvoice(String prefix, String no) {
     this.invoicePrefix = prefix;
-    this.invoiceNumber = number;
+    this.invoiceNumber = no;
+  }
+
+  public void setNumber(String number) {
+    this.number = number;
   }
 
   public void setPayer(String payer) {

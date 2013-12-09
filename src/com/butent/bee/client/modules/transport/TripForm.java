@@ -1,0 +1,98 @@
+package com.butent.bee.client.modules.transport;
+
+import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.modules.transport.TransportHandler.Profit;
+import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidation;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+
+public class TripForm extends AbstractFormInterceptor {
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget,
+      IdentifiableWidget widget) {
+    if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
+      String viewName = getFormView().getViewName();
+      final int dateIndex = Data.getColumnIndex(viewName, "Date");
+      final int speedIndex = Data.getColumnIndex(viewName, "SpeedometerBefore");
+      final int fuelIndex = Data.getColumnIndex(viewName, "FuelBefore");
+
+      editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          if (event.isCellValidation() && event.isPostValidation()) {
+            CellValidation cv = event.getCellValidation();
+            String id = cv.getNewValue();
+
+            if (!BeeUtils.isEmpty(id)) {
+              final IsRow row = cv.getRow();
+
+              ParameterList args = TransportHandler.createArgs(SVC_GET_BEFORE);
+              args.addDataItem("Vehicle", id);
+
+              if (!row.isNull(dateIndex)) {
+                args.addDataItem("Date", row.getString(dateIndex));
+              }
+              BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  Assert.notNull(response);
+
+                  if (response.hasErrors()) {
+                    Global.showError(Lists.newArrayList(response.getErrors()));
+
+                  } else if (response.hasArrayResponse(String.class)) {
+                    String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
+                    row.setValue(speedIndex, r[0]);
+                    row.setValue(fuelIndex, r[1]);
+                    getFormView().refresh(false, false);
+
+                  } else {
+                    Global.showError("Unknown response");
+                  }
+                }
+              });
+            }
+          }
+          return true;
+        }
+      });
+    }
+  }
+
+  @Override
+  public FormInterceptor getInstance() {
+    return new TripForm();
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    HeaderView header = form.getViewPresenter().getHeader();
+    header.clearCommandPanel();
+    header.addCommandItem(new Profit(COL_TRIP, row.getId()));
+    return true;
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    form.getViewPresenter().getHeader().clearCommandPanel();
+  }
+}

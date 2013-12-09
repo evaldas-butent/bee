@@ -60,6 +60,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   private int maxSize = BeeConst.UNDEF;
 
   private boolean changePending;
+  private boolean deselectPending;
 
   private String options;
 
@@ -137,7 +138,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   }
 
   public void deselect() {
-    setSelectedIndex(-1);
+    setSelectedIndex(BeeConst.UNDEF);
   }
 
   @Override
@@ -290,16 +291,23 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   
   @Override
   public void onBrowserEvent(Event event) {
-    if (EventUtils.isChange(event.getType())) {
+    String type = event.getType();
+
+    if (EventUtils.isChange(type)) {
       setChangePending(true);
       ValueChangeEvent.fire(this, getValue());
 
-    } else if (EventUtils.isMouseDown(event.getType())) {
+    } else if (EventUtils.isMouseDown(type)) {
       setChangePending(false);
-    } else if (EventUtils.isMouseUp(event.getType())) {
+    } else if (EventUtils.isMouseUp(type)) {
       if (isChangePending() && isEditing()) {
         setChangePending(false);
         fireEvent(new EditStopEvent(State.CHANGED));
+      }
+    
+    } else if (EventUtils.isKeyDown(type)) {
+      if (isNullable() && event.getKeyCode() == KeyCodes.KEY_DELETE) {
+        clearValue();
       }
     }
 
@@ -399,6 +407,9 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
   public void setSelectedIndex(int index) {
     getSelectElement().setSelectedIndex(index);
+    if (!isAttached()) {
+      setDeselectPending(BeeConst.isUndef(index));
+    }
   }
   
   @Override
@@ -464,7 +475,16 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   protected void init() {
     super.init();
     addStyleName("bee-ListBox");
-    sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
+    sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONKEYDOWN);
+  }
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    if (isDeselectPending()) {
+      setDeselectPending(false);
+      deselect();
+    }
   }
 
   private void checkIndex(int index) {
@@ -473,7 +493,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
   private int getIndex(String text) {
     int index = BeeConst.UNDEF;
-    if (text == null) {
+    if (BeeUtils.isEmpty(text)) {
       return index;
     }
 
@@ -503,7 +523,15 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     return changePending;
   }
 
+  private boolean isDeselectPending() {
+    return deselectPending;
+  }
+
   private void setChangePending(boolean changePending) {
     this.changePending = changePending;
+  }
+
+  private void setDeselectPending(boolean deselectPending) {
+    this.deselectPending = deselectPending;
   }
 }

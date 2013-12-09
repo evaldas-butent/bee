@@ -11,72 +11,32 @@
   width="900" height="600"
   >
   <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <Label text="=trTripDate" class="bee-hasDefaults bee-required" />
+        <InputDateTime source="Date" style="width:110px;" />
+        <Label text="=trTruck" class="bee-required" />
+        <DataSelector source="Vehicle" renderColumns="VehicleNumber" filter="IsTruck" required="true" />
+        <Label text="=trTripNo" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
+        <InputText source="TripNo" />
+      </row>
+      <row>
+        <Label text="=scheduledEndingDate" horizontalAlignment="right" />
+        <InputDate source="PlannedEndDate" style="width:80px;" />
+        <Label text="=trailer" horizontalAlignment="right" />
+        <DataSelector source="Trailer" filter="IsTrailer" />
+        <Label text="=status" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
+        <ListBox source="Status" />
+      </row>
+    </Table>
+    <HorizontalPanel>
+      <ChildGrid name="TripDrivers" relColumn="Trip" style="width:300px; margin-right:20px" />
+      <FlowPanel>
+        <Label text="=notes" />
+        <InputArea source="Notes" style="width: 200px;" visibleLines="5" />
+      </FlowPanel>
+    </HorizontalPanel>
 
-    <FlowPanel class="flexBox-horizontal" style="margin-bottom: 1ex;">
-      <Table>
-        <row> 
-          <FlowPanel  class="flexBox-vertical">
-            <SimplePanel style="margin-top: 10px;"> 
-              <InputDateTime source="Date" caption="=trTripDate" style="width: 140px;" 
-                  decorator="flex-left" d:unit="px" d:align="left" d:size="60" />
-            </SimplePanel>  
-            <SimplePanel style="margin-top: 10px"> 
-              <DataSelector source="Vehicle" caption="=trTruck"  style="width: 140px;"  renderColumns="VehicleNumber"
-                filter="IsTruck" d:size="60" d:unit="px" d:align="left" required="true" />
-            </SimplePanel>    
-          </FlowPanel>
-        </row>
-        <row>
-        </row>
-      </Table>
-      <Table>
-        <row> 
-          <FlowPanel  class="flexBox-vertical" style="margin-left: 1em;">
-            <SimplePanel style="margin-top: 10px">
-              <InputDate source="PlannedEndDate" caption="=scheduledEndingDate" style="width: 7em; margin: 0 2px" />
-            </SimplePanel>
-            <SimplePanel style="margin-top: 12px">   
-              <DataSelector source="Trailer" caption="=trailer" filter="IsTrailer"
-                d:size="90" d:unit="px" d:align="left" />
-            </SimplePanel>    
-          </FlowPanel>  
-        </row>
-      </Table>  
-      
-      <Table>
-        <row>
-          <FlowPanel  class="flexBox-vertical" style="margin-left: 1em;">   
-            <SimplePanel style="margin-top: 10px"> 
-              <InputText source="TripNo" caption="=trTripNo"  style="width: 100px;" />
-            </SimplePanel>  
-            <ListBox source="Status" caption="=status"
-              style="margin-bottom: 10px; width: 100px; margin-left: 10px; margin-top: 10px;" />
-            <Button name="profit" text="=cargoProfit"
-              style="width: 100px; margin-left: 60px; margin-top: 5px;" />
-          </FlowPanel>
-        </row>
-      </Table>  
-
-      <Table>
-        <row>
-          <FlowPanel class="flexBox-vertical">
-            <Label text="=notes" style="margin-top: 5px; margin-left: 8px;" />
-            <SimplePanel style="position: relative; min-width: 10em; " class="flexible">
-              <InputArea source="Notes" style="height: 80px; width: 200px;margin-left: 8px;" />
-            </SimplePanel>
-          </FlowPanel>
-        </row>
-      </Table>  
-
-      <Table>
-        <row>
-        </row>
-      </Table>
-    </FlowPanel>
-    <FlowPanel>
-      <ChildGrid name="TripDrivers" relColumn="Trip"
-        style="width:300px; padding-top:20px; position:relative; top:-40px" />
-    </FlowPanel>
     <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
         <text>=transportTripMainData</text>

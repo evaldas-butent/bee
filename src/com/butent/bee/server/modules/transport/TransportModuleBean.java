@@ -131,11 +131,11 @@ public class TransportModuleBean implements BeeModule {
       response = getUnassignedCargos(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_PROFIT)) {
-      if (reqInfo.hasParameter(VAR_TRIP_ID)) {
-        response = getTripProfit(BeeUtils.toLong(reqInfo.getParameter(VAR_TRIP_ID)));
+      if (reqInfo.hasParameter(COL_TRIP)) {
+        response = getTripProfit(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP)));
 
-      } else if (reqInfo.hasParameter(VAR_CARGO_ID)) {
-        Long cargoId = BeeUtils.toLong(reqInfo.getParameter(VAR_CARGO_ID));
+      } else if (reqInfo.hasParameter(COL_CARGO)) {
+        Long cargoId = BeeUtils.toLong(reqInfo.getParameter(COL_CARGO));
 
         response = getCargoProfit(new SqlSelect().addConstant(cargoId, COL_CARGO));
 
@@ -209,77 +209,16 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_CREDIT_INFO)) {
       response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CUSTOMER)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_CARGO_TOTAL)) {
+      response = getCargoTotal(BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)));
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
     return response;
-  }
-
-  private ResponseObject getCreditInfo(Long companyId) {
-    Assert.notNull(companyId);
-
-    SimpleRow company = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, "CreditLimit1", "CreditDays", "LimitCurrency")
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ExchangeUtils.COL_CURRENCY)
-        .addFrom(TBL_COMPANIES)
-        .addFromLeft(TBL_CURRENCIES,
-            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, "LimitCurrency"))
-        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
-
-    Map<String, String> resp = Maps.newLinkedHashMap();
-
-    if (company != null) {
-      double limit = BeeUtils.unbox(company.getDouble("CreditLimit1"));
-      Long curr = company.getLong("LimitCurrency");
-      String currName = company.getValue(ExchangeUtils.COL_CURRENCY);
-      int days = BeeUtils.unbox(company.getInt("CreditDays"));
-
-      SqlSelect query = new SqlSelect()
-          .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
-          .addFrom(TBL_SALES)
-          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
-              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
-                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
-              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
-
-      if (DataUtils.isId(curr)) {
-        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_AMOUNT,
-            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_PAID,
-                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
-      } else {
-        query.addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_AMOUNT,
-            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
-                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
-      }
-      double credit = 0.0;
-      double overdue = 0.0;
-
-      for (SimpleRow row : qs.getData(query)) {
-        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))
-            - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
-
-        int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
-            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
-
-        if (dayDiff > 0) {
-          overdue += xxx;
-        }
-        credit += xxx;
-      }
-      if (credit > 0) {
-        resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
-        resp.put("Kreditas", BeeUtils.joinWords(limit, currName));
-        resp.put("Atidėjimas", BeeUtils.joinWords(days, "d."));
-        resp.put("Skola", BeeUtils.joinWords(BeeUtils.round(credit, 2), currName));
-        resp.put("Pradelsta skola", BeeUtils.joinWords(BeeUtils.round(overdue, 2), currName));
-      }
-    }
-    return ResponseObject.response(resp);
   }
 
   @Override
@@ -416,7 +355,7 @@ public class TransportModuleBean implements BeeModule {
             SimpleRowSet rs = qs.getData(getCargoIncomeQuery(event.getQuery()
                 .resetFields().resetOrder().resetGroup()
                 .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-                .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO))));
+                .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null));
 
             for (BeeRow row : rowset.getRows()) {
               String cargoId = BeeUtils.toString(row.getId());
@@ -826,9 +765,10 @@ public class TransportModuleBean implements BeeModule {
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
    * 
    * @param flt - query filter with <b>unique</b> "Cargo" values.
+   * @param currency - currencyId, to which convert amounts.
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
    */
-  private SqlSelect getCargoIncomeQuery(SqlSelect flt) {
+  private SqlSelect getCargoIncomeQuery(SqlSelect flt, Long currency) {
     String alias = SqlUtils.uniqueName();
 
     SqlSelect ss = new SqlSelect()
@@ -838,24 +778,51 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_CARGO_INCOMES,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+        .addFromLeft(TBL_SERVICES, sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
         .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
     IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
         SqlUtils.field(TBL_ORDERS, COL_DATE));
 
-    ss.addMax(ExchangeUtils.exchangeField(ss, SqlUtils.field(TBL_ORDER_CARGO, "Price"),
-        SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY), dateExpr), "CargoIncome")
-        .addSum(ExchangeUtils.exchangeField(ss,
-            TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
-                SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)),
-            SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr),
-            "ServicesIncome");
+    IsExpression cargoIncome;
+    IsExpression servicesIncome;
+
+    if (DataUtils.isId(currency)) {
+      cargoIncome = ExchangeUtils.exchangeFieldTo(ss,
+          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION), null,
+              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT))),
+          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr,
+          SqlUtils.constant(currency));
+
+      servicesIncome = ExchangeUtils.exchangeFieldTo(ss,
+          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
+              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)), null),
+          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr,
+          SqlUtils.constant(currency));
+    } else {
+      cargoIncome = ExchangeUtils.exchangeField(ss,
+          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION), null,
+              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT))),
+          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr);
+
+      servicesIncome = ExchangeUtils.exchangeField(ss,
+          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
+              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)), null),
+          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr);
+    }
+
+    ss.addSum(cargoIncome, "CargoIncome")
+        .addSum(servicesIncome, "ServicesIncome");
 
     return ss;
   }
 
   private ResponseObject getCargoProfit(SqlSelect flt) {
-    SqlSelect ss = getCargoIncomeQuery(flt)
+    SqlSelect ss = getCargoIncomeQuery(flt, null)
         .addEmptyDouble("ServicesCost")
         .addEmptyDouble("TripCost");
 
@@ -943,6 +910,17 @@ public class TransportModuleBean implements BeeModule {
         "ServicesCost:", res.getValue("ServicesCost")});
   }
 
+  private ResponseObject getCargoTotal(long cargoId, Long currency) {
+    String val = null;
+    SimpleRow row = qs.getRow(getCargoIncomeQuery(new SqlSelect().addConstant(cargoId, COL_CARGO),
+        currency));
+
+    if (row != null) {
+      val = BeeUtils.round(row.getValue("CargoIncome"), 2);
+    }
+    return ResponseObject.response(BeeUtils.notEmpty(val, "0.00"));
+  }
+
   private ResponseObject getCargoUsage(String viewName, String[] ids) {
     String source = sys.getViewSource(viewName);
     IsExpression ref;
@@ -975,6 +953,71 @@ public class TransportModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(getThemeColors(theme));
+  }
+
+  private ResponseObject getCreditInfo(Long companyId) {
+    Assert.notNull(companyId);
+
+    SimpleRow company = qs.getRow(new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, "CreditLimit1", "CreditDays", "LimitCurrency")
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ExchangeUtils.COL_CURRENCY)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_CURRENCIES,
+            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, "LimitCurrency"))
+        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+
+    Map<String, String> resp = Maps.newLinkedHashMap();
+
+    if (company != null) {
+      double limit = BeeUtils.unbox(company.getDouble("CreditLimit1"));
+      Long curr = company.getLong("LimitCurrency");
+      String currName = company.getValue(ExchangeUtils.COL_CURRENCY);
+      int days = BeeUtils.unbox(company.getInt("CreditDays"));
+
+      SqlSelect query = new SqlSelect()
+          .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
+          .addFrom(TBL_SALES)
+          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
+              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
+              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
+
+      if (DataUtils.isId(curr)) {
+        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_AMOUNT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
+            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_PAID,
+                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
+      } else {
+        query.addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_AMOUNT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
+            .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
+                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
+      }
+      double credit = 0.0;
+      double overdue = 0.0;
+
+      for (SimpleRow row : qs.getData(query)) {
+        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))
+            - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
+
+        int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
+            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
+
+        if (dayDiff > 0) {
+          overdue += xxx;
+        }
+        credit += xxx;
+      }
+      if (credit > 0) {
+        resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
+        resp.put("Kreditas", BeeUtils.joinWords(limit, currName));
+        resp.put("Atidėjimas", BeeUtils.joinWords(days, "d."));
+        resp.put("Skola", BeeUtils.joinWords(BeeUtils.round(credit, 2), currName));
+        resp.put("Pradelsta skola", BeeUtils.joinWords(BeeUtils.round(overdue, 2), currName));
+      }
+    }
+    return ResponseObject.response(resp);
   }
 
   private ResponseObject getDtbData() {
@@ -1651,7 +1694,7 @@ public class TransportModuleBean implements BeeModule {
         .setDistinctMode(true)
         .addFields(cargoTrips, COL_CARGO)
         .addFrom(cargoTrips)
-        .addFromInner(flt, alias, SqlUtils.joinUsing(cargoTrips, alias, COL_TRIP))));
+        .addFromInner(flt, alias, SqlUtils.joinUsing(cargoTrips, alias, COL_TRIP)), null));
 
     qs.sqlIndex(tmp, COL_CARGO);
 
@@ -2005,6 +2048,7 @@ public class TransportModuleBean implements BeeModule {
       if (invoices.hasColumn(COL_SALE_PAYER)) {
         doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
       }
+      doc.setNumber(invoice.getValue(COL_TRADE_NUMBER));
       doc.setInvoice(invoice.getValue(COL_TRADE_INVOICE_PREFIX),
           invoice.getValue(COL_TRADE_INVOICE_NO));
       doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));

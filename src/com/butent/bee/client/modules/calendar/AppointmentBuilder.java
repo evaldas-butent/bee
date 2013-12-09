@@ -5,7 +5,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -14,9 +13,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -62,10 +58,10 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -289,16 +285,6 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
 
-  private static final KeyDownHandler LIST_BOX_CLEANER = new KeyDownHandler() {
-    @Override
-    public void onKeyDown(KeyDownEvent event) {
-      if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DELETE) {
-        event.preventDefault();
-        ((ListBox) event.getSource()).deselect();
-      }
-    }
-  };
-
   private static final String NAME_SERVICE_TYPE = "ServiceType";
   private static final String NAME_REPAIR_TYPE = "RepairType";
 
@@ -407,17 +393,11 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     if (BeeUtils.same(name, NAME_SERVICE_TYPE)) {
       setServiceTypeWidgetId(widget.getId());
-      if (widget instanceof ListBox) {
-        ((ListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
-      }
 
     } else if (BeeUtils.same(name, NAME_REPAIR_TYPE)) {
       setRepairTypeWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addValueChangeHandler(propWidgetHandler);
-      }
-      if (widget instanceof ListBox) {
-        ((ListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
@@ -500,9 +480,6 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_REMINDER)) {
       setReminderWidgetId(widget.getId());
-      if (widget instanceof ListBox) {
-        ((ListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
-      }
 
     } else if (BeeUtils.same(name, NAME_BUILD)) {
       if (widget instanceof HasClickHandlers) {
@@ -1463,15 +1440,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       return;
     }
 
-    if (index >= 0 && index < listBox.getItemCount()) {
+    if (listBox.isIndex(index)) {
       listBox.setSelectedIndex(index);
     } else {
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          listBox.deselect();
-        }
-      });
+      listBox.deselect();
     }
   }
 

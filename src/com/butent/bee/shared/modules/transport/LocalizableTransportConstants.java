@@ -38,8 +38,6 @@ public interface LocalizableTransportConstants {
 
   String cargoNumber();
 
-  String cargoProfit();
-
   String cargos();
 
   String cargoTermsOfService();

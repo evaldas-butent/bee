@@ -4,10 +4,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -31,21 +29,17 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.EditableWidget;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -58,8 +52,8 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -77,18 +71,21 @@ public final class TransportHandler {
     }
   }
 
-  static final class Profit implements ClickHandler {
+  static final class Profit extends Button implements ClickHandler {
     private final String idName;
+    private final long id;
 
-    public Profit(String idName) {
+    public Profit(String idName, long id) {
+      super(Localized.getConstants().profit());
+      addClickHandler(this);
       this.idName = idName;
+      this.id = id;
     }
 
     @Override
     public void onClick(ClickEvent event) {
       ParameterList args = TransportHandler.createArgs(SVC_GET_PROFIT);
-      final FormView form = UiHelper.getForm((Widget) event.getSource());
-      args.addDataItem(idName, form.getActiveRow().getId());
+      args.addDataItem(idName, id);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -99,7 +96,7 @@ public final class TransportHandler {
             Global.showError(Lists.newArrayList(response.getErrors()));
 
           } else if (response.hasArrayResponse(String.class)) {
-            String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+            String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
             List<String> messages = Lists.newArrayList();
 
             if (arr != null && arr.length % 2 == 0) {
@@ -108,12 +105,7 @@ public final class TransportHandler {
                     BeeUtils.isDouble(arr[i + 1]) ? BeeUtils.round(arr[i + 1], 2) : arr[i + 1]));
               }
             }
-
-            if (messages.isEmpty()) {
-              form.notifyInfo(arr);
-            } else {
-              form.notifyInfo(ArrayUtils.toArray(messages));
-            }
+            Global.showInfo(messages);
 
           } else {
             Global.showError("Unknown response");
@@ -197,74 +189,6 @@ public final class TransportHandler {
 
     private void setSelectedType(IsRow selectedType) {
       this.selectedType = selectedType;
-    }
-  }
-
-  private static class TripFormHandler extends AbstractFormInterceptor {
-    @Override
-    public void afterCreateEditableWidget(EditableWidget editableWidget,
-        IdentifiableWidget widget) {
-      if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
-        String viewName = getFormView().getViewName();
-        final int dateIndex = Data.getColumnIndex(viewName, "Date");
-        final int speedIndex = Data.getColumnIndex(viewName, "SpeedometerBefore");
-        final int fuelIndex = Data.getColumnIndex(viewName, "FuelBefore");
-
-        editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
-          @Override
-          public Boolean validateCell(CellValidateEvent event) {
-            if (event.isCellValidation() && event.isPostValidation()) {
-              CellValidation cv = event.getCellValidation();
-              String id = cv.getNewValue();
-
-              if (!BeeUtils.isEmpty(id)) {
-                final IsRow row = cv.getRow();
-
-                ParameterList args = TransportHandler.createArgs(SVC_GET_BEFORE);
-                args.addDataItem("Vehicle", id);
-
-                if (!row.isNull(dateIndex)) {
-                  args.addDataItem("Date", row.getString(dateIndex));
-                }
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    Assert.notNull(response);
-
-                    if (response.hasErrors()) {
-                      Global.showError(Lists.newArrayList(response.getErrors()));
-
-                    } else if (response.hasArrayResponse(String.class)) {
-                      String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
-                      row.setValue(speedIndex, r[0]);
-                      row.setValue(fuelIndex, r[1]);
-                      getFormView().refresh(false, false);
-
-                    } else {
-                      Global.showError("Unknown response");
-                    }
-                  }
-                });
-              }
-            }
-            return true;
-          }
-        });
-      }
-    }
-
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget)
-            .addClickHandler(new Profit(VAR_TRIP_ID));
-      }
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return this;
     }
   }
 
@@ -514,8 +438,8 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
-    FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
-    FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
+    FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
+    FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());

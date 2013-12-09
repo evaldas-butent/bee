@@ -31,6 +31,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
@@ -199,7 +200,7 @@ public class ShoppingCart extends Split {
       if (commentWidget != null) {
         panel.add(commentWidget);
       }
-      
+
       final CheckBox copyByMail = new CheckBox(Localized.getConstants().ecOrderCopyByMail());
       copyByMail.addStyleName(STYLE_COPY_BY_MAIL);
       panel.add(copyByMail);
@@ -287,21 +288,16 @@ public class ShoppingCart extends Split {
       input.addItem(deliveryMethod.getName());
     }
 
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        input.deselect();
-
-        if (cart.getDeliveryMethod() != null) {
-          for (int i = 0; i < deliveryMethods.size(); i++) {
-            if (cart.getDeliveryMethod().equals(deliveryMethods.get(i).getId())) {
-              input.setSelectedIndex(i);
-              break;
-            }
-          }
+    int selectedIndex = BeeConst.UNDEF;
+    if (cart.getDeliveryMethod() != null) {
+      for (int i = 0; i < deliveryMethods.size(); i++) {
+        if (cart.getDeliveryMethod().equals(deliveryMethods.get(i).getId())) {
+          selectedIndex = i;
+          break;
         }
       }
-    });
+    }
+    input.setSelectedIndex(selectedIndex);
 
     input.addBlurHandler(new BlurHandler() {
       @Override
@@ -435,11 +431,11 @@ public class ShoppingCart extends Split {
     setInt(valueWidget, item.getQuantity());
 
     panel.add(valueWidget);
-    
+
     if (item.getEcItem().getUnit() != null) {
       Label unitWidget = new Label(item.getEcItem().getUnit());
       unitWidget.addStyleName(stylePrefix + "unit");
-      
+
       panel.add(unitWidget);
     }
 
