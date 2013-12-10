@@ -4,10 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_ITEM;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -27,10 +29,13 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -57,6 +62,11 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+
+import lt.locator.Report;
+import lt.locator.ReportProviderInterface;
+import lt.locator.ReportSummarizedPeriod;
+import lt.locator.TripSumRepData;
 
 @Stateless
 @LocalBean
@@ -148,13 +158,62 @@ public class TransportImports {
           break;
 
         case TRACKING:
-          response = ResponseObject.error(Localized.getConstants().no());
+          response = importTracking(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
+              BeeUtils.toIntOrNull(reqInfo.getParameter(CommonsConstants.VAR_DATE_LOW)),
+              BeeUtils.toIntOrNull(reqInfo.getParameter(CommonsConstants.VAR_DATE_HIGH)),
+              BeeUtils.toBoolean(reqInfo.getParameter("test")));
           break;
       }
     } else {
       response = ResponseObject.error("Import type not recognized");
     }
     return response;
+  }
+
+  private List<ExtendedProperty> checkMappings(ImportObject imp, String prfx, String tmp) {
+    List<ExtendedProperty> info = Lists.newArrayList();
+    PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
+
+    for (ImportProperty prop : imp.getProperties()) {
+      String relTable = prop.getRelTable();
+
+      if (BeeUtils.isEmpty(relTable)) {
+        continue;
+      }
+      String name = prop.getName();
+      Long mappingId = imp.getMappingId(name);
+
+      if (DataUtils.isId(mappingId)) {
+        SqlSelect query = new SqlSelect()
+            .addField(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE, name)
+            .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING)
+            .addFrom(TBL_IMPORT_MAPPINGS)
+            .addFromInner(relTable,
+                sys.joinTables(relTable, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+            .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId));
+        String subq = SqlUtils.uniqueName();
+
+        qs.updateData(new SqlUpdate(tmp)
+            .addExpression(prfx + name, SqlUtils.field(subq, COL_IMPORT_MAPPING))
+            .setFrom(query, subq, SqlUtils.joinUsing(tmp, subq, name)));
+      }
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression(prfx + name, SqlUtils.field(relTable, sys.getIdName(relTable)))
+          .setFrom(relTable, SqlUtils.join(tmp, name, relTable, prop.getRelField()))
+          .setWhere(SqlUtils.isNull(tmp, prfx + name)));
+
+      for (SimpleRow row : qs.getData(new SqlSelect()
+          .addFields(tmp, name)
+          .addCount("cnt")
+          .addFrom(tmp)
+          .setWhere(SqlUtils.isNull(tmp, prfx + name))
+          .addGroup(tmp, name)
+          .addOrderDesc(null, "cnt"))) {
+
+        PropertyUtils.addExtended(info, prop.getCaption(), row.getValue(name), row.getValue("cnt"));
+      }
+    }
+    return info;
   }
 
   private ResponseObject importCosts(Long optionId, String fileName, boolean test) {
@@ -299,48 +358,8 @@ public class TransportImports {
       qs.updateData(insert);
     }
     file.delete();
-    List<ExtendedProperty> info = Lists.newArrayList();
-    PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
 
-    for (ImportProperty prop : imp.getProperties()) {
-      String relTable = prop.getRelTable();
-
-      if (BeeUtils.isEmpty(relTable)) {
-        continue;
-      }
-      String name = prop.getName();
-      Long mappingId = imp.getMappingId(name);
-
-      if (DataUtils.isId(mappingId)) {
-        SqlSelect query = new SqlSelect()
-            .addField(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE, name)
-            .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING)
-            .addFrom(TBL_IMPORT_MAPPINGS)
-            .addFromInner(relTable,
-                sys.joinTables(relTable, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
-            .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId));
-        String subq = SqlUtils.uniqueName();
-
-        qs.updateData(new SqlUpdate(tmp)
-            .addExpression(prfx + name, SqlUtils.field(subq, COL_IMPORT_MAPPING))
-            .setFrom(query, subq, SqlUtils.joinUsing(tmp, subq, name)));
-      }
-      qs.updateData(new SqlUpdate(tmp)
-          .addExpression(prfx + name, SqlUtils.field(relTable, sys.getIdName(relTable)))
-          .setFrom(relTable, SqlUtils.join(tmp, name, relTable, prop.getRelField()))
-          .setWhere(SqlUtils.isNull(tmp, prfx + name)));
-
-      for (SimpleRow row : qs.getData(new SqlSelect()
-          .addFields(tmp, name)
-          .addCount("cnt")
-          .addFrom(tmp)
-          .setWhere(SqlUtils.isNull(tmp, prfx + name))
-          .addGroup(tmp, name)
-          .addOrderDesc(null, "cnt"))) {
-
-        PropertyUtils.addExtended(info, prop.getCaption(), row.getValue(name), row.getValue("cnt"));
-      }
-    }
+    List<ExtendedProperty> info = checkMappings(imp, prfx, tmp);
     int c;
 
     if (!test) {
@@ -434,7 +453,8 @@ public class TransportImports {
 
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(COL_COSTS_NOTE, SqlUtils.field(tmp, COL_VEHICLE))
-        .setWhere(SqlUtils.notNull(tmp, prfx + COL_VEHICLE)));
+        .setWhere(SqlUtils.and(SqlUtils.isNull(tmp, COL_TRIP),
+            SqlUtils.notNull(tmp, prfx + COL_VEHICLE))));
 
     for (String tt : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
       SqlSelect query = new SqlSelect()
@@ -464,6 +484,141 @@ public class TransportImports {
       }
       PropertyUtils.addExtended(info, "IMPORTUOTA", tt, rs.getNumberOfRows());
     }
+    Object res;
+
+    if (test) {
+      res = qs.doSql(new SqlSelect().addAllFields(tmp).addFrom(tmp).getQuery());
+    } else {
+      res = info;
+    }
+    qs.sqlDropTemp(tmp);
+    return ResponseObject.response(res);
+  }
+
+  private ResponseObject importTracking(Long optionId, Integer from, Integer to, boolean test) {
+    ImportObject imp = initImport(optionId);
+
+    Long mappingId = imp.getMappingId(COL_VEHICLE);
+    String[] objects = null;
+
+    if (DataUtils.isId(mappingId)) {
+      objects = qs.getColumn(new SqlSelect()
+          .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE)
+          .addFrom(TBL_IMPORT_MAPPINGS)
+          .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId)));
+    }
+    if (ArrayUtils.isEmpty(objects)) {
+      return ResponseObject.error(Localized.getConstants().noData());
+    }
+    String prfx = "_";
+
+    List<String> cols = Lists.newArrayList();
+
+    for (BeeField fld : sys.getTableFields(TBL_VEHICLE_TRACKING)) {
+      if (!(fld instanceof BeeRelation)) {
+        cols.add(fld.getName());
+      }
+    }
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addEmptyBoolean(prfx)
+        .addFields(TBL_VEHICLE_TRACKING, cols.toArray(new String[0]))
+        .addField(TBL_VEHICLE_TRACKING, COL_VEHICLE, prfx + COL_VEHICLE)
+        .addField(TBL_VEHICLE_TRACKING, COL_COUNTRY, prfx + COL_COUNTRY)
+        .addEmptyString(COL_VEHICLE, 30)
+        .addEmptyString(COL_COUNTRY, 30)
+        .addFrom(TBL_VEHICLE_TRACKING)
+        .setWhere(SqlUtils.sqlFalse()));
+
+    String login = imp.getValue(VAR_IMPORT_LOGIN);
+    String pwd = imp.getValue(VAR_IMPORT_PASSWORD);
+
+    JustDate dateFrom = new JustDate(from);
+    JustDate dateTo = new JustDate(to);
+
+    ReportProviderInterface port = new Report().getReportProviderImplPort();
+
+    for (String obj : objects) {
+      boolean exists = true;
+
+      for (int i = 0; i < TimeUtils.dayDiff(dateFrom, dateTo); i++) {
+        DateTime dt = TimeUtils.nextDay(dateFrom, i).getDateTime();
+        TimeUtils.addMinute(dt, TimeUtils.MINUTES_PER_DAY - 1);
+
+        ReportSummarizedPeriod report = port.getSummarizedReport(login, pwd,
+            TimeUtils.startOfDay(dt).toString(), dt.toString(), obj, false, true, null, null);
+
+        switch (report.getErrorCode()) {
+          case 0:
+            break;
+
+          case -6:
+            exists = false;
+            break;
+
+          default:
+            qs.sqlDropTemp(tmp);
+            return ResponseObject.error(report.getErrorMessage(),
+                BeeUtils.parenthesize(report.getErrorCode()));
+        }
+        if (!exists) {
+          break;
+        }
+        List<TripSumRepData> data = report.getTripSummaryByCountriesGrouped();
+
+        if (!BeeUtils.isEmpty(data)) {
+          for (TripSumRepData tripData : data) {
+            qs.insertData(new SqlInsert(tmp)
+                .addConstant(COL_VEHICLE, obj)
+                .addConstant(COL_COUNTRY, tripData.getName())
+                .addConstant(COL_DATE, dt.getDate())
+                .addConstant("DriveTimeInHours", tripData.getDriveTimeInHours())
+                .addConstant("StopTimeInHours", tripData.getStopTimeInHours())
+                .addConstant("GpsDistanceInKm", tripData.getGpsDistanceInKm())
+                .addConstant("GpsAverageFuelUsage", tripData.getGpsAverageFuelUsage())
+                .addConstant("CounterFuelUsedInLiters", tripData.getCounterFuelUsedInLiters())
+                .addConstant("CanDistanceInKm", tripData.getCanDistanceInKm())
+                .addConstant("CanFuelUsedInLiters", tripData.getCanFuelUsedInLiters())
+                .addConstant("CanAverageFuelUsage", tripData.getCanAverageFuelUsage())
+                .addConstant("CanOdometerValueStartInKm", tripData.getCanOdometerValueStartInKm())
+                .addConstant("CanOdometerValueEndInKm", tripData.getCanOdometerValueEndInKm()));
+          }
+        }
+      }
+    }
+    List<ExtendedProperty> info = checkMappings(imp, prfx, tmp);
+    int c;
+
+    if (!test) {
+      c = qs.updateData(new SqlDelete(tmp)
+          .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, prfx + COL_VEHICLE),
+              SqlUtils.and(SqlUtils.notNull(tmp, COL_COUNTRY),
+                  SqlUtils.isNull(tmp, prfx + COL_COUNTRY)))));
+      PropertyUtils.addExtended(info, "PAŠALINTA", null, c);
+    }
+    c = qs.updateData(new SqlUpdate(tmp)
+        .addExpression(prfx, SqlUtils.constant(true))
+        .setFrom(TBL_VEHICLE_TRACKING, SqlUtils.and(SqlUtils.join(tmp, prfx + COL_VEHICLE,
+            TBL_VEHICLE_TRACKING, COL_VEHICLE), SqlUtils.joinUsing(tmp, TBL_VEHICLE_TRACKING,
+            COL_DATE), SqlUtils.or(SqlUtils.isNull(tmp, prfx + COL_COUNTRY),
+            SqlUtils.join(tmp, prfx + COL_COUNTRY, TBL_VEHICLE_TRACKING, COL_COUNTRY)))));
+
+    PropertyUtils.addExtended(info, "BUVO", null, c);
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(tmp, cols.toArray(new String[0]))
+        .addField(tmp, prfx + COL_VEHICLE, COL_VEHICLE)
+        .addField(tmp, prfx + COL_COUNTRY, COL_COUNTRY)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.isNull(tmp, prfx)));
+
+    if (!test) {
+      for (int i = 0; i < rs.getNumberOfRows(); i++) {
+        qs.insertData(new SqlInsert(TBL_VEHICLE_TRACKING)
+            .addFields(rs.getColumnNames())
+            .addValues((Object[]) rs.getValues(i)));
+      }
+    }
+    PropertyUtils.addExtended(info, "IMPORTUOTA", null, rs.getNumberOfRows());
     Object res;
 
     if (test) {

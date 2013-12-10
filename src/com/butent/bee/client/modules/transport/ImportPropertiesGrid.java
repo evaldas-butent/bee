@@ -88,11 +88,10 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
       return;
     }
     HtmlTable table = new HtmlTable();
-    table.setColumnCellClasses(0, StyleUtils.NAME_REQUIRED);
     int row = 0;
 
     final ListBox property = new ListBox();
-    table.setHtml(row, 0, Localized.getConstants().trImportProperty());
+    table.setHtml(row, 0, Localized.getConstants().trImportProperty(), StyleUtils.NAME_REQUIRED);
     table.setWidget(row, 1, property);
     row++;
 
@@ -109,8 +108,6 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
       public String getErrorMessage() {
         if (BeeUtils.isEmpty(property.getValue())) {
           property.setFocus(true);
-        } else if (BeeUtils.isEmpty(value.getValue())) {
-          value.setFocus(true);
         } else {
           return super.getErrorMessage();
         }

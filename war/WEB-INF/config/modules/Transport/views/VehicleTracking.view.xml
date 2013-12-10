@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="VehicleTracking"
+  source="VehicleTracking"
+  >
+  <Columns>
+    <SimpleColumn name="Vehicle"/>
+    <SimpleColumn name="Country"/>
+    <SimpleJoin joinType="LEFT" name="Country">
+      <SimpleColumn name="Name" alias="CountryName" />
+    </SimpleJoin>
+    <SimpleColumn name="Date"/>
+    <SimpleColumn name="DriveTimeInHours" />
+    <SimpleColumn name="StopTimeInHours" />
+    <SimpleColumn name="GpsDistanceInKm" />
+    <SimpleColumn name="GpsAverageFuelUsage" />
+    <SimpleColumn name="CounterFuelUsedInLiters" />
+    <SimpleColumn name="CanDistanceInKm" />
+    <SimpleColumn name="CanFuelUsedInLiters" />
+    <SimpleColumn name="CanAverageFuelUsage" />
+    <SimpleColumn name="CanOdometerValueStartInKm" />
+    <SimpleColumn name="CanOdometerValueEndInKm" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

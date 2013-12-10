@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="VehicleTracking"
+  idName="TrackingID"
+  >
+  <Fields>
+    <Relation name="Vehicle" notNull="true" relation="Vehicles" cascade="DELETE" label="=trVehicle" />
+    <Date name="Date" notNull="true" label="=date" />
+    <Relation name="Country" relation="Countries" label="=country" />
+    <Double name="DriveTimeInHours" />
+    <Double name="StopTimeInHours" />
+    <Double name="GpsDistanceInKm" />
+    <Double name="GpsAverageFuelUsage" />
+    <Double name="CounterFuelUsedInLiters" />
+    <Double name="CanDistanceInKm" />
+    <Double name="CanFuelUsedInLiters" />
+    <Double name="CanAverageFuelUsage" />
+    <Double name="CanOdometerValueStartInKm" />
+    <Double name="CanOdometerValueEndInKm" />
+  </Fields>
+</Table>
