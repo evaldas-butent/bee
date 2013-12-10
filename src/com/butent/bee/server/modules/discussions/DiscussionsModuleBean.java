@@ -40,6 +40,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -114,7 +115,21 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    List<BeeParameter> params = Lists.newArrayList(
+        new BeeParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN, ParameterType.TEXT,
+            "The discussions administrator's login name, which can perform the removal steps",
+            false, ""),
+        new BeeParameter(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS, ParameterType.BOOLEAN,
+                "Allows users deletes own comments", false, null),
+            new BeeParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
+                ParameterType.NUMBER,
+            "Number of days when the discussion becomes inactive since last comment", false, null),
+        new BeeParameter(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, ParameterType.TEXT,
+            "List of banned file extensions separated by separator", false, ""),
+        new BeeParameter(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, ParameterType.NUMBER,
+            "Max upload file size in MB", false, null));
+    
+    return params;
   }
 
   @Override

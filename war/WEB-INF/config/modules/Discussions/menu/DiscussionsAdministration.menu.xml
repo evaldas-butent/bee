@@ -3,6 +3,6 @@
 
 name="DiscussionsAdministration" label="=discussAdministration" order="99" parent="Discussions" separator="true"
 >
-    <Item name="DiscussisonParameters" label="=discussParameters" service="form" parameters="DiscussionsSettings" separator="true" />
-    <Item name="DiscussisonSystemParameters" label="=parameters" service="parameters" parameters="Discussions" separator="true" />
+   <!--  <Item name="DiscussisonParameters" label="=discussParameters" service="form" parameters="DiscussionsSettings" separator="true" /> -->
+    <Item name="DiscussisonSystemParameters" label="=discussParameters" service="parameters" parameters="Discussions" separator="true" />
 </Entry>
