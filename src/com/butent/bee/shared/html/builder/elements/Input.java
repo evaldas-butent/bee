@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.Element;
@@ -63,18 +64,23 @@ public class Input extends Element {
     return this;
   }
 
+  public Input autocomplete(Autocomplete autocomplete) {
+    String value = (autocomplete == null) ? null : autocomplete.build();
+    return autocomplete(value);
+  }
+
   public Input autocomplete(String value) {
     setAttribute(Attributes.AUTOCOMPLETE, value);
     return this;
   }
 
   public Input autocompleteOff() {
-    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
+    setAttribute(Attributes.AUTOCOMPLETE, Autocomplete.OFF);
     return this;
   }
 
   public Input autocompleteOn() {
-    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
+    setAttribute(Attributes.AUTOCOMPLETE, Autocomplete.ON);
     return this;
   }
 
