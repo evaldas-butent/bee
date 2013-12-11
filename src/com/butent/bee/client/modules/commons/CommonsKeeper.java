@@ -4,11 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.MenuManager;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -19,33 +20,13 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class CommonsKeeper {
-
-  private static class UserFormInterceptor extends AbstractFormInterceptor {
-    @Override
-    public void afterCreateWidget(String name, final IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            PasswordService.changePassword(UiHelper.getForm(widget.asWidget()));
-          }
-        });
-      }
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return this;
-    }
-  }
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
     @Override
@@ -68,29 +49,68 @@ public final class CommonsKeeper {
     }
   }
 
-  public static void register() {
-    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
-    FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
-    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
+  private static class UserFormInterceptor extends AbstractFormInterceptor {
+    @Override
+    public void afterCreateWidget(String name, final IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
+      if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            changePassword();
+          }
+        });
+      }
+    }
 
-    BeeKeeper.getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
+    @Override
+    public FormInterceptor getInstance() {
+      return this;
+    }
+    
+    @Override
+    public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+      if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
+        event.consume();
+        changePassword();
+      }
+    }
+
+    private void changePassword() {
+      PasswordService.changePassword(getFormView());
+    }
+  }
+
+  public static ParameterList createArgs(String name) {
+    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
+    args.addQueryItem(COMMONS_METHOD, name);
+    return args;
+  }
+
+  public static void register() {
+    BeeKeeper.getMenu().registerMenuCallback("items", new MenuCallback() {
       @Override
       public void onSelection(String parameters) {
         GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(parameters, "s")));
       }
     });
 
+    BeeKeeper.getMenu().registerMenuCallback(SVC_UPDATE_EXCHANGE_RATES, new MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        CommonsUtils.updateExchangeRates();
+      }
+    });
+    
+    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
+    FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
+    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
+
     FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
-  }
-
-  static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(COMMONS_METHOD, name);
-    return args;
   }
 
   private CommonsKeeper() {

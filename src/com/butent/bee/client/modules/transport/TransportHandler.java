@@ -1,55 +1,41 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.GridPanel;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartHelper;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
-import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
-import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.EditableWidget;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -67,11 +53,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.Relation;
-import com.butent.bee.shared.ui.UiConstants;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -79,31 +61,6 @@ import java.util.Collection;
 import java.util.List;
 
 public final class TransportHandler {
-
-  private static class CargoFormHandler extends AbstractFormInterceptor {
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new Profit(VAR_CARGO_ID));
-      }
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return new CargoFormHandler();
-    }
-
-    @Override
-    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-      Presenter presenter = form.getViewPresenter();
-      presenter.getHeader().clearCommandPanel();
-      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
-          Value.getValue(row.getId()))));
-
-      return true;
-    }
-  }
 
   private static class CargoGridHandler extends AbstractGridInterceptor {
     @Override
@@ -114,158 +71,21 @@ public final class TransportHandler {
     }
   }
 
-  private static class InvoiceCreator extends Button implements ClickHandler {
-
-    final Filter filter;
-
-    public InvoiceCreator(Filter filter) {
-      super(Localized.getConstants().createInvoice());
-      addClickHandler(this);
-
-      Assert.notNull(filter);
-      this.filter = Filter.and(filter, Filter.isEmpty(TradeConstants.COL_SALE));
-    }
-
-    @Override
-    public void onClick(ClickEvent event) {
-      Queries.getRowCount(VIEW_CARGO_INVOICE_INCOMES, filter, new IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          if (BeeUtils.isPositive(result)) {
-            GridPanel grid = new GridPanel(VIEW_CARGO_INVOICE_INCOMES,
-                GridFactory.getGridOptions(ImmutableMap.of(UiConstants.ATTR_FILTER,
-                    filter.toString())));
-
-            StyleUtils.setSize(grid, 800, 600);
-
-            DialogBox dialog = DialogBox.create(null);
-            dialog.setWidget(grid);
-            dialog.setAnimationEnabled(true);
-            dialog.setHideOnEscape(true);
-            dialog.center();
-          } else {
-            BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
-          }
-        }
-      });
-    }
-  }
-
-  private static class OrderFormHandler extends AbstractFormInterceptor {
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget)
-            .addClickHandler(new Profit(COL_ORDER));
-      }
-      if (BeeUtils.same(name, "trips") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new Trips());
-      }
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return new OrderFormHandler();
-    }
-
-    @Override
-    public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-      Presenter presenter = form.getViewPresenter();
-      presenter.getHeader().clearCommandPanel();
-      presenter.getHeader().addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_ORDER,
-          Value.getValue(row.getId()))));
-
-      return true;
-    }
-  }
-
-  private static final class Trips implements ClickHandler {
-    @Override
-    public void onClick(ClickEvent event) {
-      final FormView form = UiHelper.getForm((Widget) event.getSource());
-      long id = form.getActiveRow().getId();
-
-      if (!DataUtils.isId(id)) {
-        form.notifyWarning(Localized.getMessages()
-            .dataNotAvailable(Localized.getConstants().cargos()));
-        return;
-      }
-      ParameterList args = TransportHandler.createArgs(SVC_GET_UNASSIGNED_CARGOS);
-      args.addDataItem(COL_ORDER, id);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            response.notify(form);
-            return;
-          }
-          final String[] cargos = Codec.beeDeserializeCollection(response.getResponseAsString());
-
-          if (!BeeUtils.isPositive(cargos.length)) {
-            form.notifyWarning(Localized.getMessages()
-                .dataNotAvailable(Localized.getConstants().cargos()));
-            return;
-          }
-          final DialogBox dialog = DialogBox.create(Localized.getConstants()
-              .assignCargosToTripCaption());
-          dialog.setHideOnEscape(true);
-
-          HtmlTable container = new HtmlTable();
-          container.setBorderSpacing(5);
-          container.setHtml(0, 0, Localized.getConstants().trCargoSelectTrip());
-
-          Relation relation = Relation.create(VIEW_ACTIVE_TRIPS,
-              Lists.newArrayList("TripNo", "VehicleNumber", "DriverFirstName", "DriverLastName",
-                  "ExpeditionType", "ForwarderName"));
-
-          relation.disableNewRow();
-          relation.setCaching(Relation.Caching.QUERY);
-
-          final UnboundSelector selector = UnboundSelector.create(relation,
-              Lists.newArrayList("TripNo"));
-
-          selector.addEditStopHandler(new EditStopEvent.Handler() {
-            @Override
-            public void onEditStop(EditStopEvent esEvent) {
-              if (esEvent.isChanged()) {
-                dialog.close();
-
-                List<BeeColumn> columns = Data.getColumns(VIEW_CARGO_TRIPS,
-                    Lists.newArrayList(COL_CARGO, COL_TRIP));
-                List<String> values = Lists.newArrayList();
-
-                for (String cargo : cargos) {
-                  values.add(cargo);
-                  values.add(selector.getValue());
-                  Queries.insert(VIEW_CARGO_TRIPS, columns, values);
-                  values.clear();
-                }
-                Global.showInfo(Localized.getMessages().orderCargoAddingToTrips(cargos.length));
-              }
-            }
-          });
-          container.setWidget(0, 1, selector);
-          dialog.setWidget(container);
-          dialog.showOnTop(form.getElement());
-        }
-      });
-    }
-  }
-
-  private static final class Profit implements ClickHandler {
+  static final class Profit extends Button implements ClickHandler {
     private final String idName;
+    private final long id;
 
-    private Profit(String idName) {
+    public Profit(String idName, long id) {
+      super(Localized.getConstants().profit());
+      addClickHandler(this);
       this.idName = idName;
+      this.id = id;
     }
 
     @Override
     public void onClick(ClickEvent event) {
       ParameterList args = TransportHandler.createArgs(SVC_GET_PROFIT);
-      final FormView form = UiHelper.getForm((Widget) event.getSource());
-      args.addDataItem(idName, form.getActiveRow().getId());
+      args.addDataItem(idName, id);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -276,7 +96,7 @@ public final class TransportHandler {
             Global.showError(Lists.newArrayList(response.getErrors()));
 
           } else if (response.hasArrayResponse(String.class)) {
-            String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
+            String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
             List<String> messages = Lists.newArrayList();
 
             if (arr != null && arr.length % 2 == 0) {
@@ -285,12 +105,7 @@ public final class TransportHandler {
                     BeeUtils.isDouble(arr[i + 1]) ? BeeUtils.round(arr[i + 1], 2) : arr[i + 1]));
               }
             }
-
-            if (messages.isEmpty()) {
-              form.notifyInfo(arr);
-            } else {
-              form.notifyInfo(ArrayUtils.toArray(messages));
-            }
+            Global.showInfo(messages);
 
           } else {
             Global.showError("Unknown response");
@@ -374,74 +189,6 @@ public final class TransportHandler {
 
     private void setSelectedType(IsRow selectedType) {
       this.selectedType = selectedType;
-    }
-  }
-
-  private static class TripFormHandler extends AbstractFormInterceptor {
-    @Override
-    public void afterCreateEditableWidget(EditableWidget editableWidget,
-        IdentifiableWidget widget) {
-      if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
-        String viewName = getFormView().getViewName();
-        final int dateIndex = Data.getColumnIndex(viewName, "Date");
-        final int speedIndex = Data.getColumnIndex(viewName, "SpeedometerBefore");
-        final int fuelIndex = Data.getColumnIndex(viewName, "FuelBefore");
-
-        editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
-          @Override
-          public Boolean validateCell(CellValidateEvent event) {
-            if (event.isCellValidation() && event.isPostValidation()) {
-              CellValidation cv = event.getCellValidation();
-              String id = cv.getNewValue();
-
-              if (!BeeUtils.isEmpty(id)) {
-                final IsRow row = cv.getRow();
-
-                ParameterList args = TransportHandler.createArgs(SVC_GET_BEFORE);
-                args.addDataItem("Vehicle", id);
-
-                if (!row.isNull(dateIndex)) {
-                  args.addDataItem("Date", row.getString(dateIndex));
-                }
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    Assert.notNull(response);
-
-                    if (response.hasErrors()) {
-                      Global.showError(Lists.newArrayList(response.getErrors()));
-
-                    } else if (response.hasArrayResponse(String.class)) {
-                      String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
-                      row.setValue(speedIndex, r[0]);
-                      row.setValue(fuelIndex, r[1]);
-                      getFormView().refresh(false, false);
-
-                    } else {
-                      Global.showError("Unknown response");
-                    }
-                  }
-                });
-              }
-            }
-            return true;
-          }
-        });
-      }
-    }
-
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget)
-            .addClickHandler(new Profit(VAR_TRIP_ID));
-      }
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return this;
     }
   }
 
@@ -640,17 +387,17 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_TRIP_ROUTES, new TripRoutesGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGridHandler());
+    GridFactory.registerGridInterceptor(TBL_TRIP_ROUTES, new TripRoutesGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGrid());
 
-    CargoPlaceRenderer.Provider provider = new CargoPlaceRenderer.Provider();
+    ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
     String unloading = "Unloading";
 
@@ -667,7 +414,15 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
 
-    // GridFactory.registerGridInterceptor("CargoRequests", new CargoRequestsGrid());
+    TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(TBL_CARGO_EXPENSES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_INVOICE_INCOMES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_INCOMES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer("CargoExpenseList", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
     GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());
@@ -677,10 +432,15 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new CargoInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
 
-    FormFactory.registerFormInterceptor(FORM_ORDER, new OrderFormHandler());
-    FormFactory.registerFormInterceptor(FORM_TRIP, new TripFormHandler());
-    FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripFormHandler());
-    FormFactory.registerFormInterceptor(FORM_CARGO, new CargoFormHandler());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES, new CargoRequestFilesGrid());
+
+    GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
+
+    FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
+    FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
+    FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TRANSPORTATION,
@@ -691,7 +451,10 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
+    FormFactory.registerFormInterceptor(FORM_NEW_CARGO_REQUEST, new CargoRequestForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_REQUEST, new CargoRequestForm());
+
+    FormFactory.registerFormInterceptor(FORM_IMPORT_OPTION, new ImportOptionForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 

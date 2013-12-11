@@ -503,7 +503,9 @@ final class DriverTimeBoard extends ChartBase {
 
           for (Freight freight : freights.get(tripId)) {
             freight.adjustRange(trip.getRange());
+
             freight.setTripTitle(trip.getTitle());
+            freight.setEditable(trip.isEditable());
           }
 
         } else {

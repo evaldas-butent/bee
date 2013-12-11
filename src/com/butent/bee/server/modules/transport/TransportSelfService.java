@@ -262,6 +262,10 @@ public class TransportSelfService extends LoginServlet {
         case COL_QUERY_DATE:
           row.setValue(i, TimeUtils.nowMinutes());
           break;
+
+        case COL_QUERY_STATUS:
+          row.setValue(i, CargoRequestStatus.NEW.ordinal());
+          break;
           
         case ALS_CARGO_DESCRIPTION:
           value = BeeUtils.notEmpty(parameters.get(colId), DEFAULT_CARGO_DESCRIPTION);
@@ -339,6 +343,7 @@ public class TransportSelfService extends LoginServlet {
         String value;
 
         switch (column.getId()) {
+          case COL_QUERY_STATUS:
           case COL_QUERY_HOST:
           case COL_QUERY_AGENT:
             value = null;
@@ -390,6 +395,8 @@ public class TransportSelfService extends LoginServlet {
     }
 
     si.addConstant(COL_REGISTRATION_DATE, TimeUtils.nowMinutes());
+    si.addConstant(COL_REGISTRATION_STATUS, TranspRegStatus.NEW.ordinal());
+
     si.addConstant(COL_REGISTRATION_HOST, req.getRemoteAddr());
     si.addConstant(COL_REGISTRATION_AGENT, req.getHeader(HttpHeaders.USER_AGENT));
 
@@ -415,6 +422,7 @@ public class TransportSelfService extends LoginServlet {
             value = row.getDateTime(i).toCompactString();
             break;
 
+          case COL_REGISTRATION_STATUS:
           case COL_REGISTRATION_HOST:
           case COL_REGISTRATION_AGENT:
             value = null;
@@ -475,7 +483,8 @@ public class TransportSelfService extends LoginServlet {
     Tbody loadingFields =
         tbody().append(
             qField(constants.trLoadingDate(), loadingColumnAlias(COL_PLACE_DATE), true),
-            qField(constants.trRequestPlaceCompanyName(), COL_QUERY_LOADING_COMPANY_NAME, true),
+            qField(constants.trRequestPlaceCompanyName(), loadingColumnAlias(COL_PLACE_COMPANY),
+                true),
             qField(constants.trRequestPlaceContact(), loadingColumnAlias(COL_PLACE_CONTACT), true),
             qField(constants.address(), loadingColumnAlias(COL_PLACE_ADDRESS), true),
             qField(constants.city(), COL_QUERY_LOADING_CITY, true),
@@ -487,8 +496,9 @@ public class TransportSelfService extends LoginServlet {
     fieldPanel.append(qGroup(constants.trLoadingInfo(), loadingFields));
 
     Tbody unloadingFields = tbody().append(
-        qField(constants.trUnloadingDate(), unloadingColumnAlias(COL_PLACE_DATE), true),
-        qField(constants.trRequestPlaceCompanyName(), COL_QUERY_UNLOADING_COMPANY_NAME, true),
+        qField(constants.trUnloadingDate(), unloadingColumnAlias(COL_PLACE_DATE), false),
+        qField(constants.trRequestPlaceCompanyName(), unloadingColumnAlias(COL_PLACE_COMPANY),
+            true),
         qField(constants.trRequestPlaceContact(), unloadingColumnAlias(COL_PLACE_CONTACT), true),
         qField(constants.address(), unloadingColumnAlias(COL_PLACE_ADDRESS), true),
         qField(constants.city(), COL_QUERY_UNLOADING_CITY, true),

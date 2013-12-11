@@ -5,7 +5,9 @@
   caption="=trRequestsUnregistered"
   >
   <g:columns>
-    <DataColumn name="Date" />
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="Status" visible="true" />
+    <RelColumn name="Order" editEnabled="true" />
 
     <DataColumn name="CustomerName" visible="true" />
     <DataColumn name="CustomerCode" visible="false" />
@@ -21,7 +23,7 @@
     <DataColumn name="CustomerExchangeCode" visible="false" />
     
     <DataColumn name="LoadingDate" />
-    <DataColumn name="LoadingCompanyName" visible="false" />
+    <DataColumn name="LoadingCompany" visible="false" />
     <DataColumn name="LoadingContact" visible="false" />
 
     <DataColumn name="LoadingCity" />
@@ -33,7 +35,7 @@
     <DataColumn name="LoadingNumber" visible="false" />
 
     <DataColumn name="UnloadingDate" />
-    <DataColumn name="UnloadingCompanyName" visible="false" />
+    <DataColumn name="UnloadingCompany" visible="false" />
     <DataColumn name="UnloadingContact" visible="false" />
 
     <DataColumn name="UnloadingCity" />

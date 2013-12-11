@@ -103,6 +103,12 @@ public final class CommonsConstants {
   public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
   public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
   public static final String SVC_SET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "set";
+
+  public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
+
+  public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
+  public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
+
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
   public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
   public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
@@ -117,11 +123,26 @@ public final class CommonsConstants {
   public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
 
+  public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
+  public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
+
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
   public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
+
+  public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
+  public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
+  public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
+  public static final String SVC_GET_EXCHANGE_RATES_BY_CURRENCY =
+      "get_exchange_rates_by_currency";
+
+  public static final String SVC_UPDATE_EXCHANGE_RATES = "update_exchange_rates";
+
+  public static final String SVC_BLOCK_HOST = "block_host";
+  public static final String SVC_CREATE_USER = "create_user";
+  public static final String SVC_CREATE_COMPANY = "create_company";
 
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
@@ -146,13 +167,17 @@ public final class CommonsConstants {
   public static final String TBL_UNITS = "Units";
   public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
+
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
+
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_PERSONS = "Persons";
+  public static final String TBL_POSITIONS = "Positions";
+
   public static final String TBL_CITIES = "Cities";
   public static final String TBL_COUNTRIES = "Countries";
 
@@ -166,6 +191,9 @@ public final class CommonsConstants {
   public static final String TBL_WAREHOUSES = "Warehouses";
 
   public static final String TBL_IP_FILTERS = "IpFilters";
+
+  public static final String TBL_CURRENCIES = "Currencies";
+  public static final String TBL_CURRENCY_RATES = "CurrencyRates";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -187,6 +215,7 @@ public final class CommonsConstants {
   public static final String VIEW_WAREHOUSES = "Warehouses";
 
   public static final String VIEW_CURRENCIES = "Currencies";
+  public static final String VIEW_CURRENCY_RATES = "CurrencyRates";
 
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
@@ -218,6 +247,9 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
   public static final String COL_PERSON = "Person";
+
+  public static final String COL_POSITION = "Position";
+  public static final String COL_POSITION_NAME = "Name";
 
   public static final String COL_OBJECT_TYPE = "Type";
   public static final String COL_OBJECT = "Object";
@@ -295,16 +327,25 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
 
   public static final String COL_CURRENCY_NAME = "Name";
+  public static final String COL_CURRENCY_UPDATE_TAG = "UpdateTag";
+
+  public static final String COL_CURRENCY_RATE_CURRENCY = "Currency";
+  public static final String COL_CURRENCY_RATE_DATE = "Date";
+  public static final String COL_CURRENCY_RATE_QUANTITY = "Quantity";
+  public static final String COL_CURRENCY_RATE = "Rate";
 
   public static final String COL_IP_FILTER_HOST = "Host";
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
   public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
+  public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";
+
+  public static final String ALS_EMAIL_ID = "EmailId";
 
   public static final String FORM_NEW_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
@@ -317,7 +358,13 @@ public final class CommonsConstants {
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
 
+  public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
+
+  public static final String PRM_COMPANY_NAME = "CompanyName";
+  public static final String PRM_URL = "Url";
+
   public static final String PROP_CATEGORIES = "CategList";
+  public static final String PROP_ICON = "Icon";
 
   public static final String STYLE_SHEET = "commons";
 

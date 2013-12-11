@@ -11,6 +11,7 @@ name="References" label="=classifiers" order="10"
   <Item name="Units" label="=units" service="grid" parameters="Units" separator="true" />
 
   <Item name="Currencies" label="=currencies" service="grid" parameters="Currencies" separator="true" />
+  <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu" service="update_exchange_rates" />
 
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />

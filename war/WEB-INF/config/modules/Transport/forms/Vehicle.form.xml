@@ -41,7 +41,14 @@
       </page>
       <page>
         <text>=trips</text>
-        <ChildGrid name="Trips" relColumn="Vehicle" />
+        <AbsolutePanel>
+          <layer left="0" right="0" top="0" height="50" heightUnit="%">
+            <ChildGrid name="Trips" relColumn="Vehicle" />
+          </layer>
+          <layer left="0" right="0" top="51" topUnit="%" bottom="0">
+             <ChildGrid name="VehicleTracking" relColumn="Vehicle" />
+          </layer>
+        </AbsolutePanel>
       </page>
       <page>
         <text>=documents</text>

@@ -86,6 +86,7 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -134,9 +135,11 @@ import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -150,6 +153,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -164,6 +168,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
+import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -291,11 +296,22 @@ public final class CliWorker {
     } else if ("eval".equals(z)) {
       eval(args);
 
+    } else if (z.startsWith("exch")) {
+      if (arr.length >= 4) {
+        showExchangeRates(arr[1], arr[2], arr[3]);
+      } else if (arr.length >= 3) {
+        showExchangeRate(arr[1], arr[2]);
+      } else if (arr.length >= 2) {
+        showCurrentExchangeRate(args);
+      } else {
+        showListOfCurrencies();
+      }
+
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
 
-    } else if (BeeUtils.inList(z, "fa", "fontawesome")) {
-      showFontAwesome(args);
+    } else if (z.startsWith("fa")) {
+      showFontAwesome(z.substring(2), args);
 
     } else if ("files".equals(z) || z.startsWith("repo")) {
       getFiles();
@@ -369,6 +385,9 @@ public final class CliWorker {
 
     } else if ("log".equals(z)) {
       doLog(arr);
+
+    } else if ("mail".equals(z)) {
+      BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
     } else if ("menu".equals(z)) {
       doMenu(args);
@@ -486,9 +505,6 @@ public final class CliWorker {
 
     } else if ("wf".equals(z) || z.startsWith("suppl")) {
       showWidgetSuppliers();
-
-    } else if ("mail".equals(z)) {
-      BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
     } else {
       showError("wtf", v);
@@ -1423,6 +1439,21 @@ public final class CliWorker {
     });
   }
 
+  private static void getSimpleRowSet(ParameterList params) {
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          Global.showError(Lists.newArrayList(response.getErrors()));
+        } else if (response.hasResponse(SimpleRowSet.class)) {
+          showSimpleRowSet(SimpleRowSet.restore(response.getResponseAsString()));
+        } else {
+          Global.showError("response type " + response.getType());
+        }
+      }
+    });
+  }
+
   private static void getTables(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
     if (!BeeUtils.isEmpty(args)) {
@@ -1662,6 +1693,8 @@ public final class CliWorker {
     showTable("Selectors", new PropertiesData(info));
   }
 
+  // CHECKSTYLE:ON
+
   private static void rebuildSomething(String args) {
     BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
       @Override
@@ -1750,8 +1783,6 @@ public final class CliWorker {
       }
     });
   }
-
-  // CHECKSTYLE:ON
 
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
@@ -2048,6 +2079,13 @@ public final class CliWorker {
     }
   }
 
+  private static void showCurrentExchangeRate(String currency) {
+    ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE);
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+
+    getSimpleRowSet(params);
+  }
+
   private static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
       List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
@@ -2296,6 +2334,26 @@ public final class CliWorker {
     Global.showError(null, Lists.newArrayList(messages), null, "kthxbai");
   }
 
+  private static void showExchangeRate(String currency, String date) {
+    ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATE);
+
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_RATE_DATE, date);
+
+    getSimpleRowSet(params);
+  }
+
+  private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
+    ParameterList params =
+        CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
+
+    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    params.addQueryItem(CommonsConstants.VAR_DATE_LOW, dateLow);
+    params.addQueryItem(CommonsConstants.VAR_DATE_HIGH, dateHigh);
+
+    getSimpleRowSet(params);
+  }
+
   private static void showExtData(List<ExtendedProperty> data) {
     Global.showGrid(new ExtendedPropertiesData(data, true));
   }
@@ -2380,10 +2438,17 @@ public final class CliWorker {
     showTable(id, new PropertiesData(Font.getComputed(el).getInfo()));
   }
 
-  private static void showFontAwesome(String args) {
+  private static void showFontAwesome(String names, String args) {
     Flow panel = new Flow();
     StyleUtils.setFontFamily(panel, FontAwesome.FAMILY);
     StyleUtils.setFontSize(panel, FontSize.MEDIUM);
+
+    Set<Pattern> patterns = Sets.newHashSet();
+    if (!BeeUtils.isEmpty(names)) {
+      for (String s : NameUtils.NAME_SPLITTER.split(names)) {
+        patterns.add(Wildcards.getDefaultPattern(s, false, BeeConst.CHAR_EQ));
+      }
+    }
 
     List<Property> styles = PropertyUtils.createProperties(
         CssProperties.DISPLAY, Display.INLINE_BLOCK.getCssName(),
@@ -2393,17 +2458,28 @@ public final class CliWorker {
       styles.addAll(StyleUtils.parseStyles(args));
     }
 
+    int count = 0;
     for (FontAwesome fa : FontAwesome.values()) {
+      if (!patterns.isEmpty() && !Wildcards.contains(patterns, fa.name())) {
+        continue;
+      }
+
       FaLabel label = new FaLabel(fa, true);
       label.setTitle(BeeUtils.joinWords(fa.name().toLowerCase(),
           Integer.toHexString(fa.getCode())));
 
       StyleUtils.updateStyle(label, styles);
       panel.add(label);
+      
+      count++;
     }
 
-    logger.debug(FontAwesome.FAMILY, FontAwesome.values().length);
-    BeeKeeper.getScreen().updateActivePanel(panel);
+    if (count > 0) {
+      logger.debug(FontAwesome.FAMILY, names, count);
+      BeeKeeper.getScreen().updateActivePanel(panel);
+    } else {
+      showError(FontAwesome.FAMILY, names, "not found");
+    }
   }
 
   private static void showFunctions(String v, String[] arr) {
@@ -2661,8 +2737,13 @@ public final class CliWorker {
     BeeKeeper.getScreen().updateActivePanel(table);
   }
 
+  private static void showListOfCurrencies() {
+    getSimpleRowSet(CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
+  }
+
+  @SuppressWarnings("rawtypes")
   private static void showMatrix(String[][] data, String... columnLabels) {
-    Global.showGrid(new StringMatrix<TableColumn>(data, columnLabels));
+    Global.showGrid(new StringMatrix(data, columnLabels));
   }
 
   private static void showMeter(String[] arr) {
@@ -3004,6 +3085,23 @@ public final class CliWorker {
       Global.showGrid(new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));
     }
+  }
+
+  private static void showSimpleRowSet(SimpleRowSet rs) {
+    if (DataUtils.isEmpty(rs)) {
+      Global.showInfo("Simple rowset is empty");
+      return;
+    }
+
+    String matrix[][] = new String[rs.getNumberOfRows()][rs.getNumberOfColumns()];
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      for (int j = 0; j < rs.getNumberOfColumns(); j++) {
+        matrix[i][j] = rs.getValue(i, j);
+      }
+    }
+
+    showMatrix(matrix, rs.getColumnNames());
   }
 
   private static void showSize(String[] arr) {
@@ -3357,7 +3455,7 @@ public final class CliWorker {
     Double value = null;
     CssUnit unit = null;
     Font font = null;
-    Integer containerSize = null;
+    Integer containerSize = BeeKeeper.getScreen().getActivePanelWidth();
 
     int i = 1;
     while (i < len) {
@@ -3401,8 +3499,8 @@ public final class CliWorker {
     }
 
     for (CssUnit u : units) {
-      int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
-      info.add(new Property(u.getCaption(), BeeUtils.toString(px)));
+      double px = Rulers.getPixels(value, u, font, BeeUtils.unbox(containerSize));
+      info.add(new Property(u.getCaption(), BeeUtils.toString(px, 5)));
     }
 
     showTable("Pixels", new PropertiesData(info));

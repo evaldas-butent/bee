@@ -3,7 +3,7 @@
   <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
   <!ENTITY table "border-collapse: collapse;">
   <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; ">
-  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" />'>
+  <!ENTITY cols '<col index="0" cellStyle="&colLabel;" /><col index="2" cellStyle="&colLabel;" /><col index="4" cellStyle="&colLabel;" />'>
   <!ENTITY cells "vertical-align: top; padding-bottom: 3px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY area "width: 200px; height: 40px;">
@@ -16,6 +16,20 @@
   >
   <FlowPanel>
     <br/>
+
+    <Table style="&table;" cellStyle="&cells;">
+      &cols;
+
+      <row>
+        <Label text="=trRequestDate" class="bee-required bee-hasDefaults" />
+        <InputDateTime source="Date" />
+        <Label text="=trRequestStatus" class="bee-required bee-hasDefaults" />
+        <ListBox source="Status" />
+        <Label text="=trOrder" />
+        <DataSelector source="Order" readOnly="true" />
+      </row>
+    </Table>
+    &separator;
 
     <Details open="true">
       <Summary text="=trRequestCustomerInfo" style="&summary;" />
@@ -67,7 +81,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-          <InputText source="LoadingCompanyName" />
+          <InputText source="LoadingCompany" required="true" />
           <Label text="=trRequestPlaceContact" class="bee-required" />
           <InputText source="LoadingContact" required="true" />
         </row>
@@ -109,7 +123,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-          <InputText source="UnloadingCompanyName" />
+          <InputText source="UnloadingCompany" required="true" />
           <Label text="=trRequestPlaceContact" class="bee-required" />
           <InputText source="UnloadingContact" required="true" />
         </row>
@@ -151,9 +165,11 @@
 
         <row>
           <Label text="=trRequestExpeditionType" class="bee-required" />
-          <DataSelector source="Expedition" />
+          <DataSelector source="Expedition" filter="SelfService" order="SelfService, Name"
+            newRowEnabled="false" />
           <Label text="=trRequestShippingTerms" class="bee-required" />
-          <DataSelector source="ShippingTerm" required="true" />
+          <DataSelector source="ShippingTerm" required="true" filter="SelfService"
+            order="SelfService, Name" newRowEnabled="false" />
         </row>
 
         <row>
@@ -181,7 +197,7 @@
         &cols;
 
         <row>
-          <Label text="=trRequestCargoDescription" class="bee-required" />
+          <Label text="=trRequestCargoDescription" class="bee-required bee-hasDefaults" />
           <InputArea source="CargoDescription" required="true" style="width: 100%; height: 40px;" />
           <Label text="=trRequestCargoQuantity" />
           <InputInteger source="Quantity" />
@@ -217,7 +233,7 @@
           <Label text="=trRequestCargoValue" />
           <InputCurrency source="Value" />
           <Label text="=trRequestCargoCurrency" />
-          <DataSelector source="ValueCurrency" style="width: 60px;" />
+          <DataSelector source="ValueCurrency" newRowEnabled="false" style="width: 60px;" />
         </row>
 
       </Table>
@@ -232,18 +248,17 @@
 
         <row>
           <Label text="=trRequestResponsibleManager" />
-          <DataSelector source="Manager" />
+          <DataSelector source="Manager" newRowEnabled="false" />
           <Label text="=trRequestNotes" />
           <InputArea source="Notes" style="&area;" />
         </row>
 
         <row>
-          <Label text="=trRequestDate" />
-          <InputDateTime source="Date" />
           <Label text="=remoteHost" />
           <InputArea source="Host" style="&area;" />
+          <Label text="=userAgent" />
+          <InputArea source="Agent" style="&area;" />
         </row>
-
       </Table>
     </Details>
     &separator;

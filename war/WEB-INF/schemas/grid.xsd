@@ -70,6 +70,7 @@
     <xs:attribute name="enabledActions" type="ui:viewActions" />
     <xs:attribute name="disabledActions" type="ui:viewActions" />
     <xs:attribute name="favorite" type="xs:normalizedString" />
+    <xs:attribute name="enableCopy" type="xs:normalizedString" />
     <xs:attribute name="minNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="maxNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="renderMode" type="renderMode" />

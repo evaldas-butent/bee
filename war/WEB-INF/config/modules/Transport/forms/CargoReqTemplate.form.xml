@@ -13,6 +13,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="CargoReqTemplate" viewName="CargoReqTemplate" caption="=trRequestTemplate"
+  width="700" height="80" heightUnit="vh"
   >
   <FlowPanel>
     <br/>
@@ -28,9 +29,9 @@
       </row>
 
       <row>
-        <Label text="=trRequestTemplateUser" class="bee-required" />
+        <Label text="=trRequestTemplateUser" class="bee-required bee-hasDefaults" />
         <cell colSpan="3">
-          <DataSelector source="User" style="width: 300px;" editSource="CustomerCompany">
+          <DataSelector source="User" newRowEnabled="false" style="width: 300px;" >
             <renderToken source="CustomerFirstName" />
             <renderToken source="CustomerLastName" />
             <renderToken source="CustomerCompanyName" prefix=", " />
@@ -48,7 +49,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" />
-          <DataSelector source="LoadingCompany" />
+          <InputText source="LoadingCompany" />
           <Label text="=trRequestPlaceContact" />
           <InputText source="LoadingContact" />
         </row>
@@ -90,7 +91,7 @@
 
         <row>
           <Label text="=trRequestPlaceCompanyName" />
-          <DataSelector source="UnloadingCompany" />
+          <InputText source="UnloadingCompany" />
           <Label text="=trRequestPlaceContact" />
           <InputText source="UnloadingContact" />
         </row>
@@ -133,14 +134,14 @@
 
           <row>
             <Label text="=trRequestExpeditionType" />
-            <DataSelector source="Expedition" />
+            <DataSelector source="Expedition" filter="SelfService" order="SelfService, Name" 
+              newRowEnabled="false" />
             <Label text="=trRequestShippingTerms" />
-            <DataSelector source="ShippingTerm" />
+            <DataSelector source="ShippingTerm" filter="SelfService" order="SelfService, Name" 
+              newRowEnabled="false" />
           </row>
 
           <row>
-            <Label text="=trRequestDeliveryTime" />
-            <InputTimeOfDay source="DeliveryTime" style="width: 50px;" />
             <Label text="=trRequestTermsOfDelivery" />
             <InputText source="TermsOfDelivery" />
           </row>
@@ -197,7 +198,7 @@
           <Label text="=trRequestCargoValue" />
           <InputCurrency source="Value" />
           <Label text="=trRequestCargoCurrency" />
-          <DataSelector source="ValueCurrency" style="width: 60px;" />
+          <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false" style="width: 60px;" />
         </row>
 
       </Table>
@@ -212,7 +213,7 @@
 
         <row>
           <Label text="=trRequestResponsibleManager" />
-          <DataSelector source="Manager" />
+          <DataSelector source="Manager" newRowEnabled="false" />
         </row>
       </Table>
     </Disclosure>

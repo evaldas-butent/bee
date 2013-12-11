@@ -455,7 +455,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         return (Tile) parent;
       }
     }
-    logger.severe("tile not found");
+    logger.warning("tile not found");
     return null;
   }
 

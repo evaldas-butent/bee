@@ -332,11 +332,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     switch (action) {
       case ADD:
         if (getMainView().isEnabled()) {
-          addRow();
+          addRow(false);
         }
         break;
 
       case AUDIT:
+        if (BeeUtils.isEmpty(getGridView().getViewName())) {
+          return;
+        }
         Set<Long> ids = Sets.newHashSet();
 
         for (RowInfo row : getGridView().getSelectedRows(SelectedRows.ALL)) {
@@ -346,12 +349,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           ids.add(getGridView().getActiveRow().getId());
         }
         if (ids.isEmpty()) {
-          getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          if (BeeUtils.isPositive(getGridView().getGrid().getDataSize())) {
+            getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          }
           return;
         }
         GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
-            new HistoryHandler(getGridView().getViewName(), ids),
-            null, PresenterCallback.SHOW_IN_POPUP);
+            new HistoryHandler(getGridView().getViewName(), ids), null,
+            PresenterCallback.SHOW_IN_POPUP);
         break;
 
       case BOOKMARK:
@@ -369,11 +374,17 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             getHeaderElement());
         break;
 
+      case COPY:
+        if (getMainView().isEnabled() && getActiveRow() != null) {
+          addRow(true);
+        }
+        break;
+
       case DELETE:
         if (getMainView().isEnabled()) {
           IsRow row = getActiveRow();
 
-          if (row != null && getGridView().isRowEditable(row, true)) {
+          if (row != null && getGridView().isRowEditable(row, getGridView())) {
             Collection<RowInfo> selectedRows = getGridView().getSelectedRows(SelectedRows.EDITABLE);
 
             GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows);
@@ -568,15 +579,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }, notify);
   }
 
-  private void addRow() {
+  private void addRow(boolean copy) {
     if (getGridView().likeAMotherlessChild() && !validateParent()) {
       return;
     }
 
-    if (getGridInterceptor() != null && !getGridInterceptor().beforeAddRow(this)) {
+    if (getGridInterceptor() != null && !getGridInterceptor().beforeAddRow(this, copy)) {
       return;
     }
-    getGridView().startNewRow();
+    getGridView().startNewRow(copy);
   }
 
   private void afterDelete(long rowId) {

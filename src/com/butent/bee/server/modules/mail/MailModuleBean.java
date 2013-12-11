@@ -372,12 +372,7 @@ public class MailModuleBean implements BeeModule {
   }
 
   public ResponseObject sendMail(Long from, Long to, String subject, String content) {
-    try {
-      sendMail(from, Sets.newHashSet(to), null, null, subject, content, null);
-    } catch (MessagingException e) {
-      return ResponseObject.error(e);
-    }
-    return ResponseObject.info("Mail sent");
+    return sendMail(from, Sets.newHashSet(to), subject, content);
   }
 
   public ResponseObject sendMail(Long from, Set<Long> to, String subject, String content) {

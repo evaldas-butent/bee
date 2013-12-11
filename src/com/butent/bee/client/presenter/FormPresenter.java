@@ -206,7 +206,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case ADD:
         if (hasData()) {
-          formContainer.getContent().startNewRow();
+          formContainer.getContent().startNewRow(false);
         }
         break;
 

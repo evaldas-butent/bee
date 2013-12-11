@@ -7,9 +7,10 @@
   <g:columns>
     <IdColumn name="Id" caption="ID" />
     <DataColumn name="Login" caption="=userLogin" visible="true" />
+
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName"
       visible="true" />
-    <DataColumn name="CompanyName" caption="=company" visible="false" />
+    <DataColumn name="CompanyName" caption="=company" />
     <DataColumn name="Position" visible="false" />
 
     <DataColumn name="Locale" />

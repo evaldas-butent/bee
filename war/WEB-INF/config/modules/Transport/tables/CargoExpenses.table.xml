@@ -10,8 +10,9 @@
     <Date name="Date" label="=date" />
 
     <Relation name="Service" notNull="true" relation="Services" label="=trServiceName" />
-    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=total" />
+    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=amount" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="=currencyShort" />
+    <Boolean name="VatPlus" label="+" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="%" />
 

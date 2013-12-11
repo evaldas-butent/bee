@@ -32,10 +32,6 @@
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany"
         editable="true" />
-      <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn name="Name" alias="LoadingCompanyName" />
-      </SimpleJoin>
-
       <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"
         editable="true" />
 
@@ -51,7 +47,6 @@
         editable="true" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="LoadingCountryName" />
-        <SimpleColumn name="Code" alias="LoadingCountryCode" />
       </SimpleJoin>
 
       <SimpleColumn name="Email" alias="LoadingEmailId" label="=trLoadingEmail" />
@@ -69,10 +64,6 @@
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
       <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany"
         editable="true" />
-      <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn name="Name" alias="UnloadingCompanyName" />
-      </SimpleJoin>
-
       <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"
         editable="true" />
 
@@ -89,7 +80,6 @@
         editable="true" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="UnloadingCountryName" />
-        <SimpleColumn name="Code" alias="UnloadingCountryCode" />
       </SimpleJoin>
       
       <SimpleColumn name="Email" alias="UnloadingEmailId" label="=trUnloadingEmail" />
@@ -116,7 +106,6 @@
       <SimpleColumn name="Description" alias="ShippingTermDescription" />
     </SimpleJoin>
 
-    <SimpleColumn name="DeliveryTime" />
     <SimpleColumn name="TermsOfDelivery" />
 
     <SimpleColumn name="CustomsBrokerage" />

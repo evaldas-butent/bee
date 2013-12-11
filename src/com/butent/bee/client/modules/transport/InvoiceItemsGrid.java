@@ -29,7 +29,7 @@ public class InvoiceItemsGrid extends AbstractGridInterceptor {
   @Override
   public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
     if (BeeUtils.inListSame(column.getId(), COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-        COL_TRADE_ITEM_VAT, COL_TRADE_ITEM_VAT_PERC)) {
+        COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
       refresher.execute();
     }
   }

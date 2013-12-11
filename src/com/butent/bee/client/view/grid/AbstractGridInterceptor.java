@@ -102,7 +102,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter) {
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     return true;
   }
 
@@ -251,6 +251,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public String getViewName() {
     return (getGridPresenter() == null) ? null : getGridPresenter().getViewName();
+  }
+
+  @Override
+  public boolean isRowEditable(IsRow row) {
+    return row != null && row.isEditable();
   }
 
   @Override

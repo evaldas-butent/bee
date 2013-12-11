@@ -34,7 +34,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
    */
 
   private enum Serial {
-    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HEADER_MODE, FOOTER_MODE,
+    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, CURRENT_USER_FILTER, ORDER,
+    HEADER_MODE, FOOTER_MODE,
     ASYNC_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
@@ -42,7 +43,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     EDIT_FORM_IMMEDIATE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
+    COLUMNS, WIDGETS, AUTO_FIT, FLEXIBILITY, FAVORITE, ENABLE_COPY, CACHE_DATA, CACHE_DESCRIPTION,
     MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS,
     PREDEFINED_FILTERS, OPTIONS, PROPERTIES
   }
@@ -75,6 +76,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String versionName;
 
   private Filter filter;
+  private String currentUserFilter;
   private Order order;
 
   private String headerMode;
@@ -127,6 +129,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Set<Action> disabledActions = Sets.newHashSet();
 
   private String favorite;
+  private String enableCopy;
 
   private Integer minNumberOfRows;
   private Integer maxNumberOfRows;
@@ -291,6 +294,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case FILTER:
           setFilter(Filter.restore(value));
           break;
+        case CURRENT_USER_FILTER:
+          setCurrentUserFilter(value);
+          break;
         case ORDER:
           setOrder(Order.restore(value));
           break;
@@ -371,6 +377,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case FAVORITE:
           setFavorite(value);
           break;
+        case ENABLE_COPY:
+          setEnableCopy(value);
+          break;
         case MIN_NUMBER_OF_ROWS:
           setMinNumberOfRows(BeeUtils.toIntOrNull(value));
           break;
@@ -449,6 +458,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return columns;
   }
 
+  public String getCurrentUserFilter() {
+    return currentUserFilter;
+  }
+
   public Set<Action> getDisabledActions() {
     return disabledActions;
   }
@@ -485,6 +498,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return editShowId;
   }
 
+  public String getEnableCopy() {
+    return enableCopy;
+  }
+
   public Set<Action> getEnabledActions() {
     return enabledActions;
   }
@@ -501,6 +518,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Id Name", getIdName(),
         "Version Name", getVersionName(),
         "Filter", getFilter(),
+        "Current User Filter", getCurrentUserFilter(),
         "Order", getOrder(),
         "Header Mode", getHeaderMode(),
         "Footer Mode", getFooterMode(),
@@ -528,6 +546,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Max Column Width", getMaxColumnWidth(),
         "Auto Fit", getAutoFit(),
         "Favorite", getFavorite(),
+        "Enable Copy", getEnableCopy(),
         "Min Number Of Rows", getMinNumberOfRows(),
         "Max Number Of Rows", getMaxNumberOfRows(),
         "Render Mode", getRenderMode(),
@@ -893,6 +912,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case FILTER:
           arr[i++] = getFilter();
           break;
+        case CURRENT_USER_FILTER:
+          arr[i++] = getCurrentUserFilter();
+          break;
         case ORDER:
           arr[i++] = getOrder();
           break;
@@ -937,6 +959,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case FAVORITE:
           arr[i++] = getFavorite();
+          break;
+        case ENABLE_COPY:
+          arr[i++] = getEnableCopy();
           break;
         case MIN_NUMBER_OF_ROWS:
           arr[i++] = getMinNumberOfRows();
@@ -994,6 +1019,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.caption = caption;
   }
 
+  public void setCurrentUserFilter(String currentUserFilter) {
+    this.currentUserFilter = currentUserFilter;
+  }
+
   public void setDefaults() {
     setCacheData(true);
     setCacheDescription(true);
@@ -1033,6 +1062,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setEditShowId(Boolean editShowId) {
     this.editShowId = editShowId;
+  }
+
+  public void setEnableCopy(String enableCopy) {
+    this.enableCopy = enableCopy;
   }
 
   public void setEnabledActions(Set<Action> enabledActions) {
@@ -1102,7 +1135,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
-
+  
   public void setNewRowFormImmediate(Boolean newRowFormImmediate) {
     this.newRowFormImmediate = newRowFormImmediate;
   }
@@ -1118,7 +1151,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setOrder(Order order) {
     this.order = order;
   }
-  
+
   public void setParent(String parent) {
     this.parent = parent;
   }
@@ -1158,7 +1191,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowValidation(Calculation rowValidation) {
     this.rowValidation = rowValidation;
   }
-
+  
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }

@@ -8,8 +8,6 @@
   <Fields>
     <Relation name="Order" relation="TransportationOrders" cascade="DELETE" label="=trOrder" />
     <Text name="Description" notNull="true" label="=cargo" defValue="*" />
-    <Numeric name="Price" precision="12" scale="2" label="=trTransportationPrice" />
-    <Relation name="Currency" relation="Currencies" label="=currency" />
 
     <Numeric name="Weight" precision="7" scale="3" label="=weight" />
     <Relation name="WeightUnit" relation="Units" label="=weightUnit" />
@@ -38,5 +36,6 @@
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=unloading" />
     <Relation name="ShippingTerm"  relation="ShippingTerms" label="=cargoTermsOfService" />
     <Text name="Notes" label="=notes" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
   </Fields>
 </Table>

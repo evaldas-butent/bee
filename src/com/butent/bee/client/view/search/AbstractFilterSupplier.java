@@ -108,6 +108,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     this.options = options;
   }
 
+  @Override
+  public void clearNotifications() {
+    getNotificationDelegate().clearNotifications();
+  }
+  
   public void ensureData() {
   }
 

@@ -340,7 +340,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public void center() {
     boolean initiallyShowing = isShowing();
-    boolean initiallyAnimated = isAnimationEnabled;
+    boolean initiallyAnimated = isAnimationEnabled();
 
     if (!initiallyShowing) {
       setVisible(false);

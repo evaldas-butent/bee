@@ -30,6 +30,8 @@
     <Text name="Activity" label="=ecClientActivity" />
     <Text name="Notes" label="=notes" />
 
+    <Enum name="Language" key="SupportedLocale" label="=language" />
+
     <Text name="Host" label="=remoteHost" />
     <Text name="Agent" label="=userAgent" />
   </Fields>

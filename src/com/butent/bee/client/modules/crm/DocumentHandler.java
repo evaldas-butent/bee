@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
@@ -22,15 +23,14 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.FileLinkRenderer;
-import com.butent.bee.client.render.FileSizeRenderer;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -44,7 +44,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -91,7 +90,7 @@ public final class DocumentHandler {
     }
 
     @Override
-    public void onReadyForInsert(final ReadyForInsertEvent event) {
+    public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
       Assert.notNull(event);
       event.consume();
 
@@ -100,7 +99,7 @@ public final class DocumentHandler {
         return;
       }
 
-      if (getCollector().getFiles().isEmpty()) {
+      if (getCollector().isEmpty()) {
         event.getCallback().onFailure(Localized.getConstants().chooseFiles());
         return;
       }
@@ -256,10 +255,6 @@ public final class DocumentHandler {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
             DataUtils.getColumnIndex(COL_CAPTION, dataColumns));
 
-      } else if (BeeUtils.same(columnName, COL_FILE_SIZE)) {
-        int index = DataUtils.getColumnIndex(columnName, dataColumns);
-        return new FileSizeRenderer(CellSource.forColumn(dataColumns.get(index), index));
-
       } else {
         return super.getRenderer(columnName, dataColumns, columnDescription);
       }
@@ -357,7 +352,7 @@ public final class DocumentHandler {
     }
 
     @Override
-    public boolean beforeAddRow(final GridPresenter presenter) {
+    public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
       RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {

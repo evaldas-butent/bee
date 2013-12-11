@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
@@ -53,7 +54,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onReadyForInsert(final ReadyForInsertEvent event) {
+  public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
     event.consume();
     String viewName = getFormView().getViewName();
 

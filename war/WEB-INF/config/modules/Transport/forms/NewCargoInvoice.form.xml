@@ -24,10 +24,7 @@
       </row>
       <row>
         <Label text="=currency" class="bee-required" style="&lbl;" />
-        <HorizontalPanel>
-          <DataSelector source="CurrencyName" style="width:40px; margin-right:5px;" editEnabled="false" />
-          <CheckBox source="VatIncluded" text="=trdVatIncluded" />
-        </HorizontalPanel>
+        <DataSelector source="CurrencyName" style="width:40px;" editEnabled="false" />
 
         <Label text="=trdInvoicePrefix" style="&lbl;" />
         <FlowPanel>

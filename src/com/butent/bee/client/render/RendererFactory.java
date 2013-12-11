@@ -217,6 +217,10 @@ public final class RendererFactory {
         renderer = new FileIconRenderer(source);
         break;
 
+      case FILE_SIZE:
+        renderer = new FileSizeRenderer(source);
+        break;
+
       case PHOTO:
         renderer = new PhotoRenderer(source);
         break;

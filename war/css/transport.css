@@ -510,6 +510,10 @@
   margin-left: 2em;
 }
 
-.bee-tr-assessment-form .bee-disabled, .bee-tr-request-form .bee-disabled {
-  background-color: #f3f3eb;
+.bee-tr-SelfService-screen .bee-MainCommandPanel {
+  left: 160px;
+}
+.bee-tr-SelfService-shell {
+  width: 100%;
+  height: 99%;
 }

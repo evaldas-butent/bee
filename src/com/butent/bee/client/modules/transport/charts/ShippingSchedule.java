@@ -258,8 +258,10 @@ final class ShippingSchedule extends VehicleTimeBoard {
     if (hasOverlap) {
       panel.addStyleName(STYLE_TRIP_GROUP_OVERLAP);
     }
-
-    trip.makeTarget(panel, STYLE_TRIP_GROUP_DRAG_OVER);
+    
+    if (trip.isEditable()) {
+      trip.makeTarget(panel, STYLE_TRIP_GROUP_DRAG_OVER);
+    }
 
     Label label = new Label(trip.getTripNo());
     label.addStyleName(STYLE_TRIP_GROUP_LABEL);

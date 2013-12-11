@@ -52,7 +52,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   private final String sortInfoId;
   private final String captionId;
 
-  private final String caption;
+  private String caption;
 
   public HeaderCell(String caption) {
     super(EventUtils.EVENT_TYPE_CLICK);
@@ -97,10 +97,10 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
       } else {
         context.getGrid().autoFitColumn(col);
       }
-      
+
       state = EventState.CONSUMED;
     }
-    
+
     return state;
   }
 
@@ -132,6 +132,15 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
         sb.append(template.sortable(sortInfoId,
             StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
       }
+    }
+  }
+
+  public void setCaption(String caption) {
+    this.caption = caption;
+    Element el = DomUtils.getElementQuietly(captionId);
+
+    if (el != null) {
+      el.setInnerHTML(caption);
     }
   }
 }

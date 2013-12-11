@@ -62,7 +62,7 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   boolean beforeAction(Action action, GridPresenter presenter);
 
-  boolean beforeAddRow(GridPresenter presenter);
+  boolean beforeAddRow(GridPresenter presenter, boolean copy);
 
   void beforeCreate(List<? extends IsColumn> dataColumns, GridDescription gridDescription);
 
@@ -111,6 +111,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   String getRowCaption(IsRow row, boolean edit);
 
+  boolean isRowEditable(IsRow row);
+      
   void onAttach(GridView gridView);
   
   boolean onClose(GridPresenter presenter);

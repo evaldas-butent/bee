@@ -59,7 +59,7 @@ public final class ExtWidget {
     }
 
     IdentifiableWidget widget =
-        FormFactory.createWidget(root, viewName, dataColumns, creationCallback,
+        FormFactory.createWidget(null, root, viewName, dataColumns, creationCallback,
             gridInterceptor, "create ext widget:");
     if (widget == null) {
       return null;

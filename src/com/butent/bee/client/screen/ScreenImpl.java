@@ -31,8 +31,8 @@ import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.BrowsingContext;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
@@ -42,6 +42,7 @@ import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -105,6 +106,13 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void clearNotifications() {
+    if (getNotification() != null) {
+      getNotification().clear();
+    }
+  }
+  
+  @Override
   public void closeProgress(String id) {
     if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
       Widget item = DomUtils.getChildById(getProgressPanel(), id);
@@ -117,7 +125,7 @@ public class ScreenImpl implements Screen {
       }
     }
   }
-  
+
   @Override
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: view widget is null");
@@ -147,7 +155,7 @@ public class ScreenImpl implements Screen {
 
       Progress progress = (max == null) ? new Progress() : new Progress(max);
       item.add(progress);
-      
+
       if (closeBox != null) {
         closeBox.addStyleName("bee-ProgressClose");
         item.add(closeBox);
@@ -163,7 +171,7 @@ public class ScreenImpl implements Screen {
       return null;
     }
   }
-  
+
   @Override
   public int getActivePanelHeight() {
     Tile activeTile = getWorkspace().getActiveTile();
@@ -219,7 +227,7 @@ public class ScreenImpl implements Screen {
   public UserInterface getUserInterface() {
     return UserInterface.DESKTOP;
   }
-  
+
   @Override
   public int getWidth() {
     return getScreenPanel().getOffsetWidth();
@@ -347,13 +355,13 @@ public class ScreenImpl implements Screen {
     if (userData != null) {
       if (getUserPhotoContainer() != null) {
         getUserPhotoContainer().clear();
-      
+
         String photoFileName = userData.getPhotoFileName();
         if (!BeeUtils.isEmpty(photoFileName)) {
           Image image = new Image(PhotoRenderer.getUrl(photoFileName));
           image.setAlt(userData.getLogin());
           image.addStyleName("bee-UserPhoto");
-          
+
           getUserPhotoContainer().add(image);
         }
       }
@@ -362,6 +370,10 @@ public class ScreenImpl implements Screen {
         getUserSignature().setHtml(BeeUtils.trim(userData.getUserSign()));
       }
     }
+  }
+
+  protected Panel createCommandPanel() {
+    return new Flow("bee-MainCommandPanel");
   }
 
   protected Widget createCopyright(String stylePrefix) {
@@ -427,6 +439,14 @@ public class ScreenImpl implements Screen {
     return widget;
   }
 
+  protected Panel createMenuPanel() {
+    return new Flow("bee-MainMenu");
+  }
+
+  protected Widget createSearch() {
+    return Global.getSearchWidget();
+  }
+
   protected void createUi() {
     Split p = new Split(0);
     StyleUtils.occupy(p);
@@ -463,7 +483,7 @@ public class ScreenImpl implements Screen {
 
   protected Widget createUserContainer() {
     Horizontal userContainer = new Horizontal();
-    
+
     if (Settings.showUserPhoto()) {
       Flow photoContainer = new Flow("bee-UserPhotoContainer");
       userContainer.add(photoContainer);
@@ -474,7 +494,7 @@ public class ScreenImpl implements Screen {
     signature.addStyleName("bee-UserSignature");
     userContainer.add(signature);
     setUserSignature(signature);
-    
+
     signature.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -484,26 +504,34 @@ public class ScreenImpl implements Screen {
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
-
-    Image exit = new Image(Global.getImages().exit(), new Command() {
+    
+    FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
+    exit.addStyleName("bee-UserExit");
+    exit.setTitle(Localized.getConstants().signOut());
+    
+    exit.addClickHandler(new ClickHandler() {
       @Override
-      public void execute() {
+      public void onClick(ClickEvent event) {
         Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
             Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
+            Localized.getConstants().yes(), Localized.getConstants().no(),
             new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                Bee.exit();
-              }
-            }, null, StyleUtils.className(FontSize.MEDIUM), null);
+          @Override
+          public void onConfirm() {
+            Bee.exit();
+          }
+        }, null, StyleUtils.className(FontSize.MEDIUM), null);
       }
     });
-    exit.addStyleName("bee-UserExit");
 
     exitContainer.setWidget(exit);
     userContainer.add(exitContainer);
 
     return userContainer;
+  }
+
+  protected int getNorthHeight(int defHeight) {
+    return BeeUtils.positive(Settings.getPropertyInt("northHeight"), defHeight);
   }
 
   protected Notification getNotification() {
@@ -527,7 +555,7 @@ public class ScreenImpl implements Screen {
   protected Pair<? extends IdentifiableWidget, Integer> initEast() {
     return Pair.of(ClientLogManager.getLogPanel(), ClientLogManager.getInitialPanelSize());
   }
-  
+
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
@@ -538,17 +566,22 @@ public class ScreenImpl implements Screen {
       panel.add(logo);
     }
 
-    panel.add(Global.getSearchWidget());
+    Widget search = createSearch();
+    if (search != null) {
+      panel.add(search);
+    }
 
-    Flow commandContainer = new Flow();
-    commandContainer.addStyleName("bee-MainCommandPanel");
-    panel.add(commandContainer);
-    setCommandPanel(commandContainer);
+    Panel commandContainer = createCommandPanel();
+    if (commandContainer != null) {
+      panel.add(commandContainer);
+      setCommandPanel(commandContainer);
+    }
 
-    Flow menuContainer = new Flow();
-    menuContainer.addStyleName("bee-MainMenu");
-    panel.add(menuContainer);
-    setMenuPanel(menuContainer);
+    Panel menuContainer = createMenuPanel();
+    if (menuContainer != null) {
+      panel.add(menuContainer);
+      setMenuPanel(menuContainer);
+    }
 
     Widget userContainer = createUserContainer();
     userContainer.addStyleName("bee-UserContainer");
@@ -560,10 +593,6 @@ public class ScreenImpl implements Screen {
     setNotification(nw);
 
     return Pair.of(panel, getNorthHeight(100));
-  }
-  
-  protected int getNorthHeight(int defHeight) {
-    return BeeUtils.positive(Settings.getPropertyInt("northHeight"), defHeight);
   }
 
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {

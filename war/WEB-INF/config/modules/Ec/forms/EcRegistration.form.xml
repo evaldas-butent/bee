@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY area "width: 100&#37;; height: 40px;">
-  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em;">
+  <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; width: 120px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -68,19 +68,21 @@
         <Label text="=ecClientActivity" />
         <InputArea source="Activity" style="&area;" />
         <Label text="=notes" />
-        <InputArea source="Notes" style="&area;" />
+        <InputArea source="Notes" style="width: 250px; height: 60px;" />
       </row>
 
       <row>
         <Label text="=remoteHost" />
         <InputArea source="Host" style="&area;" />
         <Label text="=userAgent" />
-        <InputArea source="Agent" style="&area;" />
+        <InputArea source="Agent" style="width: 250px; height: 60px;" />
       </row>
 
       <row>
-        <Label text="=ecClientRegistrationDate" class="bee-required" />
+        <Label text="=ecClientRegistrationDate" class="bee-required bee-hasDefaults" />
         <InputDateTime source="Date" />
+        <Label text="=language" />
+        <ListBox source="Language" />
       </row>
     </Table>
   </FlowPanel>

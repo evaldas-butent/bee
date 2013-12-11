@@ -286,9 +286,14 @@ public class TecDocBean {
     EcSupplier supplier = EcSupplier.MOTOPROFIL;
     logger.info(supplier, "Waiting for data...");
 
-    WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
-    ArrayOfString info = port.zwrocCennikDetalOffline("10431", "6492", "BEE");
-
+    ArrayOfString info;
+    try {
+      WSMotoOfertaSoap port = new WSMotoOferta().getWSMotoOfertaSoap();
+      info = port.zwrocCennikDetalOffline("10431", "6492", "BEE");
+    } catch (Exception e) {
+      info = new ArrayOfString();
+      info.getString().add(e.getMessage());
+    }
     if (info != null && info.getString().size() > 1) {
       int size = info.getString().size();
       List<RemoteItem> items = Lists.newArrayListWithExpectedSize(size);

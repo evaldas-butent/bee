@@ -6,8 +6,6 @@ public interface LocalizableTransportConstants {
 
   String assessments();
 
-  String assignCargosToTripCaption();
-
   String assignCargoToTripCaption();
 
   String assignCargoToTripQuestion();
@@ -39,8 +37,6 @@ public interface LocalizableTransportConstants {
   String cargoMiddleHandlingPlaces();
 
   String cargoNumber();
-
-  String cargoProfit();
 
   String cargos();
 
@@ -160,23 +156,13 @@ public interface LocalizableTransportConstants {
 
   String trAssignCargo();
 
+  String trAssignTrip();
+
   String trCargoActualPlaces();
-
-  String trCargoRequestCreateTransportationOrderQuestion();
-
-  String trCargoRequestFinish();
-
-  String trCargoRequestReturn();
-
-  String trCargoRequestReturnToOrder();
-
-  String trCargoRequestsSetActiveRequestQuestion();
 
   String trCargoSelectCargo();
 
   String trCargoSelectTrip();
-
-  String trCargoTripsAssignTrip();
 
   String trCargoTripThereCargosAssignedInTripsAlarm();
 
@@ -184,15 +170,13 @@ public interface LocalizableTransportConstants {
 
   String trChooseForwarder();
 
-  String trCommandBlockIpAddress();
-
-  String trCommandConvertToRequest();
-
-  String trCommandCopyRequest();
+  String trCommandCreateNewOrder();
 
   String trCommandCreateNewUser();
 
   String trCommandSaveRequestAsTemplate();
+
+  String trConfirmCreateNewOrder();
 
   String trConfirmProforma();
 
@@ -209,6 +193,20 @@ public interface LocalizableTransportConstants {
   String trDriverStartingDate();
 
   String trEmptyKilometers();
+
+  String trImport();
+
+  String trImportCosts();
+
+  String trImportTracking();
+
+  String trImportNewMapping();
+
+  String trImportNewProperty();
+
+  String trImportProperty();
+
+  String trImportValue();
 
   String trInvoice();
 
@@ -290,13 +288,17 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationReceived();
 
+  String trRegistrationStatusConfirmed();
+
+  String trRegistrationStatusNew();
+
+  String trRegistrationStatusRejected();
+
   String trRegistrationSwift();
 
   String trRegistrationVatCode();
 
   String trRegistrationVatPayer();
-
-  String trRequestActionFinish();
 
   String trRequestActionSubmit();
 
@@ -358,8 +360,6 @@ public interface LocalizableTransportConstants {
 
   String trRequestExpeditionType();
 
-  String trRequestFinishReason();
-
   String trRequestFreightInsurance();
 
   String trRequestNew();
@@ -384,7 +384,15 @@ public interface LocalizableTransportConstants {
 
   String trRequestStatusActive();
 
+  String trRequestStatusFinished();
+
   String trRequestStatusNew();
+
+  String trRequestStatusRejected();
+
+  String trRequestTemplateName();
+
+  String trRequestTemplateNew();
 
   String trRequestTemplates();
 
@@ -421,6 +429,8 @@ public interface LocalizableTransportConstants {
   String trUnloadingInfo();
 
   String trUnloadingNumber();
+
+  String trVehicle();
 
   String trVehicleTypes();
 

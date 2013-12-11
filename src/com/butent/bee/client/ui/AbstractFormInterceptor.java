@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.Presenter;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
@@ -44,6 +46,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
       WidgetDescriptionCallback callback) {
   }
 
+  @Override
+  public void afterInsertRow(IsRow result) {
+  }
+  
   @Override
   public void afterRefresh(FormView form, IsRow row) {
   }
@@ -82,6 +88,21 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
     return (getFormView() == null) ? BeeConst.UNDEF : getFormView().getDataIndex(source);
   }
 
+  @Override
+  public Integer getDataInt(String source) {
+    return (getFormView() == null) ? null : getFormView().getDataInt(source);
+  }
+  
+  @Override
+  public Long getDataLong(String source) {
+    return (getFormView() == null) ? null : getFormView().getDataLong(source);
+  }
+
+  @Override
+  public String getDataValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getDataValue(source);
+  }
+  
   @Override
   public Domain getDomain() {
     return null;
@@ -136,15 +157,26 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public void notifyRequired(String message) {
+    if (getFormView() != null) {
+      getFormView().notifyWarning(message, Localized.getConstants().valueRequired());
+    }
+  }
+
+  @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
   }
 
   @Override
-  public void onReadyForInsert(ReadyForInsertEvent event) {
+  public void onLoad(FormView form) {
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
   }
 
   @Override
@@ -170,6 +202,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
 
   @Override
   public void onStateChange(State state) {
+  }
+
+  @Override
+  public void onUnload(FormView form) {
   }
 
   @Override

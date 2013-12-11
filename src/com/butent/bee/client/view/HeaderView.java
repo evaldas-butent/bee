@@ -28,6 +28,8 @@ public interface HeaderView extends View, IndexedPanel, Printable {
   int getHeight();
 
   boolean hasAction(Action action);
+  
+  boolean hasCommands();
 
   boolean isActionEnabled(Action action);
 

@@ -9,7 +9,9 @@
     xmlns:f="http://www.butent.com/form"
     xmlns:xi="http://www.w3.org/2001/XInclude"
     
-    name="EcClient" viewName="EcClients" caption="=ecClient">
+    name="EcClient" viewName="EcClients" caption="=ecClient"
+    width="700" height="80" heightUnit="vh"
+    >
 
   <FlowPanel class="flexBox-vertical">
     <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">

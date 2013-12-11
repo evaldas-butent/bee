@@ -76,7 +76,7 @@
   <xs:element name="Relation" type="relationType" substitutionGroup="field" />
   <xs:element name="Enum" type="enumType" substitutionGroup="field" />
 
-  <xs:complexType name="fieldType">
+  <xs:complexType name="fieldType" abstract="true">
     <xs:attribute name="name" type="type:fieldNameType" use="required" />
     <xs:attribute name="notNull" type="xs:boolean" />
     <xs:attribute name="unique" type="xs:boolean" />
@@ -87,11 +87,27 @@
     <xs:attribute name="audit" type="xs:boolean" default="true" />
   </xs:complexType>
 
-  <xs:complexType name="booleanType">
+  <xs:complexType name="hasPrecisionType" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="fieldType">
+        <xs:attribute name="precision" type="xs:positiveInteger" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractBooleanType" abstract="true">
     <xs:complexContent>
       <xs:extension base="fieldType">
         <xs:attribute name="type" type="type:dataType" fixed="BOOLEAN" />
       </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="booleanType">
+    <xs:complexContent>
+      <xs:restriction base="abstractBooleanType">
+        <xs:attribute name="notNull" type="xs:boolean" use="prohibited" />
+      </xs:restriction>
     </xs:complexContent>
   </xs:complexType>
 
@@ -121,9 +137,8 @@
 
   <xs:complexType name="numericType">
     <xs:complexContent>
-      <xs:extension base="fieldType">
+      <xs:extension base="hasPrecisionType">
         <xs:attribute name="type" type="type:dataType" fixed="DECIMAL" />
-        <xs:attribute name="precision" type="xs:positiveInteger" use="required" />
         <xs:attribute name="scale" type="xs:byte" default="0" />
       </xs:extension>
     </xs:complexContent>
@@ -131,18 +146,16 @@
 
   <xs:complexType name="charType">
     <xs:complexContent>
-      <xs:extension base="fieldType">
+      <xs:extension base="hasPrecisionType">
         <xs:attribute name="type" type="type:dataType" fixed="CHAR" />
-        <xs:attribute name="precision" type="xs:positiveInteger" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="stringType">
     <xs:complexContent>
-      <xs:extension base="fieldType">
+      <xs:extension base="hasPrecisionType">
         <xs:attribute name="type" type="type:dataType" fixed="STRING" />
-        <xs:attribute name="precision" type="xs:positiveInteger" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

@@ -61,7 +61,7 @@ public final class SqlUtils {
   public static IsCondition compare(String source, String field, Operator op, Object value) {
     return compare(field(source, field), op, constant(value));
   }
-  
+
   public static IsExpression concat(Object... members) {
     Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
@@ -598,17 +598,21 @@ public final class SqlUtils {
   }
 
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {
-    Assert.noNulls(expr, pairs);
-    Assert.parameterCount(pairs.length, 3);
-    Assert.isOdd(pairs.length);
+    Assert.notNull(pairs);
+    Assert.parameterCount(pairs.length, 2);
 
     Map<String, Object> params = Maps.newHashMap();
-    params.put("expression", expr);
-    params.put("caseElse", getSqlExpression(pairs[pairs.length - 1]));
+    if (expr != null) {
+      params.put("expression", expr);
+    }
+    int x = pairs.length % 2;
 
-    for (int i = 0; i < (pairs.length - 1) / 2; i++) {
+    for (int i = 0; i < (pairs.length - x) / 2; i++) {
       params.put("case" + i, getSqlExpression(pairs[i * 2]));
       params.put("value" + i, getSqlExpression(pairs[i * 2 + 1]));
+    }
+    if (x == 1) {
+      params.put("caseElse", getSqlExpression(pairs[pairs.length - x]));
     }
     return new FunctionExpression(SqlFunction.CASE, params);
   }

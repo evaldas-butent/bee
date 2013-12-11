@@ -6,15 +6,24 @@
   x="0" y="0"
   >
   <Fields>
-    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip" />
+    <Relation name="Trip" relation="Trips" cascade="DELETE" label="=trip" />
     <Date name="Date" notNull="true" defExpr="CURRENT_DATE" label="=date" />
+
     <Double name="Quantity" notNull="true" label="=quantity" />
-    <Numeric name="Price" precision="15" scale="5" label="=trdPrice" />
-    <Relation name="Currency" relation="Currencies" label="=currency"/>
+    <Numeric name="Price" precision="15" scale="5" label="=price" />
+    <Relation name="Currency" relation="Currencies" label="=currencyShort" />
+    <Boolean name="VatPlus" label="+" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="%" />
+
     <String name="Number" precision="20" label="=number" />
     <Relation name="Supplier" relation="Companies" label="=trSupplier" />
     <Relation name="Country" relation="Countries" label="=country"/>
     <String name="Note" precision="50" label="=note" />
-    <Relation name="Item" relation="Items" label="=trProductService"/>
+    <Relation name="Item" relation="Items" label="=trAccountItem" />
+    <String name="ExternalID" precision="40" label="=externalId" />
   </Fields>
+  <Indexes>
+    <Index fields="ExternalID" />
+  </Indexes>
 </Table>

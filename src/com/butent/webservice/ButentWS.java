@@ -10,7 +10,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
@@ -44,8 +43,7 @@ public class ButentWS extends Service {
     ButentWS butentWS;
     try {
       butentWS = new ButentWS(new URL(address));
-    } catch (MalformedURLException e) {
-      logger.error(e);
+    } catch (Exception e) {
       return ResponseObject.error(e);
     }
     ButentWebServiceSoapPort port = butentWS.getButentWebServiceSoapPort();

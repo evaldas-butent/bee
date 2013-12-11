@@ -6,6 +6,7 @@
   >
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
+    <Enum name="Status" key="CargoRequestStatus" notNull="true" defValue="0" label="=trRequestStatus" />
   
     <String name="CustomerName" precision="100" notNull="true" label="=trRequestCustomerName" />
     <String name="CustomerCode" precision="30" notNull="true" label="=trRequestCustomerCode" />
@@ -23,13 +24,9 @@
 
     <String name="CustomerExchangeCode" precision="30" label="=trRequestCustomerExchangeCode" />
 
-    <String name="LoadingCompanyName" precision="100" notNull="true"
-      label="=trLoadingCompanyName" />
     <String name="LoadingEmail" precision="255" label="=trLoadingEmail" />
     <String name="LoadingCity" precision="30" notNull="true" label="=trLoadingCity" />
 
-    <String name="UnloadingCompanyName" precision="100" notNull="true"
-      label="=trUnloadingCompanyName" />
     <String name="UnloadingEmail" precision="255" label="=trUnloadingEmail" />
     <String name="UnloadingCity" precision="30" notNull="true" label="=trUnloadingCity" />
 

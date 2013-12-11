@@ -518,6 +518,7 @@
         <xs:attribute name="gridName" type="type:nameType" />
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="filter" type="xs:normalizedString" />
+        <xs:attribute name="currentUserFilter" type="type:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -590,6 +591,11 @@
       <xs:complexContent>
         <xs:extension base="inputWidget">
           <xs:attribute name="upperCase" type="xs:boolean" />
+          <xs:attribute name="autocomplete" type="ui:autocomplete" />
+          <xs:attribute name="autocompleteSection" type="xs:NCName" />
+          <xs:attribute name="autocompleteHint" type="ui:autofillHint" />
+          <xs:attribute name="autocompleteContact" type="ui:autofillContact" />
+          <xs:attribute name="autocompleteField" type="ui:autofillField" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

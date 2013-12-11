@@ -33,11 +33,6 @@
       <carry><ui:expression>row.CargoWeight</ui:expression></carry>
     </DataColumn>
     <DataColumn name="Season" caption="=trSeason" updateMode="row">
-      <renderer type="list" />
-      <editor type="list">
-        <ui:item>=summer</ui:item>
-        <ui:item>=winter</ui:item>
-      </editor>
       <carry><ui:expression>row.Season</ui:expression></carry>
     </DataColumn>
     <DataColumn name="Temperature" caption="=trTemperatureShort" updateMode="row" />

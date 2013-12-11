@@ -3,12 +3,12 @@
 
   name="Currencies"
   idName="CurrencyID"
-  x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="5" notNull="true" unique="true" label="=currencyShort" />
+    <String name="Name" precision="5" notNull="true" unique="true" label="=currency" />
     <String name="Caption" precision="60" label="=caption" />
     <String name="MinorName" precision="5" label="=minorName" />
     <String name="MinorCaption" precision="60" label="=minorCaption" />
+    <Boolean name="UpdateTag" label="=currencyUpdateTag" />
   </Fields>
 </Table>

@@ -21,9 +21,6 @@ public final class Keywords {
   public static final String ENC_TYPE_TEXT_PLAIN = "text/plain";  
   public static final String ENC_TYPE_URL_ENCODED = "application/x-www-form-urlencoded";
 
-  public static final String AUTOCOMPLETE_OFF = "off";
-  public static final String AUTOCOMPLETE_ON = "on";
-
   public static final String INPUT_MODE_EMAIL = "email";
   public static final String INPUT_MODE_FULL_WIDTH_LATIN = "full-width-latin";
   public static final String INPUT_MODE_LATIN = "latin";

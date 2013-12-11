@@ -124,9 +124,6 @@ public final class Images {
     @Source("error.png")
     ImageResource error();
 
-    @Source("exit.gif")
-    ImageResource exit();
-
     @Source("filter_delete.png")
     ImageResource filterDelete();
 

@@ -8,6 +8,7 @@
   >
   <Columns>
     <SimpleColumn name="Date" />
+    <SimpleColumn name="Status" />
 
     <SimpleColumn name="User" />
     <SimpleJoin name="User" joinType="LEFT">
@@ -42,11 +43,9 @@
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="LEFT">
-      <SimpleColumn name="Order" />
+      <SimpleColumn name="Order" editable="true" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
-        <SimpleColumn name="Date" alias="OrderDate" />
-        <SimpleColumn name="Status" alias="OrderStatus" />
       </SimpleJoin>
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
@@ -54,10 +53,6 @@
 
         <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany"
           editable="true" />
-        <SimpleJoin name="Company" joinType="LEFT">
-          <SimpleColumn name="Name" alias="LoadingCompanyName" />
-        </SimpleJoin>
-
         <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact"
           editable="true" />
 
@@ -73,7 +68,6 @@
           editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
         </SimpleJoin>
 
         <SimpleColumn name="Email" alias="LoadingEmailId" editable="true" label="=trLoadingEmail" />
@@ -93,10 +87,6 @@
 
         <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany"
           editable="true" />
-        <SimpleJoin name="Company" joinType="LEFT">
-          <SimpleColumn name="Name" alias="UnloadingCompanyName" />
-        </SimpleJoin>
-
         <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"
           editable="true" />
 
@@ -113,7 +103,6 @@
           editable="true" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
         
         <SimpleColumn name="Email" alias="UnloadingEmailId" editable="true"
@@ -167,13 +156,8 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Status" />
-    <SimpleColumn name="Finished" />
-    <SimpleColumn name="Result" />
     
     <SimpleColumn name="Notes" />
-    <SimpleColumn name="Host" />
-    <SimpleColumn name="Agent" />
   </Columns>
 
   <Order>

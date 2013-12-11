@@ -70,7 +70,7 @@
           <InlineLabel name="IncomeTotal" style="font-weight:bold; margin-right:20px;" />
           <InlineLabel text="=transportCost" style="padding-top:1px; margin-right:10px;" />
           <InlineLabel name="ExpenseTotal" style="font-weight:bold; margin-right:20px;" />
-          <InlineLabel text="=cargoProfit" style="padding-top:1px; margin-right:10px;" />
+          <InlineLabel text="=profit" style="padding-top:1px; margin-right:10px;" />
           <InlineLabel name="Profit" style="font-weight:bold;" />
         </FlowPanel>
       </FlowPanel>

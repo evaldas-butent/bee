@@ -94,10 +94,6 @@
       <SimpleColumn name="Dangerous" />
 
       <SimpleColumn name="Notes" alias="CargoNotes" />
-      <SimpleColumn name="Price" />
-      <SimpleJoin joinType="LEFT" name="Currency">
-        <SimpleColumn name="Name" alias="CurrencyName" />
-      </SimpleJoin>
 
       <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <SimpleColumn name="Trip" />

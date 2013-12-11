@@ -20,6 +20,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionAudit();
 
+  String actionBlock();
+
   String actionBookmark();
 
   String actionCancel();
@@ -29,6 +31,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionClose();
 
   String actionConfigure();
+
+  String actionCopy();
+
+  String actionCreate();
 
   String actionDelete();
 
@@ -58,6 +64,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionSave();
 
+  String actionUpdate();
+
   String actionWorkspaceEnlargeDown();
 
   String actionWorkspaceEnlargeToLeft();
@@ -85,6 +93,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String address();
 
   String allowPhotoSize();
+
+  String amount();
 
   String article();
 
@@ -158,9 +168,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String creator();
 
+  String currency();
+
   String dangerous();
 
   String date();
+
+  String dateFormat();
 
   String dateFromShort();
 
@@ -199,6 +213,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String error();
 
   String exchangeCode();
+
+  String externalId();
 
   String fax();
 
@@ -249,8 +265,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String invalidRange();
 
   String invalidTime();
+  
+  String ipBlockCommand();
+
+  String ipBlocked();
 
   String item();
+
+  String itemOrService();
 
   String languageTag();
 
@@ -294,6 +316,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String newTab();
 
+  String newUser();
+
   String newValues();
 
   String no();
@@ -302,9 +326,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String notANumber();
 
+  String note();
+
   String notes();
 
   String nothingFound();
+
+  String number();
 
   String objectEvent();
 
@@ -334,6 +362,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String partial();
 
+  String password();
+
   String period();
 
   String personContact();
@@ -346,9 +376,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String postIndex();
 
+  String price();
+
   String print();
 
   String priority();
+
+  String profit();
+
+  String quantity();
 
   String questionLogout();
 
@@ -374,6 +410,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String rightStateVisible();
 
+  String rowIsReadOnly();
+
   String saveChanges();
 
   String saveFilter();
@@ -394,15 +432,23 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String settings();
 
+  String signOut();
+
   String sorry();
 
   String startDate();
+
+  String startRow();
 
   String status();
 
   String style();
 
   String summary();
+
+  String summer();
+
+  String supplier();
 
   String tabControl();
 
@@ -426,11 +472,29 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String unitWeekShort();
 
+  String updateExchangeRatesDateHigh();
+
+  String updateExchangeRatesDateLow();
+
+  String updateExchangeRatesDialogCaption();
+
+  String updateExchangeRatesNoCurrencies();
+
+  String user();
+
   String userFullName();
+
+  String userLogin();
 
   String value();
 
   String valueRequired();
+
+  String vat();
+
+  String vatPercent();
+
+  String vatPlus();
 
   String volume();
 
@@ -439,6 +503,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String weight();
 
   String width();
+
+  String winter();
 
   String yes();
 }

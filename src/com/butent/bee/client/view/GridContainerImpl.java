@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Place;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -113,7 +114,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     setHasPaging(UiOption.hasPaging(uiOptions));
     setHasSearch(UiOption.hasSearch(uiOptions));
 
-    boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
+    boolean hasData = !BeeUtils.isEmpty(gridDescription.getViewName());
+    boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly())
+        || hasData && !Data.isViewEditable(gridDescription.getViewName());
 
     HeaderView header;
     if (gridDescription.hasGridHeader()) {
@@ -166,6 +169,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         disabledActions.add(Action.ADD);
       }
 
+      if (!readOnly && !BeeUtils.isEmpty(gridDescription.getEnableCopy()) 
+          && !disabledActions.contains(Action.COPY)) {
+        enabledActions.add(Action.COPY);
+      }
+
       if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
       }
@@ -173,8 +181,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         enabledActions.add(Action.AUDIT);
       }
 
-      header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,
-          enabledActions, disabledActions, hiddenActions);
+      header.create(caption, hasData, readOnly, uiOptions, enabledActions, disabledActions,
+          hiddenActions);
     } else {
       header = null;
     }
@@ -358,7 +366,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       rowEnabled = false;
     } else {
       rowEnabled = !gridView.isReadOnly() && isEnabled() && gridView.isEnabled()
-          && gridView.isRowEditable(rowValue, false);
+          && gridView.isRowEditable(rowValue, null);
     }
 
     if (DataUtils.sameIdAndVersion(rowValue, getLastRow()) && rowEnabled == wasLastEnabled()) {

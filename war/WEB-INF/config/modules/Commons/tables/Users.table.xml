@@ -6,6 +6,7 @@
   <Fields>
     <String name="Login" precision="100" notNull="true" unique="true" label="=userLogin"/>
     <String name="Password" precision="64" label="=password" />
+
     <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true"
       label="=companyPerson" />
     

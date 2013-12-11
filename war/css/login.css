@@ -103,9 +103,9 @@ body {
 
 .bee-SignIn-Command-container {
   position: relative;
-  left: 50px;
-  width: 300px;
-  margin-top: 3ex;
+  left: 0;
+  width: 400px;
+  margin-top: 4ex;
 }
 .bee-SignIn-Command-Form-query {
   position: absolute;

@@ -3,6 +3,7 @@
 
   name="Countries"
   source="Countries"
+  caption="=countries"
   newRowCaption="=newCountry"
   newRowColumns="Name Code EUMember"
   >

@@ -4,7 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
 
   name="Vehicles" viewName="Vehicles" editForm="Vehicle" caption="=vehicles"
-  flexGrow="1" flexShrink="1" minColumnWidth="60"
+  flexGrow="1" minColumnWidth="60"
   >
   <g:west size="160" splitterSize="2">
     <w:DataTree name="VehicleModels" caption="=vehicleModelsShort" source="VehicleModels" parentColumn="Parent">

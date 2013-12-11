@@ -428,6 +428,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
+    return addHandler(handler, SaveChangesEvent.getType());
+  }
+  
+  @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
   }
@@ -471,6 +476,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
   }
 
+  @Override
+  public void clearNotifications() {
+    if (getNotification() != null) {
+      getNotification().clear();
+    }
+  }
+  
   @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
@@ -638,6 +650,36 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public int getDataIndex(String source) {
     return DataUtils.getColumnIndex(source, getDataColumns());
+  }
+
+  @Override
+  public Integer getDataInt(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getInteger(index);
+    } else {
+      return null;
+    }
+  }
+  
+  @Override
+  public Long getDataLong(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getLong(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public String getDataValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -817,6 +859,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public boolean isFlushable() {
     return isAdding() || isEditing();
   }
+  
+  @Override
+  public boolean isInteractive() {
+    return isAttached() && !isClosed() && DomUtils.isVisible(getElement());
+  }
 
   @Override
   public boolean isModal() {
@@ -852,7 +899,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       setDataObserver(new DataObserver());
     }
   }
-  
+
   @Override
   public boolean observesData() {
     return getDataObserver() != null;
@@ -1075,7 +1122,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (isAttached() && !isClosed() && DomUtils.isVisible(getElement())) {
+    if (isInteractive()) {
       String type = event.getNativeEvent().getType();
 
       if (EventUtils.isClick(type)) {
@@ -1127,13 +1174,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void onSaveChanges(SaveChangesEvent event) {
-    if (getFormInterceptor() != null) {
-      getFormInterceptor().onSaveChanges(event);
-    }
-  }
-
-  @Override
   public void prepareForInsert() {
     if (!validate(this, true)) {
       return;
@@ -1169,6 +1209,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       @Override
       public void onSuccess(BeeRow result) {
+        if (getFormInterceptor() != null) {
+          getFormInterceptor().afterInsertRow(result);
+        }
         finishNewRow(result);
       }
     };
@@ -1176,7 +1219,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, getChildrenForInsert(),
         callback);
     if (getFormInterceptor() != null) {
-      getFormInterceptor().onReadyForInsert(event);
+      getFormInterceptor().onReadyForInsert(this, event);
       if (event.isConsumed()) {
         return;
       }
@@ -1416,7 +1459,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void startNewRow() {
+  public void startNewRow(boolean copy) {
     setAdding(true);
     fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
 
@@ -1426,6 +1469,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       row = DataUtils.createEmptyRow(getDataColumns().size());
     }
     IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
+    
+    if (getActiveRow() != null && copy) {
+      for (int i = 0; i < getDataColumns().size(); i++) {
+        if (!row.isNull(i)) {
+          newRow.setValue(i, row.getString(i));
+        }
+      }
+    }
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.hasCarry() && editableWidget.hasColumn()) {
@@ -1509,10 +1560,18 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   protected void onLoad() {
     super.onLoad();
     Previewer.ensureRegistered(this);
+    
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onLoad(this);
+    }
   }
 
   @Override
   protected void onUnload() {
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onUnload(this);
+    }
+
     Previewer.ensureUnregistered(this);
     if (getDataObserver() != null) {
       getDataObserver().stop();

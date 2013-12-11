@@ -7,12 +7,17 @@
   <Columns>
     <SimpleColumn name="Trip" />
     <SimpleColumn name="Date" />
+
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="Number" />
     <SimpleColumn name="Supplier" />
     <SimpleJoin name="Supplier" joinType="LEFT">
@@ -27,6 +32,7 @@
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
     </SimpleJoin>
+    <SimpleColumn name="ExternalID" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

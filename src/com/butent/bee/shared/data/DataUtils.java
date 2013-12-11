@@ -276,7 +276,11 @@ public final class DataUtils {
   }
 
   public static Boolean getBoolean(BeeRowSet rowSet, IsRow row, String columnId) {
-    return row.getBoolean(getColumnIndex(columnId, rowSet.getColumns()));
+    return getBoolean(rowSet.getColumns(), row, columnId);
+  }
+
+  public static Boolean getBoolean(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getBoolean(getColumnIndex(columnId, columns));
   }
 
   public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
@@ -380,11 +384,19 @@ public final class DataUtils {
   }
 
   public static JustDate getDate(BeeRowSet rowSet, IsRow row, String columnId) {
-    return row.getDate(getColumnIndex(columnId, rowSet.getColumns()));
+    return getDate(rowSet.getColumns(), row, columnId);
+  }
+
+  public static JustDate getDate(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getDate(getColumnIndex(columnId, columns));
   }
 
   public static DateTime getDateTime(BeeRowSet rowSet, IsRow row, String columnId) {
-    return row.getDateTime(getColumnIndex(columnId, rowSet.getColumns()));
+    return getDateTime(rowSet.getColumns(), row, columnId);
+  }
+
+  public static DateTime getDateTime(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getDateTime(getColumnIndex(columnId, columns));
   }
 
   public static int getDefaultAsyncThreshold() {
@@ -414,6 +426,14 @@ public final class DataUtils {
     return result;
   }
 
+  public static Double getDouble(BeeRowSet rowSet, IsRow row, String columnId) {
+    return getDouble(rowSet.getColumns(), row, columnId);
+  }
+
+  public static Double getDouble(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getDouble(getColumnIndex(columnId, columns));
+  }
+  
   public static Set<Long> getIdSetDifference(String s1, String s2) {
     Set<Long> difference = parseIdSet(s1);
     if (!difference.isEmpty() || !BeeUtils.isEmpty(s2)) {
@@ -423,11 +443,19 @@ public final class DataUtils {
   }
 
   public static Integer getInteger(BeeRowSet rowSet, IsRow row, String columnId) {
-    return row.getInteger(getColumnIndex(columnId, rowSet.getColumns()));
+    return getInteger(rowSet.getColumns(), row, columnId);
+  }
+
+  public static Integer getInteger(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getInteger(getColumnIndex(columnId, columns));
   }
 
   public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {
-    return row.getLong(getColumnIndex(columnId, rowSet.getColumns()));
+    return getLong(rowSet.getColumns(), row, columnId);
+  }
+
+  public static Long getLong(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getLong(getColumnIndex(columnId, columns));
   }
 
   public static int getMaxInitialRowSetSize() {
@@ -547,7 +575,11 @@ public final class DataUtils {
   }
 
   public static String getString(BeeRowSet rowSet, IsRow row, String columnId) {
-    return row.getString(getColumnIndex(columnId, rowSet.getColumns()));
+    return getString(rowSet.getColumns(), row, columnId);
+  }
+
+  public static String getString(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return row.getString(getColumnIndex(columnId, columns));
   }
 
   public static String getString(IsRow row, int index) {

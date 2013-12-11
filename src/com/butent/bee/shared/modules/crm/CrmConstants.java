@@ -274,8 +274,6 @@ public final class CrmConstants {
 
   public static final String PROP_LAST_EVENT_ID = "LastEventId";
 
-  public static final String PROP_ICON = "Icon";
-
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
@@ -287,6 +285,8 @@ public final class CrmConstants {
 
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
+
+  public static final String FORM_DOCUMENT = "Document";
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 

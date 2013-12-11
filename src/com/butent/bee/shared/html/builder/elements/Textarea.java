@@ -1,5 +1,6 @@
 package com.butent.bee.shared.html.builder.elements;
 
+import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
@@ -18,18 +19,23 @@ public class Textarea extends FertileElement {
     return this;
   }
 
+  public Textarea autocomplete(Autocomplete autocomplete) {
+    String value = (autocomplete == null) ? null : autocomplete.build();
+    return autocomplete(value);
+  }
+  
   public Textarea autocomplete(String value) {
     setAttribute(Attributes.AUTOCOMPLETE, value);
     return this;
   }
 
   public Textarea autocompleteOff() {
-    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_OFF);
+    setAttribute(Attributes.AUTOCOMPLETE, Autocomplete.OFF);
     return this;
   }
 
   public Textarea autocompleteOn() {
-    setAttribute(Attributes.AUTOCOMPLETE, Keywords.AUTOCOMPLETE_ON);
+    setAttribute(Attributes.AUTOCOMPLETE, Autocomplete.ON);
     return this;
   }
 

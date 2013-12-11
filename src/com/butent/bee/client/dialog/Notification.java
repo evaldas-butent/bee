@@ -176,8 +176,9 @@ public class Notification extends Composite implements PreviewHandler, Identifia
     initWidget(html);
   }
 
-  public void clearPendingMessages() {
+  public void clear() {
     getPendingMessages().clear();
+    hide();
   }
 
   @Override

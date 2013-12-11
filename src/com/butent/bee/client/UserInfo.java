@@ -6,6 +6,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -21,8 +22,12 @@ public class UserInfo implements Module, HasInfo {
   private String sessionId;
   private UserData userData;
 
+  public Long getCompany() {
+    return isLoggedIn() ? userData.getCompany() : null;
+  }
+  
   public Filter getFilter(String column) {
-    if (isLoggedIn()) {
+    if (isLoggedIn() && !BeeUtils.isEmpty(column)) {
       return ComparisonFilter.isEqual(column, new LongValue(getUserId()));
     } else {
       return null;

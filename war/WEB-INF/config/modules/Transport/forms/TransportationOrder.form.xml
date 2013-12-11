@@ -19,20 +19,21 @@
         <row>
           <Label text="=orderNumber" horizontalAlignment="right" class="bee-hasDefaults" />
           <InputText source="OrderNo" />
-            <Button name="profit" text="=cargoProfit" />
-            <Button name="trips" text="=transportAssignTrip" />
+          <cell colSpan="2">
+            <text />
+          </cell>
           <cell rowSpan="3">
             <InputArea source="Notes" visibleLines="5" style="width:150px;" />
           </cell>
         </row>
         <row>
           <Label text="=customer" horizontalAlignment="right" class="bee-required" />
-          <DataSelector source="Customer" />
+          <DataSelector name="Customer" source="Customer" />
           <Label text="=payer" horizontalAlignment="right" />
           <DataSelector source="Payer" />
         </row>
         <row>
-          <Label text="=contact" horizontalAlignment="right" />
+          <Label text="=personContact" horizontalAlignment="right" />
           <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
             choiceColumns="FirstName LastName CompanyName" options="Customer" />
           <Label text="=manager" horizontalAlignment="right" />

@@ -7,8 +7,8 @@
 
   <g:columns>
     <DataColumn name="Date" caption="=date" />
-    <RelColumn name="Item" caption="=trProductService" />
-    <RelColumn name="Unit" caption="=unit" />
+    <RelColumn name="Item" renderColumns="ItemName" />
+    <DataColumn name="UnitName" />
     <DataColumn name="Quantity" caption="=quantity" />
     <DataColumn name="Price" caption="=price" format="#.00" />
     <RelColumn name="Currency" caption="=currencyShort" />

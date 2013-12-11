@@ -4,11 +4,16 @@ import elemental.client.Browser.Info;
 import elemental.js.JsBrowser;
 
 public enum LayoutEngine {
-  WEBKIT("webkit", "css/webkit.css"),
+  WEBKIT("webkit", "css/webkit.css?v=131121"),
   GECKO("gecko", null),
   TRIDENT("trident", "css/trident.css");
   
   public static LayoutEngine detect() {
+    String userAgent = JsBrowser.getWindow().getNavigator().getUserAgent().toLowerCase();
+    if (userAgent.contains(TRIDENT.substring)) {
+      return TRIDENT;
+    }
+
     Info info = JsBrowser.getInfo();
     
     if (info != null) {
@@ -22,8 +27,6 @@ public enum LayoutEngine {
     if (BrowsingContext.isChrome()) {
       return WEBKIT;
     }
-    
-    String userAgent = JsBrowser.getWindow().getNavigator().getUserAgent().toLowerCase();
     
     for (LayoutEngine engine : LayoutEngine.values()) {
       if (userAgent.contains(engine.substring)) {

@@ -30,5 +30,5 @@ public interface DataView extends View, NotificationListener, HasViewName, HasAc
   
   int refreshBySource(String source);
   
-  void startNewRow();
+  void startNewRow(boolean copy);
 }

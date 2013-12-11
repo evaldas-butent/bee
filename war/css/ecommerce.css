@@ -30,11 +30,6 @@
   max-height: 100%;
 }
 
-.bee-ec-Order-form .bee-disabled,
-.bee-ec-Order-form .bee-disabled input {
-  background-color: #f3f3eb;
-}
-
 .bee-ec-OrderRejection-table td {
   padding: 8px;
 }

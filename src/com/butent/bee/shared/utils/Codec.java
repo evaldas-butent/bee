@@ -238,7 +238,7 @@ public final class Codec {
   }
 
   public static Map<String, String> beeDeserializeMap(String data) {
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = Maps.newLinkedHashMap();
 
     String[] arr = beeDeserializeCollection(data);
     if (arr != null) {
@@ -458,6 +458,10 @@ public final class Codec {
     int len = s.length();
     Assert.isPositive(len);
     return toBase64(toBytes(s));
+  }
+
+  public static String encodePassword(String password) {
+    return BeeUtils.isEmpty(password) ? null : md5(password.trim());
   }
 
   /**

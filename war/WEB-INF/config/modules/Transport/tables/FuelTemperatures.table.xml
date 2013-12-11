@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="Consumption" notNull="true" relation="FuelConsumptions" cascade="DELETE" label="=trFuelConsumptions"/>
-    <Numeric name="Season" precision="1" notNull="true" label="=trSeason" />
+    <Enum name="Season" key="FuelSeason" notNull="true" defValue="0" label="=trSeason" />
     <Numeric name="TempFrom" precision="3" scale="0" label="=trTemperatureFromShort" />
     <Numeric name="TempTo" precision="3" scale="0" label="=trTemparatureToShort" />
     <Numeric name="Rate" precision="6" scale="2" notNull="true" label="=trRatePercentShort"/>

@@ -22,7 +22,6 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -44,6 +43,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
   private final Collection<Long> ids;
 
   public HistoryHandler(String viewName, Collection<Long> ids) {
+    Assert.notEmpty(viewName);
     this.viewName = viewName;
     this.ids = ids;
   }
@@ -102,7 +102,6 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
       return;
     }
     provider.clear();
-    final CellGrid grid = getGridView().getGrid();
 
     ParameterList args = CommonsKeeper.createArgs(SVC_GET_HISTORY);
     args.addDataItem(VAR_HISTORY_VIEW, viewName);
@@ -124,8 +123,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
         for (BeeRow row : rowset.getRows()) {
           provider.addRow(row);
         }
-        grid.setRowData(rowset.getRows().getList(), true);
-        grid.setRowCount(rowset.getNumberOfRows(), true);
+        provider.refresh(false);
       }
     });
   }

@@ -238,6 +238,8 @@ public final class EcConstants {
   public static final String SVC_UPLOAD_GRAPHICS = "uploadGraphics";
   public static final String SVC_UPLOAD_BANNERS = "uploadBanners";
 
+  public static final String SVC_CREATE_CLIENT = "createClient";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -440,6 +442,7 @@ public final class EcConstants {
   public static final String COL_REGISTRATION_COUNTRY = "Country";
   public static final String COL_REGISTRATION_ACTIVITY = "Activity";
   public static final String COL_REGISTRATION_NOTES = "Notes";
+  public static final String COL_REGISTRATION_LANGUAGE = "Language";
   public static final String COL_REGISTRATION_HOST = "Host";
   public static final String COL_REGISTRATION_AGENT = "Agent";
 

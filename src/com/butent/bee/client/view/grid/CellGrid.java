@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -57,7 +58,6 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleDescriptor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
@@ -79,9 +79,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Flexibility;
-import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -920,7 +920,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private final RowChangeScheduler rowChangeScheduler =
       new RowChangeScheduler(defaultRowChangeSensitivityMillis);
 
-  private Evaluator rowEditable;
+  private Predicate<IsRow> rowEditable;
 
   public CellGrid() {
     setElement(Document.get().createDivElement());
@@ -1478,15 +1478,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return readOnly;
   }
 
-  public boolean isRowEditable(IsRow rowValue) {
-    boolean ok = (rowValue != null) && rowValue.isEditable();
-    if (ok && getRowEditable() != null) {
-      getRowEditable().update(rowValue);
-      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
-    }
-    return ok;
-  }
-
   public boolean isRowSelected(long rowId) {
     return getSelectedRows().containsKey(rowId);
   }
@@ -1620,7 +1611,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       if (!eventState.proceed()) {
         return;
       }
-      
+
       if (EventUtils.isClick(eventType)) {
         if (EventUtils.hasModifierKey(event) || columnInfo.isSelection()) {
           if (event.getShiftKey()) {
@@ -1992,6 +1983,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     info.setHeaderWidth(width);
   }
 
+  public void setColumnLabel(String columnId, String label) {
+    ColumnInfo info = getColumnInfo(columnId);
+    Assert.notNull(info);
+
+    info.setLabel(label);
+  }
+
   public void setColumnWidth(String columnId, double width, CssUnit unit) {
     int containerSize = getOffsetWidth();
     Assert.isPositive(containerSize);
@@ -2168,7 +2166,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  public void setRowEditable(Evaluator rowEditable) {
+  public void setRowEditable(Predicate<IsRow> rowEditable) {
     this.rowEditable = rowEditable;
   }
 
@@ -3082,7 +3080,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return resizerStatus;
   }
 
-  private Evaluator getRowEditable() {
+  private Predicate<IsRow> getRowEditable() {
     return rowEditable;
   }
 
@@ -3377,6 +3375,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private boolean isResizing() {
     return isResizing;
+  }
+
+  private boolean isRowEditable(IsRow rowValue) {
+    if (getRowEditable() == null) {
+      return (rowValue != null) && rowValue.isEditable();
+    } else {
+      return getRowEditable().apply(rowValue);
+    }
   }
 
   private boolean isRowSelected(IsRow rowValue) {

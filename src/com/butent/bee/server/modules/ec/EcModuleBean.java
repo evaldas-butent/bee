@@ -18,11 +18,13 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
@@ -71,6 +73,8 @@ import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -140,10 +144,10 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return null;
     }
-    
+
     Operator operator;
     String value;
-    
+
     if (code.contains(Operator.CHAR_ANY) || code.contains(Operator.CHAR_ONE)) {
       operator = Operator.MATCHES;
       value = code.trim().toUpperCase();
@@ -151,7 +155,7 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.isPrefixOrSuffix(code, BeeConst.CHAR_EQ)) {
       operator = Operator.EQ;
       value = BeeUtils.removePrefixAndSuffix(code, BeeConst.CHAR_EQ).trim().toUpperCase();
-    
+
     } else {
       operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
       value = normalizeCode(code);
@@ -200,12 +204,15 @@ public class EcModuleBean implements BeeModule {
       return result;
     }
   }
+
   @EJB
   SystemBean sys;
   @EJB
   UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  DataEditorBean deb;
   @EJB
   ParamHolderBean prm;
   @EJB
@@ -355,9 +362,11 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_UPLOAD_GRAPHICS)) {
       response = uploadGraphics(reqInfo);
-
     } else if (BeeUtils.same(svc, SVC_UPLOAD_BANNERS)) {
       response = uploadBanners(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_CREATE_CLIENT)) {
+      response = createClient(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -670,6 +679,66 @@ public class EcModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private ResponseObject createClient(RequestInfo reqInfo) {
+    List<BeeColumn> columns = sys.getView(VIEW_CLIENTS).getRowSetColumns();
+    BeeRow row = DataUtils.createEmptyRow(columns.size());
+
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+      if (column.isEditable()) {
+        String value = reqInfo.getParameter(column.getId());
+
+        if (!BeeUtils.isEmpty(value)) {
+          row.setValue(i, value);
+        } else if (!column.isNullable() && !column.hasDefaults()) {
+          return ResponseObject.parameterNotFound(SVC_CREATE_CLIENT, column.getId());
+        }
+      }
+    }
+
+    int managerIndex = DataUtils.getColumnIndex(COL_CLIENT_MANAGER, columns);
+    if (!DataUtils.isId(row.getLong(managerIndex))) {
+      Long manager = qs.getId(TBL_MANAGERS, COL_MANAGER_USER, usr.getCurrentUserId());
+      if (manager != null) {
+        row.setValue(managerIndex, manager);
+      }
+    }
+
+    BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_CLIENTS, columns, row);
+
+    ResponseObject response = deb.commitRow(rowSet, true);
+    if (response.hasErrors()) {
+      return response;
+    }
+    
+    response.clearMessages();
+
+    if (reqInfo.hasParameter(VAR_MAIL)) {
+      row = (BeeRow) response.getResponse();
+
+      Long sender = getSenderEmailId(row.getLong(managerIndex));
+      
+      Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
+      if (!DataUtils.isId(recipient)) {
+        Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
+        recipient = usr.getEmailId(userId);
+      }
+
+      String login = DataUtils.getString(columns, row, COL_LOGIN);
+      String password = reqInfo.getParameter(COL_PASSWORD);
+      
+      SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+          BeeUtils.toIntOrNull(reqInfo.getParameter(COL_USER_LOCALE)));
+
+      if (DataUtils.isId(sender) && DataUtils.isId(recipient) 
+          && !BeeUtils.anyEmpty(login, password)) {
+        response.addMessagesFrom(mailRegistration(sender, recipient, login, password, locale));
+      }
+    }
+
+    return response;
   }
 
   private String createTempArticleIds(SqlSelect query) {
@@ -1202,7 +1271,7 @@ public class EcModuleBean implements BeeModule {
 
     return result;
   }
-  
+
   private List<String> getClientWarehouses(Long client, String table) {
     List<String> result = Lists.newArrayList();
 
@@ -2298,6 +2367,28 @@ public class EcModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject mailRegistration(Long sender, Long recipient, String login,
+      String password, SupportedLocale locale) {
+    
+    String companyName = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_COMPANY_NAME));
+    String url = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_URL));
+    
+    LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
+
+    String subject = BeeUtils.trim(messages.ecRegistrationMailSubject(companyName));
+    String content = BeeUtils.trim(messages.ecRegistrationMailContent(login, password, url));
+
+    ResponseObject response = mail.sendMail(sender, recipient, subject, content);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    response.addInfo(usr.getLocalizableConstants().ecMailSent());
+    response.addInfo(getEmailAddress(recipient));
+
+    return response;
+  }
+
   private ResponseObject mergeCategory(Long categoryId, Long parentCategoryId) {
     Assert.noNulls(categoryId, parentCategoryId);
 
@@ -2606,7 +2697,7 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return ResponseObject.parameterNotFound(SVC_SEARCH_BY_ITEM_CODE, VAR_QUERY);
     }
-    
+
     IsCondition codeCondition = getCodeCondition(code, defOperator);
     if (codeCondition == null) {
       return ResponseObject.error(normalizeCode(code),
@@ -2754,7 +2845,7 @@ public class EcModuleBean implements BeeModule {
                 data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
             docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, true);
+            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, false);
           }
         }
         if (!response.hasErrors()) {

@@ -22,10 +22,9 @@
       <row>
         <Label text="=trdTotal" style="&lbl;" />
         <HorizontalPanel>
-          <DecimalLabel source="Amount" format="#.00" style="font-weight:bold; margin-right:5px;" />
+          <DecimalLabel source="Amount" format="0.00" style="font-weight:bold; margin-right:5px;" />
           <DataSelector source="CurrencyName" placeholder="=currencyShort"
-            style="width:40px; margin-right:5px;" editEnabled="false" />
-          <CheckBox source="VatIncluded" text="=trdVatIncluded" />
+            style="width:40px;" editEnabled="false" />
         </HorizontalPanel>
 
         <Label text="=trdInvoicePrefix" style="&lbl;" />
