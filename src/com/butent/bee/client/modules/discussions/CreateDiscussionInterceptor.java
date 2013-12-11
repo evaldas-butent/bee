@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.discussions;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -31,6 +33,7 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -39,11 +42,13 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Map;
 
 class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -72,7 +77,50 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     final FormView form = getFormView();
 
     if (widget instanceof FileCollector) {
-      ((FileCollector) widget).bindDnd(getFormView());
+      final FileCollector fc = (FileCollector) widget;
+      fc.bindDnd(getFormView());
+
+      DiscussionsUtils.getDiscussionsParameters(new Consumer<Map<String, String>>() {
+
+        @Override
+        public void accept(final Map<String, String> input) {
+          if (input == null || input.isEmpty()) {
+            return;
+          }
+          
+          fc.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
+
+            @Override
+            public void onSelection(SelectionEvent<NewFileInfo> event) {
+              NewFileInfo fileInfo = event.getSelectedItem();
+
+              if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
+                  BeeUtils.toLongOrNull(input.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
+
+                BeeKeeper.getScreen().notifyWarning(
+                    Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
+                    BeeUtils.toLong(input.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024), "("
+                    + fileInfo.getName() + ")");
+
+                fc.clear();
+                return;
+              }
+              
+              if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(), 
+                  BeeConst.STRING_POINT), input.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
+                
+                BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
+                    fileInfo.getName());
+                fc.clear();
+                return;
+              }
+            }
+            
+          });
+        }
+
+      });
+
     }
 
     if (BeeUtils.same(name, WIDGET_ACCESSIBILITY) && widget instanceof InputBoolean) {

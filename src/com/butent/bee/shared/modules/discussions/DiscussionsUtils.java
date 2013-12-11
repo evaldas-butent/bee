@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -15,6 +16,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,7 @@ public final class DiscussionsUtils {
    */
 
   private static final BiMap<String, String> discussionPropertyToRelation = HashBiMap.create();
+  private static final long MEGABYTE_IN_BYTES = 1024 * 1024;
   
   public static List<Long> getDiscussionMembers(IsRow row, List<BeeColumn> columns) {
     List<Long> users = Lists.newArrayList();
@@ -79,28 +82,26 @@ public final class DiscussionsUtils {
   public static Set<String> getRelations() {
     return ensureDiscussionPropertyToRelation().inverse().keySet();
   }
-
-  /*public static boolean isDiscussionAdmin(String loginName) {
-    if (BeeUtils.isEmpty(loginName)) {
+  
+  public static boolean isFileSizeLimitExceeded(long uploadFileSize, Long checkParam) {
+    if (checkParam == null) {
+      return false;
+    }
+    if (checkParam <= 0) {
       return false;
     }
 
-    Boolean result = Boolean.FALSE;
+    return uploadFileSize > (checkParam * MEGABYTE_IN_BYTES);
+  }
 
-    Global.getParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN, new Consumer<String>() {
+  public static boolean isForbiddenExtention(String fileExtention, String fileExtentionList) {
+    if (BeeUtils.isEmpty(fileExtention) || BeeUtils.isEmpty(fileExtentionList)) {
+      return false;
+    }
 
-      @Override
-      public void accept(String input) {
-        LogUtils.getRootLogger().debug("VALUE", input);
-
-        if (!BeeUtils.isEmpty(input)) {
-          result = true;
-        }
-      }
-    });
-
-    return result.booleanValue();
-  }*/
+    String[] extentions = BeeUtils.split(fileExtentionList, BeeConst.CHAR_SPACE);
+    return BeeUtils.inListSame(fileExtention, null, null, extentions);
+  }
 
   public static boolean sameMembers(IsRow oldRow, IsRow newRow) {
     if (oldRow == null || newRow == null) {
@@ -110,7 +111,7 @@ public final class DiscussionsUtils {
           .sameIdSet(oldRow.getProperty(PROP_MEMBERS), newRow.getProperty(PROP_MEMBERS));
     }
   }
-
+  
   public static String translateDiscussionPropertyToRelation(String propertyName) {
     return ensureDiscussionPropertyToRelation().get(propertyName);
   }

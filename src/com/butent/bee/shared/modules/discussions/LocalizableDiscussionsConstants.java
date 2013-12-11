@@ -56,6 +56,8 @@ public interface LocalizableDiscussionsConstants {
 
   String discussFilterStarred();
 
+  String discussInvalidFile();
+
   String discussObserved();
 
   String discussNotCreated();

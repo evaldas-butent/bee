@@ -68,7 +68,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -283,6 +282,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       @Override
       public void accept(final Map<String, String> input) {
         header.clearCommandPanel();
+
+        if (input == null) {
+          return;
+        }
+
         for (final DiscussionEvent event : DiscussionEvent.values()) {
           String label = event.getCommandLabel();
 
@@ -351,13 +355,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     // boolean accessCheckBoxValue = form.getWidgetByName(name)
 
-    form.setEnabled(isOwner(userId, owner));
+    form.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
-    LogUtils.getRootLogger().debug("still public?", isPublic(form, row));
-    if (isPublic(form, row)) {
-      visitedRow.setProperty(PROP_MEMBERS, null);
-    }
 
     BeeRowSet rowSet = new BeeRowSet(form.getViewName(), form.getDataColumns());
     rowSet.addRow(visitedRow);
@@ -515,7 +515,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void showComment(IsRow activeRow, Flow panel, BeeRow row, List<BeeColumn> columns,
-      List<StoredFile> files, boolean renderPhoto, int paddingLeft) {
+      List<StoredFile> files, boolean renderPhoto, int paddingLeft, String allowDelOwnComments,
+      String discussAdmin) {
 
     boolean deleted =
         row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)) == null
@@ -597,7 +598,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     if (!deleted
         && isEventEnabled(getFormView(), activeRow, DiscussionEvent.COMMENT_DELETE, statusId,
-            ownerId, false) && isCommentOwner) {
+            ownerId, false, discussAdmin,
+            isCommentOwner && BeeUtils.toBoolean(allowDelOwnComments))) {
       renderTrash(row, colActions);
     }
 
@@ -607,62 +609,86 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void showAnsweredCommentsAndMarks(IsRow activeRow, Flow panel, List<StoredFile> files,
-      Multimap<Long, Long> data, long parent, BeeRowSet rowSet, int paddingLeft) {
+      Multimap<Long, Long> data, long parent, BeeRowSet rowSet, int paddingLeft,
+      String allowDelOwnComments, String discussAdmin) {
     if (data.containsKey(parent)) {
       for (long id : data.get(parent)) {
         BeeRow row = rowSet.getRowById(id);
         showComment(activeRow, panel, row, rowSet.getColumns(), filterCommentFiles(files, row
             .getId()),
-            isPhoto(row, rowSet), paddingLeft);
+            isPhoto(row, rowSet), paddingLeft, allowDelOwnComments, discussAdmin);
 
-        showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet, paddingLeft + 1);
+        showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet, paddingLeft + 1,
+            allowDelOwnComments, discussAdmin);
       }
     }
   }
 
-  private void showCommentsAndMarks(FormView form, IsRow activeRow, BeeRowSet rowSet,
-      List<StoredFile> files) {
+  private void showCommentsAndMarks(final FormView form, final IsRow activeRow,
+      final BeeRowSet rowSet,
+      final List<StoredFile> files) {
     Widget widget = form.getWidgetByName(VIEW_DISCUSSIONS_COMMENTS);
 
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
       return;
     }
 
-    Flow panel = (Flow) widget;
-    panel.clear();
+    final Flow panel = (Flow) widget;
 
-    Set<Long> roots = Sets.newHashSet();
-    Multimap<Long, Long> data = HashMultimap.create();
+    DiscussionsUtils.getDiscussionsParameters(new Consumer<Map<String, String>>() {
 
-    for (BeeRow row : rowSet.getRows()) {
-      Long parent = row.getLong(rowSet.getColumnIndex(COL_PARENT_COMMENT));
+      @Override
+      public void accept(Map<String, String> paramInput) {
+        panel.clear();
 
-      if (parent == null) {
-        roots.add(row.getId());
-      } else {
-        data.put(parent, row.getId());
-      }
-    }
-
-    for (long id : roots) {
-      BeeRow row = rowSet.getRowById(id);
-      showComment(activeRow, panel, row, rowSet.getColumns(), filterCommentFiles(files, row
-          .getId()),
-          isPhoto(row, rowSet), INITIAL_COMMENT_ROW_PADDING_LEFT);
-
-      showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet,
-          INITIAL_COMMENT_ROW_PADDING_LEFT + 1);
-    }
-
-    if (panel.getWidgetCount() > 0 && form.asWidget().isVisible()) {
-      final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
-      Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          last.getElement().scrollIntoView();
+        if (paramInput == null) {
+          Global.showError("Error getting parrameters ");
+          return;
         }
-      });
-    }
+
+        if (paramInput.isEmpty()) {
+          Global.showError("Error getting parrameters ");
+          return;
+        }
+
+        Set<Long> roots = Sets.newHashSet();
+        Multimap<Long, Long> data = HashMultimap.create();
+
+        for (BeeRow row : rowSet.getRows()) {
+          Long parent = row.getLong(rowSet.getColumnIndex(COL_PARENT_COMMENT));
+
+          if (parent == null) {
+            roots.add(row.getId());
+          } else {
+            data.put(parent, row.getId());
+          }
+        }
+
+        for (long id : roots) {
+          BeeRow row = rowSet.getRowById(id);
+          showComment(activeRow, panel, row, rowSet.getColumns(), filterCommentFiles(files, row
+              .getId()),
+              isPhoto(row, rowSet), INITIAL_COMMENT_ROW_PADDING_LEFT, paramInput
+                  .get(PRM_ALLOW_DELETE_OWN_COMMENTS), paramInput.get(PRM_DISCUSS_ADMIN));
+
+          showAnsweredCommentsAndMarks(activeRow, panel, files, data, id, rowSet,
+              INITIAL_COMMENT_ROW_PADDING_LEFT + 1, paramInput.get(PRM_ALLOW_DELETE_OWN_COMMENTS),
+              paramInput.get(PRM_DISCUSS_ADMIN));
+        }
+
+        if (panel.getWidgetCount() > 0 && form.asWidget().isVisible()) {
+          final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
+          Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+            @Override
+            public void execute() {
+              last.getElement().scrollIntoView();
+            }
+          });
+        }
+      }
+
+    });
+
   }
 
   private static void showError(String message) {
@@ -911,7 +937,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       Long owner, boolean showInHeader, String adminLogin, boolean allowDelOwnComments) {
 
     if (event == null || status == null || owner == null
-        || (!isMember(userId, form, row) && !isPublic(form, row))) {
+        || (!isMember(userId, form, row) && !isPublic(form, row)) || isAdmin(adminLogin)) {
+
       return false;
     }
 

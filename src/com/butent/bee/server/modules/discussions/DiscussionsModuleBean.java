@@ -125,7 +125,7 @@ public class DiscussionsModuleBean implements BeeModule {
                 ParameterType.NUMBER,
             "Number of days when the discussion becomes inactive since last comment", false, null),
         new BeeParameter(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, ParameterType.TEXT,
-            "List of banned file extensions separated by separator", false, ""),
+            "List of banned file extensions separated by spaces", false, ""),
         new BeeParameter(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, ParameterType.NUMBER,
             "Max upload file size in MB", false, null));
     
