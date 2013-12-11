@@ -22,6 +22,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
@@ -324,7 +325,7 @@ public final class TradeUtils {
   public static void getTotalInWords(Double amount, final String currencyName,
       final String minorName, final Widget total) {
     Assert.notNull(total);
-    String locale = DomUtils.getDataProperty(total.getElement(), "locale");
+    String locale = DomUtils.getDataProperty(total.getElement(), VAR_LOCALE);
 
     if (amount == null || amount <= 0) {
       return;
@@ -332,11 +333,11 @@ public final class TradeUtils {
     long number = BeeUtils.toLong(Math.floor(amount));
     final int fraction = BeeUtils.toInt((amount - number) * 100);
 
-    ParameterList args = TradeKeeper.createArgs(SVC_NUMBER_TO_WORDS);
-    args.addDataItem(COL_TRADE_AMOUNT, number);
+    ParameterList args = CommonsKeeper.createArgs(SVC_NUMBER_TO_WORDS);
+    args.addDataItem(VAR_AMOUNT, number);
 
     if (!BeeUtils.isEmpty(locale)) {
-      args.addDataItem("Locale", locale);
+      args.addDataItem(VAR_LOCALE, locale);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override

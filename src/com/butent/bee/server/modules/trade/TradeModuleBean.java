@@ -1,10 +1,12 @@
 package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
@@ -14,7 +16,6 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.IsExpression;
@@ -27,17 +28,18 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -93,9 +95,8 @@ public class TradeModuleBean implements BeeModule {
           BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
           reqInfo.getParameter(ExchangeUtils.COL_CURRENCY));
 
-    } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
-      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT)),
-          reqInfo.getParameter("Locale"));
+    } else if (BeeUtils.same(svc, SVC_CREDIT_INFO)) {
+      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CUSTOMER)));
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -103,6 +104,71 @@ public class TradeModuleBean implements BeeModule {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  public ResponseObject getCreditInfo(Long companyId) {
+    Assert.notNull(companyId);
+
+    SimpleRow company = qs.getRow(new SqlSelect()
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, "CreditLimit1", "CreditDays", "LimitCurrency")
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ExchangeUtils.COL_CURRENCY)
+        .addFrom(TBL_COMPANIES)
+        .addFromLeft(TBL_CURRENCIES,
+            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, "LimitCurrency"))
+        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+
+    Map<String, String> resp = Maps.newLinkedHashMap();
+
+    if (company != null) {
+      double limit = BeeUtils.unbox(company.getDouble("CreditLimit1"));
+      Long curr = company.getLong("LimitCurrency");
+      String currName = company.getValue(ExchangeUtils.COL_CURRENCY);
+      int days = BeeUtils.unbox(company.getInt("CreditDays"));
+
+      SqlSelect query = new SqlSelect()
+          .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
+          .addFrom(TBL_SALES)
+          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
+              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
+              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
+                  SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
+
+      if (DataUtils.isId(curr)) {
+        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_AMOUNT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
+            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_PAID,
+                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
+      } else {
+        query.addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_AMOUNT,
+            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
+            .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
+                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
+      }
+      double credit = 0.0;
+      double overdue = 0.0;
+
+      for (SimpleRow row : qs.getData(query)) {
+        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))
+            - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
+
+        int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
+            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
+
+        if (dayDiff > 0) {
+          overdue += xxx;
+        }
+        credit += xxx;
+      }
+      if (credit > 0) {
+        resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
+        resp.put("Kreditas", BeeUtils.joinWords(limit, currName));
+        resp.put("Atidėjimas", BeeUtils.joinWords(days, "d."));
+        resp.put("Skola", BeeUtils.joinWords(BeeUtils.round(credit, 2), currName));
+        resp.put("Pradelsta skola", BeeUtils.joinWords(BeeUtils.round(overdue, 2), currName));
+      }
+    }
+    return ResponseObject.response(resp);
   }
 
   @Override
@@ -209,17 +275,5 @@ public class TradeModuleBean implements BeeModule {
               ExchangeUtils.COL_RATES_RATE + ExchangeUtils.COL_CURRENCY);
     }
     return ResponseObject.response(qs.getData(query));
-  }
-
-  private ResponseObject getNumberInWords(Long number, String locale) {
-    Assert.notNull(number);
-
-    Locale loc = I18nUtils.toLocale(locale);
-
-    if (loc == null) {
-      loc = usr.getLocale();
-    }
-    return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
-        .format(number));
   }
 }

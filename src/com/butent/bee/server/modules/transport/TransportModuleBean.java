@@ -36,7 +36,6 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -101,6 +100,8 @@ public class TransportModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   TransportImports imp;
+  @EJB
+  TradeModuleBean trd;
 
   @Resource
   TimerService timerService;
@@ -957,68 +958,7 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private ResponseObject getCreditInfo(Long companyId) {
-    Assert.notNull(companyId);
-
-    SimpleRow company = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, "CreditLimit1", "CreditDays", "LimitCurrency")
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ExchangeUtils.COL_CURRENCY)
-        .addFrom(TBL_COMPANIES)
-        .addFromLeft(TBL_CURRENCIES,
-            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, "LimitCurrency"))
-        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
-
-    Map<String, String> resp = Maps.newLinkedHashMap();
-
-    if (company != null) {
-      double limit = BeeUtils.unbox(company.getDouble("CreditLimit1"));
-      Long curr = company.getLong("LimitCurrency");
-      String currName = company.getValue(ExchangeUtils.COL_CURRENCY);
-      int days = BeeUtils.unbox(company.getInt("CreditDays"));
-
-      SqlSelect query = new SqlSelect()
-          .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
-          .addFrom(TBL_SALES)
-          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
-              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
-                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
-              SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
-
-      if (DataUtils.isId(curr)) {
-        query.addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_AMOUNT,
-            COL_TRADE_CURRENCY, COL_TRADE_DATE, curr), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeFieldTo(query, TBL_SALES, COL_TRADE_PAID,
-                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME, curr), COL_TRADE_PAID);
-      } else {
-        query.addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_AMOUNT,
-            COL_TRADE_CURRENCY, COL_TRADE_DATE), COL_TRADE_AMOUNT)
-            .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
-                COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
-      }
-      double credit = 0.0;
-      double overdue = 0.0;
-
-      for (SimpleRow row : qs.getData(query)) {
-        double xxx = BeeUtils.unbox(row.getDouble(COL_TRADE_AMOUNT))
-            - BeeUtils.unbox(row.getDouble(COL_TRADE_PAID));
-
-        int dayDiff = TimeUtils.dayDiff(BeeUtils.nvl(row.getDateTime(COL_TRADE_TERM),
-            TimeUtils.nextDay(row.getDateTime(COL_TRADE_DATE), days)), TimeUtils.nowMinutes());
-
-        if (dayDiff > 0) {
-          overdue += xxx;
-        }
-        credit += xxx;
-      }
-      if (credit > 0) {
-        resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
-        resp.put("Kreditas", BeeUtils.joinWords(limit, currName));
-        resp.put("Atidėjimas", BeeUtils.joinWords(days, "d."));
-        resp.put("Skola", BeeUtils.joinWords(BeeUtils.round(credit, 2), currName));
-        resp.put("Pradelsta skola", BeeUtils.joinWords(BeeUtils.round(overdue, 2), currName));
-      }
-    }
-    return ResponseObject.response(resp);
+    return trd.getCreditInfo(companyId);
   }
 
   private ResponseObject getDtbData() {

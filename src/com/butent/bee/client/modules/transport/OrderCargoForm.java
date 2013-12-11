@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
@@ -22,6 +24,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -70,12 +73,20 @@ class OrderCargoForm extends AbstractFormInterceptor {
           }
         }
       });
+    } else if (widget instanceof InputBoolean && BeeUtils.same(name, "Partial")) {
+      ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
+        @Override
+        public void onValueChange(ValueChangeEvent<String> event) {
+          refreshPartial(BeeUtils.toBoolean(event.getValue()));
+        }
+      });
     }
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refresh(row.getLong(form.getDataIndex(ExchangeUtils.COL_CURRENCY)));
+    refreshPartial(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial"))));
   }
 
   @Override
@@ -129,6 +140,14 @@ class OrderCargoForm extends AbstractFormInterceptor {
           widget.getElement().setInnerText(response.getResponseAsString());
         }
       });
+    }
+  }
+
+  private void refreshPartial(boolean on) {
+    Widget widget = getFormView().getWidgetByName("Metrics");
+
+    if (widget != null) {
+      widget.setVisible(on);
     }
   }
 }

@@ -34,6 +34,7 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.Pair;
@@ -61,6 +62,7 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -197,6 +199,10 @@ public class CommonsModuleBean implements BeeModule {
       response = createUser(reqInfo);
     } else if (BeeUtils.same(svc, SVC_BLOCK_HOST)) {
       response = blockHost(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
+      response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_AMOUNT)),
+          reqInfo.getParameter(VAR_LOCALE));
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -1047,6 +1053,18 @@ public class CommonsModuleBean implements BeeModule {
     } else {
       return ExchangeRatesWS.getListOfCurrencies(address);
     }
+  }
+
+  private ResponseObject getNumberInWords(Long number, String locale) {
+    Assert.notNull(number);
+
+    Locale loc = I18nUtils.toLocale(locale);
+
+    if (loc == null) {
+      loc = usr.getLocale();
+    }
+    return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
+        .format(number));
   }
 
   private ResponseObject updateExchangeRates(RequestInfo reqInfo) {
