@@ -12,17 +12,16 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.HasMouseWheelHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -54,10 +53,12 @@ import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
+import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
@@ -99,9 +100,9 @@ import java.util.Map;
  */
 
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasTextBox,
-    HasRelatedRow, HasCapsLock {
+    HasRelatedRow, HasCapsLock , HasKeyDownHandlers {
 
-  protected final class InputWidget extends InputText {
+  protected final class InputWidget extends InputText implements HasMouseWheelHandlers {
 
     private InputWidget() {
       super();
@@ -111,6 +112,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
     }
 
+    @Override
+    public HandlerRegistration addMouseWheelHandler(MouseWheelHandler handler) {
+      return addDomHandler(handler, MouseWheelEvent.getType());
+    }
+    
     @Override
     public void onBrowserEvent(Event event) {
       boolean showing = getSelector().isShowing();
@@ -813,6 +819,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addKeyDownHandler(handler);
+  }
+  
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -829,11 +840,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   public HandlerRegistration addSelectorHandler(SelectorEvent.Handler handler) {
     return addHandler(handler, SelectorEvent.getType());
-  }
-
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
   }
 
   public void clearDisplay() {
@@ -915,7 +921,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
-  public TextBoxBase getTextBox() {
+  public TextBox getTextBox() {
     return getInput();
   }
 
@@ -1013,7 +1019,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   public void setDisplayValue(String value) {
-    getInput().setValue(value, false);
+    getInput().setValue(value);
   }
 
   @Override

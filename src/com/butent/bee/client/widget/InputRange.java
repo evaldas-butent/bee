@@ -1,7 +1,10 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.event.shared.HandlerRegistration;
+
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -28,6 +31,11 @@ public class InputRange extends InputInteger {
     super(inputType, min, max, step);
   }
 
+  @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addValueChangeHandler(handler);
+  }
+  
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;

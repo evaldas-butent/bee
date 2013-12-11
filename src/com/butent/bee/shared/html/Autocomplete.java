@@ -115,24 +115,56 @@ public class Autocomplete {
   }
 
   public Autocomplete contact(String c, String fld) {
-    this.contact = c;
-    this.field = fld;
+    setContact(c);
+    setField(fld);
     return this;
   }
 
   public Autocomplete field(String fld) {
-    this.field = fld;
+    setField(fld);
     return this;
   }
 
+  public String getContact() {
+    return contact;
+  }
+
+  public String getField() {
+    return field;
+  }
+
+  public String getHint() {
+    return hint;
+  }
+
+  public String getSection() {
+    return section;
+  }
+
   public Autocomplete hint(String h) {
-    this.hint = h;
+    setHint(h);
     return this;
   }
 
   public Autocomplete section(String s) {
-    this.section = s;
+    setSection(s);
     return this;
+  }
+
+  public void setContact(String contact) {
+    this.contact = contact;
+  }
+
+  public void setField(String field) {
+    this.field = field;
+  }
+
+  public void setHint(String hint) {
+    this.hint = hint;
+  }
+
+  public void setSection(String section) {
+    this.section = section;
   }
 
   public Autocomplete shipping() {
@@ -142,21 +174,5 @@ public class Autocomplete {
   @Override
   public String toString() {
     return Strings.nullToEmpty(build());
-  }
-
-  private String getContact() {
-    return contact;
-  }
-
-  private String getField() {
-    return field;
-  }
-
-  private String getHint() {
-    return hint;
-  }
-
-  private String getSection() {
-    return section;
   }
 }

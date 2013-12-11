@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -19,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class IdFilterSupplier extends AbstractFilterSupplier {
   
-  private final Editor editor;
+  private final InputLong editor;
 
   private Long oldValue;
 

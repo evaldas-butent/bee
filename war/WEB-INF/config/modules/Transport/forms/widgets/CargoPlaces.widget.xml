@@ -14,17 +14,15 @@
     </row>
     <row>
       <Label text="=company" horizontalAlignment="right" />
-      <InputText source="LoadingCompany" autocompleteSection="loading" 
-        autocompleteField="organization" />
+      <InputText source="LoadingCompany" autocompleteName="loading-company" />
     </row>
     <row>
       <Label text="=personContact" horizontalAlignment="right" />
-      <InputText source="LoadingContact" autocompleteSection="loading" autocompleteField="name" />
+      <InputText source="LoadingContact" autocompleteName="loading-contact" />
     </row>
     <row>
       <Label text="=address" horizontalAlignment="right" />
-      <InputText source="LoadingAddress" autocompleteSection="loading" 
-        autocompleteField="address-line1" />
+      <InputText source="LoadingAddress" autocompleteName="loading-address" />
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
@@ -38,8 +36,8 @@
     </row>
     <row>
       <Label text="=postIndex" horizontalAlignment="right" />
-      <InputText source="LoadingPostIndex" style="width:90px;" autocompleteSection="loading" 
-        autocompleteField="postal-code" />
+      <InputText source="LoadingPostIndex" style="width:90px;" 
+        autocompleteName="loading-postal-code" />
     </row>
     <row>
       <Label text="=country" horizontalAlignment="right" />
@@ -58,7 +56,8 @@
     </row>
     <row>
       <Label text="=ref" horizontalAlignment="right" />
-      <InputArea source="LoadingTerminal" style="wdith:155px;" />
+      <InputArea source="LoadingTerminal" style="wdith:155px;" 
+        autocompleteName="loading-terminal" />
     </row>
   </Table>
 
@@ -74,18 +73,15 @@
     </row>
     <row>
       <Label text="=company" horizontalAlignment="right" />
-      <InputText source="UnloadingCompany" autocompleteSection="unloading" 
-        autocompleteField="organization" />
+      <InputText source="UnloadingCompany" autocompleteName="unloading-company" />
     </row>
     <row>
       <Label text="=personContact" horizontalAlignment="right" />
-      <InputText source="UnloadingContact" autocompleteSection="unloading" 
-        autocompleteField="name" />
+      <InputText source="UnloadingContact" autocompleteName="unloading-contact" />
     </row>
     <row>
       <Label text="=address" horizontalAlignment="right" />
-      <InputText source="UnloadingAddress" autocompleteSection="unloading" 
-        autocompleteField="address-line1" />
+      <InputText source="UnloadingAddress" autocompleteName="unloading-address" />
     </row>
     <row>
       <Label text="=city" horizontalAlignment="right" />
@@ -99,8 +95,8 @@
     </row>
     <row>
       <Label text="=postIndex" horizontalAlignment="right" />
-      <InputText source="UnloadingPostIndex" style="width:90px;" autocompleteSection="unloading" 
-        autocompleteField="postal-code" />
+      <InputText source="UnloadingPostIndex" style="width:90px;"
+        autocompleteName="unloading-postal-code" />
     </row>
     <row>
       <Label text="=country" horizontalAlignment="right" />
@@ -119,7 +115,8 @@
     </row>
     <row>
       <Label text="=ref" horizontalAlignment="right" decorator="caption-top" />
-      <InputArea source="UnloadingTerminal" style="wdith:155px;" />
+      <InputArea source="UnloadingTerminal" style="wdith:155px;"
+        autocompleteName="unloading-terminal" />
     </row>
   </Table>
 </HorizontalPanel>

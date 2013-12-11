@@ -591,11 +591,7 @@
       <xs:complexContent>
         <xs:extension base="inputWidget">
           <xs:attribute name="upperCase" type="xs:boolean" />
-          <xs:attribute name="autocomplete" type="ui:autocomplete" />
-          <xs:attribute name="autocompleteSection" type="xs:NCName" />
-          <xs:attribute name="autocompleteHint" type="ui:autofillHint" />
-          <xs:attribute name="autocompleteContact" type="ui:autofillContact" />
-          <xs:attribute name="autocompleteField" type="ui:autofillField" />
+          <xs:attributeGroup ref="ui:autocomplete" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -610,6 +606,7 @@
             default="caption-left-cell" />
           <xs:attribute name="onFocus" type="ui:focusAction" />
           <xs:attribute name="placeholder" type="xs:normalizedString" />
+          <xs:attributeGroup ref="ui:autocomplete" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

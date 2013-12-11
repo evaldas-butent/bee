@@ -908,13 +908,6 @@
     </xs:restriction>
   </xs:simpleType>
   
-  <xs:simpleType name="autocomplete">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="off" />
-      <xs:enumeration value="on" />
-    </xs:restriction>
-  </xs:simpleType>
-
   <xs:simpleType name="autofillHint">
     <xs:restriction base="xs:string">
       <xs:enumeration value="shipping" />
@@ -983,4 +976,14 @@
       <xs:enumeration value="impp" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:attributeGroup name="autocomplete">
+    <xs:attribute name="autocomplete" type="xs:boolean" />
+    <xs:attribute name="autocompleteName" type="xs:NCName" />
+    <xs:attribute name="autocompleteSection" type="xs:NCName" />
+    <xs:attribute name="autocompleteHint" type="autofillHint" />
+    <xs:attribute name="autocompleteContact" type="autofillContact" />
+    <xs:attribute name="autocompleteField" type="autofillField" />
+  </xs:attributeGroup>
+  
 </xs:schema>

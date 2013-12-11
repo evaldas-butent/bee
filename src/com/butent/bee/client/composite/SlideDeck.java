@@ -6,6 +6,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -869,9 +871,9 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
       effectWidget.setSelectedIndex(getEffect().ordinal());
     }
 
-    effectWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+    effectWidget.addChangeHandler(new ChangeHandler() {
       @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
+      public void onChange(ChangeEvent event) {
         Effect eff = EnumUtils.getEnumByIndex(Effect.class, effectWidget.getSelectedIndex());
         if (eff != null && eff != getEffect()) {
           animation.onEffectChanged(getEffect(), eff);

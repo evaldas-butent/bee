@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
@@ -30,8 +30,8 @@ import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
@@ -61,7 +61,7 @@ import java.util.List;
  * etc.
  */
 
-public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler,
+public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopEvent.Handler,
     HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler, HasCaption {
 
   private static final String STYLE_EDITOR = "bee-CellGridEditor";
@@ -419,6 +419,11 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
   }
 
+  @Override
+  public void onValueChange(ValueChangeEvent<String> event) {
+    endEdit(null, false);
+  }
+  
   public void openEditor(HasWidgets editorContainer, Element sourceElement,
       Element adjustElement, int zIndex, IsRow row, char charCode, EditEndEvent.Handler handler) {
     Assert.notNull(handler);
@@ -569,8 +574,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     if (getEditor() == null) {
       return;
     }
-    getEditor().addKeyDownHandler(this);
+    
     getEditor().addBlurHandler(this);
+
+    getEditor().addEditChangeHandler(this);
     getEditor().addEditStopHandler(this);
   }
 
