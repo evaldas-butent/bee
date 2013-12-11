@@ -87,6 +87,7 @@ public final class DiscussionsConstants {
 
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_LAST_COMMET = "LastComment";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
@@ -147,6 +148,7 @@ public final class DiscussionsConstants {
 
   public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
 
+  public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
 

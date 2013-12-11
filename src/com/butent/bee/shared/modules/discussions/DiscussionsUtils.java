@@ -24,16 +24,6 @@ import java.util.Set;
 
 public final class DiscussionsUtils {
 
-  /*
-   * public final class ParameterConsumer implements Consumer<Map<String, String>> {
-   * 
-   * @Override public void accept(Map<String, String> input) { // TODO Auto-generated method stub
-   * 
-   * }
-   * 
-   * }
-   */
-
   private static final BiMap<String, String> discussionPropertyToRelation = HashBiMap.create();
   private static final long MEGABYTE_IN_BYTES = 1024 * 1024;
   

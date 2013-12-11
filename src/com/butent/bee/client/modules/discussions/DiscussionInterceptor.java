@@ -9,6 +9,8 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -56,6 +58,8 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -161,8 +165,49 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       col++;
 
       styleName = STYLE_DIALOG + "fileCillector";
-      FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
+      final FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
       collector.addStyleName(styleName);
+
+      DiscussionsUtils.getDiscussionsParameters(new Consumer<Map<String, String>>() {
+
+        @Override
+        public void accept(final Map<String, String> input) {
+          if (input == null || input.isEmpty()) {
+            return;
+          }
+
+          collector.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
+
+            @Override
+            public void onSelection(SelectionEvent<NewFileInfo> event) {
+              NewFileInfo fileInfo = event.getSelectedItem();
+
+              if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
+                  BeeUtils.toLongOrNull(input.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
+
+                BeeKeeper.getScreen().notifyWarning(
+                    Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
+                        BeeUtils.toLong(input.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024), "("
+                        + fileInfo.getName() + ")");
+
+                collector.clear();
+                return;
+              }
+
+              if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
+                  BeeConst.STRING_POINT), input.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
+
+                BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
+                    fileInfo.getName());
+                collector.clear();
+                return;
+              }
+            }
+
+          });
+        }
+
+      });
 
       table.setWidget(row, col, collector);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
@@ -400,7 +445,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         String comments = data.getProperty(PROP_COMMENTS);
 
         if (!BeeUtils.isEmpty(comments)) {
-          showCommentsAndMarks(form, row, BeeRowSet.restore(comments), files);
+          showCommentsAndMarks(form, data, BeeRowSet.restore(comments), files);
         } else {
           clearCommentsCache(form);
         }
@@ -518,13 +563,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       List<StoredFile> files, boolean renderPhoto, int paddingLeft, String allowDelOwnComments,
       String discussAdmin) {
 
-    boolean deleted =
-        row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)) == null
-            ? false : row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)).booleanValue();
+    boolean deleted = BeeUtils.unbox(
+        row.getBoolean(DataUtils.getColumnIndex(COL_DELETED, columns)));
 
-    boolean isCommentOwner =
-        row.getLong(DataUtils.getColumnIndex(COL_PUBLISHER, columns)) == null
-            ? false : row.getLong(DataUtils.getColumnIndex(COL_PUBLISHER, columns)) == userId;
+    boolean isCommentOwner = isOwner(userId, BeeUtils.unbox(
+        row.getLong(DataUtils.getColumnIndex(COL_PUBLISHER, columns))));
 
     Long ownerId = activeRow.getLong(getFormView().getDataIndex(COL_OWNER));
     Integer statusId = activeRow.getInteger(getFormView().getDataIndex(COL_STATUS));
@@ -594,6 +637,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         && isEventEnabled(getFormView(), activeRow, DiscussionEvent.REPLY, statusId, ownerId,
             false)) {
       renderReply(row, colActions);
+    } else if (!deleted) {
+      Assert.notNull(null);
     }
 
     if (!deleted
@@ -692,7 +737,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private static void showError(String message) {
-    Global.showError(Localized.getConstants().error(), Lists.newArrayList(message));
+    BeeKeeper.getScreen().notifySevere(Localized.getConstants().error(), message);
   }
 
   private static void clearCommentsCache(FormView form) {
@@ -787,6 +832,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
         if (BeeUtils.isEmpty(comment)) {
           showError(Localized.getConstants().crmEnterComment());
+          return;
         }
 
         final long discussionId = getDiscussionId();
@@ -937,7 +983,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       Long owner, boolean showInHeader, String adminLogin, boolean allowDelOwnComments) {
 
     if (event == null || status == null || owner == null
-        || (!isMember(userId, form, row) && !isPublic(form, row)) || isAdmin(adminLogin)) {
+        || (!isMember(userId, form, row) && !isPublic(form, row) && !isAdmin(adminLogin))) {
 
       return false;
     }
@@ -990,7 +1036,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (BeeUtils.isEmpty(members)) {
       return false;
     }
-
     return members.contains(user);
   }
 

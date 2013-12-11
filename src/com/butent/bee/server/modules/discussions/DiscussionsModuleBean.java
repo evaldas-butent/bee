@@ -16,6 +16,9 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.ParameterEvent;
+import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -44,6 +47,8 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -59,7 +64,12 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 
 @Stateless
 @LocalBean
@@ -77,8 +87,15 @@ public class DiscussionsModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  ParamHolderBean prm;
   @Resource
   EJBContext ctx;
+
+  @Resource
+  TimerService timerService;
+
+  private Timer discussTimer;
 
   @Override
   public Collection<String> dependsOn() {
@@ -144,6 +161,18 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    initTimer();
+
+    prm.registerParameterEventHandler(new ParameterEventHandler() {
+      @Subscribe
+      public void initTimers(ParameterEvent event) {
+        if (BeeUtils.same(event.getModule(), DISCUSSIONS_MODULE)
+            && BeeUtils.same(event.getParameter(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+          initTimer();
+        }
+      }
+    });
+
     sys.registerDataEventHandler(new DataEventHandler() {
 
       @Subscribe
@@ -549,6 +578,34 @@ public class DiscussionsModuleBean implements BeeModule {
     return response;
   }
 
+  @Timeout
+  private void doInactiveDiscussions() {
+    SqlSelect select =
+        new SqlSelect().addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), sys
+                .getIdName(TBL_DISCUSSIONS))
+            .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, ALS_LAST_COMMET)
+            .setWhere(
+                SqlUtils.equals(TBL_DISCUSSIONS, COL_STATUS, DiscussionStatus.ACTIVE.ordinal()));
+    
+    SimpleRowSet oldDiscussions = qs.getData(select);
+    
+    if (oldDiscussions.isEmpty()) {
+      return;
+    }
+    
+    JustDate date = new JustDate();
+    // TODO:
+    
+    SqlUpdate update =
+        new SqlUpdate(TBL_DISCUSSIONS).addConstant(COL_STATUS, DiscussionStatus.INACTIVE.ordinal())
+            .setWhere(
+                SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS),
+                    (Object[]) oldDiscussions.getColumn(sys.getIdName(TBL_DISCUSSIONS))));
+
+    int count = qs.updateData(update);
+    logger.info("Setting inactive discussions", count);
+  }
+
   private ResponseObject getDiscussionData(RequestInfo reqInfo) {
     long discussionId = BeeUtils.toLong(reqInfo.getParameter(VAR_DISCUSSION_ID));
     if (!DataUtils.isId(discussionId)) {
@@ -643,6 +700,36 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return res;
+  }
+
+  private void initTimer() {
+    Integer days = prm.getInteger(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
+
+    boolean timerExists = discussTimer != null;
+    
+    if (timerExists) {
+      try {
+        discussTimer.cancel();
+      } catch (NoSuchObjectLocalException er) {
+        logger.error(er);
+      }
+
+      discussTimer = null;
+    }
+    
+    if (BeeUtils.isPositive(days)) {
+      discussTimer =
+          timerService.createIntervalTimer(days * TimeUtils.MILLIS_PER_DAY,
+              days * TimeUtils.MILLIS_PER_DAY, new TimerConfig(null, false));
+
+      logger.info("Created DISCUSSION refresh timer every", days, "minutes starting at",
+          discussTimer.getNextTimeout());
+    } else {
+      if (timerExists) {
+        logger.info("Removed DISCUSSION timer");
+      }
+    }
+
   }
 
   private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {
