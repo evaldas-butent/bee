@@ -181,6 +181,13 @@ public final class TransportConstants {
 
       @Override
       protected void init() {
+        LocalizableConstants locale = Localized.getConstants();
+        addProperty(new ImportProperty(VAR_IMPORT_LOGIN, locale.loginUserName()));
+        addProperty(new ImportProperty(VAR_IMPORT_PASSWORD, locale.loginPassword()));
+        addProperty(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
+            TBL_VEHICLES, COL_VEHICLE_NUMBER));
+        addProperty(new ImportProperty(CommonsConstants.COL_COUNTRY, locale.country(),
+            CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
       }
     };
 
@@ -386,10 +393,14 @@ public final class TransportConstants {
   public static final String VAR_IMPORT_START_ROW = "Row";
   public static final String VAR_IMPORT_DATE_FORMAT = "DateFormat";
 
+  public static final String VAR_IMPORT_LOGIN = "Login";
+  public static final String VAR_IMPORT_PASSWORD = "Password";
+
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
+  public static final String TBL_VEHICLE_TRACKING = "VehicleTracking";
   public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
   public static final String TBL_VEHICLE_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";

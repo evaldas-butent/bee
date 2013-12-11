@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="VehicleTracking" viewName="VehicleTracking"
+  >
+  <g:columns>
+    <RelColumn name="Country" />
+    <DataColumn name="Date" />
+    <DataColumn name="DriveTimeInHours" />
+    <DataColumn name="StopTimeInHours" />
+    <DataColumn name="GpsDistanceInKm" />
+    <DataColumn name="GpsAverageFuelUsage" />
+    <DataColumn name="CounterFuelUsedInLiters" />
+    <DataColumn name="CanDistanceInKm" />
+    <DataColumn name="CanFuelUsedInLiters" />
+    <DataColumn name="CanAverageFuelUsage" />
+    <DataColumn name="CanOdometerValueStartInKm" />
+    <DataColumn name="CanOdometerValueEndInKm" />
+  </g:columns>
+</g:Grid>

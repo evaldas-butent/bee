@@ -72,6 +72,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -1936,8 +1937,8 @@ public class TransportModuleBean implements BeeModule {
     if (timerExists) {
       try {
         erpTimer.cancel();
-      } catch (Exception e) {
-        logger.error(e, "ERP");
+      } catch (NoSuchObjectLocalException e) {
+        logger.error(e);
       }
       erpTimer = null;
     }
