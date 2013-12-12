@@ -137,15 +137,15 @@ public class DiscussionsModuleBean implements BeeModule {
             "The discussions administrator's login name, which can perform the removal steps",
             false, ""),
         new BeeParameter(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS, ParameterType.BOOLEAN,
-                "Allows users deletes own comments", false, null),
-            new BeeParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
-                ParameterType.NUMBER,
+            "Allows users deletes own comments", false, null),
+        new BeeParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
+            ParameterType.NUMBER,
             "Number of days when the discussion becomes inactive since last comment", false, null),
         new BeeParameter(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, ParameterType.TEXT,
             "List of banned file extensions separated by spaces", false, ""),
         new BeeParameter(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, ParameterType.NUMBER,
             "Max upload file size in MB", false, null));
-    
+
     return params;
   }
 
@@ -557,9 +557,8 @@ public class DiscussionsModuleBean implements BeeModule {
         }
 
         if ((response == null || !response.hasErrors()) && DataUtils.isId(deleteComment)) {
-            response = deleteDiscussionComment(discussionId, deleteComment);
-          }
-
+          response = deleteDiscussionComment(discussionId, deleteComment);
+        }
 
         if (response == null || !response.hasErrors()) {
           response =
@@ -580,29 +579,48 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Timeout
   private void doInactiveDiscussions() {
-    SqlSelect select =
-        new SqlSelect().addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), sys
-                .getIdName(TBL_DISCUSSIONS))
-            .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, ALS_LAST_COMMET)
-            .setWhere(
-                SqlUtils.equals(TBL_DISCUSSIONS, COL_STATUS, DiscussionStatus.ACTIVE.ordinal()));
-    
-    SimpleRowSet oldDiscussions = qs.getData(select);
-    
-    if (oldDiscussions.isEmpty()) {
+    Long days = prm.getLong(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
+
+    if (!BeeUtils.isPositive(days)) {
+      logger.info("No value set for discussion deactyvation");
       return;
     }
-    
-    JustDate date = new JustDate();
-    // TODO:
-    
-    SqlUpdate update =
-        new SqlUpdate(TBL_DISCUSSIONS).addConstant(COL_STATUS, DiscussionStatus.INACTIVE.ordinal())
-            .setWhere(
-                SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS),
-                    (Object[]) oldDiscussions.getColumn(sys.getIdName(TBL_DISCUSSIONS))));
+    SqlSelect select =
+        new SqlSelect().addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), sys
+            .getIdName(TBL_DISCUSSIONS))
+            .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, ALS_LAST_COMMET)
+            .addFrom(TBL_DISCUSSIONS)
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
+            .setWhere(SqlUtils.and(
+                SqlUtils.equals(TBL_DISCUSSIONS, COL_STATUS, DiscussionStatus.ACTIVE.ordinal()),
+                SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)))
+            .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS));
 
-    int count = qs.updateData(update);
+    SimpleRowSet activeDiscussions = qs.getData(select);
+
+    if (activeDiscussions.isEmpty()) {
+      logger.info("No value set for discussion deactyvation");
+      return;
+    }
+
+    JustDate dacyvationTime =
+        new JustDate(System.currentTimeMillis() - (days * TimeUtils.MILLIS_PER_DAY));
+
+    int count = 0;
+    for (int i = 0; i < activeDiscussions.getNumberOfRows(); i++) {
+
+      if (activeDiscussions.getDate(i, ALS_LAST_COMMET).compareTo(dacyvationTime) < 0) {
+        SqlUpdate update =
+            new SqlUpdate(TBL_DISCUSSIONS).addConstant(COL_STATUS,
+                DiscussionStatus.INACTIVE.ordinal())
+                .setWhere(SqlUtils.equals(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS),
+                    activeDiscussions.getLong(i, sys.getIdName(TBL_DISCUSSIONS))));
+
+        count += qs.updateData(update);
+      }
+    }
+
     logger.info("Setting inactive discussions", count);
   }
 
@@ -706,7 +724,7 @@ public class DiscussionsModuleBean implements BeeModule {
     Integer days = prm.getInteger(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     boolean timerExists = discussTimer != null;
-    
+
     if (timerExists) {
       try {
         discussTimer.cancel();
@@ -716,13 +734,14 @@ public class DiscussionsModuleBean implements BeeModule {
 
       discussTimer = null;
     }
-    
+
     if (BeeUtils.isPositive(days)) {
       discussTimer =
-          timerService.createIntervalTimer(days * TimeUtils.MILLIS_PER_DAY,
-              days * TimeUtils.MILLIS_PER_DAY, new TimerConfig(null, false));
+          timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
+              DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(null, false));
 
-      logger.info("Created DISCUSSION refresh timer every", days, "minutes starting at",
+
+      logger.info("Created DISCUSSION refresh timer starting at",
           discussTimer.getNextTimeout());
     } else {
       if (timerExists) {

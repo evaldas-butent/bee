@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.discussions;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -169,6 +170,8 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String VIEW_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String VIEW_DISCUSSIONS_USERS = "DiscussionsUsers";
+
+  public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
 
   private DiscussionsConstants() {
 
