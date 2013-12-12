@@ -103,6 +103,12 @@ public final class CommonsConstants {
   public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
   public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
   public static final String SVC_SET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "set";
+
+  public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
+
+  public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
+  public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
+
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
   public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
   public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
@@ -356,7 +362,7 @@ public final class CommonsConstants {
 
   public static final String PRM_COMPANY_NAME = "CompanyName";
   public static final String PRM_URL = "Url";
-  
+
   public static final String PROP_CATEGORIES = "CategList";
   public static final String PROP_ICON = "Icon";
 

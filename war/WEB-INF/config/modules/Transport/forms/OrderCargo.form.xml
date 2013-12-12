@@ -9,7 +9,7 @@
   xmlns:d="http://www.butent.com/decorator"
   
   name="OrderCargo" viewName="OrderCargo" caption="=cargo"
-  width="925" height="750"
+  width="800" height="670"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&section;">
@@ -20,11 +20,11 @@
         <InlineLabel text="=trTransportationPrice" style="padding-top:1px;" />
         <DecimalLabel name="Amount" style="padding-top:1px; font-weight:bold; color:green;" />
         <DataSelector name="Currency" source="Currency" editEnabled="false" placeholder="=currencyShort"
-          style="width: 40px; font-weight: bold; display: inline-block;" />
+          style="width:40px; font-weight:bold; display:inline-block;" />
       </HorizontalPanel>
     </FlowPanel>
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <TabbedPages style="height: 300px; width: 480px">
+      <TabbedPages style="height: 290px; width: 480px">
         <page>
           <text>=cargoInformation</text>
           <FlowPanel>
@@ -40,75 +40,96 @@
           <ChildGrid name="CargoIncomes" relColumn="Cargo"  />
         </page>
       </TabbedPages> 
-      <FlowPanel class="flexBox-vertical" style="margin:10px; margin-top:35px;">
+      <FlowPanel style="margin-left:10px;">
       	<Table>
       	  <row>
-      	    <Label text="=cargoValue" horizontalAlignment="right" />
-              <FlowPanel>
-              <InputCurrency source="Value" />
-      	      <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:3px;"/>
-            </FlowPanel>
-            <CheckBox source="Partial" text="=partial" style="margin:3px;"/>
-      	  </row>
-      	  <row>
       	  	<Label text="=trLoadedKilometers" horizontalAlignment="right" />
-      	  	<InputDecimal source="LoadedKilometers" />
-            <CheckBox source="Outsized" text="=outsized" style="margin:3px;"/>
+      	  	<InputInteger source="LoadedKilometers" style="width:70px" />
       	  </row>
       	  <row>
             <Label text="=trEmptyKilometers"  horizontalAlignment="right" />
-            <InputDecimal source="EmptyKilometers" />
-            <CheckBox source="Dangerous" text="=dangerous" style="margin:3px;"/>
+            <InputInteger source="EmptyKilometers" style="width:70px" />
       	  </row>
+          <row>
+            <Label text="=cargoChangeOfPallets" horizontalAlignment="right" />
+            <InputInteger source="ExchangeOfPalettes" style="width:30px" />
+          </row>
+          <row>
+            <Label text="=pallets" horizontalAlignment="right" />
+            <InputInteger source="Palettes" style="width:70px" />        
+          </row>
+          <row><text>&amp;nbsp;</text></row>
+          <row>
+            <CheckBox source="Outsized" text="=outsized" />
+          </row>
+          <row>
+            <CheckBox source="Dangerous" text="=dangerous" />
+          </row>
+          <row>
+            <cell style="vertical-align:top;">
+              <CheckBox name="Partial" source="Partial" text="=partial" />
+            </cell>
+            <Table name="Metrics">
+              <row>
+                <Label text="=length" horizontalAlignment="right" />
+                <InputDecimal source="Length" format="0.00" style="width:70px" />
+              </row>
+              <row>
+                <Label text="=width" horizontalAlignment="right" />
+                <InputDecimal source="Width" format="0.00" style="width:70px" />
+              </row>
+              <row>
+                <Label text="=height" horizontalAlignment="right" />
+                <InputDecimal source="Height" format="0.00" style="width:70px" />        
+              </row>
+              <row>
+                <Label text="=volume" horizontalAlignment="right" />
+                <FlowPanel>
+                  <InputDecimal source="Volume" format="0.000" style="width:70px" />
+                  <DataSelector source="VolumeUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+                </FlowPanel>
+              </row>
+              <row>
+                <Label html="LDM" horizontalAlignment="right" />
+                <InputDecimal source="LDM" format="0.00" style="width:70px" />
+              </row>
+            </Table>
+          </row>
       	</Table>
       </FlowPanel>
     </FlowPanel>
     &separator;
     <Table>
       <row>
-        <Label text="=cargoTermsOfService" horizontalAlignment="right" />
-        <DataSelector source="ShippingTerm" />
-        <Label text="=weight" horizontalAlignment="right" />
-        <FlowPanel>
-          <InputDecimal source="Weight" format="0.000" style="display:inline-block; width:100px" />
-          <DataSelector source="WeightUnit" style="display:inline-block; width:40px; margin-left:5px;" />
-        </FlowPanel>
-        <Label text="=length" horizontalAlignment="right" />
-        <InputDecimal source="Length" format="#.00" />
-        <Label text="=notes" />
-      </row>
-      <row>
-        <Label text="=cargoChangeOfPallets" horizontalAlignment="right" />
-        <InputInteger source="ExchangeOfPalettes" />
-        <Label text="=volume" horizontalAlignment="right" />
-        <FlowPanel>
-          <InputDecimal source="Volume" format="0.000" style="display:inline-block; width:100px" />
-          <DataSelector source="VolumeUnit" style="display:inline-block; width:40px; margin-left:5px;" />
-        </FlowPanel>
-        <Label text="=width" horizontalAlignment="right" />
-        <InputDecimal source="Width" format="#.00" />
-        <cell rowSpan="3">
-          <InputArea source="Notes" characterWidth="30" style="height: 100%" />
-        </cell>
-      </row>
-      <row>
         <Label html="CMR" horizontalAlignment="right" />
         <InputText source="Cmr" />
-        <Label text="=quantity" horizontalAlignment="right" />
+        <Label text="=cargoValue" horizontalAlignment="right" />
         <FlowPanel>
-          <InputInteger source="Quantity" style="display:inline-block; width:100px" />
-          <DataSelector source="QuantityUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+          <InputCurrency source="Value" style="width:70px" />
+          <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:5px;"/>
         </FlowPanel>
-        <Label text="=height" horizontalAlignment="right" />
-        <InputDecimal source="Height" format="#.00" />        
+        <Label text="=notes" />
+        <cell rowSpan="4">
+          <InputArea source="Notes" characterWidth="30" visibleLines="4" />
+        </cell>
       </row>
       <row>
         <Label text="=number" horizontalAlignment="right" />
         <InputText source="Number" />
-        <Label html="LDM" horizontalAlignment="right" />
-        <InputDecimal source="LDM" format="#.00" style="width:145px" />
-        <Label text="=pallets" horizontalAlignment="right" />
-        <InputInteger source="Palettes" />        
+        <Label text="=quantity" horizontalAlignment="right" />
+        <FlowPanel>
+          <InputInteger source="Quantity" style="width:70px" />
+          <DataSelector source="QuantityUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+        </FlowPanel>
+      </row>
+      <row>
+        <Label text="=cargoTermsOfService" horizontalAlignment="right" />
+        <DataSelector source="ShippingTerm" />
+        <Label text="=weight" horizontalAlignment="right" />
+        <FlowPanel>
+          <InputDecimal source="Weight" format="0.000" style="width:70px" />
+          <DataSelector source="WeightUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+        </FlowPanel>
       </row>
     </Table>
 

@@ -11,17 +11,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.InputEvent;
@@ -30,9 +28,11 @@ import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
+import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.client.widget.InputColor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -45,7 +45,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHandler {
+public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownHandlers,
+    PreviewHandler {
 
   private static final String STYLE_PREFIX = "bee-ColorEditor-";
 
@@ -107,7 +108,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
         }
       }
     });
-    
+
     picker.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -133,23 +134,23 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
   }
 
   @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addKeyDownHandler(handler);
+  }
+
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
-    return getTextBox().addDomHandler(handler, FocusEvent.getType());
+    return textBox.addDomHandler(handler, FocusEvent.getType());
   }
 
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return getTextBox().addDomHandler(handler, KeyDownEvent.getType());
-  }
-
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
+    return textBox.addDomHandler(handler, KeyDownEvent.getType());
   }
 
   @Override
@@ -179,17 +180,17 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
 
   @Override
   public int getTabIndex() {
-    return getTextBox().getTabIndex();
+    return textBox.getTabIndex();
   }
 
   @Override
-  public TextBoxBase getTextBox() {
+  public TextBox getTextBox() {
     return textBox;
   }
 
   @Override
   public String getValue() {
-    return getTextBox().getValue();
+    return textBox.getValue();
   }
 
   @Override
@@ -255,7 +256,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
 
   @Override
   public void setAccessKey(char key) {
-    getTextBox().setAccessKey(key);
+    textBox.setAccessKey(key);
   }
 
   @Override
@@ -265,13 +266,13 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
 
   @Override
   public void setEnabled(boolean enabled) {
-    getTextBox().setEnabled(enabled);
+    textBox.setEnabled(enabled);
     picker.setEnabled(enabled);
   }
 
   @Override
   public void setFocus(boolean focused) {
-    getTextBox().setFocus(focused);
+    textBox.setFocus(focused);
   }
 
   @Override
@@ -291,12 +292,12 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
 
   @Override
   public void setTabIndex(int index) {
-    getTextBox().setTabIndex(index);
+    textBox.setTabIndex(index);
   }
 
   @Override
   public void setValue(String value) {
-    getTextBox().setValue(value);
+    textBox.setValue(value);
     picker.setColor(value);
   }
 
@@ -334,7 +335,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
     }
     return messages;
   }
-  
+
   @Override
   protected void onUnload() {
     super.onUnload();
@@ -347,7 +348,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
       Previewer.ensureUnregistered(this);
     }
   }
-  
+
   private void doBlur(BlurEvent event) {
     if (isPickerClosed()) {
       for (BlurHandler handler : blurHandlers) {
@@ -359,7 +360,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, PreviewHand
   private State getPickerState() {
     return pickerState;
   }
-  
+
   private boolean isPickerClosed() {
     return State.CLOSED.equals(getPickerState());
   }

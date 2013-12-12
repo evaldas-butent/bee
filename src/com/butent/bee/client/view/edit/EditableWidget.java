@@ -6,11 +6,8 @@ import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.Data;
@@ -49,8 +46,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String>, FocusHandler,
-    BlurHandler, EditStopEvent.Handler, HasCellValidationHandlers, EditEndEvent.HasEditEndHandler {
+public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHandler,
+    EditStopEvent.Handler, HasCellValidationHandlers, EditEndEvent.HasEditEndHandler {
 
   private static final BeeLogger logger = LogUtils.getLogger(EditableWidget.class);
 
@@ -125,12 +122,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       getEditor().addFocusHandler(this);
       getEditor().addBlurHandler(this);
 
-      if (isFocusable()) {
-        getEditor().addKeyDownHandler(this);
-      } else {
-        getEditor().addValueChangeHandler(this);
-      }
-
+      getEditor().addEditChangeHandler(this);
       getEditor().addEditStopHandler(this);
 
       setInitialized(true);
@@ -379,7 +371,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     getForm().onActiveWidgetChange(new ActiveWidgetChangeEvent(getWidgetId(), true));
 
     if (event.getSource() instanceof HasTextBox) {
-      TextBoxBase widget = ((HasTextBox) event.getSource()).getTextBox();
+      TextBox widget = ((HasTextBox) event.getSource()).getTextBox();
       String value = widget.getText();
       if (BeeUtils.isEmpty(value)) {
         return;

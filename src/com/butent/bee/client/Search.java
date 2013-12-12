@@ -27,6 +27,7 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
@@ -434,6 +435,8 @@ public class Search {
   private static final String STYLE_SUBMIT_CONTAINER = "bee-MainSearchSubmitContainer";
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
+  private static final String NAME_INPUT = "main-search";
+  
   private static final int MIN_SEARCH_PHRASE_LENGTH = 3;
 
   private Panel searchPanel;
@@ -462,6 +465,8 @@ public class Search {
 
     setInput(new InputText());
     DomUtils.setSearch(getInput());
+    AutocompleteProvider.enableDefault(getInput(), NAME_INPUT);
+
     getInput().addStyleName(STYLE_INPUT);
 
     getInput().addKeyDownHandler(new KeyDownHandler() {

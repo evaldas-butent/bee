@@ -319,12 +319,13 @@ public class SystemServiceBean {
   private static ResponseObject saveResource(RequestInfo reqInfo) {
     long start = System.currentTimeMillis();
 
-    String uri = reqInfo.getParameter(Service.RPC_VAR_URI);
-    String md5 = reqInfo.getParameter(Service.RPC_VAR_MD5);
-
-    if (BeeUtils.isEmpty(uri)) {
+    String pUri = reqInfo.getParameter(Service.RPC_VAR_URI);
+    if (BeeUtils.isEmpty(pUri)) {
       return ResponseObject.parameterNotFound(Service.SAVE_RESOURCE, Service.RPC_VAR_URI);
     }
+    String uri = Codec.decodeBase64(pUri);
+
+    String md5 = reqInfo.getParameter(Service.RPC_VAR_MD5);
 
     String content = reqInfo.getContent();
     if (BeeUtils.isEmpty(content)) {

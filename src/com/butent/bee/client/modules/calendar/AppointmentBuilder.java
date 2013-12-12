@@ -8,17 +8,18 @@ import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
@@ -275,14 +276,6 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
   }
 
-  private class PropWidgetHandler implements ValueChangeHandler<String> {
-    @Override
-    public void onValueChange(ValueChangeEvent<String> event) {
-      updateDuration(event.getValue());
-      checkOverlap(true);
-    }
-  }
-
   private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
 
   private static final String NAME_SERVICE_TYPE = "ServiceType";
@@ -327,7 +320,6 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private ModalCallback modalCallback;
 
   private final DateOrTimeWidgetHandler dateOrTimeWidgetHandler = new DateOrTimeWidgetHandler();
-  private final PropWidgetHandler propWidgetHandler = new PropWidgetHandler();
 
   private final List<Long> serviceTypes = Lists.newArrayList();
   private Long defaultServiceType;
@@ -396,8 +388,14 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_REPAIR_TYPE)) {
       setRepairTypeWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addValueChangeHandler(propWidgetHandler);
+      if (widget instanceof HasChangeHandlers) {
+        ((HasChangeHandlers) widget).addChangeHandler(new ChangeHandler() {
+          @Override
+          public void onChange(ChangeEvent event) {
+            updateDuration();
+            checkOverlap(true);
+          }
+        });
       }
 
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
@@ -1495,7 +1493,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
   }
 
-  private void updateDuration(String propName) {
+  private void updateDuration() {
+    ListBox listBox = getListBox(getRepairTypeWidgetId());
+    String propName = (listBox == null) ? null : listBox.getValue();
+
     BeeRowSet properties = CalendarKeeper.getExtendedProperties();
     if (BeeUtils.isEmpty(propName) || properties == null) {
       return;

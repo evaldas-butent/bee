@@ -6,11 +6,10 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -20,9 +19,11 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.HasTextBox;
+import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
@@ -37,8 +38,9 @@ import java.util.List;
  * Implements a component used for making changes to multiple lines of text.
  */
 
-public class TextEditor extends Absolute implements Editor, HasTextDimensions, HasTextBox {
-  
+public class TextEditor extends Absolute implements Editor, HasTextDimensions, HasTextBox,
+    HasKeyDownHandlers {
+
   private static final String STYLE_NAME = "bee-TextEditor";
 
   private final InputArea area;
@@ -48,13 +50,13 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public TextEditor() {
     super();
 
     this.area = new InputArea();
     area.addStyleName(STYLE_NAME + "-area");
-    
+
     Simple wrapper = new Simple(area);
     wrapper.addStyleName(STYLE_NAME + "-wrapper");
 
@@ -78,7 +80,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getArea().addDomHandler(handler, BlurEvent.getType());
   }
-  
+
+  @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addKeyDownHandler(handler);
+  }
+
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return getArea().addEditStopHandler(handler);
@@ -88,15 +95,10 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return getArea().addDomHandler(handler, FocusEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
-  }
-
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return getArea().addValueChangeHandler(handler);
   }
 
   @Override
@@ -108,7 +110,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public int getCharacterWidth() {
     return getArea().getCharacterWidth();
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return getArea().getDefaultFocusAction();
@@ -118,12 +120,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public String getIdPrefix() {
     return "text-editor";
   }
-  
+
   @Override
   public String getNormalizedValue() {
     return getArea().getNormalizedValue();
   }
-  
+
   @Override
   public String getOptions() {
     return options;
@@ -133,12 +135,12 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public int getTabIndex() {
     return getArea().getTabIndex();
   }
-  
+
   @Override
-  public TextBoxBase getTextBox() {
+  public TextBox getTextBox() {
     return getArea();
   }
-  
+
   @Override
   public String getValue() {
     return getArea().getValue();
@@ -153,7 +155,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_AREA;
   }
-  
+
   @Override
   public boolean handlesKey(int keyCode) {
     return getArea().handlesKey(keyCode);
@@ -168,7 +170,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public boolean isEditing() {
     return getArea().isEditing();
   }
-  
+
   @Override
   public boolean isEnabled() {
     return getArea().isEnabled();
@@ -206,7 +208,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     }
     super.onBrowserEvent(event);
   }
-  
+
   @Override
   public void setAccessKey(char key) {
     getArea().setAccessKey(key);
@@ -277,7 +279,7 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return getArea().validate(normalizedValue, checkForNull);
   }
-  
+
   private String getAcceptId() {
     return acceptId;
   }

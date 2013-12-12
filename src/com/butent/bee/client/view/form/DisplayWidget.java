@@ -39,11 +39,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class DisplayWidget {
 
   private static final BeeLogger logger = LogUtils.getLogger(DisplayWidget.class);
-  
+
   private final int dataIndex;
   private final AbstractCellRenderer renderer;
   private final WidgetDescription widgetDescription;
-  
+
   private final boolean dataBound;
 
   public DisplayWidget(int dataIndex, AbstractCellRenderer renderer,
@@ -51,8 +51,8 @@ public class DisplayWidget {
     this.dataIndex = dataIndex;
     this.renderer = renderer;
     this.widgetDescription = widgetDescription;
-    
-    this.dataBound = dataIndex >= 0 || renderer != null 
+
+    this.dataBound = dataIndex >= 0 || renderer != null
         || !BeeUtils.isEmpty(widgetDescription.getRowProperty());
   }
 
@@ -71,7 +71,7 @@ public class DisplayWidget {
 
     return BeeConst.STRING_EMPTY;
   }
-  
+
   public String getWidgetId() {
     return widgetDescription.getWidgetId();
   }
@@ -87,12 +87,12 @@ public class DisplayWidget {
   public boolean hasRowProperty() {
     return !BeeUtils.isEmpty(widgetDescription.getRowProperty());
   }
-  
+
   public boolean hasSource(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
     } else {
-      return BeeUtils.inListSame(source, widgetDescription.getSource(), 
+      return BeeUtils.inListSame(source, widgetDescription.getSource(),
           widgetDescription.getRowProperty());
     }
   }
@@ -102,11 +102,11 @@ public class DisplayWidget {
       ((HandlesRendering) widget).render(row);
       return;
     }
-    
+
     if (!dataBound) {
       return;
     }
-    
+
     String value = getValue(row);
     FormWidget type = getWidgetType();
 
@@ -159,13 +159,13 @@ public class DisplayWidget {
           ((DoubleLabel) widget).setValue(BeeUtils.toDoubleOrNull(value));
         }
         break;
-        
+
       case FLAG:
         if (widget instanceof Flag) {
           ((Flag) widget).render(value);
         }
         break;
-        
+
       case FILE_GROUP:
         if (widget instanceof FileGroup && hasRowProperty()) {
           ((FileGroup) widget).render(value);
@@ -201,7 +201,7 @@ public class DisplayWidget {
           ((InternalLink) widget).setHtml(value);
         }
         break;
-        
+
       case LINK:
         if (!BeeUtils.isEmpty(value) && widget instanceof Link) {
           ((Link) widget).update(value);
@@ -233,7 +233,7 @@ public class DisplayWidget {
           }
         }
         break;
-      
+
       case RICH_TEXT_EDITOR:
         if (widget instanceof RichTextEditor) {
           ((RichTextEditor) widget).setValue(value);
@@ -241,12 +241,10 @@ public class DisplayWidget {
         break;
 
       case TAB_BAR:
-        if (widget instanceof TabBar) {
-          if (BeeUtils.isDigit(value)) {
-            int idx = BeeUtils.toInt(value);
-            if (idx >= 0 && idx < ((TabBar) widget).getItemCount()) {
-              ((TabBar) widget).selectTab(idx, false);
-            }
+        if (widget instanceof TabBar && row != null && dataIndex >= 0) {
+          Integer idx = row.getInteger(dataIndex);
+          if (idx != null && ((TabBar) widget).isIndex(idx)) {
+            ((TabBar) widget).selectTab(idx, false);
           }
         }
         break;
