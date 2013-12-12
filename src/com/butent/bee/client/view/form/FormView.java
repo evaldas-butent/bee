@@ -21,6 +21,7 @@ import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.EditEndEvent;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.shared.data.BeeColumn;
@@ -69,6 +70,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   String getDataValue(String source);
 
   HasDataTable getDisplay();
+  
+  List<EditableWidget> getEditableWidgets();
 
   FormInterceptor getFormInterceptor();
 

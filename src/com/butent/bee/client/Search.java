@@ -465,7 +465,7 @@ public class Search {
 
     setInput(new InputText());
     DomUtils.setSearch(getInput());
-    AutocompleteProvider.enableDefault(getInput(), NAME_INPUT);
+    AutocompleteProvider.enableAutocomplete(getInput(), NAME_INPUT);
 
     getInput().addStyleName(STYLE_INPUT);
 
@@ -566,7 +566,10 @@ public class Search {
 
           if (results.isEmpty()) {
             BeeKeeper.getScreen().notifyWarning(value, Localized.getConstants().nothingFound());
+
           } else {
+            AutocompleteProvider.retainValue(getInput());
+            
             ModuleManager.maybeInitialize(new Command() {
               @Override
               public void execute() {

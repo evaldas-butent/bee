@@ -9,6 +9,7 @@ import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -245,6 +246,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
       return;
     }
 
+    AutocompleteProvider.retainValues(formView);
+    
     Collection<RowChildren> children = formView.getChildrenForInsert();
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, children, callback);
 

@@ -1,10 +1,7 @@
-package com.butent.bee.client.ui;
-
-import com.google.gwt.dom.client.Element;
+package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.HasName;
 import com.butent.bee.shared.html.Autocomplete;
-import com.butent.bee.shared.ui.HasStringValue;
 
 public interface HasAutocomplete extends HasName, HasStringValue {
   
@@ -17,7 +14,7 @@ public interface HasAutocomplete extends HasName, HasStringValue {
   String ATTR_AUTOCOMPLETE_CONTACT = "autocompleteContact";
   String ATTR_AUTOCOMPLETE_FIELD = "autocompleteField";
   
-  Element cloneAutocomplete();
+  boolean isMultiline();
 
   String getAutocomplete();
 

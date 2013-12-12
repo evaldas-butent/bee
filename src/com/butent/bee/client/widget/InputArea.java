@@ -21,7 +21,6 @@ import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesAfterSave;
-import com.butent.bee.client.ui.HasAutocomplete;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -35,6 +34,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -43,7 +43,6 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collections;
 import java.util.List;
 
-import elemental.js.html.JsTextAreaElement;
 import elemental.html.TextAreaElement;
 
 /**
@@ -121,17 +120,6 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
     setValue(BeeConst.STRING_EMPTY);
   }
 
-  @Override
-  public Element cloneAutocomplete() {
-    TextAreaElement clone = (TextAreaElement) Document.get().createTextAreaElement();
-    
-    clone.setName(getName());
-    ((JsTextAreaElement) clone).setAttribute(Attributes.AUTOCOMPLETE, getAutocomplete());
-    clone.setValue(getValue());
-    
-    return Element.as((JsTextAreaElement) clone);
-  }
-  
   @Override
   public String getAutocomplete() {
     return getElement().getPropertyString(Attributes.AUTOCOMPLETE);
@@ -256,6 +244,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   @Override
   public boolean isEnabled() {
     return !getTextAreaElement().isDisabled();
+  }
+
+  @Override
+  public boolean isMultiline() {
+    return true;
   }
 
   @Override

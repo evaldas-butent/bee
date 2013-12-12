@@ -30,7 +30,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.HasAutocomplete;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -42,6 +41,7 @@ import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.List;
 
 import elemental.html.InputElement;
-import elemental.js.html.JsInputElement;
 
 /**
  * Implements a text box that allows a single line of text to be entered.
@@ -65,8 +64,6 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   private boolean nullable = true;
 
   private boolean editing;
-
-  private String oldValue;
 
   private boolean upperCase;
 
@@ -155,17 +152,6 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
-  public Element cloneAutocomplete() {
-    InputElement clone = (InputElement) Document.get().createTextInputElement();
-    
-    clone.setName(getName());
-    clone.setAutocomplete(getAutocomplete());
-    clone.setValue(getValue());
-    
-    return Element.as((JsInputElement) clone);
-  }
-
-  @Override
   public String getAutocomplete() {
     return getInputElement().getAutocomplete();
   }
@@ -212,10 +198,6 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     } else {
       return BeeUtils.trimRight(v);
     }
-  }
-
-  public String getOldValue() {
-    return oldValue;
   }
 
   @Override
@@ -299,6 +281,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
+  public boolean isMultiline() {
+    return false;
+  }
+  
+  @Override
   public boolean isNullable() {
     return nullable;
   }
@@ -335,10 +322,6 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     }
 
     super.onBrowserEvent(event);
-
-    if (EventUtils.isChange(event.getType())) {
-      setOldValue(getValue());
-    }
   }
 
   @Override
@@ -441,7 +424,6 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     String v = (isUpperCase() && !BeeUtils.isEmpty(value)) ? value.toUpperCase()
         : Strings.nullToEmpty(value);
     getInputElement().setValue(v);
-    setOldValue(v);
   }
 
   public void setVisibleLength(int length) {
@@ -486,7 +468,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     addStyleName(getDefaultStyleName());
 
     setCharMatcher(getDefaultCharMatcher());
-    sinkEvents(Event.ONKEYPRESS | Event.ONCHANGE);
+    sinkEvents(Event.ONKEYPRESS);
   }
 
   protected boolean isTextBox() {
@@ -495,9 +477,5 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
 
   private InputElement getInputElement() {
     return (InputElement) getElement();
-  }
-
-  private void setOldValue(String oldValue) {
-    this.oldValue = oldValue;
   }
 }

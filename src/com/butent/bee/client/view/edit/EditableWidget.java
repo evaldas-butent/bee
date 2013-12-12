@@ -410,8 +410,6 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     switch (keyCode) {
       case KeyCodes.KEY_ENTER:
       case KeyCodes.KEY_TAB:
-      case KeyCodes.KEY_UP:
-      case KeyCodes.KEY_DOWN:
         event.preventDefault();
         update(keyCode, EventUtils.hasModifierKey(event.getNativeEvent()), true);
         break;

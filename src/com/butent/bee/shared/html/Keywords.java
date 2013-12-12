@@ -53,6 +53,8 @@ public final class Keywords {
   public static final String ACCEPT_VIDEO = "video/*";
   public static final String ACCEPT_IMAGE = "image/*";
 
+  public static final String URL_ABOUT_BLANK = "about:blank";
+
   private Keywords() {
   }
 }

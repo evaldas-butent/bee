@@ -45,6 +45,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.HasRowChildren;
@@ -688,6 +689,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public List<EditableWidget> getEditableWidgets() {
+    return editableWidgets;
+  }
+
+  @Override
   public FormInterceptor getFormInterceptor() {
     return formInterceptor;
   }
@@ -733,13 +739,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public String getProperty(String key) {
-    return properties.get(key);
+  public Map<String, String> getProperties() {
+    return properties;
   }
 
   @Override
-  public Map<String, String> getProperties() {
-    return properties;
+  public String getProperty(String key) {
+    return properties.get(key);
   }
 
   @Override
@@ -854,12 +860,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public boolean isEnabled() {
     return enabled;
   }
-
+  
   @Override
   public boolean isFlushable() {
     return isAdding() || isEditing();
   }
-  
+
   @Override
   public boolean isInteractive() {
     return isAttached() && !isClosed() && DomUtils.isVisible(getElement());
@@ -1200,6 +1206,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
+    AutocompleteProvider.retainValues(this);
+    
     RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
@@ -1704,10 +1712,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       logger.warning("editable widget not found:", source);
     }
     return null;
-  }
-
-  private List<EditableWidget> getEditableWidgets() {
-    return editableWidgets;
   }
 
   private Notification getNotification() {
