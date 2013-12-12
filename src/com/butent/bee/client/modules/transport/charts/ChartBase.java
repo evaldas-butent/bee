@@ -2032,7 +2032,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {
-      args.addQueryItem(VAR_THEME_ID, theme);
+      args.addQueryItem(VAR_ID, theme);
     }
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

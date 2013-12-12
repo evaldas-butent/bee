@@ -3,7 +3,7 @@
 
 name="Transport" label="=transport" order="60"
 >
-  <Item name="Orders" label="=transportationOrders" service="grid" parameters="TransportationOrders" separator="true" />
+  <Item name="Orders" label="=trOrders" service="grid" parameters="TransportationOrders" separator="true" />
   <Item name="Cargo" label="=cargos" service="grid" parameters="AllCargo" />
 
   <Item name="Trips" label="=trips" service="grid" parameters="Trips" separator="true" />

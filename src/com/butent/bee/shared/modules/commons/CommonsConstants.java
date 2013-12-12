@@ -246,6 +246,9 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
+  public static final String COL_COMPANY_CREDIT_LIMIT = "CreditLimit";
+  public static final String COL_COMPANY_LIMIT_CURRENCY = "LimitCurrency";
+  public static final String COL_COMPANY_CREDIT_DAYS = "CreditDays";
   public static final String COL_PERSON = "Person";
 
   public static final String COL_POSITION = "Position";
@@ -326,6 +329,7 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
 
+  public static final String COL_CURRENCY = "Currency";
   public static final String COL_CURRENCY_NAME = "Name";
   public static final String COL_CURRENCY_UPDATE_TAG = "UpdateTag";
 
@@ -347,7 +351,7 @@ public final class CommonsConstants {
 
   public static final String ALS_EMAIL_ID = "EmailId";
 
-  public static final String FORM_NEW_COMPANY = "Company";
+  public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";

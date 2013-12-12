@@ -97,7 +97,7 @@ class ChartData {
     CARGO(Localized.getConstants().cargos()),
     CUSTOMER(Localized.getConstants().transportationCustomers()),
     LOADING(Localized.getConstants().cargoLoading()),
-    ORDER(Localized.getConstants().transportationOrders()),
+    ORDER(Localized.getConstants().trOrders()),
     ORDER_STATUS(Localized.getConstants().trOrderStatus()),
     PLACE(Localized.getConstants().cargoHandlingPlaces()),
     TRAILER(Localized.getConstants().trailers()),
