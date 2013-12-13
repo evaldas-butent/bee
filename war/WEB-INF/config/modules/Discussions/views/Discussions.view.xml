@@ -24,21 +24,28 @@
     
     <ExternalJoin source="DiscussionsFiles" joinType="LEFT"
       name="Discussion">
-      <AggregateColumn alias="FilesCount" aggregate="COUNT"
-        name="Discussion" />
-    </ExternalJoin>
+      <AggregateColumn alias="FilesCount" aggregate="COUNT_DISTINCT"
+        name="File" />
+    </ExternalJoin> 
 
     <ExternalJoin source="DiscussionsComments" joinType="LEFT"
-      name="Discussion">
-      <AggregateColumn alias="CommentCount" aggregate="COUNT"
-        name="Discussion" />
+      name="Discussion">    
       <AggregateColumn alias="LastComment" aggregate="MAX"
+        name="PublishTime" /> 
+        <!--
+        <ExternalJoin source="Users" joinType="LEFT" name="CompanyPerson">
+          <AggregateJoin name="CompanyPerson"   joinType="LEFT"  >
+            <AggregateJoin name="Person" joinType="LEFT"  > 
+              <HiddenColumn alias="CommenterFirstName" name="FirstName"  />
+              <HiddenColumn alias="CommenterLastName" name="LastName"  />
+            </AggregateJoin> 
+          </AggregateJoin>
+        </ExternalJoin>
+        -->
+      <AggregateColumn alias="CommentCount" aggregate="COUNT_DISTINCT"
         name="PublishTime" />
-     <!--  <AggregateJoin name="Publisher" joinType="LEFT">
-        <AggregateJoin name="Users" joinType="LEFT">
-
-        </AggregateJoin>
-      </AggregateJoin> -->
+        
+        
     </ExternalJoin>
   </Columns>
 

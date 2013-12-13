@@ -40,6 +40,15 @@ public final class DiscussionsConstants {
       return caption;
     }
 
+    public static boolean in(int event, DiscussionEvent... events) {
+      for (DiscussionEvent ts : events) {
+        if (ts.ordinal() == event) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     public String getCommandLabel() {
       return commandLabel;
     }

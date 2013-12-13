@@ -58,7 +58,6 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
@@ -637,8 +636,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         && isEventEnabled(getFormView(), activeRow, DiscussionEvent.REPLY, statusId, ownerId,
             false)) {
       renderReply(row, colActions);
-    } else if (!deleted) {
-      Assert.notNull(null);
     }
 
     if (!deleted
@@ -837,7 +834,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
         final long discussionId = getDiscussionId();
 
-        ParameterList params = createParams(DiscussionEvent.COMMENT, comment);
+        BeeRow newRow = getNewRow(DiscussionStatus.ACTIVE);
+
+        ParameterList params = createParams(DiscussionEvent.COMMENT, newRow, comment);
 
         if (replayedCommentId != null) {
           params.addDataItem(VAR_DISCUSSION_PARENT_COMMENT, replayedCommentId);
@@ -991,26 +990,29 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     switch (event) {
       case ACTIVATE:
         return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE) && isAdmin(adminLogin))
-            || (DiscussionStatus.in(status, DiscussionStatus.CLOSED)
+            || (DiscussionStatus.in(status, DiscussionStatus.CLOSED, DiscussionStatus.INACTIVE)
             && (isOwner(userId, owner) || isAdmin(adminLogin)));
       case CLOSE:
-        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE)
+        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isOwner(userId, owner) || isAdmin(adminLogin));
       case COMMENT:
-        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE);
+        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE);
       case COMMENT_DELETE:
-        return !showInHeader && DiscussionStatus.in(status, DiscussionStatus.ACTIVE)
+        return !showInHeader
+            && DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isAdmin(adminLogin) || allowDelOwnComments);
       case CREATE:
         return false;
       case DEACTIVATE:
         return false;
       case MARK:
-        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && !showInHeader;
+        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
+            && !showInHeader;
       case MODIFY:
         return isOwner(userId, owner);
       case REPLY:
-        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE) && !showInHeader;
+        return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
+            && !showInHeader;
       case VISIT:
         return false;
     }

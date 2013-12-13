@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 
   name="Discussions" viewName="Discussions" caption="=discussions"
-  cacheData="false" asyncThreshold="-1" favorite="Subject" order="DiscussionID desc">
+  cacheData="false" asyncThreshold="-1" favorite="Subject" flexGrow="1" order="DiscussionID desc">
   <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html"
       horizontalAlignment="center" width="20" maxWidth="20" caption="-"
@@ -15,7 +15,7 @@
       <renderer type="star" />
     </PropColumn>
 
-    <DataColumn name="Subject" flexGrow="2" visible="true" />
+    <DataColumn name="Subject" minWidth="300"  visible="true" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" autoFit="true" />
@@ -34,7 +34,7 @@
        <render>
         <ui:function>
           if (row.FilesCount > 0) {
-          return $wnd.Bee_getImageResourceHtml("attachment");
+          return $wnd.Bee_getImageResourceHtml("attachment") + row.FilesCount;
           } else {
           return " "
           }
@@ -47,11 +47,14 @@
       minWidth="150" autoFit="true" caption="=discussLastComment">
       <renderToken source="LastComment" format="date_time_short" />
     </CalcColumn>
-
-
-
-    <DataColumn name="CommentCount" visible="true" maxWidth="90"
-      horizontalAlignment="center" autoFit="true" caption="=discussTotalComments" />
+    
+    <CalcColumn name="CommentCount" type="integer"
+      maxWidth="90" autoFit="true" caption="=discussTotalComments">
+        <render>
+          <ui:expression>row.CommentCount</ui:expression>
+        </render>
+    </CalcColumn>
+      
 
   </g:columns>
   <g:rowStyle>
