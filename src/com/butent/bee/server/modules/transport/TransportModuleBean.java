@@ -209,7 +209,7 @@ public class TransportModuleBean implements BeeModule {
       response = imp.doImport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CREDIT_INFO)) {
-      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CUSTOMER)));
+      response = getCreditInfo(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_TOTAL)) {
       response = getCargoTotal(BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
@@ -948,8 +948,8 @@ public class TransportModuleBean implements BeeModule {
 
   private ResponseObject getColors(RequestInfo reqInfo) {
     Long theme;
-    if (reqInfo.hasParameter(VAR_THEME_ID)) {
-      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_THEME_ID));
+    if (reqInfo.hasParameter(VAR_ID)) {
+      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_ID));
     } else {
       theme = null;
     }
@@ -957,8 +957,67 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(getThemeColors(theme));
   }
 
-  private ResponseObject getCreditInfo(Long companyId) {
-    return trd.getCreditInfo(companyId);
+  @SuppressWarnings("unchecked")
+  private ResponseObject getCreditInfo(RequestInfo reqInfo) {
+    Long company = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY));
+
+    if (!DataUtils.isId(company)) {
+      Long incomeId = BeeUtils.toLongOrNull(reqInfo.getParameter(TBL_CARGO_INCOMES));
+
+      if (!DataUtils.isId(incomeId)) {
+        return ResponseObject.emptyResponse();
+      }
+      SimpleRow row = qs.getRow(new SqlSelect()
+          .addFields(TBL_ORDERS, COL_CUSTOMER, COL_PAYER)
+          .addFrom(TBL_CARGO_INCOMES)
+          .addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+          .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .setWhere(sys.idEquals(TBL_CARGO_INCOMES, incomeId)));
+
+      if (row != null) {
+        company = BeeUtils.nvl(row.getLong(COL_PAYER), row.getLong(COL_CUSTOMER));
+      }
+    }
+    Map<String, Object> resp = Maps.newHashMap();
+
+    if (DataUtils.isId(company)) {
+      ResponseObject response = trd.getCreditInfo(company);
+
+      if (response.hasErrors()) {
+        return response;
+      }
+      resp.putAll((Map<? extends String, ?>) response.getResponse());
+      Long curr = (Long) resp.get(COL_COMPANY_LIMIT_CURRENCY);
+
+      SqlSelect query = new SqlSelect()
+          .addFrom(TBL_ORDERS)
+          .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .addFromInner(TBL_CARGO_INCOMES,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
+              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+              SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
+
+      IsExpression cargoIncome;
+      IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
+          SqlUtils.field(TBL_ORDERS, COL_DATE));
+
+      if (DataUtils.isId(curr)) {
+        cargoIncome = ExchangeUtils.exchangeFieldTo(query,
+            TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)),
+            SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr, SqlUtils.constant(curr));
+      } else {
+        cargoIncome = ExchangeUtils.exchangeField(query,
+            TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)),
+            SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
+      }
+      resp.put(VAR_INCOME, BeeUtils.round(qs.getValue(query.addSum(cargoIncome, VAR_INCOME)), 2));
+    }
+    return ResponseObject.response(resp);
   }
 
   private ResponseObject getDtbData() {

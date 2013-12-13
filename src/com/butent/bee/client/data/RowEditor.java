@@ -15,6 +15,7 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.presenter.RowPresenter;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -389,6 +390,10 @@ public final class RowEditor {
 
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, dataInfo.getColumns(),
         formView.getChildrenForUpdate(), callback);
+    
+    if (!event.isEmpty()) {
+      AutocompleteProvider.retainValues(formView);
+    }
 
     if (formView.getFormInterceptor() != null) {
       formView.getFormInterceptor().onSaveChanges(formView, event);

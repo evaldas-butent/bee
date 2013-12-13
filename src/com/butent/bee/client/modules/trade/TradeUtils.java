@@ -13,7 +13,7 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.XMLParser;
 import com.google.gwt.xml.client.impl.DOMParseException;
 
-import static com.butent.bee.server.modules.commons.ExchangeUtils.*;
+import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_RATES_RATE;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 

@@ -382,7 +382,7 @@ public final class TransportConstants {
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
 
-  public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
+  public static final String VAR_ID = Service.RPC_VAR_PREFIX + "id";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";

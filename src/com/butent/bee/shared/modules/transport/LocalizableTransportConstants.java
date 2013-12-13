@@ -118,8 +118,6 @@ public interface LocalizableTransportConstants {
 
   String transportationCustomers();
 
-  String transportationOrders();
-
   String trAssessment();
 
   String trAssessmentCancelOrderQuestion();
@@ -231,6 +229,8 @@ public interface LocalizableTransportConstants {
   String trNewVehicle();
 
   String trOrder();
+
+  String trOrders();
 
   String trOrderStatus();
 

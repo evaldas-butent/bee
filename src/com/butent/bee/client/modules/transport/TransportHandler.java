@@ -459,6 +459,7 @@ public final class TransportHandler {
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 
     ChartHelper.register();
+    CargoIncomesObserver.register();
   }
 
   private TransportHandler() {

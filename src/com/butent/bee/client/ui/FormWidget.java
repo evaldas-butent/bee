@@ -137,6 +137,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
@@ -1221,7 +1222,7 @@ public enum FormWidget {
       }
       
       if (widget instanceof HasAutocomplete) {
-        AutocompleteProvider.maybeSetAutocomplete((HasAutocomplete) widget, attributes,
+        AutocompleteProvider.maybeEnableAutocomplete((HasAutocomplete) widget, attributes,
             formName, name, viewName, (column == null) ? null : column.getId());
       }
     }

@@ -88,14 +88,6 @@ public final class SimpleEditorHandler implements EditChangeHandler, EditStopEve
         forward = !EventUtils.hasModifierKey(event.getNativeEvent());
         break;
 
-      case KeyCodes.KEY_UP:
-        forward = false;
-        break;
-
-      case KeyCodes.KEY_DOWN:
-        forward = true;
-        break;
-
       default:
         forward = null;
     }

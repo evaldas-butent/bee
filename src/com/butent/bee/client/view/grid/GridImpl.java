@@ -58,6 +58,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -2284,6 +2285,8 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       return;
     }
 
+    AutocompleteProvider.retainValues(form);
+    
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values,
         form.getChildrenForInsert(), callback);
 
@@ -2309,6 +2312,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, getDataColumns(), children,
         callback);
 
+    if (form != null && !event.isEmpty()) {
+      AutocompleteProvider.retainValues(form);
+    }
+    
     if (form != null && form.getFormInterceptor() != null) {
       form.getFormInterceptor().onSaveChanges(this, event);
       if (event.isConsumed()) {

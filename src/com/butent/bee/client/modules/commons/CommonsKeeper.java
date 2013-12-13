@@ -67,7 +67,7 @@ public final class CommonsKeeper {
     public FormInterceptor getInstance() {
       return this;
     }
-    
+
     @Override
     public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
       if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
@@ -101,10 +101,11 @@ public final class CommonsKeeper {
         CommonsUtils.updateExchangeRates();
       }
     });
-    
+
     FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
     FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
+    FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 

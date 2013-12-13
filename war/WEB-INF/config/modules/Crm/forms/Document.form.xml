@@ -65,7 +65,7 @@
         </row>
 
         <row>
-          <Label text="=transportationOrders" style="&chlabel;" />
+          <Label text="=trOrders" style="&chlabel;" />
           <ChildSelector viewName="TransportationOrders" childTable="Relations" 
             renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" style="&chselect;" />
         </row>

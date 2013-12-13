@@ -6,7 +6,6 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
@@ -21,7 +20,6 @@ import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -96,7 +94,7 @@ public class TradeModuleBean implements BeeModule {
           reqInfo.getParameter(ExchangeUtils.COL_CURRENCY));
 
     } else if (BeeUtils.same(svc, SVC_CREDIT_INFO)) {
-      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CUSTOMER)));
+      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -107,23 +105,24 @@ public class TradeModuleBean implements BeeModule {
   }
 
   public ResponseObject getCreditInfo(Long companyId) {
-    Assert.notNull(companyId);
-
+    if (!DataUtils.isId(companyId)) {
+      return ResponseObject.emptyResponse();
+    }
     SimpleRow company = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, "CreditLimit1", "CreditDays", "LimitCurrency")
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ExchangeUtils.COL_CURRENCY)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CREDIT_LIMIT,
+            COL_COMPANY_LIMIT_CURRENCY, COL_COMPANY_CREDIT_DAYS)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addFrom(TBL_COMPANIES)
         .addFromLeft(TBL_CURRENCIES,
-            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, "LimitCurrency"))
+            sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, COL_COMPANY_LIMIT_CURRENCY))
         .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
-    Map<String, String> resp = Maps.newLinkedHashMap();
+    Map<String, Object> resp = Maps.newHashMap();
 
     if (company != null) {
-      double limit = BeeUtils.unbox(company.getDouble("CreditLimit1"));
-      Long curr = company.getLong("LimitCurrency");
-      String currName = company.getValue(ExchangeUtils.COL_CURRENCY);
-      int days = BeeUtils.unbox(company.getInt("CreditDays"));
+      double limit = BeeUtils.unbox(company.getDouble(COL_COMPANY_CREDIT_LIMIT));
+      Long curr = company.getLong(COL_COMPANY_LIMIT_CURRENCY);
+      int days = BeeUtils.unbox(company.getInt(COL_COMPANY_CREDIT_DAYS));
 
       SqlSelect query = new SqlSelect()
           .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
@@ -145,7 +144,7 @@ public class TradeModuleBean implements BeeModule {
             .addExpr(ExchangeUtils.exchangeField(query, TBL_SALES, COL_TRADE_PAID,
                 COL_TRADE_CURRENCY, COL_TRADE_PAYMENT_TIME), COL_TRADE_PAID);
       }
-      double credit = 0.0;
+      double debt = 0.0;
       double overdue = 0.0;
 
       for (SimpleRow row : qs.getData(query)) {
@@ -158,15 +157,15 @@ public class TradeModuleBean implements BeeModule {
         if (dayDiff > 0) {
           overdue += xxx;
         }
-        credit += xxx;
+        debt += xxx;
       }
-      if (credit > 0) {
-        resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
-        resp.put("Kreditas", BeeUtils.joinWords(limit, currName));
-        resp.put("Atidėjimas", BeeUtils.joinWords(days, "d."));
-        resp.put("Skola", BeeUtils.joinWords(BeeUtils.round(credit, 2), currName));
-        resp.put("Pradelsta skola", BeeUtils.joinWords(BeeUtils.round(overdue, 2), currName));
-      }
+      resp.put(COL_COMPANY_NAME, company.getValue(COL_COMPANY_NAME));
+      resp.put(COL_COMPANY_CREDIT_LIMIT, limit);
+      resp.put(COL_COMPANY_LIMIT_CURRENCY, curr);
+      resp.put(COL_CURRENCY, company.getValue(COL_CURRENCY));
+      resp.put(COL_COMPANY_CREDIT_DAYS, days);
+      resp.put(VAR_DEBT, BeeUtils.round(debt, 2));
+      resp.put(VAR_OVERDUE, BeeUtils.round(overdue, 2));
     }
     return ResponseObject.response(resp);
   }
