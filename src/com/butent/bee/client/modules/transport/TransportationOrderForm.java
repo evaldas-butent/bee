@@ -169,7 +169,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
           List<String> msgs = Lists.newArrayList();
 
           msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
-              BeeUtils.joinItems(limit, result.get(CommonsConstants.COL_CURRENCY))));
+              BeeUtils.joinWords(limit, result.get(CommonsConstants.COL_CURRENCY))));
           msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
 
           if (overdue > 0) {

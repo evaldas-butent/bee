@@ -284,7 +284,7 @@ public class MailModuleBean implements BeeModule {
         }
         if (!save) {
           try {
-            sendMail(sender, to, cc, bcc, subject, content, attachments);
+            sendMail(sender, to, cc, bcc, subject, content, attachments, true);
             response.addInfo(usr.getLocalizableConstants().mailMessageSent());
 
           } catch (MessagingException e) {
@@ -377,7 +377,7 @@ public class MailModuleBean implements BeeModule {
 
   public ResponseObject sendMail(Long from, Set<Long> to, String subject, String content) {
     try {
-      sendMail(from, to, null, null, subject, content, null);
+      sendMail(from, to, null, null, subject, content, null, false);
     } catch (MessagingException ex) {
       logger.error(ex);
       return ResponseObject.error(ex);
@@ -386,7 +386,7 @@ public class MailModuleBean implements BeeModule {
   }
 
   public void sendMail(Long from, Set<Long> to, Set<Long> cc,
-      Set<Long> bcc, String subject, String content, Set<Long> attachments)
+      Set<Long> bcc, String subject, String content, Set<Long> attachments, boolean store)
       throws MessagingException {
 
     MailAccount account = mail.getAccountByAddressId(from);
@@ -399,10 +399,12 @@ public class MailModuleBean implements BeeModule {
       transport = account.connectToTransport();
       transport.sendMessage(message, message.getAllRecipients());
 
-      MailFolder folder = mail.getSentFolder(account);
+      if (store) {
+        MailFolder folder = mail.getSentFolder(account);
 
-      if (!account.addMessageToRemoteFolder(message, folder)) {
-        mail.storeMail(message, folder.getId(), null);
+        if (!account.addMessageToRemoteFolder(message, folder)) {
+          mail.storeMail(message, folder.getId(), null);
+        }
       }
     } finally {
       if (transport != null) {

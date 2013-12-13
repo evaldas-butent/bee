@@ -20,12 +20,14 @@
     <SimpleColumn name="StoreLogin" />
     <SimpleColumn name="StorePassword" />
     <SimpleColumn name="StoreSSL" />
+    <SimpleColumn name="StoreProperties" />
 
     <SimpleColumn name="TransportServer" />
     <SimpleColumn name="TransportPort" />
     <SimpleColumn name="TransportLogin" />
     <SimpleColumn name="TransportPassword" />
     <SimpleColumn name="TransportSSL" />
+    <SimpleColumn name="TransportProperties" />
 
     <SimpleColumn name="InboxFolder" />
 

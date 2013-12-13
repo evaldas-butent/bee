@@ -265,7 +265,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String invalidRange();
 
   String invalidTime();
-  
+
   String ipBlockCommand();
 
   String ipBlocked();
@@ -311,6 +311,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String newPasswordIsRequired();
 
   String newPasswordsDoesNotMatch();
+
+  String newProperty();
 
   String newService();
 
@@ -383,6 +385,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String priority();
 
   String profit();
+
+  String properties();
 
   String quantity();
 
