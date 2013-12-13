@@ -17,8 +17,8 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -712,14 +712,14 @@ public class EcModuleBean implements BeeModule {
     if (response.hasErrors()) {
       return response;
     }
-    
+
     response.clearMessages();
 
     if (reqInfo.hasParameter(VAR_MAIL)) {
       row = (BeeRow) response.getResponse();
 
       Long sender = getSenderEmailId(row.getLong(managerIndex));
-      
+
       Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
       if (!DataUtils.isId(recipient)) {
         Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
@@ -728,11 +728,11 @@ public class EcModuleBean implements BeeModule {
 
       String login = DataUtils.getString(columns, row, COL_LOGIN);
       String password = reqInfo.getParameter(COL_PASSWORD);
-      
+
       SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
           BeeUtils.toIntOrNull(reqInfo.getParameter(COL_USER_LOCALE)));
 
-      if (DataUtils.isId(sender) && DataUtils.isId(recipient) 
+      if (DataUtils.isId(sender) && DataUtils.isId(recipient)
           && !BeeUtils.anyEmpty(login, password)) {
         response.addMessagesFrom(mailRegistration(sender, recipient, login, password, locale));
       }
@@ -756,16 +756,8 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
     }
 
-    IsCondition condition;
-    String code;
-
-    if (BeeUtils.isEmpty(BeeUtils.parseDigits(query))) {
-      condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
-      code = null;
-    } else {
-      condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query);
-      code = query;
-    }
+    IsCondition condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
+    String code = null;
 
     SqlSelect articleIdQuery = new SqlSelect()
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
@@ -2369,10 +2361,10 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject mailRegistration(Long sender, Long recipient, String login,
       String password, SupportedLocale locale) {
-    
+
     String companyName = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_COMPANY_NAME));
     String url = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_URL));
-    
+
     LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
 
     String subject = BeeUtils.trim(messages.ecRegistrationMailSubject(companyName));
