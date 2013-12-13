@@ -4,7 +4,7 @@
   <row>
     <Label text="=documentName" class="bee-required" />
     <cell colSpan="3">
-      <InputText source="Name" style="width: 100%;" />
+      <InputText source="Name" style="width: 100%;" autocomplete="true" />
     </cell>
   </row>
 

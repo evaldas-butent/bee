@@ -23,6 +23,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -174,6 +176,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   public abstract void onRequest(Element target, Scheduler.ScheduledCommand onChange);
 
   public abstract Filter parse(FilterValue input);
+  
+  public boolean retainInput() {
+    return AutocompleteProvider.retainValues(getAutocompletableWidgets());
+  }
 
   public void setEffectiveFilter(Filter effectiveFilter) {
     this.effectiveFilter = effectiveFilter;
@@ -289,6 +295,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected List<SupplierAction> getActions() {
+    return Lists.newArrayList();
+  }
+  
+  protected List<? extends HasAutocomplete> getAutocompletableWidgets() {
     return Lists.newArrayList();
   }
 

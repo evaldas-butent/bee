@@ -68,6 +68,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   private HasCellValidationHandlers validationDelegate;
 
   private boolean initialized;
+  private boolean dirty;
 
   private Editor editor;
   private FormView form;
@@ -285,6 +286,10 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     }
   }
 
+  public boolean isDirty() {
+    return dirty;
+  }
+
   public boolean isDisplay() {
     return getDisplayWidget() != null;
   }
@@ -437,6 +442,12 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
         getDisplayWidget().refresh((Widget) getEditor(), row);
       }
     }
+    
+    setDirty(false);
+  }
+
+  public void setDirty(boolean dirty) {
+    this.dirty = dirty;
   }
 
   public void setValidationDelegate(HasCellValidationHandlers validationDelegate) {
@@ -555,6 +566,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
       if (normalize) {
         getEditor().normalizeDisplay(newValue);
       }
+      setDirty(true);
 
     } else {
       if (normalize) {

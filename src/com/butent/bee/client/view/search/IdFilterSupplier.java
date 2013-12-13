@@ -8,13 +8,17 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class IdFilterSupplier extends AbstractFilterSupplier {
   
@@ -28,6 +32,10 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     this.editor = new InputLong();
     editor.addStyleName(DEFAULT_STYLE_PREFIX + "id-editor");
 
+    if (!BeeUtils.isEmpty(viewName)) {
+      AutocompleteProvider.enableAutocomplete(editor, viewName.trim() + "-id-filter");
+    }
+    
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
@@ -38,6 +46,11 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
     });
   }
 
+  @Override
+  protected List<? extends HasAutocomplete> getAutocompletableWidgets() {
+    return Lists.newArrayList(editor);
+  }
+  
   @Override
   public FilterValue getFilterValue() {
     String value = getEditorValue();

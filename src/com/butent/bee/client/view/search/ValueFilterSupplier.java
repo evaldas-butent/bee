@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -70,9 +71,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
     this.editor = new InputText();
     editor.addStyleName(STYLE_PREFIX + "editor");
-    
-    AutocompleteProvider.enableAutocomplete(editor, BeeUtils.join(BeeConst.STRING_MINUS, viewName,
-        BeeUtils.join(BeeConst.STRING_MINUS, searchBy), "filter"));
+
+    if (!BeeUtils.isEmpty(viewName)) {
+      AutocompleteProvider.enableAutocomplete(editor,
+          BeeUtils.join(BeeConst.STRING_MINUS, viewName,
+              BeeUtils.join(BeeConst.STRING_MINUS, searchBy), "filter"));
+    }
 
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -82,9 +86,14 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
         }
       }
     });
-    
+
     this.errorMessage = new Label();
     errorMessage.addStyleName(STYLE_PREFIX + "error");
+  }
+
+  @Override
+  protected List<? extends HasAutocomplete> getAutocompletableWidgets() {
+    return Lists.newArrayList(editor);
   }
 
   @Override
@@ -120,7 +129,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     panel.add(caption);
 
     panel.add(editor);
-    
+
     errorMessage.clear();
     panel.add(errorMessage);
 
@@ -148,7 +157,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     }
 
     openDialog(target, panel, onChange);
-    
+
     if (!BeeUtils.isEmpty(getOldValue())) {
       editor.selectAll();
     }
@@ -275,10 +284,6 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       boolean changed = !BeeUtils.equalsTrim(getOldValue(), input) || getEmptiness() != null;
       setEmptiness(null);
       update(changed);
-      
-      if (!BeeUtils.isEmpty(input)) {
-        AutocompleteProvider.retainValue(editor);
-      }
 
     } else {
       errorMessage.setHtml(Localized.getConstants().error());

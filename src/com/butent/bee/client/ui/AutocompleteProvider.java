@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.FormElement;
 import com.google.gwt.dom.client.IFrameElement;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -42,6 +43,10 @@ public final class AutocompleteProvider {
 
     obj.setAutocomplete(Autocomplete.ON);
     obj.setName(name);
+  }
+
+  public static void enableAutocomplete(HasAutocomplete obj, String firstName, String secondName) {
+    enableAutocomplete(obj, generateName(firstName, secondName));
   }
 
   public static void maybeEnableAutocomplete(HasAutocomplete obj, Map<String, String> attributes,
@@ -117,13 +122,28 @@ public final class AutocompleteProvider {
     }
   }
 
+  public static boolean retainValues(Collection<? extends HasAutocomplete> widgets) {
+    if (BeeUtils.isEmpty(widgets)) {
+      return false;
+    }
+    
+    List<HasAutocomplete> fields = Lists.newArrayList();
+    for (HasAutocomplete widget : widgets) {
+      if (isSubmittable(widget)) {
+        fields.add(widget);
+      }
+    }
+    
+    return fields.isEmpty() ? false : saveValues(fields);
+  }
+  
   public static boolean retainValues(FormView form) {
     Assert.notNull(form);
 
     List<HasAutocomplete> fields = Lists.newArrayList();
 
     for (EditableWidget editableWidget : form.getEditableWidgets()) {
-      if (editableWidget.getEditor() instanceof HasAutocomplete) {
+      if (editableWidget.isDirty() && editableWidget.getEditor() instanceof HasAutocomplete) {
         HasAutocomplete field = (HasAutocomplete) editableWidget.getEditor();
 
         if (isSubmittable(field)) {
@@ -156,6 +176,10 @@ public final class AutocompleteProvider {
     List<Element> elements = Lists.newArrayList();
 
     for (HasAutocomplete field : fields) {
+      if (field.isMultiline() && !Features.supportsAutocompleteTextArea()) {
+        continue;
+      }
+
       String name = field.getName();
       if (names.contains(name)) {
         duplicates.add(field);
@@ -171,6 +195,8 @@ public final class AutocompleteProvider {
         DomUtils.setValue(element, field.getValue().trim());
 
         elements.add(element);
+        
+        logger.debug(name, field.getAutocomplete(), field.getValue());
       }
     }
 

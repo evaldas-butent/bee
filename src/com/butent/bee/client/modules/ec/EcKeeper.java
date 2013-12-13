@@ -36,6 +36,7 @@ import com.butent.bee.client.modules.ec.widget.ItemPicture;
 import com.butent.bee.client.modules.ec.widget.Promo;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
@@ -63,6 +64,7 @@ import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -164,7 +166,7 @@ public final class EcKeeper {
     }
   }
 
-  public static void doGlobalSearch(String query) {
+  public static void doGlobalSearch(String query, final HasAutocomplete inputWidget) {
     if (!checkSearchQuery(query)) {
       return;
     }
@@ -175,6 +177,7 @@ public final class EcKeeper {
     requestItems(SVC_GLOBAL_SEARCH, query, params, new Consumer<List<EcItem>>() {
       @Override
       public void accept(List<EcItem> items) {
+        AutocompleteProvider.retainValue(inputWidget);
         resetActiveCommand();
 
         ItemPanel widget = new ItemPanel();
