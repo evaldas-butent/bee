@@ -24,6 +24,7 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -38,7 +39,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -298,7 +298,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     return Lists.newArrayList();
   }
   
-  protected List<? extends HasAutocomplete> getAutocompletableWidgets() {
+  protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
     return Lists.newArrayList();
   }
 

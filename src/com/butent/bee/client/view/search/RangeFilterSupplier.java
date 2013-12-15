@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
@@ -24,7 +25,6 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -87,19 +87,19 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     this.inputTo = EditorFactory.createEditor(column, false);
     inputTo.addStyleName(STYLE_TO + STYLE_SUFFIX_INPUT);
 
-    if (!BeeUtils.isEmpty(viewName) && inputFrom instanceof HasAutocomplete) {
-      AutocompleteProvider.enableAutocomplete((HasAutocomplete) inputFrom,
+    if (!BeeUtils.isEmpty(viewName) && AutocompleteProvider.isAutocompleteCandidate(inputFrom)) {
+      AutocompleteProvider.enableAutocomplete(inputFrom,
           BeeUtils.join(BeeConst.STRING_MINUS, viewName, column.getId(), "filter-from"));
 
-      AutocompleteProvider.enableAutocomplete((HasAutocomplete) inputTo,
+      AutocompleteProvider.enableAutocomplete(inputTo,
           BeeUtils.join(BeeConst.STRING_MINUS, viewName, column.getId(), "filter-to"));
     }
   }
 
   @Override
-  protected List<? extends HasAutocomplete> getAutocompletableWidgets() {
-    if (inputFrom instanceof HasAutocomplete) {
-      return Lists.newArrayList((HasAutocomplete) inputFrom, (HasAutocomplete) inputTo);
+  protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
+    if (AutocompleteProvider.isAutocompleteCandidate(inputFrom)) {
+      return Lists.newArrayList(inputFrom, inputTo);
     } else {
       return super.getAutocompletableWidgets();
     }

@@ -64,7 +64,6 @@ import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -166,7 +165,7 @@ public final class EcKeeper {
     }
   }
 
-  public static void doGlobalSearch(String query, final HasAutocomplete inputWidget) {
+  public static void doGlobalSearch(String query, final IdentifiableWidget inputWidget) {
     if (!checkSearchQuery(query)) {
       return;
     }

@@ -21,6 +21,7 @@ import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.charts.ChartData.Item;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
@@ -109,7 +110,10 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     selectAllWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        FilterDataWidget.this.doAll(false);
+        boolean updated = FilterDataWidget.this.doAll(false);
+        if (updated && !BeeUtils.isEmpty(getSearchQuery())) {
+          AutocompleteProvider.retainValue(searchBox);
+        }
       }
     });
 
@@ -120,6 +124,9 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.searchBox = new InputText();
     searchBox.addStyleName(STYLE_DATA_SEARCH);
     DomUtils.setSearch(searchBox);
+
+    AutocompleteProvider.enableAutocomplete(searchBox, "tr-chart-filter-"
+        + data.getType().name().toLowerCase());
 
     searchBox.addInputHandler(new InputHandler() {
       @Override
@@ -132,7 +139,10 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       @Override
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          FilterDataWidget.this.onEnterKeyDown(EventUtils.hasModifierKey(event.getNativeEvent()));
+          boolean hasModifiers = EventUtils.hasModifierKey(event.getNativeEvent());
+          if (FilterDataWidget.this.onEnterKeyDown(hasModifiers)) {
+            AutocompleteProvider.retainValue(searchBox);
+          }
         }
       }
     });
@@ -196,7 +206,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
         StyleUtils.setVisible(itemElement, false);
         setNumberOfHiddenItems(getNumberOfHiddenItems() + 1);
       }
-      
+
       unselectedContainer.appendChild(itemElement);
     }
   }
@@ -204,7 +214,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   boolean hasType(ChartData.Type type) {
     return data.getType() == type;
   }
-  
+
   void refresh() {
     int cnt = data.getNumberOfEnabledUnselectedItems();
     if (unselectedSizeWidget != null) {
@@ -246,7 +256,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       itemElement.removeFromParent();
     }
   }
-  
+
   void reset(boolean resetData) {
     if (searchBox != null) {
       searchBox.clearValue();
@@ -282,7 +292,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     return count;
   }
 
-  private void doAll(boolean wasSelected) {
+  private boolean doAll(boolean wasSelected) {
     List<Element> children = DomUtils.getVisibleChildren(wasSelected
         ? selectedContainer : unselectedContainer);
 
@@ -295,6 +305,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       refresh();
       fireSelection();
     }
+    return updated;
   }
 
   private void doSearch(String input) {
@@ -377,16 +388,20 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     return updated;
   }
 
-  private void onEnterKeyDown(boolean hasModifiers) {
+  private boolean onEnterKeyDown(boolean hasModifiers) {
     if (BeeUtils.isEmpty(getSearchQuery()) || getNumberOfVisibleUnselectedItems() <= 0) {
-      return;
-    }
+      return false;
 
-    if (hasModifiers) {
-      doAll(false);
+    } else if (hasModifiers) {
+      return doAll(false);
+
     } else if (moveItem(DomUtils.getFirstVisibleChild(unselectedContainer), false)) {
       refresh();
       fireSelection();
+      return true;
+
+    } else {
+      return true;
     }
   }
 

@@ -129,7 +129,7 @@ public enum UserInterface implements HasCaption {
   E_COMMERCE {
     @Override
     public Collection<Component> getComponents() {
-      return EnumSet.noneOf(Component.class);
+      return EnumSet.of(Component.AUTOCOMPLETE);
     }
 
     @Override
@@ -162,7 +162,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.DATA_INFO, Component.DICTIONARY, Component.FILTERS,
-          Component.DECORATORS, Component.GRIDS);
+          Component.DECORATORS, Component.GRIDS, Component.AUTOCOMPLETE);
     }
 
     @Override
@@ -192,7 +192,7 @@ public enum UserInterface implements HasCaption {
   };
 
   public enum Component {
-    DATA_INFO, DICTIONARY, FAVORITES, FILTERS, DECORATORS, GRIDS, MENU;
+    DATA_INFO, DICTIONARY, FAVORITES, FILTERS, DECORATORS, GRIDS, MENU, AUTOCOMPLETE;
 
     public String key() {
       return name().toLowerCase();

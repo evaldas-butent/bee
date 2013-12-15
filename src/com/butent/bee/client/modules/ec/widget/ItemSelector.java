@@ -27,7 +27,7 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<InputText
 
   private final InputText editor;
 
-  public ItemSelector(String caption, String editorName) {
+  public ItemSelector(String caption, String acKey) {
     super(EcStyles.name(STYLE_PRIMARY));
 
     if (!BeeUtils.isEmpty(caption)) {
@@ -36,7 +36,7 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<InputText
       add(label);
     }
 
-    this.editor = createEditor(editorName);
+    this.editor = createEditor(acKey);
     add(editor);
 
     Button button = new Button(Localized.getConstants().ecDoSearch());
@@ -57,13 +57,13 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<InputText
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  private InputText createEditor(String name) {
+  private InputText createEditor(String acKey) {
     InputText input = new InputText();
     DomUtils.setSearch(input);
     EcStyles.add(input, STYLE_PRIMARY, "input");
     
-    if (!BeeUtils.isEmpty(name)) {
-      AutocompleteProvider.enableAutocomplete(input, name);
+    if (!BeeUtils.isEmpty(acKey)) {
+      AutocompleteProvider.enableAutocomplete(input, acKey);
     }
     
     input.addKeyDownHandler(new KeyDownHandler() {

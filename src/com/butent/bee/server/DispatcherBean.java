@@ -83,6 +83,16 @@ public class DispatcherBean {
     if (!BeeUtils.isEmpty(components)) {
       for (Component component : components) {
         switch (component) {
+          case AUTOCOMPLETE:
+            ResponseObject acData = uiService.getAutocomplete();
+            if (acData != null) {
+              response.addMessagesFrom(acData);
+              if (!acData.hasErrors() && acData.hasResponse()) {
+                data.put(component.key(), acData.getResponse());
+              }
+            }
+            break;
+            
           case DATA_INFO:
             data.put(component.key(), system.getDataInfo());
             break;

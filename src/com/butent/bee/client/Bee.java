@@ -14,6 +14,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.shared.BeeConst;
@@ -105,6 +106,10 @@ public class Bee implements EntryPoint {
 
       if (!BeeUtils.isEmpty(serialized)) {
         switch (component) {
+          case AUTOCOMPLETE:
+            AutocompleteProvider.load(serialized);
+            break;
+            
           case DATA_INFO:
             Data.getDataInfoProvider().restore(serialized);
             break;

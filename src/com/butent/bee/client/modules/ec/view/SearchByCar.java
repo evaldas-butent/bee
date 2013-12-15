@@ -19,6 +19,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
@@ -36,6 +37,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -100,6 +102,8 @@ class SearchByCar extends EcView {
   private static final String STYLE_TYPE_PANEL = STYLE_TYPE + "panel";
   private static final String STYLE_HAS_TYPES = STYLE_TYPE_PANEL + "-notEmpty";
 
+  private static final Edges selectorMargins = new Edges(0, 0, 2, 0);
+  
   private final CarAttributeWidget manufacturerWidget;
   private final IndexSelector manufacturerSelector;
 
@@ -135,6 +139,7 @@ class SearchByCar extends EcView {
 
     this.manufacturerWidget = new CarAttributeWidget(STYLE_ATTRIBUTE + STYLE_MANUFACTURER);
     this.manufacturerSelector = new IndexSelector(STYLE_SELECTOR + STYLE_MANUFACTURER);
+    manufacturerSelector.enableAutocomplete(EcConstants.NAME_PREFIX + "car-manufacturer-selector");
 
     this.modelWidget = new CarAttributeWidget(STYLE_ATTRIBUTE + STYLE_MODEL);
     this.modelSelector = new IndexSelector(STYLE_SELECTOR + STYLE_MODEL);
@@ -372,7 +377,7 @@ class SearchByCar extends EcView {
     });
 
     popup.setHideOnEscape(true);
-    popup.showRelativeTo(attributeWidget.getElement());
+    popup.showRelativeTo(attributeWidget.getElement(), selectorMargins);
   }
 
   private void openEngines() {
@@ -424,6 +429,7 @@ class SearchByCar extends EcView {
             @Override
             public void onSelection(SelectionEvent<Integer> event) {
               onSelectManufacturer(event.getSelectedItem());
+              manufacturerSelector.retainValue(getManufacturer());
             }
           });
         }

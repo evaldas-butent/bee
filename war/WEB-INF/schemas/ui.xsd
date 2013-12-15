@@ -979,7 +979,7 @@
   
   <xs:attributeGroup name="autocomplete">
     <xs:attribute name="autocomplete" type="xs:boolean" />
-    <xs:attribute name="autocompleteName" type="xs:NCName" />
+    <xs:attribute name="autocompleteKey" type="xs:NCName" />
     <xs:attribute name="autocompleteSection" type="xs:NCName" />
     <xs:attribute name="autocompleteHint" type="autofillHint" />
     <xs:attribute name="autocompleteContact" type="autofillContact" />

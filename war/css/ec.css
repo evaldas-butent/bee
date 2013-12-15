@@ -342,6 +342,7 @@
   background-image: url(../images/ec/red_background.png);
   height: 32px;
   color: white;
+  margin-left: 2px;
 }
 
 .bee-ec-ItemList-table {

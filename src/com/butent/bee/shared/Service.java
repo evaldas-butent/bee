@@ -80,6 +80,9 @@ public final class Service {
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
 
+  public static final String GET_AUTOCOMPLETE = DATA_SERVICE_PREFIX + "get_autocomplete";
+  public static final String UPDATE_AUTOCOMPLETE = DATA_SERVICE_PREFIX + "update_autocomplete";
+  
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 

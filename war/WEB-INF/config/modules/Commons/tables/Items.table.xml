@@ -5,7 +5,7 @@
   idName="ItemID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" label="=itemsName" />
+    <String name="Name" precision="100" notNull="true" label="=itemName" />
     <Relation name="Unit" notNull="true" relation="Units" label="=unitName" />
     <String name="Article" precision="30" unique="true" label="=article" />
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />

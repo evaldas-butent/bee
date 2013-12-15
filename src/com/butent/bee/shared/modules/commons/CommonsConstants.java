@@ -195,6 +195,8 @@ public final class CommonsConstants {
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String TBL_AUTOCOMPLETE = "Autocomplete";
+
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_USERS = "Users";
@@ -219,6 +221,8 @@ public final class CommonsConstants {
 
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
+  public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
+  
   public static final String GRID_PERSONS = "Persons";
 
   public static final String GRID_HISTORY = "History";
@@ -341,6 +345,10 @@ public final class CommonsConstants {
   public static final String COL_IP_FILTER_HOST = "Host";
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
   public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
+
+  public static final String COL_AUTOCOMPLETE_USER = "User";
+  public static final String COL_AUTOCOMPLETE_KEY = "Key";
+  public static final String COL_AUTOCOMPLETE_VALUE = "Value";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

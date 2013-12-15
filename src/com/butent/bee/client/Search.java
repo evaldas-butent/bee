@@ -435,7 +435,7 @@ public class Search {
   private static final String STYLE_SUBMIT_CONTAINER = "bee-MainSearchSubmitContainer";
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
-  private static final String NAME_INPUT = "main-search";
+  private static final String KEY_INPUT = "main-search";
   
   private static final int MIN_SEARCH_PHRASE_LENGTH = 3;
 
@@ -465,7 +465,7 @@ public class Search {
 
     setInput(new InputText());
     DomUtils.setSearch(getInput());
-    AutocompleteProvider.enableAutocomplete(getInput(), NAME_INPUT);
+    AutocompleteProvider.enableAutocomplete(getInput(), KEY_INPUT);
 
     getInput().addStyleName(STYLE_INPUT);
 

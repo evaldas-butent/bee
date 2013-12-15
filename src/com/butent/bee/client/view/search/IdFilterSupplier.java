@@ -9,13 +9,13 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -47,7 +47,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   }
 
   @Override
-  protected List<? extends HasAutocomplete> getAutocompletableWidgets() {
+  protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
     return Lists.newArrayList(editor);
   }
   
