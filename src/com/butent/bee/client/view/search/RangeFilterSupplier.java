@@ -10,6 +10,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
@@ -37,14 +39,14 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
   private static final String STYLE_SUFFIX_WRAPPER = "-wrapper";
   private static final String STYLE_SUFFIX_LABEL = "-label";
   private static final String STYLE_SUFFIX_INPUT = "-input";
-  
+
   private static final String STYLE_EMPTINESS = STYLE_PREFIX + "emptiness";
   private static final String STYLE_NOT_NULL = STYLE_PREFIX + "notNull";
   private static final String STYLE_NULL = STYLE_PREFIX + "null";
-  
+
   private static final Operator LOWER_OPERATOR = Operator.GE;
   private static final Operator UPPER_OPERATOR = Operator.LT;
-  
+
   private static Pair<String, String> parseRange(String value) {
     if (BeeUtils.isEmpty(value)) {
       return null;
@@ -69,21 +71,38 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
 
   private final Editor inputFrom;
   private final Editor inputTo;
-  
+
   private Boolean emptiness;
 
   private final Pair<String, String> oldValue = Pair.of(null, null);
-  
+
   private Widget widget;
-  
+
   public RangeFilterSupplier(String viewName, BeeColumn column, String label, String options) {
     super(viewName, column, label, options);
-    
+
     this.inputFrom = EditorFactory.createEditor(column, false);
     inputFrom.addStyleName(STYLE_FROM + STYLE_SUFFIX_INPUT);
-    
+
     this.inputTo = EditorFactory.createEditor(column, false);
     inputTo.addStyleName(STYLE_TO + STYLE_SUFFIX_INPUT);
+
+    if (!BeeUtils.isEmpty(viewName) && AutocompleteProvider.isAutocompleteCandidate(inputFrom)) {
+      AutocompleteProvider.enableAutocomplete(inputFrom,
+          BeeUtils.join(BeeConst.STRING_MINUS, viewName, column.getId(), "filter-from"));
+
+      AutocompleteProvider.enableAutocomplete(inputTo,
+          BeeUtils.join(BeeConst.STRING_MINUS, viewName, column.getId(), "filter-to"));
+    }
+  }
+
+  @Override
+  protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
+    if (AutocompleteProvider.isAutocompleteCandidate(inputFrom)) {
+      return Lists.newArrayList(inputFrom, inputTo);
+    } else {
+      return super.getAutocompletableWidgets();
+    }
   }
 
   @Override
@@ -109,7 +128,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
       return null;
     }
   }
-  
+
   @Override
   public String getLabel() {
     String lower = getLowerValue();
@@ -128,7 +147,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
 
     } else if (getEmptiness() != null) {
       return getEmptinessLabel(getEmptiness());
-    
+
     } else {
       return null;
     }
@@ -147,7 +166,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     }
 
     openDialog(target, getWidget(), onChange);
-    
+
     inputFrom.setFocus(true);
   }
 
@@ -177,7 +196,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
   @Override
   protected void doClear() {
     super.doClear();
-    
+
     inputFrom.clearValue();
     inputTo.clearValue();
   }
@@ -187,7 +206,7 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     String lower = getLowerValue();
     String upper = getUpperValue();
 
-    boolean changed = !Objects.equal(lower, oldValue.getA()) 
+    boolean changed = !Objects.equal(lower, oldValue.getA())
         || !Objects.equal(upper, oldValue.getB()) || getEmptiness() != null;
     update(changed);
   }
@@ -202,20 +221,20 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     inputFrom.setValue(oldValue.getA());
     inputTo.setValue(oldValue.getB());
   }
-  
+
   private Filter buildFilter(String lower, String upper) {
     if (BeeUtils.allEmpty(lower, upper)) {
       return null;
 
     } else if (BeeUtils.isEmpty(lower)) {
       return ComparisonFilter.compareWithValue(getColumn(), UPPER_OPERATOR, upper);
-    
+
     } else if (BeeUtils.isEmpty(upper)) {
       return ComparisonFilter.compareWithValue(getColumn(), LOWER_OPERATOR, lower);
-    
+
     } else if (lower.equals(upper)) {
       return ComparisonFilter.compareWithValue(getColumn(), Operator.EQ, lower);
-    
+
     } else {
       return Filter.and(ComparisonFilter.compareWithValue(getColumn(), LOWER_OPERATOR, lower),
           ComparisonFilter.compareWithValue(getColumn(), UPPER_OPERATOR, upper));
@@ -234,27 +253,27 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     panel.add(caption);
 
     Flow fromWrapper = new Flow(STYLE_FROM + STYLE_SUFFIX_WRAPPER);
-    
+
     Label labelFrom = new Label();
     labelFrom.getElement().setInnerText(LOWER_OPERATOR.toTextString());
     labelFrom.addStyleName(STYLE_FROM + STYLE_SUFFIX_LABEL);
-    
+
     fromWrapper.add(labelFrom);
     fromWrapper.add(inputFrom);
-    
+
     panel.add(fromWrapper);
 
     Flow toWrapper = new Flow(STYLE_TO + STYLE_SUFFIX_WRAPPER);
-    
+
     Label labelTo = new Label();
     labelTo.getElement().setInnerText(UPPER_OPERATOR.toTextString());
     labelTo.addStyleName(STYLE_TO + STYLE_SUFFIX_LABEL);
-    
+
     toWrapper.add(labelTo);
     toWrapper.add(inputTo);
-    
+
     panel.add(toWrapper);
-    
+
     if (hasEmptiness()) {
       Flow emptinessWrapper = new Flow(STYLE_EMPTINESS);
 
@@ -280,14 +299,14 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
     }
 
     panel.add(getCommandWidgets(false));
-    
+
     return panel;
   }
 
   private Boolean getEmptiness() {
     return emptiness;
   }
-  
+
   private String getLowerValue() {
     return BeeUtils.trim(inputFrom.getValue());
   }

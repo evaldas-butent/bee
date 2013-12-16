@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Parameters" caption="=parameters" enabledActions="refresh add delete"
+  name="Parameters" caption="=parameters" enabledActions="refresh delete" disabledActions="audit"
   editForm="Parameter" editPopup="true" editInPlace="Value"
-  newRowForm="Parameter" newRowCaption="=newParameter" newRowPopup="true"
   >
   <g:columns>
     <DataColumn name="Name" source="Name" caption="=parameter" visible="true" />

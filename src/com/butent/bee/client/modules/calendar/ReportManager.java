@@ -19,6 +19,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
@@ -171,6 +172,7 @@ class ReportManager {
 
     Label capLabel = new Label(Localized.getConstants().calName());
     addStyle(capLabel, "capLabel");
+
     container.add(capLabel);
 
     final InputText caption = new InputText();
@@ -180,24 +182,30 @@ class ReportManager {
       caption.setMaxLength(precision);
     }
     addStyle(caption, "caption");
+    AutocompleteProvider.enableAutocomplete(caption, viewName, COL_CAPTION);
+    
     container.add(caption);
 
     Label ldLabel = new Label(Localized.getConstants().calReportLowerDate());
     addStyle(ldLabel, "ldLabel");
+    
     container.add(ldLabel);
 
     final Editor lowerDate = createDateEditor(Data.getColumnType(viewName, COL_LOWER_DATE));
     lowerDate.setValue(Data.getString(viewName, options, COL_LOWER_DATE));
     addStyle(lowerDate.asWidget(), "lowerDate");
+    
     container.add(lowerDate);
 
     Label udLabel = new Label(Localized.getConstants().calReportUpperDate());
     addStyle(udLabel, "udLabel");
+    
     container.add(udLabel);
 
     final Editor upperDate = createDateEditor(Data.getColumnType(viewName, COL_UPPER_DATE));
     upperDate.setValue(Data.getString(viewName, options, COL_UPPER_DATE));
     addStyle(upperDate.asWidget(), "upperDate");
+    
     container.add(upperDate);
 
     final InputSpinner lowerHour;
@@ -206,15 +214,18 @@ class ReportManager {
     if (EnumSet.of(Report.BUSY_HOURS, Report.CANCEL_HOURS).contains(report)) {
       Label lhLabel = new Label(Localized.getConstants().calReportLowerHour());
       addStyle(lhLabel, "lhLabel");
+    
       container.add(lhLabel);
 
       lowerHour = new InputSpinner(0, TimeUtils.HOURS_PER_DAY - 1);
       lowerHour.setValue(BeeUtils.unbox(Data.getInteger(viewName, options, COL_LOWER_HOUR)));
       addStyle(lowerHour, "lowerHour");
+      
       container.add(lowerHour);
 
       Label uhLabel = new Label(Localized.getConstants().calReportUpperHour());
       addStyle(uhLabel, "uhLabel");
+      
       container.add(uhLabel);
 
       upperHour = new InputSpinner(0, TimeUtils.HOURS_PER_DAY);
@@ -222,7 +233,9 @@ class ReportManager {
           COL_UPPER_HOUR)), TimeUtils.HOURS_PER_DAY);
       upperHour.setValue(value);
       addStyle(upperHour, "upperHour");
+      
       container.add(upperHour);
+
     } else {
       lowerHour = null;
       upperHour = null;
@@ -230,6 +243,7 @@ class ReportManager {
 
     Label atpLabel = new Label(Localized.getConstants().calAttendeesTypes());
     addStyle(atpLabel, "atpLabel");
+    
     container.add(atpLabel);
 
     Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME));
@@ -239,10 +253,12 @@ class ReportManager {
 
     atpSelector.render(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
     addStyle(atpSelector, "attendeeTypes");
+    
     container.add(atpSelector);
 
     Label attLabel = new Label(Localized.getConstants().calAttendees());
     addStyle(attLabel, "attLabel");
+    
     container.add(attLabel);
 
     Relation attRel = Relation.create(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
@@ -253,12 +269,16 @@ class ReportManager {
 
     attSelector.render(Data.getString(viewName, options, COL_ATTENDEES));
     addStyle(attSelector, "attendees");
+    
     container.add(attSelector);
 
     final Button tableCommand = new Button(Localized.getConstants().calTable(), new Command() {
       @Override
       public void execute() {
         String vCap = caption.getValue();
+        if (!BeeUtils.isEmpty(vCap)) {
+          AutocompleteProvider.retainValue(caption);
+        }
 
         JustDate vLd = TimeUtils.parseDate(lowerDate.getValue());
         JustDate vUd = TimeUtils.parseDate(upperDate.getValue());
@@ -297,6 +317,7 @@ class ReportManager {
       }
     });
     addStyle(tableCommand, "tableCommand");
+    
     container.add(tableCommand);
 
     DialogBox dialog = DialogBox.create(report.getCaption(), DialogConstants.STYLE_REPORT_OPTIONS);

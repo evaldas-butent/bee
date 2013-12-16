@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
@@ -610,13 +611,17 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   public void showRelativeTo(final Element target) {
+    showRelativeTo(target, null);
+  }
+
+  public void showRelativeTo(final Element target, final Edges margins) {
     if (target == null) {
       center();
     } else {
       setPopupPositionAndShow(new PositionCallback() {
         @Override
         public void setPosition(int offsetWidth, int offsetHeight) {
-          position(target, offsetWidth, offsetHeight);
+          position(target, margins, offsetWidth, offsetHeight);
         }
       });
     }
@@ -730,12 +735,20 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  private void position(Element relativeElement, int offsetWidth, int offsetHeight) {
+  private void position(Element relativeElement, Edges margins, int offsetWidth, int offsetHeight) {
     int left = relativeElement.getAbsoluteLeft();
     int top = relativeElement.getAbsoluteTop();
 
     int objectWidth = relativeElement.getOffsetWidth();
     int objectHeight = relativeElement.getOffsetHeight();
+    
+    if (margins != null) {
+      left -= margins.getIntLeft();
+      top -= margins.getIntTop();
+
+      objectWidth += margins.getIntRight();
+      objectHeight += margins.getIntBottom();
+    }
 
     int offsetWidthDiff = offsetWidth - objectWidth;
     if (offsetWidthDiff > 0) {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Autocomplete" source="Autocomplete" caption="=autocompletion"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Key" />
+    <SimpleColumn name="Value" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Key" />
+    <OrderBy column="Value" />
+  </Order>
+</View>
+ 

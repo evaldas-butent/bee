@@ -16,4 +16,7 @@ name="Administration" label="=administration" order="1000"
 
   <Item name="ReminderTypes" label="=reminderTypes" service="grid" parameters="ReminderTypes"
     separator="true" />
+
+  <Item name="Autocomplete" label="=autocompletion" service="grid" parameters="Autocomplete"
+    separator="true" />
 </Entry>

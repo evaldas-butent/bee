@@ -24,7 +24,6 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -356,8 +355,7 @@ public class QueryServiceBean {
         .addFrom(tableName)
         .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
 
-    SimpleRowSet data = getData(query);
-    return DataUtils.isEmpty(data) ? null : data.getLong(0, 0);
+    return getLong(query);
   }
 
   public Long getId(String tableName, String f1, Object v1, String f2, Object v2) {
@@ -366,8 +364,17 @@ public class QueryServiceBean {
         .addFrom(tableName)
         .setWhere(SqlUtils.equals(tableName, f1, v1, f2, v2));
 
-    SimpleRowSet data = getData(query);
-    return DataUtils.isEmpty(data) ? null : data.getLong(0, 0);
+    return getLong(query);
+  }
+
+  public Long getId(String tableName, String f1, Object v1, String f2, Object v2,
+      String f3, Object v3) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, sys.getIdName(tableName))
+        .addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, f1, v1, f2, v2, f3, v3));
+
+    return getLong(query);
   }
 
   public Integer getInt(IsQuery query) {

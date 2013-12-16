@@ -563,6 +563,8 @@ public final class EcConstants {
 
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
 
+  public static final String NAME_PREFIX = "ec-";
+  
   private EcConstants() {
   }
 }

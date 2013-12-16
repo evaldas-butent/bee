@@ -42,6 +42,7 @@
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="viewName" type="type:nameType" />
     <xs:attribute name="filter" type="xs:normalizedString" />
+    <xs:attribute name="currentUserFilter" type="type:nameType" />
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="minColumnWidth" type="col:columnWidth" />
     <xs:attribute name="maxColumnWidth" type="col:columnWidth" />

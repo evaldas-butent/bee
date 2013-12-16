@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.Node;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -30,7 +31,6 @@ public final class Features {
 
   private static Boolean applicationCache;
 
-  private static Boolean attributeAutocomplete;
   private static Boolean attributeAutofocus;
   private static Boolean attributeList;
   private static Boolean attributeMax;
@@ -46,6 +46,9 @@ public final class Features {
   private static String audioMp3;
   private static String audioVorbis;
   private static String audioWav;
+
+  private static Boolean autocompleteInput;
+  private static Boolean autocompleteTextArea;
 
   private static Boolean canvas;
   private static Boolean canvasText;
@@ -158,7 +161,6 @@ public final class Features {
     List<Property> lst = PropertyUtils.createProperties(
         "Application Cache", supportsApplicationCache(),
 
-        "Attribute Autocomplete", supportsAttributeAutocomplete(),
         "Attribute Autofocus", supportsAttributeAutofocus(),
         "Attribute List", supportsAttributeList(),
         "Attribute Max", supportsAttributeMax(),
@@ -174,6 +176,9 @@ public final class Features {
         "Audio Mp3", getAudioMp3(),
         "Audio Vorbis", getAudioVorbis(),
         "Audio Wav", getAudioWav(),
+
+        "Autocomplete Input", supportsAutocompleteInput(),
+        "Autocomplete Text Area", supportsAutocompleteTextArea(),
 
         "Canvas", supportsCanvas(),
         "Canvas Text", supportsCanvasText(),
@@ -306,13 +311,6 @@ public final class Features {
     return applicationCache;
   }
 
-  public static boolean supportsAttributeAutocomplete() {
-    if (attributeAutocomplete == null) {
-      attributeAutocomplete = testAttributeAutocomplete();
-    }
-    return attributeAutocomplete;
-  }
-
   public static boolean supportsAttributeAutofocus() {
     if (attributeAutofocus == null) {
       attributeAutofocus = testAttributeAutofocus();
@@ -381,6 +379,20 @@ public final class Features {
       audio = testAudio();
     }
     return audio;
+  }
+
+  public static boolean supportsAutocompleteInput() {
+    if (autocompleteInput == null) {
+      autocompleteInput = testAutocompleteInput();
+    }
+    return autocompleteInput;
+  }
+
+  public static boolean supportsAutocompleteTextArea() {
+    if (autocompleteTextArea == null) {
+      autocompleteTextArea = testAutocompleteTextArea();
+    }
+    return autocompleteTextArea;
   }
 
   public static boolean supportsCanvas() {
@@ -838,44 +850,40 @@ public final class Features {
     return isWindowProperty("applicationCache");
   }
 
-  private static boolean testAttributeAutocomplete() {
-    return testInputAttribute("autocomplete");
-  }
-
   private static boolean testAttributeAutofocus() {
-    return testInputAttribute("autofocus");
+    return testInputAttribute(Attributes.AUTOFOCUS);
   }
 
   private static boolean testAttributeList() {
-    return testInputAttribute("list");
+    return testInputAttribute(Attributes.LIST);
   }
 
   private static boolean testAttributeMax() {
-    return testInputAttribute("max");
+    return testInputAttribute(Attributes.MAX);
   }
 
   private static boolean testAttributeMin() {
-    return testInputAttribute("min");
+    return testInputAttribute(Attributes.MIN);
   }
 
   private static boolean testAttributeMultiple() {
-    return testInputAttribute("multiple");
+    return testInputAttribute(Attributes.MULTIPLE);
   }
 
   private static boolean testAttributePattern() {
-    return testInputAttribute("pattern");
+    return testInputAttribute(Attributes.PATTERN);
   }
 
   private static boolean testAttributePlaceholder() {
-    return testInputAttribute("placeholder");
+    return testInputAttribute(Attributes.PLACEHOLDER);
   }
 
   private static boolean testAttributeRequired() {
-    return testInputAttribute("required");
+    return testInputAttribute(Attributes.REQUIRED);
   }
 
   private static boolean testAttributeStep() {
-    return testInputAttribute("step");
+    return testInputAttribute(Attributes.STEP);
   }
 
   private static boolean testAudio() {
@@ -930,6 +938,14 @@ public final class Features {
 
   private static String testAudioWav() {
     return testAudioType("audio/wav; codecs=\"1\"");
+  }
+
+  private static boolean testAutocompleteInput() {
+    return testInputAttribute(Attributes.AUTOCOMPLETE);
+  }
+
+  private static boolean testAutocompleteTextArea() {
+    return JsUtils.isIn(Attributes.AUTOCOMPLETE, DomUtils.createElement(Tags.TEXT_AREA));
   }
 
   private static native boolean testCanvas() /*-{

@@ -683,14 +683,14 @@ public class EcModuleBean implements BeeModule {
     if (response.hasErrors()) {
       return response;
     }
-    
+
     response.clearMessages();
 
     if (reqInfo.hasParameter(VAR_MAIL)) {
       row = (BeeRow) response.getResponse();
 
       Long sender = getSenderEmailId(row.getLong(managerIndex));
-      
+
       Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
       if (!DataUtils.isId(recipient)) {
         Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
@@ -699,11 +699,11 @@ public class EcModuleBean implements BeeModule {
 
       String login = DataUtils.getString(columns, row, COL_LOGIN);
       String password = reqInfo.getParameter(COL_PASSWORD);
-      
+
       SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
           BeeUtils.toIntOrNull(reqInfo.getParameter(COL_USER_LOCALE)));
 
-      if (DataUtils.isId(sender) && DataUtils.isId(recipient) 
+      if (DataUtils.isId(sender) && DataUtils.isId(recipient)
           && !BeeUtils.anyEmpty(login, password)) {
         response.addMessagesFrom(mailRegistration(sender, recipient, login, password, locale));
       }
@@ -734,7 +734,8 @@ public class EcModuleBean implements BeeModule {
       condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
       code = null;
     } else {
-      condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query);
+      condition = SqlUtils.or(SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query),
+          SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query));
       code = query;
     }
 
@@ -2305,10 +2306,10 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject mailRegistration(Long sender, Long recipient, String login,
       String password, SupportedLocale locale) {
-    
+
     String companyName = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_COMPANY_NAME));
     String url = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_URL));
-    
+
     LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
 
     String subject = BeeUtils.trim(messages.ecRegistrationMailSubject(companyName));

@@ -95,6 +95,7 @@ import com.butent.bee.client.style.Axis;
 import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetFactory;
@@ -213,6 +214,9 @@ public final class CliWorker {
 
     } else if ("audio".equals(z)) {
       playAudio(args);
+
+    } else if (z.startsWith("autoc") && !args.isEmpty()) {
+      AutocompleteProvider.switchTo(args);
 
     } else if ("browser".equals(z) || z.startsWith("wind")) {
       showBrowser(arr);

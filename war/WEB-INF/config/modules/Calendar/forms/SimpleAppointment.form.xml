@@ -9,10 +9,10 @@
 
   <FlowPanel style="&relative; width: 760px; height: 360px;">
     <InputText source="Summary" required="true" caption="=summary" style="width: 240px;"
-      d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+      d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" autocomplete="true" />
 
     <InputText source="Location" caption="=location" style="width: 320px;"
-      d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
+      d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" autocomplete="true" />
 
     <Label text="=calAppointmentAttendees" style="&absolute; left: 0; top: 40px;" />
 

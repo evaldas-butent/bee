@@ -7,7 +7,7 @@ public interface HasAutocomplete extends HasName, HasStringValue {
   
   String ATTR_AUTOCOMPLETE = "autocomplete";
 
-  String ATTR_AUTOCOMPLETE_NAME = "autocompleteName";
+  String ATTR_AUTOCOMPLETE_KEY = "autocompleteKey";
 
   String ATTR_AUTOCOMPLETE_SECTION = "autocompleteSection";
   String ATTR_AUTOCOMPLETE_HINT = "autocompleteHint";

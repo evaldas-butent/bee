@@ -11,7 +11,7 @@
     <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex;">
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecItemName" class="bee-required" style="&lbl;" />
-        <InputText source="ArticleName" style="width: 430px;" />
+        <InputText source="ArticleName" style="width: 430px;" autocomplete="true" />
 
         <CheckBox text="=ecItemVisible" source="Visible" style="margin-left: 50px;" />
       </FlowPanel>

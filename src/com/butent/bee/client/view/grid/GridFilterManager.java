@@ -226,7 +226,7 @@ public class GridFilterManager {
         public void accept(FilterDescription t, Action u) {
           if (t != null) {
             updateFilterValues(asValues(t.getComponents()), true);
-            onChange(null, true);
+            onChange(null, true, null);
           } else if (Action.DELETE == u) {
             buildContentPanel();
           }
@@ -317,7 +317,12 @@ public class GridFilterManager {
         filterSupplier.onRequest(button.getElement(), new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
-            onChange(columnInfo, true);
+            onChange(columnInfo, true, new Scheduler.ScheduledCommand() {
+              @Override
+              public void execute() {
+                filterSupplier.retainInput();
+              }
+            });
           }
         });
       }
@@ -334,7 +339,7 @@ public class GridFilterManager {
       @Override
       public void onClick(ClickEvent event) {
         filterSupplier.setFilterValue(null);
-        onChange(columnInfo, true);
+        onChange(columnInfo, true, null);
       }
     });
 
@@ -411,13 +416,19 @@ public class GridFilterManager {
     return values;
   }
 
-  private void onChange(final ColumnInfo columnInfo, final boolean closeDialog) {
+  private void onChange(final ColumnInfo columnInfo, final boolean closeDialog,
+      final Scheduler.ScheduledCommand onSuccess) {
+
     final Filter filter = getFilter(null, null);
 
     filterConsumer.tryFilter(filter, new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input)) {
+          if (onSuccess != null) {
+            onSuccess.execute();
+          }
+
           if (closeDialog) {
             UiHelper.closeDialog(contentPanel);
           } else {

@@ -5,7 +5,8 @@
   idName="FavoritesID"
   >
   <Fields>
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER" label="=User" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER"
+      label="=user" />
     <Integer name="Group" notNull="true" />
     <String name="Key" precision="100" notNull="true" />
     <Long name="Item" notNull="true" />

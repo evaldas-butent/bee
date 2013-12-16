@@ -19,6 +19,7 @@ import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InputText;
@@ -99,6 +100,10 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
     return addHandler(handler, SelectionEvent.getType());
   }
   
+  public void enableAutocomplete(String key) {
+    AutocompleteProvider.enableAutocomplete(searchBox, key);
+  }
+  
   public void focus() {
     if (searchBox != null) {
       searchBox.setFocus(true);
@@ -130,6 +135,10 @@ public class IndexSelector extends Flow implements HasSelectionHandlers<Integer>
     refreshCounter();
   }
 
+  public void retainValue(String value) {
+    AutocompleteProvider.retainValue(searchBox, value);
+  }
+  
   private void addItem(String item, int index) {
     Element itemElement = Document.get().createDivElement();
 

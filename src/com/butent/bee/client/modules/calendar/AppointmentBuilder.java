@@ -52,6 +52,7 @@ import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -1271,6 +1272,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       return false;
     }
     setSaving(true);
+    
+    AutocompleteProvider.retainValues(getFormView());
 
     BeeRow row = DataUtils.cloneRow(getFormView().getActiveRow());
     final String viewName = VIEW_APPOINTMENTS;

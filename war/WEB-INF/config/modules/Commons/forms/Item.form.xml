@@ -12,7 +12,7 @@
   <FlowPanel style="margin: 2ex 1em 0 1em;">
     <FlowPanel class="flexBox-horizontal">
       <Label text="=name" class="bee-required" style="&lbl1;" />
-      <InputText source="Name" style="width: 500px;" />
+      <InputText source="Name" style="width: 500px;" autocomplete="true" />
     </FlowPanel>
     &separator;
 

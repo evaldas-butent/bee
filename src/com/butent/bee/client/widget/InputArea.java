@@ -16,6 +16,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
@@ -94,7 +95,7 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addKeyDownHandler(handler);
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -122,7 +123,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
 
   @Override
   public String getAutocomplete() {
-    return getElement().getPropertyString(Attributes.AUTOCOMPLETE);
+    if (Features.supportsAutocompleteTextArea()) {
+      return getElement().getPropertyString(Attributes.AUTOCOMPLETE);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -316,7 +321,9 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
 
   @Override
   public void setAutocomplete(String ac) {
-    getElement().setPropertyString(Attributes.AUTOCOMPLETE, ac);
+    if (Features.supportsAutocompleteTextArea()) {
+      getElement().setPropertyString(Attributes.AUTOCOMPLETE, ac);
+    }
   }
 
   @Override

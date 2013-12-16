@@ -44,6 +44,7 @@ import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
+import com.butent.bee.shared.ui.HasSuggestionSource;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -57,7 +58,8 @@ import elemental.html.InputElement;
 
 public class InputText extends CustomWidget implements Editor, TextBox, HasCharacterFilter,
     HasInputHandlers, HasKeyDownHandlers, HasKeyPressHandlers, HasTextBox, HasCapsLock,
-    HasMaxLength, HasAutocomplete, HasChangeHandlers, HasValueChangeHandlers<String> {
+    HasMaxLength, HasAutocomplete, HasSuggestionSource, HasChangeHandlers,
+    HasValueChangeHandlers<String> {
 
   private CharMatcher charMatcher;
 
@@ -72,6 +74,8 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   private boolean handlesTabulation;
 
   private boolean valueChangeHandlerInitialized;
+  
+  private String suggestionSource;
   
   public InputText() {
     super(Document.get().createTextInputElement());
@@ -219,6 +223,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
+  public String getSuggestionSource() {
+    return suggestionSource;
+  }
+
+  @Override
   public int getTabIndex() {
     return getInputElement().getTabIndex();
   }
@@ -279,12 +288,12 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public boolean isEnabled() {
     return !getInputElement().isDisabled();
   }
-
+  
   @Override
   public boolean isMultiline() {
     return false;
   }
-  
+
   @Override
   public boolean isNullable() {
     return nullable;
@@ -383,7 +392,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
   @Override
   public void setMaxLength(int maxLength) {
     getInputElement().setMaxLength(maxLength);
@@ -402,6 +411,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   @Override
   public void setOptions(String options) {
     this.options = options;
+  }
+
+  @Override
+  public void setSuggestionSource(String suggestionSource) {
+    this.suggestionSource = suggestionSource;
   }
 
   @Override

@@ -510,6 +510,14 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     DomUtils.setId(this, id);
   }
 
+  public void setText(int row, int column, String text) {
+    prepareCell(row, column);
+    Element td = cleanCell(row, column, text == null);
+    if (text != null) {
+      td.setInnerText(text);
+    }
+  }
+
   public void setWidget(int row, int column, Widget widget) {
     prepareCell(row, column);
     if (widget != null) {

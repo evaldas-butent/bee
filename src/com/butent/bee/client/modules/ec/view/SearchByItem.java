@@ -6,12 +6,16 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemSelector;
+import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class SearchByItem extends EcView implements SelectionHandler<String> {
+class SearchByItem extends EcView implements SelectionHandler<InputText> {
   
   private final String service;
   private final String selectorCaption;
@@ -27,12 +31,15 @@ class SearchByItem extends EcView implements SelectionHandler<String> {
   }
 
   @Override
-  public void onSelection(SelectionEvent<String> event) {
+  public void onSelection(SelectionEvent<InputText> event) {
     itemPanel.clear();
+    
+    final InputText editor = event.getSelectedItem();
 
-    EcKeeper.searchItems(service, event.getSelectedItem(), new Consumer<List<EcItem>>() {
+    EcKeeper.searchItems(service, BeeUtils.trim(editor.getValue()), new Consumer<List<EcItem>>() {
       @Override
       public void accept(List<EcItem> input) {
+        AutocompleteProvider.retainValue(editor);
         EcKeeper.renderItems(itemPanel, input);
       }
     });
@@ -40,7 +47,7 @@ class SearchByItem extends EcView implements SelectionHandler<String> {
 
   @Override
   protected void createUi() {
-    ItemSelector selector = new ItemSelector(selectorCaption);
+    ItemSelector selector = new ItemSelector(selectorCaption, EcConstants.NAME_PREFIX + service);
     selector.addSelectionHandler(this);
 
     add(selector);
