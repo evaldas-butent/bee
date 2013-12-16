@@ -216,6 +216,9 @@ public final class Images {
 
     @Source("silver/plus_gray_17x18.png")
     ImageResource silverAdd();
+    
+    @Source("silver/bar_chart_24x24.png")
+    ImageResource silverBarChart();
 
     @Source("silver/bookmark_add_21x19.png")
     ImageResource silverBookmarkAdd();
@@ -231,6 +234,12 @@ public final class Images {
 
     @Source("silver/delete_17x18.png")
     ImageResource silverDelete();
+
+    @Source("silver/discuss_activate_24x24.png")
+    ImageResource silverDiscussActivate();
+
+    @Source("silver/discuss_close_24x24.png")
+    ImageResource silverDiscussClose();
 
     @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
@@ -253,8 +262,14 @@ public final class Images {
     @Source("silver/reload_17x18.png")
     ImageResource silverReload();
 
+    @Source("silver/sad_24x24.png")
+    ImageResource silverSad();
+
     @Source("silver/save_17x18.png")
     ImageResource silverSave();
+
+    @Source("silver/smile_24x24.png")
+    ImageResource silverSmile();
 
     @Source("silver/tringle_down_11x9.png")
     ImageResource silverTringleDown();
@@ -444,6 +459,8 @@ public final class Images {
     map.put(key("silverClose"), resources.silverClose());
     map.put(key("silverConfigure"), resources.silverConfigure());
     map.put(key("silverDelete"), resources.silverDelete());
+    map.put(key("silverDiscussActivate"), resources.silverDiscussActivate());
+    map.put(key("silverDiscussClose"), resources.silverDiscussClose());
     map.put(key("silverEdit"), resources.silverEdit());
     map.put(key("silverFilter"), resources.silverFilter());
     map.put(key("silverFilterRemove"), resources.silverFilterRemove());
@@ -452,6 +469,8 @@ public final class Images {
     map.put(key("silverPrint"), resources.silverPrint());
     map.put(key("silverReload"), resources.silverReload());
     map.put(key("silverSave"), resources.silverSave());
+    map.put(key("silverSmile"), resources.silverSmile());
+    map.put(key("silverSad"), resources.silverSad());
     map.put(key("silverTringleDown"), resources.silverTringleDown());
     map.put(key("silverTringleUp"), resources.silverTringleUp());
   }

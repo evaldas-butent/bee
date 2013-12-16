@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+
+  name="DiscussMarkTypes" viewName="DiscussMarkTypes" caption="=discussMarkTypes">
+  <g:columns>
+    <DataColumn name="Name"  visible="true" />
+    <DataColumn name="ImageResourceName" visible="true" minWidth="70" />
+    
+    <CalcColumn name="Preview" type="string" cellType="html"  visible="true" maxWidth="90"
+      horizontalAlignment="center" autoFit="true" caption="-" sortable="false">
+       <render>
+        <ui:function>        
+          return $wnd.Bee_getImageResourceHtml(row.ImageResourceName);
+        </ui:function>
+      </render>     
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

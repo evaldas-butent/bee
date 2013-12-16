@@ -87,14 +87,12 @@
   text-align: center;
 }
 
-.bee-discuss-comment-col-Actions-reply,.bee-discuss-comment-col-Actions-trash
-  {
+.bee-discuss-Actions {
   padding: 4px;
   margin: 4px;
 }
 
-.bee-discuss-comment-col-Actions-reply:hover,.bee-discuss-comment-col-Actions-trash:hover
-  {
+.bee-discuss-Actions:hover {
   outline: #ccc dotted 1px;
 }
 

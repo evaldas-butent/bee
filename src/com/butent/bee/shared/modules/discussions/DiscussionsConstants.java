@@ -106,11 +106,14 @@ public final class DiscussionsConstants {
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_DELETED = "Deleted";
+  public static final String COL_MARK_NAME = "Name";
+  public static final String COL_MARK_RESOURCE = "ImageResourceName";
   public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "FileName";
   public static final String COL_FILE_SIZE = "FileSize";
   public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_LAST_ACCESS = "LastAccess";
+  public static final String COL_MARK = "Mark";
   public static final String COL_MEMBER = "Member";
   public static final String COL_OWNER = "Owner";
   public static final String COL_PUBLISHER = "Publisher";
@@ -139,6 +142,7 @@ public final class DiscussionsConstants {
   public static final String PROP_STAR = "Star";
   public static final String PROP_USER = "User";
   public static final String PROP_ATTACHMENT = "Attachment";
+  public static final String PROP_MARKS = "Marks";
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";
@@ -161,6 +165,7 @@ public final class DiscussionsConstants {
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
+  public static final String TBL_DISCUSSIONS_COMENTS_MARKS = "DiscussCommentsMarks";
 
   public static final long VALUE_MEMBER = 1;
 
@@ -179,6 +184,7 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String VIEW_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String VIEW_DISCUSSIONS_USERS = "DiscussionsUsers";
+  public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
 
   public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
 

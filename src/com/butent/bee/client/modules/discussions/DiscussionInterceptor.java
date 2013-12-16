@@ -14,6 +14,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
@@ -28,6 +29,7 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
@@ -356,6 +358,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       boolean val = BeeUtils.toBoolean(ac.getValue());
       getMultiSelector(form, PROP_MEMBERS).setEnabled(!val);
     }
+
+    widget = form.getWidgetBySource(VIEW_DISCUSSIONS);
+    if (widget instanceof FlowPanel) {
+      createMarkPanel((Flow) widget, form, row, null);
+    }
+
   }
 
   @Override
@@ -457,6 +465,37 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     });
     return false;
+  }
+
+  private void createMarkPanel(final Flow flowWidget, FormView form, IsRow formRow,
+      final Long commentId) {
+
+    if (flowWidget == null || form == null || formRow == null) {
+      return;
+    }
+
+    Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
+    Long owner =  formRow.getLong(form.getDataIndex(COL_OWNER));
+    final Long discussId = formRow.getId();
+    
+    if (!isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)) {
+      return;
+    }
+
+    Queries.getRowSet(VIEW_DISCUSSIONS_MARK_TYPES, Lists.newArrayList(COL_MARK_NAME,
+        COL_MARK_RESOURCE),
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.isEmpty()) {
+              return;
+            }
+
+            for (IsRow markRow : result.getRows()) {
+              renderMark(flowWidget, result, markRow, discussId, commentId);
+            }
+          }
+        });
   }
 
   private static Widget createCommentCell(String colName, String value) {
@@ -906,7 +945,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case DEACTIVATE:
         break;
       case MARK:
-        doMark(null);
+        doMark(null, null);
         break;
       case MODIFY:
         break;
@@ -919,7 +958,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private static void doMark(Long commentId) {
+  private static void doMark(@SuppressWarnings("unused") Long discussId, Long commentId) {
     if (commentId == null) {
       // TODO: do discussion mark
       return;
@@ -1069,6 +1108,28 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     container.add(fileContainer);
   }
 
+  private static void renderMark(Flow container, BeeRowSet markTypeRowData, IsRow markTypeRow,
+      final Long discussId, final Long commentId) {
+    String markName = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_NAME));
+    String markRes = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_RESOURCE));
+
+    Image imgMark = new Image(Images.get(markRes));
+    imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+    imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + markName);
+    imgMark.setTitle(Localized.maybeTranslate(markName));
+
+    imgMark.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        doMark(discussId, commentId);
+      }
+
+    });
+
+    container.add(imgMark);
+  }
+
   private static void renderPhoto(IsRow commentRow, List<BeeColumn> commentColumns,
       Flow container) {
     String photo =
@@ -1082,6 +1143,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void renderReply(IsRow commentRow, Flow container) {
     Image imgReply = new Image(Images.get(IMAGE_REPLY));
+    imgReply.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
     imgReply.setTitle(Localized.getConstants().discussActionReply());
 
@@ -1100,6 +1162,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void renderTrash(IsRow commentRow, Flow container) {
     Image imgTrash = new Image(Images.get(IMAGE_TRASH));
+    imgTrash.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
     imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
     imgTrash.setTitle(Localized.getConstants().actionDelete());
     final long commentId = commentRow.getId();

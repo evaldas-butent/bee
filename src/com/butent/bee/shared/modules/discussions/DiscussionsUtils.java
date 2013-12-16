@@ -27,6 +27,10 @@ public final class DiscussionsUtils {
   private static final BiMap<String, String> discussionPropertyToRelation = HashBiMap.create();
   private static final long MEGABYTE_IN_BYTES = 1024 * 1024;
   
+  public static List<Long> getDiscussionMarks(IsRow row) {
+    return DataUtils.parseIdList(row.getProperty(PROP_MARKS));
+  }
+
   public static List<Long> getDiscussionMembers(IsRow row, List<BeeColumn> columns) {
     List<Long> users = Lists.newArrayList();
 

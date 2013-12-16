@@ -262,7 +262,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,
-      Collection<Long> discussionUsers, Long commentId) {
+      Collection<Long> discussionUsers, Collection<Long> discussionMarks, Long commentId) {
     long discussionId = row.getId();
 
     if (!BeeUtils.isEmpty(discussionUsers)) {
@@ -271,6 +271,10 @@ public class DiscussionsModuleBean implements BeeModule {
       if (!discussionUsers.isEmpty()) {
         row.setProperty(PROP_MEMBERS, DataUtils.buildIdList(discussionUsers));
       }
+    }
+    
+    if (!BeeUtils.isEmpty(discussionMarks)) {
+      row.setProperty(PROP_MARKS, DataUtils.buildIdList(discussionMarks));
     }
 
     Multimap<String, Long> discussionRelations = getDiscussionRelations(discussionId);
@@ -397,7 +401,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
       response = deb.commitRow(updated, true);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
-        addDiscussionProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers,
+        addDiscussionProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, null,
             commentId);
       }
     } else {
@@ -643,6 +647,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     BeeRow data = rowSet.getRow(0);
     addDiscussionProperties(data, rowSet.getColumns(), getDiscussionMembers(discussionId),
+        getDiscussionMarks(discussionId),
         commentId);
 
     return ResponseObject.response(data);
@@ -683,6 +688,29 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private List<Long> getDiscussionMarks(long discussionId) {
+    if (!DataUtils.isId(discussionId)) {
+      return Lists.newArrayList();
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DISCUSSIONS_COMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMENTS_MARKS))
+        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
+        .setWhere(
+            SqlUtils.equals(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION,
+                discussionId)).addOrder(
+            TBL_DISCUSSIONS_COMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMENTS_MARKS));
+
+    Long[] result = qs.getLongColumn(query);
+    List<Long> markList = Lists.newArrayList();
+
+    if (BeeUtils.isPositive(result.length)) {
+      markList = Lists.newArrayList(result);
+    }
+
+    return markList;
   }
 
   private List<Long> getDiscussionMembers(long discussionId) {
