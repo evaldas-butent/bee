@@ -539,10 +539,16 @@ public final class PropertyUtils {
   private static boolean validValue(Object v) {
     if (v == null) {
       return false;
+
     } else if (v instanceof String) {
       return !((String) v).isEmpty();
+    
     } else if (v instanceof Collection) {
       return !((Collection<?>) v).isEmpty();
+
+    } else if (v instanceof Map) {
+      return !((Map<?, ?>) v).isEmpty();
+    
     } else {
       return true;
     }

@@ -106,6 +106,7 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.Button;
@@ -504,11 +505,14 @@ public final class CliWorker {
     } else if ("vm".equals(z)) {
       BeeKeeper.getRpc().invoke("vmInfo");
 
+    } else if ("wf".equals(z) || z.startsWith("suppl")) {
+      showWidgetSuppliers();
+
     } else if ("widget".equals(z) && arr.length >= 2) {
       showWidgetInfo(arr);
 
-    } else if ("wf".equals(z) || z.startsWith("suppl")) {
-      showWidgetSuppliers();
+    } else if ("ws".equals(z) || z.startsWith("websock")) {
+      doWebSocket(args);
 
     } else {
       showError("wtf", v);
@@ -1312,6 +1316,35 @@ public final class CliWorker {
     }
   }
 
+  private static void doWebSocket(String args) {
+    if (BeeUtils.isEmpty(args) || BeeUtils.same(args, "info")) {
+      showTable("WebSocket", new PropertiesData(Endpoint.getInfo()));
+
+    } else if (BeeUtils.same(args, "open")) {
+      if (Endpoint.isOpen()) {
+        inform("endpoint already open");
+      } else {
+        logger.debug("opening endpoint");
+        Endpoint.open();
+      }
+
+    } else if (BeeUtils.same(args, "close")) {
+      if (Endpoint.isOpen()) {
+        logger.debug("closing endpoint");
+        Endpoint.close();
+      } else {
+        inform("endpoint not open");
+      }
+
+    } else {
+      if (Endpoint.isOpen()) {
+        Endpoint.send(args);
+      } else {
+        inform("endpoint not open");
+      }
+    }
+  }
+  
   private static void eval(String xpr) {
     if (BeeUtils.isEmpty(xpr)) {
       Global.sayHuh();

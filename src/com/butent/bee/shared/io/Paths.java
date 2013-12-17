@@ -36,6 +36,16 @@ public final class Paths {
     return BeeUtils.join(SEGMENT_SEPARATOR, segments);
   }
   
+  public static String ensureEndSeparator(String segment) {
+    if (BeeUtils.isEmpty(segment)) {
+      return segment;
+    } else if (segment.trim().endsWith(SEGMENT_SEPARATOR)) {
+      return segment.trim();
+    } else {
+      return segment.trim() + SEGMENT_SEPARATOR;
+    }
+  }
+  
   public static String getFlagPath(String fileName) {
     if (BeeUtils.isEmpty(fileName)) {
       return null;
