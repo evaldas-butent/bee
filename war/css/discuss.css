@@ -131,3 +131,33 @@
   max-height: 10em;
   display: block;
 }
+
+.bee-discuss-markTypes-container {
+  display: inline-block;
+  text-align: right;
+  margin-right: 2em;
+}
+
+.bee-discuss-Actions-mark-label {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: -1em;
+  font-size: smaller;
+  font-weight: bolder;
+}
+
+.bee-discuss-Actions-mark{
+   display: inline-block;
+   height: 1.5em;
+   vertical-align: middle;
+}
+
+.bee-Label .bee-discuss-Actions-mark-label {
+  vertical-align: middle;
+}
+
+.bee-discuss-Actions-stats {
+  display: inline-block;
+  height: 1.5em;
+  vertical-align: middle;
+}

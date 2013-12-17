@@ -455,6 +455,7 @@ public final class Images {
 
     map.put(key("silverAdd"), resources.silverAdd());
     map.put(key("silverBookmarkAdd"), resources.silverBookmarkAdd());
+    map.put(key("silverBarChart"), resources.silverBarChart());
     map.put(key("silverChatIcon"), resources.silverChatIcon());
     map.put(key("silverClose"), resources.silverClose());
     map.put(key("silverConfigure"), resources.silverConfigure());

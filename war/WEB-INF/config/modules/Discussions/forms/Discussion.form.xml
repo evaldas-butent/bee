@@ -68,7 +68,7 @@
       </FlowPanel>
     </FlowPanel>
     
-    <FlowPanel name = "DiscussMarkTypes" class="flexBox-horizontal bee-discuss-markTypes-container" />
+    <FlowPanel name ="DiscussMarkTypes" class="flexBox-horizontal bee-discuss-markTypes-container" />
 
     <Disclosure xmlns="http://www.butent.com/widget"
       xmlns:xi="http://www.w3.org/2001/XInclude" open="false">

@@ -464,6 +464,8 @@ public class DiscussionsModuleBean implements BeeModule {
     Long parentComment = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_PARENT_COMMENT));
     Long deleteComment =
         BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_DELETED_COMMENT));
+    Long markId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_MARK));
+    Long markedComment = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_DISCUSSION_MARKED_COMMENT));
 
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     Set<String> updatedRelations = NameUtils.toSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
@@ -530,8 +532,6 @@ public class DiscussionsModuleBean implements BeeModule {
 
       case DEACTIVATE:
         break;
-      case MARK:
-        break;
       case VISIT:
         if (oldMembers.contains(currentUser)) {
           response = registerDiscussionVisit(discussionId, currentUser, now);
@@ -547,6 +547,7 @@ public class DiscussionsModuleBean implements BeeModule {
       case ACTIVATE:
       case CLOSE:
       case COMMENT:
+      case MARK:
       case MODIFY:
       case REPLY:
         if (!BeeUtils.isEmpty(commentText)) {
@@ -562,6 +563,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if ((response == null || !response.hasErrors()) && DataUtils.isId(deleteComment)) {
           response = deleteDiscussionComment(discussionId, deleteComment);
+        }
+        
+        if ((response == null || !response.hasErrors()) && DataUtils.isId(markId)) {
+          response = doMark(discussionId, markedComment, markId, currentUser);
         }
 
         if (response == null || !response.hasErrors()) {
@@ -626,6 +631,16 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     logger.info("Setting inactive discussions", count);
+  }
+
+  private ResponseObject doMark(Long discussionId, Long commentId, Long markId, Long userId) {
+    SqlInsert insert =
+        new SqlInsert(TBL_DISCUSSIONS_COMENTS_MARKS).addConstant(COL_DISCUSSION, discussionId)
+            .addConstant(COL_COMMENT, commentId)
+            .addConstant(COL_MARK, markId)
+            .addConstant(CommonsConstants.COL_USER, userId);
+
+    return qs.insertDataWithResponse(insert);
   }
 
   private ResponseObject getDiscussionData(RequestInfo reqInfo) {

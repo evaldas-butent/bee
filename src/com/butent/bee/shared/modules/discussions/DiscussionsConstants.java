@@ -179,6 +179,9 @@ public final class DiscussionsConstants {
   public static final String VAR_DISCUSSION_RELATIONS = Service.RPC_VAR_PREFIX
       + "discuss_relations";
   public static final String VAR_DISCUSSION_USERS = Service.RPC_VAR_PREFIX + "discuss_users";
+  public static final String VAR_DISCUSSION_MARK = Service.RPC_VAR_PREFIX + "discuss_mark";
+  public static final String VAR_DISCUSSION_MARKED_COMMENT = Service.RPC_VAR_PREFIX
+      + "discuss_marked_comment";
 
   public static final String VIEW_DISCUSSIONS = "Discussions";
   public static final String VIEW_DISCUSSIONS_COMMENTS = "DiscussionsComments";

@@ -60,6 +60,10 @@ public interface LocalizableDiscussionsConstants {
 
   String discussObserved();
 
+  String discussMarks();
+
+  String discussMarkStats();
+
   String discussNotCreated();
 
   String discussSelectMembers();

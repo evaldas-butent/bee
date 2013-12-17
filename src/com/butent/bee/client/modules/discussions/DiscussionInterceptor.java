@@ -14,7 +14,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
@@ -56,6 +56,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
@@ -266,6 +267,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_COMMENT_COL = STYLE_COMMENT + "col-";
   private static final String STYLE_COMMENT_FILES = STYLE_COMMENT + "files";
   private static final String STYLE_ACTIONS = "Actions";
+  private static final String STYLE_MARKED = "-marked";
+  private static final String STYLE_MARK = "-mark";
+  private static final String STYLE_STATS = "-stats";
+  private static final String STYLE_DISABLED = "-disabled";
+  private static final String STYLE_LABEL = "-label";
   private static final String STYLE_REPLY = "-reply";
   private static final String STYLE_TRASH = "-trash";
   private static final String STYLE_CHATTER = "-chatter";
@@ -359,11 +365,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       getMultiSelector(form, PROP_MEMBERS).setEnabled(!val);
     }
 
-    widget = form.getWidgetBySource(VIEW_DISCUSSIONS);
-    if (widget instanceof FlowPanel) {
+    widget = form.getWidgetByName(VIEW_DISCUSSIONS_MARK_TYPES);
+    if (widget instanceof Panel) {
       createMarkPanel((Flow) widget, form, row, null);
     }
-
   }
 
   @Override
@@ -469,31 +474,57 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void createMarkPanel(final Flow flowWidget, FormView form, IsRow formRow,
       final Long commentId) {
+    flowWidget.clear();
 
-    if (flowWidget == null || form == null || formRow == null) {
+    if (form == null || formRow == null) {
       return;
     }
 
     Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
-    Long owner =  formRow.getLong(form.getDataIndex(COL_OWNER));
-    final Long discussId = formRow.getId();
-    
-    if (!isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)) {
-      return;
-    }
+    Long owner = formRow.getLong(form.getDataIndex(COL_OWNER));
+
+    final boolean enabled =
+        isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false);
+    final boolean marked = false; // TODO:
+
+    final Widget label = new CustomDiv();
+    // label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL);
+    label.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "Label");
+    label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL);
+    label.getElement().setInnerHTML(Localized.getConstants().discussMarks());
+    flowWidget.add(label);
 
     Queries.getRowSet(VIEW_DISCUSSIONS_MARK_TYPES, Lists.newArrayList(COL_MARK_NAME,
         COL_MARK_RESOURCE),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
+            flowWidget.clear();
+            flowWidget.add(label);
             if (result.isEmpty()) {
               return;
             }
 
+            int i = 0;
             for (IsRow markRow : result.getRows()) {
-              renderMark(flowWidget, result, markRow, discussId, commentId);
+              renderMark(flowWidget, result, markRow, commentId, enabled, marked, i++);
             }
+
+            Image imgStats = new Image(Images.get("silverBarChart"));
+            imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+            imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
+            imgStats.setTitle(Localized.getConstants().discussMarkStats());
+
+            imgStats.addClickHandler(new ClickHandler() {
+
+              @Override
+              public void onClick(ClickEvent event) {
+                BeeKeeper.getScreen().notifyInfo("Soon as posible");
+              }
+
+            });
+
+            flowWidget.add(imgStats);
           }
         });
   }
@@ -665,6 +696,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (!files.isEmpty()) {
       renderFiles(files, colComment);
     }
+
+    // renderMark(container, markTypeRowData, markTypeRow, commentId, enabled, marked, seek); //
+    // TODO
 
     container.add(colComment);
 
@@ -945,7 +979,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       case DEACTIVATE:
         break;
       case MARK:
-        doMark(null, null);
+        // doMark(null, null);
         break;
       case MODIFY:
         break;
@@ -958,12 +992,19 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private static void doMark(@SuppressWarnings("unused") Long discussId, Long commentId) {
-    if (commentId == null) {
-      // TODO: do discussion mark
+  private void doMark(Long commentId, Long markId) {
+    if (markId == null) {
       return;
     }
-    // TODO: do discussion comment mark
+
+    ParameterList params = createParams(DiscussionEvent.MARK, null);
+    params.addDataItem(VAR_DISCUSSION_MARK, markId);
+
+    if (DataUtils.isId(commentId)) {
+      params.addDataItem(VAR_DISCUSSION_MARKED_COMMENT, commentId);
+    }
+
+    sendRequest(params, DiscussionEvent.MARK);
   }
 
   private long getDiscussionId() {
@@ -1108,26 +1149,47 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     container.add(fileContainer);
   }
 
-  private static void renderMark(Flow container, BeeRowSet markTypeRowData, IsRow markTypeRow,
-      final Long discussId, final Long commentId) {
+  private void renderMark(Flow container, BeeRowSet markTypeRowData, IsRow markTypeRow,
+      final Long commentId, final boolean enabled, final boolean marked, final int seek) {
     String markName = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_NAME));
     String markRes = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_RESOURCE));
+    final Long markId = markTypeRow.getId();
 
-    Image imgMark = new Image(Images.get(markRes));
+    Widget imgMark =
+        BeeUtils.isEmpty(markRes) ? new Button(Localized.maybeTranslate(markName)) : new Image(
+            Images.get(markRes));
     imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-    imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + markName);
+    imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK);
+    if (!enabled) {
+      imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_DISABLED);
+    }
+
+    if (marked) {
+      imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_MARKED);
+    }
+
+    imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + seek);
     imgMark.setTitle(Localized.maybeTranslate(markName));
 
-    imgMark.addClickHandler(new ClickHandler() {
+    if (enabled && !marked) {
+      ((CustomWidget) imgMark).addClickHandler(new ClickHandler() {
 
-      @Override
-      public void onClick(ClickEvent event) {
-        doMark(discussId, commentId);
-      }
+        @Override
+        public void onClick(ClickEvent event) {
+          doMark(commentId, markId);
+        }
 
-    });
+      });
+    }
 
     container.add(imgMark);
+
+    Widget label = new CustomDiv();
+    label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL);
+    label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL + seek);
+    label.getElement().setInnerHTML(BeeUtils.toString(BeeUtils.randomInt(0, 100)));
+    container.add(label);
+
   }
 
   private static void renderPhoto(IsRow commentRow, List<BeeColumn> commentColumns,
