@@ -323,11 +323,12 @@ public class Global implements Module {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
   }
 
-  public static void showGrid(IsTable<?, ?> table) {
+  public static void showGrid(String caption, IsTable<?, ?> table) {
     Assert.notNull(table, "showGrid: table is null");
-    CellGrid grid = GridFactory.simpleGrid(table, BeeKeeper.getScreen().getActivePanelWidth());
+    CellGrid grid = GridFactory.simpleGrid(caption, table,
+        BeeKeeper.getScreen().getActivePanelWidth());
     if (grid != null) {
-      BeeKeeper.getScreen().updateActivePanel(grid);
+      BeeKeeper.getScreen().showWidget(grid, true);
     }
   }
 

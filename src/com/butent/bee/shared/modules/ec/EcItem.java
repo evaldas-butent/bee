@@ -26,7 +26,7 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   public static final Splitter CATEGORY_SPLITTER =
       Splitter.on(EcConstants.CATEGORY_ID_SEPARATOR).trimResults().omitEmptyStrings();
-  
+
   public static String joinCategories(Collection<Long> categories) {
     StringBuilder sb = new StringBuilder();
     for (Long category : categories) {
@@ -60,10 +60,10 @@ public class EcItem implements BeeSerializable, HasCaption {
   private boolean featured;
 
   private String unit;
-  
+
   private int primaryStock;
   private int secondaryStock;
-  
+
   private int analogCount;
 
   public EcItem(long articleId) {
@@ -110,9 +110,13 @@ public class EcItem implements BeeSerializable, HasCaption {
         case SUPPLIERS:
           Collection<ArticleSupplier> sups = Lists.newArrayList();
 
-          for (String supplier : Codec.beeDeserializeCollection(value)) {
-            sups.add(ArticleSupplier.restore(supplier));
+          String[] suppArr = Codec.beeDeserializeCollection(value);
+          if (suppArr != null) {
+            for (String supplier : suppArr) {
+              sups.add(ArticleSupplier.restore(supplier));
+            }
           }
+
           setSuppliers(sups);
           break;
 
@@ -131,13 +135,17 @@ public class EcItem implements BeeSerializable, HasCaption {
         case DESCRIPTION:
           setDescription(value);
           break;
-        
+
         case CRITERIA:
           if (!criteria.isEmpty()) {
             criteria.clear();
           }
-          for (String crit : Codec.beeDeserializeCollection(value)) {
-            criteria.add(ArticleCriteria.restore(crit));
+
+          String[] critArr = Codec.beeDeserializeCollection(value);
+          if (critArr != null) {
+            for (String crit : critArr) {
+              criteria.add(ArticleCriteria.restore(crit));
+            }
           }
           break;
 
@@ -152,7 +160,7 @@ public class EcItem implements BeeSerializable, HasCaption {
         case UNIT:
           setUnit(value);
           break;
-          
+
         case PRIMARY_STOCK:
           setPrimaryStock(BeeUtils.toInt(value));
           break;
@@ -213,7 +221,7 @@ public class EcItem implements BeeSerializable, HasCaption {
   public String getDescription() {
     return description;
   }
-  
+
   public int getListPrice() {
     return listPrice;
   }
@@ -357,7 +365,7 @@ public class EcItem implements BeeSerializable, HasCaption {
         case DESCRIPTION:
           arr[i++] = description;
           break;
-          
+
         case CRITERIA:
           arr[i++] = criteria;
           break;
@@ -373,7 +381,7 @@ public class EcItem implements BeeSerializable, HasCaption {
         case UNIT:
           arr[i++] = unit;
           break;
-          
+
         case PRIMARY_STOCK:
           arr[i++] = primaryStock;
           break;
@@ -409,7 +417,7 @@ public class EcItem implements BeeSerializable, HasCaption {
   public void setCriteria(List<ArticleCriteria> criteria) {
     BeeUtils.overwrite(this.criteria, criteria);
   }
-  
+
   public void setDescription(String description) {
     this.description = description;
   }

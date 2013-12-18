@@ -15,7 +15,9 @@ import com.butent.bee.shared.websocket.TextMessage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.websocket.CloseReason;
 import javax.websocket.Extension;
@@ -28,12 +30,17 @@ import javax.websocket.RemoteEndpoint.Async;
 import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-@ServerEndpoint("/ws")
+@ServerEndpoint("/ws/{user-id}")
 public class Endpoint {
 
+  private static final String PROPERTY_USER_ID = "UserId";
+
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
+  
+  private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();   
 
   private static List<Property> getExtensionInfo(Extension extension) {
     List<Property> info = Lists.newArrayList();
@@ -63,9 +70,16 @@ public class Endpoint {
     info.add(new Property("Open Sessions", BeeUtils.bracket(size)));
     
     if (size > 0) {
+      int index = 0;
+
       for (Session session : sessions) {
-        info.add(new Property(BeeUtils.joinWords("Id:", session.getId()),
-            BeeUtils.joinWords("User Principal:", session.getUserPrincipal())));
+        String prefix = "Session " + Integer.toString(index++) + BeeConst.STRING_SPACE;
+        
+        PropertyUtils.addProperties(info,
+            prefix + "Id", session.getId(),
+            prefix + "User Principal", session.getUserPrincipal(),
+            prefix + "User Id", getUserId(session),
+            prefix + "Open", session.isOpen());
       }
     }
     
@@ -115,6 +129,7 @@ public class Endpoint {
       
       PropertyUtils.addProperties(info,
           "Negotiated Subprotocol", session.getNegotiatedSubprotocol(),
+          "Open Sessions", session.getOpenSessions().size(),
           "Path Parameters", session.getPathParameters(),
           "Protocol Version", session.getProtocolVersion(),
           "Query String", session.getQueryString(),
@@ -129,6 +144,9 @@ public class Endpoint {
     return info;
   }
   
+  private static Long getUserId(Session session) {
+    return (session == null) ? null : (Long) session.getUserProperties().get(PROPERTY_USER_ID);
+  }
 
   private static List<Property> getWebSocketContainerInfo(WebSocketContainer wsc) {
     List<Property> info = Lists.newArrayList();
@@ -157,32 +175,54 @@ public class Endpoint {
   
   private static void send(Session session, Message message) {
     try {
-      session.getBasicRemote().sendText(message.stringify());
+      session.getBasicRemote().sendText(message.encode());
     } catch (IOException ex) {
       logger.error(ex);
     }
   }
   
+  private static void setUserId(Session session, Long userId) {
+    session.getUserProperties().put(PROPERTY_USER_ID, userId);
+  }
+  
   @OnClose
   public void onClose(Session session, CloseReason closeReason) {
-    logger.warning("ws close", session.getId(), closeReason);
+    openSessions.remove(session);
+    
+//    String reasonInfo;
+//    if (closeReason == null) {
+//      reasonInfo = null;
+//    } else {
+//      int code = closeReason.getCloseCode().getCode();
+//      
+//      for (CloseCodes closeCodes : closeCodes.values()) {
+//        
+//      }
+//   
+//    
+//    reasonInfo = BeeUtils.joinOptions("code", (code == null) ? null
+//            : BeeUtils.joinWords(code.toString(), ""), closeReason.getReasonPhrase());
+//    }
+    
+    logger.info("ws close", session.getId(), closeReason);
   }
   
   @OnError
   public void onError(Session session, Throwable thr) {
+    openSessions.remove(session);
     logger.error(thr, "ws error", session.getId());
   }
   
   @OnMessage
   public void onMessage(Session session, String received) {
-    logger.warning("ws message", session.getId(), received);
+    logger.debug("ws message", session.getId(), received);
     
     Message message;
     
     if (BeeUtils.same(received, "?")) {
-      message = new InfoMessage(getSessionInfo(session));
+      message = new InfoMessage("Session", getSessionInfo(session));
     } else if (BeeUtils.same(received, "who")) {
-      message = new InfoMessage(getOpenSessionsInfo(session.getOpenSessions()));
+      message = new InfoMessage("Open Sessions", getOpenSessionsInfo(openSessions));
     } else {
       message = new TextMessage(received);
     }
@@ -191,7 +231,10 @@ public class Endpoint {
   }
   
   @OnOpen
-  public void onOpen(Session session) {
-    logger.warning("ws open", session.getId(), session.getUserPrincipal());
+  public void onOpen(@PathParam("user-id") Long userId, Session session) {
+    setUserId(session, userId);
+    openSessions.add(session);
+
+    logger.info("ws open", session.getId(), session.getUserPrincipal(), userId);
   }
 }

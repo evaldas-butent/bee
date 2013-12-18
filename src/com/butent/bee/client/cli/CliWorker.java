@@ -223,7 +223,7 @@ public final class CliWorker {
       showBrowser(arr);
 
     } else if ("cache".equals(z)) {
-      showExtData(Global.getCache().getExtendedInfo());
+      showExtData(v, Global.getCache().getExtendedInfo());
 
     } else if (z.startsWith("cap")) {
       showCaptions();
@@ -253,7 +253,7 @@ public final class CliWorker {
       doCollections(arr);
 
     } else if (z.startsWith("column")) {
-      showExtData(Data.getColumnMapper().getExtendedInfo());
+      showExtData(v, Data.getColumnMapper().getExtendedInfo());
 
     } else if (z.startsWith("data")) {
       showDataInfo(args);
@@ -278,7 +278,7 @@ public final class CliWorker {
 
     } else if (z.startsWith("decor")) {
       if (BeeUtils.isEmpty(args)) {
-        showExtData(TuningFactory.getExtendedInfo());
+        showExtData(v, TuningFactory.getExtendedInfo());
       } else {
         TuningFactory.refresh();
       }
@@ -331,7 +331,7 @@ public final class CliWorker {
       FormFactory.openForm(arr[1]);
 
     } else if (z.startsWith("forminf") || "ff".equals(z)) {
-      showPropData(FormFactory.getInfo());
+      showPropData(v, FormFactory.getInfo());
 
     } else if ("fs".equals(z)) {
       getFs();
@@ -443,10 +443,10 @@ public final class CliWorker {
       BeeKeeper.getRpc().invoke("systemInfo");
 
     } else if ("settings".equals(z)) {
-      showPropData(Settings.getInfo());
+      showPropData(v, Settings.getInfo());
 
     } else if (z.startsWith("sheets")) {
-      Global.showGrid(new PropertiesData(Global.getStyleSheets()));
+      Global.showGrid(v, new PropertiesData(Global.getStyleSheets()));
 
     } else if ("size".equals(z) && arr.length >= 2) {
       showSize(arr);
@@ -458,7 +458,7 @@ public final class CliWorker {
       doSql(args);
 
     } else if ("stacking".equals(z) || z.startsWith("zind") || z.startsWith("z-ind")) {
-      showPropData(Stacking.getInfo());
+      showPropData(v, Stacking.getInfo());
 
     } else if (z.startsWith("stor")) {
       storage(arr);
@@ -491,7 +491,7 @@ public final class CliWorker {
       upload();
 
     } else if (z.startsWith("user")) {
-      showPropData(BeeKeeper.getUser().getInfo());
+      showPropData(v, BeeKeeper.getUser().getInfo());
 
     } else if ("video".equals(z)) {
       playVideo(args);
@@ -841,7 +841,7 @@ public final class CliWorker {
       lst.add(new Property(entry.getKey(), entry.getValue()));
     }
 
-    showPropData(lst, "Location", "Api Key");
+    showPropData("Ajax", lst, "Location", "Api Key");
   }
 
   private static void doCollections(String[] arr) {
@@ -1185,7 +1185,7 @@ public final class CliWorker {
 
   private static void doLocale(String[] arr, String args) {
     if (BeeUtils.isEmpty(args)) {
-      showExtData(LocaleUtils.getInfo());
+      showExtData("Locale info", LocaleUtils.getInfo());
 
     } else if (BeeUtils.contains(arr[0], 's')) {
       BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args);
@@ -1196,7 +1196,7 @@ public final class CliWorker {
         String value = Localized.translate(arr[i]);
         PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL));
       }
-      showPropData(info);
+      showPropData("Locale info", info);
     }
   }
 
@@ -1250,7 +1250,7 @@ public final class CliWorker {
     String p2 = ArrayUtils.getQuietly(arr, 1);
 
     if (BeeUtils.same(p1, "screen")) {
-      showExtData(screen.getExtendedInfo());
+      showExtData(p1, screen.getExtendedInfo());
       return;
     }
 
@@ -1261,7 +1261,7 @@ public final class CliWorker {
     }
 
     if (BeeUtils.isEmpty(p2)) {
-      showExtData(screen.getDirectionInfo(dir));
+      showExtData(p1, screen.getDirectionInfo(dir));
       return;
     }
 
@@ -1273,7 +1273,7 @@ public final class CliWorker {
     screen.setDirectionSize(dir, BeeUtils.toInt(p2), true);
   }
 
-  private static void doSql(String sql) {
+  private static void doSql(final String sql) {
     BeeKeeper.getRpc().sendText(Service.DO_SQL, sql,
         new ResponseCallback() {
           @Override
@@ -1286,7 +1286,7 @@ public final class CliWorker {
               if (rs.isEmpty()) {
                 logger.debug("sql: RowSet is empty");
               } else {
-                Global.showGrid(rs);
+                Global.showGrid(BeeUtils.clip(sql, 100), rs);
               }
             }
           }
@@ -1325,7 +1325,7 @@ public final class CliWorker {
         inform("endpoint already open");
       } else {
         logger.debug("opening endpoint");
-        Endpoint.open();
+        Endpoint.open(BeeKeeper.getUser().getUserId());
       }
 
     } else if (BeeUtils.same(args, "close")) {
@@ -1476,14 +1476,14 @@ public final class CliWorker {
     });
   }
 
-  private static void getSimpleRowSet(ParameterList params) {
+  private static void getSimpleRowSet(final String caption, ParameterList params) {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasErrors()) {
           Global.showError(Lists.newArrayList(response.getErrors()));
         } else if (response.hasResponse(SimpleRowSet.class)) {
-          showSimpleRowSet(SimpleRowSet.restore(response.getResponseAsString()));
+          showSimpleRowSet(caption, SimpleRowSet.restore(response.getResponseAsString()));
         } else {
           Global.showError("response type " + response.getType());
         }
@@ -1545,7 +1545,7 @@ public final class CliWorker {
                           if (rs.isEmpty()) {
                             logger.debug("sql: RowSet is empty");
                           } else {
-                            Global.showGrid(rs);
+                            Global.showGrid(null, rs);
                           }
                         }
                       }
@@ -1732,7 +1732,7 @@ public final class CliWorker {
 
   // CHECKSTYLE:ON
 
-  private static void rebuildSomething(String args) {
+  private static void rebuildSomething(final String args) {
     BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -1815,7 +1815,8 @@ public final class CliWorker {
                 PresenterCallback.SHOW_IN_ACTIVE_PANEL);
           }
         } else if (response.hasResponse()) {
-          showPropData(PropertyUtils.restoreProperties((String) response.getResponse()));
+          showPropData(BeeUtils.joinWords("Rebuild", args),
+              PropertyUtils.restoreProperties((String) response.getResponse()));
         }
       }
     });
@@ -1925,7 +1926,7 @@ public final class CliWorker {
       PropertyUtils.appendChildrenToExtended(info, "Document", BrowsingContext.getDocumentInfo());
     }
 
-    showExtData(info);
+    showExtData(ArrayUtils.joinWords(arr), info);
   }
 
   private static void showCaptions() {
@@ -1944,7 +1945,7 @@ public final class CliWorker {
       }
     }
 
-    showPropData(props);
+    showPropData("Captions", props);
   }
 
   private static void showChoice(String[] arr) {
@@ -2039,7 +2040,7 @@ public final class CliWorker {
       public void run() {
         ClientLocation location = AjaxLoader.getClientLocation();
 
-        showPropData(PropertyUtils.createProperties("City", location.getCity(),
+        showPropData("Client Location", PropertyUtils.createProperties("City", location.getCity(),
             "Country", location.getCountry(), "Country Code", location.getCountryCode(),
             "Latitude", location.getLatitude(), "Longitude", location.getLongitude(),
             "Region", location.getRegion()));
@@ -2120,7 +2121,8 @@ public final class CliWorker {
     ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE);
     params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
 
-    getSimpleRowSet(params);
+    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE, currency),
+        params);
   }
 
   private static void showDataInfo(String viewName) {
@@ -2146,7 +2148,7 @@ public final class CliWorker {
         data[i][5] = BeeUtils.toString(di.getViewColumns().size());
         data[i][6] = BeeUtils.toString(di.getRowCount());
       }
-      showMatrix(data, "view", "table", "id", "version", "cc", "vc", "rc");
+      showMatrix("Data info", data, "view", "table", "id", "version", "cc", "vc", "rc");
 
     } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
       Data.getDataInfoProvider().load();
@@ -2154,7 +2156,7 @@ public final class CliWorker {
     } else {
       DataInfo dataInfo = Data.getDataInfo(viewName);
       if (dataInfo != null) {
-        showExtData(dataInfo.getExtendedInfo());
+        showExtData(viewName, dataInfo.getExtendedInfo());
       }
     }
   }
@@ -2253,7 +2255,7 @@ public final class CliWorker {
         "JustDate", TimeUtils.toDate(t).toString(),
         "Java Date", TimeUtils.toJava(t).toString());
 
-    showPropData(lst);
+    showPropData(BeeUtils.joinWords(cmnd, args), lst);
   }
 
   private static void showDateFormat(String args) {
@@ -2272,7 +2274,7 @@ public final class CliWorker {
         i++;
       }
 
-      showMatrix(data, "Format", "Pattern", "Value");
+      showMatrix("DateTime", data, "Format", "Pattern", "Value");
 
     } else {
       DateTimeFormat dtf = null;
@@ -2377,7 +2379,8 @@ public final class CliWorker {
     params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
     params.addQueryItem(CommonsConstants.COL_CURRENCY_RATE_DATE, date);
 
-    getSimpleRowSet(params);
+    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_EXCHANGE_RATE, currency, date),
+        params);
   }
 
   private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
@@ -2388,11 +2391,12 @@ public final class CliWorker {
     params.addQueryItem(CommonsConstants.VAR_DATE_LOW, dateLow);
     params.addQueryItem(CommonsConstants.VAR_DATE_HIGH, dateHigh);
 
-    getSimpleRowSet(params);
+    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
+        currency, dateLow, dateHigh), params);
   }
 
-  private static void showExtData(List<ExtendedProperty> data) {
-    Global.showGrid(new ExtendedPropertiesData(data, true));
+  private static void showExtData(String caption, List<ExtendedProperty> data) {
+    Global.showGrid(caption, new ExtendedPropertiesData(data, true));
   }
 
   private static void showFlags(String[] arr) {
@@ -2775,12 +2779,13 @@ public final class CliWorker {
   }
 
   private static void showListOfCurrencies() {
-    getSimpleRowSet(CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
+    getSimpleRowSet(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES,
+        CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
   }
 
   @SuppressWarnings("rawtypes")
-  private static void showMatrix(String[][] data, String... columnLabels) {
-    Global.showGrid(new StringMatrix(data, columnLabels));
+  private static void showMatrix(String caption, String[][] data, String... columnLabels) {
+    Global.showGrid(caption, new StringMatrix(data, columnLabels));
   }
 
   private static void showMeter(String[] arr) {
@@ -3025,8 +3030,8 @@ public final class CliWorker {
     timer.scheduleRepeating(100);
   }
 
-  private static void showPropData(List<Property> data, String... columnLabels) {
-    Global.showGrid(new PropertiesData(data, columnLabels));
+  private static void showPropData(String caption, List<Property> data, String... columnLabels) {
+    Global.showGrid(caption, new PropertiesData(data, columnLabels));
   }
 
   private static void showProperties(String v, String[] arr) {
@@ -3119,12 +3124,12 @@ public final class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
     } else {
-      Global.showGrid(new StringMatrix<TableColumn>(
+      Global.showGrid("rpc", new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));
     }
   }
 
-  private static void showSimpleRowSet(SimpleRowSet rs) {
+  private static void showSimpleRowSet(String caption, SimpleRowSet rs) {
     if (DataUtils.isEmpty(rs)) {
       Global.showInfo("Simple rowset is empty");
       return;
@@ -3138,7 +3143,7 @@ public final class CliWorker {
       }
     }
 
-    showMatrix(matrix, rs.getColumnNames());
+    showMatrix(caption, matrix, rs.getColumnNames());
   }
 
   private static void showSize(String[] arr) {
@@ -3293,7 +3298,7 @@ public final class CliWorker {
     List<Property> data = Features.getInfo();
 
     if (BeeUtils.isEmpty(args)) {
-      showPropData(data);
+      showPropData("Support", data);
 
     } else {
       List<Property> filtered = Lists.newArrayList();
@@ -3309,7 +3314,7 @@ public final class CliWorker {
         Property p = filtered.get(0);
         inform(p.getName(), p.getValue());
       } else {
-        showPropData(filtered);
+        showPropData("Features " + args, filtered);
       }
     }
   }
@@ -3469,19 +3474,21 @@ public final class CliWorker {
     if (showModal(table.getNumberOfRows())) {
       Global.showModalGrid(caption, table);
     } else {
-      Global.showGrid(table);
+      Global.showGrid(caption, table);
     }
   }
 
-  private static void showTableInfo(String args) {
+  private static void showTableInfo(final String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_TABLE_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
+
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        showExtData(PropertyUtils.restoreExtended((String) response.getResponse()));
+        showExtData(BeeUtils.joinWords("Tables", args),
+            PropertyUtils.restoreExtended((String) response.getResponse()));
       }
     });
   }
@@ -3543,15 +3550,17 @@ public final class CliWorker {
     showTable("Pixels", new PropertiesData(info));
   }
 
-  private static void showViewInfo(String args) {
+  private static void showViewInfo(final String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
+
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        showExtData(PropertyUtils.restoreExtended((String) response.getResponse()));
+        showExtData(BeeUtils.joinWords("Views", args),
+            PropertyUtils.restoreExtended((String) response.getResponse()));
       }
     });
   }
@@ -3573,7 +3582,7 @@ public final class CliWorker {
     int depth = BeeUtils.isDigit(z) ? BeeUtils.toInt(z) : 0;
 
     List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
-    showExtData(info);
+    showExtData(BeeUtils.joinWords("Widget", id, z), info);
   }
 
   private static void showWidgetSuppliers() {
@@ -3618,7 +3627,7 @@ public final class CliWorker {
     }
 
     if (parCnt <= 0) {
-      showPropData(BeeKeeper.getStorage().getAll());
+      showPropData("Storage", BeeKeeper.getStorage().getAll());
       return;
     }
 
@@ -3679,7 +3688,7 @@ public final class CliWorker {
         }
       }
 
-      showExtData(lst);
+      showExtData("Sheets", lst);
       return;
     }
 
@@ -3710,7 +3719,7 @@ public final class CliWorker {
       if (BeeUtils.isEmpty(info)) {
         inform("element id", arr[1], "has no style");
       } else {
-        showPropData(info);
+        showPropData(BeeUtils.joinWords("Element", arr[1], "style"), info);
       }
       return;
     }

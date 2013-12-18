@@ -646,7 +646,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       getNotification().clear();
     }
   }
-  
+
   @Override
   public void create(Order order) {
     if (gridInterceptor != null) {
@@ -691,7 +691,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
         return isRowEditable(input, null);
       }
     });
-    
+
     if (gridDescription.getRowValidation() != null) {
       setRowValidation(Evaluator.create(gridDescription.getRowValidation(), null, dataColumns));
     }
@@ -1127,18 +1127,18 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (rowValue == null) {
       return false;
     }
-    
+
     boolean ok = rowValue.isEditable();
-    
+
     if (ok && getGridInterceptor() != null) {
       ok = getGridInterceptor().isRowEditable(rowValue);
     }
-    
+
     if (ok && getRowEditable() != null) {
       getRowEditable().update(rowValue);
       ok = BeeUtils.toBoolean(getRowEditable().evaluate());
     }
- 
+
     if (!ok && notificationListener != null) {
       notificationListener.notifyWarning(Localized.getConstants().rowIsReadOnly());
     }
@@ -1953,7 +1953,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (BeeUtils.isEmpty(editViewName)) {
       return false;
     }
-    
+
     if (!Data.isViewVisible(editViewName)) {
       return false;
     }
@@ -2124,17 +2124,17 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       return;
     }
 
-    if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
-        && EditStartEvent.isClickOrEnter(event.getCharCode())) {
+    if (ValueType.BOOLEAN.equals(editableColumn.getDataType())) {
+      if (EditStartEvent.isClickOrEnter(event.getCharCode())) {
+        String oldValue = editableColumn.getOldValue(rowValue);
+        Boolean b = !BeeUtils.toBoolean(oldValue);
+        if (!b && editableColumn.isNullable()) {
+          b = null;
+        }
+        String newValue = BooleanValue.pack(b);
 
-      String oldValue = editableColumn.getOldValue(rowValue);
-      Boolean b = !BeeUtils.toBoolean(oldValue);
-      if (!b && editableColumn.isNullable()) {
-        b = null;
+        validateAndUpdate(editableColumn, rowValue, oldValue, newValue, true);
       }
-      String newValue = BooleanValue.pack(b);
-
-      validateAndUpdate(editableColumn, rowValue, oldValue, newValue, true);
       return;
     }
 
@@ -2286,7 +2286,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     }
 
     AutocompleteProvider.retainValues(form);
-    
+
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values,
         form.getChildrenForInsert(), callback);
 
@@ -2315,7 +2315,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (form != null && !event.isEmpty()) {
       AutocompleteProvider.retainValues(form);
     }
-    
+
     if (form != null && form.getFormInterceptor() != null) {
       form.getFormInterceptor().onSaveChanges(this, event);
       if (event.isConsumed()) {

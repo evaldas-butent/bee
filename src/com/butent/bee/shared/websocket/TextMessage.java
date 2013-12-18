@@ -13,6 +13,10 @@ public class TextMessage extends Message {
     super(Type.TEXT);
   }
 
+  public String getText() {
+    return text;
+  }
+
   @Override
   protected void deserialize(String s) {
     this.text = s;

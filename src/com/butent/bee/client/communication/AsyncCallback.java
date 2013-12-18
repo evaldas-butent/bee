@@ -221,7 +221,7 @@ public class AsyncCallback implements RequestCallback {
       }
 
       ResponseData table = new ResponseData(arr, columns);
-      Global.showGrid(table);
+      Global.showGrid(svc, table);
 
     } else {
       for (int i = 0; i < arr.length(); i++) {
