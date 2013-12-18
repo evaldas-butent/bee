@@ -144,16 +144,13 @@
   margin-left: -1em;
   font-size: smaller;
   font-weight: bolder;
+  background-color: whitesmoke;
 }
 
 .bee-discuss-Actions-mark{
    display: inline-block;
    height: 1.5em;
    vertical-align: middle;
-}
-
-.bee-Label .bee-discuss-Actions-mark-label {
-  vertical-align: middle;
 }
 
 .bee-discuss-Actions-stats {
