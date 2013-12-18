@@ -81,7 +81,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         if (getFormView().isInteractive()) {
           getHeaderView().clearCommandPanel();
         }
-        // updateStatus(CargoRequestStatus.REJECTED);
+        updateStatus(CargoRequestStatus.REJECTED);
       }
     });
   }
@@ -127,7 +127,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
                 getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
 
                 CargoRequestStatus status = CargoRequestStatus.ACTIVE;
-                // updateStatus(status);
+                updateStatus(status);
                 refreshCommands(status);
 
                 DataChangeEvent.fireRefresh(VIEW_ORDERS);
@@ -186,7 +186,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     }
   }
 
-  // private void updateStatus(CargoRequestStatus status) {
-  // SelfServiceUtils.updateStatus(getFormView(), COL_QUERY_STATUS, status);
-  // }
+  private void updateStatus(CargoRequestStatus status) {
+    SelfServiceUtils.updateStatus(getFormView(), COL_QUERY_STATUS, status);
+  }
 }

@@ -192,10 +192,17 @@
   left: 440px;
   top: 28px;
   right: 225px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
 }
 .bee-MainCommandPanelItem {
-  display: inline-block;
-  margin-left: 5%;
   height: 25px;
   background-color: #f2f2f2;
   padding: 0 10px;
@@ -468,7 +475,15 @@
 }
 
 .bee-Header-control {
-  margin-right: 1em;
+  margin-right: 10px;
+}
+.bee-Header-control.bee-fa-label {
+  font-size: 18px;
+  color: #888;
+  cursor: pointer;
+}
+.bee-Header-control.bee-fa-label:hover {
+  color: black;
 }
 
 .bee-Header-control.bee-Action-removeFilter {
@@ -476,6 +491,13 @@
   position: relative;
   top: -10px;
   left: -10px;
+}
+
+.bee-Header-disabled .bee-Header-control {
+  display: none;
+}
+.bee-Header-control-hidden {
+  display: none;
 }
 
 .bee-CellGrid {
@@ -706,14 +728,7 @@
 
 .bee-Toggle {
   text-align: center;
-}
-
-.bee-Toggle-up-hovering {
-  color: red;
-}
-
-.bee-Toggle-down-hovering {
-  color: green;
+  cursor: pointer;
 }
 
 .bee-StringPicker {
@@ -786,7 +801,7 @@
   -ms-flex-align: center;
   margin-bottom: 5px;
 }
-.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+.bee-RichTextToolbar-row .bee-Toggle-down {
   background-color: #faac58;
 }
 
@@ -870,7 +885,8 @@
   bottom: 0;
 }
 
-.bee-GridFormContainer-newRow .bee-hasDefaults:after {
+.bee-GridFormContainer-newRow .bee-hasDefaults:after,
+.bee-NewRowContainer .bee-hasDefaults:after {
   content: "*";
   font-weight: bold;
   color: #4d90fe;
@@ -1644,8 +1660,12 @@
   outline: #555 solid 1px;
 }
 
-.bee-disabled {
-  background-color: #ebebe4;
+.bee-Form-disabled .bee-disabled,
+.bee-Form-disabled .bee-disabled input {
+  background-color: #f3f3eb;
+}
+.bee-Form-disabled .bee-CheckBox.bee-disabled {
+  background-color: inherit;
 }
 
 .bee-FilterSupplier-dialog {
@@ -2128,18 +2148,22 @@
   position: relative;
   overflow: hidden;
   background-repeat: no-repeat;
-  background-size: contain;
+  background-position: center;
 }
 .bee-SlideDeck-wrapper {
   position: absolute;
   top: 0;
   left: 0;
   background-repeat: no-repeat;
-  background-size: contain;
+  background-position: center;
 }
 
-.bee-SlideDeck-playing .bee-SlideDeck-canvas {
+.bee-SlideDeck-playing .bee-SlideDeck-canvas,
+.bee-SlideDeck-paused .bee-SlideDeck-canvas {
   background-image: none !important;
+}
+.bee-SlideDeck-not-playing .bee-SlideDeck-wrapper {
+  display: none;
 }
 
 .bee-SlideDeck-controls {
@@ -2168,11 +2192,36 @@
   font-size: 20px;
   cursor: pointer;
 }
+.bee-SlideDeck-playing .bee-SlideDeck-play {
+  color: green;
+}
+.bee-SlideDeck-not-playing .bee-SlideDeck-play {
+  color: red;
+}
+.bee-SlideDeck-paused .bee-SlideDeck-play {
+  color: yellow;
+}
+
 .bee-SlideDeck-progress {
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
   margin-left: 1em;
+  cursor: pointer;
+}
+
+.bee-SlideDeck-progress::-webkit-progress-bar {
+/*   background-color: #eee; */
+}
+.bee-SlideDeck-progress::-webkit-progress-value {
+/*   background-color: #bada55; */
+} 
+.bee-SlideDeck-progress::-moz-progress-bar {
+/*   background-color: #bada55; */
+} 
+
+.bee-SlideDeck-repeat {
+  margin-left: 0.5em;
   margin-right: 1em;
   cursor: pointer;
 }
@@ -2189,36 +2238,39 @@
   font-size: 16px;
   cursor: pointer;
 }
+.bee-SlideDeck-nav-disabled {
+  visibility: hidden;
+  cursor: default;
+}
 
-.bee-SlideDeck-settings {
+.bee-SlideDeck-settings-toggle {
   font-size: 17px;
   margin-left: 1em;
   margin-right: 0.5em;
   cursor: pointer;
 }
 
-.bee-SlideDeck-nav-disabled {
-  visibility: hidden;
-  cursor: default;
+.bee-SlideDeck-settings-panel {
+  position: absolute;
+  right: 0;
+  color: white;  
+  background-color: rgba(20, 20, 20, 0.8);
+}
+.bee-SlideDeck-settings-hidden {
+  display: none;
 }
 
-.bee-SlideDeck-config-popup {
-  background-color: rgba(20, 20, 20, 0.8);
-  color: white;  
-}
-.bee-SlideDeck-config-panel {
-  position: relative;
-}
-.bee-SlideDeck-config-table {
+.bee-SlideDeck-settings-table {
   border-collapse: collapse;
 }
-.bee-SlideDeck-config-table td {
+.bee-SlideDeck-settings-table td {
   padding: 5px 8px;
 }
-.bee-SlideDeck-config-effect {
+
+.bee-SlideDeck-settings-effect {
   color: black;
 }
-.bee-SlideDeck-config-close {
+.bee-SlideDeck-settings-close {
   position: absolute;
   top: 2px;
   right: 2px;

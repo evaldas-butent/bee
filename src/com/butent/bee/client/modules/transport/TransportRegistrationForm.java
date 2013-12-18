@@ -66,7 +66,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
         if (getFormView().isInteractive()) {
           getHeaderView().clearCommandPanel();
         }
-        // updateStatus(TranspRegStatus.REJECTED);
+        updateStatus(TranspRegStatus.REJECTED);
       }
     });
   }
@@ -116,7 +116,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
             if (getFormView().isInteractive()) {
               getHeaderView().clearCommandPanel();
             }
-            // updateStatus(TranspRegStatus.CONFIRMED);
+            updateStatus(TranspRegStatus.CONFIRMED);
           }
         });
   }
@@ -172,7 +172,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     }
   }
 
-  // private void updateStatus(final TranspRegStatus status) {
-  // SelfServiceUtils.updateStatus(getFormView(), COL_REGISTRATION_STATUS, status);
-  // }
+  private void updateStatus(final TranspRegStatus status) {
+    SelfServiceUtils.updateStatus(getFormView(), COL_REGISTRATION_STATUS, status);
+  }
 }

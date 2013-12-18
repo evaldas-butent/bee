@@ -1,6 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
-// import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.IdCallback;
@@ -72,12 +72,12 @@ class CargoRequestFilesGrid extends AbstractGridInterceptor {
             gridView.ensureRelId(new IdCallback() {
               @Override
               public void onSuccess(Long result) {
-                // SelfServiceUtils.sendFiles(result, input, new ScheduledCommand() {
-                // @Override
-                // public void execute() {
-                // gridView.getViewPresenter().handleAction(Action.REFRESH);
-                // }
-                // });
+                SelfServiceUtils.sendFiles(result, input, new ScheduledCommand() {
+                  @Override
+                  public void execute() {
+                    gridView.getViewPresenter().handleAction(Action.REFRESH);
+                  }
+                });
               }
             });
           }

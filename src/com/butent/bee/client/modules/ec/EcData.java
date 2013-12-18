@@ -12,6 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.Consumer;
@@ -47,7 +48,7 @@ class EcData {
 
     @Override
     public int compare(Long o1, Long o2) {
-      return BeeUtils.compareNullsFirst(categoryNames.get(o1), categoryNames.get(o2));
+      return Collator.DEFAULT.compare(categoryNames.get(o1), categoryNames.get(o2));
     }
   }
 

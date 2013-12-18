@@ -56,9 +56,9 @@ class CargoRequestForm extends AbstractFormInterceptor {
 
   @Override
   public void afterInsertRow(IsRow result) {
-    // if (getCollector() != null && !getCollector().isEmpty()) {
-    // SelfServiceUtils.sendFiles(result.getId(), getCollector().getFiles(), null);
-    // }
+    if (getCollector() != null && !getCollector().isEmpty()) {
+      SelfServiceUtils.sendFiles(result.getId(), getCollector().getFiles(), null);
+    }
 
     super.afterInsertRow(result);
   }
@@ -127,12 +127,12 @@ class CargoRequestForm extends AbstractFormInterceptor {
         Queries.insert(VIEW_ORDERS, columns, values, null, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            // getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
-            //
-            // CargoRequestStatus status = CargoRequestStatus.ACTIVE;
-            // SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
-            // refreshCommands(status);
-            //
+            getActiveRow().setValue(getDataIndex(COL_ORDER), result.getId());
+
+            CargoRequestStatus status = CargoRequestStatus.ACTIVE;
+            SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
+            refreshCommands(status);
+
             DataChangeEvent.fireRefresh(VIEW_ORDERS);
           }
         });
