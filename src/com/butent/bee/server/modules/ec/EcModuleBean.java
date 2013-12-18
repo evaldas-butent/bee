@@ -17,8 +17,8 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -404,10 +404,7 @@ public class EcModuleBean implements BeeModule {
     prm.registerParameterEventHandler(new ParameterEventHandler() {
       @Subscribe
       public void initTimers(ParameterEvent event) {
-        if (BeeUtils.same(event.getModule(), EC_MODULE)
-            && BeeUtils.inListSame(event.getParameter(),
-                PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
-
+        if (BeeUtils.inListSame(event.getParameter(), PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
           tcd.initTimers();
         }
       }
@@ -1369,9 +1366,9 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.response(finInfo);
     }
 
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     if (!BeeUtils.same(remoteAddress, BeeConst.STRING_MINUS)) {
       SimpleRow companyInfo = qs.getRow(new SqlSelect()
@@ -2371,8 +2368,8 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject mailRegistration(Long sender, Long recipient, String login,
       String password, SupportedLocale locale) {
 
-    String companyName = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_COMPANY_NAME));
-    String url = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_URL));
+    String companyName = BeeUtils.trim(prm.getText(PRM_COMPANY_NAME));
+    String url = BeeUtils.trim(prm.getText(PRM_URL));
 
     LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
 
@@ -2752,9 +2749,9 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
     }
 
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     ResponseObject response;
 
@@ -2793,10 +2790,10 @@ public class EcModuleBean implements BeeModule {
 
       if (!response.hasErrors()) {
         String warehouse = BeeUtils.notEmpty(order.getValue(COL_WAREHOUSE_SUPPLIER_CODE),
-            prm.getText(COMMONS_MODULE, "ERPWarehouse"));
+            prm.getText("ERPWarehouse"));
 
         WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
-            prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(), warehouse);
+            prm.getText("ERPOperation"), response.getResponseAsString(), warehouse);
 
         SimpleRowSet data = qs.getData(query);
 
@@ -2846,7 +2843,7 @@ public class EcModuleBean implements BeeModule {
                 data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
             docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, false);
+            docItem.setVat(prm.getValue(PRM_VAT_PERCENT), true, false);
           }
         }
         if (!response.hasErrors()) {

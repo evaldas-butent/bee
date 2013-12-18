@@ -30,7 +30,6 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
@@ -326,22 +325,13 @@ public class MailModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        new BeeParameter(MAIL_MODULE,
-            "DefaultAccount", ParameterType.NUMBER, "Default mail account", false, null),
-        new BeeParameter(MAIL_MODULE,
-            "POP3Server", ParameterType.TEXT, "POP3 server name", false, null),
-        new BeeParameter(MAIL_MODULE,
-            "POP3ServerPort", ParameterType.NUMBER, "POP3 server port number", false, null),
-        new BeeParameter(MAIL_MODULE,
-            "POP3BindPort", ParameterType.NUMBER, "POP3 proxy port number to listen on", false,
-            null),
-        new BeeParameter(MAIL_MODULE,
-            "SMTPServer", ParameterType.TEXT, "SMTP server name", false, null),
-        new BeeParameter(MAIL_MODULE,
-            "SMTPServerPort", ParameterType.NUMBER, "SMTP server port number", false, null),
-        new BeeParameter(MAIL_MODULE,
-            "SMTPBindPort", ParameterType.NUMBER, "SMTP proxy port number to listen on", false,
-            null));
+        BeeParameter.createNumber(MAIL_MODULE, "DefaultAccount", false, null),
+        BeeParameter.createText(MAIL_MODULE, "POP3Server", false, null),
+        BeeParameter.createNumber(MAIL_MODULE, "POP3ServerPort", false, null),
+        BeeParameter.createNumber(MAIL_MODULE, "POP3BindPort", false, null),
+        BeeParameter.createText(MAIL_MODULE, "SMTPServer", false, null),
+        BeeParameter.createNumber(MAIL_MODULE, "SMTPServerPort", false, null),
+        BeeParameter.createNumber(MAIL_MODULE, "SMTPBindPort", false, null));
 
     return params;
   }

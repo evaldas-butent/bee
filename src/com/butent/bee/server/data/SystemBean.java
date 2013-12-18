@@ -150,6 +150,7 @@ public class SystemBean {
       cache.remove(BeeUtils.normalize(objectName));
     }
   }
+
   @EJB
   DataSourceBean dsb;
   @EJB
@@ -1214,8 +1215,8 @@ public class SystemBean {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
         logger.warning("Table name doesn't match resource name:", xmlTable.name);
       } else {
-        table = new BeeTable(moduleName, xmlTable, BeeUtils.isTrue(
-            prm.getBoolean(CommonsConstants.COMMONS_MODULE, CommonsConstants.PRM_AUDIT_OFF)));
+        table = new BeeTable(moduleName, xmlTable,
+            BeeUtils.isTrue(prm.getBoolean(CommonsConstants.PRM_AUDIT_OFF)));
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {

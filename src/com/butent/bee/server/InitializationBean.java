@@ -36,7 +36,6 @@ public class InitializationBean {
 
     Localized.setConstants(Localizations.getConstants(locale));
     Localized.setMessages(Localizations.getMessages(locale));
-
     Localized.setDictionary(Localizations.getDictionary(locale));
 
     moduleBean.initModules();

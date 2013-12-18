@@ -54,13 +54,11 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -94,9 +92,7 @@ public class CommonsModuleBean implements BeeModule {
     List<BeeParameter> params = Lists.newArrayList();
 
     for (SqlEngine engine : SqlEngine.values()) {
-      BeeParameter param = new BeeParameter(COMMONS_MODULE,
-          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), ParameterType.MAP,
-          BeeUtils.joinWords("Duomenų bazės", engine, "klaidų pranešimai"), false, null);
+      Map<String, String> value = null;
 
       switch (engine) {
         case GENERIC:
@@ -104,14 +100,15 @@ public class CommonsModuleBean implements BeeModule {
         case ORACLE:
           break;
         case POSTGRESQL:
-          param.setValue(ImmutableMap
+          value = ImmutableMap
               .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
                   "Tokia reikšmė jau egzistuoja: $1",
                   ".+violates foreign key constraint.+from table \"(.+)\"\\.",
-                  "Įrašas naudojamas lentelėje \"$1\""));
+                  "Įrašas naudojamas lentelėje \"$1\"");
           break;
       }
-      params.add(param);
+      params.add(BeeParameter.createMap(COMMONS_MODULE,
+          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), false, value));
     }
     return params;
   }
@@ -171,7 +168,7 @@ public class CommonsModuleBean implements BeeModule {
       response = doItemEvent(svc, reqInfo);
 
     } else if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
-      response = doParameterEvent(svc, reqInfo);
+      response = prm.doService(svc, reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
@@ -215,25 +212,17 @@ public class CommonsModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        new BeeParameter(COMMONS_MODULE,
-            "ProgramTitle", ParameterType.TEXT, null, false, "BEE"),
-        new BeeParameter(COMMONS_MODULE, PRM_VAT_PERCENT, ParameterType.NUMBER,
-            "Default VAT percent", false, 21),
-        new BeeParameter(COMMONS_MODULE,
-            PRM_AUDIT_OFF, ParameterType.BOOLEAN, "Disable database level auditing", false, false),
-        new BeeParameter(COMMONS_MODULE, PRM_ERP_ADDRESS, ParameterType.TEXT,
-            "Address of ERP system WebService", false, null),
-        new BeeParameter(COMMONS_MODULE, PRM_ERP_LOGIN, ParameterType.TEXT,
-            "Login name of ERP system WebService", false, null),
-        new BeeParameter(COMMONS_MODULE, PRM_ERP_PASSWORD, ParameterType.TEXT,
-            "Password of ERP system WebService", false, null),
-        new BeeParameter(COMMONS_MODULE, "ERPOperation", ParameterType.TEXT,
-            "Document operation name in ERP system", false, null),
-        new BeeParameter(COMMONS_MODULE, "ERPWarehouse", ParameterType.TEXT,
-            "Document warehouse name in ERP system", false, null),
-        new BeeParameter(COMMONS_MODULE, PRM_COMPANY_NAME, ParameterType.TEXT,
-            "Company name", false, null),
-        new BeeParameter(COMMONS_MODULE, PRM_URL, ParameterType.TEXT, "URL", false, null));
+        BeeParameter.createText(COMMONS_MODULE, "ProgramTitle", false, "B-NOVO"),
+        BeeParameter.createRelation(COMMONS_MODULE, PRM_COMPANY_NAME, false,
+            TBL_COMPANIES, COL_COMPANY_NAME),
+        BeeParameter.createNumber(COMMONS_MODULE, PRM_VAT_PERCENT, false, 21),
+        BeeParameter.createBoolean(COMMONS_MODULE, PRM_AUDIT_OFF, false, null),
+        BeeParameter.createText(COMMONS_MODULE, PRM_ERP_ADDRESS, false, null),
+        BeeParameter.createText(COMMONS_MODULE, PRM_ERP_LOGIN, false, null),
+        BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
+        BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
+        BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
+        BeeParameter.createText(COMMONS_MODULE, PRM_URL, false, null));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -734,56 +723,6 @@ public class CommonsModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject doParameterEvent(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
-
-    if (BeeUtils.same(svc, SVC_GET_PARAMETERS)) {
-      List<BeeParameter> params = Lists.newArrayList();
-
-      for (BeeParameter p : prm
-          .getParameters(reqInfo.getParameter(VAR_PARAMETERS_MODULE)).values()) {
-        BeeParameter param = new BeeParameter(p.getModule(), p.getName(), p.getType(),
-            p.getDescription(), p.supportsUsers(), p.getValue());
-
-        if (param.supportsUsers()) {
-          param.setUserValue(usr.getCurrentUserId(), p.getUserValue(usr.getCurrentUserId()));
-        }
-        params.add(param);
-      }
-      response = ResponseObject.response(params);
-
-    } else if (BeeUtils.same(svc, SVC_GET_PARAMETER)) {
-      response = ResponseObject.response(prm.getValue(reqInfo.getParameter(VAR_PARAMETERS_MODULE),
-          reqInfo.getParameter(VAR_PARAMETERS)));
-
-    } else if (BeeUtils.same(svc, SVC_CREATE_PARAMETER)) {
-      prm.createParameter(BeeParameter.restore(
-          reqInfo.getParameter(VAR_PARAMETERS)));
-      response = ResponseObject.response(true);
-
-    } else if (BeeUtils.same(svc, SVC_SET_PARAMETER)) {
-      prm.setParameter(reqInfo.getParameter(VAR_PARAMETERS_MODULE),
-          reqInfo.getParameter(VAR_PARAMETERS),
-          reqInfo.getParameter(VAR_PARAMETER_VALUE));
-      response = ResponseObject.response(true);
-
-    } else if (BeeUtils.same(svc, SVC_REMOVE_PARAMETERS)) {
-      prm.removeParameters(reqInfo.getParameter(VAR_PARAMETERS_MODULE),
-          Codec.beeDeserializeCollection(reqInfo.getParameter(VAR_PARAMETERS)));
-
-      response = ResponseObject.response(true);
-    }
-    if (response == null) {
-      String msg = BeeUtils.joinWords("Parameters service not recognized:", svc);
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
-
-    } else if (response.hasErrors()) {
-      ctx.setRollbackOnly();
-    }
-    return response;
-  }
-
   private ResponseObject getCompanyInfo(Long companyId, String locale) {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.error("Wrong company ID");
@@ -891,8 +830,8 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   private String getExchangeRatesRemoteAddress() {
-    if (prm.hasModuleParameter(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS)) {
-      return prm.getText(COMMONS_MODULE, PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
+    if (prm.hasParameter(PRM_WS_LB_EXCHANGE_RATES_ADDRESS)) {
+      return prm.getText(PRM_WS_LB_EXCHANGE_RATES_ADDRESS);
     } else {
       return null;
     }

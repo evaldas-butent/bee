@@ -7,7 +7,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.ParametersHandler;
+import com.butent.bee.client.modules.commons.ParametersGrid;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -57,7 +57,7 @@ public class MenuCommand extends Command {
       }
 
       if (BeeUtils.same(svc, SERVICE_PARAMETERS)) {
-        GridFactory.openGrid("Parameters", new ParametersHandler(args));
+        GridFactory.openGrid("Parameters", new ParametersGrid(args));
         return;
       }
     }

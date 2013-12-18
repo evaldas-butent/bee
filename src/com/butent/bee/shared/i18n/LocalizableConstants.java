@@ -388,6 +388,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String properties();
 
+  String property();
+
   String quantity();
 
   String questionLogout();

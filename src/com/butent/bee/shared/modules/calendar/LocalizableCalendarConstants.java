@@ -59,10 +59,6 @@ public interface LocalizableCalendarConstants {
   String calPublic();
 
   String calReminder();
-  
-  String calRemindersEarliestTime();
-
-  String calRemindersLatestTime();
 
   String calRepairType();
 
@@ -103,10 +99,10 @@ public interface LocalizableCalendarConstants {
   String calWorkWeekView();
 
   String createNewAppointment();
-  
+
   String deleteAppointment();
-  
+
   String overlappingAppointments();
-  
+
   String selectAppointment();
 }

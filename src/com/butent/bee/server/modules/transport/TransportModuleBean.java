@@ -50,7 +50,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.JustDate;
@@ -226,10 +225,8 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        new BeeParameter(TRANSPORT_MODULE, "ERPCreditOperation", ParameterType.TEXT,
-            "Credit document operation name in ERP system", false, null),
-        new BeeParameter(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, ParameterType.NUMBER,
-            "Interval of ERP payments renewal in minutes", false, null));
+        BeeParameter.createText(TRANSPORT_MODULE, "ERPCreditOperation", false, null),
+        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null));
   }
 
   @Override
@@ -249,9 +246,7 @@ public class TransportModuleBean implements BeeModule {
     prm.registerParameterEventHandler(new ParameterEventHandler() {
       @Subscribe
       public void initTimers(ParameterEvent event) {
-        if (BeeUtils.same(event.getModule(), TRANSPORT_MODULE)
-            && BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
-
+        if (BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
           initTimer();
         }
       }
@@ -1900,9 +1895,9 @@ public class TransportModuleBean implements BeeModule {
       }
       ids.append("'").append(row.getValue(COL_SALE)).append("'");
     }
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
@@ -1930,7 +1925,7 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private void initTimer() {
-    Integer minutes = prm.getInteger(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL);
+    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
     boolean timerExists = erpTimer != null;
 
     if (timerExists) {
@@ -1988,9 +1983,9 @@ public class TransportModuleBean implements BeeModule {
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
@@ -2034,12 +2029,12 @@ public class TransportModuleBean implements BeeModule {
       String client;
 
       if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText(TRANSPORT_MODULE, "ERPCreditOperation");
+        operation = prm.getText("ERPCreditOperation");
         warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
         client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
       } else {
-        operation = prm.getText(COMMONS_MODULE, "ERPOperation");
-        warehouse = prm.getText(COMMONS_MODULE, "ERPWarehouse");
+        operation = prm.getText("ERPOperation");
+        warehouse = prm.getText("ERPWarehouse");
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
       WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
