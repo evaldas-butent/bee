@@ -147,14 +147,32 @@
   background-color: whitesmoke;
 }
 
-.bee-discuss-Actions-mark{
+.bee-discuss-Actions-mark {
    display: inline-block;
    height: 1.5em;
    vertical-align: middle;
+   background-color: #fafafa;
+   border: 1px solid #ccc;
+   border-radius: 6px;
 }
 
 .bee-discuss-Actions-stats {
   display: inline-block;
   height: 1.5em;
   vertical-align: middle;
+}
+
+.bee-discuss-Actions-mark-disabled {
+  
+}
+
+.bee-discuss-Actions-mark-marked {
+  border: 2px solid #a1bff5 !important;
+  color: #a1bff5 !important;
+}
+
+.bee-discuss-Actions-mark-disabled:hover {
+  cursor: default;
+  border: 1px solid #ccc;
+  outline: none;
 }

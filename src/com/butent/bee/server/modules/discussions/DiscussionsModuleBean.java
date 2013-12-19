@@ -121,6 +121,8 @@ public class DiscussionsModuleBean implements BeeModule {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_DATA)) {
       response = getDiscussionData(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_MARKS_DATA)) {
+      response = getDiscussionMarksData(reqInfo);
     } else {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);
       logger.warning(message);
@@ -726,6 +728,47 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return markList;
+  }
+
+  private ResponseObject getDiscussionMarksData(RequestInfo req) {
+    SqlSelect select = new SqlSelect()
+        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
+        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT, COL_COMMENT)
+        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK, COL_MARK)
+            .addField(TBL_DISCUSSIONS_COMENTS_MARKS, CommonsConstants.COL_USER,
+                CommonsConstants.COL_USER)
+        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS);
+    select.setWhere(SqlUtils.sqlTrue());
+
+    if (req.hasParameter(VAR_DISCUSSION_MARK)) {
+      List<Long> ids = DataUtils.parseIdList(req.getParameter(VAR_DISCUSSION_MARK));
+      if (!ids.isEmpty()) {
+        select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.inList(
+            TBL_DISCUSSIONS_COMENTS_MARKS, sys
+                .getIdName(TBL_DISCUSSIONS_COMENTS_MARKS),
+            ids)));
+      }
+    } else {
+      select.setWhere(SqlUtils.sqlFalse());
+    }
+
+    if (req.hasParameter(VAR_DISCUSSION_COMMENT)) {
+      Long cid = BeeUtils.toLongOrNull(req.getParameter(VAR_DISCUSSION_COMMENT));
+
+      if (DataUtils.isId(cid)) {
+        select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.equals(
+            TBL_DISCUSSIONS_COMENTS_MARKS,
+            COL_COMMENT, cid)));
+      } else {
+        select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.isNull(
+            TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT)));
+      }
+    }
+
+
+    SimpleRowSet rs = qs.getData(select);
+
+    return ResponseObject.response(rs);
   }
 
   private List<Long> getDiscussionMembers(long discussionId) {

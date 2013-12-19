@@ -13,6 +13,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -26,9 +27,13 @@ public final class DiscussionsUtils {
 
   private static final BiMap<String, String> discussionPropertyToRelation = HashBiMap.create();
   private static final long MEGABYTE_IN_BYTES = 1024 * 1024;
-  
-  public static List<Long> getDiscussionMarks(IsRow row) {
+
+  public static List<Long> getDiscussionMarksIds(IsRow row) {
+    if (row == null) {
+      return Lists.newArrayList();
+    }
     return DataUtils.parseIdList(row.getProperty(PROP_MARKS));
+
   }
 
   public static List<Long> getDiscussionMembers(IsRow row, List<BeeColumn> columns) {
@@ -54,7 +59,7 @@ public final class DiscussionsUtils {
     if (params == null) {
       return;
     }
-    
+
     final Map<String, String> holder = Maps.newHashMap();
 
     for (final String parameterName : LIST_OF_PARAMETERS) {
@@ -72,11 +77,30 @@ public final class DiscussionsUtils {
       });
     }
   }
-  
+
+  public static int getMarkCount(long markId, Long commentId, SimpleRowSet marksStats) {
+    int result = 0;
+
+    if (marksStats == null) {
+      return result;
+    }
+
+    for (String[] row : marksStats.getRows()) {
+      if ((markId == BeeUtils
+          .unbox(BeeUtils.toLongOrNull(row[marksStats.getColumnIndex(COL_MARK)])))
+          && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+              .getColumnIndex(COL_COMMENT)])))) {
+        result++;
+      }
+    }
+
+    return result;
+  }
+
   public static Set<String> getRelations() {
     return ensureDiscussionPropertyToRelation().inverse().keySet();
   }
-  
+
   public static boolean isFileSizeLimitExceeded(long uploadFileSize, Long checkParam) {
     if (checkParam == null) {
       return false;
@@ -97,6 +121,47 @@ public final class DiscussionsUtils {
     return BeeUtils.inListSame(fileExtention, null, null, extentions);
   }
 
+  public static boolean isMarked(long markId, long userId, Long commentId,
+      SimpleRowSet marksStats) {
+    boolean result = false;
+
+    if (marksStats == null) {
+      return result;
+    }
+
+    for (String[] row : marksStats.getRows()) {
+      result =
+          result
+              || (markId == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+                  .getColumnIndex(COL_MARK)]))
+                  && (userId == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+                      .getColumnIndex(CommonsConstants.COL_USER)])))
+                  && (BeeUtils.unbox(commentId)
+                == BeeUtils.unbox(BeeUtils
+                  .toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]))));
+    }
+
+    return result;
+  }
+
+  public static boolean hasOneMark(Long userId, Long commentId, SimpleRowSet marksStats) {
+    boolean result = false;
+
+    if (marksStats == null) {
+      return result;
+    }
+
+    for (String[] row : marksStats.getRows()) {
+      result =
+          result || (userId == BeeUtils.toLongOrNull(row[marksStats
+              .getColumnIndex(CommonsConstants.COL_USER)])
+              && commentId == BeeUtils.toLongOrNull(row[marksStats
+              .getColumnIndex(COL_COMMENT)]));
+    }
+
+    return result;
+  }
+
   public static boolean sameMembers(IsRow oldRow, IsRow newRow) {
     if (oldRow == null || newRow == null) {
       return false;
@@ -105,7 +170,7 @@ public final class DiscussionsUtils {
           .sameIdSet(oldRow.getProperty(PROP_MEMBERS), newRow.getProperty(PROP_MEMBERS));
     }
   }
-  
+
   public static String translateDiscussionPropertyToRelation(String propertyName) {
     return ensureDiscussionPropertyToRelation().get(propertyName);
   }

@@ -161,6 +161,7 @@ public final class DiscussionsConstants {
       PRM_DISCUSS_INACTIVE_TIME_IN_DAYS};
 
   public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
+  public static final String SVC_GET_DISCUSSION_MARKS_DATA = "get_discuss_marks_data";
 
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";

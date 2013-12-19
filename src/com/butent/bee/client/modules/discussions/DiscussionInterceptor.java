@@ -71,6 +71,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
@@ -472,7 +473,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return false;
   }
 
-  private void createMarkPanel(final Flow flowWidget, FormView form, IsRow formRow,
+  private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
       final Long commentId) {
     flowWidget.clear();
 
@@ -480,51 +481,68 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
-    Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
-    Long owner = formRow.getLong(form.getDataIndex(COL_OWNER));
+    final Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
+    final Long owner = formRow.getLong(form.getDataIndex(COL_OWNER));
 
-    final boolean enabled =
-        isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false);
-    final boolean marked = false; // TODO:
 
-    final Widget label = new CustomDiv();
-    // label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL);
-    label.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "Label");
-    label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL);
-    label.getElement().setInnerHTML(Localized.getConstants().discussMarks());
-    flowWidget.add(label);
+    // final Widget label = new CustomDiv();
+    // label.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "Label");
+    // label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL
+    // + "-main");
+    // label.getElement().setInnerHTML(Localized.getConstants().discussMarks());
+    // flowWidget.add(label);
 
     Queries.getRowSet(VIEW_DISCUSSIONS_MARK_TYPES, Lists.newArrayList(COL_MARK_NAME,
         COL_MARK_RESOURCE),
         new RowSetCallback() {
           @Override
-          public void onSuccess(BeeRowSet result) {
+          public void onSuccess(final BeeRowSet result) {
             flowWidget.clear();
-            flowWidget.add(label);
+            // flowWidget.add(label);
             if (result.isEmpty()) {
               return;
             }
 
-            int i = 0;
-            for (IsRow markRow : result.getRows()) {
-              renderMark(flowWidget, result, markRow, commentId, enabled, marked, i++);
-            }
+            DiscussionsKeeper.getDiscussionMarksData(DiscussionsUtils
+                .getDiscussionMarksIds(formRow),
+                commentId, new Callback<SimpleRowSet>() {
 
-            Image imgStats = new Image(Images.get("silverBarChart"));
-            imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-            imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
-            imgStats.setTitle(Localized.getConstants().discussMarkStats());
+                  @Override
+                  public void onSuccess(final SimpleRowSet marksStats) {
+                    flowWidget.clear();
+                    boolean enabled =
+                        isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
+                            && !DiscussionsUtils.hasOneMark(userId, commentId, marksStats);
 
-            imgStats.addClickHandler(new ClickHandler() {
+                    int i = 0;
+                    for (IsRow markRow : result.getRows()) {
+                      boolean marked =
+                          DiscussionsUtils.isMarked(markRow.getId(), userId, commentId, marksStats);
+                      int markCount =
+                          DiscussionsUtils.getMarkCount(markRow.getId(), commentId, marksStats);
+                      
+                      renderMark(flowWidget, result, markRow, commentId, enabled,
+                          marked, markCount, i++);
+                    }
 
-              @Override
-              public void onClick(ClickEvent event) {
-                BeeKeeper.getScreen().notifyInfo("Soon as posible");
-              }
+                    Image imgStats = new Image(Images.get("silverBarChart"));
+                    imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+                    imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
+                    imgStats.setTitle(Localized.getConstants().discussMarkStats());
 
-            });
+                    imgStats.addClickHandler(new ClickHandler() {
 
-            flowWidget.add(imgStats);
+                      @Override
+                      public void onClick(ClickEvent event) {
+                        Global.showInfo(BeeUtils.join("<br /> \n", marksStats.getRows()));
+                      }
+
+                    });
+
+                    flowWidget.add(imgStats);
+
+                  }
+                });
           }
         });
   }
@@ -1150,18 +1168,33 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void renderMark(Flow container, BeeRowSet markTypeRowData, IsRow markTypeRow,
-      final Long commentId, final boolean enabled, final boolean marked, final int seek) {
+      final Long commentId, final boolean enabled, final boolean marked, final int markCount,
+      final int seek) {
+
     String markName = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_NAME));
     String markRes = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_RESOURCE));
     final Long markId = markTypeRow.getId();
+    
+    boolean hasImageRes = false;
+    if (!BeeUtils.isEmpty(markRes)) {
+      if (Images.get(markRes) != null) {
+        hasImageRes = true;
+      }
+    }
 
     Widget imgMark =
-        BeeUtils.isEmpty(markRes) ? new Button(Localized.maybeTranslate(markName)) : new Image(
+        !hasImageRes ? new Button(Localized.maybeTranslate(markName)) : new Image(
             Images.get(markRes));
+
     imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-    imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK);
+
+    if (hasImageRes) {
+      imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK);
+    }
+
     if (!enabled) {
       imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_DISABLED);
+      imgMark.addStyleName(StyleUtils.CLASS_NAME_PREFIX + StyleUtils.NAME_DISABLED);
     }
 
     if (marked) {
@@ -1171,7 +1204,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + seek);
     imgMark.setTitle(Localized.maybeTranslate(markName));
 
-    if (enabled && !marked) {
+    if (enabled) {
       ((CustomWidget) imgMark).addClickHandler(new ClickHandler() {
 
         @Override
@@ -1187,7 +1220,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Widget label = new CustomDiv();
     label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL);
     label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL + seek);
-    label.getElement().setInnerHTML(BeeUtils.toString(BeeUtils.randomInt(0, 100)));
+    label.getElement().setInnerHTML(BeeUtils.toString(markCount));
     container.add(label);
 
   }
