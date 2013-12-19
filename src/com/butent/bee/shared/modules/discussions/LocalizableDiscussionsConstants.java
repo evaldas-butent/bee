@@ -62,6 +62,8 @@ public interface LocalizableDiscussionsConstants {
 
   String discussMarks();
 
+  String discussMarked();
+
   String discussMarkStats();
 
   String discussNotCreated();

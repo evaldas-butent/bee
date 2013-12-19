@@ -151,6 +151,9 @@ public final class Images {
     @Source("last.png")
     ImageResource last();
 
+    @Source("link.gif")
+    ImageResource link();
+
     @Source("loading.gif")
     ImageResource loading();
 
@@ -404,6 +407,8 @@ public final class Images {
     map.put(key("information"), resources.information());
 
     map.put(key("last"), resources.last());
+
+    map.put(key("link"), resources.link());
 
     map.put(key("loading"), resources.loading());
 

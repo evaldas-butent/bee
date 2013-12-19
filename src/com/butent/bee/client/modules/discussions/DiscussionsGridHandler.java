@@ -35,6 +35,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
+  // private static final String NAME_MARK_COUNT = "MarkCount";
 
   private final ListType type;
   private final Long userId;
@@ -73,23 +74,23 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   @Override
   public void onEditStart(final EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      IsRow row = event.getRowValue();
-      if (row == null) {
-        return;
-      }
+    IsRow row = event.getRowValue();
+    
+    if (row == null) {
+      return;
+    }
+    
+    if (PROP_STAR.equals(event.getColumnId())) {     
+      if (row.getProperty(PROP_USER) != null) {
 
-      if (row.getProperty(PROP_USER) == null) {
-        return;
+        final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
+        EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+          @Override
+          public void accept(Integer parameter) {
+            updateStar(event, source, parameter);
+          }
+        });
       }
-
-      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-        @Override
-        public void accept(Integer parameter) {
-          updateStar(event, source, parameter);
-        }
-      });
     }
   }
 

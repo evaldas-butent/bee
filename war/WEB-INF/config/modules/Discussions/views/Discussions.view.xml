@@ -27,6 +27,12 @@
       <AggregateColumn alias="FilesCount" aggregate="COUNT_DISTINCT"
         name="File" />
     </ExternalJoin> 
+    
+    <ExternalJoin source="Relations" joinType="LEFT"
+      name="Discussion">
+      <AggregateColumn alias="RelCount" aggregate="COUNT_DISTINCT"
+        name="Discussion" />
+    </ExternalJoin> 
 
     <ExternalJoin source="DiscussionsComments" joinType="LEFT"
       name="Discussion">    

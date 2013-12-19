@@ -370,7 +370,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     widget = form.getWidgetByName(VIEW_DISCUSSIONS_MARK_TYPES);
     if (widget instanceof Panel) {
-      createMarkPanel((Flow) widget, form, row, null);
+      createMarkPanel((Flow) widget, form, row, null, true);
     }
   }
 
@@ -477,6 +477,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
       final Long commentId) {
+    createMarkPanel(flowWidget, form, formRow, commentId, false);
+  }
+
+  private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
+      final Long commentId, final boolean renderHeader) {
     flowWidget.clear();
 
     if (form == null || formRow == null) {
@@ -495,7 +500,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         if (result.isEmpty()) {
           return;
         }
-        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, result);
+        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, result,
+            renderHeader);
       }
     });
 
@@ -803,7 +809,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void showDiscussionMarkData(final Flow flowWidget, final FormView form,
       final IsRow formRow, final Long commentId, final Long owner, final Integer status,
-      final BeeRowSet result) {
+      final BeeRowSet result, final boolean renderHeaderInfo) {
 
     DiscussionsKeeper.getDiscussionMarksData(DiscussionsUtils
         .getDiscussionMarksIds(formRow), new Callback<SimpleRowSet>() {
@@ -811,6 +817,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       @Override
       public void onSuccess(final SimpleRowSet marksStats) {
         flowWidget.clear();
+
+        if (renderHeaderInfo) {
+          HeaderView header = form.getViewPresenter().getHeader();
+          String caption = form.getCaption();
+          caption =
+              BeeUtils.joinWords(caption, "[" + Localized.getConstants().discussMarked(),
+                  DiscussionsUtils.getDiscussMarkCountTotal(marksStats) + "]");
+          header.setCaption(caption);
+        }
+
         boolean enabled =
             isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
                 && !DiscussionsUtils.hasOneMark(userId, commentId, marksStats);

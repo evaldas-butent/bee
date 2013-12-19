@@ -33,16 +33,20 @@
       horizontalAlignment="center" autoFit="true" caption="-" sortable="false">
        <render>
         <ui:function>
+          var result ="";
           if (row.FilesCount > 0) {
-          return $wnd.Bee_getImageResourceHtml("attachment") + row.FilesCount;
-          } else {
-          return " "
+          result = result + $wnd.Bee_getImageResourceHtml("attachment") + "&lt;sup&gt;" + row.FilesCount + "&lt;/sup&gt;  ";
           }
+          
+          if (row.RelCount > 0) {
+           result = result + $wnd.Bee_getImageResourceHtml("link");
+          }
+            
+          return result;
         </ui:function>
       </render>     
-     <!--  <renderer type="attachment" /> -->
-    </CalcColumn>
-
+    </CalcColumn> 
+    
     <CalcColumn name="LastComment" type="string" cellType="html"
       minWidth="150" autoFit="true" caption="=discussLastComment">
       <renderToken source="LastComment" format="date_time_short" />
@@ -54,7 +58,11 @@
           <ui:expression>row.CommentCount</ui:expression>
         </render>
     </CalcColumn>
-      
+    
+    <CalcColumn name="MarkCount" type="integer"
+      maxWidth="90" autoFit="true" caption="=discussTotalMarks">
+        
+    </CalcColumn>      
 
   </g:columns>
   <g:rowStyle>

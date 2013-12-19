@@ -36,6 +36,23 @@ public final class DiscussionsUtils {
 
   }
 
+  public static int getDiscussMarkCountTotal(SimpleRowSet marksStats) {
+    int result = 0;
+
+    if (marksStats == null) {
+      return result;
+    }
+
+    for (String[] row : marksStats.getRows()) {
+      if (BeeUtils.toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]) == null) {
+        result++;
+      }
+    }
+
+    return result;
+
+  }
+
   public static List<Long> getDiscussionMembers(IsRow row, List<BeeColumn> columns) {
     List<Long> users = Lists.newArrayList();
 
@@ -153,10 +170,12 @@ public final class DiscussionsUtils {
 
     for (String[] row : marksStats.getRows()) {
       result =
-          result || (userId == BeeUtils.toLongOrNull(row[marksStats
-              .getColumnIndex(CommonsConstants.COL_USER)])
-              && commentId == BeeUtils.toLongOrNull(row[marksStats
-              .getColumnIndex(COL_COMMENT)]));
+          result
+              || ((BeeUtils.unbox(userId)
+                == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+                  .getColumnIndex(CommonsConstants.COL_USER)])))
+              && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+                  .getColumnIndex(COL_COMMENT)]))));
     }
 
     return result;

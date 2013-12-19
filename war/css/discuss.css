@@ -92,7 +92,11 @@
 }
 
 .bee-discuss-comment-col-Mark>.bee-Button {
-   height: 1.5em;
+   height: 3ex;
+}
+
+.bee-discuss-comment-col-Mark>.bee-discuss-Actions-stats {
+   height: 1em;
 }
 
 .bee-discuss-Actions {
