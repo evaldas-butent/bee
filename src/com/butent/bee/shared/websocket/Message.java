@@ -2,6 +2,8 @@ package com.butent.bee.shared.websocket;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -10,7 +12,7 @@ import java.util.List;
 
 public abstract class Message {
   
-  protected enum Type {
+  public enum Type {
     INFO {
       @Override
       Message createMessage() {
@@ -28,14 +30,18 @@ public abstract class Message {
     abstract Message createMessage();
   }
   
-  public static Message parse(String s) {
+  private static BeeLogger logger = LogUtils.getLogger(Message.class);
+  
+  public static Message decode(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     if (arr == null || arr.length != 2) {
+      logger.severe("cannot decode message", s);
       return null;
     }
     
     Type messageType = EnumUtils.getEnumByIndex(Type.class, BeeUtils.toIntOrNull(arr[0]));
     if (messageType == null) {
+      logger.severe("cannot decode message type", arr[0]);
       return null;
     }
     
@@ -51,9 +57,13 @@ public abstract class Message {
     this.type = type;
   }
   
-  public String stringify() {
+  public String encode() {
     List<String> data = Lists.newArrayList(Integer.toString(type.ordinal()), serialize());
     return Codec.beeSerialize(data);
+  }
+  
+  public Type getType() {
+    return type;
   }
 
   protected abstract void deserialize(String s);

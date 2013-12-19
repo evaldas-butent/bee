@@ -82,9 +82,8 @@ public class QueryServiceBean {
     public T processError(SQLException ex) {
       String error = null;
 
-      Map<String, String> params = prm.getMap(CommonsConstants.COMMONS_MODULE,
-          BeeUtils.join(BeeConst.STRING_EMPTY, CommonsConstants.PRM_SQL_MESSAGES,
-              SqlBuilderFactory.getBuilder().getEngine()));
+      Map<String, String> params = prm.getMap(BeeUtils.join(BeeConst.STRING_EMPTY,
+          CommonsConstants.PRM_SQL_MESSAGES, SqlBuilderFactory.getBuilder().getEngine()));
 
       if (!BeeUtils.isEmpty(params)) {
         String msg = ex.getMessage();

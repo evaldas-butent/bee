@@ -31,7 +31,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.time.TimeUtils;
@@ -174,14 +173,12 @@ public class TecDocBean {
 
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        new BeeParameter(EC_MODULE, PRM_BUTENT_INTERVAL, ParameterType.NUMBER,
-            "Interval of BŪTENT data renewal in minutes", false, null),
-        new BeeParameter(EC_MODULE, PRM_MOTONET_INTERVAL, ParameterType.NUMBER,
-            "Interval of MOTOPROFIL data renewal in minutes", false, null));
+        BeeParameter.createNumber(EC_MODULE, PRM_BUTENT_INTERVAL, false, null),
+        BeeParameter.createNumber(EC_MODULE, PRM_MOTONET_INTERVAL, false, null));
   }
 
   public void initTimers() {
-    Integer minutes = prm.getInteger(EC_MODULE, PRM_BUTENT_INTERVAL);
+    Integer minutes = prm.getInteger(PRM_BUTENT_INTERVAL);
     boolean timerExists = butentTimer != null;
 
     if (timerExists) {
@@ -203,7 +200,7 @@ public class TecDocBean {
         logger.info(EcSupplier.EOLTAS, "removed timer");
       }
     }
-    minutes = prm.getInteger(EC_MODULE, PRM_MOTONET_INTERVAL);
+    minutes = prm.getInteger(PRM_MOTONET_INTERVAL);
     timerExists = motonetTimer != null;
 
     if (timerExists) {
@@ -230,9 +227,9 @@ public class TecDocBean {
   @Asynchronous
   public void suckButent() {
     EcSupplier supplier = EcSupplier.EOLTAS;
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL";
 

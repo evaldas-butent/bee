@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COMMONS_MODULE;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable;
@@ -48,7 +48,7 @@ public class ModuleHolderBean {
 
   private static BeeLogger logger = LogUtils.getLogger(ModuleHolderBean.class);
 
-  private final Map<String, BeeModule> modules = Maps.newHashMap();
+  private final Map<String, BeeModule> modules = Maps.newLinkedHashMap();
 
   @EJB
   SystemBean sys;
@@ -98,12 +98,12 @@ public class ModuleHolderBean {
   }
 
   public void initModules() {
-    prm.refreshParameters(COMMONS_MODULE);
-
     TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
         Config.getProperty("TableActivationMode"));
 
     for (String mod : getModules()) {
+      prm.refreshModuleParameters(mod);
+
       if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
         for (String tblName : sys.getTableNames()) {
           BeeTable table = sys.getTable(tblName);
@@ -128,7 +128,8 @@ public class ModuleHolderBean {
 
   @PostConstruct
   private void init() {
-    Collection<String> mods = Sets.newHashSet(COMMONS_MODULE);
+    Collection<String> mods = Sets.newLinkedHashSet();
+    mods.add(COMMONS_MODULE);
     String moduleList = Config.getProperty(PROPERTY_MODULES);
 
     if (!BeeUtils.isEmpty(moduleList)) {

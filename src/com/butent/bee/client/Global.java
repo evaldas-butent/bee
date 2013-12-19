@@ -23,6 +23,7 @@ import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
@@ -182,10 +183,8 @@ public class Global implements Module {
     if (prmConsumer == null || BeeUtils.anyEmpty(module, prm)) {
       return;
     }
-    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(COMMONS_METHOD, SVC_GET_PARAMETER);
-    args.addDataItem(VAR_PARAMETERS_MODULE, module);
-    args.addDataItem(VAR_PARAMETERS, prm);
+    ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETER);
+    args.addDataItem(VAR_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -324,11 +323,12 @@ public class Global implements Module {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
   }
 
-  public static void showGrid(IsTable<?, ?> table) {
+  public static void showGrid(String caption, IsTable<?, ?> table) {
     Assert.notNull(table, "showGrid: table is null");
-    CellGrid grid = GridFactory.simpleGrid(table, BeeKeeper.getScreen().getActivePanelWidth());
+    CellGrid grid = GridFactory.simpleGrid(caption, table,
+        BeeKeeper.getScreen().getActivePanelWidth());
     if (grid != null) {
-      BeeKeeper.getScreen().updateActivePanel(grid);
+      BeeKeeper.getScreen().showWidget(grid, true);
     }
   }
 

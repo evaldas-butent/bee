@@ -445,7 +445,8 @@ public final class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          Global.showGrid(new ExtendedPropertiesData(gridDescription.getExtendedInfo(), true));
+          Global.showGrid(BeeUtils.joinWords("Grid", name),
+              new ExtendedPropertiesData(gridDescription.getExtendedInfo(), true));
           return;
         } else {
           logger.warning("grid", name, "description was not found");
@@ -463,10 +464,10 @@ public final class GridFactory {
       info.add(new Property(entry.getKey(), cc));
     }
 
-    Global.showGrid(new PropertiesData(info, "Grid Name", "Column Count"));
+    Global.showGrid("Grids", new PropertiesData(info, "Grid Name", "Column Count"));
   }
 
-  public static CellGrid simpleGrid(IsTable<?, ?> table, int containerWidth) {
+  public static CellGrid simpleGrid(String caption, IsTable<?, ?> table, int containerWidth) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -479,6 +480,7 @@ public final class GridFactory {
     }
 
     CellGrid grid = new CellGrid();
+    grid.setCaption(caption);
 
     DataColumn<?> column;
     for (int i = 0; i < c; i++) {

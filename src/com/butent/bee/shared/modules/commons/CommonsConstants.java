@@ -100,8 +100,7 @@ public final class CommonsConstants {
 
   public static final String SVC_GET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
-  public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
-  public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
+  public static final String SVC_RESET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "set";
 
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
@@ -110,7 +109,7 @@ public final class CommonsConstants {
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
 
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
-  public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
+  public static final String VAR_PARAMETER = Service.RPC_VAR_PREFIX + "parameters";
   public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
 
   public static final String SVC_GET_HISTORY = "get_history";
@@ -222,7 +221,7 @@ public final class CommonsConstants {
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
   public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
-  
+
   public static final String GRID_PERSONS = "Persons";
 
   public static final String GRID_HISTORY = "History";

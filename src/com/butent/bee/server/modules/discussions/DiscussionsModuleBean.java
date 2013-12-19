@@ -43,7 +43,6 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -135,18 +134,21 @@ public class DiscussionsModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        new BeeParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN, ParameterType.TEXT,
-            "The discussions administrator's login name, which can perform the removal steps",
+        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN,
+           /* "The discussions administrator's login name, which can perform the removal steps",*/
             false, ""),
-        new BeeParameter(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS, ParameterType.BOOLEAN,
-            "Allows users deletes own comments", false, null),
-        new BeeParameter(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
-            ParameterType.NUMBER,
-            "Number of days when the discussion becomes inactive since last comment", false, null),
-        new BeeParameter(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, ParameterType.TEXT,
-            "List of banned file extensions separated by spaces", false, ""),
-        new BeeParameter(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, ParameterType.NUMBER,
-            "Max upload file size in MB", false, null));
+        BeeParameter.createBoolean(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS,
+            /*"Allows users deletes own comments",*/ false, null),
+        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
+            /*"Number of days when the discussion becomes inactive since last comment",*/
+            false, null),
+        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS,
+            /* "List of banned file extensions separated by spaces", */
+            false, ""),
+        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE,
+            /*"Max upload file size in MB",*/
+            false, null)
+            );
 
     return params;
   }
@@ -168,8 +170,7 @@ public class DiscussionsModuleBean implements BeeModule {
     prm.registerParameterEventHandler(new ParameterEventHandler() {
       @Subscribe
       public void initTimers(ParameterEvent event) {
-        if (BeeUtils.same(event.getModule(), DISCUSSIONS_MODULE)
-            && BeeUtils.same(event.getParameter(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+        if (BeeUtils.same(event.getParameter(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
           initTimer();
         }
       }
@@ -590,7 +591,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Timeout
   private void doInactiveDiscussions() {
-    Long days = prm.getLong(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
+    Long days = prm.getLong(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     if (!BeeUtils.isPositive(days)) {
       logger.info("No value set for discussion deactyvation");
@@ -807,7 +808,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private void initTimer() {
-    Integer days = prm.getInteger(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
+    Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     boolean timerExists = discussTimer != null;
 

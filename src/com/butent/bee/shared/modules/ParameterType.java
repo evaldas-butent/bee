@@ -5,7 +5,7 @@ import com.butent.bee.shared.ui.HasCaption;
 public enum ParameterType implements HasCaption {
   TEXT, NUMBER, BOOLEAN,
   DATE, TIME, DATETIME,
-  MAP, SET, LIST;
+  MAP, RELATION, COLLECTION;
 
   @Override
   public String getCaption() {

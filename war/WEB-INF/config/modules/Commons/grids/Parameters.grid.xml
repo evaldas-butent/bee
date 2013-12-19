@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="Parameters" caption="=parameters" enabledActions="refresh delete" disabledActions="audit"
-  editForm="Parameter" editPopup="true" editInPlace="Value"
+  name="Parameters" caption="=parameters" enabledActions="refresh" disabledActions="audit"
   >
   <g:columns>
-    <DataColumn name="Name" source="Name" caption="=parameter" visible="true" />
-    <DataColumn name="Value" source="UserValue" caption="=valueParameter" maxWidth="400"
-      whiteSpace="pre-wrap" visible="true" />
-    <DataColumn name="Description" source="Description" caption="=description"
-      whiteSpace="pre-wrap" />
+    <DataColumn name="Name" caption="=parameter" />
+    <DataColumn name="Value"  caption="=valueParameter" />
+    <DataColumn name="Description" caption="=description" />
   </g:columns>
 </g:Grid>

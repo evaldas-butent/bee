@@ -55,7 +55,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
@@ -202,8 +201,8 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (start != null) {
         DateTime time = TimeUtils.toDateTimeOrNull(start);
-        long from = BeeUtils.unbox(prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM));
-        long until = BeeUtils.unbox(prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL));
+        long from = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_FROM));
+        long until = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_UNTIL));
 
         if (from < until) {
           int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
@@ -282,10 +281,10 @@ public class CalendarModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, ParameterType.TIME,
-            usr.getLocalizableConstants().calRemindersEarliestTime(), false, "8:00"),
-        new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, ParameterType.TIME,
-            usr.getLocalizableConstants().calRemindersLatestTime(), false, "18:00"));
+        BeeParameter.createTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, false,
+            TimeUtils.parseTime("8:00")),
+        BeeParameter.createTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, false,
+            TimeUtils.parseTime("18:00")));
   }
 
   @Override
@@ -1175,7 +1174,7 @@ public class CalendarModuleBean implements BeeModule {
             data.getInt(CommonsConstants.COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
-          Long sender = prm.getLong(MailConstants.MAIL_MODULE, "DefaultAccount");
+          Long sender = prm.getLong("DefaultAccount");
           Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
               data.getValue(CommonsConstants.COL_EMAIL)));
 

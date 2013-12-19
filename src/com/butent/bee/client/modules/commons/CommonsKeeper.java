@@ -14,7 +14,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -106,8 +105,6 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
-
-    FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

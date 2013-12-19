@@ -272,12 +272,12 @@ public final class PropertyUtils {
     if (BeeUtils.isEmpty(src)) {
       return;
     }
-    
+
     int cnt = src.size();
     if (!BeeUtils.isEmpty(caption)) {
       dst.add(new Property(caption, BeeUtils.bracket(cnt)));
     }
-    
+
     int idx = 0;
     String s;
     for (HasInfo item : src) {
@@ -287,11 +287,11 @@ public final class PropertyUtils {
       } else {
         s = (cnt > 1) ? BeeUtils.joinWords(prefix, idx) : prefix;
       }
-      
+
       appendChildrenToProperties(dst, s, item.getInfo());
     }
   }
-  
+
   /**
    * Appends all elements from {@code src} to {@code dst} using a {@code prefix} prefix for all
    * added elements.
@@ -342,7 +342,7 @@ public final class PropertyUtils {
     }
 
     int n = values.length;
-    String name = BeeUtils.isEmpty(prefix) 
+    String name = BeeUtils.isEmpty(prefix)
         ? BeeConst.STRING_EMPTY : prefix.trim() + BeeConst.STRING_SPACE;
 
     for (int i = 0; i < n; i++) {
@@ -361,9 +361,9 @@ public final class PropertyUtils {
     if (!BeeUtils.isEmpty(prefix)) {
       addProperty(lst, prefix, BeeUtils.bracket(n));
     }
-    String name = BeeUtils.isEmpty(prefix) 
+    String name = BeeUtils.isEmpty(prefix)
         ? BeeConst.STRING_EMPTY : prefix.trim() + BeeConst.STRING_SPACE;
-    
+
     int i = 0;
     for (String item : values) {
       addProperty(lst, name + BeeUtils.progress(++i, n), item);
@@ -382,7 +382,7 @@ public final class PropertyUtils {
     }
     return lst;
   }
-  
+
   public static void debugProperties(Collection<Property> properties) {
     if (!BeeUtils.isEmpty(properties)) {
       for (Property property : properties) {
@@ -391,7 +391,7 @@ public final class PropertyUtils {
       LogUtils.getRootLogger().addSeparator();
     }
   }
-  
+
   /**
    * Returns an ExtendedProperty list as an array.
    * 
@@ -441,9 +441,14 @@ public final class PropertyUtils {
       return null;
     }
     List<ExtendedProperty> lst = Lists.newArrayList();
-    for (String prop : Codec.beeDeserializeCollection(s)) {
-      lst.add(ExtendedProperty.restore(prop));
+
+    String[] arr = Codec.beeDeserializeCollection(s);
+    if (arr != null) {
+      for (String prop : arr) {
+        lst.add(ExtendedProperty.restore(prop));
+      }
     }
+
     return lst;
   }
 
@@ -452,8 +457,12 @@ public final class PropertyUtils {
       return null;
     }
     List<Property> lst = Lists.newArrayList();
-    for (String prop : Codec.beeDeserializeCollection(s)) {
-      lst.add(Property.restore(prop));
+
+    String[] arr = Codec.beeDeserializeCollection(s);
+    if (arr != null) {
+      for (String prop : arr) {
+        lst.add(Property.restore(prop));
+      }
     }
     return lst;
   }
@@ -542,13 +551,13 @@ public final class PropertyUtils {
 
     } else if (v instanceof String) {
       return !((String) v).isEmpty();
-    
+
     } else if (v instanceof Collection) {
       return !((Collection<?>) v).isEmpty();
 
     } else if (v instanceof Map) {
       return !((Map<?, ?>) v).isEmpty();
-    
+
     } else {
       return true;
     }

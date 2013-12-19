@@ -1,7 +1,5 @@
 package com.butent.bee.server.modules.mail.proxy;
 
-import static com.butent.bee.shared.modules.mail.MailConstants.*;
-
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.shared.Assert;
@@ -122,9 +120,9 @@ public class MailProxy {
   private boolean initParameters(Protocol protocol) {
     resetParameters(protocol);
 
-    String server = prm.getText(MAIL_MODULE, protocol + "Server");
-    Number serverPort = prm.getNumber(MAIL_MODULE, protocol + "ServerPort");
-    Number bindPort = prm.getNumber(MAIL_MODULE, protocol + "BindPort");
+    String server = prm.getText(protocol + "Server");
+    Number serverPort = prm.getNumber(protocol + "ServerPort");
+    Number bindPort = prm.getNumber(protocol + "BindPort");
 
     boolean ok = !BeeUtils.isEmpty(server) && BeeUtils.allNotNull(serverPort, bindPort);
 

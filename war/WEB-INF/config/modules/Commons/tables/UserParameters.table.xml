@@ -3,11 +3,10 @@
   
   name="UserParameters"
   idName="ParameterID"
-  x="0" y="0"
   >
   <Fields>
     <Relation name="Parameter" relation="Parameters" notNull="true" cascade="DELETE" label="=parameter" />
-    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" label="=user"/>
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" label="=user" />
     <Text name="Value" label="=value" />
   </Fields>
 
