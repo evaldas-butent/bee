@@ -87,6 +87,14 @@
   text-align: center;
 }
 
+.bee-discuss-comment-col-Mark>.bee-discuss-Actions-mark {
+   height: 1em;
+}
+
+.bee-discuss-comment-col-Mark>.bee-Button {
+   height: 1.5em;
+}
+
 .bee-discuss-Actions {
   padding: 4px;
   margin: 4px;
@@ -102,6 +110,12 @@
 
 .bee-discuss-comment-col-Actions-trash {
   
+}
+
+.bee-discuss-comment-col-Mark {
+  text-align: right;
+  display: inline-block;
+  width: 100%;
 }
 
 .bee-discuss-commentDialog {

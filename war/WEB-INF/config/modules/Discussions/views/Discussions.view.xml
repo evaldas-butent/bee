@@ -31,21 +31,9 @@
     <ExternalJoin source="DiscussionsComments" joinType="LEFT"
       name="Discussion">    
       <AggregateColumn alias="LastComment" aggregate="MAX"
-        name="PublishTime" /> 
-        <!--
-        <ExternalJoin source="Users" joinType="LEFT" name="CompanyPerson">
-          <AggregateJoin name="CompanyPerson"   joinType="LEFT"  >
-            <AggregateJoin name="Person" joinType="LEFT"  > 
-              <HiddenColumn alias="CommenterFirstName" name="FirstName"  />
-              <HiddenColumn alias="CommenterLastName" name="LastName"  />
-            </AggregateJoin> 
-          </AggregateJoin>
-        </ExternalJoin>
-        -->
+        name="PublishTime" />        
       <AggregateColumn alias="CommentCount" aggregate="COUNT_DISTINCT"
         name="PublishTime" />
-        
-        
     </ExternalJoin>
   </Columns>
 

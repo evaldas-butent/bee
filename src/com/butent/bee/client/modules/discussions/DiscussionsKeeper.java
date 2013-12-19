@@ -46,7 +46,7 @@ public final class DiscussionsKeeper {
     return createArgs(DISCUSSIONS_PREFIX + event.name());
   }
 
-  public static void getDiscussionMarksData(final List<Long> marksIds, final Long commentId,
+  public static void getDiscussionMarksData(final List<Long> marksIds,
       final Callback<SimpleRowSet> result) {
     if (marksIds == null || result == null) {
       return;
@@ -58,7 +58,7 @@ public final class DiscussionsKeeper {
     if (!marksIds.isEmpty()) {
       params.addDataItem(VAR_DISCUSSION_MARK, DataUtils.buildIdList(marksIds));
     }
-    params.addDataItem(VAR_DISCUSSION_COMMENT, BeeUtils.unbox(commentId));
+    // params.addDataItem(VAR_DISCUSSION_COMMENT, BeeUtils.unbox(commentId));
     
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 

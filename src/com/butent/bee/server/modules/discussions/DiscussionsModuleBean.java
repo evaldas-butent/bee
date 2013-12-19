@@ -753,18 +753,15 @@ public class DiscussionsModuleBean implements BeeModule {
       select.setWhere(SqlUtils.sqlFalse());
     }
 
-    if (req.hasParameter(VAR_DISCUSSION_COMMENT)) {
-      Long cid = BeeUtils.toLongOrNull(req.getParameter(VAR_DISCUSSION_COMMENT));
-
-      if (DataUtils.isId(cid)) {
-        select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.equals(
-            TBL_DISCUSSIONS_COMENTS_MARKS,
-            COL_COMMENT, cid)));
-      } else {
-        select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.isNull(
-            TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT)));
-      }
-    }
+    /*
+     * if (req.hasParameter(VAR_DISCUSSION_COMMENT)) { Long cid =
+     * BeeUtils.toLongOrNull(req.getParameter(VAR_DISCUSSION_COMMENT));
+     * 
+     * if (DataUtils.isId(cid)) { select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.equals(
+     * TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT, cid))); } else {
+     * select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.isNull(
+     * TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT))); } }
+     */
 
 
     SimpleRowSet rs = qs.getData(select);

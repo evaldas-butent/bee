@@ -29,7 +29,6 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
@@ -289,9 +288,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       PROP_APPOINTMENTS, PROP_TASKS, PROP_DOCUMENTS);
   private final long userId;
 
+  // private final DiscussionIterceptorCache discussCache;
+
   DiscussionInterceptor() {
     super();
     this.userId = BeeKeeper.getUser().getUserId();
+    // this.discussCache = DiscussionIterceptorCache.getInstance();
   }
 
   @Override
@@ -484,67 +486,39 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     final Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
     final Long owner = formRow.getLong(form.getDataIndex(COL_OWNER));
 
+    DiscussionIterceptorCache.getMarkTypes(new Callback<BeeRowSet>() {
 
-    // final Widget label = new CustomDiv();
-    // label.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "Label");
-    // label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_LABEL
-    // + "-main");
-    // label.getElement().setInnerHTML(Localized.getConstants().discussMarks());
-    // flowWidget.add(label);
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        flowWidget.clear();
 
-    Queries.getRowSet(VIEW_DISCUSSIONS_MARK_TYPES, Lists.newArrayList(COL_MARK_NAME,
-        COL_MARK_RESOURCE),
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(final BeeRowSet result) {
-            flowWidget.clear();
-            // flowWidget.add(label);
-            if (result.isEmpty()) {
-              return;
-            }
+        if (result.isEmpty()) {
+          return;
+        }
+        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, result);
+      }
+    });
 
-            DiscussionsKeeper.getDiscussionMarksData(DiscussionsUtils
-                .getDiscussionMarksIds(formRow),
-                commentId, new Callback<SimpleRowSet>() {
-
-                  @Override
-                  public void onSuccess(final SimpleRowSet marksStats) {
-                    flowWidget.clear();
-                    boolean enabled =
-                        isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
-                            && !DiscussionsUtils.hasOneMark(userId, commentId, marksStats);
-
-                    int i = 0;
-                    for (IsRow markRow : result.getRows()) {
-                      boolean marked =
-                          DiscussionsUtils.isMarked(markRow.getId(), userId, commentId, marksStats);
-                      int markCount =
-                          DiscussionsUtils.getMarkCount(markRow.getId(), commentId, marksStats);
-                      
-                      renderMark(flowWidget, result, markRow, commentId, enabled,
-                          marked, markCount, i++);
-                    }
-
-                    Image imgStats = new Image(Images.get("silverBarChart"));
-                    imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-                    imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
-                    imgStats.setTitle(Localized.getConstants().discussMarkStats());
-
-                    imgStats.addClickHandler(new ClickHandler() {
-
-                      @Override
-                      public void onClick(ClickEvent event) {
-                        Global.showInfo(BeeUtils.join("<br /> \n", marksStats.getRows()));
-                      }
-
-                    });
-
-                    flowWidget.add(imgStats);
-
-                  }
-                });
-          }
-        });
+    // if (discussCache.isEmptyMarkTypes()) {
+    //
+    // Queries.getRowSet(VIEW_DISCUSSIONS_MARK_TYPES, Lists.newArrayList(COL_MARK_NAME,
+    // COL_MARK_RESOURCE),
+    // new RowSetCallback() {
+    // @Override
+    // public void onSuccess(final BeeRowSet result) {
+    // flowWidget.clear();
+    // // flowWidget.add(label);
+    // if (result.isEmpty()) {
+    // return;
+    // }
+    // discussCache.setMarkTypes(result);
+    // showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, result);
+    // }
+    // });
+    // } else {
+    // showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, discussCache
+    // .getMarkTypes());
+    // }
   }
 
   private static Widget createCommentCell(String colName, String value) {
@@ -715,8 +689,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       renderFiles(files, colComment);
     }
 
-    // renderMark(container, markTypeRowData, markTypeRow, commentId, enabled, marked, seek); //
-    // TODO
+    Flow colMarks = new Flow();
+    colMarks.addStyleName(STYLE_COMMENT_COL + COL_MARK);
+    createMarkPanel(colMarks, getFormView(), activeRow, row.getId());
+
+    colComment.add(colMarks);
 
     container.add(colComment);
 
@@ -822,6 +799,51 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     });
 
+  }
+
+  private void showDiscussionMarkData(final Flow flowWidget, final FormView form,
+      final IsRow formRow, final Long commentId, final Long owner, final Integer status,
+      final BeeRowSet result) {
+
+    DiscussionsKeeper.getDiscussionMarksData(DiscussionsUtils
+        .getDiscussionMarksIds(formRow), new Callback<SimpleRowSet>() {
+
+      @Override
+      public void onSuccess(final SimpleRowSet marksStats) {
+        flowWidget.clear();
+        boolean enabled =
+            isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
+                && !DiscussionsUtils.hasOneMark(userId, commentId, marksStats);
+
+        int i = 0;
+        for (IsRow markRow : result.getRows()) {
+          boolean marked =
+              DiscussionsUtils.isMarked(markRow.getId(), userId, commentId, marksStats);
+          int markCount =
+              DiscussionsUtils.getMarkCount(markRow.getId(), commentId, marksStats);
+
+          renderMark(flowWidget, result, markRow, commentId, enabled,
+              marked, markCount, i++);
+        }
+
+        Image imgStats = new Image(Images.get("silverBarChart"));
+        imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+        imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
+        imgStats.setTitle(Localized.getConstants().discussMarkStats());
+
+        imgStats.addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent event) {
+            Global.showInfo(BeeUtils.join("<br /> \n", marksStats.getRows()));
+          }
+
+        });
+
+        flowWidget.add(imgStats);
+
+      }
+    });
   }
 
   private static void showError(String message) {
@@ -1174,7 +1196,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     String markName = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_NAME));
     String markRes = markTypeRow.getString(markTypeRowData.getColumnIndex(COL_MARK_RESOURCE));
     final Long markId = markTypeRow.getId();
-    
+
     boolean hasImageRes = false;
     if (!BeeUtils.isEmpty(markRes)) {
       if (Images.get(markRes) != null) {
