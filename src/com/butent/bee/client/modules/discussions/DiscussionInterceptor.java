@@ -142,14 +142,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       table.setWidget(row, col, (Widget) input);
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
-      // InputArea input = new InputArea();
-      // styleName = STYLE_DIALOG + "-commentArea";
-      //
-      // input.addStyleName(styleName);
-      //
-      // table.setWidget(row, col, input);
-      // table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
       return input.getId();
     }
 
@@ -491,19 +483,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     final Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
     final Long owner = formRow.getLong(form.getDataIndex(COL_OWNER));
 
-    DiscussionIterceptorCache.getMarkTypes(new Callback<BeeRowSet>() {
+    BeeRowSet markTypes = DiscussionsUtils.getMarkTypes(formRow);
 
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        flowWidget.clear();
-
-        if (result.isEmpty()) {
-          return;
-        }
-        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, result,
+    if (markTypes != null) {
+      flowWidget.clear();
+      if (!markTypes.isEmpty()) {
+        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, markTypes,
             renderHeader);
       }
-    });
+    }
+
 
     // if (discussCache.isEmptyMarkTypes()) {
     //

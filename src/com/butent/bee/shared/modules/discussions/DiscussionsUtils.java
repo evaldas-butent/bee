@@ -11,6 +11,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -112,6 +113,18 @@ public final class DiscussionsUtils {
     }
 
     return result;
+  }
+
+  public static BeeRowSet getMarkTypes(IsRow formRow) {
+    if (formRow == null) {
+      return null;
+    }
+    
+    if (BeeUtils.isEmpty(formRow.getProperty(PROP_MARK_TYPES))) {
+      return null;
+    }
+
+    return BeeRowSet.restore(formRow.getProperty(PROP_MARK_TYPES));
   }
 
   public static Set<String> getRelations() {

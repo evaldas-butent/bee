@@ -151,6 +151,7 @@ public final class DiscussionsConstants {
   public static final String PROP_DOCUMENTS = "Documents";
 
   public static final String PROP_MARK_COUNT = "MarkCount";
+  public static final String PROP_MARK_TYPES = "MarkTypes";
 
   public static final String PRM_DISCUSS_ADMIN = "DiscussionsAdmin";
   public static final String PRM_FORBIDDEN_FILES_EXTENTIONS = "ForbiddenFilesExtentions";

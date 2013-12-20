@@ -310,6 +310,11 @@ public class DiscussionsModuleBean implements BeeModule {
     if (commentId != null) {
       row.setProperty(PROP_LAST_COMMENT, BeeUtils.toString(commentId));
     }
+    
+    BeeRowSet rs = getDiscussionMarkTypeData();
+    if (!rs.isEmpty()) {
+      row.setProperty(PROP_MARK_TYPES, rs.serialize());
+    }
   }
 
   private ResponseObject createDiscussionRelations(long discussionId,
@@ -716,6 +721,10 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private BeeRowSet getDiscussionMarkTypeData() {
+    return qs.getViewData(VIEW_DISCUSSIONS_MARK_TYPES);
   }
 
   private List<Long> getDiscussionMarks(long discussionId) {
