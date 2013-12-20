@@ -281,9 +281,9 @@ public class CalendarModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        BeeParameter.createTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, false,
+        BeeParameter.createTimeOfDay(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, false,
             TimeUtils.parseTime("8:00")),
-        BeeParameter.createTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, false,
+        BeeParameter.createTimeOfDay(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, false,
             TimeUtils.parseTime("18:00")));
   }
 

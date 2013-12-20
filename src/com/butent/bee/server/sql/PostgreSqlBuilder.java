@@ -10,7 +10,6 @@ import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -239,23 +238,6 @@ class PostgreSqlBuilder extends SqlBuilder {
       return null;
     }
     return "\"" + value + "\"";
-  }
-
-  @Override
-  protected String sqlTransform(Object x) {
-    Object val;
-
-    if (x instanceof Value) {
-      val = ((Value) x).getObjectValue();
-    } else {
-      val = x;
-    }
-    String s = super.sqlTransform(val);
-
-    if (val instanceof CharSequence) {
-      s = s.replace("\\", "\\\\");
-    }
-    return s;
   }
 
   @Override

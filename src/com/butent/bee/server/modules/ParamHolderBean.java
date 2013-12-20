@@ -1,7 +1,10 @@
 package com.butent.bee.server.modules;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
@@ -17,17 +20,20 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -150,10 +156,50 @@ public class ParamHolderBean {
   public Collection<BeeParameter> getModuleParameters(String module) {
     Assert.notEmpty(module);
     Collection<BeeParameter> params = Lists.newArrayList();
+    Multimap<String, BeeParameter> map = HashMultimap.create();
 
     for (BeeParameter param : parameters.values()) {
       if (BeeUtils.same(param.getModule(), module)) {
-        params.add(param);
+        BeeParameter p = BeeParameter.restore(param.serialize());
+
+        if (param.getType() == ParameterType.RELATION && DataUtils.isId(param.getId())) {
+          map.put(p.getOptions(), p);
+        }
+        params.add(p);
+      }
+    }
+    for (String opt : map.keySet()) {
+      HashSet<Long> ids = Sets.newHashSet();
+
+      for (BeeParameter param : map.get(opt)) {
+        for (Long userId : param.getUsers()) {
+          Long id = BeeUtils.toLongOrNull(DataUtils.isId(userId)
+              ? param.getValue(userId) : param.getValue());
+
+          if (DataUtils.isId(id)) {
+            ids.add(id);
+          }
+        }
+      }
+      if (!BeeUtils.isEmpty(ids)) {
+        Pair<String, String> relation = Pair.restore(opt);
+        String idName = sys.getIdName(relation.getA());
+
+        SimpleRowSet rs = qs.getData(new SqlSelect()
+            .addFields(relation.getA(), idName, relation.getB())
+            .addFrom(relation.getA())
+            .setWhere(SqlUtils.inList(relation.getA(), idName, ids)));
+
+        for (BeeParameter param : map.get(opt)) {
+          for (Long userId : param.getUsers()) {
+            if (DataUtils.isId(userId)) {
+              param.setDisplayValue(userId,
+                  rs.getValueByKey(idName, param.getValue(userId), relation.getB()));
+            } else {
+              param.setDisplayValue(rs.getValueByKey(idName, param.getValue(), relation.getB()));
+            }
+          }
+        }
       }
     }
     return params;
@@ -186,7 +232,7 @@ public class ParamHolderBean {
   public String getValue(String name) {
     BeeParameter parameter = getParameter(name);
     return parameter.supportsUsers()
-        ? parameter.getUserValue(usr.getCurrentUserId()) : parameter.getValue();
+        ? parameter.getValue(usr.getCurrentUserId()) : parameter.getValue();
   }
 
   public boolean hasParameter(String name) {
@@ -200,12 +246,11 @@ public class ParamHolderBean {
   public void refreshModuleParameters(String module) {
     Collection<BeeParameter> defaults = moduleBean.getModuleDefaultParameters(module);
 
-    if (!BeeUtils.isEmpty(defaults)) {
-      for (BeeParameter param : defaults) {
-        putParameter(param);
-      }
-    } else {
-      defaults = getModuleParameters(module);
+    if (BeeUtils.isEmpty(defaults)) {
+      return;
+    }
+    for (BeeParameter param : defaults) {
+      putParameter(param);
     }
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_PARAMS, FLD_NAME, FLD_VALUE)
@@ -219,13 +264,8 @@ public class ParamHolderBean {
       if (!hasUserParameters) {
         hasUserParameters = param.supportsUsers();
       }
-      String name = param.getName();
-      String value = data.getValueByKey(FLD_NAME, name, FLD_VALUE);
-
-      if (value != null) {
-        param.setValue(value);
-      }
-      param.setId(BeeUtils.toLongOrNull(data.getValueByKey(FLD_NAME, name, FLD_PARAM)));
+      param.setValue(data.getValueByKey(FLD_NAME, param.getName(), FLD_VALUE));
+      param.setId(BeeUtils.toLongOrNull(data.getValueByKey(FLD_NAME, param.getName(), FLD_PARAM)));
     }
     if (hasUserParameters) {
       data = qs.getData(new SqlSelect()
@@ -237,7 +277,7 @@ public class ParamHolderBean {
       for (BeeParameter param : defaults) {
         if (DataUtils.isId(param.getId())) {
           String id = BeeUtils.toString(param.getId());
-          param.setUserValue(BeeUtils.toLong(data.getValueByKey(FLD_PARAM, id, FLD_USER)),
+          param.setValue(BeeUtils.toLong(data.getValueByKey(FLD_PARAM, id, FLD_USER)),
               data.getValueByKey(FLD_PARAM, id, FLD_VALUE));
         }
       }
@@ -290,7 +330,7 @@ public class ParamHolderBean {
               .addConstant(FLD_VALUE, value));
         }
       }
-      param.setUserValue(userId, value);
+      param.setValue(userId, value);
 
     } else {
       qs.updateData(new SqlUpdate(TBL_PARAMS)

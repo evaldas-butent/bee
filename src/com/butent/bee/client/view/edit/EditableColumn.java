@@ -64,7 +64,7 @@ import java.util.List;
 public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopEvent.Handler,
     HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler, HasCaption {
 
-  private static final String STYLE_EDITOR = "bee-CellGridEditor";
+  public static final String STYLE_EDITOR = "bee-CellGridEditor";
 
   private final String viewName;
 
@@ -423,7 +423,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
   public void onValueChange(ValueChangeEvent<String> event) {
     endEdit(null, false);
   }
-  
+
   public void openEditor(HasWidgets editorContainer, Element sourceElement,
       Element adjustElement, int zIndex, IsRow row, char charCode, EditEndEvent.Handler handler) {
     Assert.notNull(handler);
@@ -502,7 +502,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
         if (defaultDimensions.hasHeight() && defaultDimensions.getIntHeight() > height) {
           height = defaultDimensions.getIntHeight();
           StyleUtils.setHeight(editorElement, height);
-        } else if (defaultDimensions.hasMinHeight() 
+        } else if (defaultDimensions.hasMinHeight()
             && defaultDimensions.getIntMinHeight() > height) {
           height = defaultDimensions.getIntMinHeight();
           StyleUtils.setHeight(editorElement, height);
@@ -574,7 +574,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     if (getEditor() == null) {
       return;
     }
-    
+
     getEditor().addBlurHandler(this);
 
     getEditor().addEditChangeHandler(this);

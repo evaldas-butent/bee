@@ -222,6 +222,11 @@ public class CommonsModuleBean implements BeeModule {
         BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
+        BeeParameter.createCollection(COMMONS_MODULE, "PRMcollection", false, null),
+        BeeParameter.createDate(COMMONS_MODULE, "PRMdate", false, null),
+        BeeParameter.createDateTime(COMMONS_MODULE, "PRMdatetime", false, null),
+        BeeParameter.createNumber(COMMONS_MODULE, "PRMnumber", false, null),
+        BeeParameter.createTime(COMMONS_MODULE, "PRMtime", false, null),
         BeeParameter.createText(COMMONS_MODULE, PRM_URL, false, null));
 
     params.addAll(getSqlEngineParameters());
