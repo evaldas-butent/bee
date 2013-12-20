@@ -59,10 +59,9 @@
         </render>
     </CalcColumn>
     
-    <CalcColumn name="MarkCount" type="integer"
+    <PropColumn name="MarkCount" type="decimal"  format="#" horizontalAlignment="center"
       maxWidth="90" autoFit="true" caption="=discussTotalMarks">
-        
-    </CalcColumn>      
+    </PropColumn>      
 
   </g:columns>
   <g:rowStyle>

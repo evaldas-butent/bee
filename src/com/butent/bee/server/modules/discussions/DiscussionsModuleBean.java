@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.discussions;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -135,20 +136,20 @@ public class DiscussionsModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createText(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN,
-           /* "The discussions administrator's login name, which can perform the removal steps",*/
+            /* "The discussions administrator's login name, which can perform the removal steps", */
             false, ""),
         BeeParameter.createBoolean(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS,
-            /*"Allows users deletes own comments",*/ false, null),
+            /* "Allows users deletes own comments", */false, null),
         BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
-            /*"Number of days when the discussion becomes inactive since last comment",*/
+            /* "Number of days when the discussion becomes inactive since last comment", */
             false, null),
         BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS,
             /* "List of banned file extensions separated by spaces", */
             false, ""),
         BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE,
-            /*"Max upload file size in MB",*/
+            /* "Max upload file size in MB", */
             false, null)
-            );
+        );
 
     return params;
   }
@@ -189,6 +190,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
           if (!rowSet.isEmpty()) {
             Set<Long> discussionsIds = Sets.newHashSet();
+
 
             if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
               for (BeeRow row : rowSet.getRows()) {
@@ -258,6 +260,14 @@ public class DiscussionsModuleBean implements BeeModule {
                 row.setProperty(PROP_LAST_PUBLISH, discussEventRow.getValue(publishIndex));
               }
             }
+
+            Map<Long, Integer> markCounts = getDiscussionsMarksCount(discussionsIds);
+            for (BeeRow row : rowSet.getRows()) {
+              String value =
+                  markCounts.get(row.getId()) != null ? BeeUtils
+                      .toString(markCounts.get(row.getId())) : "";
+              row.setProperty(PROP_MARK_COUNT, value);
+            }
           }
         }
       }
@@ -275,7 +285,7 @@ public class DiscussionsModuleBean implements BeeModule {
         row.setProperty(PROP_MEMBERS, DataUtils.buildIdList(discussionUsers));
       }
     }
-    
+
     if (!BeeUtils.isEmpty(discussionMarks)) {
       row.setProperty(PROP_MARKS, DataUtils.buildIdList(discussionMarks));
     }
@@ -567,7 +577,7 @@ public class DiscussionsModuleBean implements BeeModule {
         if ((response == null || !response.hasErrors()) && DataUtils.isId(deleteComment)) {
           response = deleteDiscussionComment(discussionId, deleteComment);
         }
-        
+
         if ((response == null || !response.hasErrors()) && DataUtils.isId(markId)) {
           response = doMark(discussionId, markedComment, markId, currentUser);
         }
@@ -731,13 +741,33 @@ public class DiscussionsModuleBean implements BeeModule {
     return markList;
   }
 
+  private Map<Long, Integer> getDiscussionsMarksCount(Set<Long> discussionIds) {
+    SqlSelect select = new SqlSelect()
+        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
+        .addCount(TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK, PROP_MARK_COUNT)
+        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT),
+            SqlUtils.inList(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, discussionIds)))
+        .addGroup(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION);
+    
+    SimpleRowSet rs = qs.getData(select);
+    Map<Long, Integer> ls = Maps.newHashMap();
+    
+    for (String [] row : rs.getRows()) {
+      ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
+          BeeUtils.toInt(row[rs.getColumnIndex(PROP_MARK_COUNT)]));
+    }
+
+    return ls;
+  }
+
   private ResponseObject getDiscussionMarksData(RequestInfo req) {
     SqlSelect select = new SqlSelect()
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT, COL_COMMENT)
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK, COL_MARK)
-            .addField(TBL_DISCUSSIONS_COMENTS_MARKS, CommonsConstants.COL_USER,
-                CommonsConstants.COL_USER)
+        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, CommonsConstants.COL_USER,
+            CommonsConstants.COL_USER)
         .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS);
     select.setWhere(SqlUtils.sqlTrue());
 
@@ -763,7 +793,6 @@ public class DiscussionsModuleBean implements BeeModule {
      * TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT))); } }
      */
 
-
     SimpleRowSet rs = qs.getData(select);
 
     return ResponseObject.response(rs);
@@ -783,6 +812,8 @@ public class DiscussionsModuleBean implements BeeModule {
             TBL_DISCUSSIONS_USERS, sys.getIdName(TBL_DISCUSSIONS_USERS));
     return Lists.newArrayList(qs.getLongColumn(query));
   }
+
+
 
   private Multimap<String, Long> getDiscussionRelations(long discussionId) {
     Multimap<String, Long> res = HashMultimap.create();
@@ -823,7 +854,6 @@ public class DiscussionsModuleBean implements BeeModule {
       discussTimer =
           timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
               DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(null, false));
-
 
       logger.info("Created DISCUSSION refresh timer starting at",
           discussTimer.getNextTimeout());
