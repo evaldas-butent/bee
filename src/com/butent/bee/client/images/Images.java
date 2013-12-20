@@ -274,6 +274,9 @@ public final class Images {
     @Source("undo.png")
     ImageResource undo();
 
+    @Source("user.png")
+    ImageResource user();
+
     @Source("warning.png")
     ImageResource warning();
     
@@ -432,6 +435,8 @@ public final class Images {
     map.put(key("sliderSliding"), resources.sliderSliding());
 
     map.put(key("undo"), resources.undo());
+
+    map.put(key("user"), resources.user());
 
     map.put(key("warning"), resources.warning());
 

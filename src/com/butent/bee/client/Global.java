@@ -78,6 +78,8 @@ public class Global implements Module {
 
   private static final Reports reports = new Reports();
 
+  private static final Users users = new Users();
+
   private static boolean debug;
 
   public static void addReport(String caption, Command command) {
@@ -212,6 +214,10 @@ public class Global implements Module {
 
   public static Map<String, String> getStyleSheets() {
     return styleSheets;
+  }
+  
+  public static Users getUsers() {
+    return users;
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback) {

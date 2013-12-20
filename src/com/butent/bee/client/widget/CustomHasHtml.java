@@ -20,7 +20,17 @@ public class CustomHasHtml extends CustomWidget implements HasHtml {
   }
 
   @Override
+  public String getText() {
+    return getElement().getInnerText();
+  }
+
+  @Override
   public void setHtml(String html) {
     getElement().setInnerHTML(html);
+  }
+
+  @Override
+  public void setText(String text) {
+    getElement().setInnerText(text);
   }
 }

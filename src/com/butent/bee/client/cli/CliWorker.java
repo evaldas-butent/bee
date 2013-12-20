@@ -171,6 +171,8 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
+import com.butent.bee.shared.websocket.ShowMessage;
+import com.butent.bee.shared.websocket.EchoMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1336,12 +1338,16 @@ public final class CliWorker {
         inform("endpoint not open");
       }
 
+    } else if (!Endpoint.isOpen()) {
+      inform("endpoint not open");
+      
+    } else if (BeeUtils.same(args, "?")) {
+      Endpoint.send(ShowMessage.showSessionInfo());
+    } else if (BeeUtils.same(args, "who")) {
+      Endpoint.send(ShowMessage.showOpenSessions());
+    
     } else {
-      if (Endpoint.isOpen()) {
-        Endpoint.send(args);
-      } else {
-        inform("endpoint not open");
-      }
+      Endpoint.send(new EchoMessage(args));
     }
   }
   

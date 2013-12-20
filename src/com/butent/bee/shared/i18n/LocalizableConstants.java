@@ -492,6 +492,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String userLogin();
 
+  String users();
+
   String value();
 
   String valueRequired();

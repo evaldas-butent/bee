@@ -1,16 +1,16 @@
 package com.butent.bee.shared.websocket;
 
-public class TextMessage extends Message {
+public class EchoMessage extends Message {
   
   private String text;
 
-  public TextMessage(String text) {
+  public EchoMessage(String text) {
     this();
     this.text = text;
   }
 
-  TextMessage() {
-    super(Type.TEXT);
+  EchoMessage() {
+    super(Type.ECHO);
   }
 
   public String getText() {

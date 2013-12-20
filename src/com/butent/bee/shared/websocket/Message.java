@@ -4,26 +4,41 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
 public abstract class Message {
   
   public enum Type {
+    ECHO {
+      @Override
+      Message createMessage() {
+        return new EchoMessage();
+      }
+    },
     INFO {
       @Override
       Message createMessage() {
         return new InfoMessage();
       }
     },
-    
-    TEXT {
+    SESSION {
       @Override
       Message createMessage() {
-        return new TextMessage();
+        return new SessionMessage();
+      }
+    },
+    SHOW {
+      @Override
+      Message createMessage() {
+        return new ShowMessage();
+      }
+    },
+    USERS {
+      @Override
+      Message createMessage() {
+        return new UsersMessage();
       }
     };
     
@@ -39,7 +54,7 @@ public abstract class Message {
       return null;
     }
     
-    Type messageType = EnumUtils.getEnumByIndex(Type.class, BeeUtils.toIntOrNull(arr[0]));
+    Type messageType = Codec.unpack(Type.class, arr[0]);
     if (messageType == null) {
       logger.severe("cannot decode message type", arr[0]);
       return null;
@@ -58,7 +73,7 @@ public abstract class Message {
   }
   
   public String encode() {
-    List<String> data = Lists.newArrayList(Integer.toString(type.ordinal()), serialize());
+    List<String> data = Lists.newArrayList(Codec.pack(getType()), serialize());
     return Codec.beeSerialize(data);
   }
   

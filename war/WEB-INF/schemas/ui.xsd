@@ -248,6 +248,7 @@
       <xs:enumeration value="search" />
       <xs:enumeration value="settings" />
       <xs:enumeration value="undo" />
+      <xs:enumeration value="user" />
       <xs:enumeration value="warning" />
       <xs:enumeration value="yellow" />
       <xs:enumeration value="yellowSmall" />

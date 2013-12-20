@@ -53,6 +53,7 @@ public final class Endpoint {
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
 
   private static WebSocket socket;
+  private static String sessionId;
 
   private static MessageDispatcher dispatcher = new MessageDispatcher();
 
@@ -69,6 +70,7 @@ public final class Endpoint {
       info.add(new Property(WebSocket.class.getSimpleName(), BeeConst.NULL));
     } else {
       PropertyUtils.addProperties(info,
+          "Session Id", sessionId,
           "Binary Type", socket.getBinaryType(),
           "Buffered Amount", socket.getBufferedAmount(),
           "Extensions", socket.getExtensions(),
@@ -78,6 +80,10 @@ public final class Endpoint {
     }
 
     return info;
+  }
+
+  public static String getSessionId() {
+    return sessionId;
   }
 
   public static boolean isClosed() {
@@ -124,10 +130,14 @@ public final class Endpoint {
     }
   }
 
-  public static void send(String data) {
-    if (isOpen()) {
-      socket.send(data);
+  public static void send(Message message) {
+    if (isOpen() && message != null) {
+      socket.send(message.encode());
     }
+  }
+
+  public static void setSessionId(String sessionId) {
+    Endpoint.sessionId = sessionId;
   }
 
   private static String getReadyState() {
@@ -144,6 +154,8 @@ public final class Endpoint {
 
   private static void onClose(CloseEvent event) {
     if (socket != null) {
+      setSessionId(null);
+
       String eventInfo = (event == null) ? null 
           : BeeUtils.joinOptions("code", Integer.toString(event.getCode()),
               "reason", event.getReason());

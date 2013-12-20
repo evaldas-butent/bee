@@ -67,6 +67,10 @@ public final class EnumUtils {
     }
   }
 
+  public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, String s) {
+    return getEnumByIndex(clazz, BeeUtils.toIntOrNull(s));
+  }
+  
   public static <E extends Enum<?>> E getEnumByName(Class<E> clazz, String name) {
     Assert.notNull(clazz);
     if (BeeUtils.isEmpty(name)) {

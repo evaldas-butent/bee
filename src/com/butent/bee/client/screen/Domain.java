@@ -10,7 +10,8 @@ public enum Domain {
   CALENDAR(1, Global.getImages().calendar(), null, true, true),
   REPORT(2, Global.getImages().report(), Localized.getConstants().reports(), false, false),
   MAIL(3, Global.getImages().plane(), null, true, true),
-  ADMIN(4, Global.getImages().configure(), "Admin", false, true);
+  USER(4, Global.getImages().user(), Localized.getConstants().users(), false, false),
+  ADMIN(5, Global.getImages().configure(), "Admin", false, true);
 
   private final int ordinal;
   private final ImageResource imageResource;
