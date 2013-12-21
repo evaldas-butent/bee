@@ -270,9 +270,11 @@ public class Endpoint {
     logger.info("ws close", reasonInfo, toLog(session));
     
     if (!openSessions.isEmpty()) {
+      SessionUser sessionUser = getSessionUser(session);
+
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
-          send(openSession, SessionMessage.close(getSessionUser(openSession)));
+          send(openSession, SessionMessage.close(sessionUser));
         }
       }
     }
@@ -301,23 +303,25 @@ public class Endpoint {
 
   @OnOpen
   public void onOpen(@PathParam("user-id") Long userId, Session session) {
+    setUserId(session, userId);
+    SessionUser sessionUser = getSessionUser(session);
+
     List<SessionUser> users = Lists.newArrayList();
 
     if (!openSessions.isEmpty()) {
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
-          send(openSession, SessionMessage.open(getSessionUser(openSession)));
+          send(openSession, SessionMessage.open(sessionUser));
           users.add(getSessionUser(openSession));
         }
       }
     }
 
-    setUserId(session, userId);
     openSessions.add(session);
 
     logger.info("ws open", toLog(session));
     
-    users.add(getSessionUser(session));
+    users.add(sessionUser);
     send(session, new UsersMessage(users));
   }
 }

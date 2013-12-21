@@ -163,8 +163,16 @@ public class ParametersGrid extends AbstractGridInterceptor {
               if (!BeeUtils.isEmpty(errors)) {
                 Global.showError(errors);
               } else {
-                consumer.accept(editor.getValue(), editor instanceof UnboundSelector
-                    ? ((UnboundSelector) editor).getRenderedValue() : null);
+                String displayValue;
+                if (editor instanceof UnboundSelector) {
+                  UnboundSelector selector = (UnboundSelector) editor;
+                  selector.render(selector.getRelatedRow());
+                  displayValue = selector.getRenderedValue();
+                } else {
+                  displayValue = null;
+                }
+                
+                consumer.accept(editor.getValue(), displayValue);
               }
             }
           };
@@ -263,6 +271,8 @@ public class ParametersGrid extends AbstractGridInterceptor {
         Pair<String, String> relData = Pair.restore(param.getOptions());
         ArrayList<String> cols = Lists.newArrayList(relData.getB());
         Relation relation = Relation.create(relData.getA(), cols);
+        relation.disableEdit();
+        relation.disableNewRow();
 
         UnboundSelector selector = UnboundSelector.create(relation, cols);
         Long rel = param.getRelation(userId);

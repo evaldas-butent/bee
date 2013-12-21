@@ -54,6 +54,6 @@ public class SessionMessage extends Message {
 
   @Override
   protected String serialize() {
-    return Pair.of(getSessionUser(), getState()).serialize();
+    return Pair.of(getSessionUser(), Codec.pack(getState())).serialize();
   }
 }
