@@ -3,6 +3,7 @@ package com.butent.bee.server.data;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -299,7 +300,7 @@ public class DataEditorBean {
     if (view.isReadOnly()) {
       return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
     }
-    List<Long> ids = Lists.newArrayList();
+    Set<Long> ids = Sets.newHashSet();
 
     for (RowInfo row : rows) {
       ids.add(row.getId());

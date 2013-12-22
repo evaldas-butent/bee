@@ -35,6 +35,7 @@ import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -145,9 +146,25 @@ public class ParametersGrid extends AbstractGridInterceptor {
           break;
 
         case COLLECTION:
+          Global.inputCollection(param.getName(), Localized.getConstants().parameter(),
+              BeeUtils.toBoolean(param.getOptions()), param.getCollection(userId),
+              new Consumer<Collection<String>>() {
+                @Override
+                public void accept(Collection<String> result) {
+                  consumer.accept(Codec.beeSerialize(result), null);
+                }
+              });
           break;
 
         case MAP:
+          Global.inputMap(param.getName(), Localized.getConstants().parameter(),
+              Localized.getConstants().value(), param.getMap(userId),
+              new Consumer<Map<String, String>>() {
+                @Override
+                public void accept(Map<String, String> result) {
+                  consumer.accept(Codec.beeSerialize(result), null);
+                }
+              });
           break;
 
         default:
@@ -171,7 +188,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
                 } else {
                   displayValue = null;
                 }
-                
                 consumer.accept(editor.getValue(), displayValue);
               }
             }
@@ -278,8 +294,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
         Long rel = param.getRelation(userId);
         selector.setValue(rel != null ? rel.toString() : null);
         selector.setDisplayValue(param.getDisplayValue(userId));
-        selector.setAdding(false);
-        selector.setEditing(false);
         editor = selector;
         break;
 
@@ -323,7 +337,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
         Collection<String> collection = param.getCollection(userId);
 
         if (!BeeUtils.isEmpty(collection)) {
-          value = "..." + BeeUtils.parenthesize(collection);
+          value = "..." + BeeUtils.parenthesize(collection.size());
         }
         break;
 

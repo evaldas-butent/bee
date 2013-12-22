@@ -17,6 +17,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public final class BeeParameter implements BeeSerializable {
 
@@ -63,6 +64,14 @@ public final class BeeParameter implements BeeSerializable {
 
     BeeParameter param = new BeeParameter(module, name, ParameterType.RELATION, userMode, null);
     param.setOptions(Pair.of(relationTable, relationField).serialize());
+    return param;
+  }
+
+  public static BeeParameter createSet(String module, String name, boolean userMode,
+      Set<String> defValue) {
+
+    BeeParameter param = createCollection(module, name, userMode, defValue);
+    param.setOptions(BeeUtils.toString(true));
     return param;
   }
 

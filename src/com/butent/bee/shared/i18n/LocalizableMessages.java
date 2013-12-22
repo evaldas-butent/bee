@@ -33,9 +33,11 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
 
   String not(String value);
 
+  String recordIsInUse(String place);
+
   String rowsRetrieved(int cnt);
 
   String rowsUpdated(int cnt);
 
-  String valueExists(String label, String value);
+  String valueExists(String value);
 }

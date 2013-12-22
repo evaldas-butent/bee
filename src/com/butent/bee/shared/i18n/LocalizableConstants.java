@@ -362,6 +362,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String pallets();
 
+  String parameter();
+
   String partial();
 
   String password();

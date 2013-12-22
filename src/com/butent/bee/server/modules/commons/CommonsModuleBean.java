@@ -222,7 +222,7 @@ public class CommonsModuleBean implements BeeModule {
         BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
-        BeeParameter.createCollection(COMMONS_MODULE, "PRMcollection", false, null),
+        BeeParameter.createSet(COMMONS_MODULE, "PRMcollection", false, null),
         BeeParameter.createDate(COMMONS_MODULE, "PRMdate", false, null),
         BeeParameter.createDateTime(COMMONS_MODULE, "PRMdatetime", false, null),
         BeeParameter.createNumber(COMMONS_MODULE, "PRMnumber", false, null),
@@ -245,6 +245,8 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    prm.init();
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void refreshIpFilterCache(TableModifyEvent event) {
@@ -367,8 +369,9 @@ public class CommonsModuleBean implements BeeModule {
 
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      logger.warning(usr.getLocalizableMesssages().valueExists(
-          usr.getLocalizableConstants().email(), email), "ignored");
+      logger.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
+          "ignored");
       email = null;
     }
 
@@ -487,14 +490,14 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     if (usr.isUser(login)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().valueExists(
-          usr.getLocalizableConstants().user(), login));
+      return ResponseObject.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
     }
 
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().valueExists(
-          usr.getLocalizableConstants().email(), email));
+      return ResponseObject.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)));
     }
 
     UserInterface userInterface = EnumUtils.getEnumByIndex(UserInterface.class,

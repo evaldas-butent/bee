@@ -2,13 +2,17 @@ package com.butent.bee.server.modules;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
+import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -24,6 +28,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -67,7 +72,7 @@ public class ParamHolderBean {
   @EJB
   SystemBean sys;
 
-  private final Map<String, BeeParameter> parameters = Maps.newTreeMap();
+  private final Table<String, String, BeeParameter> parameters = TreeBasedTable.create();
   private final EventBus parameterEventBus = new EventBus();
 
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
@@ -236,7 +241,37 @@ public class ParamHolderBean {
   }
 
   public boolean hasParameter(String name) {
-    return parameters.containsKey(BeeUtils.normalize(name));
+    return parameters.containsRow(BeeUtils.normalize(name));
+  }
+
+  public void init() {
+    sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      public void checkRelation(ViewDeleteEvent event) {
+        if (event.isBefore()) {
+          String table = BeeUtils.normalize(sys.getViewSource(event.getTargetName()));
+
+          if (parameters.containsColumn(table)) {
+            for (BeeParameter param : parameters.column(table).values()) {
+              if (!DataUtils.isId(param.getId())) {
+                continue;
+              }
+              for (Long userId : param.getUsers()) {
+                Long id = BeeUtils.toLongOrNull(DataUtils.isId(userId)
+                    ? param.getValue(userId) : param.getValue());
+
+                if (DataUtils.isId(id) && event.getIds().contains(id)) {
+                  event.addErrorMessage(Localized.getMessages()
+                      .recordIsInUse(BeeUtils.joinWords(Localized.getConstants().parameter(),
+                          param.getModule(), param.getName())));
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   public void postParameterEvent(ParameterEvent event) {
@@ -346,18 +381,19 @@ public class ParamHolderBean {
     Assert.notEmpty(name);
     Assert.state(hasParameter(name), "Unknown parameter: " + name);
 
-    return parameters.get(BeeUtils.normalize(name));
+    return parameters.row(BeeUtils.normalize(name)).values().iterator().next();
   }
 
   private void putParameter(BeeParameter parameter) {
     String name = BeeUtils.normalize(parameter.getName());
-    BeeParameter oldParam = parameters.get(name);
 
-    if (oldParam != null) {
+    if (hasParameter(name)) {
+      BeeParameter oldParam = getParameter(name);
       Assert.state(BeeUtils.same(oldParam.getModule(), parameter.getModule()),
           "Dublicate parameter name: " + name
               + " (modules: " + oldParam.getModule() + ", " + parameter.getModule() + ")");
     }
-    parameters.put(name, parameter);
+    parameters.put(name, parameter.getType() == ParameterType.RELATION
+        ? BeeUtils.normalize(Pair.restore(parameter.getOptions()).getA()) : "", parameter);
   }
 }
