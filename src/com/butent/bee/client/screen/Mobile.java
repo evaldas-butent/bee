@@ -178,7 +178,7 @@ public class Mobile extends ScreenImpl {
     Image play = new Image(Global.getImages().play(), new Command() {
       @Override
       public void execute() {
-        CliWorker.execute(cli.getValue());
+        CliWorker.execute(cli.getValue(), false);
       }
     });
     p.addLeftTop(play, pct + 4, CssUnit.PCT, 2, CssUnit.PX);

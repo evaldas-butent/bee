@@ -71,7 +71,7 @@ public class Shell extends InputArea {
         setCursorPos(pos + 1);
       }
 
-      ok = CliWorker.execute(line.trim());
+      ok = CliWorker.execute(line.trim(), true);
       if (ok) {
         save();
       }

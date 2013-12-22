@@ -22,6 +22,11 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
+import com.google.gwt.geolocation.client.Geolocation;
+import com.google.gwt.geolocation.client.Geolocation.PositionOptions;
+import com.google.gwt.geolocation.client.Position;
+import com.google.gwt.geolocation.client.Position.Coordinates;
+import com.google.gwt.geolocation.client.PositionError;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
@@ -31,6 +36,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
@@ -86,6 +92,10 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.maps.LatLng;
+import com.butent.bee.client.maps.MapImpl;
+import com.butent.bee.client.maps.MapOptions;
+import com.butent.bee.client.maps.MapWidget;
 import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
@@ -171,8 +181,9 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
-import com.butent.bee.shared.websocket.ShowMessage;
-import com.butent.bee.shared.websocket.EchoMessage;
+import com.butent.bee.shared.websocket.messages.AdminMessage;
+import com.butent.bee.shared.websocket.messages.EchoMessage;
+import com.butent.bee.shared.websocket.messages.ShowMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -198,7 +209,7 @@ public final class CliWorker {
 
   private static boolean cornified;
 
-  public static boolean execute(String line) {
+  public static boolean execute(String line, boolean errorPopup) {
     if (BeeUtils.isEmpty(line)) {
       return false;
     }
@@ -211,6 +222,9 @@ public final class CliWorker {
 
     if ("?".equals(z)) {
       whereAmI();
+      
+    } else if (z.startsWith("adm") && !args.isEmpty()) {
+      doAdmin(args, errorPopup);
 
     } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
       doAjaxKeys(arr);
@@ -234,7 +248,7 @@ public final class CliWorker {
       new CanvasDemo().start();
 
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
-      doScreen(arr);
+      doScreen(arr, errorPopup);
 
     } else if ("charset".equals(z)) {
       getCharsets();
@@ -243,7 +257,7 @@ public final class CliWorker {
       showChoice(arr);
 
     } else if ("class".equals(z)) {
-      getClassInfo(args);
+      getClassInfo(args, errorPopup);
 
     } else if ("clear".equals(z)) {
       clear(args);
@@ -258,10 +272,10 @@ public final class CliWorker {
       showExtData(v, Data.getColumnMapper().getExtendedInfo());
 
     } else if (z.startsWith("data")) {
-      showDataInfo(args);
+      showDataInfo(args, errorPopup);
 
     } else if (z.startsWith("color")) {
-      showColor(args);
+      showColor(args, errorPopup);
 
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
@@ -295,7 +309,7 @@ public final class CliWorker {
       doDsn();
 
     } else if (z.startsWith("dt")) {
-      showDate(z, args);
+      showDate(z, args, errorPopup);
 
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
@@ -314,11 +328,14 @@ public final class CliWorker {
         showListOfCurrencies();
       }
 
+    } else if ("exit".equals(z)) {
+      Bee.exit();
+      
     } else if (BeeUtils.inList(z, "f", "func")) {
-      showFunctions(v, arr);
+      showFunctions(v, arr, errorPopup);
 
     } else if (z.startsWith("fa")) {
-      showFontAwesome(z.substring(2), args);
+      showFontAwesome(z.substring(2), args, errorPopup);
 
     } else if ("files".equals(z) || z.startsWith("repo")) {
       getFiles();
@@ -327,7 +344,7 @@ public final class CliWorker {
       showFlags(arr);
 
     } else if ("font".equals(z) && arr.length == 2) {
-      showFont(arr[1]);
+      showFont(arr[1], errorPopup);
 
     } else if ("form".equals(z) && arr.length == 2) {
       FormFactory.openForm(arr[1]);
@@ -343,7 +360,7 @@ public final class CliWorker {
           ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
 
     } else if ("geo".equals(z)) {
-      showGeo();
+      showGeo(errorPopup);
 
     } else if ("grid".equals(z) && arr.length == 2) {
       GridFactory.openGrid(arr[1]);
@@ -355,13 +372,13 @@ public final class CliWorker {
       showGwt();
 
     } else if (BeeUtils.inList(z, "h5", "html5") || z.startsWith("supp") || z.startsWith("feat")) {
-      showSupport(args);
+      showSupport(args, errorPopup);
 
     } else if (z.startsWith("hist")) {
       Global.showModalGrid("History", new PropertiesData(Historian.getInstance().getInfo()));
 
     } else if ("id".equals(z)) {
-      showElement(v, arr);
+      showElement(v, arr, errorPopup);
 
     } else if (z.startsWith("image")) {
       showImages(arr);
@@ -369,6 +386,9 @@ public final class CliWorker {
     } else if ("import_cvs".equals(z)) {
       importCSV(arr);
 
+    } else if ("inject".equals(z) && arr.length == 2) {
+      DomUtils.injectExternalScript(arr[1]);
+      
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
 
@@ -376,10 +396,10 @@ public final class CliWorker {
       showInputBox(arr);
 
     } else if ("jdbc".equals(z)) {
-      doJdbc(args);
+      doJdbc(args, errorPopup);
 
     } else if (BeeUtils.inList(z, "keys", "pk")) {
-      getKeys(arr);
+      getKeys(arr, errorPopup);
 
     } else if (z.startsWith("like") && arr.length >= 3) {
       doLike(arr);
@@ -396,11 +416,14 @@ public final class CliWorker {
     } else if ("mail".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
+    } else if ("map".equals(z) && arr.length >= 3) {
+      showMap(arr, errorPopup);
+      
     } else if ("menu".equals(z)) {
       doMenu(args);
 
     } else if ("meter".equals(z)) {
-      showMeter(arr);
+      showMeter(arr, errorPopup);
 
     } else if ("md5".equals(z)) {
       digest(v);
@@ -412,7 +435,7 @@ public final class CliWorker {
       showNotes(args);
 
     } else if (BeeUtils.inList(z, "p", "prop")) {
-      showProperties(v, arr);
+      showProperties(v, arr, errorPopup);
 
     } else if (z.startsWith("ping")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_PING);
@@ -421,16 +444,16 @@ public final class CliWorker {
       Global.showModalGrid("Previewers", new PropertiesData(Previewer.getInstance().getInfo()));
 
     } else if (z.startsWith("print")) {
-      print(args);
+      print(args, errorPopup);
 
     } else if ("progress".equals(z)) {
-      showProgress(arr);
+      showProgress(arr, errorPopup);
 
     } else if ("rebuild".equals(z)) {
-      rebuildSomething(args);
+      rebuildSomething(args, errorPopup);
 
     } else if (z.startsWith("rect") && arr.length >= 2) {
-      showRectangle(arr[1]);
+      showRectangle(arr[1], errorPopup);
 
     } else if (z.startsWith("rot") || "scale".equals(z) || "skew".equals(z) || "tt".equals(z)) {
       animate(arr);
@@ -439,7 +462,7 @@ public final class CliWorker {
       showRpc();
 
     } else if (z.startsWith("selector") && arr.length >= 2) {
-      querySelector(z, args);
+      querySelector(z, args, errorPopup);
 
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
@@ -463,10 +486,10 @@ public final class CliWorker {
       showPropData(v, Stacking.getInfo());
 
     } else if (z.startsWith("stor")) {
-      storage(arr);
+      storage(arr, errorPopup);
 
     } else if ("style".equals(z)) {
-      style(v, arr);
+      style(v, arr, errorPopup);
 
     } else if ("svg".equals(z)) {
       showSvg(arr);
@@ -511,13 +534,13 @@ public final class CliWorker {
       showWidgetSuppliers();
 
     } else if ("widget".equals(z) && arr.length >= 2) {
-      showWidgetInfo(arr);
+      showWidgetInfo(arr, errorPopup);
 
     } else if ("ws".equals(z) || z.startsWith("websock")) {
       doWebSocket(args);
 
     } else {
-      showError("wtf", v);
+      showError(errorPopup, "command not recognized", v);
       return false;
     }
     return true;
@@ -821,6 +844,68 @@ public final class CliWorker {
     logger.info(BeeConst.CLIENT, Codec.md5(src));
     BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.HTML, src);
   }
+  
+  private static void doAdmin(String args, boolean errorPopup) {
+    String cmnd;
+
+    boolean all;
+    Set<Long> userIds = Sets.newHashSet();
+    
+    if (args.startsWith(BeeConst.STRING_ALL)) {
+      all = true;
+      cmnd = BeeUtils.removePrefix(args.substring(1).trim(), BeeConst.STRING_ALL);
+
+    } else if (args.startsWith(BeeConst.STRING_LEFT_PARENTHESIS)
+        || args.startsWith(BeeConst.STRING_LEFT_BRACKET)) {
+      
+      int endIndex = args.indexOf(args.startsWith(BeeConst.STRING_LEFT_PARENTHESIS)
+          ? BeeConst.STRING_RIGHT_PARENTHESIS : BeeConst.STRING_RIGHT_BRACKET);
+      if (endIndex <= 0) {
+        showError(errorPopup, args, "user list not closed");
+        return;
+      }
+      
+      String userList = args.substring(1, endIndex).trim();
+      if (BeeUtils.isEmpty(userList) || BeeUtils.containsOnly(userList, BeeConst.CHAR_ALL)) {
+        all = true;
+      } else {
+        all = false;
+        
+        List<String> userNames = NameUtils.toList(userList);
+        for (String userName : userNames) {
+          Long userId = Global.getUsers().parseUser(userName);
+          if (userId == null) {
+            showError(errorPopup, "user not found", userName);
+            return;
+          }
+          
+          userIds.add(userId);
+        }
+      }
+      
+      cmnd = args.substring(endIndex + 1);
+      
+    } else {
+      all = true;
+      cmnd = args;
+    }
+    
+    if (BeeUtils.isEmpty(cmnd)) {
+      showError(errorPopup, "cannot parse", args);
+      return;
+    }
+    
+    Set<String> sessions = all ? Global.getUsers().getAllSessions() 
+        : Global.getUsers().getSessions(userIds);
+    if (BeeUtils.isEmpty(sessions)) {
+      showError(errorPopup, "no open sessions found");
+      return;
+    }
+    
+    for (String session : sessions) {
+      Endpoint.send(AdminMessage.command(Endpoint.getSessionId(), session, cmnd));
+    }
+  }
 
   private static void doAjaxKeys(String[] arr) {
     if (ArrayUtils.length(arr) == 3) {
@@ -1080,9 +1165,9 @@ public final class CliWorker {
     });
   }
 
-  private static void doJdbc(String args) {
+  private static void doJdbc(String args, boolean errorPopup) {
     if (BeeUtils.isEmpty(args)) {
-      showError("Query not specified");
+      showError(errorPopup, "Query not specified");
       return;
     }
 
@@ -1090,7 +1175,7 @@ public final class CliWorker {
     List<String> input = Lists.newArrayList(splitter.split(args));
 
     if (BeeUtils.isEmpty(input)) {
-      showError("Query not specified");
+      showError(errorPopup, "Query not specified");
       return;
     }
 
@@ -1244,7 +1329,7 @@ public final class CliWorker {
     }
   }
 
-  private static void doScreen(String[] arr) {
+  private static void doScreen(String[] arr, boolean errorPopup) {
     Split screen = BeeKeeper.getScreen().getScreenPanel();
     Assert.notNull(screen);
 
@@ -1268,7 +1353,7 @@ public final class CliWorker {
     }
 
     if (!BeeUtils.isInt(p2)) {
-      showError(p1, p2, "size not an int");
+      showError(errorPopup, p1, p2, "size not an int");
       return;
     }
 
@@ -1366,16 +1451,16 @@ public final class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
-  private static void getClassInfo(String args) {
+  private static void getClassInfo(String args, boolean errorPopup) {
     Pair<String, String> params = Pair.split(args);
 
     String cls = (params == null) ? null : params.getA();
     String pck = (params == null) ? null : params.getB();
 
     if (BeeUtils.isEmpty(cls)) {
-      showError("Class name not specified");
+      showError(errorPopup, "Class name not specified");
     } else if (cls.length() < 2) {
-      showError("Class name", cls, "too short");
+      showError(errorPopup, "Class name", cls, "too short");
     } else {
       BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
           XmlUtils.createString(Service.XML_TAG_DATA,
@@ -1424,24 +1509,10 @@ public final class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
-  private static native void getGeo(Element element) /*-{
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition);
-    } else {
-      element.innerHTML = "no geolocation support";
-    }
-
-    function showPosition(position) {
-      var lat = position.coords.latitude;
-      var lng = position.coords.longitude;
-      element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
-    }
-  }-*/;
-
-  private static void getKeys(String[] arr) {
+  private static void getKeys(String[] arr, boolean errorPopup) {
     int parCnt = ArrayUtils.length(arr) - 1;
     if (parCnt <= 0) {
-      showError("getKeys", "table not specified");
+      showError(errorPopup, "getKeys", "table not specified");
       return;
     }
 
@@ -1611,14 +1682,14 @@ public final class CliWorker {
     BeeKeeper.getScreen().updateActivePanel(widget);
   }
 
-  private static void print(String args) {
+  private static void print(String args, boolean errorPopup) {
     Widget widget = null;
     Element element = null;
 
     if (BeeUtils.same(args, "log")) {
       IdentifiableWidget lp = ClientLogManager.getLogPanel();
       if (lp == null) {
-        showError("log widget not available");
+        showError(errorPopup, "log widget not available");
         return;
       } else {
         widget = lp.asWidget();
@@ -1627,14 +1698,14 @@ public final class CliWorker {
     } else if (!BeeUtils.isEmpty(args)) {
       element = DomUtils.getElementQuietly(args);
       if (element == null) {
-        showError(args, "element not found");
+        showError(errorPopup, args, "element not found");
         return;
       }
 
     } else {
       IdentifiableWidget iw = BeeKeeper.getScreen().getActiveWidget();
       if (iw == null) {
-        showError("active widget not available");
+        showError(errorPopup, "active widget not available");
         return;
       } else {
         widget = iw.asWidget();
@@ -1686,14 +1757,14 @@ public final class CliWorker {
     }
   }
 
-  private static void querySelector(String command, String selectors) {
+  private static void querySelector(String command, String selectors, boolean errorPopup) {
     int p = command.indexOf('#');
     Element root = null;
     if (p > 0 && p < command.length() - 1) {
       String id = command.substring(p + 1);
       root = Document.get().getElementById(id);
       if (root == null) {
-        showError(command, id, "element id not found");
+        showError(errorPopup, command, id, "element id not found");
         return;
       }
     }
@@ -1723,7 +1794,7 @@ public final class CliWorker {
 
     int cnt = (nodes == null) ? 0 : nodes.getLength();
     if (cnt <= 0) {
-      showError(command, selectors, "no elements found");
+      showError(errorPopup, command, selectors, "no elements found");
       return;
     }
 
@@ -1738,7 +1809,7 @@ public final class CliWorker {
 
   // CHECKSTYLE:ON
 
-  private static void rebuildSomething(final String args) {
+  private static void rebuildSomething(final String args, final boolean errorPopup) {
     BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -1770,7 +1841,7 @@ public final class CliWorker {
                           p.setWidgetTopBottom(area, 0, CssUnit.EM, 0, CssUnit.EM);
                           p.setWidgetLeftRight(area, 0, CssUnit.EM, 50, CssUnit.PCT);
                         } else {
-                          showError("Wrong response received");
+                          showError(errorPopup, "Wrong response received");
                         }
                       }
                     });
@@ -1806,7 +1877,7 @@ public final class CliWorker {
                                 new InputArea(Resource.restore(resp.getResponseAsString()));
                             inform(res.getValue());
                           } else {
-                            showError("Wrong response received");
+                            showError(errorPopup, "Wrong response received");
                           }
                         }
                       });
@@ -2054,7 +2125,7 @@ public final class CliWorker {
     });
   }
 
-  private static void showColor(String args) {
+  private static void showColor(String args, boolean errorPopup) {
     if (BeeUtils.isEmpty(args)) {
       Map<String, String> names = Color.getNames();
 
@@ -2099,7 +2170,7 @@ public final class CliWorker {
     } else {
       String normalized = Color.normalize(args);
       if (BeeUtils.isEmpty(normalized)) {
-        showError(args, "color not recognized");
+        showError(errorPopup, args, "color not recognized");
         return;
       }
 
@@ -2131,11 +2202,11 @@ public final class CliWorker {
         params);
   }
 
-  private static void showDataInfo(String viewName) {
+  private static void showDataInfo(String viewName, boolean errorPopup) {
     if (BeeUtils.isEmpty(viewName)) {
       List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
       if (list.isEmpty()) {
-        showError("no data infos available");
+        showError(errorPopup, "no data infos available");
         return;
       }
 
@@ -2167,7 +2238,7 @@ public final class CliWorker {
     }
   }
 
-  private static void showDate(String cmnd, String args) {
+  private static void showDate(String cmnd, String args, boolean errorPopup) {
     DateTimeFormat dtf = null;
     String inp = null;
 
@@ -2191,7 +2262,7 @@ public final class CliWorker {
           t = dtf.parse(inp);
         }
       } catch (IllegalArgumentException ex) {
-        showError(args, dtf.getPattern(), inp, ex.toString());
+        showError(errorPopup, args, dtf.getPattern(), inp, ex.toString());
       }
 
     } else if (!BeeUtils.isEmpty(args)) {
@@ -2349,7 +2420,7 @@ public final class CliWorker {
     showTable(caption, new PropertiesData(info));
   }
 
-  private static void showElement(String v, String[] arr) {
+  private static void showElement(String v, String[] arr, boolean errorPopup) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
       return;
@@ -2357,7 +2428,7 @@ public final class CliWorker {
 
     JavaScriptObject obj = Document.get().getElementById(arr[1]);
     if (obj == null) {
-      showError(arr[1], "element id not found");
+      showError(errorPopup, arr[1], "element id not found");
       return;
     }
 
@@ -2365,7 +2436,7 @@ public final class CliWorker {
     JsArrayString prp = JsUtils.getProperties(obj, patt);
 
     if (JsUtils.isEmpty(prp)) {
-      showError(v, "properties not found");
+      showError(errorPopup, v, "properties not found");
       return;
     }
 
@@ -2375,8 +2446,12 @@ public final class CliWorker {
     showTable(v, table);
   }
 
-  private static void showError(String... messages) {
-    Global.showError(null, Lists.newArrayList(messages), null, "kthxbai");
+  private static void showError(boolean popup, String... messages) {
+    if (popup) {
+      Global.showError(null, Lists.newArrayList(messages), null, "kthxbai");
+    } else {
+      logger.severe(ArrayUtils.joinWords(messages));
+    }
   }
 
   private static void showExchangeRate(String currency, String date) {
@@ -2475,17 +2550,17 @@ public final class CliWorker {
     }
   }
 
-  private static void showFont(String id) {
+  private static void showFont(String id, boolean errorPopup) {
     Element el = Document.get().getElementById(id);
     if (el == null) {
-      showError(id, "element not found");
+      showError(errorPopup, id, "element not found");
       return;
     }
 
     showTable(id, new PropertiesData(Font.getComputed(el).getInfo()));
   }
 
-  private static void showFontAwesome(String names, String args) {
+  private static void showFontAwesome(String names, String args, boolean errorPopup) {
     Flow panel = new Flow();
     StyleUtils.setFontFamily(panel, FontAwesome.FAMILY);
     StyleUtils.setFontSize(panel, FontSize.MEDIUM);
@@ -2525,11 +2600,11 @@ public final class CliWorker {
       logger.debug(FontAwesome.FAMILY, names, count);
       BeeKeeper.getScreen().updateActivePanel(panel);
     } else {
-      showError(FontAwesome.FAMILY, names, "not found");
+      showError(errorPopup, FontAwesome.FAMILY, names, "not found");
     }
   }
 
-  private static void showFunctions(String v, String[] arr) {
+  private static void showFunctions(String v, String[] arr, boolean errorPopup) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
       return;
@@ -2542,7 +2617,7 @@ public final class CliWorker {
       obj = JsUtils.eval(arr[1]);
     }
     if (obj == null) {
-      showError(arr[1], "not a js object");
+      showError(errorPopup, arr[1], "not a js object");
       return;
     }
 
@@ -2550,7 +2625,7 @@ public final class CliWorker {
     JsArrayString fnc = JsUtils.getFunctions(obj, patt);
 
     if (JsUtils.isEmpty(fnc)) {
-      showError(v, "functions not found");
+      showError(errorPopup, v, "functions not found");
       return;
     }
     if (fnc.length() <= 5) {
@@ -2564,10 +2639,44 @@ public final class CliWorker {
     showTable(v, table);
   }
 
-  private static void showGeo() {
-    Label widget = new Label("Looking for location...");
-    getGeo(widget.getElement());
-    BeeKeeper.getScreen().updateActivePanel(widget);
+  private static void showGeo(boolean errorPopup) {
+    Geolocation geolocation = Geolocation.getIfSupported();
+    if (geolocation == null) {
+      showError(errorPopup, "geolocation not supported");
+      return;
+    }
+    
+    com.google.gwt.core.client.Callback<Position, PositionError> callback = 
+        new com.google.gwt.core.client.Callback<Position, PositionError>() {
+      @Override
+      public void onSuccess(Position result) {
+        if (result != null && result.getCoordinates() != null) {
+          Coordinates coords = result.getCoordinates();
+          
+          List<Property> info = PropertyUtils.createProperties(
+              "Latitude", coords.getLatitude(),
+              "Longitude", coords.getLongitude(),
+              "Accuracy", coords.getAccuracy(),
+              "Altitude", coords.getAltitude(),
+              "Accuracy", coords.getAltitudeAccuracy(),
+              "Speed", coords.getSpeed(),
+              "Heading", coords.getHeading(),
+              "Timestamp", result.getTimestamp());
+          
+          showPropData("Position", info);
+        }
+      }
+      
+      @Override
+      public void onFailure(PositionError reason) {
+        if (reason != null) {
+        logger.warning(reason.getCode(), reason.getMessage());
+        }
+      }
+    };
+    
+    PositionOptions positionOptions = new PositionOptions().setHighAccuracyEnabled(true);
+    geolocation.getCurrentPosition(callback, positionOptions);
   }
 
   private static void showGwt() {
@@ -2789,14 +2898,46 @@ public final class CliWorker {
         CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
   }
 
+  private static void showMap(String[] arr, boolean errorPopup) {
+    if (!MapImpl.detectSupport()) {
+      showError(errorPopup, "maps not supported");
+      return;
+    }
+    
+    Double latitude = BeeUtils.toDoubleOrNull(arr[1]);
+    Double longitude = BeeUtils.toDoubleOrNull(arr[2]);
+    
+    if (latitude == null || longitude == null) {
+      showError(errorPopup, "invalid lat lng", ArrayUtils.joinWords(arr));
+      return;
+    }
+    
+    int pos = 3;
+
+    int zoom = BeeConst.UNDEF;
+    if (arr.length > pos && BeeUtils.isInt(arr[pos])) {
+      zoom = BeeUtils.toInt(arr[pos]);
+      pos++;
+    }
+    
+    LatLng latLng = LatLng.create(latitude, longitude);
+    
+    MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom) 
+        : MapOptions.create(latLng);
+    String caption = ArrayUtils.joinWords(arr);
+    
+    MapWidget widget = MapWidget.create(mapOptions, caption);
+    BeeKeeper.getScreen().showWidget(widget, true);
+  }
+  
   @SuppressWarnings("rawtypes")
   private static void showMatrix(String caption, String[][] data, String... columnLabels) {
     Global.showGrid(caption, new StringMatrix(data, columnLabels));
   }
 
-  private static void showMeter(String[] arr) {
+  private static void showMeter(String[] arr, boolean errorPopup) {
     if (!Features.supportsElementMeter()) {
-      showError("meter element not supported");
+      showError(errorPopup, "meter element not supported");
       return;
     }
 
@@ -2909,7 +3050,7 @@ public final class CliWorker {
     }
     return rowCount <= 12;
   }
-
+  
   private static void showNotes(String args) {
     if (BeeUtils.isEmpty(args)) {
       Global.sayHuh(args);
@@ -2941,9 +3082,9 @@ public final class CliWorker {
     }
   }
 
-  private static void showProgress(String[] arr) {
+  private static void showProgress(String[] arr, boolean errorPopup) {
     if (!Features.supportsElementProgress()) {
-      showError("progress element not supported");
+      showError(errorPopup, "progress element not supported");
       return;
     }
 
@@ -3040,7 +3181,7 @@ public final class CliWorker {
     Global.showGrid(caption, new PropertiesData(data, columnLabels));
   }
 
-  private static void showProperties(String v, String[] arr) {
+  private static void showProperties(String v, String[] arr, boolean errorPopup) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
       return;
@@ -3053,7 +3194,7 @@ public final class CliWorker {
       obj = JsUtils.eval(arr[1]);
     }
     if (obj == null) {
-      showError(arr[1], "not a js object");
+      showError(errorPopup, arr[1], "not a js object");
       return;
     }
 
@@ -3061,7 +3202,7 @@ public final class CliWorker {
     JsArrayString prp = JsUtils.getProperties(obj, patt);
 
     if (JsUtils.isEmpty(prp)) {
-      showError(v, "properties not found");
+      showError(errorPopup, v, "properties not found");
       return;
     }
 
@@ -3071,16 +3212,16 @@ public final class CliWorker {
     showTable(v, table);
   }
 
-  private static void showRectangle(String id) {
+  private static void showRectangle(String id, boolean errorPopup) {
     Element el = Document.get().getElementById(id);
     if (el == null) {
-      showError(id, "element not found");
+      showError(errorPopup, id, "element not found");
       return;
     }
 
     ClientRect startRect = ClientRect.createBounding(el);
     if (startRect == null) {
-      showError(id, "rectangle not available");
+      showError(errorPopup, id, "rectangle not available");
     }
 
     String center = StyleUtils.className(TextAlign.CENTER);
@@ -3300,7 +3441,7 @@ public final class CliWorker {
     BeeKeeper.getScreen().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
   }
 
-  private static void showSupport(String args) {
+  private static void showSupport(String args, boolean errorPopup) {
     List<Property> data = Features.getInfo();
 
     if (BeeUtils.isEmpty(args)) {
@@ -3315,7 +3456,7 @@ public final class CliWorker {
       }
 
       if (filtered.isEmpty()) {
-        showError("feature not tested:", args);
+        showError(errorPopup, "feature not tested:", args);
       } else if (filtered.size() == 1) {
         Property p = filtered.get(0);
         inform(p.getName(), p.getValue());
@@ -3571,16 +3712,16 @@ public final class CliWorker {
     });
   }
 
-  private static void showWidgetInfo(String[] arr) {
+  private static void showWidgetInfo(String[] arr, boolean errorPopup) {
     String id = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(id)) {
-      showError("widget id not specified");
+      showError(errorPopup, "widget id not specified");
       return;
     }
 
     Widget widget = DomUtils.getWidget(id);
     if (widget == null) {
-      showError(id, "widget not found");
+      showError(errorPopup, id, "widget not found");
       return;
     }
 
@@ -3623,7 +3764,7 @@ public final class CliWorker {
     }
   }
 
-  private static void storage(String[] arr) {
+  private static void storage(String[] arr, boolean errorPopup) {
     int parCnt = ArrayUtils.length(arr) - 1;
     int len = BeeKeeper.getStorage().length();
 
@@ -3646,7 +3787,7 @@ public final class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().get(key);
         if (z == null) {
-          showError(Localized.getMessages().keyNotFound(key));
+          showError(errorPopup, Localized.getMessages().keyNotFound(key));
         } else {
           inform(key, z);
         }
@@ -3665,7 +3806,7 @@ public final class CliWorker {
     }
   }
 
-  private static void style(String v, String[] arr) {
+  private static void style(String v, String[] arr, boolean errorPopup) {
     if (ArrayUtils.length(arr) < 2) {
       JsStyleSheetList sheets = JsBrowser.getDocument().getStyleSheets();
       int sheetCnt = (sheets == null) ? 0 : sheets.getLength();
@@ -3764,7 +3905,7 @@ public final class CliWorker {
 
     String st = sb.toString();
     if (!st.contains("{") || !st.contains("}")) {
-      showError("Nah pop no style, a strictly roots", v, st);
+      showError(errorPopup, "Nah pop no style, a strictly roots", v, st);
       return;
     }
 

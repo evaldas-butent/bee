@@ -2,19 +2,21 @@ package com.butent.bee.client.websocket;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
-import com.butent.bee.shared.websocket.InfoMessage;
-import com.butent.bee.shared.websocket.Message;
-import com.butent.bee.shared.websocket.SessionMessage;
 import com.butent.bee.shared.websocket.SessionUser;
-import com.butent.bee.shared.websocket.ShowMessage;
-import com.butent.bee.shared.websocket.ShowMessage.Subject;
-import com.butent.bee.shared.websocket.EchoMessage;
-import com.butent.bee.shared.websocket.UsersMessage;
+import com.butent.bee.shared.websocket.messages.AdminMessage;
+import com.butent.bee.shared.websocket.messages.EchoMessage;
+import com.butent.bee.shared.websocket.messages.InfoMessage;
+import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.SessionMessage;
+import com.butent.bee.shared.websocket.messages.ShowMessage;
+import com.butent.bee.shared.websocket.messages.UsersMessage;
+import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 
 import java.util.List;
 
@@ -27,6 +29,28 @@ class MessageDispatcher {
   
   void dispatch(Message message) {
     switch (message.getType()) {
+      case ADMIN:
+        AdminMessage am = (AdminMessage) message;
+
+        if (!BeeUtils.isEmpty(am.getResponse())) {
+          logger.debug(message.getClass().getSimpleName(), "response", am.getResponse());
+
+        } else if (!BeeUtils.isEmpty(am.getCommand())) {
+          logger.debug(message.getClass().getSimpleName(), "from", am.getFrom());
+          logger.debug(am.getCommand());
+
+          boolean ok = CliWorker.execute(am.getCommand(), false);
+          if (!ok) {
+            Endpoint.send(AdminMessage.response(Endpoint.getSessionId(), am.getFrom(),
+                "command not recognized: " + am.getCommand()));
+          }
+          
+        } else {
+          logger.warning(message.getClass().getSimpleName(), "from", am.getFrom(), "is empty");
+        }
+        
+        break;
+        
       case ECHO:
         BeeKeeper.getScreen().notifyInfo(((EchoMessage) message).getText());
         break;

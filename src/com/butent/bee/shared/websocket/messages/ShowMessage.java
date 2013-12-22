@@ -1,4 +1,4 @@
-package com.butent.bee.shared.websocket;
+package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.Codec;

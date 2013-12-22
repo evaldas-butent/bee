@@ -12,7 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
-import com.butent.bee.shared.websocket.Message;
+import com.butent.bee.shared.websocket.messages.Message;
 
 import java.util.List;
 

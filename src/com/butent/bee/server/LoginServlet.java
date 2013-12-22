@@ -153,7 +153,9 @@ public class LoginServlet extends HttpServlet {
     }
 
     for (String script : ui.getScripts()) {
-      doc.getHead().append(script().src(resource(contextPath, Paths.getScriptPath(script))));
+      String src = script.contains("://") ? script 
+          : resource(contextPath, Paths.getScriptPath(script));
+      doc.getHead().append(script().src(src));
     }
     doc.getHead().append(script().src(resource(contextPath, "bee/bee.nocache.js")));
 

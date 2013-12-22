@@ -108,6 +108,15 @@ public final class Settings {
   public static int getProviderSensitivityMillis() {
     return getPropertyInt("providerSensitivityMillis");
   }
+
+  public static List<String> getScripts() {
+    String value = getProperty("scripts");
+    if (BeeUtils.isEmpty(value)) {
+      return Collections.emptyList();
+    } else {
+      return Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults().splitToList(value);
+    }
+  }
   
   public static long getStartMillis() {
     return getPropertyLong("startMillis");

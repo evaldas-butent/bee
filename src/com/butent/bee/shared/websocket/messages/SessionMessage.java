@@ -1,8 +1,9 @@
-package com.butent.bee.shared.websocket;
+package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.websocket.SessionUser;
 
 public class SessionMessage extends Message {
   

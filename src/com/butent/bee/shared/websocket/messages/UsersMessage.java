@@ -1,8 +1,9 @@
-package com.butent.bee.shared.websocket;
+package com.butent.bee.shared.websocket.messages;
 
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.websocket.SessionUser;
 
 import java.util.List;
 

@@ -94,6 +94,13 @@ public class Bee implements EntryPoint {
         start();
       }
     });
+    
+    List<String> extScripts = Settings.getScripts();
+    if (!BeeUtils.isEmpty(extScripts)) {
+      for (String script : extScripts) {
+        DomUtils.injectExternalScript(script);
+      }
+    }
   }
 
   private static void load(Map<String, String> data) {

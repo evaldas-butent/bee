@@ -8,13 +8,14 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
-import com.butent.bee.shared.websocket.InfoMessage;
-import com.butent.bee.shared.websocket.Message;
-import com.butent.bee.shared.websocket.SessionMessage;
 import com.butent.bee.shared.websocket.SessionUser;
-import com.butent.bee.shared.websocket.ShowMessage;
-import com.butent.bee.shared.websocket.ShowMessage.Subject;
-import com.butent.bee.shared.websocket.UsersMessage;
+import com.butent.bee.shared.websocket.messages.AdminMessage;
+import com.butent.bee.shared.websocket.messages.InfoMessage;
+import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.SessionMessage;
+import com.butent.bee.shared.websocket.messages.ShowMessage;
+import com.butent.bee.shared.websocket.messages.UsersMessage;
+import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 
 import java.util.Collection;
 import java.util.List;
@@ -48,6 +49,17 @@ public class Endpoint {
 
   private static void dispatch(Session session, Message message) {
     switch (message.getType()) {
+      case ADMIN:
+        Session toSession = findOpenSession(((AdminMessage) message).getTo(), true);
+        if (toSession != null) {
+          send(toSession, message);
+        }
+        break;
+        
+      case ECHO:
+        send(session, message);
+        break;
+
       case SHOW:
         Subject subject = ((ShowMessage) message).getSubject();
         if (subject == null) {
@@ -67,16 +79,25 @@ public class Endpoint {
         }
         break;
 
-      case ECHO:
-        send(session, message);
-        break;
-
       case INFO:
       case SESSION:
       case USERS:
         logger.severe("ws message not supported", message.getType(), toLog(session));
         break;
     }
+  }
+  
+  private static Session findOpenSession(String sessionId, boolean warn) {
+    for (Session session : openSessions) {
+      if (session.getId().endsWith(sessionId) && session.isOpen()) {
+        return session;
+      }
+    }
+    
+    if (warn) {
+      logger.warning("ws opend session not found", sessionId);
+    }
+    return null;
   }
 
   private static List<Property> getExtensionInfo(Extension extension) {

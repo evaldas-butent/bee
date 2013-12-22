@@ -1,4 +1,4 @@
-package com.butent.bee.shared.websocket;
+package com.butent.bee.shared.websocket.messages;
 
 import com.google.common.collect.Lists;
 
@@ -11,6 +11,12 @@ import java.util.List;
 public abstract class Message {
   
   public enum Type {
+    ADMIN {
+      @Override
+      Message createMessage() {
+        return new AdminMessage();
+      }
+    },
     ECHO {
       @Override
       Message createMessage() {

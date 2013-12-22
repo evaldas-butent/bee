@@ -1,4 +1,4 @@
-package com.butent.bee.shared.websocket;
+package com.butent.bee.shared.websocket.messages;
 
 public class EchoMessage extends Message {
   
