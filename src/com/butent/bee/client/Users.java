@@ -2,14 +2,18 @@ package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.websocket.messages.LocationMessage;
 
 import java.util.Collection;
 import java.util.List;
@@ -75,12 +79,27 @@ public class Users extends Flow {
     super(STYLE_PREFIX + "container");
   }
 
-  public void addUser(String login, long userId, String sessionId) {
+  public void addUser(String login, final long userId, String sessionId) {
     User user = find(userId);
 
     if (user == null) {
       UserWidget userWidget = new UserWidget(login);
       users.add(new User(login, userId, sessionId, userWidget));
+      
+      userWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          String from = Endpoint.getSessionId();
+          User toUser = find(userId);
+          
+          if (!BeeUtils.isEmpty(from) && toUser != null) {
+            for (String to : toUser.sessions) {
+              logger.debug("get location of", toUser.login);
+              Endpoint.send(LocationMessage.query(from, to));
+            }
+          }
+        }
+      });
 
       add(userWidget);
 
@@ -121,8 +140,17 @@ public class Users extends Flow {
 
     return result;
   }
+  
+  public String getUserNameBySession(String sessionId) {
+    for (User user : users) {
+      if (user.sessions.contains(sessionId)) {
+        return user.login;
+      }
+    }
+    return null;
+  }
 
-  public Long parseUser(String input) {
+  public Long parseUserName(String input) {
     for (User user : users) {
       if (BeeUtils.same(user.login, input)) {
         return user.userId;

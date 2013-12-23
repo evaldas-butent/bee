@@ -11,10 +11,6 @@ public class MapImpl extends JavaScriptObject {
     return createJso(element, options);
   }
 
-  public static final native boolean detectSupport() /*-{
-    return !!$wnd.google && !!$wnd.google.maps;
-  }-*/;
-  
   private static native MapImpl createJso(Element element, MapOptions options) /*-{
     return new $wnd.google.maps.Map(element, options);
   }-*/;

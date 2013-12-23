@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.websocket.SessionUser;
-import com.butent.bee.shared.websocket.messages.AdminMessage;
+import com.butent.bee.shared.websocket.messages.HasRecipient;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
@@ -50,7 +50,8 @@ public class Endpoint {
   private static void dispatch(Session session, Message message) {
     switch (message.getType()) {
       case ADMIN:
-        Session toSession = findOpenSession(((AdminMessage) message).getTo(), true);
+      case LOCATION:
+        Session toSession = findOpenSession(((HasRecipient) message).getTo(), true);
         if (toSession != null) {
           send(toSession, message);
         }

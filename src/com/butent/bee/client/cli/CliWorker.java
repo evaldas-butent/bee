@@ -8,7 +8,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
@@ -22,11 +21,9 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
-import com.google.gwt.geolocation.client.Geolocation;
-import com.google.gwt.geolocation.client.Geolocation.PositionOptions;
+import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
-import com.google.gwt.geolocation.client.PositionError;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
@@ -92,10 +89,13 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.maps.ApiLoader;
 import com.butent.bee.client.maps.LatLng;
-import com.butent.bee.client.maps.MapImpl;
 import com.butent.bee.client.maps.MapOptions;
+import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
+import com.butent.bee.client.maps.Marker;
+import com.butent.bee.client.maps.MarkerOptions;
 import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
@@ -132,6 +132,7 @@ import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
@@ -222,7 +223,7 @@ public final class CliWorker {
 
     if ("?".equals(z)) {
       whereAmI();
-      
+
     } else if (z.startsWith("adm") && !args.isEmpty()) {
       doAdmin(args, errorPopup);
 
@@ -330,7 +331,7 @@ public final class CliWorker {
 
     } else if ("exit".equals(z)) {
       Bee.exit();
-      
+
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr, errorPopup);
 
@@ -360,7 +361,7 @@ public final class CliWorker {
           ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
 
     } else if ("geo".equals(z)) {
-      showGeo(errorPopup);
+      showGeo();
 
     } else if ("grid".equals(z) && arr.length == 2) {
       GridFactory.openGrid(arr[1]);
@@ -388,7 +389,7 @@ public final class CliWorker {
 
     } else if ("inject".equals(z) && arr.length == 2) {
       DomUtils.injectExternalScript(arr[1]);
-      
+
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
 
@@ -418,7 +419,7 @@ public final class CliWorker {
 
     } else if ("map".equals(z) && arr.length >= 3) {
       showMap(arr, errorPopup);
-      
+
     } else if ("menu".equals(z)) {
       doMenu(args);
 
@@ -790,7 +791,7 @@ public final class CliWorker {
       delay = 2000;
     }
 
-    Scheduler.get().scheduleFixedDelay(new RepeatingCommand() {
+    Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
       private int counter;
 
       @Override
@@ -844,64 +845,64 @@ public final class CliWorker {
     logger.info(BeeConst.CLIENT, Codec.md5(src));
     BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.HTML, src);
   }
-  
+
   private static void doAdmin(String args, boolean errorPopup) {
     String cmnd;
 
     boolean all;
     Set<Long> userIds = Sets.newHashSet();
-    
+
     if (args.startsWith(BeeConst.STRING_ALL)) {
       all = true;
       cmnd = BeeUtils.removePrefix(args.substring(1).trim(), BeeConst.STRING_ALL);
 
     } else if (args.startsWith(BeeConst.STRING_LEFT_PARENTHESIS)
         || args.startsWith(BeeConst.STRING_LEFT_BRACKET)) {
-      
+
       int endIndex = args.indexOf(args.startsWith(BeeConst.STRING_LEFT_PARENTHESIS)
           ? BeeConst.STRING_RIGHT_PARENTHESIS : BeeConst.STRING_RIGHT_BRACKET);
       if (endIndex <= 0) {
         showError(errorPopup, args, "user list not closed");
         return;
       }
-      
+
       String userList = args.substring(1, endIndex).trim();
       if (BeeUtils.isEmpty(userList) || BeeUtils.containsOnly(userList, BeeConst.CHAR_ALL)) {
         all = true;
       } else {
         all = false;
-        
+
         List<String> userNames = NameUtils.toList(userList);
         for (String userName : userNames) {
-          Long userId = Global.getUsers().parseUser(userName);
+          Long userId = Global.getUsers().parseUserName(userName);
           if (userId == null) {
             showError(errorPopup, "user not found", userName);
             return;
           }
-          
+
           userIds.add(userId);
         }
       }
-      
+
       cmnd = args.substring(endIndex + 1);
-      
+
     } else {
       all = true;
       cmnd = args;
     }
-    
+
     if (BeeUtils.isEmpty(cmnd)) {
       showError(errorPopup, "cannot parse", args);
       return;
     }
-    
-    Set<String> sessions = all ? Global.getUsers().getAllSessions() 
+
+    Set<String> sessions = all ? Global.getUsers().getAllSessions()
         : Global.getUsers().getSessions(userIds);
     if (BeeUtils.isEmpty(sessions)) {
       showError(errorPopup, "no open sessions found");
       return;
     }
-    
+
     for (String session : sessions) {
       Endpoint.send(AdminMessage.command(Endpoint.getSessionId(), session, cmnd));
     }
@@ -1425,17 +1426,17 @@ public final class CliWorker {
 
     } else if (!Endpoint.isOpen()) {
       inform("endpoint not open");
-      
+
     } else if (BeeUtils.same(args, "?")) {
       Endpoint.send(ShowMessage.showSessionInfo());
     } else if (BeeUtils.same(args, "who")) {
       Endpoint.send(ShowMessage.showOpenSessions());
-    
+
     } else {
       Endpoint.send(new EchoMessage(args));
     }
   }
-  
+
   private static void eval(String xpr) {
     if (BeeUtils.isEmpty(xpr)) {
       Global.sayHuh();
@@ -2592,7 +2593,7 @@ public final class CliWorker {
 
       StyleUtils.updateStyle(label, styles);
       panel.add(label);
-      
+
       count++;
     }
 
@@ -2639,44 +2640,27 @@ public final class CliWorker {
     showTable(v, table);
   }
 
-  private static void showGeo(boolean errorPopup) {
-    Geolocation geolocation = Geolocation.getIfSupported();
-    if (geolocation == null) {
-      showError(errorPopup, "geolocation not supported");
-      return;
-    }
-    
-    com.google.gwt.core.client.Callback<Position, PositionError> callback = 
-        new com.google.gwt.core.client.Callback<Position, PositionError>() {
+  private static void showGeo() {
+    Consumer<Position> onPosition = new Consumer<Position>() {
       @Override
-      public void onSuccess(Position result) {
-        if (result != null && result.getCoordinates() != null) {
-          Coordinates coords = result.getCoordinates();
-          
-          List<Property> info = PropertyUtils.createProperties(
-              "Latitude", coords.getLatitude(),
-              "Longitude", coords.getLongitude(),
-              "Accuracy", coords.getAccuracy(),
-              "Altitude", coords.getAltitude(),
-              "Accuracy", coords.getAltitudeAccuracy(),
-              "Speed", coords.getSpeed(),
-              "Heading", coords.getHeading(),
-              "Timestamp", result.getTimestamp());
-          
-          showPropData("Position", info);
-        }
-      }
-      
-      @Override
-      public void onFailure(PositionError reason) {
-        if (reason != null) {
-        logger.warning(reason.getCode(), reason.getMessage());
-        }
+      public void accept(Position input) {
+        Coordinates coords = input.getCoordinates();
+
+        List<Property> info = PropertyUtils.createProperties(
+            "Latitude", coords.getLatitude(),
+            "Longitude", coords.getLongitude(),
+            "Accuracy", coords.getAccuracy(),
+            "Altitude", coords.getAltitude(),
+            "Accuracy", coords.getAltitudeAccuracy(),
+            "Speed", coords.getSpeed(),
+            "Heading", coords.getHeading(),
+            "Timestamp", input.getTimestamp());
+
+        showPropData("Position", info);
       }
     };
     
-    PositionOptions positionOptions = new PositionOptions().setHighAccuracyEnabled(true);
-    geolocation.getCurrentPosition(callback, positionOptions);
+    MapUtils.getCurrentPosition(onPosition);
   }
 
   private static void showGwt() {
@@ -2898,38 +2882,67 @@ public final class CliWorker {
         CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
   }
 
-  private static void showMap(String[] arr, boolean errorPopup) {
-    if (!MapImpl.detectSupport()) {
-      showError(errorPopup, "maps not supported");
-      return;
-    }
-    
-    Double latitude = BeeUtils.toDoubleOrNull(arr[1]);
-    Double longitude = BeeUtils.toDoubleOrNull(arr[2]);
-    
+  private static void showMap(final String[] arr, boolean errorPopup) {
+    final Double latitude = BeeUtils.toDoubleOrNull(arr[1]);
+    final Double longitude = BeeUtils.toDoubleOrNull(arr[2]);
+
     if (latitude == null || longitude == null) {
       showError(errorPopup, "invalid lat lng", ArrayUtils.joinWords(arr));
       return;
     }
-    
-    int pos = 3;
 
-    int zoom = BeeConst.UNDEF;
-    if (arr.length > pos && BeeUtils.isInt(arr[pos])) {
-      zoom = BeeUtils.toInt(arr[pos]);
-      pos++;
+    final int zoom;
+    final int pos;
+
+    if (arr.length > 3 && BeeUtils.isInt(arr[3])) {
+      zoom = BeeUtils.toInt(arr[3]);
+      pos = 4;
+    } else {
+      zoom = BeeConst.UNDEF;
+      pos = 3;
     }
-    
-    LatLng latLng = LatLng.create(latitude, longitude);
-    
-    MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom) 
-        : MapOptions.create(latLng);
-    String caption = ArrayUtils.joinWords(arr);
-    
-    MapWidget widget = MapWidget.create(mapOptions, caption);
-    BeeKeeper.getScreen().showWidget(widget, true);
+
+    final String caption = ArrayUtils.joinWords(arr);
+
+    ApiLoader.ensureApi(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        LatLng latLng = LatLng.create(latitude, longitude);
+        MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom)
+            : MapOptions.create(latLng);
+
+        final MapWidget widget = MapWidget.create(mapOptions, caption);
+
+        if (widget != null) {
+          if (pos < arr.length - 2) {
+            widget.addAttachHandler(new AttachEvent.Handler() {
+              @Override
+              public void onAttachOrDetach(AttachEvent event) {
+                if (event.isAttached() && widget.getMapImpl() != null) {
+                  for (int i = pos; i < arr.length - 2; i += 3) {
+                    Double lat = BeeUtils.toDoubleOrNull(arr[i + 1]);
+                    Double lng = BeeUtils.toDoubleOrNull(arr[i + 2]);
+
+                    if (lat != null && lng != null) {
+                      LatLng position = LatLng.create(lat, lng);
+                      MarkerOptions markerOptions = MarkerOptions.create(position,
+                          widget.getMapImpl());
+                      markerOptions.setTitle(BeeUtils.joinWords(arr[i], position.getString()));
+
+                      Marker.create(markerOptions);
+                    }
+                  }
+                }
+              }
+            });
+          }
+
+          BeeKeeper.getScreen().showWidget(widget, true);
+        }
+      }
+    });
   }
-  
+
   @SuppressWarnings("rawtypes")
   private static void showMatrix(String caption, String[][] data, String... columnLabels) {
     Global.showGrid(caption, new StringMatrix(data, columnLabels));
@@ -3050,7 +3063,7 @@ public final class CliWorker {
     }
     return rowCount <= 12;
   }
-  
+
   private static void showNotes(String args) {
     if (BeeUtils.isEmpty(args)) {
       Global.sayHuh(args);

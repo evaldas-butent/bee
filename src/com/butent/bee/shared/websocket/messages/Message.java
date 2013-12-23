@@ -29,6 +29,12 @@ public abstract class Message {
         return new InfoMessage();
       }
     },
+    LOCATION {
+      @Override
+      Message createMessage() {
+        return new LocationMessage();
+      }
+    },
     SESSION {
       @Override
       Message createMessage() {

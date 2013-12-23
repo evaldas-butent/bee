@@ -65,6 +65,10 @@ public final class MapWidget extends CustomWidget implements RequiresResize, Has
   public String getIdPrefix() {
     return "map";
   }
+  
+  public MapImpl getMapImpl() {
+    return impl;
+  }
 
   public MapTypeId getMapTypeId() {
     return (impl == null) ? null : impl.getMapTypeId();

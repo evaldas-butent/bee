@@ -7,7 +7,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
-public class AdminMessage extends Message {
+public class AdminMessage extends Message implements HasRecipient {
   
   public static AdminMessage command(String from, String to, String command) {
     AdminMessage adminMessage = new AdminMessage(from, to);
@@ -50,6 +50,7 @@ public class AdminMessage extends Message {
     return response;
   }
 
+  @Override
   public String getTo() {
     return to;
   }
