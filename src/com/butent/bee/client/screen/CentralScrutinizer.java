@@ -57,7 +57,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
       if (domain.isRemovable()) {
         CustomDiv close = new CustomDiv(STYLE_NAME + "-close");
-        close.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+        close.setText(String.valueOf(BeeConst.CHAR_TIMES));
 
         close.addClickHandler(new ClickHandler() {
           @Override

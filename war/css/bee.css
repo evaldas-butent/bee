@@ -1490,16 +1490,21 @@
   margin-right: 1em;
 }
 
-.bee-ProgressItem {
+.bee-Thermometer-container {
   display: inline-block;
   margin-left: 2em;
   margin-top: 2px;
 }
-.bee-ProgressItem .bee-Progress {
+.bee-Thermometer-progress {
   margin: 0 3px 1px 5px;
 }
-.bee-ProgressClose {
+.bee-Thermometer-cancel {
+  font-size: 18px;
   margin-right: 5px;
+  cursor: pointer;
+}
+.bee-Thermometer-cancel:hover {
+  color: red;
 }
 
 .bee-FileCollector-panel, .bee-FileGroup-panel {
@@ -2266,5 +2271,9 @@
   position: absolute;
   top: 2px;
   right: 2px;
+  cursor: pointer;
+}
+
+.bee-UserList-name {
   cursor: pointer;
 }

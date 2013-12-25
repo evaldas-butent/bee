@@ -10,6 +10,7 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -226,7 +227,7 @@ public final class FileUtils {
       @Override
       public void handleEvent(Event evt) {
         if (progressId != null) {
-          BeeKeeper.getScreen().closeProgress(progressId);
+          BeeKeeper.getScreen().removeProgress(progressId);
         }
 
         if (xhr.getStatus() == Response.SC_OK) {
@@ -327,8 +328,12 @@ public final class FileUtils {
   }
 
   private static String maybeCreateProgress(String caption, long size) {
-    return (size > MIN_FILE_SIZE_FOR_PROGRESS)
-        ? BeeKeeper.getScreen().createProgress(caption, (double) size, null) : null;
+    if (size < MIN_FILE_SIZE_FOR_PROGRESS) {
+      return null;
+    } else {
+      Thermometer widget = new Thermometer(caption, (double) size);
+      return BeeKeeper.getScreen().addProgress(widget);
+    }
   }
 
   private static void upload(String srv, NewFileInfo fileInfo, final Callback<String> callback) {
@@ -356,7 +361,7 @@ public final class FileUtils {
       @Override
       public void handleEvent(Event evt) {
         if (progressId != null) {
-          BeeKeeper.getScreen().closeProgress(progressId);
+          BeeKeeper.getScreen().removeProgress(progressId);
         }
         String msg = BeeUtils.joinWords("upload", fileName, "response status:");
 

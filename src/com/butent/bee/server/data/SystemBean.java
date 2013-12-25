@@ -32,6 +32,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -65,7 +66,6 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -184,19 +184,32 @@ public class SystemBean {
     }
   }
 
-  public List<Property> checkTables(String... tbls) {
+  public List<Property> checkTables(List<String> tbls, String progressId) {
     List<Property> diff = Lists.newArrayList();
-    Collection<String> tables;
+    List<String> tables;
 
-    if (ArrayUtils.isEmpty(tbls)) {
+    if (BeeUtils.isEmpty(tbls)) {
       initTables();
       tables = getTableNames();
     } else {
       tables = Lists.newArrayList(tbls);
     }
-    for (String tbl : tables) {
-      createTable(getTable(tbl), diff);
+    
+    int size = tables.size();
+
+    for (int i = 0; i < size; i++) {
+      if (!BeeUtils.isEmpty(progressId)) {
+        double value = i / (double) size;
+
+        if (!Endpoint.updateProgress(progressId, value)) {
+          diff.add(new Property("canceled", BeeUtils.progress(i, size)));
+          break;
+        }
+      }
+
+      createTable(getTable(tables.get(i)), diff);
     }
+    
     return diff;
   }
 

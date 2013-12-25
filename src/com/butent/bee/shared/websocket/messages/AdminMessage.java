@@ -3,6 +3,7 @@ package com.butent.bee.shared.websocket.messages;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -53,6 +54,12 @@ public class AdminMessage extends Message implements HasRecipient {
   @Override
   public String getTo() {
     return to;
+  }
+
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("type", string(getType()), "from", getFrom(), "to", getTo(),
+        "command", getCommand(), "response", getResponse());
   }
 
   @Override

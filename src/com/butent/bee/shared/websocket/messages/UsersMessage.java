@@ -2,6 +2,7 @@ package com.butent.bee.shared.websocket.messages;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.websocket.SessionUser;
 
@@ -24,6 +25,12 @@ public class UsersMessage extends Message {
     return users;
   }
 
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("type", string(getType()),
+        "users", BeeUtils.isEmpty(getUsers()) ? null : getUsers().toString());
+  }
+  
   @Override
   protected void deserialize(String s) {
     if (!users.isEmpty()) {

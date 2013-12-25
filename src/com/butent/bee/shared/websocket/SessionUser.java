@@ -93,4 +93,10 @@ public class SessionUser implements BeeSerializable {
     }
     return Codec.beeSerialize(arr);
   }
+  
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("login", getLogin(), "userId", BeeUtils.toString(userId),
+        "sessionId", getSessionId());
+  }
 }

@@ -2,6 +2,7 @@ package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.websocket.SessionUser;
 
@@ -45,6 +46,13 @@ public class SessionMessage extends Message {
     return getState() == State.OPEN;
   }
 
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("type", string(getType()), "sessionUser",
+        (getSessionUser() == null) ? null : BeeUtils.bracket(getSessionUser().toString()),
+        "state", string(getState()));
+  }
+  
   @Override
   protected void deserialize(String s) {
     Pair<String, String> pair = Pair.restore(s);

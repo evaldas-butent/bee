@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -33,6 +34,18 @@ public abstract class Message {
       @Override
       Message createMessage() {
         return new LocationMessage();
+      }
+    },
+    LOG {
+      @Override
+      Message createMessage() {
+        return new LogMessage();
+      }
+    },
+    PROGRESS {
+      @Override
+      Message createMessage() {
+        return new ProgressMessage();
       }
     },
     SESSION {
@@ -93,7 +106,18 @@ public abstract class Message {
     return type;
   }
 
+  @Override
+  public abstract String toString();
+
   protected abstract void deserialize(String s);
 
   protected abstract String serialize();
+  
+  protected String string(Double d) {
+    return (d == null) ? null : BeeUtils.toString(d, 6);
+  }
+
+  protected String string(Enum<?> e) {
+    return (e == null) ? null : e.name();
+  }
 }

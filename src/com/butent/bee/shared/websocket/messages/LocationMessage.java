@@ -85,6 +85,13 @@ public class LocationMessage extends Message implements HasRecipient {
   }
 
   @Override
+  public String toString() {
+    return BeeUtils.joinOptions("type", string(getType()), "from", getFrom(), "to", getTo(),
+        "latitude", string(getLatitude()), "longitude", string(getLongitude()),
+        "accuracy", string(getAccuracy()), "response", getResponse());
+  }
+  
+  @Override
   protected void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 6);

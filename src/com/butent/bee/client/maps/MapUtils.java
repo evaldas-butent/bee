@@ -23,6 +23,8 @@ public final class MapUtils {
   private static final int DEFAULT_POSITION_MAXIMUM_AGE = 0;
   private static final int DEFAULT_POSITION_TIMEOUT = 10000;
 
+  private static final int DEFAULT_POSITION_ZOOM = 14;
+  
   public static PositionOptions defaultPositionOptions() {
     return new PositionOptions()
         .setHighAccuracyEnabled(DEFAULT_POSITION_HIGH_ACCURACY)
@@ -82,7 +84,7 @@ public final class MapUtils {
   }
 
   public static void showPosition(String caption, double latitude, double longitude, String title) {
-    showPosition(caption, latitude, longitude, MapOptions.DEFAULT_ZOOM, title);
+    showPosition(caption, latitude, longitude, DEFAULT_POSITION_ZOOM, title);
   }
 
   public static void showPosition(final String caption, final double latitude,

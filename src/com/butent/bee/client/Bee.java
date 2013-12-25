@@ -17,6 +17,7 @@ import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -43,7 +44,12 @@ public class Bee implements EntryPoint {
 
   public static void exit() {
     Bee.keeper.exit();
+    
+    ClientLogManager.close();
+    
+    Endpoint.close();
     BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
+
     BodyPanel.get().clear();
   }
 
@@ -158,6 +164,8 @@ public class Bee implements EntryPoint {
     Data.init();
 
     Historian.start();
+    
+    Endpoint.open(BeeKeeper.getUser().getUserId());
 
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
   }

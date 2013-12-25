@@ -71,7 +71,7 @@ public class Users extends Flow {
 
   private static final BeeLogger logger = LogUtils.getLogger(Users.class);
 
-  private static final String STYLE_PREFIX = "bee-UserList";
+  private static final String STYLE_PREFIX = "bee-UserList-";
 
   private final List<User> users = Lists.newArrayList();
 

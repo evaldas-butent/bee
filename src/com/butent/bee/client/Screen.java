@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.Workspace;
+import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.UserData;
@@ -24,35 +25,35 @@ public interface Screen extends Module, NotificationListener {
 
   void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption);
   
-  void closeProgress(String id);
+  String addProgress(HasProgress widget);
   
   void closeWidget(IdentifiableWidget widget);
 
   boolean containsDomainEntry(Domain domain, Long key);
   
-  String createProgress(String caption, Double max, IdentifiableWidget closeBox);
-
   int getActivePanelHeight();
 
   int getActivePanelWidth();
 
   IdentifiableWidget getActiveWidget();
-  
-  HasWidgets getCommandPanel();
 
+  HasWidgets getCommandPanel();
+  
   int getHeight();
 
   Split getScreenPanel();
-  
-  UserInterface getUserInterface();
 
-  int getWidth();
+  UserInterface getUserInterface();
   
+  int getWidth();
+
   Workspace getWorkspace();
   
   void onLoad();
-
+  
   boolean removeDomainEntry(Domain domain, Long key);
+
+  void removeProgress(String id);
   
   void showInfo();
 

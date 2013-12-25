@@ -1,12 +1,13 @@
 package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 public class ShowMessage extends Message {
   
   public enum Subject implements HasCaption {
-    SESSION("Session"), OPEN_SESSIONS("Open Sessions");
+    SESSION("Session"), OPEN_SESSIONS("Open Sessions"), ENDPOINT("Server Endpoint");
     
     private final String caption;
 
@@ -20,6 +21,10 @@ public class ShowMessage extends Message {
     }
   }
   
+  public static ShowMessage showEndpoint() {
+    return new ShowMessage(Subject.ENDPOINT);
+  }
+
   public static ShowMessage showOpenSessions() {
     return new ShowMessage(Subject.OPEN_SESSIONS);
   }
@@ -43,6 +48,11 @@ public class ShowMessage extends Message {
     return subject;
   }
 
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("type", string(getType()), "subject", string(getSubject()));
+  }
+  
   @Override
   protected void deserialize(String s) {
     this.subject = Codec.unpack(Subject.class, s);

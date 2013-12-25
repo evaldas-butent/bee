@@ -52,6 +52,7 @@ import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.composite.SliderBar;
+import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -184,6 +185,8 @@ import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
+import com.butent.bee.shared.websocket.messages.LogMessage;
+import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 
 import java.util.ArrayList;
@@ -538,7 +541,7 @@ public final class CliWorker {
       showWidgetInfo(arr, errorPopup);
 
     } else if ("ws".equals(z) || z.startsWith("websock")) {
-      doWebSocket(args);
+      doWebSocket(args, arr);
 
     } else {
       showError(errorPopup, "command not recognized", v);
@@ -1404,7 +1407,7 @@ public final class CliWorker {
     }
   }
 
-  private static void doWebSocket(String args) {
+  private static void doWebSocket(String args, String[] arr) {
     if (BeeUtils.isEmpty(args) || BeeUtils.same(args, "info")) {
       showTable("WebSocket", new PropertiesData(Endpoint.getInfo()));
 
@@ -1427,13 +1430,26 @@ public final class CliWorker {
     } else if (!Endpoint.isOpen()) {
       inform("endpoint not open");
 
-    } else if (BeeUtils.same(args, "?")) {
+    } else if (BeeUtils.same(args, "session")) {
       Endpoint.send(ShowMessage.showSessionInfo());
-    } else if (BeeUtils.same(args, "who")) {
+    } else if (BeeUtils.same(args, "users")) {
       Endpoint.send(ShowMessage.showOpenSessions());
+    } else if (BeeUtils.same(args, "server")) {
+      Endpoint.send(ShowMessage.showEndpoint());
 
     } else {
-      Endpoint.send(new EchoMessage(args));
+      LogLevel level = LogLevel.parse(arr[1]);
+
+      if (level != null) {
+        if (arr.length > 2) {
+          Endpoint.send(LogMessage.log(level, ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2)));
+        } else {
+          Endpoint.send(LogMessage.level(level));
+        }
+
+      } else {
+        Endpoint.send(new EchoMessage(args));
+      }
     }
   }
 
@@ -1811,10 +1827,37 @@ public final class CliWorker {
   // CHECKSTYLE:ON
 
   private static void rebuildSomething(final String args, final boolean errorPopup) {
-    BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
+    final String progressId;
+
+    if (BeeUtils.same(args, "check") && Endpoint.isOpen()) {
+      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
+      Thermometer thermometer = new Thermometer("rebuild", BeeConst.DOUBLE_ONE, close);
+
+      progressId = BeeKeeper.getScreen().addProgress(thermometer);
+
+      if (progressId != null) {
+        close.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            BeeKeeper.getScreen().removeProgress(progressId);
+            Endpoint.cancelPropgress(progressId);
+          }
+        });
+      }
+
+    } else {
+      progressId = null;
+    }
+    
+    final ResponseCallback responseCallback = new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
+
+        if (progressId != null) {
+          BeeKeeper.getScreen().removeProgress(progressId);
+          Endpoint.send(ProgressMessage.close(progressId));
+        }
 
         if (response.hasResponse(Resource.class)) {
           final LayoutPanel p = new LayoutPanel();
@@ -1897,7 +1940,24 @@ public final class CliWorker {
               PropertyUtils.restoreProperties((String) response.getResponse()));
         }
       }
-    });
+    };
+    
+    if (progressId == null) {
+      BeeKeeper.getRpc().sendText(Service.REBUILD, args, responseCallback);
+
+    } else {
+      Endpoint.enqueuePropgress(progressId, new Consumer<String>() {
+        @Override
+        public void accept(String input) {
+          ParameterList params = new ParameterList(Service.REBUILD);
+          if (!BeeUtils.isEmpty(input)) {
+            params.addQueryItem(Service.VAR_PROGRESS, input);
+          }
+          
+          BeeKeeper.getRpc().sendText(params, args, responseCallback);
+        }
+      });
+    }
   }
 
   // CHECKSTYLE:OFF
@@ -2659,7 +2719,7 @@ public final class CliWorker {
         showPropData("Position", info);
       }
     };
-    
+
     MapUtils.getCurrentPosition(onPosition);
   }
 
@@ -3160,15 +3220,16 @@ public final class CliWorker {
               String caption =
                   BeeUtils.toString(prog.start - now) + "-" + BeeUtils.toString(prog.finish - now);
 
-              Image close = new Image(Global.getImages().closeSmallRed());
+              InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
               close.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                  BeeKeeper.getScreen().closeProgress(prog.id);
+                  BeeKeeper.getScreen().removeProgress(prog.id);
                 }
               });
 
-              prog.id = BeeKeeper.getScreen().createProgress(caption, prog.max, close);
+              Thermometer thermometer = new Thermometer(caption, prog.max, close);
+              prog.id = BeeKeeper.getScreen().addProgress(thermometer);
             }
 
           } else if (prog.finish > time) {
@@ -3176,7 +3237,7 @@ public final class CliWorker {
             BeeKeeper.getScreen().updateProgress(prog.id, value);
 
           } else {
-            BeeKeeper.getScreen().closeProgress(prog.id);
+            BeeKeeper.getScreen().removeProgress(prog.id);
             prog.id = null;
 
             closed++;

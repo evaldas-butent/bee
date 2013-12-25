@@ -18,7 +18,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -29,14 +28,12 @@ import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.BrowsingContext;
-import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
@@ -106,23 +103,23 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void clearNotifications() {
-    if (getNotification() != null) {
-      getNotification().clear();
+  public String addProgress(HasProgress widget) {
+    if (getProgressPanel() != null && widget != null) {
+      if (!getProgressPanel().iterator().hasNext()) {
+        showProgressPanel();
+      }
+
+      getProgressPanel().add(widget);
+      return widget.getId();
+    } else {
+      return null;
     }
   }
   
   @Override
-  public void closeProgress(String id) {
-    if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
-      Widget item = DomUtils.getChildById(getProgressPanel(), id);
-
-      if (item != null) {
-        getProgressPanel().remove(item);
-        if (!getProgressPanel().iterator().hasNext()) {
-          hideProgressPanel();
-        }
-      }
+  public void clearNotifications() {
+    if (getNotification() != null) {
+      getNotification().clear();
     }
   }
 
@@ -135,41 +132,6 @@ public class ScreenImpl implements Screen {
   @Override
   public boolean containsDomainEntry(Domain domain, Long key) {
     return getCentralScrutinizer().contains(domain, key);
-  }
-
-  @Override
-  public String createProgress(String caption, Double max, IdentifiableWidget closeBox) {
-    if (getProgressPanel() != null) {
-      if (!getProgressPanel().iterator().hasNext()) {
-        showProgressPanel();
-      }
-
-      Flow item = new Flow();
-      item.addStyleName("bee-ProgressItem");
-
-      if (!BeeUtils.isEmpty(caption)) {
-        InlineLabel label = new InlineLabel(caption.trim());
-        item.addStyleName("bee-ProgressCaption");
-        item.add(label);
-      }
-
-      Progress progress = (max == null) ? new Progress() : new Progress(max);
-      item.add(progress);
-
-      if (closeBox != null) {
-        closeBox.addStyleName("bee-ProgressClose");
-        item.add(closeBox);
-      }
-
-      DoubleLabel percent = new DoubleLabel(Format.getDefaultPercentFormat(), true);
-      item.addStyleName("bee-ProgressPercent");
-      item.add(percent);
-
-      getProgressPanel().add(item);
-      return item.getId();
-    } else {
-      return null;
-    }
   }
 
   @Override
@@ -283,6 +245,20 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void removeProgress(String id) {
+    if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
+      Widget item = DomUtils.getChildById(getProgressPanel(), id);
+
+      if (item != null) {
+        getProgressPanel().remove(item);
+        if (!getProgressPanel().iterator().hasNext()) {
+          hideProgressPanel();
+        }
+      }
+    }
+  }
+
+  @Override
   public void showInfo() {
     getWorkspace().showInfo();
   }
@@ -329,23 +305,8 @@ public class ScreenImpl implements Screen {
     if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
       Widget item = DomUtils.getChildById(getProgressPanel(), id);
 
-      if (item instanceof HasWidgets) {
-        Double max = null;
-
-        for (Widget child : (HasWidgets) item) {
-          if (child instanceof Progress) {
-            ((Progress) child).setValue(value);
-            max = ((Progress) child).getMax();
-          }
-        }
-
-        if (max != null) {
-          for (Widget child : (HasWidgets) item) {
-            if (child instanceof DoubleLabel) {
-              ((DoubleLabel) child).setValue(value / max);
-            }
-          }
-        }
+      if (item instanceof HasProgress) {
+        ((HasProgress) item).update(value);
       }
     }
   }

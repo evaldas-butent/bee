@@ -14,11 +14,14 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.websocket.SessionUser;
+import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
+import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
@@ -44,8 +47,7 @@ class MessageDispatcher {
           logger.debug(message.getClass().getSimpleName(), "response", am.getResponse());
 
         } else if (!BeeUtils.isEmpty(am.getCommand())) {
-          logger.debug(message.getClass().getSimpleName(), "from", am.getFrom());
-          logger.debug(am.getCommand());
+          logger.debug(message.getClass().getSimpleName(), am.getCommand());
 
           boolean ok = CliWorker.execute(am.getCommand(), false);
           if (!ok) {
@@ -54,7 +56,7 @@ class MessageDispatcher {
           }
 
         } else {
-          logger.warning(message.getClass().getSimpleName(), "from", am.getFrom(), "is empty");
+          WsUtils.onEmptyMessage(message);
         }
         break;
 
@@ -67,19 +69,17 @@ class MessageDispatcher {
         List<Property> info = ((InfoMessage) message).getInfo();
 
         if (BeeUtils.isEmpty(info)) {
-          logger.warning(caption, "message is empty");
+          WsUtils.onEmptyMessage(message);
         } else {
           Global.showGrid(caption, new PropertiesData(info));
         }
         break;
-
+        
       case LOCATION:
         LocationMessage lm = (LocationMessage) message;
         final String from = lm.getFrom();
 
         if (lm.isQuery()) {
-          logger.debug(message.getClass().getSimpleName(), "from", from);
-
           MapUtils.getCurrentPosition(new Consumer<Position>() {
             @Override
             public void accept(Position input) {
@@ -108,7 +108,47 @@ class MessageDispatcher {
           logger.debug(message.getClass().getSimpleName(), "response", lm.getResponse());
 
         } else {
-          logger.warning(message.getClass().getSimpleName(), "from", from, "is empty");
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+        
+      case LOG:
+        LogMessage logMessage = (LogMessage) message;
+        
+        if (logMessage.getLevel() != null && !BeeUtils.isEmpty(logMessage.getText())) {
+          logger.log(logMessage.getLevel(), logMessage.getText());
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+        
+      case PROGRESS:
+        ProgressMessage pm = (ProgressMessage) message;
+        String progressId = pm.getProgressId();
+        
+        if (BeeUtils.isEmpty(progressId)) {
+          WsUtils.onEmptyMessage(message);
+        
+        } else if (pm.isActivated()) {
+          boolean started = Endpoint.startPropgress(progressId);
+          if (started) {
+            logger.debug("progress", progressId, "started");
+          } else {
+            logger.warning("cannot start progress", progressId);
+          }
+
+        } else if (pm.isUpdate()) {
+          if (Global.isDebug()) {
+            logger.debug(message);
+          }
+          BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
+
+        } else if (pm.isCanceled() || pm.isClosed()) {
+          logger.debug(message);
+          BeeKeeper.getScreen().removeProgress(progressId);
+        
+        } else {
+          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -121,8 +161,7 @@ class MessageDispatcher {
         } else if (sm.isClosed()) {
           Global.getUsers().removeUser(su.getUserId(), su.getSessionId());
         } else {
-          logger.warning("unrecognized session state:", sm.getState(),
-              "user:", su.getUserId(), su.getLogin(), "session", su.getSessionId());
+          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -131,7 +170,7 @@ class MessageDispatcher {
         if (subject == Subject.SESSION) {
           Global.showGrid(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
         } else {
-          logger.warning(message.getClass().getSimpleName(), "subject", subject, "not supported");
+          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -145,7 +184,7 @@ class MessageDispatcher {
         }
 
         if (users.isEmpty()) {
-          logger.warning(message.getClass().getSimpleName(), "user list empty");
+          WsUtils.onEmptyMessage(message);
         } else {
           Endpoint.setSessionId(users.get(users.size() - 1).getSessionId());
         }
