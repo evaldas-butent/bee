@@ -2,51 +2,62 @@ package com.butent.bee.shared.websocket.messages;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.websocket.SessionUser;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class UsersMessage extends Message {
-  
-  private final List<SessionUser> users = Lists.newArrayList();
 
-  public UsersMessage(List<SessionUser> users) {
+  private final List<UserData> data = Lists.newArrayList();
+
+  public UsersMessage(Collection<UserData> data) {
     this();
-    this.users.addAll(users);
+    this.data.addAll(data);
   }
 
   UsersMessage() {
     super(Type.USERS);
   }
-  
-  public List<SessionUser> getUsers() {
-    return users;
+
+  public List<UserData> getData() {
+    return data;
   }
 
   @Override
   public String toString() {
-    return BeeUtils.joinOptions("type", string(getType()),
-        "users", BeeUtils.isEmpty(getUsers()) ? null : getUsers().toString());
+    List<Long> ids = Lists.newArrayList();
+    for (UserData userData : data) {
+      ids.add(userData.getUserId());
+    }
+
+    if (ids.size() > 1) {
+      Collections.sort(ids);
+    }
+
+    return BeeUtils.joinOptions("type", string(getType()), "size", BeeUtils.toString(data.size()),
+        "users", ids.isEmpty() ? null : ids.toString());
   }
-  
+
   @Override
   protected void deserialize(String s) {
-    if (!users.isEmpty()) {
-      users.clear();
+    if (!data.isEmpty()) {
+      data.clear();
     }
 
     String[] arr = Codec.beeDeserializeCollection(s);
     if (arr != null) {
-      for (String su : arr) {
-        users.add(SessionUser.restore(su));
+      for (String ud : arr) {
+        data.add(UserData.restore(ud));
       }
     }
   }
 
   @Override
   protected String serialize() {
-    return Codec.beeSerialize(users);
+    return Codec.beeSerialize(getData());
   }
 }

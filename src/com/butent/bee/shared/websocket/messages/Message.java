@@ -42,6 +42,12 @@ public abstract class Message {
         return new LogMessage();
       }
     },
+    ONLINE {
+      @Override
+      Message createMessage() {
+        return new OnlineMessage();
+      }
+    },
     PROGRESS {
       @Override
       Message createMessage() {

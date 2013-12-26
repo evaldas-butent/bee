@@ -1,5 +1,6 @@
 package com.butent.bee.client.websocket;
 
+import com.google.common.base.Objects;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 
@@ -9,6 +10,7 @@ import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.PropertiesData;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -24,8 +26,9 @@ import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
-import com.butent.bee.shared.websocket.messages.UsersMessage;
+import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
+import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.List;
 
@@ -122,6 +125,22 @@ class MessageDispatcher {
         }
         break;
         
+      case ONLINE:
+        List<SessionUser> sessionUsers = ((OnlineMessage) message).getSessionUsers();
+        if (sessionUsers.size() > 1) {
+          for (int i = 0; i < sessionUsers.size() - 1; i++) {
+            SessionUser sessionUser = sessionUsers.get(i);
+            Global.getUsers().addSession(sessionUser.getSessionId(), sessionUser.getUserId());
+          }
+        }
+
+        if (sessionUsers.isEmpty()) {
+          WsUtils.onEmptyMessage(message);
+        } else {
+          Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
+        }
+        break;
+
       case PROGRESS:
         ProgressMessage pm = (ProgressMessage) message;
         String progressId = pm.getProgressId();
@@ -157,9 +176,9 @@ class MessageDispatcher {
         SessionUser su = sm.getSessionUser();
 
         if (sm.isOpen()) {
-          Global.getUsers().addUser(su.getLogin(), su.getUserId(), su.getSessionId());
+          Global.getUsers().addSession(su.getSessionId(), su.getUserId());
         } else if (sm.isClosed()) {
-          Global.getUsers().removeUser(su.getUserId(), su.getSessionId());
+          Global.getUsers().removeSession(su.getSessionId());
         } else {
           WsUtils.onInvalidState(message);
         }
@@ -173,20 +192,23 @@ class MessageDispatcher {
           WsUtils.onInvalidState(message);
         }
         break;
-
+        
       case USERS:
-        List<SessionUser> users = ((UsersMessage) message).getUsers();
-        if (users.size() > 1) {
-          for (int i = 0; i < users.size() - 1; i++) {
-            SessionUser user = users.get(i);
-            Global.getUsers().addUser(user.getLogin(), user.getUserId(), user.getSessionId());
-          }
-        }
+        List<UserData> users = ((UsersMessage) message).getData();
 
-        if (users.isEmpty()) {
+        if (BeeUtils.isEmpty(users)) {
           WsUtils.onEmptyMessage(message);
+        
         } else {
-          Endpoint.setSessionId(users.get(users.size() - 1).getSessionId());
+          Global.getUsers().updateUserData(users);
+          
+          for (UserData userData : users) {
+            if (Objects.equal(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
+              BeeKeeper.getUser().setUserData(userData);
+              BeeKeeper.getScreen().updateUserData(userData);
+              break;
+            }
+          }
         }
         break;
     }

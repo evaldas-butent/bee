@@ -79,6 +79,19 @@ public class DispatcherBean {
     }
 
     Collection<Component> components = UserInterface.normalize(userInterface).getComponents();
+    
+    Collection<Component> requiredComponents = UserInterface.getRequiredComponents();
+    if (!BeeUtils.isEmpty(requiredComponents)) {
+      if (components == null) {
+        components = requiredComponents;
+      } else {
+        for (Component component : requiredComponents) {
+          if (!components.contains(component)) {
+            components.add(component);
+          }
+        }
+      }
+    }
 
     if (!BeeUtils.isEmpty(components)) {
       for (Component component : components) {
@@ -141,6 +154,10 @@ public class DispatcherBean {
                 data.put(component.key(), menuData.getResponse());
               }
             }
+            break;
+            
+          case USERS:
+            data.put(component.key(), userService.getAllUserData());
             break;
         }
       }

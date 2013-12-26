@@ -201,7 +201,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   void start() {
     add(Domain.REPORT, Global.getReports());
     
-    add(Domain.USER, Global.getUsers());
+    add(Domain.USER, Global.getUsers().getOnlinePanel());
 
     Shell shell = new Shell("bee-Shell");
     shell.restore();

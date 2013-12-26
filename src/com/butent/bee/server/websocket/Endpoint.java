@@ -1,6 +1,7 @@
 package com.butent.bee.server.websocket;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -16,8 +17,9 @@ import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
-import com.butent.bee.shared.websocket.messages.UsersMessage;
+import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
+import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +70,21 @@ public class Endpoint {
       }
       
       return true;
+    }
+  }
+
+  public static void updateUserData(List<UserData> data) {
+    if (BeeUtils.isEmpty(data)) {
+      logger.severe("user data is empty");
+    
+    } else if (!openSessions.isEmpty()) {
+      UsersMessage message = new UsersMessage(data);
+
+      for (Session session : openSessions) {
+        if (session.isOpen()) {
+          send(session, message);
+        }
+      }
     }
   }
 
@@ -147,6 +164,7 @@ public class Endpoint {
         break;
 
       case INFO:
+      case ONLINE:
       case SESSION:
       case USERS:
         logger.severe("ws message not supported", message, toLog(session));
@@ -287,7 +305,7 @@ public class Endpoint {
   }
   
   private static SessionUser getSessionUser(Session session) {
-    return new SessionUser(getUserName(session), getUserId(session), session.getId());
+    return new SessionUser(session.getId(), getUserId(session));
   }
 
   private static Long getUserId(Session session) {
@@ -435,13 +453,13 @@ public class Endpoint {
     setUserId(session, userId);
     SessionUser sessionUser = getSessionUser(session);
 
-    List<SessionUser> users = new ArrayList<>();
+    List<SessionUser> sessionUsers = new ArrayList<>();
 
     if (!openSessions.isEmpty()) {
       for (Session openSession : openSessions) {
         if (openSession.isOpen()) {
           send(openSession, SessionMessage.open(sessionUser));
-          users.add(getSessionUser(openSession));
+          sessionUsers.add(getSessionUser(openSession));
         }
       }
     }
@@ -450,7 +468,7 @@ public class Endpoint {
 
     logger.info("ws open", toLog(session));
     
-    users.add(sessionUser);
-    send(session, new UsersMessage(users));
+    sessionUsers.add(sessionUser);
+    send(session, new OnlineMessage(sessionUsers));
   }
 }

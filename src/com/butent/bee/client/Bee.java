@@ -151,6 +151,10 @@ public class Bee implements EntryPoint {
           case MENU:
             BeeKeeper.getMenu().restore(serialized);
             break;
+            
+          case USERS:
+            Global.getUsers().loadUserData(serialized);
+            break;
         }
       }
     }

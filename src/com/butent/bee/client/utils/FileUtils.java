@@ -60,7 +60,7 @@ public final class FileUtils {
       @Override
       public void handleEvent(Event evt) {
         if (xhr.getStatus() == Response.SC_OK) {
-          String response = xhr.getResponseText();
+          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
 
           if (BeeUtils.same(response, photoFileName)) {
             logger.info("deleted photo", photoFileName);
@@ -231,7 +231,7 @@ public final class FileUtils {
         }
 
         if (xhr.getStatus() == Response.SC_OK) {
-          String response = xhr.getResponseText();
+          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
 
           if (BeeUtils.same(response, photoFileName)) {
             logger.info(TimeUtils.elapsedSeconds(start), originalFileName, "size:", fileSize);

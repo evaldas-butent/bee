@@ -34,6 +34,7 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
@@ -259,6 +260,7 @@ public class CommonsModuleBean implements BeeModule {
       public void refreshRightsCache(TableModifyEvent event) {
         if (usr.isRightsTable(event.getTargetName()) && event.isAfter()) {
           usr.initRights();
+          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 
@@ -267,6 +269,7 @@ public class CommonsModuleBean implements BeeModule {
         if ((usr.isRoleTable(event.getTargetName()) || usr.isUserTable(event.getTargetName()))
             && event.isAfter()) {
           usr.initUsers();
+          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 

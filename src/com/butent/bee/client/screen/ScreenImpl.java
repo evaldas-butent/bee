@@ -328,7 +328,7 @@ public class ScreenImpl implements Screen {
       }
 
       if (getUserSignature() != null) {
-        getUserSignature().setHtml(BeeUtils.trim(userData.getUserSign()));
+        getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
       }
     }
   }
