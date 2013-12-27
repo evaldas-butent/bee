@@ -19,20 +19,20 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
   private enum Serial {
     ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED
   }
-  
+
   public static String getIconUrl(String icon) {
     Assert.notEmpty(icon);
     return Paths.buildPath(Paths.IMAGE_DIR, Paths.FILE_ICON_DIR, icon);
   }
-  
+
   public static StoredFile restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    
+
     StoredFile result = new StoredFile();
     result.deserialize(s);
-    
+
     return result;
   }
 
@@ -41,7 +41,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     if (BeeUtils.isEmpty(s)) {
       return result;
     }
-    
+
     String[] arr = Codec.beeDeserializeCollection(s);
     if (arr == null) {
       return result;
@@ -55,23 +55,26 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     }
     return result;
   }
-  
+
   private long fileId;
-  
+
   private String name;
   private Long size;
 
   private String type;
   private String icon;
-  
+
   private DateTime fileDate;
   private String fileVersion;
 
   private String caption;
   private String description;
-  
+
   private Long relatedId;
-  
+
+  private String path;
+  private boolean temporary;
+
   public StoredFile(long fileId, String name, Long size, String type) {
     super();
     this.fileId = fileId;
@@ -95,7 +98,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
         continue;
       }
       Serial member = members[i];
-      
+
       switch (member) {
         case ID:
           setFileId(BeeUtils.toLong(value));
@@ -120,11 +123,11 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
         case DATE:
           setFileDate(DateTime.restore(value));
           break;
-          
+
         case VERSION:
           setFileVersion(value);
           break;
-          
+
         case CAPTION:
           setCaption(value);
           break;
@@ -132,7 +135,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
         case DESCRIPTION:
           setDescription(value);
           break;
-          
+
         case RELATED:
           setRelatedId(BeeUtils.toLong(value));
           break;
@@ -183,6 +186,10 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     return name;
   }
 
+  public String getPath() {
+    return path;
+  }
+
   public Long getRelatedId() {
     return relatedId;
   }
@@ -193,6 +200,10 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
 
   public String getType() {
     return type;
+  }
+
+  public boolean isTemporary() {
+    return temporary;
   }
 
   @Override
@@ -210,7 +221,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
         case NAME:
           arr[i++] = getName();
           break;
-          
+
         case SIZE:
           arr[i++] = getSize();
           break;
@@ -218,7 +229,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
         case TYPE:
           arr[i++] = getType();
           break;
-        
+
         case ICON:
           arr[i++] = getIcon();
           break;
@@ -226,15 +237,15 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
         case DATE:
           arr[i++] = getFileDate();
           break;
-          
+
         case VERSION:
           arr[i++] = getFileVersion();
           break;
-          
+
         case CAPTION:
           arr[i++] = getCaption();
           break;
-          
+
         case DESCRIPTION:
           arr[i++] = getDescription();
           break;
@@ -262,13 +273,21 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
   public void setFileVersion(String fileVersion) {
     this.fileVersion = fileVersion;
   }
-  
+
   public void setIcon(String icon) {
     this.icon = icon;
   }
 
+  public void setPath(String path) {
+    this.path = path;
+  }
+
   public void setRelatedId(Long relatedId) {
     this.relatedId = relatedId;
+  }
+
+  public void setTemporary(boolean temporary) {
+    this.temporary = temporary;
   }
 
   public void setType(String type) {

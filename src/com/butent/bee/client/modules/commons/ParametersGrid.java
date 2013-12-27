@@ -45,7 +45,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -174,7 +173,9 @@ public class ParametersGrid extends AbstractGridInterceptor {
           final ScheduledCommand executor = new ScheduledCommand() {
             @Override
             public void execute() {
-              popup.close();
+              if (popup.isShowing()) {
+                popup.close();
+              }
               List<String> errors = editor.validate(true);
 
               if (!BeeUtils.isEmpty(errors)) {
@@ -195,7 +196,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
           editor.addEditChangeHandler(new EditChangeHandler() {
             @Override
             public void onValueChange(ValueChangeEvent<String> e) {
-              LogUtils.getRootLogger().debug("onValueChange");
               executor.execute();
             }
 
@@ -209,13 +209,11 @@ public class ParametersGrid extends AbstractGridInterceptor {
               switch (keyCode) {
                 case KeyCodes.KEY_ESCAPE:
                   e.preventDefault();
-                  LogUtils.getRootLogger().debug("Escape");
                   popup.close();
                   break;
 
                 case KeyCodes.KEY_ENTER:
                   e.preventDefault();
-                  LogUtils.getRootLogger().debug("Enter");
                   executor.execute();
                   break;
               }
@@ -225,7 +223,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
           editor.addEditStopHandler(new EditStopEvent.Handler() {
             @Override
             public void onEditStop(EditStopEvent e) {
-              LogUtils.getRootLogger().debug("onEditStop");
               executor.execute();
             }
           });
@@ -235,7 +232,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
             @Override
             public void onClose(CloseEvent ev) {
               if (ev.mouseOutside()) {
-                LogUtils.getRootLogger().debug("MouseOutside");
                 executor.execute();
               }
               grid.refocus();
