@@ -200,6 +200,12 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String doFilter();
 
+  String domainNews();
+  
+  String domainOnline();
+  
+  String domainRooms();
+
   String email();
 
   String enterColor();

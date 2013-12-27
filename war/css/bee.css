@@ -5,6 +5,15 @@
   font-style: normal;
 }
 
+@keyframes rotate {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+@-webkit-keyframes rotate {
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(360deg);}
+}
+
 .bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
@@ -1254,18 +1263,6 @@
   height: 100%;
 }
 
-.bee-ReportsItem {
-  margin-left: 1em;
-  margin-top: 1.5ex;
-}
-.bee-ReportsItem:first-child {
-  margin-top: 3ex;
-}
-.bee-ReportsItem:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 .bee-Workspace-tabPanel {
   display: flex;
   display: -webkit-flex;
@@ -1603,12 +1600,6 @@
 .bee-Appliance-close:hover {
   color: red;
   cursor: pointer;
-}
-
-.bee-ApplianceAdmin {
-}
-
-.bee-ApplianceReport {
 }
 
 .bee-Shell {
@@ -2274,6 +2265,66 @@
   cursor: pointer;
 }
 
-.bee-Online-name {
+.bee-Online-size,
+.bee-Rooms-size {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  display: inline-block;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background-color: #999;
+  border-radius: 10px;
+}
+.bee-Online-updated,
+.bee-Rooms-updated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+.bee-Online-item,
+.bee-Rooms-item {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Online-item:hover,
+.bee-Rooms-item:hover {
+  background-color: #f2f2f2;
+}
+.bee-Online-item:hover .bee-Online-tweet,
+.bee-Online-item:hover .bee-Online-home {
+  visibility: visible;
+}
+
+.bee-Online-name,
+.bee-Rooms-name {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  margin: 3px 1em 1px 1em;
   cursor: pointer;
+}
+.bee-Online-name:hover,
+.bee-Rooms-name:hover {
+  text-decoration: underline;
+}
+
+.bee-Online-tweet,
+.bee-Online-home {
+  font-size: 18px;
+  margin-right: 5px;
+  cursor: pointer;
+  color: #555;
+  visibility: hidden;
+}
+.bee-Online-tweet:hover,
+.bee-Online-home:hover {
+  color: white;
+  background-color: #008;
 }

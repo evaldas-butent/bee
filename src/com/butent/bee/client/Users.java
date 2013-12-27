@@ -3,18 +3,25 @@ package com.butent.bee.client;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -28,14 +35,15 @@ import java.util.Set;
 public class Users {
 
   private static final class OnlinePanel extends Flow {
-    
+
     private OnlinePanel() {
       super(STYLE_PREFIX + "panel");
     }
 
     private OnlineWidget findBySession(String sessionId) {
       for (Widget widget : this) {
-        if (widget instanceof OnlineWidget && ((OnlineWidget) widget).sessionId.equals(sessionId)) {
+        if (widget instanceof OnlineWidget
+            && ((OnlineWidget) widget).getSessionId().equals(sessionId)) {
           return (OnlineWidget) widget;
         }
       }
@@ -46,20 +54,54 @@ public class Users {
   }
 
   private static final class OnlineWidget extends Flow {
-    
-    private static final int NAME_INDEX = 0; 
+
+    private static final int NAME_INDEX = 0;
 
     private final String sessionId;
+    private final Long personId;
 
     private OnlineWidget(String sessionId, UserData userData) {
       super(STYLE_PREFIX + "item");
+
       this.sessionId = sessionId;
+      this.personId = userData.getPerson();
 
       CustomDiv nameWidget = new CustomDiv(STYLE_PREFIX + "name");
       nameWidget.setText(userData.getUserSign());
+
+      nameWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          RowEditor.openRow(CommonsConstants.VIEW_PERSONS, personId, true, null);
+        }
+      });
+
       add(nameWidget);
+
+      FaLabel tweetWidget = new FaLabel(FontAwesome.TWITTER);
+      tweetWidget.addStyleName(STYLE_PREFIX + "tweet");
+      add(tweetWidget);
+
+      FaLabel homeWidget = new FaLabel(FontAwesome.HOME);
+      homeWidget.addStyleName(STYLE_PREFIX + "home");
+
+      homeWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          String from = Endpoint.getSessionId();
+          if (!BeeUtils.isEmpty(from)) {
+            Endpoint.send(LocationMessage.query(from, getSessionId()));
+          }
+        }
+      });
+
+      add(homeWidget);
     }
-    
+
+    private String getSessionId() {
+      return sessionId;
+    }
+
     private void updateData(UserData userData) {
       if (userData != null) {
         getWidget(NAME_INDEX).getElement().setInnerText(userData.getUserSign());
@@ -70,16 +112,19 @@ public class Users {
   private static final BeeLogger logger = LogUtils.getLogger(Users.class);
 
   private static final String STYLE_PREFIX = "bee-Online-";
+  private static final String STYLE_UPDATED = STYLE_PREFIX + "updated";
 
   private final Map<Long, UserData> users = Maps.newHashMap();
   private final Map<String, Long> openSessions = Maps.newHashMap();
 
   private final OnlinePanel onlinePanel = new OnlinePanel();
 
+  private Label sizeBadge;
+
   Users() {
   }
-  
-  public void addSession(final String sessionId, long userId) {
+
+  public void addSession(final String sessionId, long userId, boolean initial) {
     Assert.notEmpty(sessionId, "attempt to add empty session");
     if (openSessions.containsKey(sessionId)) {
       logger.severe("session", sessionId, "already exists");
@@ -95,20 +140,11 @@ public class Users {
     openSessions.put(sessionId, userId);
 
     OnlineWidget widget = new OnlineWidget(sessionId, userData);
-
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        String from = Endpoint.getSessionId();
-        if (!BeeUtils.isEmpty(from)) {
-          Endpoint.send(LocationMessage.query(from, sessionId));
-        }
-      }
-    });
-
     onlinePanel.add(widget);
+
+    updateHeader(initial);
   }
-  
+
   public Set<String> getAllSessions() {
     return openSessions.keySet();
   }
@@ -143,12 +179,12 @@ public class Users {
       logger.severe("cannot deserialize user data");
       return;
     }
-    
+
     List<UserData> data = Lists.newArrayList();
     for (String s : arr) {
       data.add(UserData.restore(s));
     }
-    
+
     updateUserData(data);
   }
 
@@ -229,6 +265,8 @@ public class Users {
         onlinePanel.remove(widget);
       }
 
+      updateHeader(false);
+
     } else {
       logger.warning("session not found:", sessionId);
     }
@@ -239,15 +277,15 @@ public class Users {
     if (BeeUtils.isEmpty(data)) {
       openSessions.clear();
       onlinePanel.clear();
-      
+
       logger.warning("user data is empty");
       return;
     }
-    
+
     for (UserData userData : data) {
       users.put(userData.getUserId(), userData);
     }
-    
+
     if (!openSessions.isEmpty()) {
       Set<String> sessionsToRemove = Sets.newHashSet();
       for (Map.Entry<String, Long> entry : openSessions.entrySet()) {
@@ -255,14 +293,14 @@ public class Users {
           sessionsToRemove.add(entry.getKey());
         }
       }
-      
+
       if (!sessionsToRemove.isEmpty()) {
         for (String sessionId : sessionsToRemove) {
           removeSession(sessionId);
         }
       }
     }
-    
+
     if (!openSessions.isEmpty()) {
       for (Map.Entry<String, Long> entry : openSessions.entrySet()) {
         OnlineWidget widget = onlinePanel.findBySession(entry.getKey());
@@ -271,7 +309,43 @@ public class Users {
         }
       }
     }
-    
+
     logger.info("users", users.size());
+  }
+
+  private Label getSizeBadge() {
+    return sizeBadge;
+  }
+
+  private void setSizeBadge(Label sizeBadge) {
+    this.sizeBadge = sizeBadge;
+  }
+
+  private void updateHeader(boolean initial) {
+    Flow header = BeeKeeper.getScreen().getDomainHeader(Domain.ONLINE, null);
+    if (header == null) {
+      logger.warning(Domain.ONLINE, "header not available");
+      return;
+    }
+
+    if (getSizeBadge() == null) {
+      Label badge = new Label();
+      badge.addStyleName(STYLE_PREFIX + "size");
+      header.add(badge);
+
+      setSizeBadge(badge);
+    }
+
+    getSizeBadge().setText(BeeUtils.toString(openSessions.size()));
+
+    if (!initial) {
+      getSizeBadge().removeStyleName(STYLE_UPDATED);
+      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          getSizeBadge().addStyleName(STYLE_UPDATED);
+        }
+      });
+    }
   }
 }

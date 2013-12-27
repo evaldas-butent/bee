@@ -18,6 +18,12 @@ public abstract class Message {
         return new AdminMessage();
       }
     },
+    CHAT {
+      @Override
+      Message createMessage() {
+        return new ChatMessage();
+      }
+    },
     ECHO {
       @Override
       Message createMessage() {
@@ -52,6 +58,12 @@ public abstract class Message {
       @Override
       Message createMessage() {
         return new ProgressMessage();
+      }
+    },
+    ROOMS {
+      @Override
+      Message createMessage() {
+        return new RoomsMessage();
       }
     },
     SESSION {

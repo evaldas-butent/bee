@@ -1,6 +1,9 @@
 package com.butent.bee.server.websocket;
 
+import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -10,11 +13,13 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
+import com.butent.bee.shared.websocket.messages.ChatMessage;
 import com.butent.bee.shared.websocket.messages.HasRecipient;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
+import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
@@ -98,6 +103,31 @@ public class Endpoint {
         }
         break;
         
+      case CHAT:
+        ChatMessage chatMessage = (ChatMessage) message;
+        ChatRoom room = Rooms.getRoom(chatMessage.getRoomId());
+        
+        if (!chatMessage.isValid()) {
+          WsUtils.onEmptyMessage(message, toLog(session));
+
+        } else if (room == null) {
+          WsUtils.onInvalidState(message, toLog(session));
+        
+        } else {
+          TextMessage textMessage = chatMessage.getTextMessage();
+          Rooms.sanitizeIncomingMessage(textMessage);
+
+          room.addMessage(textMessage);
+          
+          for (Session openSession : openSessions) {
+            if (openSession.isOpen() && !session.getId().equals(openSession.getId())
+                && room.isVisible(getUserId(openSession))) {
+              send(openSession, message);
+            }
+          }
+        }
+        break;
+        
       case ECHO:
         send(session, message);
         break;
@@ -165,6 +195,7 @@ public class Endpoint {
 
       case INFO:
       case ONLINE:
+      case ROOMS:
       case SESSION:
       case USERS:
         logger.severe("ws message not supported", message, toLog(session));
@@ -469,6 +500,8 @@ public class Endpoint {
     logger.info("ws open", toLog(session));
     
     sessionUsers.add(sessionUser);
+
     send(session, new OnlineMessage(sessionUsers));
+    send(session, new RoomsMessage(Rooms.getRoomDataWithoudMessagess(userId)));
   }
 }

@@ -186,7 +186,7 @@ public final class Endpoint {
       String data = message.encode();
       socket.send(data);
 
-      logger.info("->", message.getType(), "length:", data.length());
+      logger.info("->", message.getType().name().toLowerCase(), data.length());
     }
   }
 
@@ -225,7 +225,7 @@ public final class Endpoint {
       String eventInfo = (event == null) ? null
           : BeeUtils.joinOptions("code", Integer.toString(event.getCode()),
               "reason", event.getReason());
-      logger.info("ws close", socket.getUrl(), getReadyState(), eventInfo);
+      logger.info("close", socket.getUrl(), getReadyState(), eventInfo);
     }
   }
 
@@ -239,7 +239,7 @@ public final class Endpoint {
     if (data instanceof String) {
       Message message = Message.decode((String) data);
       if (message != null) {
-        logger.info("<-", message.getType(), "length:", ((String) data).length());
+        logger.info("<-", message.getType().name().toLowerCase(), ((String) data).length());
         dispatcher.dispatch(message);
       }
 
@@ -252,7 +252,7 @@ public final class Endpoint {
 
   private static void onOpen() {
     if (socket != null) {
-      logger.info("ws open", socket.getUrl(), getReadyState());
+      logger.info(socket.getUrl(), getReadyState());
     }
   }
 

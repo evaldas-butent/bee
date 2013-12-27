@@ -77,7 +77,11 @@ public class ScreenImpl implements Screen {
 
   @Override
   public boolean activateDomainEntry(Domain domain, Long key) {
-    return getCentralScrutinizer().activate(domain, key);
+    if (getCentralScrutinizer() == null) {
+      return false;
+    } else {
+      return getCentralScrutinizer().activate(domain, key);
+    }
   }
 
   @Override
@@ -99,7 +103,11 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
-    getCentralScrutinizer().add(domain, widget, key, caption);
+    if (getCentralScrutinizer() == null) {
+      logger.severe("cannot add domain", domain);
+    } else {
+      getCentralScrutinizer().add(domain, widget, key, caption);
+    }
   }
 
   @Override
@@ -115,7 +123,7 @@ public class ScreenImpl implements Screen {
       return null;
     }
   }
-  
+
   @Override
   public void clearNotifications() {
     if (getNotification() != null) {
@@ -131,7 +139,11 @@ public class ScreenImpl implements Screen {
 
   @Override
   public boolean containsDomainEntry(Domain domain, Long key) {
-    return getCentralScrutinizer().contains(domain, key);
+    if (getCentralScrutinizer() == null) {
+      return false;
+    } else {
+      return getCentralScrutinizer().contains(domain, key);
+    }
   }
 
   @Override
@@ -154,6 +166,15 @@ public class ScreenImpl implements Screen {
   @Override
   public HasWidgets getCommandPanel() {
     return commandPanel;
+  }
+
+  @Override
+  public Flow getDomainHeader(Domain domain, Long key) {
+    if (getCentralScrutinizer() == null) {
+      return null;
+    } else {
+      return getCentralScrutinizer().getDomainHeader(domain, key);
+    }
   }
 
   @Override
@@ -241,7 +262,11 @@ public class ScreenImpl implements Screen {
 
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
-    return getCentralScrutinizer().remove(domain, key);
+    if (getCentralScrutinizer() == null) {
+      return false;
+    } else {
+      return getCentralScrutinizer().remove(domain, key);
+    }
   }
 
   @Override
@@ -465,11 +490,11 @@ public class ScreenImpl implements Screen {
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
-    
+
     FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
     exit.addStyleName("bee-UserExit");
     exit.setTitle(Localized.getConstants().signOut());
-    
+
     exit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -477,11 +502,11 @@ public class ScreenImpl implements Screen {
             Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
             Localized.getConstants().yes(), Localized.getConstants().no(),
             new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            Bee.exit();
-          }
-        }, null, StyleUtils.className(FontSize.MEDIUM), null);
+              @Override
+              public void onConfirm() {
+                Bee.exit();
+              }
+            }, null, StyleUtils.className(FontSize.MEDIUM), null);
       }
     });
 

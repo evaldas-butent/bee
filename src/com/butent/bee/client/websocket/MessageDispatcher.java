@@ -9,6 +9,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -18,15 +19,17 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
+import com.butent.bee.shared.websocket.messages.ChatMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
+import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
-import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
@@ -58,6 +61,16 @@ class MessageDispatcher {
                 "command not recognized: " + am.getCommand()));
           }
 
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+        
+      case CHAT:
+        ChatMessage chatMessage = (ChatMessage) message;
+        
+        if (chatMessage.isValid()) {
+          Global.getRooms().addMessage(chatMessage);
         } else {
           WsUtils.onEmptyMessage(message);
         }
@@ -130,7 +143,7 @@ class MessageDispatcher {
         if (sessionUsers.size() > 1) {
           for (int i = 0; i < sessionUsers.size() - 1; i++) {
             SessionUser sessionUser = sessionUsers.get(i);
-            Global.getUsers().addSession(sessionUser.getSessionId(), sessionUser.getUserId());
+            Global.getUsers().addSession(sessionUser.getSessionId(), sessionUser.getUserId(), true);
           }
         }
 
@@ -171,12 +184,22 @@ class MessageDispatcher {
         }
         break;
 
+      case ROOMS:
+        List<ChatRoom> rooms = ((RoomsMessage) message).getData();
+
+        if (BeeUtils.isEmpty(rooms)) {
+          WsUtils.onEmptyMessage(message);
+        } else {
+          Global.getRooms().setRoomData(rooms);
+        }
+        break;
+        
       case SESSION:
         SessionMessage sm = (SessionMessage) message;
         SessionUser su = sm.getSessionUser();
 
         if (sm.isOpen()) {
-          Global.getUsers().addSession(su.getSessionId(), su.getUserId());
+          Global.getUsers().addSession(su.getSessionId(), su.getUserId(), false);
         } else if (sm.isClosed()) {
           Global.getUsers().removeSession(su.getSessionId());
         } else {

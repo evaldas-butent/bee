@@ -32,12 +32,10 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.client.widget.FaLabel;
@@ -91,15 +89,10 @@ public class Global implements Module {
 
   private static final Filters filters = new Filters();
 
-  private static final Reports reports = new Reports();
-
   private static final Users users = new Users();
+  private static final Rooms rooms = new Rooms();
 
   private static boolean debug;
-
-  public static void addReport(String caption, Command command) {
-    reports.addReport(caption, command);
-  }
 
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -215,8 +208,8 @@ public class Global implements Module {
     });
   }
 
-  public static Reports getReports() {
-    return reports;
+  public static Rooms getRooms() {
+    return rooms;
   }
 
   public static Search getSearch() {

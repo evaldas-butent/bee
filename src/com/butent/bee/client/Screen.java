@@ -2,6 +2,7 @@ package com.butent.bee.client;
 
 import com.google.gwt.user.client.ui.HasWidgets;
 
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.Workspace;
@@ -38,6 +39,8 @@ public interface Screen extends Module, NotificationListener {
   IdentifiableWidget getActiveWidget();
 
   HasWidgets getCommandPanel();
+
+  Flow getDomainHeader(Domain domain, Long key);
   
   int getHeight();
 

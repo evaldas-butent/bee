@@ -66,11 +66,9 @@ public final class CrmKeeper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("tasks_reports", new MenuManager.MenuCallback() {
-
+    BeeKeeper.getMenu().registerMenuCallback("task_reports", new MenuManager.MenuCallback() {
       @Override
       public void onSelection(String parameters) {
-
         if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {
           FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
               TasksReportsInterceptor.ReportType.COMPANY_TIMES));

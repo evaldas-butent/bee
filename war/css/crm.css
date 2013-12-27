@@ -154,20 +154,11 @@
   background-color: yellow;
 }
 
-@keyframes spinMode {
-  from {transform: rotate(0deg);}
-  to {transform: rotate(360deg);}
-}
-@-webkit-keyframes spinMode {
-  from {-webkit-transform: rotate(0deg);}
-  to {-webkit-transform: rotate(360deg);}
-}
-
 .bee-CellGridActiveRow .bee-crm-Mode-new,
 .bee-CellGridActiveRow .bee-crm-Mode-upd {
   border: 2px dashed blue;
-  animation: spinMode 2s linear infinite;
-  -webkit-animation: spinMode 2s linear infinite;
+  animation: rotate 2s linear infinite;
+  -webkit-animation: rotate 2s linear infinite;
 }
 
 .bee-crm-DocumentSelector {
