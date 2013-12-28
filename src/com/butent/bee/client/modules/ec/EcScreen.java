@@ -36,6 +36,8 @@ import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 public class EcScreen extends ScreenImpl {
 
   public EcScreen() {
@@ -82,6 +84,15 @@ public class EcScreen extends ScreenImpl {
     return getScreenPanel().getCenter();
   }
 
+  @Override
+  public List<IdentifiableWidget> getOpenWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+    if (getActiveWidget() != null) {
+      result.add(getActiveWidget());
+    }
+    return result;
+  }
+  
   @Override
   public UserInterface getUserInterface() {
     return UserInterface.E_COMMERCE;

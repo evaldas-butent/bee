@@ -27,6 +27,8 @@ import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
+import com.butent.bee.shared.websocket.messages.RoomStateMessage;
+import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
@@ -182,6 +184,20 @@ class MessageDispatcher {
         } else {
           WsUtils.onInvalidState(message);
         }
+        break;
+        
+      case ROOM_STATE:
+        RoomStateMessage rsm = (RoomStateMessage) message;
+        
+        if (rsm.isValid()) {
+          Global.getRooms().onRoomState(rsm);
+        } else {
+          WsUtils.onInvalidState(message);
+        }
+        break;
+
+      case ROOM_USER:
+        Global.getRooms().onRoomUser((RoomUserMessage) message);
         break;
 
       case ROOMS:

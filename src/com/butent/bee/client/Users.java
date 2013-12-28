@@ -10,11 +10,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.UserData;
@@ -25,6 +27,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 
 import java.util.Collection;
@@ -148,11 +151,30 @@ public class Users {
   public Set<String> getAllSessions() {
     return openSessions.keySet();
   }
+  
+  public String getFirstName(Long userId) {
+    UserData userData = getUserData(userId);
+    return (userData == null) ? null : userData.getFirstName();
+  }
 
   public IdentifiableWidget getOnlinePanel() {
     return onlinePanel;
   }
 
+  public Image getPhoto(Long userId) {
+    UserData userData = getUserData(userId);
+    
+    if (userData == null || BeeUtils.isEmpty(userData.getPhotoFileName())) {
+      return null;
+    
+    } else {
+      Image image = new Image(PhotoRenderer.getUrl(userData.getPhotoFileName()));
+      image.setAlt(userData.getLogin());
+      
+      return image;
+    }
+  }
+  
   public Set<String> getSessions(Collection<Long> userIds) {
     Set<String> result = Sets.newHashSet();
 
@@ -163,6 +185,27 @@ public class Users {
         }
       }
     }
+    return result;
+  }
+
+  public String getSignature(Long userId) {
+    UserData userData = getUserData(userId);
+    return (userData == null) ? null : userData.getUserSign();
+  }
+
+  public List<String> getSignatures(Collection<Long> userIds) {
+    List<String> result = Lists.newArrayList();
+    if (BeeUtils.isEmpty(userIds)) {
+      return result;
+    }
+    
+    for (Long userId : userIds) {
+      String signature = getSignature(userId);
+      if (!BeeUtils.isEmpty(signature)) {
+        result.add(signature);
+      }
+    }
+    
     return result;
   }
 
@@ -315,6 +358,14 @@ public class Users {
 
   private Label getSizeBadge() {
     return sizeBadge;
+  }
+  
+  private UserData getUserData(Long userId) {
+    UserData userData = users.get(userId);
+    if (userData == null) {
+      logger.warning(NameUtils.getName(this), "user not found:", userId);
+    }
+    return userData;
   }
 
   private void setSizeBadge(Label sizeBadge) {

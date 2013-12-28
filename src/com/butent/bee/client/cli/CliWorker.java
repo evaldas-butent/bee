@@ -465,6 +465,9 @@ public final class CliWorker {
     } else if ("rpc".equals(z)) {
       showRpc();
 
+    } else if ("rooms".equals(z)) {
+      showPropData("Client Rooms", Global.getRooms().getInfo());
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 
@@ -1436,6 +1439,8 @@ public final class CliWorker {
       Endpoint.send(ShowMessage.showOpenSessions());
     } else if (BeeUtils.same(args, "server")) {
       Endpoint.send(ShowMessage.showEndpoint());
+    } else if (BeeUtils.same(args, "rooms")) {
+      Endpoint.send(ShowMessage.showRooms());
 
     } else {
       LogLevel level = LogLevel.parse(arr[1]);

@@ -37,7 +37,7 @@ public class TextMessage implements BeeSerializable {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 6);
+    Assert.lengthEquals(arr, 3);
 
     int i = 0;
     setUserId(BeeUtils.toLong(arr[i++]));

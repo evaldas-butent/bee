@@ -16,6 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
@@ -182,7 +183,13 @@ public final class Endpoint {
   }
 
   public static void send(Message message) {
-    if (isOpen() && message != null) {
+    if (!isOpen()) {
+      logger.warning("ws is not open");
+    
+    } else if (message == null) {
+      WsUtils.onEmptyMessage(message);
+
+    } else {
       String data = message.encode();
       socket.send(data);
 

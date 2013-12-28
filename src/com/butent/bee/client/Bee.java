@@ -46,11 +46,10 @@ public class Bee implements EntryPoint {
     Bee.keeper.exit();
     
     ClientLogManager.close();
+    BodyPanel.get().clear();
     
     Endpoint.close();
     BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
-
-    BodyPanel.get().clear();
   }
 
   @Override

@@ -1042,6 +1042,10 @@ public final class TimeUtils {
         + BeeUtils.toLeadingZeroes((int) (millis % 1000), 3);
   }
 
+  public static String toString(long millis) {
+    return new DateTime(millis).toString();
+  }
+
   public static String toTimeString(long millis) {
     return new DateTime(millis).toTimeString();
   }

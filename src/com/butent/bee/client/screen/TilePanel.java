@@ -770,6 +770,21 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     return activeTileId;
   }
 
+  List<IdentifiableWidget> getContentWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+
+    for (Widget child : getChildren()) {
+      if (child instanceof Tile) {
+        IdentifiableWidget content = ((Tile) child).getContent();
+        if (content != null) {
+          result.add(content);
+        }
+      }
+    }
+    
+    return result;
+  }
+  
   Tile getEventTile(Node target) {
     if (target == null) {
       return null;

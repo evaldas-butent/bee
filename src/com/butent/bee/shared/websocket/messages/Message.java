@@ -60,6 +60,18 @@ public abstract class Message {
         return new ProgressMessage();
       }
     },
+    ROOM_STATE {
+      @Override
+      Message createMessage() {
+        return new RoomStateMessage();
+      }
+    },
+    ROOM_USER {
+      @Override
+      Message createMessage() {
+        return new RoomUserMessage();
+      }
+    },
     ROOMS {
       @Override
       Message createMessage() {

@@ -547,10 +547,16 @@ public class MessageBoxes {
     close.setFocus(true);
   }
 
-  public void showWidget(Widget widget, Element target) {
+  public void showWidget(String caption, Widget widget, Element target) {
     Assert.notNull(widget);
 
-    Popup popup = new Popup(OutsideClick.CLOSE);
+    Popup popup;
+    if (BeeUtils.isEmpty(caption)) {
+      popup = new Popup(OutsideClick.CLOSE);
+    } else {
+      popup = DialogBox.create(caption);
+    }
+    
     popup.setAnimationEnabled(true);
     popup.setHideOnEscape(true);
 

@@ -12,6 +12,8 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.ui.UserInterface;
 
+import java.util.List;
+
 /**
  * manages the main browser window and it's main containing elements (f.e. panels).
  */
@@ -43,6 +45,8 @@ public interface Screen extends Module, NotificationListener {
   Flow getDomainHeader(Domain domain, Long key);
   
   int getHeight();
+  
+  List<IdentifiableWidget> getOpenWidgets();
 
   Split getScreenPanel();
 

@@ -19,6 +19,8 @@ import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
+import com.butent.bee.shared.websocket.messages.RoomStateMessage;
+import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
@@ -60,20 +62,20 @@ public class Endpoint {
 
   private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();
   private static Map<String, String> progressToSession = new ConcurrentHashMap<>();
-  
+
   public static boolean updateProgress(String progressId, double value) {
     String sessionId = progressToSession.get(progressId);
 
     if (BeeUtils.isEmpty(sessionId)) {
       logger.info("ws session not found for progress:", progressId, "value", value);
       return false;
-    
+
     } else {
       Session session = findOpenSession(sessionId, true);
       if (session != null) {
         send(session, ProgressMessage.update(progressId, value));
       }
-      
+
       return true;
     }
   }
@@ -81,7 +83,7 @@ public class Endpoint {
   public static void updateUserData(List<UserData> data) {
     if (BeeUtils.isEmpty(data)) {
       logger.severe("user data is empty");
-    
+
     } else if (!openSessions.isEmpty()) {
       UsersMessage message = new UsersMessage(data);
 
@@ -93,7 +95,26 @@ public class Endpoint {
     }
   }
 
+  private static void sendToOccupants(ChatRoom room, Message message) {
+    for (Session session : openSessions) {
+      if (session.isOpen() && room.isVisible(getUserId(session))) {
+        send(session, message);
+      }
+    }
+  }
+
+  private static void sendToNeighbors(ChatRoom room, Message message, String mySessionId) {
+    for (Session session : openSessions) {
+      if (session.isOpen() && !mySessionId.equals(session.getId())
+          && room.isVisible(getUserId(session))) {
+        send(session, message);
+      }
+    }
+  }
+
   private static void dispatch(Session session, Message message) {
+    ChatRoom room;
+
     switch (message.getType()) {
       case ADMIN:
       case LOCATION:
@@ -102,43 +123,37 @@ public class Endpoint {
           send(toSession, message);
         }
         break;
-        
+
       case CHAT:
         ChatMessage chatMessage = (ChatMessage) message;
-        ChatRoom room = Rooms.getRoom(chatMessage.getRoomId());
-        
+        room = Rooms.getRoom(chatMessage.getRoomId());
+
         if (!chatMessage.isValid()) {
           WsUtils.onEmptyMessage(message, toLog(session));
 
         } else if (room == null) {
           WsUtils.onInvalidState(message, toLog(session));
-        
+
         } else {
           TextMessage textMessage = chatMessage.getTextMessage();
           Rooms.sanitizeIncomingMessage(textMessage);
 
           room.addMessage(textMessage);
-          
-          for (Session openSession : openSessions) {
-            if (openSession.isOpen() && !session.getId().equals(openSession.getId())
-                && room.isVisible(getUserId(openSession))) {
-              send(openSession, message);
-            }
-          }
+          sendToNeighbors(room, message, session.getId());
         }
         break;
-        
+
       case ECHO:
         send(session, message);
         break;
-        
+
       case LOG:
         LogMessage logMessage = (LogMessage) message;
         LogLevel level = logMessage.getLevel();
-        
+
         if (level == null) {
           WsUtils.onInvalidState(message, toLog(session));
-        
+
         } else if (BeeUtils.isEmpty(logMessage.getText())) {
           logger.setLevel(level);
           logger.log(level, "ws log level set to:", level, toLog(session));
@@ -147,27 +162,84 @@ public class Endpoint {
           logger.log(level, logMessage.getText());
         }
         break;
-        
+
       case PROGRESS:
         ProgressMessage pm = (ProgressMessage) message;
         String progressId = pm.getProgressId();
-        
+
         if (BeeUtils.isEmpty(progressId)) {
           WsUtils.onEmptyMessage(message, toLog(session));
-          
+
         } else if (pm.isOpen()) {
           progressToSession.put(progressId, session.getId());
           logger.info("ws activated progress:", progressId, "session:", session.getId());
-          
+
           send(session, ProgressMessage.activate(progressId));
 
         } else if (pm.isClosed() || pm.isCanceled()) {
           String removed = progressToSession.remove(progressId);
           logger.debug("ws remove progress:", progressId, "session:", removed);
-        
+
         } else {
           WsUtils.onInvalidState(message, toLog(session));
         }
+        break;
+        
+      case ROOM_STATE:
+        RoomStateMessage rsm = (RoomStateMessage) message;
+        
+        if (!rsm.isValid()) {
+          WsUtils.onInvalidState(message, toLog(session));
+          
+        } else if (rsm.isNew()) {
+          room = Rooms.addRoom(rsm.getRoom());
+          if (room != null) {
+            sendToOccupants(room, RoomStateMessage.add(room));
+          }
+
+        } else if (rsm.isUpdated()) {
+          room = Rooms.updateRoom(rsm.getRoom());
+          if (room != null) {
+            sendToOccupants(room, RoomStateMessage.update(room));
+          }
+
+        } else if (rsm.isRemoved()) {
+          room = Rooms.removeRoom(rsm.getRoom().getId());
+          if (room != null) {
+            sendToOccupants(room, RoomStateMessage.remove(room));
+          }
+
+        } else {
+          WsUtils.onInvalidState(message, toLog(session));
+        }
+        
+        break;
+
+      case ROOM_USER:
+        RoomUserMessage rum = (RoomUserMessage) message;
+        room = Rooms.getRoom(rum.getRoomId());
+
+        if (room == null) {
+          WsUtils.onInvalidState(message, toLog(session));
+
+        } else {
+          boolean ok;
+          if (rum.join()) {
+            ok = room.join(rum.getUserId());
+          } else if (rum.quit()) {
+            ok = room.quit(rum.getUserId());
+          } else {
+            ok = false;
+          }
+
+          if (ok) {
+            send(session, RoomStateMessage.load(room));
+            sendToNeighbors(room, message, session.getId());
+          } else {
+            WsUtils.onInvalidState(message, toLog(session));
+          }
+        }
+
         break;
 
       case SHOW:
@@ -176,18 +248,23 @@ public class Endpoint {
           WsUtils.onEmptyMessage(message, toLog(session));
 
         } else {
+          String caption = subject.getCaption();
+
           switch (subject) {
             case ENDPOINT:
-              send(session, new InfoMessage(subject.getCaption(), getInfo()));
+              send(session, new InfoMessage(caption, getInfo()));
               break;
 
             case OPEN_SESSIONS:
-              send(session, new InfoMessage(subject.getCaption(),
-                  getOpenSessionsInfo(openSessions)));
+              send(session, new InfoMessage(caption, getOpenSessionsInfo(openSessions)));
+              break;
+
+            case ROOMS:
+              send(session, new InfoMessage(caption, Rooms.getInfo()));
               break;
 
             case SESSION:
-              send(session, new InfoMessage(subject.getCaption(), getSessionInfo(session)));
+              send(session, new InfoMessage(caption, getSessionInfo(session)));
               break;
           }
         }
@@ -202,14 +279,14 @@ public class Endpoint {
         break;
     }
   }
-  
+
   private static Session findOpenSession(String sessionId, boolean warn) {
     for (Session session : openSessions) {
       if (session.getId().endsWith(sessionId) && session.isOpen()) {
         return session;
       }
     }
-    
+
     if (warn) {
       logger.warning("ws open session not found", sessionId);
     }
@@ -239,13 +316,13 @@ public class Endpoint {
 
   private static List<Property> getInfo() {
     List<Property> info = getOpenSessionsInfo(openSessions);
-    
+
     int size = progressToSession.size();
     info.add(new Property("Progress", BeeUtils.bracket(size)));
     if (size > 0) {
       info.addAll(PropertyUtils.createProperties(progressToSession));
     }
-    
+
     LogLevel level = logger.getLevel();
     if (level != null) {
       info.add(new Property("Log Level", level.name()));
@@ -253,7 +330,7 @@ public class Endpoint {
 
     return info;
   }
-  
+
   private static List<Property> getOpenSessionsInfo(Collection<Session> sessions) {
     int size = (sessions == null) ? 0 : sessions.size();
 
@@ -334,7 +411,7 @@ public class Endpoint {
 
     return info;
   }
-  
+
   private static SessionUser getSessionUser(Session session) {
     return new SessionUser(session.getId(), getUserId(session));
   }
@@ -380,11 +457,16 @@ public class Endpoint {
   }
 
   private static void send(Session session, Message message) {
-    String text = message.encode();
-    session.getAsyncRemote().sendText(message.encode());
+    if (message == null) {
+      WsUtils.onEmptyMessage(message, toLog(session));
 
-    logger.debug("->", message);
-    logger.info("->", message.getType(), "length:", text.length(), toLog(session));
+    } else {
+      String text = message.encode();
+      session.getAsyncRemote().sendText(message.encode());
+
+      logger.debug("->", message);
+      logger.info("->", message.getType(), "length:", text.length(), toLog(session));
+    }
   }
 
   private static void setUserId(Session session, Long userId) {
@@ -405,21 +487,21 @@ public class Endpoint {
   @OnClose
   public void onClose(Session session, CloseReason closeReason) {
     openSessions.remove(session);
-    
+
     if (!progressToSession.isEmpty() && progressToSession.values().contains(session.getId())) {
       Set<String> keys = new HashSet<>();
-      
+
       for (Map.Entry<String, String> entry : progressToSession.entrySet()) {
         if (entry.getValue().equals(session.getId())) {
           keys.add(entry.getKey());
         }
       }
-      
+
       for (String key : keys) {
         progressToSession.remove(key);
       }
     }
-    
+
     String reasonInfo;
     if (closeReason == null) {
       reasonInfo = null;
@@ -446,7 +528,7 @@ public class Endpoint {
     }
 
     logger.info("ws close", reasonInfo, toLog(session));
-    
+
     if (!openSessions.isEmpty()) {
       SessionUser sessionUser = getSessionUser(session);
 
@@ -498,10 +580,10 @@ public class Endpoint {
     openSessions.add(session);
 
     logger.info("ws open", toLog(session));
-    
+
     sessionUsers.add(sessionUser);
 
     send(session, new OnlineMessage(sessionUsers));
-    send(session, new RoomsMessage(Rooms.getRoomDataWithoudMessagess(userId)));
+    send(session, new RoomsMessage(Rooms.getRoomDataWithoutMessagess(userId)));
   }
 }

@@ -2328,3 +2328,45 @@
   color: white;
   background-color: #008;
 }
+
+.bee-Chat-messages {
+  position: absolute;
+  top: 30px;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+}
+.bee-Chat-footer {
+  position: absolute;
+  height: 60px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.bee-Chat-message-photo {
+  max-width: 60px;
+  max-height: 60px;
+  cursor: default;
+}
+
+.bee-Chat-input {
+  width: 50%;
+  height: 50px;
+}
+.bee-Chat-submit {
+  position: absolute;
+  top: 1ex;
+  left: 55%;
+  font-size: x-large;
+}
+.bee-Chat-online {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 60%;
+  right: 0;
+}
+
+
+

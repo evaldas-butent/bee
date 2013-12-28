@@ -7,7 +7,10 @@ import com.butent.bee.shared.utils.Codec;
 public class ShowMessage extends Message {
   
   public enum Subject implements HasCaption {
-    SESSION("Session"), OPEN_SESSIONS("Open Sessions"), ENDPOINT("Server Endpoint");
+    SESSION("Session"),
+    OPEN_SESSIONS("Open Sessions"),
+    ENDPOINT("Server Endpoint"),
+    ROOMS("Server Rooms");
     
     private final String caption;
 
@@ -27,6 +30,10 @@ public class ShowMessage extends Message {
 
   public static ShowMessage showOpenSessions() {
     return new ShowMessage(Subject.OPEN_SESSIONS);
+  }
+
+  public static ShowMessage showRooms() {
+    return new ShowMessage(Subject.ROOMS);
   }
 
   public static ShowMessage showSessionInfo() {

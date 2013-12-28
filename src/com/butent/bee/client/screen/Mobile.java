@@ -33,6 +33,8 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 /**
  * Handles mobile phone size screen implementation.
  */
@@ -89,6 +91,15 @@ public class Mobile extends ScreenImpl {
     return getScreenPanel().getCenter();
   }
 
+  @Override
+  public List<IdentifiableWidget> getOpenWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+    if (getActiveWidget() != null) {
+      result.add(getActiveWidget());
+    }
+    return result;
+  }
+  
   @Override
   public UserInterface getUserInterface() {
     return UserInterface.MOBILE;

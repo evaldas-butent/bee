@@ -48,6 +48,8 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.List;
+
 /**
  * Handles default (desktop) screen implementation.
  */
@@ -187,6 +189,11 @@ public class ScreenImpl implements Screen {
     return NameUtils.getClassName(getClass());
   }
 
+  @Override
+  public List<IdentifiableWidget> getOpenWidgets() {
+    return getWorkspace().getOpenWidgets();
+  }
+  
   @Override
   public int getPriority(int p) {
     switch (p) {

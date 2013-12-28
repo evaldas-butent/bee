@@ -584,11 +584,19 @@ public class Global implements Module {
   }
 
   public static void showModalWidget(Widget widget) {
-    showModalWidget(widget, null);
+    showModalWidget(null, widget, null);
+  }
+
+  public static void showModalWidget(String caption, Widget widget) {
+    showModalWidget(caption, widget, null);
   }
 
   public static void showModalWidget(Widget widget, Element target) {
-    msgBoxen.showWidget(widget, target);
+    showModalWidget(null, widget, target);
+  }
+
+  public static void showModalWidget(String caption, Widget widget, Element target) {
+    msgBoxen.showWidget(caption, widget, target);
   }
 
   Global() {
