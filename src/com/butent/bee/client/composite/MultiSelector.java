@@ -30,6 +30,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
@@ -37,6 +38,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
@@ -131,7 +133,17 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   private static final int MIN_INPUT_WIDTH = 25;
   private static final int MAX_INPUT_LENGTH = 30;
 
-  public static MultiSelector createAutonomous(Relation relation, AbstractCellRenderer renderer) {
+  public static MultiSelector autonomous(String viewName, List<String> columns) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(columns);
+    
+    return autonomous(Relation.create(viewName, columns),
+        RendererFactory.createRenderer(viewName, columns));    
+  }
+  
+  public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
+    Assert.notNull(relation);
+
     final MultiSelector selector = new MultiSelector(relation, true, null);
     selector.setRenderer(renderer);
 

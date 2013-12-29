@@ -424,6 +424,24 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String rightStateVisible();
 
+  String roomDwellers();
+  
+  String roomName();
+  
+  String roomNew();
+  
+  String roomOwners();
+  
+  String roomSettings();
+  
+  String roomTypePrivate();
+  
+  String roomTypePublic();
+  
+  String roomUpdateTime();
+
+  String roomUsers();
+  
   String rowIsReadOnly();
 
   String saveChanges();

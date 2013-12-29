@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
+import com.butent.bee.shared.websocket.messages.NotificationMessage;
 
 import java.util.Collection;
 import java.util.List;
@@ -61,12 +63,15 @@ public class Users {
     private static final int NAME_INDEX = 0;
 
     private final String sessionId;
+
+    private final Long userId;
     private final Long personId;
 
     private OnlineWidget(String sessionId, UserData userData) {
       super(STYLE_PREFIX + "item");
 
       this.sessionId = sessionId;
+      this.userId = userData.getUserId();
       this.personId = userData.getPerson();
 
       CustomDiv nameWidget = new CustomDiv(STYLE_PREFIX + "name");
@@ -83,6 +88,22 @@ public class Users {
 
       FaLabel tweetWidget = new FaLabel(FontAwesome.TWITTER);
       tweetWidget.addStyleName(STYLE_PREFIX + "tweet");
+
+      tweetWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          Global.inputString(Global.getUsers().getFirstName(userId), null, new StringCallback() {
+            @Override
+            public void onSuccess(String value) {
+              String from = Endpoint.getSessionId();
+              if (!BeeUtils.isEmpty(from)) {
+                Endpoint.send(new NotificationMessage(from, getSessionId(), BeeUtils.trim(value)));
+              }
+            }
+          }, null, NotificationMessage.MAX_LENGTH);
+        }
+      });
+
       add(tweetWidget);
 
       FaLabel homeWidget = new FaLabel(FontAwesome.HOME);
@@ -151,7 +172,7 @@ public class Users {
   public Set<String> getAllSessions() {
     return openSessions.keySet();
   }
-  
+
   public String getFirstName(Long userId) {
     UserData userData = getUserData(userId);
     return (userData == null) ? null : userData.getFirstName();
@@ -163,18 +184,18 @@ public class Users {
 
   public Image getPhoto(Long userId) {
     UserData userData = getUserData(userId);
-    
+
     if (userData == null || BeeUtils.isEmpty(userData.getPhotoFileName())) {
       return null;
-    
+
     } else {
       Image image = new Image(PhotoRenderer.getUrl(userData.getPhotoFileName()));
       image.setAlt(userData.getLogin());
-      
+
       return image;
     }
   }
-  
+
   public Set<String> getSessions(Collection<Long> userIds) {
     Set<String> result = Sets.newHashSet();
 
@@ -198,18 +219,30 @@ public class Users {
     if (BeeUtils.isEmpty(userIds)) {
       return result;
     }
-    
+
     for (Long userId : userIds) {
       String signature = getSignature(userId);
       if (!BeeUtils.isEmpty(signature)) {
         result.add(signature);
       }
     }
-    
+
     return result;
   }
 
-  public String getUserNameBySession(String sessionId) {
+  public UserData getUserData(Long userId) {
+    UserData userData = users.get(userId);
+    if (userData == null) {
+      logger.warning(NameUtils.getName(this), "user not found:", userId);
+    }
+    return userData;
+  }
+
+  public Long getUserIdBySession(String sessionId) {
+    return openSessions.get(sessionId);
+  }
+
+  public String getUserSignatureBySession(String sessionId) {
     Long userId = openSessions.get(sessionId);
     UserData userData = (userId == null) ? null : users.get(userId);
 
@@ -358,14 +391,6 @@ public class Users {
 
   private Label getSizeBadge() {
     return sizeBadge;
-  }
-  
-  private UserData getUserData(Long userId) {
-    UserData userData = users.get(userId);
-    if (userData == null) {
-      logger.warning(NameUtils.getName(this), "user not found:", userId);
-    }
-    return userData;
   }
 
   private void setSizeBadge(Label sizeBadge) {

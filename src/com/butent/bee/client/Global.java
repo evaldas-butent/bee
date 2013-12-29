@@ -489,6 +489,11 @@ public class Global implements Module {
     return debug;
   }
 
+  public static void messageBox(String caption, Icon icon, String message) {
+    messageBox(caption, icon, Lists.newArrayList(message),
+        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
+  }
+
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,

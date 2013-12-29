@@ -7,7 +7,9 @@ import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.CliWorker;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.maps.MapUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.data.PropertiesData;
@@ -25,6 +27,7 @@ import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.NotificationMessage;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
@@ -113,7 +116,7 @@ class MessageDispatcher {
           });
 
         } else if (lm.hasCoordinates()) {
-          String title = Global.getUsers().getUserNameBySession(from);
+          String title = Global.getUsers().getUserSignatureBySession(from);
           if (BeeUtils.isPositive(lm.getAccuracy())) {
             caption = BeeUtils.joinWords(title, "+-", lm.getAccuracy(), "m");
           } else {
@@ -138,6 +141,35 @@ class MessageDispatcher {
         } else {
           WsUtils.onEmptyMessage(message);
         }
+        break;
+
+      case NOTIFICATION:
+        NotificationMessage notificationMessage = (NotificationMessage) message;
+        
+        if (notificationMessage.isValid()) {
+          Long fromUser = Global.getUsers().getUserIdBySession(notificationMessage.getFrom());
+          String signature = Global.getUsers().getSignature(fromUser);
+          String text = notificationMessage.getText();
+          
+          Icon icon;
+          if (text.endsWith(BeeConst.STRING_QUESTION)) {
+            icon = Icon.QUESTION;
+          } else if (text.endsWith(BeeConst.STRING_EXCLAMATION)) {
+            icon = Icon.ALARM;
+          } else {
+            icon = null;
+          }
+          
+          if (icon == null) {
+            BeeKeeper.getScreen().notifyInfo(signature, text);
+          } else {
+            Global.messageBox(signature, icon, text);
+          }
+
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        
         break;
         
       case ONLINE:

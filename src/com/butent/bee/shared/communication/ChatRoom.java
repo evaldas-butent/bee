@@ -7,6 +7,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,11 +22,20 @@ import java.util.Vector;
 public class ChatRoom implements BeeSerializable, HasInfo {
 
   public enum Type implements HasCaption {
-    PUBLIC, PRIVATE;
+    PUBLIC(Localized.getConstants().roomTypePublic()),
+    PRIVATE(Localized.getConstants().roomTypePrivate());
+    
+    public static final Type DEFAULT = PUBLIC; 
+    
+    private final String caption;
+    
+    private Type(String caption) {
+      this.caption = caption;
+    }
 
     @Override
     public String getCaption() {
-      return BeeUtils.proper(this);
+      return caption;
     }
   }
 
@@ -34,6 +44,8 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   }
 
   public static final int DEFAULT_CAPACITY = 1000;
+
+  public static final int MAX_NAME_LENGTH = 30;
 
   private static long idCounter = 1;
 
@@ -77,11 +89,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   public void addMessage(TextMessage message) {
     if (message != null && message.isValid()) {
       messages.add(message);
-
-      setMessageCount(getMessageCount() + 1);
-      if (message.getMillis() > 0) {
-        setMaxTime(Math.max(getMaxTime(), message.getMillis()));
-      }
+      aggregate(message);
     }
   }
 
@@ -93,7 +101,16 @@ public class ChatRoom implements BeeSerializable, HasInfo {
       return false;
     }
   }
-
+  
+  public void aggregate(TextMessage message) {
+    if (message != null && message.isValid()) {
+      setMessageCount(getMessageCount() + 1);
+      if (message.getMillis() > 0) {
+        setMaxTime(Math.max(getMaxTime(), message.getMillis()));
+      }
+    }
+  }
+  
   public void clear() {
     messages.clear();
 
@@ -121,7 +138,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     }
 
     copy.setMessageCount(getMessageCount());
-    copy.setMaxTime(copy.getMaxTime());
+    copy.setMaxTime(getMaxTime());
 
     return copy;
   }

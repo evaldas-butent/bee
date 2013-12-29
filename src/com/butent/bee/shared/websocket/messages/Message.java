@@ -48,6 +48,12 @@ public abstract class Message {
         return new LogMessage();
       }
     },
+    NOTIFICATION {
+      @Override
+      Message createMessage() {
+        return new NotificationMessage();
+      }
+    },
     ONLINE {
       @Override
       Message createMessage() {

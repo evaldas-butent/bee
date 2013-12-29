@@ -160,10 +160,10 @@ public class DateTimeFormat {
         pattern = dtfi.formatMonthAbbrev();
         break;
       case MONTH_ABBR_DAY:
-        pattern = dtfi.formatMonthAbbrevDay();
+        pattern = LocaleUtils.formatMonthAbbrevDay(LocaleInfo.getCurrentLocale());
         break;
       case MONTH_DAY:
-        pattern = dtfi.formatMonthFullDay();
+        pattern = LocaleUtils.formatMonthFullDay(LocaleInfo.getCurrentLocale());
         break;
       case MONTH_NUM_DAY:
         pattern = dtfi.formatMonthNumDay();

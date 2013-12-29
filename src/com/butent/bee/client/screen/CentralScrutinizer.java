@@ -208,8 +208,6 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-    add(Domain.NEWS, new CustomDiv());
-    
     add(Domain.ONLINE, Global.getUsers().getOnlinePanel());
     add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
 

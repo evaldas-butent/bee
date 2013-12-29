@@ -63,6 +63,14 @@ public class Endpoint {
   private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();
   private static Map<String, String> progressToSession = new ConcurrentHashMap<>();
 
+  public static void sendToAll(Message message) {
+    for (Session session : openSessions) {
+      if (session.isOpen()) {
+        send(session, message);
+      }
+    }
+  }
+  
   public static boolean updateProgress(String progressId, double value) {
     String sessionId = progressToSession.get(progressId);
 
@@ -118,6 +126,7 @@ public class Endpoint {
     switch (message.getType()) {
       case ADMIN:
       case LOCATION:
+      case NOTIFICATION:
         Session toSession = findOpenSession(((HasRecipient) message).getTo(), true);
         if (toSession != null) {
           send(toSession, message);
@@ -184,13 +193,13 @@ public class Endpoint {
           WsUtils.onInvalidState(message, toLog(session));
         }
         break;
-        
+
       case ROOM_STATE:
         RoomStateMessage rsm = (RoomStateMessage) message;
-        
+
         if (!rsm.isValid()) {
           WsUtils.onInvalidState(message, toLog(session));
-          
+
         } else if (rsm.isNew()) {
           room = Rooms.addRoom(rsm.getRoom());
           if (room != null) {
@@ -200,7 +209,7 @@ public class Endpoint {
         } else if (rsm.isUpdated()) {
           room = Rooms.updateRoom(rsm.getRoom());
           if (room != null) {
-            sendToOccupants(room, RoomStateMessage.update(room));
+            sendToAll(RoomStateMessage.update(room));
           }
 
         } else if (rsm.isRemoved()) {
@@ -212,7 +221,7 @@ public class Endpoint {
         } else {
           WsUtils.onInvalidState(message, toLog(session));
         }
-        
+
         break;
 
       case ROOM_USER:
@@ -233,8 +242,11 @@ public class Endpoint {
           }
 
           if (ok) {
-            send(session, RoomStateMessage.load(room));
+            if (rum.join()) {
+              send(session, RoomStateMessage.load(room));
+            }
             sendToNeighbors(room, message, session.getId());
+
           } else {
             WsUtils.onInvalidState(message, toLog(session));
           }

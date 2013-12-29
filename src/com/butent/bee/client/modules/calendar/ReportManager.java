@@ -281,7 +281,7 @@ class ReportManager {
 
     Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME));
     atpRel.disableNewRow();
-    final MultiSelector atpSelector = MultiSelector.createAutonomous(atpRel,
+    final MultiSelector atpSelector = MultiSelector.autonomous(atpRel,
         RendererFactory.createRenderer(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME)));
 
     atpSelector.render(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
@@ -297,7 +297,7 @@ class ReportManager {
     Relation attRel = Relation.create(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
     attRel.disableNewRow();
 
-    final MultiSelector attSelector = MultiSelector.createAutonomous(attRel,
+    final MultiSelector attSelector = MultiSelector.autonomous(attRel,
         RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME)));
 
     attSelector.render(Data.getString(viewName, options, COL_ATTENDEES));

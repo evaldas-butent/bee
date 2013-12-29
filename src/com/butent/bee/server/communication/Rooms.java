@@ -58,7 +58,11 @@ public final class Rooms {
       room.setMaxTime(source.getMaxTime());
     }
     
-    return room;
+    if (chatRooms.add(room)) {
+      return room;
+    } else {
+      return null;
+    }
   }
 
   public static List<Property> getInfo() {

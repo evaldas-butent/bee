@@ -5,10 +5,11 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.Rooms;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -31,7 +32,6 @@ import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -43,6 +43,9 @@ import java.util.EnumSet;
 public class Chat extends Flow implements Presenter, View, Printable {
 
   private static final class MessageWidget extends Flow {
+
+    private final long millis;
+    private final Label timeLabel;
 
     private MessageWidget(TextMessage textMessage) {
       super(STYLE_MESSAGE_WRAPPER);
@@ -64,10 +67,19 @@ public class Chat extends Flow implements Presenter, View, Printable {
       body.addStyleName(STYLE_MESSAGE_BODY);
       add(body);
 
-      DateTime dateTime = new DateTime(textMessage.getMillis());
-      Label time = new Label(dateTime.toString());
-      time.addStyleName(STYLE_MESSAGE_TIME);
-      add(time);
+      this.millis = textMessage.getMillis();
+      this.timeLabel = new Label(ChatUtils.elapsed(millis));
+      timeLabel.addStyleName(STYLE_MESSAGE_TIME);
+      add(timeLabel);
+    }
+
+    private boolean refresh() {
+      if (ChatUtils.needsRefresh(millis)) {
+        timeLabel.setText(ChatUtils.elapsed(millis));
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -78,10 +90,14 @@ public class Chat extends Flow implements Presenter, View, Printable {
 
   private static final String STYLE_MESSAGE_PREFIX = STYLE_PREFIX + "message-";
   private static final String STYLE_MESSAGE_PHOTO = STYLE_MESSAGE_PREFIX + "photo";
-  private static final String STYLE_MESSAGE_PHOTO_PLACEHOLDER = STYLE_MESSAGE_PHOTO + "placeholder";
+  private static final String STYLE_MESSAGE_PHOTO_PLACEHOLDER = STYLE_MESSAGE_PHOTO
+      + "-placeholder";
+
   private static final String STYLE_MESSAGE_SIGNATURE = STYLE_MESSAGE_PREFIX + "signature";
   private static final String STYLE_MESSAGE_BODY = STYLE_MESSAGE_PREFIX + "body";
   private static final String STYLE_MESSAGE_TIME = STYLE_MESSAGE_PREFIX + "time";
+
+  private static final int TIMER_PERIOD = 5000;
 
   private final long roomId;
 
@@ -89,6 +105,8 @@ public class Chat extends Flow implements Presenter, View, Printable {
   private final Flow messagePanel;
   private final InputArea inputArea;
   private final Flow onlinePanel;
+
+  private final Timer timer;
 
   private boolean enabled = true;
 
@@ -149,18 +167,28 @@ public class Chat extends Flow implements Presenter, View, Printable {
       for (TextMessage textMessage : chatRoom.getMessages()) {
         addMessage(textMessage, false);
       }
-      updateMessageCount();
+      updateHeader(chatRoom.getMaxTime());
     }
 
     updateOnlinePanel(chatRoom.getUsers());
+
+    this.timer = new Timer() {
+      @Override
+      public void run() {
+        onTimer();
+      }
+    };
+    timer.scheduleRepeating(TIMER_PERIOD);
   }
 
-  public void addMessage(TextMessage textMessage, boolean updateCount) {
+  public void addMessage(TextMessage textMessage, boolean update) {
     if (textMessage != null && textMessage.isValid()) {
-      messagePanel.add(new MessageWidget(textMessage));
+      MessageWidget messageWidget = new MessageWidget(textMessage);
+      messagePanel.add(messageWidget);
 
-      if (updateCount) {
-        updateMessageCount();
+      if (update) {
+        updateHeader(textMessage.getMillis());
+        messageWidget.getElement().scrollIntoView();
       }
     }
   }
@@ -192,7 +220,7 @@ public class Chat extends Flow implements Presenter, View, Printable {
 
   @Override
   public Element getPrintElement() {
-    return getElement();
+    return messagePanel.getElement();
   }
 
   public long getRoomId() {
@@ -266,13 +294,26 @@ public class Chat extends Flow implements Presenter, View, Printable {
   }
 
   @Override
+  protected void onLoad() {
+    super.onLoad();
+
+    int count = messagePanel.getWidgetCount();
+    if (count > 1) {
+      messagePanel.getWidget(count - 1).getElement().scrollIntoView();
+    }
+  }
+
+  @Override
   protected void onUnload() {
+    timer.cancel();
+
     super.onUnload();
-    Rooms.leaveRoom(getRoomId());
+
+    Global.getRooms().leaveRoom(getRoomId());
   }
 
   private boolean compose() {
-    String text = inputArea.getValue();
+    String text = BeeUtils.trim(inputArea.getValue());
     if (BeeUtils.isEmpty(text)) {
       return false;
     }
@@ -291,22 +332,35 @@ public class Chat extends Flow implements Presenter, View, Printable {
     Endpoint.send(chatMessage);
     return true;
   }
-  
-  private void updateMessageCount() {
-    headerView.setMessage(BeeUtils.bracket(messagePanel.getWidgetCount()));
+
+  private void onTimer() {
+    int count = messagePanel.getWidgetCount();
+
+    if (count > 0) {
+      for (int i = count - 1; i >= 0; i--) {
+        Widget widget = messagePanel.getWidget(i);
+
+        if (widget instanceof MessageWidget) {
+          boolean updated = ((MessageWidget) widget).refresh();
+          if (!updated) {
+            break;
+          }
+        }
+      }
+
+      Long maxTime = Global.getRooms().getMaxTime(roomId);
+      if (maxTime != null) {
+        updateHeader(maxTime);
+      }
+    }
+  }
+
+  private void updateHeader(long maxTime) {
+    headerView.setMessage(BeeUtils.joinWords(BeeUtils.bracket(messagePanel.getWidgetCount()),
+        ChatUtils.elapsed(maxTime)));
   }
 
   private void updateOnlinePanel(Collection<Long> users) {
-    onlinePanel.clear();
-    if (BeeUtils.isEmpty(users)) {
-      return;
-    }
-
-    for (Long userId : users) {
-      Label nameLabel = new Label(Global.getUsers().getFirstName(userId));
-      nameLabel.addStyleName(STYLE_PREFIX + "user");
-
-      onlinePanel.add(nameLabel);
-    }
+    ChatUtils.renderOtherUsers(onlinePanel, users, STYLE_PREFIX + "user");
   }
 }
