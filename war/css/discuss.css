@@ -180,6 +180,12 @@
   vertical-align: middle;
 }
 
+.bee-discuss-Actions-label-stats {
+  max-height: 6em;
+  display: block;
+  overflow: auto;
+}
+
 .bee-discuss-Actions-mark-disabled {
   
 }

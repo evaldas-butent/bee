@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -99,6 +100,41 @@ public final class DiscussionsUtils {
           && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
               .getColumnIndex(COL_COMMENT)])))) {
         result++;
+      }
+    }
+
+    return result;
+  }
+  
+  public static SimpleRowSet getMarkData(IsRow formRow) {
+    if (formRow == null) {
+      return null;
+    }
+
+    if (BeeUtils.isEmpty(formRow.getProperty(PROP_MARK_DATA))) {
+      return null;
+    }
+
+    return SimpleRowSet.restore(formRow.getProperty(PROP_MARK_DATA));
+  }
+
+  public static List<String> getMarkStats(Long commentId, SimpleRowSet marksStats) {
+    List<String> result = Lists.newArrayList();
+
+    if (marksStats == null) {
+      return result;
+    }
+
+    for (String[] row : marksStats.getRows()) {
+      if (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
+          .getColumnIndex(COL_COMMENT)]))) {
+        String text = BeeUtils.joinWords(
+            row[marksStats.getColumnIndex(CommonsConstants.COL_FIRST_NAME)],
+            row[marksStats.getColumnIndex(CommonsConstants.COL_LAST_NAME)]);
+        text += BeeConst.STRING_COMMA + BeeConst.STRING_SPACE
+            + Localized.maybeTranslate(row[marksStats.getColumnIndex(COL_MARK_NAME)]);
+
+        result.add(text);
       }
     }
 

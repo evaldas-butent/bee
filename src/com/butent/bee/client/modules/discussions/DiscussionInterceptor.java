@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -761,55 +762,64 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       final IsRow formRow, final Long commentId, final Long owner, final Integer status,
       final BeeRowSet result, final boolean renderHeaderInfo) {
 
-    DiscussionsKeeper.getDiscussionMarksData(DiscussionsUtils
-        .getDiscussionMarksIds(formRow), new Callback<SimpleRowSet>() {
+    final SimpleRowSet markData = DiscussionsUtils.getMarkData(formRow);
+
+    if (markData == null) {
+      return;
+    }
+
+    if (renderHeaderInfo) {
+      HeaderView header = form.getViewPresenter().getHeader();
+      String caption = form.getCaption();
+      caption =
+          BeeUtils.joinWords(caption, "[" + Localized.getConstants().discussMarked(),
+              DiscussionsUtils.getDiscussMarkCountTotal(markData) + "]");
+      header.setCaption(caption);
+    }
+
+    boolean enabled =
+        isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
+            && !DiscussionsUtils.hasOneMark(userId, commentId, markData);
+
+    int i = 0;
+    for (IsRow markRow : result.getRows()) {
+      boolean marked =
+          DiscussionsUtils.isMarked(markRow.getId(), userId, commentId, markData);
+      int markCount =
+          DiscussionsUtils.getMarkCount(markRow.getId(), commentId, markData);
+
+      renderMark(flowWidget, result, markRow, commentId, enabled,
+          marked, markCount, i++);
+    }
+
+    Image imgStats = new Image(Images.get("silverBarChart"));
+    imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+    imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
+    imgStats.setTitle(Localized.getConstants().discussMarkStats());
+
+    imgStats.addClickHandler(new ClickHandler() {
 
       @Override
-      public void onSuccess(final SimpleRowSet marksStats) {
-        flowWidget.clear();
+      public void onClick(ClickEvent event) {
+        // TODO:
+        List<String> stats = DiscussionsUtils.getMarkStats(commentId, markData);
 
-        if (renderHeaderInfo) {
-          HeaderView header = form.getViewPresenter().getHeader();
-          String caption = form.getCaption();
-          caption =
-              BeeUtils.joinWords(caption, "[" + Localized.getConstants().discussMarked(),
-                  DiscussionsUtils.getDiscussMarkCountTotal(marksStats) + "]");
-          header.setCaption(caption);
-        }
+        Widget label = new CustomDiv();
+        label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+        label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_LABEL + STYLE_STATS);
+        label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_LABEL + STYLE_STATS
+            + BeeUtils.unbox(commentId));
 
-        boolean enabled =
-            isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
-                && !DiscussionsUtils.hasOneMark(userId, commentId, marksStats);
+        label.getElement().setInnerHTML(
+            BeeUtils.join(Document.get().createBRElement().getString(), stats));
 
-        int i = 0;
-        for (IsRow markRow : result.getRows()) {
-          boolean marked =
-              DiscussionsUtils.isMarked(markRow.getId(), userId, commentId, marksStats);
-          int markCount =
-              DiscussionsUtils.getMarkCount(markRow.getId(), commentId, marksStats);
-
-          renderMark(flowWidget, result, markRow, commentId, enabled,
-              marked, markCount, i++);
-        }
-
-        Image imgStats = new Image(Images.get("silverBarChart"));
-        imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-        imgStats.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_STATS);
-        imgStats.setTitle(Localized.getConstants().discussMarkStats());
-
-        imgStats.addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent event) {
-            Global.showInfo(BeeUtils.join("<br /> \n", marksStats.getRows()));
-          }
-
-        });
-
-        flowWidget.add(imgStats);
-
+        Global.showInfo(label.toString());
       }
+
     });
+
+    flowWidget.add(imgStats);
+
   }
 
   private static void showError(String message) {

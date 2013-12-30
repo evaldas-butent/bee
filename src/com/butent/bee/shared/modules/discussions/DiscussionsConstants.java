@@ -152,6 +152,7 @@ public final class DiscussionsConstants {
 
   public static final String PROP_MARK_COUNT = "MarkCount";
   public static final String PROP_MARK_TYPES = "MarkTypes";
+  public static final String PROP_MARK_DATA = "MarkData";
 
   public static final String PROP_PARAMETERS = "Parameters";
 
@@ -162,12 +163,12 @@ public final class DiscussionsConstants {
   public static final String PRM_DISCUSS_INACTIVE_TIME_IN_DAYS = "DiscussInactiveTimeInDays";
 
   public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
-  public static final String SVC_GET_DISCUSSION_MARKS_DATA = "get_discuss_marks_data";
 
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
   public static final String TBL_DISCUSSIONS_COMENTS_MARKS = "DiscussCommentsMarks";
+  public static final String TBL_COMMENTS_MARK_TYPES = "CommentsMarksTypes";
 
   public static final long VALUE_MEMBER = 1;
 

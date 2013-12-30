@@ -121,8 +121,6 @@ public class DiscussionsModuleBean implements BeeModule {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_DATA)) {
       response = getDiscussionData(reqInfo);
-    } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_MARKS_DATA)) {
-      response = getDiscussionMarksData(reqInfo);
     } else {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);
       logger.warning(message);
@@ -281,6 +279,9 @@ public class DiscussionsModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(discussionMarks)) {
       row.setProperty(PROP_MARKS, DataUtils.buildIdList(discussionMarks));
     }
+
+    SimpleRowSet markData = getDiscussionMarksData((List<Long>) discussionMarks);
+    row.setProperty(PROP_MARK_DATA, markData.serialize());
 
     Multimap<String, Long> discussionRelations = getDiscussionRelations(discussionId);
     for (String property : discussionRelations.keySet()) {
@@ -773,41 +774,46 @@ public class DiscussionsModuleBean implements BeeModule {
     return ls;
   }
 
-  private ResponseObject getDiscussionMarksData(RequestInfo req) {
+  private SimpleRowSet getDiscussionMarksData(List<Long> filter) {
     SqlSelect select = new SqlSelect()
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT, COL_COMMENT)
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK, COL_MARK)
         .addField(TBL_DISCUSSIONS_COMENTS_MARKS, CommonsConstants.COL_USER,
             CommonsConstants.COL_USER)
-        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS);
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_FIRST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.COL_LAST_NAME)
+            .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
+            .addFromLeft(CommonsConstants.TBL_USERS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMENTS_MARKS,
+                CommonsConstants.COL_USER))
+        .addField(TBL_COMMENTS_MARK_TYPES, COL_MARK_NAME, COL_MARK_NAME)
+        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                CommonsConstants.COL_COMPANY_PERSON))
+        .addFromLeft(CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON))
+        .addFromLeft(TBL_COMMENTS_MARK_TYPES,
+            sys.joinTables(TBL_COMMENTS_MARK_TYPES, TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK));
+
     select.setWhere(SqlUtils.sqlTrue());
 
-    if (req.hasParameter(VAR_DISCUSSION_MARK)) {
-      List<Long> ids = DataUtils.parseIdList(req.getParameter(VAR_DISCUSSION_MARK));
-      if (!ids.isEmpty()) {
+    if (!BeeUtils.isEmpty(filter)) {
         select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.inList(
             TBL_DISCUSSIONS_COMENTS_MARKS, sys
                 .getIdName(TBL_DISCUSSIONS_COMENTS_MARKS),
-            ids)));
-      }
+          filter)));
     } else {
       select.setWhere(SqlUtils.sqlFalse());
     }
 
-    /*
-     * if (req.hasParameter(VAR_DISCUSSION_COMMENT)) { Long cid =
-     * BeeUtils.toLongOrNull(req.getParameter(VAR_DISCUSSION_COMMENT));
-     * 
-     * if (DataUtils.isId(cid)) { select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.equals(
-     * TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT, cid))); } else {
-     * select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.isNull(
-     * TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT))); } }
-     */
 
     SimpleRowSet rs = qs.getData(select);
 
-    return ResponseObject.response(rs);
+    return rs;
   }
 
   private List<Long> getDiscussionMembers(long discussionId) {
