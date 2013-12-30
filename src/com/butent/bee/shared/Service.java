@@ -174,6 +174,8 @@ public final class Service {
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
   public static final String VAR_UI = RPC_VAR_PREFIX + "ui";
 
+  public static final String VAR_PROGRESS = RPC_VAR_PREFIX + "progress";
+
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
    * 

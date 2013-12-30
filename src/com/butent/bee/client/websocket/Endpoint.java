@@ -1,10 +1,14 @@
 package com.butent.bee.client.websocket;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -12,9 +16,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
-import com.butent.bee.shared.websocket.Message;
+import com.butent.bee.shared.websocket.WsUtils;
+import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.List;
+import java.util.Map;
 
 import elemental.js.events.JsEvent;
 import elemental.events.MessageEvent;
@@ -48,18 +55,56 @@ public final class Endpoint {
     }
   }
 
-  private static final String LOG_PREFIX = "WS Endpoint";
+  private static final int PROGRESS_ACTIVATION_TIMEOUT = 2000;
 
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
 
   private static WebSocket socket;
+  private static String sessionId;
 
   private static MessageDispatcher dispatcher = new MessageDispatcher();
+
+  private static Map<String, Consumer<String>> progressQueue = Maps.newHashMap();
+
+  public static void cancelPropgress(String progressId) {
+    Assert.notEmpty(progressId);
+    
+    dequeuePropgress(progressId);
+    send(ProgressMessage.cancel(progressId));
+  }
 
   public static void close() {
     if (socket != null && !isClosed()) {
       socket.close();
     }
+  }
+
+  public static void dequeuePropgress(String progressId) {
+    if (progressQueue.containsKey(progressId)) {
+      progressQueue.remove(progressId);
+    }
+  }
+
+  public static void enqueuePropgress(final String progressId, Consumer<String> consumer) {
+    Assert.notEmpty(progressId);
+    Assert.notNull(consumer);
+
+    progressQueue.put(progressId, consumer);
+    send(ProgressMessage.open(progressId));
+
+    Timer timer = new Timer() {
+      @Override
+      public void run() {
+        if (!progressQueue.isEmpty()) {
+          Consumer<String> starter = progressQueue.remove(progressId);
+          if (starter != null) {
+            starter.accept(null);
+          }
+        }
+      }
+    };
+
+    timer.schedule(PROGRESS_ACTIVATION_TIMEOUT);
   }
 
   public static List<Property> getInfo() {
@@ -69,6 +114,7 @@ public final class Endpoint {
       info.add(new Property(WebSocket.class.getSimpleName(), BeeConst.NULL));
     } else {
       PropertyUtils.addProperties(info,
+          "Session Id", sessionId,
           "Binary Type", socket.getBinaryType(),
           "Buffered Amount", socket.getBufferedAmount(),
           "Extensions", socket.getExtensions(),
@@ -77,7 +123,19 @@ public final class Endpoint {
           "Url", socket.getUrl());
     }
 
+    info.add(new Property("Progress Queue", BeeUtils.bracket(progressQueue.size())));
+    if (!progressQueue.isEmpty()) {
+      int i = 0;
+      for (String key : progressQueue.keySet()) {
+        info.add(new Property(BeeUtils.joinWords("Progress", i++), key));
+      }
+    }
+
     return info;
+  }
+
+  public static String getSessionId() {
+    return sessionId;
   }
 
   public static boolean isClosed() {
@@ -124,10 +182,35 @@ public final class Endpoint {
     }
   }
 
-  public static void send(String data) {
-    if (isOpen()) {
+  public static void send(Message message) {
+    if (!isOpen()) {
+      logger.warning("ws is not open");
+    
+    } else if (message == null) {
+      WsUtils.onEmptyMessage(message);
+
+    } else {
+      String data = message.encode();
       socket.send(data);
+
+      logger.info("->", message.getType().name().toLowerCase(), data.length());
     }
+  }
+
+  public static void setSessionId(String sessionId) {
+    Endpoint.sessionId = sessionId;
+  }
+  
+  static boolean startPropgress(String progressId) {
+    if (!progressQueue.isEmpty()) {
+      Consumer<String> starter = progressQueue.remove(progressId);
+      if (starter != null) {
+        starter.accept(progressId);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private static String getReadyState() {
@@ -144,38 +227,39 @@ public final class Endpoint {
 
   private static void onClose(CloseEvent event) {
     if (socket != null) {
-      String eventInfo = (event == null) ? null 
+      setSessionId(null);
+
+      String eventInfo = (event == null) ? null
           : BeeUtils.joinOptions("code", Integer.toString(event.getCode()),
               "reason", event.getReason());
-      logger.info(LOG_PREFIX, socket.getUrl(), getReadyState(), eventInfo);
+      logger.info("close", socket.getUrl(), getReadyState(), eventInfo);
     }
   }
 
   private static void onError(JsEvent event) {
-    logger.severe(LOG_PREFIX, "error", JsUtils.toJson(event));
+    logger.severe("ws error", JsUtils.toJson(event));
   }
 
   private static void onMessage(MessageEvent event) {
     Object data = event.getData();
 
     if (data instanceof String) {
-      logger.debug(LOG_PREFIX, "received length:", ((String) data).length());
-
       Message message = Message.decode((String) data);
       if (message != null) {
+        logger.info("<-", message.getType().name().toLowerCase(), ((String) data).length());
         dispatcher.dispatch(message);
       }
 
     } else if (data == null) {
-      logger.warning(LOG_PREFIX, "received data is null");
+      logger.warning("ws received data is null");
     } else {
-      logger.warning(LOG_PREFIX, "unknown received data type", NameUtils.getName(data));
+      logger.warning("ws unknown received data type", NameUtils.getName(data));
     }
   }
 
   private static void onOpen() {
     if (socket != null) {
-      logger.info(LOG_PREFIX, socket.getUrl(), getReadyState());
+      logger.info(socket.getUrl(), getReadyState());
     }
   }
 

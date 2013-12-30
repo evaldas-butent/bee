@@ -168,12 +168,17 @@ class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers,
   public int getTabIndex() {
     return getElement().getTabIndex();
   }
-  
+
+  @Override
+  public String getText() {
+    return impl.getText();
+  }
+
   @Override
   public boolean isEnabled() {
     return impl.isEnabled();
   }
-
+  
   @Override
   public void onBrowserEvent(Event event) {
     String type = event.getType();
@@ -189,16 +194,21 @@ class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers,
 
     super.onBrowserEvent(event);
   }
-  
+
   @Override
   public void setEnabled(boolean enabled) {
     impl.setEnabled(enabled);
   }
-
+  
   public void setFocus(boolean focused) {
     if (isAttached()) {
       impl.setFocus(focused);
     }
+  }
+
+  @Override
+  public void setHtml(String html) {
+    impl.setHtml(html);
   }
   
   public void setTabIndex(int index) {
@@ -206,8 +216,8 @@ class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers,
   }
 
   @Override
-  public void setHtml(String html) {
-    impl.setHtml(html);
+  public void setText(String text) {
+    impl.setText(text);
   }
 
   @Override

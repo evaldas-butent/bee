@@ -53,8 +53,26 @@ public enum SupportedLocale implements HasCaption {
     public String getLanguage() {
       return "ru";
     }
+  },
+
+  FI {
+    @Override
+    public String getCaption() {
+      return "Suomi";
+    }
+
+    @Override
+    public String getIconName() {
+      return "finnish";
+    }
+
+    @Override
+    public String getLanguage() {
+      return "fi";
+    }
   };
   
+
   public static final SupportedLocale DEFAULT = LT;
   
   public static SupportedLocale getByLanguage(String language) {

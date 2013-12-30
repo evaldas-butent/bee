@@ -57,7 +57,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
       if (domain.isRemovable()) {
         CustomDiv close = new CustomDiv(STYLE_NAME + "-close");
-        close.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+        close.setText(String.valueOf(BeeConst.CHAR_TIMES));
 
         close.addClickHandler(new ClickHandler() {
           @Override
@@ -102,6 +102,15 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   CentralScrutinizer() {
     super();
     addStyleName("bee-CentralScrutinizer");
+  }
+  
+  public Flow getDomainHeader(Domain domain, Long key) {
+    int index = find(domain, key);
+    if (index >= 0) {
+      return getAppliance(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -173,7 +182,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     int before = getStackSize();
     for (int i = 0; i < getStackSize(); i++) {
       Appliance appliance = getAppliance(i);
-      if (appliance != null && appliance.getDomain().getOrdinal() > domain.getOrdinal()) {
+      if (appliance != null && appliance.getDomain().ordinal() > domain.ordinal()) {
         before = i;
         break;
       }
@@ -199,13 +208,13 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-    add(Domain.REPORT, Global.getReports());
+    add(Domain.ONLINE, Global.getUsers().getOnlinePanel());
+    add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
 
     Shell shell = new Shell("bee-Shell");
     shell.restore();
 
     Simple wrapper = new Simple(shell);
-
     add(Domain.ADMIN, wrapper);
   }
 

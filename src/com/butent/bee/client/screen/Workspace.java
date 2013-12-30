@@ -390,6 +390,19 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     return panel.getActiveTile();
   }
+  
+  List<IdentifiableWidget> getOpenWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+
+    for (int i = 0; i < getPageCount(); i++) {
+      Widget contentPanel = getContentWidget(i);
+      if (contentPanel instanceof TilePanel) {
+        result.addAll(((TilePanel) contentPanel).getContentWidgets());
+      }
+    }
+    
+    return result;
+  }
 
   int getPageIndex(Tile tile) {
     for (int i = 0; i < getPageCount(); i++) {

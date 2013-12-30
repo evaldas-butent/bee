@@ -131,7 +131,7 @@ public enum UserInterface implements HasCaption {
   E_COMMERCE {
     @Override
     public Collection<Component> getComponents() {
-      return EnumSet.of(Component.AUTOCOMPLETE);
+      return EnumSet.of(Component.AUTOCOMPLETE, Component.USERS);
     }
 
     @Override
@@ -164,7 +164,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.DATA_INFO, Component.DICTIONARY, Component.FILTERS,
-          Component.DECORATORS, Component.GRIDS, Component.AUTOCOMPLETE);
+          Component.DECORATORS, Component.GRIDS, Component.AUTOCOMPLETE, Component.USERS);
     }
 
     @Override
@@ -194,7 +194,25 @@ public enum UserInterface implements HasCaption {
   };
 
   public enum Component {
-    DATA_INFO, DICTIONARY, FAVORITES, FILTERS, DECORATORS, GRIDS, MENU, AUTOCOMPLETE;
+    DATA_INFO(false),
+    DICTIONARY(false),
+    FAVORITES(false),
+    FILTERS(false),
+    DECORATORS(false),
+    GRIDS(false),
+    MENU(false),
+    AUTOCOMPLETE(false),
+    USERS(true);
+    
+    private final boolean required;
+    
+    private Component(boolean required) {
+      this.required = required;
+    }
+
+    public boolean isRequired() {
+      return required;
+    }
 
     public String key() {
       return name().toLowerCase();
@@ -223,6 +241,18 @@ public enum UserInterface implements HasCaption {
     return EnumUtils.getEnumByName(UserInterface.class, input);
   }
 
+  public static Collection<Component> getRequiredComponents() {
+    EnumSet<Component> components = EnumSet.noneOf(Component.class);
+    
+    for (Component component : Component.values()) {
+      if (component.isRequired()) {
+        components.add(component);
+      }
+    }
+    
+    return components;
+  }
+  
   public static UserInterface normalize(UserInterface ui) {
     return (ui == null) ? DEFAULT : ui;
   }

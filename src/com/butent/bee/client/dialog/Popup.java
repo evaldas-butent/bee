@@ -292,8 +292,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
-
-    setStyleName(styleName);
+    
+    if (styleName != null) {
+      setStyleName(styleName);
+    }
   }
 
   @Override

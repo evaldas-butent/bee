@@ -21,6 +21,7 @@ import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
@@ -109,7 +110,7 @@ public final class EcKeeper {
   public static HandlerRegistration bindKeyPress(HasKeyPressHandlers source) {
     if (eventHandler.getEnabled() == null) {
       eventHandler.setEnabled(false);
-      
+
       List<String> keys = Lists.newArrayList(COL_CLIENT_TOGGLE_LIST_PRICE, COL_CLIENT_TOGGLE_PRICE,
           COL_CLIENT_TOGGLE_STOCK_LIMIT);
 
@@ -120,8 +121,8 @@ public final class EcKeeper {
           eventHandler.setPriceEnabled(BeeConst.isTrue(BeeUtils.getQuietly(input, 1)));
           eventHandler.setStockLimitEnabled(BeeConst.isTrue(BeeUtils.getQuietly(input, 2)));
 
-          eventHandler.setEnabled(eventHandler.isListPriceEnabled() 
-              || eventHandler.isPriceEnabled() 
+          eventHandler.setEnabled(eventHandler.isListPriceEnabled()
+              || eventHandler.isPriceEnabled()
               || eventHandler.isStockLimitEnabled());
         }
       });
@@ -208,7 +209,7 @@ public final class EcKeeper {
 
   public static void finalizeRequest(EcRequest request, boolean remove) {
     if (request.hasProgress()) {
-      BeeKeeper.getScreen().closeProgress(request.getProgressId());
+      BeeKeeper.getScreen().removeProgress(request.getProgressId());
       request.setProgressId(null);
     }
 
@@ -348,8 +349,11 @@ public final class EcKeeper {
       }
     });
 
-    String progressId = BeeKeeper.getScreen().createProgress(request.getLabel(), null, cancel);
-    request.setProgressId(progressId);
+    Thermometer thermometer = new Thermometer(request.getLabel(), null, cancel);
+    String progressId = BeeKeeper.getScreen().addProgress(thermometer);
+    if (!BeeUtils.isEmpty(progressId)) {
+      request.setProgressId(thermometer.getId());
+    }
 
     pendingRequests.add(request);
   }
@@ -363,10 +367,10 @@ public final class EcKeeper {
           public void accept(List<DeliveryMethod> deliveryMethods) {
             Cart cart = getCart(cartType);
             ShoppingCart widget = new ShoppingCart(cartType, cart, deliveryMethods);
-            
+
             resetActiveCommand();
             searchBox.clearValue();
-            
+
             BeeKeeper.getScreen().updateActivePanel(widget);
           }
         });

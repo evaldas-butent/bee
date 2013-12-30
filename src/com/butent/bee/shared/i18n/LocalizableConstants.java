@@ -200,6 +200,12 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String doFilter();
 
+  String domainNews();
+  
+  String domainOnline();
+  
+  String domainRooms();
+
   String email();
 
   String enterColor();
@@ -362,6 +368,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String pallets();
 
+  String parameter();
+
   String partial();
 
   String password();
@@ -416,6 +424,24 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String rightStateVisible();
 
+  String roomDwellers();
+  
+  String roomName();
+  
+  String roomNew();
+  
+  String roomOwners();
+  
+  String roomSettings();
+  
+  String roomTypePrivate();
+  
+  String roomTypePublic();
+  
+  String roomUpdateTime();
+
+  String roomUsers();
+  
   String rowIsReadOnly();
 
   String saveChanges();
@@ -491,6 +517,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String userFullName();
 
   String userLogin();
+
+  String users();
 
   String value();
 

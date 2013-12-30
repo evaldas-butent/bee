@@ -6,9 +6,9 @@
   >
   <Fields>
     <String name="Hash" precision="40" notNull="true" unique="true" />
-    <Text name="Repository" notNull="true" />
+    <Text name="Repository" />
     <String name="Name" precision="255" notNull="true" label="=fileOriginalName" />
-    <Long name="Size" label="=fileSize" />
+    <Long name="Size" label="=fileSize" notNull="true" />
     <String name="Type" precision="100" label="=fileType" />
   </Fields>
 </Table>

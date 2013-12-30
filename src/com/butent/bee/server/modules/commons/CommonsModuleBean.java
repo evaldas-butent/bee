@@ -34,6 +34,7 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
@@ -222,6 +223,11 @@ public class CommonsModuleBean implements BeeModule {
         BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
+        BeeParameter.createSet(COMMONS_MODULE, "PRMcollection", false, null),
+        BeeParameter.createDate(COMMONS_MODULE, "PRMdate", false, null),
+        BeeParameter.createDateTime(COMMONS_MODULE, "PRMdatetime", false, null),
+        BeeParameter.createNumber(COMMONS_MODULE, "PRMnumber", false, null),
+        BeeParameter.createTime(COMMONS_MODULE, "PRMtime", false, null),
         BeeParameter.createText(COMMONS_MODULE, PRM_URL, false, null));
 
     params.addAll(getSqlEngineParameters());
@@ -240,6 +246,8 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    prm.init();
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void refreshIpFilterCache(TableModifyEvent event) {
@@ -252,6 +260,7 @@ public class CommonsModuleBean implements BeeModule {
       public void refreshRightsCache(TableModifyEvent event) {
         if (usr.isRightsTable(event.getTargetName()) && event.isAfter()) {
           usr.initRights();
+          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 
@@ -260,6 +269,7 @@ public class CommonsModuleBean implements BeeModule {
         if ((usr.isRoleTable(event.getTargetName()) || usr.isUserTable(event.getTargetName()))
             && event.isAfter()) {
           usr.initUsers();
+          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 
@@ -362,8 +372,9 @@ public class CommonsModuleBean implements BeeModule {
 
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      logger.warning(usr.getLocalizableMesssages().valueExists(
-          usr.getLocalizableConstants().email(), email), "ignored");
+      logger.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)),
+          "ignored");
       email = null;
     }
 
@@ -482,14 +493,14 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     if (usr.isUser(login)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().valueExists(
-          usr.getLocalizableConstants().user(), login));
+      return ResponseObject.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().user(), login)));
     }
 
     String email = reqInfo.getParameter(COL_EMAIL);
     if (!BeeUtils.isEmpty(email) && qs.sqlExists(TBL_EMAILS, COL_EMAIL_ADDRESS, email)) {
-      return ResponseObject.warning(usr.getLocalizableMesssages().valueExists(
-          usr.getLocalizableConstants().email(), email));
+      return ResponseObject.warning(usr.getLocalizableMesssages()
+          .valueExists(BeeUtils.joinWords(usr.getLocalizableConstants().email(), email)));
     }
 
     UserInterface userInterface = EnumUtils.getEnumByIndex(UserInterface.class,

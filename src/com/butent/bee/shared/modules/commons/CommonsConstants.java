@@ -161,6 +161,7 @@ public final class CommonsConstants {
   public static final String TBL_USER_HISTORY = "UserHistory";
 
   public static final String TBL_FILES = "Files";
+  public static final String TBL_FILE_PARTS = "FileParts";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -267,6 +268,8 @@ public final class CommonsConstants {
   public static final String COL_FILE_REPO = "Repository";
   public static final String COL_FILE_SIZE = "Size";
   public static final String COL_FILE_TYPE = "Type";
+  public static final String COL_FILE_FILE = "File";
+  public static final String COL_FILE_PART = "Part";
 
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_EMAIL_LABEL = "Label";

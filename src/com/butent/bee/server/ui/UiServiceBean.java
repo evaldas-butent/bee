@@ -1312,7 +1312,8 @@ public class UiServiceBean {
         }
       }
       if (BeeUtils.isEmpty(err)) {
-        List<Property> resp = sys.checkTables(tbls.toArray(new String[0]));
+        String progressId = tbls.isEmpty() ? reqInfo.getParameter(Service.VAR_PROGRESS) : null;
+        List<Property> resp = sys.checkTables(tbls, progressId);
 
         if (BeeUtils.isEmpty(resp)) {
           response.addWarning("No changes in table structure");

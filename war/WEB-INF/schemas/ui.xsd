@@ -208,6 +208,7 @@
       <xs:enumeration value="close" />
       <xs:enumeration value="closeSmall" />
       <xs:enumeration value="closeSmallRed" />
+      <xs:enumeration value="comments" />
       <xs:enumeration value="configure" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="descending" />
@@ -218,6 +219,7 @@
       <xs:enumeration value="editAdd" />
       <xs:enumeration value="editDelete" />
       <xs:enumeration value="error" />
+      <xs:enumeration value="feed" />
       <xs:enumeration value="filterDelete" />
       <xs:enumeration value="first" />
       <xs:enumeration value="forward" />
@@ -248,6 +250,7 @@
       <xs:enumeration value="search" />
       <xs:enumeration value="settings" />
       <xs:enumeration value="undo" />
+      <xs:enumeration value="user" />
       <xs:enumeration value="warning" />
       <xs:enumeration value="yellow" />
       <xs:enumeration value="yellowSmall" />

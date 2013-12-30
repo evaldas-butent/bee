@@ -13,6 +13,15 @@
   font-style: normal;
 }
 
+@keyframes rotate {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+@-webkit-keyframes rotate {
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(360deg);}
+}
+
 .bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
@@ -1265,18 +1274,6 @@
   height: 100%;
 }
 
-.bee-ReportsItem {
-  margin-left: 1em;
-  margin-top: 1.5ex;
-}
-.bee-ReportsItem:first-child {
-  margin-top: 3ex;
-}
-.bee-ReportsItem:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 .bee-Workspace-tabPanel {
   display: flex;
   display: -webkit-flex;
@@ -1501,16 +1498,21 @@
   margin-right: 1em;
 }
 
-.bee-ProgressItem {
+.bee-Thermometer-container {
   display: inline-block;
   margin-left: 2em;
   margin-top: 2px;
 }
-.bee-ProgressItem .bee-Progress {
+.bee-Thermometer-progress {
   margin: 0 3px 1px 5px;
 }
-.bee-ProgressClose {
+.bee-Thermometer-cancel {
+  font-size: 18px;
   margin-right: 5px;
+  cursor: pointer;
+}
+.bee-Thermometer-cancel:hover {
+  color: red;
 }
 
 .bee-FileCollector-panel, .bee-FileGroup-panel {
@@ -1609,12 +1611,6 @@
 .bee-Appliance-close:hover {
   color: red;
   cursor: pointer;
-}
-
-.bee-ApplianceAdmin {
-}
-
-.bee-ApplianceReport {
 }
 
 .bee-Shell {
@@ -2275,4 +2271,229 @@
   top: 2px;
   right: 2px;
   cursor: pointer;
+}
+
+.bee-Online-size,
+.bee-Rooms-size {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  display: inline-block;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background-color: #999;
+  border-radius: 10px;
+}
+.bee-Online-updated,
+.bee-Rooms-updated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+.bee-Online-item,
+.bee-Room-headerPanel,
+.bee-Room-infoPanel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Online-item:hover,
+.bee-Room-container:hover {
+  background-color: #f2f2f2;
+}
+.bee-Online-item:hover .bee-Online-tweet,
+.bee-Online-item:hover .bee-Online-home {
+  visibility: visible;
+}
+
+.bee-Online-name {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  margin: 3px 1em 1px 1em;
+  cursor: pointer;
+}
+.bee-Online-name:hover {
+  text-decoration: underline;
+}
+
+.bee-Online-tweet,
+.bee-Online-home {
+  font-size: 18px;
+  margin-right: 5px;
+  cursor: pointer;
+  color: #555;
+  visibility: hidden;
+}
+.bee-Online-tweet:hover,
+.bee-Online-home:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-Room-container {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+  transition: background-color 1s;  
+}
+
+.bee-Room-nameLabel {
+  font-weight: bold;
+  color: #333;
+  text-decoration: underline;
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  margin: 3px 1em;
+  cursor: pointer;
+}
+
+.bee-Room-infoCommand,
+.bee-Room-settingsCommand,
+.bee-Room-deleteCommand {
+  font-size: 18px;
+  margin-right: 5px;
+  cursor: pointer;
+  color: #555;
+}
+
+.bee-Room-guest {
+  display: none;
+}
+
+.bee-Room-usersBadge {
+  margin-left: 5px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background-color: #999;
+  border-radius: 10px;
+}
+.bee-Room-usersBadge.bee-Room-empty {
+  visibility: hidden;
+}
+.bee-Room-usersPanel {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+}
+.bee-Room-user {
+  display: inline-block;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 5px;
+}
+.bee-Room-maxTime {
+  margin-left: 5px;
+  margin-right: 5px;
+  color: #777;
+}
+
+.bee-Room-updated {
+  background-color: #ff8;
+}
+
+.bee-Rooms-plus {
+  display: inline-block;
+  font-size: x-large;
+  margin-left: 1em;
+  margin-top: 5px;
+  cursor: pointer;
+}
+.bee-Room-infoCommand:hover,
+.bee-Room-settingsCommand:hover,
+.bee-Room-deleteCommand:hover,
+.bee-Rooms-plus:hover:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-Chat-messages {
+  position: absolute;
+  top: 30px;
+  bottom: 11%;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+.bee-Chat-footer {
+  position: absolute;
+  height: 10%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: WhiteSmoke;
+}
+
+.bee-Chat-message {
+  min-height: 60px;
+  position: relative;
+  border-bottom: 1px solid #ccc;
+}
+.bee-Chat-message:hover {
+  background-color: #f2f2f2;
+}
+
+.bee-Chat-message-photo {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  max-width: 48px;
+  max-height: 48px;
+  border-radius: 5px;
+  cursor: default;
+}
+.bee-Chat-message-signature {
+  margin-left: 60px;
+  padding-top: 5px;
+  padding-bottom: 3px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #555;
+}
+.bee-Chat-message-body {
+  margin-left: 60px;
+  white-space: pre-line;
+  font-size: 14px;
+  color: #333;
+}
+.bee-Chat-message-time {
+  position: absolute;
+  top: 5px;
+  right: 1em;
+  color: #777;
+}
+
+.bee-Chat-input {
+  position: absolute;
+  top: 5%;
+  left: 1%;
+  width: 50%;
+  height: 90%;
+}
+.bee-Chat-submit {
+  position: absolute;
+  top: 10%;
+  left: 53%;
+  font-size: x-large;
+}
+.bee-Chat-online {
+  position: absolute;
+  top: 3px;
+  bottom: 0;
+  left: 60%;
+  right: 0;
+}
+.bee-Chat-user {
+  display: inline-block;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 5px;
 }

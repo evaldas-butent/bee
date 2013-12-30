@@ -71,6 +71,21 @@ public class LogbackLogger implements BeeLogger {
   }
 
   @Override
+  public LogLevel getLevel() {
+    if (isDebugEnabled()) {
+      return LogLevel.DEBUG;
+    } else if (isInfoEnabled()) {
+      return LogLevel.INFO;
+    } else if (isWarningEnabled()) {
+      return LogLevel.WARNING;
+    } else if (isErrorEnabled()) {
+      return LogLevel.ERROR;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public void info(Object... messages) {
     if (isInfoEnabled()) {
       logInternal(LocationAwareLogger.INFO_INT, null, messages);

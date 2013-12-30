@@ -11,6 +11,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public abstract class DataEvent {
 
@@ -37,16 +38,16 @@ public abstract class DataEvent {
     }
   }
   public static class ViewDeleteEvent extends ViewModifyEvent {
-    private final List<Long> ids;
+    private final Set<Long> ids;
 
-    ViewDeleteEvent(String viewName, List<Long> ids) {
+    ViewDeleteEvent(String viewName, Set<Long> ids) {
       super(viewName);
       Assert.notEmpty(ids);
 
       this.ids = ids;
     }
 
-    public List<Long> getIds() {
+    public Set<Long> getIds() {
       return ids;
     }
   }

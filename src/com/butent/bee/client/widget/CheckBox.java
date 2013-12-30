@@ -87,6 +87,11 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
   }
 
   @Override
+  public String getText() {
+    return labelElem.getInnerText();
+  }
+
+  @Override
   public Boolean getValue() {
     if (isAttached()) {
       return inputElem.isChecked();
@@ -99,17 +104,17 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
   public boolean isEnabled() {
     return !inputElem.isDisabled();
   }
-
+  
   @Override
   public void setAccessKey(char key) {
     inputElem.setAccessKey(String.valueOf(key));
   }
-  
+
   @Override
   public void setEnabled(boolean enabled) {
     inputElem.setDisabled(!enabled);
   }
-
+  
   @Override
   public void setFocus(boolean focused) {
     if (focused) {
@@ -122,12 +127,12 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
   public void setFormValue(String value) {
     inputElem.setValue(value);
   }
-  
+
   @Override
   public void setHtml(String html) {
     labelElem.setInnerHTML(html);
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
@@ -138,6 +143,11 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
     if (inputElem != null) {
       inputElem.setTabIndex(index);
     }
+  }
+  
+  @Override
+  public void setText(String text) {
+    labelElem.setInnerText(text);
   }
   
   @Override

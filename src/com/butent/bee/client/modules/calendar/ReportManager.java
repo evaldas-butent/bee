@@ -31,6 +31,7 @@ import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
@@ -56,23 +57,6 @@ import java.util.Map;
 class ReportManager {
 
   private static final String STYLE_PREFIX = "bee-cal-ReportOptions-";
-
-  private final Map<Report, BeeRow> reportOptions = Maps.newHashMap();
-
-  ReportManager() {
-    super();
-  }
-
-  void register() {
-    for (final Report report : Report.values()) {
-      Global.addReport(report.getCaption(), new Command() {
-        @Override
-        public void execute() {
-          onSelectReport(report);
-        }
-      });
-    }
-  }
 
   private static void addStyle(Widget widget, String styleName) {
     widget.addStyleName(STYLE_PREFIX + styleName);
@@ -135,7 +119,56 @@ class ReportManager {
     return sb.toString();
   }
 
-  private void onSelectReport(final Report report) {
+  private static void showReport(Report report, String caption, BeeRowSet rowSet) {
+    String gridName = "CalendarReport" + report.name();
+    GridDescription gridDescription = new GridDescription(gridName);
+
+    gridDescription.setCaption(caption);
+    gridDescription.setReadOnly(true);
+
+    for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
+      String colName = rowSet.getColumn(i).getId();
+      ColumnDescription columnDescription = new ColumnDescription(ColType.DATA, colName);
+
+      switch (i) {
+        case 0:
+          columnDescription.setCaption(Localized.getConstants().calReportLowerHour());
+          break;
+        case 1:
+          columnDescription.setCaption(Localized.getConstants().calAttendee());
+          break;
+        default:
+          columnDescription.setHorAlign(TextAlign.RIGHT.getCssName());
+          break;
+      }
+
+      columnDescription.setSource(colName);
+      columnDescription.setSortable(true);
+
+      gridDescription.addColumn(columnDescription);
+    }
+
+    Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
+    
+    GridView gridView = GridFactory.createGridView(gridDescription,
+        GridFactory.getSupplierKey(gridName, null), rowSet.getColumns());
+    gridView.initData(rowSet.getNumberOfRows(), rowSet);
+    
+    GridPresenter presenter = new GridPresenter(gridDescription, gridView,
+        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, CachingPolicy.NONE, uiOptions);
+
+    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
+  }
+
+  private final Map<Report, BeeRow> reportOptions = Maps.newHashMap();
+
+  ReportManager() {
+    super();
+  }
+
+  void onSelectReport(final Report report) {
+    Assert.notNull(report);
+
     BeeRow options = reportOptions.get(report);
     if (options != null) {
       openDialog(report, options);
@@ -248,7 +281,7 @@ class ReportManager {
 
     Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME));
     atpRel.disableNewRow();
-    final MultiSelector atpSelector = MultiSelector.createAutonomous(atpRel,
+    final MultiSelector atpSelector = MultiSelector.autonomous(atpRel,
         RendererFactory.createRenderer(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME)));
 
     atpSelector.render(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
@@ -264,7 +297,7 @@ class ReportManager {
     Relation attRel = Relation.create(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
     attRel.disableNewRow();
 
-    final MultiSelector attSelector = MultiSelector.createAutonomous(attRel,
+    final MultiSelector attSelector = MultiSelector.autonomous(attRel,
         RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME)));
 
     attSelector.render(Data.getString(viewName, options, COL_ATTENDEES));
@@ -327,46 +360,5 @@ class ReportManager {
     dialog.center();
 
     caption.setFocus(true);
-  }
-
-  private static void showReport(Report report, String caption, BeeRowSet rowSet) {
-    String gridName = "CalendarReport" + report.name();
-    GridDescription gridDescription = new GridDescription(gridName);
-
-    gridDescription.setCaption(caption);
-    gridDescription.setReadOnly(true);
-
-    for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
-      String colName = rowSet.getColumn(i).getId();
-      ColumnDescription columnDescription = new ColumnDescription(ColType.DATA, colName);
-
-      switch (i) {
-        case 0:
-          columnDescription.setCaption(Localized.getConstants().calReportLowerHour());
-          break;
-        case 1:
-          columnDescription.setCaption(Localized.getConstants().calAttendee());
-          break;
-        default:
-          columnDescription.setHorAlign(TextAlign.RIGHT.getCssName());
-          break;
-      }
-
-      columnDescription.setSource(colName);
-      columnDescription.setSortable(true);
-
-      gridDescription.addColumn(columnDescription);
-    }
-
-    Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
-    
-    GridView gridView = GridFactory.createGridView(gridDescription,
-        GridFactory.getSupplierKey(gridName, null), rowSet.getColumns());
-    gridView.initData(rowSet.getNumberOfRows(), rowSet);
-    
-    GridPresenter presenter = new GridPresenter(gridDescription, gridView,
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, CachingPolicy.NONE, uiOptions);
-
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }
 }

@@ -1,8 +1,9 @@
-package com.butent.bee.shared.websocket;
+package com.butent.bee.shared.websocket.messages;
 
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -34,6 +35,12 @@ public class InfoMessage extends Message implements HasCaption, HasInfo {
     return info;
   }
 
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions("type", string(getType()), "caption", getCaption(),
+        "info", BeeUtils.isEmpty(info) ? null : info.toString());
+  }
+  
   @Override
   protected void deserialize(String s) {
     Pair<String, String> pair = Pair.restore(s);

@@ -32,7 +32,7 @@ public class CliWidget extends InputText {
     }
 
     event.preventDefault();
-    CliWorker.execute(getValue());
+    CliWorker.execute(getValue(), true);
   }
 
   @Override

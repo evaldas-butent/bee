@@ -30,6 +30,9 @@ public final class LocaleUtils {
       "sausio", "vasario", "kovo", "balandžio", "gegužės", "birželio",
       "liepos", "rugpjūčio", "rugsėjo", "spalio", "lapkričio", "gruodžio"};
 
+  private static final String LT_FORMAT_MONTH_ABBREV_DAY = "MMM d";
+  private static final String LT_FORMAT_MONTH_FULL_DAY = "MMMM d";
+  
   public static boolean copyDateTimeFormat(Object src, Object dst) {
     if (src instanceof HasDateTimeFormat && dst instanceof HasDateTimeFormat && src != dst) {
       ((HasDateTimeFormat) dst).setDateTimeFormat(((HasDateTimeFormat) src).getDateTimeFormat());
@@ -184,15 +187,37 @@ public final class LocaleUtils {
   }
 
   /**
-   * cldr patch.
+   * cldr patches.
    */
-  public static String[] monthsFull(LocaleInfo localeInfo) {
-    Assert.notNull(localeInfo);
-    if (BeeUtils.same(localeInfo.getLocaleName(), LOCALE_NAME_LT)) {
+  static String formatMonthAbbrevDay(LocaleInfo localeInfo) {
+    if (isLt(localeInfo)) {
+      return LT_FORMAT_MONTH_ABBREV_DAY;
+    } else {
+      Assert.notNull(localeInfo);
+      return localeInfo.getDateTimeFormatInfo().formatMonthAbbrevDay();
+    }
+  }
+
+  static String formatMonthFullDay(LocaleInfo localeInfo) {
+    if (isLt(localeInfo)) {
+      return LT_FORMAT_MONTH_FULL_DAY;
+    } else {
+      Assert.notNull(localeInfo);
+      return localeInfo.getDateTimeFormatInfo().formatMonthFullDay();
+    }
+  }
+
+  static String[] monthsFull(LocaleInfo localeInfo) {
+    if (isLt(localeInfo)) {
       return LT_MONTHS_FULL;
     } else {
+      Assert.notNull(localeInfo);
       return localeInfo.getDateTimeFormatInfo().monthsFull();
     }
+  }
+  
+  private static boolean isLt(LocaleInfo localeInfo) {
+    return localeInfo != null && BeeUtils.same(localeInfo.getLocaleName(), LOCALE_NAME_LT);
   }
 
   private LocaleUtils() {

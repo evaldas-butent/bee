@@ -17,37 +17,44 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public final class BeeParameter implements BeeSerializable {
 
   public static BeeParameter createBoolean(String module, String name, boolean userMode,
       Boolean defValue) {
-    return new BeeParameter(module, name, ParameterType.BOOLEAN, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.BOOLEAN, userMode,
+        defValue != null ? defValue.toString() : null);
   }
 
   public static BeeParameter createCollection(String module, String name, boolean userMode,
       Collection<String> defValue) {
-    return new BeeParameter(module, name, ParameterType.COLLECTION, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.COLLECTION, userMode,
+        defValue != null ? Codec.beeSerialize(defValue) : null);
   }
 
   public static BeeParameter createDate(String module, String name, boolean userMode,
       JustDate defValue) {
-    return new BeeParameter(module, name, ParameterType.DATE, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.DATE, userMode,
+        defValue != null ? defValue.toString() : null);
   }
 
   public static BeeParameter createDateTime(String module, String name, boolean userMode,
       DateTime defValue) {
-    return new BeeParameter(module, name, ParameterType.DATETIME, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.DATETIME, userMode,
+        defValue != null ? defValue.toCompactString() : null);
   }
 
   public static BeeParameter createMap(String module, String name, boolean userMode,
       Map<String, String> defValue) {
-    return new BeeParameter(module, name, ParameterType.MAP, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.MAP, userMode,
+        defValue != null ? Codec.beeSerialize(defValue) : null);
   }
 
   public static BeeParameter createNumber(String module, String name, boolean userMode,
       Number defValue) {
-    return new BeeParameter(module, name, ParameterType.NUMBER, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.NUMBER, userMode,
+        defValue != null ? defValue.toString() : null);
   }
 
   public static BeeParameter createRelation(String module, String name, boolean userMode,
@@ -60,9 +67,26 @@ public final class BeeParameter implements BeeSerializable {
     return param;
   }
 
+  public static BeeParameter createSet(String module, String name, boolean userMode,
+      Set<String> defValue) {
+
+    BeeParameter param = createCollection(module, name, userMode, defValue);
+    param.setOptions(BeeUtils.toString(true));
+    return param;
+  }
+
   public static BeeParameter createTime(String module, String name, boolean userMode,
       Long defValue) {
-    return new BeeParameter(module, name, ParameterType.TIME, userMode, transform(defValue));
+    return new BeeParameter(module, name, ParameterType.TIME, userMode,
+        defValue != null ? TimeUtils.renderTime(defValue, false) : null);
+  }
+
+  public static BeeParameter createTimeOfDay(String module, String name, boolean userMode,
+      Long defValue) {
+
+    BeeParameter param = createTime(module, name, userMode, defValue);
+    param.setOptions(BeeUtils.toString(true));
+    return param;
   }
 
   public static BeeParameter createText(String module, String name, boolean userMode,
@@ -76,32 +100,18 @@ public final class BeeParameter implements BeeSerializable {
     return parameter;
   }
 
-  private static String transform(Object val) {
-    String expr = null;
-
-    if (val != null) {
-      if (val instanceof BeeSerializable) {
-        expr = ((BeeSerializable) val).serialize();
-      } else if (val instanceof Map || val instanceof Collection) {
-        expr = Codec.beeSerialize(val);
-      } else {
-        expr = val.toString();
-      }
-    }
-    return expr;
-  }
-
   private String module;
   private String name;
   private ParameterType type;
   private String defValue;
   private final Map<Long, String> userValues = Maps.newHashMapWithExpectedSize(1);
+  private final Map<Long, String> displayValues = Maps.newHashMapWithExpectedSize(1);
   private boolean supportsUsers;
   private Long id;
   private String options;
 
   private enum Serial {
-    MODULE, NAME, TYPE, DEF_VALUE, USER_VALUES, SUPPORTS_USERS, OPTIONS;
+    MODULE, NAME, TYPE, DEF_VALUE, USER_VALUES, DISPLAY_VALUES, SUPPORTS_USERS, OPTIONS;
   }
 
   private BeeParameter() {
@@ -145,6 +155,11 @@ public final class BeeParameter implements BeeSerializable {
             userValues.put(BeeUtils.toLongOrNull(entry.getKey()), entry.getValue());
           }
           break;
+        case DISPLAY_VALUES:
+          for (Entry<String, String> entry : Codec.beeDeserializeMap(val).entrySet()) {
+            displayValues.put(BeeUtils.toLongOrNull(entry.getKey()), entry.getValue());
+          }
+          break;
         case SUPPORTS_USERS:
           supportsUsers = BeeUtils.toBoolean(val);
           break;
@@ -160,7 +175,7 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public Boolean getBoolean(Long userId) {
-    return (Boolean) getTypedValue(ParameterType.BOOLEAN, getUserValue(userId));
+    return (Boolean) getTypedValue(ParameterType.BOOLEAN, getValue(userId));
   }
 
   @SuppressWarnings("unchecked")
@@ -170,7 +185,7 @@ public final class BeeParameter implements BeeSerializable {
 
   @SuppressWarnings("unchecked")
   public Collection<String> getCollection(Long userId) {
-    return (Collection<String>) getTypedValue(ParameterType.COLLECTION, getUserValue(userId));
+    return (Collection<String>) getTypedValue(ParameterType.COLLECTION, getValue(userId));
   }
 
   public JustDate getDate() {
@@ -178,7 +193,7 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public JustDate getDate(Long userId) {
-    return (JustDate) getTypedValue(ParameterType.DATE, getUserValue(userId));
+    return (JustDate) getTypedValue(ParameterType.DATE, getValue(userId));
   }
 
   public DateTime getDateTime() {
@@ -186,7 +201,21 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public DateTime getDateTime(Long userId) {
-    return (DateTime) getTypedValue(ParameterType.DATETIME, getUserValue(userId));
+    return (DateTime) getTypedValue(ParameterType.DATETIME, getValue(userId));
+  }
+
+  public String getDisplayValue() {
+    return displayValues.get(null);
+  }
+
+  public String getDisplayValue(Long userId) {
+    Assert.isTrue(DataUtils.isId(userId));
+
+    if (supportsUsers() && displayValues.containsKey(userId)) {
+      return displayValues.get(userId);
+    } else {
+      return getDisplayValue();
+    }
   }
 
   public Long getId() {
@@ -200,7 +229,7 @@ public final class BeeParameter implements BeeSerializable {
 
   @SuppressWarnings("unchecked")
   public Map<String, String> getMap(Long userId) {
-    return (Map<String, String>) getTypedValue(ParameterType.MAP, getUserValue(userId));
+    return (Map<String, String>) getTypedValue(ParameterType.MAP, getValue(userId));
   }
 
   public String getModule() {
@@ -216,7 +245,7 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public Number getNumber(Long userId) {
-    return (Number) getTypedValue(ParameterType.NUMBER, getUserValue(userId));
+    return (Number) getTypedValue(ParameterType.NUMBER, getValue(userId));
   }
 
   public String getOptions() {
@@ -228,7 +257,7 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public Long getRelation(Long userId) {
-    return (Long) getTypedValue(ParameterType.RELATION, getUserValue(userId));
+    return (Long) getTypedValue(ParameterType.RELATION, getValue(userId));
   }
 
   public String getText() {
@@ -236,7 +265,7 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public String getText(Long userId) {
-    return (String) getTypedValue(ParameterType.TEXT, getUserValue(userId));
+    return (String) getTypedValue(ParameterType.TEXT, getValue(userId));
   }
 
   public Long getTime() {
@@ -244,23 +273,15 @@ public final class BeeParameter implements BeeSerializable {
   }
 
   public Long getTime(Long userId) {
-    return (Long) getTypedValue(ParameterType.TIME, getUserValue(userId));
+    return (Long) getTypedValue(ParameterType.TIME, getValue(userId));
   }
 
   public ParameterType getType() {
     return type;
   }
 
-  public String getUserValue(Long userId) {
-    Assert.state(supportsUsers(), "Parameter does not support user values: "
-        + BeeUtils.join(".", getModule(), getName()));
-    Assert.isTrue(DataUtils.isId(userId));
-
-    if (userValues.containsKey(userId)) {
-      return userValues.get(userId);
-    } else {
-      return getValue();
-    }
+  public Collection<Long> getUsers() {
+    return userValues.keySet();
   }
 
   public String getValue() {
@@ -271,8 +292,19 @@ public final class BeeParameter implements BeeSerializable {
     }
   }
 
+  public String getValue(Long userId) {
+    Assert.isTrue(DataUtils.isId(userId));
+
+    if (supportsUsers() && userValues.containsKey(userId)) {
+      return userValues.get(userId);
+    } else {
+      return getValue();
+    }
+  }
+
   public void reset() {
     userValues.clear();
+    displayValues.clear();
     setId(null);
   }
 
@@ -299,6 +331,9 @@ public final class BeeParameter implements BeeSerializable {
         case USER_VALUES:
           arr[i++] = userValues;
           break;
+        case DISPLAY_VALUES:
+          arr[i++] = displayValues;
+          break;
         case SUPPORTS_USERS:
           arr[i++] = supportsUsers;
           break;
@@ -310,20 +345,28 @@ public final class BeeParameter implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
-  public void setId(Long id) {
-    this.id = id;
+  public void setDisplayValue(String displayValue) {
+    if (displayValue == null) {
+      displayValues.remove(null);
+    } else {
+      displayValues.put(null, displayValue);
+    }
   }
 
-  public void setUserValue(Long userId, String val) {
+  public void setDisplayValue(Long userId, String displayValue) {
     Assert.state(supportsUsers(), "Parameter does not support user values: "
         + BeeUtils.join(".", getModule(), getName()));
     Assert.isTrue(DataUtils.isId(userId));
 
-    if (val == null) {
-      userValues.remove(userId);
+    if (displayValue == null) {
+      displayValues.remove(userId);
     } else {
-      userValues.put(userId, val);
+      displayValues.put(userId, displayValue);
     }
+  }
+
+  public void setId(Long id) {
+    this.id = id;
   }
 
   public void setValue(String value) {
@@ -332,6 +375,20 @@ public final class BeeParameter implements BeeSerializable {
     } else {
       userValues.put(null, value);
     }
+    setDisplayValue(null);
+  }
+
+  public void setValue(Long userId, String value) {
+    Assert.state(supportsUsers(), "Parameter does not support user values: "
+        + BeeUtils.join(".", getModule(), getName()));
+    Assert.isTrue(DataUtils.isId(userId));
+
+    if (value == null) {
+      userValues.remove(userId);
+    } else {
+      userValues.put(userId, value);
+    }
+    setDisplayValue(userId, null);
   }
 
   public boolean supportsUsers() {
@@ -349,11 +406,11 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case DATE:
-        val = TimeUtils.toDateOrNull(expr);
+        val = TimeUtils.parseDate(expr);
         break;
 
       case DATETIME:
-        val = TimeUtils.toDateTimeOrNull(expr);
+        val = TimeUtils.parseDateTime(expr);
         break;
 
       case COLLECTION:
@@ -383,7 +440,7 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case TIME:
-        val = BeeUtils.toLongOrNull(expr);
+        val = TimeUtils.parseTime(expr);
         break;
     }
     return val;

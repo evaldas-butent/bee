@@ -94,6 +94,9 @@ public final class Images {
     @Source("closeSmallRed.png")
     ImageResource closeSmallRed();
 
+    @Source("comments.png")
+    ImageResource comments();
+
     @Source("configure.png")
     ImageResource configure();
 
@@ -123,6 +126,9 @@ public final class Images {
 
     @Source("error.png")
     ImageResource error();
+
+    @Source("feed.png")
+    ImageResource feed();
 
     @Source("filter_delete.png")
     ImageResource filterDelete();
@@ -292,6 +298,9 @@ public final class Images {
     @Source("undo.png")
     ImageResource undo();
 
+    @Source("user.png")
+    ImageResource user();
+
     @Source("warning.png")
     ImageResource warning();
     
@@ -373,6 +382,8 @@ public final class Images {
     map.put(key("closeSmall"), resources.closeSmall());
     map.put(key("closeSmallRed"), resources.closeSmallRed());
 
+    map.put(key("comments"), resources.comments());
+
     map.put(key("configure"), resources.configure());
 
     map.put(key("delete"), resources.delete());
@@ -390,6 +401,8 @@ public final class Images {
     map.put(key("editDelete"), resources.editDelete());
 
     map.put(key("error"), resources.error());
+
+    map.put(key("feed"), resources.feed());
 
     map.put(key("filterDelete"), resources.filterDelete());
 
@@ -452,6 +465,8 @@ public final class Images {
     map.put(key("sliderSliding"), resources.sliderSliding());
 
     map.put(key("undo"), resources.undo());
+
+    map.put(key("user"), resources.user());
 
     map.put(key("warning"), resources.warning());
 

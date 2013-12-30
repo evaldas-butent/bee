@@ -1207,7 +1207,6 @@ public final class DomUtils {
     Assert.notEmpty(src);
     Document doc = Document.get();
     ScriptElement script = doc.createScriptElement();
-    script.setType("text/javascript");
     script.setSrc(src);
     doc.getBody().appendChild(script);
   }
