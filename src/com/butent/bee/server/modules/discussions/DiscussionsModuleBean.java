@@ -135,20 +135,12 @@ public class DiscussionsModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN,
-            /* "The discussions administrator's login name, which can perform the removal steps", */
-            false, ""),
-        BeeParameter.createBoolean(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS,
-            /* "Allows users deletes own comments", */false, null),
-        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS,
-            /* "Number of days when the discussion becomes inactive since last comment", */
-            false, null),
-        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS,
-            /* "List of banned file extensions separated by spaces", */
-            false, ""),
-        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE,
-            /* "Max upload file size in MB", */
-            false, null)
+        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN, false, ""),
+        BeeParameter.createBoolean(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS, false, null),
+        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false,
+            null),
+        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
+        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, false, null)
         );
 
     return params;
