@@ -51,15 +51,15 @@ public final class DiscussionsKeeper {
     if (marksIds == null || result == null) {
       return;
     }
-    
+
     LogUtils.getRootLogger().debug("PROP MARKS", BeeUtils.joinLongs(marksIds));
-    
+
     ParameterList params = createArgs(SVC_GET_DISCUSSION_MARKS_DATA);
     if (!marksIds.isEmpty()) {
       params.addDataItem(VAR_DISCUSSION_MARK, DataUtils.buildIdList(marksIds));
     }
     // params.addDataItem(VAR_DISCUSSION_COMMENT, BeeUtils.unbox(commentId));
-    
+
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
       @Override
@@ -69,7 +69,7 @@ public final class DiscussionsKeeper {
           result.onFailure(BeeUtils.join(". ", response.getMessages()));
           return;
         }
-        
+
         if (response.hasResponse(SimpleRowSet.class)) {
           result.onSuccess(SimpleRowSet.restore(response.getResponseAsString()));
         } else {

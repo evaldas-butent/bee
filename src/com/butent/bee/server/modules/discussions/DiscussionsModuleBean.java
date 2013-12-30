@@ -307,6 +307,17 @@ public class DiscussionsModuleBean implements BeeModule {
     if (!rs.isEmpty()) {
       row.setProperty(PROP_MARK_TYPES, rs.serialize());
     }
+
+    Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(DISCUSSIONS_MODULE);
+    if (!discussModuleParams.isEmpty()) {
+      Map<String, String> paramsMap = Maps.newHashMap();
+      
+      for (BeeParameter p : discussModuleParams) {
+        paramsMap.put(p.getName(), p.getValue());
+      }
+      
+      row.setProperty(PROP_PARAMETERS, Codec.beeSerialize(paramsMap));
+    }
   }
 
   private ResponseObject createDiscussionRelations(long discussionId,

@@ -33,7 +33,6 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -80,53 +79,49 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       final FileCollector fc = (FileCollector) widget;
       fc.bindDnd(getFormView());
 
-      DiscussionsUtils.getDiscussionsParameters(new Consumer<Map<String, String>>() {
+      final Map<String, String> discussParams =
+          DiscussionsUtils.getDiscussionsParameters(form.getActiveRow());
+
+      if (discussParams == null || discussParams.isEmpty()) {
+        return;
+      }
+
+      fc.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
 
         @Override
-        public void accept(final Map<String, String> input) {
-          if (input == null || input.isEmpty()) {
-            return;
-          }
-          
-          fc.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
+        public void onSelection(SelectionEvent<NewFileInfo> event) {
+          NewFileInfo fileInfo = event.getSelectedItem();
 
-            @Override
-            public void onSelection(SelectionEvent<NewFileInfo> event) {
-              NewFileInfo fileInfo = event.getSelectedItem();
+          if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
+              BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
 
-              if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
-                  BeeUtils.toLongOrNull(input.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
-
-                BeeKeeper.getScreen().notifyWarning(
-                    Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
-                    BeeUtils.toLong(input.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024), "("
+            BeeKeeper.getScreen().notifyWarning(
+                Localized.getMessages().fileSizeExceeded(fileInfo.getSize(),
+                    BeeUtils.toLong(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)) * 1024 * 1024),
+                "("
                     + fileInfo.getName() + ")");
 
-                fc.clear();
-                return;
-              }
-              
-              if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(), 
-                  BeeConst.STRING_POINT), input.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
-                
-                BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
-                    fileInfo.getName());
-                fc.clear();
-                return;
-              }
-            }
-            
-          });
+            fc.clear();
+            return;
+          }
+
+          if (DiscussionsUtils.isForbiddenExtention(BeeUtils.getSuffix(fileInfo.getName(),
+              BeeConst.STRING_POINT), discussParams.get(PRM_FORBIDDEN_FILES_EXTENTIONS))) {
+
+            BeeKeeper.getScreen().notifyWarning(Localized.getConstants().discussInvalidFile(),
+                fileInfo.getName());
+            fc.clear();
+            return;
+          }
         }
 
       });
-
     }
 
     if (BeeUtils.same(name, WIDGET_ACCESSIBILITY) && widget instanceof InputBoolean) {
       final InputBoolean ac = (InputBoolean) widget;
       ac.setValue(BeeConst.STRING_TRUE);
-      
+
       ac.addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
@@ -156,20 +151,20 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
     event.consume();
     IsRow activeRow = getFormView().getActiveRow();
-    
+
     boolean discussPublic = BeeUtils.toBoolean(
         ((InputBoolean) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY)).getValue());
-    
+
     String description = ((Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
         .getValue();
-    
+
     if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
       event.getCallback().onFailure(Localized.getConstants().discussSelectMembers());
       return;
     }
-    
+
     BeeRow newRow = DataUtils.cloneRow(activeRow);
-    
+
     if (!BeeUtils.isEmpty(description)) {
       Data.setValue(VIEW_DISCUSSIONS, newRow, COL_DESCRIPTION, description);
     }
@@ -242,12 +237,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void createFiles(final List<Long> discussions) {
-   
+
     Widget widget = getFormView().getWidgetByName(WIDGET_FILES);
 
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
       List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
-      
+
       final List<BeeColumn> columns =
           Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_FILE,
               COL_CAPTION));

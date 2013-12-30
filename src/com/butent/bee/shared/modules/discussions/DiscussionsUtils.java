@@ -7,9 +7,7 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -19,6 +17,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 import java.util.Map;
@@ -73,27 +72,18 @@ public final class DiscussionsUtils {
     return users;
   }
 
-  public static void getDiscussionsParameters(final Consumer<Map<String, String>> params) {
-    if (params == null) {
-      return;
+  public static Map<String, String> getDiscussionsParameters(IsRow formRow) {
+    if (formRow == null) {
+      return Maps.newHashMap();
+    }
+    
+    if (BeeUtils.isEmpty(formRow.getProperty(PROP_PARAMETERS))) {
+      return Maps.newHashMap();
     }
 
-    final Map<String, String> holder = Maps.newHashMap();
+    Map<String, String> params = Codec.beeDeserializeMap(formRow.getProperty(PROP_PARAMETERS));
 
-    for (final String parameterName : LIST_OF_PARAMETERS) {
-      Global.getParameter(DISCUSSIONS_MODULE, parameterName, new Consumer<String>() {
-
-        @Override
-        public void accept(String input) {
-          holder.put(parameterName, input);
-
-          if (holder.size() == LIST_OF_PARAMETERS.length) {
-            params.accept(holder);
-          }
-        }
-
-      });
-    }
+    return params;
   }
 
   public static int getMarkCount(long markId, Long commentId, SimpleRowSet marksStats) {

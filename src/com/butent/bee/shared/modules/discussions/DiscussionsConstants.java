@@ -153,15 +153,13 @@ public final class DiscussionsConstants {
   public static final String PROP_MARK_COUNT = "MarkCount";
   public static final String PROP_MARK_TYPES = "MarkTypes";
 
+  public static final String PROP_PARAMETERS = "Parameters";
+
   public static final String PRM_DISCUSS_ADMIN = "DiscussionsAdmin";
   public static final String PRM_FORBIDDEN_FILES_EXTENTIONS = "ForbiddenFilesExtentions";
   public static final String PRM_MAX_UPLOAD_FILE_SIZE = "MaxUploadFileSize";
   public static final String PRM_ALLOW_DELETE_OWN_COMMENTS = "AllowDeleteOwnComments";
   public static final String PRM_DISCUSS_INACTIVE_TIME_IN_DAYS = "DiscussInactiveTimeInDays";
-
-  public static final String[] LIST_OF_PARAMETERS = {PRM_DISCUSS_ADMIN,
-      PRM_FORBIDDEN_FILES_EXTENTIONS, PRM_MAX_UPLOAD_FILE_SIZE, PRM_ALLOW_DELETE_OWN_COMMENTS,
-      PRM_DISCUSS_INACTIVE_TIME_IN_DAYS};
 
   public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
   public static final String SVC_GET_DISCUSSION_MARKS_DATA = "get_discuss_marks_data";
