@@ -10,11 +10,13 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -49,6 +51,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
@@ -263,9 +266,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
 
-  private static final String IMAGE_REPLY = "replytoall";
-  private static final String IMAGE_TRASH = "silverdelete";
-
   private static final int INITIAL_COMMENT_ROW_PADDING_LEFT = 0;
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = 5;
 
@@ -273,12 +273,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       PROP_APPOINTMENTS, PROP_TASKS, PROP_DOCUMENTS);
   private final long userId;
 
-  // private final DiscussionIterceptorCache discussCache;
-
   DiscussionInterceptor() {
     super();
     this.userId = BeeKeeper.getUser().getUserId();
-    // this.discussCache = DiscussionIterceptorCache.getInstance();
   }
 
   @Override
@@ -329,14 +326,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
       if (!BeeUtils.isEmpty(label) && isEventEnabled(form, row, event, status, owner
           , discussParameters.get(PRM_DISCUSS_ADMIN))) {
-        header.addCommandItem(new Button(label, new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent e) {
-            doEvent(form, row, event, discussParameters.get(PRM_DISCUSS_ADMIN));
-          }
-
-        }));
+        header.addCommandItem((IdentifiableWidget) createEventButton(form, row, event,
+            discussParameters
+                .get(PRM_DISCUSS_ADMIN)));
       }
     }
 
@@ -453,6 +445,37 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     });
     return false;
+  }
+
+  private Widget createEventButton(final FormView form, final IsRow row,
+      final DiscussionEvent event, final String adminLogin) {
+    ImageResource imageResource = !BeeUtils.isEmpty(event.getImageResource())
+        ? Images.get(event.getImageResource()) : null;
+    String label = event.getCommandLabel();
+
+    Widget cmd = null;
+
+    if (imageResource != null) {
+      cmd = new Image(imageResource);
+      ((Image) cmd).setAlt(label);
+      ((Image) cmd).setTitle(label);
+    } else {
+      cmd = new Button(label);
+    }
+
+    cmd.addStyleName(STYLE_ACTIONS);
+
+    if (cmd instanceof HasCommand) {
+      ((HasClickHandlers) cmd).addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent mouseEvent) {
+          doEvent(form, row, event, adminLogin);
+        }
+      });
+    }
+
+    return cmd;
   }
 
   private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
@@ -801,7 +824,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
       @Override
       public void onClick(ClickEvent event) {
-        // TODO:
         List<String> stats = DiscussionsUtils.getMarkStats(commentId, markData);
 
         Widget label = new CustomDiv();
@@ -1235,41 +1257,67 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void renderReply(final IsRow formRow, IsRow commentRow, Flow container) {
-    Image imgReply = new Image(Images.get(IMAGE_REPLY));
-    imgReply.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-    imgReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
-    imgReply.setTitle(Localized.getConstants().discussActionReply());
+    String label = DiscussionEvent.REPLY.getCommandLabel();
+    ImageResource res = !BeeUtils.isEmpty(DiscussionEvent.REPLY.getImageResource())
+        ? Images.get(DiscussionEvent.REPLY.getImageResource()) : null;
+
+    Widget widgetReply;
+
+    if (res != null) {
+      widgetReply = new Image(res);
+    } else {
+      widgetReply = new Button(label);
+    }
+    widgetReply.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+    widgetReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
+    widgetReply.setTitle(Localized.getConstants().discussActionReply());
 
     final long commentId = commentRow.getId();
-    imgReply.addClickHandler(new ClickHandler() {
 
-      @Override
-      public void onClick(ClickEvent event) {
-        doComment(formRow, commentId);
-      }
+    if (widgetReply instanceof HasClickHandlers) {
+      ((HasClickHandlers) widgetReply).addClickHandler(new ClickHandler() {
 
-    });
+        @Override
+        public void onClick(ClickEvent event) {
+          doComment(formRow, commentId);
+        }
 
-    container.add(imgReply);
+      });
+    }
+
+    container.add(widgetReply);
   }
 
   private void renderTrash(IsRow commentRow, Flow container) {
-    Image imgTrash = new Image(Images.get(IMAGE_TRASH));
-    imgTrash.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-    imgTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
-    imgTrash.setTitle(Localized.getConstants().actionDelete());
+    String label = DiscussionEvent.COMMENT_DELETE.getCommandLabel();
+    ImageResource res = !BeeUtils.isEmpty(DiscussionEvent.COMMENT_DELETE.getImageResource())
+        ? Images.get(DiscussionEvent.COMMENT_DELETE.getImageResource()) : null;
+
+    Widget widgetTrash;
+
+    if (res != null) {
+      widgetTrash = new Image(res);
+    } else {
+      widgetTrash = new Button(label);
+    }
+
+    widgetTrash.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
+    widgetTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
+    widgetTrash.setTitle(Localized.getConstants().actionDelete());
     final long commentId = commentRow.getId();
 
-    imgTrash.addClickHandler(new ClickHandler() {
+    if (widgetTrash instanceof HasClickHandlers) {
+      ((HasClickHandlers) widgetTrash).addClickHandler(new ClickHandler() {
 
-      @Override
-      public void onClick(ClickEvent event) {
-        doCommentDelete(commentId);
-      }
+        @Override
+        public void onClick(ClickEvent event) {
+          doCommentDelete(commentId);
+        }
 
-    });
+      });
+    }
 
-    container.add(imgTrash);
+    container.add(widgetTrash);
   }
 
   private void requeryComments(final long discussionId) {

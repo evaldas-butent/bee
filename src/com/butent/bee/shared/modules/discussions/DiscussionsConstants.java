@@ -9,35 +9,41 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class DiscussionsConstants {
 
   public enum DiscussionEvent implements HasCaption {
-    CREATE(Localized.getConstants().discussEventCreated(), null),
-    VISIT(Localized.getConstants().discussEventVisited(), null),
+    CREATE(Localized.getConstants().discussEventCreated(), null, null),
+    VISIT(Localized.getConstants().discussEventVisited(), null, null),
     ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
-        .discussActionActivate()),
+        .discussActionActivate(), "silverDiscussActivate"),
     COMMENT(Localized.getConstants().discussEventCommented(), Localized.getConstants()
-        .discussActionComment()),
+        .discussActionComment(), "comments"),
     COMMENT_DELETE(Localized.getConstants().discussEventCommentDeleted(), Localized.getConstants()
-        .actionDelete()),
+        .actionDelete(), "silverdelete"),
     REPLY(Localized.getConstants().discussEventReplied(), Localized.getConstants()
-        .discussActionReply()),
+        .discussActionReply(), "replyToAll"),
     MARK(Localized.getConstants().discussEventMarked(), Localized.getConstants()
-        .discussActionMark()),
-    MODIFY(Localized.getConstants().discussEventModified(), null),
+        .discussActionMark(), null),
+    MODIFY(Localized.getConstants().discussEventModified(), null, null),
     DEACTIVATE(Localized.getConstants().discussEventDeactivated(), Localized.getConstants()
-        .discussActionDeactivate()),
+        .discussActionDeactivate(), null),
     CLOSE(Localized.getConstants().discussEventClosed(), Localized.getConstants()
-        .discussActionClose());
+        .discussActionClose(), "silverDiscussClose");
 
     private final String caption;
     private final String commandLabel;
+    private final String imageResource;
 
-    private DiscussionEvent(String caption, String commandLabel) {
+    private DiscussionEvent(String caption, String commandLabel, String imageResource) {
       this.caption = caption;
       this.commandLabel = commandLabel;
+      this.imageResource = imageResource;
     }
 
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public String getImageResource() {
+      return imageResource;
     }
 
     public static boolean in(int event, DiscussionEvent... events) {
