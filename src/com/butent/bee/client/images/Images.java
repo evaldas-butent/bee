@@ -244,11 +244,14 @@ public final class Images {
     @Source("silver/delete_17x18.png")
     ImageResource silverDelete();
 
-    @Source("silver/discuss_activate_24x24.png")
+    @Source("silver/discuss_activate_17x18.png")
     ImageResource silverDiscussActivate();
 
-    @Source("silver/discuss_close_24x24.png")
+    @Source("silver/discuss_close_17x18.png")
     ImageResource silverDiscussClose();
+
+    @Source("silver/comment_17x18.png")
+    ImageResource silverDiscussComment();
 
     @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
@@ -482,6 +485,7 @@ public final class Images {
     map.put(key("silverDelete"), resources.silverDelete());
     map.put(key("silverDiscussActivate"), resources.silverDiscussActivate());
     map.put(key("silverDiscussClose"), resources.silverDiscussClose());
+    map.put(key("silverDiscussComment"), resources.silverDiscussComment());
     map.put(key("silverEdit"), resources.silverEdit());
     map.put(key("silverFilter"), resources.silverFilter());
     map.put(key("silverFilterRemove"), resources.silverFilterRemove());

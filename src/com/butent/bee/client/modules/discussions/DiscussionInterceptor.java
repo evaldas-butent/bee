@@ -463,7 +463,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       cmd = new Button(label);
     }
 
-    cmd.addStyleName(STYLE_ACTIONS);
+    cmd.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
 
     if (cmd instanceof HasCommand) {
       ((HasClickHandlers) cmd).addClickHandler(new ClickHandler() {
@@ -664,7 +664,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Flow colComment = new Flow();
     colComment.addStyleName(STYLE_COMMENT_COL + COL_COMMENT_TEXT);
 
-    String text = commentRow.getString(DataUtils.getColumnIndex(COL_COMMENT_TEXT, columns));
+    String text = deleted ? commentRow.getString(DataUtils.getColumnIndex(COL_REASON, columns))
+        : commentRow.getString(DataUtils.getColumnIndex(COL_COMMENT_TEXT, columns));
 
     if (!BeeUtils.isEmpty(text)) {
       colComment.add(createCommentCell(COL_COMMENT, text));

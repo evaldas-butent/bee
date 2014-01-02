@@ -443,7 +443,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SqlUpdate update =
         new SqlUpdate(TBL_DISCUSSIONS_COMMENTS)
-            .addConstant(COL_COMMENT_TEXT, reasonText)
+            .addConstant(COL_REASON, reasonText)
             .addConstant(COL_DELETED, true)
             .setWhere(SqlUtils.and(SqlUtils.equals(
                 TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, discussionId), SqlUtils.equals(

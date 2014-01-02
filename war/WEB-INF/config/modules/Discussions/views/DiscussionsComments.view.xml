@@ -19,6 +19,7 @@
     </SimpleJoin>
     <SimpleColumn name="PublishTime" />
     <SimpleColumn name="CommentText" />
+    <SimpleColumn name="Reason" />
     <SimpleColumn name="Deleted" />
   </Columns>
   <Order>

@@ -14,7 +14,7 @@ public final class DiscussionsConstants {
     ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
         .discussActionActivate(), "silverDiscussActivate"),
     COMMENT(Localized.getConstants().discussEventCommented(), Localized.getConstants()
-        .discussActionComment(), "comments"),
+        .discussActionComment(), "silverDiscussComment"),
     COMMENT_DELETE(Localized.getConstants().discussEventCommentDeleted(), Localized.getConstants()
         .actionDelete(), "silverdelete"),
     REPLY(Localized.getConstants().discussEventReplied(), Localized.getConstants()
@@ -127,6 +127,7 @@ public final class DiscussionsConstants {
   public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PARENT_COMMENT = "Parent";
+  public static final String COL_REASON = "Reason";
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
   public static final String COL_SUBJECT = "Subject";
