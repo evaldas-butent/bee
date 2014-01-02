@@ -324,7 +324,6 @@ public class Chat extends Flow implements Presenter, View, Printable {
     }
 
     TextMessage textMessage = new TextMessage(BeeKeeper.getUser().getUserId(), text);
-    textMessage.setMillis(System.currentTimeMillis());
 
     ChatMessage chatMessage = new ChatMessage(roomId, textMessage);
     Global.getRooms().addMessage(chatMessage);

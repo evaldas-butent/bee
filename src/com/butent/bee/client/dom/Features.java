@@ -88,6 +88,7 @@ public final class Features {
   private static Boolean intl;
   private static Boolean localStorage;
   private static Boolean microdata;
+  private static Boolean notifications;
   private static Boolean postMessage;
   private static Boolean requestAnimationFrame;
   private static Boolean selectors;
@@ -218,6 +219,7 @@ public final class Features {
         "Intl", supportsIntl(),
         "Local Storage", supportsLocalStorage(),
         "Microdata", supportsMicrodata(),
+        "Notifications", supportsNotifications(),
         "Post Message", supportsPostMessage(),
         "Request Animation Frame", supportsRequestAnimationFrame(),
         "Send As Form Data", supportsSendAsFormData(),
@@ -622,6 +624,13 @@ public final class Features {
       microdata = testMicrodata();
     }
     return microdata;
+  }
+
+  public static boolean supportsNotifications() {
+    if (notifications == null) {
+      notifications = testNotifications();
+    }
+    return notifications;
   }
 
   public static boolean supportsPostMessage() {
@@ -1115,6 +1124,10 @@ public final class Features {
 
   private static boolean testMicrodata() {
     return isDocumentProperty("getItems");
+  }
+
+  private static boolean testNotifications() {
+    return isInWindow("Notification");
   }
 
   private static boolean testPostMessage() {

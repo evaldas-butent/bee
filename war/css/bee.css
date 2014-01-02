@@ -2318,6 +2318,7 @@
 .bee-Online-home {
   font-size: 18px;
   margin-right: 5px;
+  padding: 3px;
   cursor: pointer;
   color: #555;
   visibility: hidden;
@@ -2351,6 +2352,7 @@
 .bee-Room-deleteCommand {
   font-size: 18px;
   margin-right: 5px;
+  padding: 3px;
   cursor: pointer;
   color: #555;
 }
@@ -2397,14 +2399,18 @@
   font-size: x-large;
   margin-left: 1em;
   margin-top: 5px;
+  padding: 1px 3px;
   cursor: pointer;
 }
 .bee-Room-infoCommand:hover,
 .bee-Room-settingsCommand:hover,
-.bee-Room-deleteCommand:hover,
 .bee-Rooms-plus:hover:hover {
   color: white;
   background-color: #080;
+}
+.bee-Room-deleteCommand:hover {
+  color: white;
+  background-color: red;
 }
 
 .bee-Chat-messages {
@@ -2488,4 +2494,56 @@
   font-size: 12px;
   font-style: italic;
   margin-left: 5px;
+}
+
+.bee-Conversation-messages {
+  border-collapse: collapse;
+}
+.bee-Conversation-messages td {
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-Conversation-message-photo {
+  max-width: 48px;
+  max-height: 48px;
+  border-radius: 5px;
+  cursor: default;
+}
+.bee-Conversation-message-header {
+  font-weight: bold;
+  color: #222;
+}
+.bee-Conversation-message-body {
+  font-size: medium;
+}
+
+.bee-Conversation-input {
+  margin-top: 2em;
+  margin-left: 2em;
+  width: 256px;
+}
+
+.bee-Conversation-commands {
+  margin-top: 1ex;
+  text-align: right;
+}
+
+.bee-Conversation-reply,
+.bee-Conversation-cancel {
+  display: inline-block;
+  font-size: large;
+  color: #777;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.bee-Conversation-reply:hover {
+  background-color: #0a0;
+  color: white;
+  border-radius: 10px;
+}
+.bee-Conversation-cancel:hover {
+  background-color: red;
+  color: white;
+  border-radius: 10px;
 }

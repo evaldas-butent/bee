@@ -357,7 +357,8 @@ public class Rooms implements HasInfo {
 
     ChatRoom room = findRoom(chatMessage.getRoomId());
     if (room != null && chatMessage.isValid()) {
-      room.aggregate(chatMessage.getTextMessage());
+      room.incrementMassageCount();
+      room.updateMaxTime(chatMessage.getTextMessage().getMillis());
 
       RoomWidget roomWidget = roomsPanel.findRoomWidget(room.getId());
       if (roomWidget != null) {
@@ -817,7 +818,6 @@ public class Rooms implements HasInfo {
   private void updateHeader() {
     Flow header = BeeKeeper.getScreen().getDomainHeader(Domain.ROOMS, null);
     if (header == null) {
-      logger.warning(Domain.ROOMS, "header not available");
       return;
     }
 

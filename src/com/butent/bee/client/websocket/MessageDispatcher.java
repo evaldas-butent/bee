@@ -1,22 +1,42 @@
 package com.butent.bee.client.websocket;
 
 import com.google.common.base.Objects;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.CliWorker;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.NotificationOptions;
+import com.butent.bee.client.dialog.WebNotification;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.images.Images;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.maps.MapUtils;
+import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Paragraph;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
@@ -44,6 +64,155 @@ class MessageDispatcher {
 
   private static BeeLogger logger = LogUtils.getLogger(MessageDispatcher.class);
 
+  private static final String CONVERSATION_STYLE_PREFIX = "bee-Conversation-";
+  private static final String CONVERSATION_MESSAGE_STYLE_PREFIX = CONVERSATION_STYLE_PREFIX
+      + "message-";
+
+  private static void onNotification(final NotificationMessage notificationMessage) {
+    int size = notificationMessage.getMessages().size();
+    TextMessage lastMessage = notificationMessage.getMessages().get(size - 1);
+
+    Long fromUser = Global.getUsers().getUserIdBySession(notificationMessage.getFrom());
+    if (fromUser == null) {
+      fromUser = lastMessage.getUserId();
+    }
+
+    UserData userData = Global.getUsers().getUserData(fromUser);
+    String title = (userData == null) ? BeeUtils.joinWords("Message from user", fromUser)
+        : userData.getUserSign();
+
+    Icon icon = BeeUtils.isEmpty(notificationMessage.getIcon()) ? null 
+        : EnumUtils.getEnumByName(Icon.class, notificationMessage.getIcon());
+    String text = lastMessage.getText();
+
+    switch (notificationMessage.getDisplayMode()) {
+      case DIALOG:
+        final DialogBox dialog = DialogBox.create(title, CONVERSATION_STYLE_PREFIX + "dialog");
+        Flow container = new Flow(CONVERSATION_STYLE_PREFIX + "container");
+
+        HtmlTable table = new HtmlTable(CONVERSATION_STYLE_PREFIX + "messages");
+        int row = 0;
+
+        for (TextMessage message : notificationMessage.getMessages()) {
+          if (message != null && message.isValid()) {
+            if (size == 1 && icon != null) {
+              Image image = new Image(icon.getImageResource());
+              table.setWidgetAndStyle(row, 0, image, CONVERSATION_MESSAGE_STYLE_PREFIX + "icon");
+            } else {
+              Image photo = Global.getUsers().getPhoto(message.getUserId());
+              if (photo != null) {
+                table.setWidgetAndStyle(row, 0, photo, CONVERSATION_MESSAGE_STYLE_PREFIX + "photo");
+              }
+            }
+
+            Flow content = new Flow();
+
+            String signature = Global.getUsers().getSignature(message.getUserId());
+            if (!BeeUtils.isEmpty(signature)) {
+              Label header = new Label(signature);
+              header.addStyleName(CONVERSATION_MESSAGE_STYLE_PREFIX + "header");
+              content.add(header);
+            }
+
+            Paragraph body = new Paragraph(CONVERSATION_MESSAGE_STYLE_PREFIX + "body");
+            body.setHtml(message.getText());
+            content.add(body);
+
+            table.setWidgetAndStyle(row, 1, content, CONVERSATION_MESSAGE_STYLE_PREFIX + "content");
+            row++;
+          }
+        }
+
+        container.add(table);
+
+        final InputText input = new InputText();
+        input.addStyleName(CONVERSATION_STYLE_PREFIX + "input");
+        input.setMaxLength(NotificationMessage.MAX_LENGTH);
+
+        input.addKeyDownHandler(new KeyDownHandler() {
+          @Override
+          public void onKeyDown(KeyDownEvent event) {
+            if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER && !input.isEmpty()) {
+              reply(notificationMessage, input.getValue());
+              dialog.close();
+            }
+          }
+        });
+
+        container.add(input);
+
+        Flow commands = new Flow(CONVERSATION_STYLE_PREFIX + "commands");
+
+        FaLabel reply = new FaLabel(FontAwesome.REPLY);
+        reply.addStyleName(CONVERSATION_STYLE_PREFIX + "reply");
+
+        reply.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            if (input.isEmpty()) {
+              input.setFocus(true);
+            } else {
+              reply(notificationMessage, input.getValue());
+              dialog.close();
+            }
+          }
+        });
+
+        commands.add(reply);
+
+        FaLabel cancel = new FaLabel(FontAwesome.TIMES);
+        cancel.addStyleName(CONVERSATION_STYLE_PREFIX + "cancel");
+
+        cancel.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            dialog.close();
+          }
+        });
+
+        commands.add(cancel);
+
+        container.add(commands);
+        dialog.setWidget(container);
+
+        dialog.setAnimationEnabled(true);
+        dialog.setHideOnEscape(true);
+
+        dialog.center();
+        input.setFocus(true);
+        break;
+
+      case EXTERNAL_NOTIFICATION:
+        NotificationOptions options = new NotificationOptions();
+        options.setBody(text);
+
+        if (icon != null) {
+          options.setIcon(icon.getImageResource().getSafeUri().asString());
+        } else if (userData != null && !BeeUtils.isEmpty(userData.getPhotoFileName())) {
+          options.setIcon(PhotoRenderer.getUrl(userData.getPhotoFileName()));
+        }
+
+        WebNotification.create(title, options, null);
+        break;
+
+      case INTERNAL_NOTIFICATION:
+        BeeKeeper.getScreen().notifyInfo(title + BeeConst.STRING_COLON,
+            (icon == null) ? null : Images.asString(icon.getImageResource()), text);
+        break;
+
+      case POPUP:
+        Global.messageBox(title, icon, text);
+        break;
+    }
+  }
+
+  private static void reply(NotificationMessage notificationMessage, String text) {
+    TextMessage textMessage = new TextMessage(BeeKeeper.getUser().getUserId(), text);
+    if (textMessage.isValid()) {
+      Endpoint.send(notificationMessage.reply(textMessage));
+    }
+  }
+
   MessageDispatcher() {
   }
 
@@ -70,10 +239,10 @@ class MessageDispatcher {
           WsUtils.onEmptyMessage(message);
         }
         break;
-        
+
       case CHAT:
         ChatMessage chatMessage = (ChatMessage) message;
-        
+
         if (chatMessage.isValid()) {
           Global.getRooms().addMessage(chatMessage);
         } else {
@@ -95,7 +264,7 @@ class MessageDispatcher {
           Global.showGrid(caption, new PropertiesData(info));
         }
         break;
-        
+
       case LOCATION:
         LocationMessage lm = (LocationMessage) message;
         final String from = lm.getFrom();
@@ -132,10 +301,10 @@ class MessageDispatcher {
           WsUtils.onEmptyMessage(message);
         }
         break;
-        
+
       case LOG:
         LogMessage logMessage = (LogMessage) message;
-        
+
         if (logMessage.getLevel() != null && !BeeUtils.isEmpty(logMessage.getText())) {
           logger.log(logMessage.getLevel(), logMessage.getText());
         } else {
@@ -145,33 +314,14 @@ class MessageDispatcher {
 
       case NOTIFICATION:
         NotificationMessage notificationMessage = (NotificationMessage) message;
-        
-        if (notificationMessage.isValid()) {
-          Long fromUser = Global.getUsers().getUserIdBySession(notificationMessage.getFrom());
-          String signature = Global.getUsers().getSignature(fromUser);
-          String text = notificationMessage.getText();
-          
-          Icon icon;
-          if (text.endsWith(BeeConst.STRING_QUESTION)) {
-            icon = Icon.QUESTION;
-          } else if (text.endsWith(BeeConst.STRING_EXCLAMATION)) {
-            icon = Icon.ALARM;
-          } else {
-            icon = null;
-          }
-          
-          if (icon == null) {
-            BeeKeeper.getScreen().notifyInfo(signature, text);
-          } else {
-            Global.messageBox(signature, icon, text);
-          }
 
+        if (notificationMessage.isValid()) {
+          onNotification(notificationMessage);
         } else {
           WsUtils.onEmptyMessage(message);
         }
-        
         break;
-        
+
       case ONLINE:
         List<SessionUser> sessionUsers = ((OnlineMessage) message).getSessionUsers();
         if (sessionUsers.size() > 1) {
@@ -191,10 +341,10 @@ class MessageDispatcher {
       case PROGRESS:
         ProgressMessage pm = (ProgressMessage) message;
         String progressId = pm.getProgressId();
-        
+
         if (BeeUtils.isEmpty(progressId)) {
           WsUtils.onEmptyMessage(message);
-        
+
         } else if (pm.isActivated()) {
           boolean started = Endpoint.startPropgress(progressId);
           if (started) {
@@ -212,15 +362,15 @@ class MessageDispatcher {
         } else if (pm.isCanceled() || pm.isClosed()) {
           logger.debug(message);
           BeeKeeper.getScreen().removeProgress(progressId);
-        
+
         } else {
           WsUtils.onInvalidState(message);
         }
         break;
-        
+
       case ROOM_STATE:
         RoomStateMessage rsm = (RoomStateMessage) message;
-        
+
         if (rsm.isValid()) {
           Global.getRooms().onRoomState(rsm);
         } else {
@@ -241,7 +391,7 @@ class MessageDispatcher {
           Global.getRooms().setRoomData(rooms);
         }
         break;
-        
+
       case SESSION:
         SessionMessage sm = (SessionMessage) message;
         SessionUser su = sm.getSessionUser();
@@ -263,16 +413,16 @@ class MessageDispatcher {
           WsUtils.onInvalidState(message);
         }
         break;
-        
+
       case USERS:
         List<UserData> users = ((UsersMessage) message).getData();
 
         if (BeeUtils.isEmpty(users)) {
           WsUtils.onEmptyMessage(message);
-        
+
         } else {
           Global.getUsers().updateUserData(users);
-          
+
           for (UserData userData : users) {
             if (Objects.equal(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
               BeeKeeper.getUser().setUserData(userData);

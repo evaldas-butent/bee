@@ -29,6 +29,8 @@ public class TextMessage implements BeeSerializable {
   public TextMessage(long userId, String text) {
     this.userId = userId;
     this.text = text;
+    
+    this.millis = System.currentTimeMillis();
   }
   
   private TextMessage() {

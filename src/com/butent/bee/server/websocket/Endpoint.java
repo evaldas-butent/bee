@@ -3,7 +3,6 @@ package com.butent.bee.server.websocket;
 import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ChatRoom;
-import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -143,12 +142,11 @@ public class Endpoint {
         } else if (room == null) {
           WsUtils.onInvalidState(message, toLog(session));
 
-        } else {
-          TextMessage textMessage = chatMessage.getTextMessage();
-          Rooms.sanitizeIncomingMessage(textMessage);
-
-          room.addMessage(textMessage);
+        } else if (Rooms.addMessage(room, chatMessage.getTextMessage())) {
           sendToNeighbors(room, message, session.getId());
+
+        } else {
+          logger.warning("cannot add message", message);
         }
         break;
 
