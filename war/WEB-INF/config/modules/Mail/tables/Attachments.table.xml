@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" label="=mailMessage" />
-    <Relation name="File" relation="Files" notNull="true" />
+    <Relation name="File" relation="Files" notNull="true" editable="true" />
     <String name="FileName" precision="255" />
   </Fields>
 

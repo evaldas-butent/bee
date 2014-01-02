@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Document" relation="Documents" notNull="true" cascade="DELETE" label="=document" />
-    <Relation name="File" relation="Files" notNull="true" />
+    <Relation name="File" relation="Files" notNull="true" editable="true" />
 
     <String name="Caption" precision="100" label="=documentFileCaption"/>
     <Text name="Description" label="=documentFileDescription" />

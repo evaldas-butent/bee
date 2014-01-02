@@ -194,7 +194,7 @@ public class SystemBean {
     } else {
       tables = Lists.newArrayList(tbls);
     }
-    
+
     int size = tables.size();
 
     for (int i = 0; i < size; i++) {
@@ -209,7 +209,7 @@ public class SystemBean {
 
       createTable(getTable(tables.get(i)), diff);
     }
-    
+
     return diff;
   }
 

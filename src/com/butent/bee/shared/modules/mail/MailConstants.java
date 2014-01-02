@@ -13,7 +13,7 @@ public final class MailConstants {
       this.name = name;
     }
 
-    public String getFullName() {
+    public String getFolderName() {
       return name;
     }
   }
@@ -66,7 +66,6 @@ public final class MailConstants {
   public static final String TBL_FOLDERS = "Folders";
 
   public static final String TBL_MESSAGES = "Messages";
-  public static final String TBL_RAW_CONTENTS = "RawContents";
   public static final String TBL_PARTS = "Parts";
   public static final String TBL_ATTACHMENTS = "Attachments";
 

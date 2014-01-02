@@ -17,7 +17,6 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -33,11 +32,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -69,13 +68,6 @@ public class MailStorageBean {
   SystemBean sys;
   @EJB
   FileStorageBean fs;
-  @EJB
-  MailModuleBean mail;
-
-  @Asynchronous
-  public void checkMailAsynchronously(MailAccount account, MailFolder folder) {
-    mail.checkMail(account, folder);
-  }
 
   public void connectFolder(MailFolder folder) {
     validateFolder(folder, null);
@@ -237,7 +229,9 @@ public class MailStorageBean {
         .addFrom(TBL_MESSAGES)
         .addFromLeft(TBL_PLACES,
             SqlUtils.and(sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE),
-                SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId, COL_MESSAGE_UID, messageUID)))
+                SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId),
+                messageUID == null ? SqlUtils.isNull(TBL_PLACES, COL_MESSAGE_UID)
+                    : SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID)))
         .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId()))
         .addGroup(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES)));
 
@@ -253,25 +247,27 @@ public class MailStorageBean {
         return false;
       }
       Long senderId = storeAddress(sender);
+      Long fileId;
+      InputStream is = null;
 
+      try {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        message.writeTo(bos);
+        is = new ByteArrayInputStream(bos.toByteArray());
+        String contentType = message.getContentType();
+
+        fileId = fs.storeFile(is, envelope.getMessageId(), !BeeUtils.isEmpty(contentType)
+            ? new ContentType(message.getContentType()).getBaseType() : null);
+      } catch (IOException e) {
+        throw new MessagingException(e.toString());
+      }
       messageId = qs.insertData(new SqlInsert(TBL_MESSAGES)
           .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
           .addConstant(COL_DATE, envelope.getDate())
           .addConstant(COL_SENDER, senderId)
-          .addConstant(COL_SUBJECT, envelope.getSubject()));
+          .addConstant(COL_SUBJECT, envelope.getSubject())
+          .addConstant(COL_RAW_CONTENT, fileId));
 
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-      try {
-        message.writeTo(bos);
-        bos.close();
-
-        qs.insertData(new SqlInsert(TBL_RAW_CONTENTS).addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_RAW_CONTENT, bos.toString(BeeConst.CHARSET_UTF8)));
-
-      } catch (IOException e) {
-        throw new MessagingException(e.toString());
-      }
       Set<Long> allAddresses = Sets.newHashSet();
 
       for (Entry<AddressType, Address> entry : envelope.getRecipients().entries()) {
@@ -285,8 +281,8 @@ public class MailStorageBean {
         }
       }
       try {
-        storePart(messageId, new MimeMessage(null, new ByteArrayInputStream(bos.toByteArray())),
-            null);
+        is.reset();
+        storePart(messageId, new MimeMessage(null, is), null);
       } catch (IOException e) {
         throw new MessagingException(e.toString());
       }
@@ -410,7 +406,7 @@ public class MailStorageBean {
   private MailFolder createSysFolder(MailAccount account, SystemFolder sysFolder)
       throws MessagingException {
     MailFolder root = getRootFolder(account);
-    String folderName = sysFolder.getFullName();
+    String folderName = sysFolder.getFolderName();
     boolean ok = account.createRemoteFolder(root, folderName, true);
 
     if (!ok && sysFolder != SystemFolder.Inbox) {
