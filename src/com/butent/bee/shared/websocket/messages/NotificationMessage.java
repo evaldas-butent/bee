@@ -3,6 +3,7 @@ package com.butent.bee.shared.websocket.messages;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -10,31 +11,69 @@ import java.util.List;
 
 public class NotificationMessage extends Message implements HasRecipient {
 
+  public enum DisplayMode {
+    POPUP, DIALOG, EXTERNAL_NOTIFICATION, INTERNAL_NOTIFICATION
+  }
+
   public static final int MAX_LENGTH = 280;
+
+  public static NotificationMessage dialog(String from, String to, TextMessage textMessage) {
+    return new NotificationMessage(from, to, DisplayMode.DIALOG, textMessage);
+  }
+
+  public static NotificationMessage externalNotification(String from, String to,
+      TextMessage textMessage) {
+    return new NotificationMessage(from, to, DisplayMode.EXTERNAL_NOTIFICATION, textMessage);
+  }
+
+  public static NotificationMessage internalNotification(String from, String to,
+      TextMessage textMessage) {
+    return new NotificationMessage(from, to, DisplayMode.INTERNAL_NOTIFICATION, textMessage);
+  }
+
+  public static NotificationMessage popup(String from, String to, TextMessage textMessage) {
+    return new NotificationMessage(from, to, DisplayMode.POPUP, textMessage);
+  }
 
   private String from;
   private String to;
 
-  private String text;
+  private DisplayMode displayMode;
+  private String icon;
 
-  public NotificationMessage(String from, String to, String text) {
+  private final List<TextMessage> messages = Lists.newArrayList();
+
+  NotificationMessage() {
+    super(Type.NOTIFICATION);
+  }
+
+  private NotificationMessage(String from, String to, DisplayMode displayMode,
+      TextMessage textMessage) {
     this();
 
     this.from = from;
     this.to = to;
-    this.text = text;
+    this.displayMode = displayMode;
+    
+    if (textMessage != null && textMessage.isValid()) {
+      this.messages.add(textMessage);
+    }
   }
 
-  NotificationMessage() {
-    super(Type.NOTIFICATION);
+  public DisplayMode getDisplayMode() {
+    return displayMode;
   }
 
   public String getFrom() {
     return from;
   }
 
-  public String getText() {
-    return text;
+  public String getIcon() {
+    return icon;
+  }
+
+  public List<TextMessage> getMessages() {
+    return messages;
   }
 
   @Override
@@ -43,41 +82,83 @@ public class NotificationMessage extends Message implements HasRecipient {
   }
 
   public boolean isValid() {
-    return !BeeUtils.anyEmpty(getFrom(), getTo(), getText());
+    return !BeeUtils.anyEmpty(getFrom(), getTo()) && getDisplayMode() != null 
+        && !getMessages().isEmpty();
+  }
+  
+  public NotificationMessage reply(TextMessage textMessage) {
+    NotificationMessage copy = new NotificationMessage();
+    
+    copy.setFrom(getTo());
+    copy.setTo(getFrom());
+    
+    copy.setDisplayMode(getDisplayMode());
+    copy.setIcon(getIcon());
+    
+    copy.getMessages().addAll(getMessages());
+    if (textMessage != null && textMessage.isValid()) {
+      copy.getMessages().add(textMessage);
+    }
+    
+    return copy;
+  }
+
+  public void setFrom(String from) {
+    this.from = from;
+  }
+
+  public void setIcon(String icon) {
+    this.icon = icon;
+  }
+
+  public void setTo(String to) {
+    this.to = to;
   }
 
   @Override
   public String toString() {
-    return BeeUtils.joinOptions("type", string(getType()), "from", getFrom(), "to", getTo(),
-        "text", getText());
+    return BeeUtils.joinOptions("from", getFrom(), "to", getTo(),
+        "display mode", string(getDisplayMode()), "icon", getIcon(),
+        "messages", getMessages().toString());
   }
 
   @Override
   protected void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 3);
+    Assert.lengthEquals(arr, 5);
 
     int i = 0;
     setFrom(arr[i++]);
     setTo(arr[i++]);
-    setText(arr[i++]);
+    setDisplayMode(Codec.unpack(DisplayMode.class, arr[i++]));
+    setIcon(arr[i++]);
+
+    String[] mArr = Codec.beeDeserializeCollection(arr[i++]);
+    if (!messages.isEmpty()) {
+      messages.clear();
+    }
+
+    if (mArr != null) {
+      for (String msg : mArr) {
+        messages.add(TextMessage.restore(msg));
+      }
+    }
   }
 
   @Override
   protected String serialize() {
-    List<String> values = Lists.newArrayList(getFrom(), getTo(), getText());
+    List<Object> values = Lists.newArrayList();
+
+    values.add(getFrom());
+    values.add(getTo());
+    values.add(Codec.pack(getDisplayMode()));
+    values.add(getIcon());
+    values.add(getMessages());
+
     return Codec.beeSerialize(values);
   }
 
-  private void setFrom(String from) {
-    this.from = from;
-  }
-
-  private void setText(String text) {
-    this.text = text;
-  }
-
-  private void setTo(String to) {
-    this.to = to;
+  private void setDisplayMode(DisplayMode displayMode) {
+    this.displayMode = displayMode;
   }
 }

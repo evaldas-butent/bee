@@ -16,6 +16,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
@@ -103,7 +104,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     super();
     addStyleName("bee-CentralScrutinizer");
   }
-  
+
   public Flow getDomainHeader(Domain domain, Long key) {
     int index = find(domain, key);
     if (index >= 0) {
@@ -208,8 +209,10 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-    add(Domain.ONLINE, Global.getUsers().getOnlinePanel());
-    add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
+    if (Endpoint.isEnabled()) {
+      add(Domain.ONLINE, Global.getUsers().getOnlinePanel());
+      add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
+    }
 
     Shell shell = new Shell("bee-Shell");
     shell.restore();

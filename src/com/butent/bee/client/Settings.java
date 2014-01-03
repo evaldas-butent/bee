@@ -134,6 +134,10 @@ public final class Settings {
   public static String getVersion() {
     return getProperty("version");
   }
+  
+  public static String getWebSocketUrl() {
+    return getProperty("webSocketUrl");
+  }
 
   public static boolean minimizeNumberOfConcurrentRequests() {
     return getPropertyBoolean("minimizeNumberOfConcurrentRequests");

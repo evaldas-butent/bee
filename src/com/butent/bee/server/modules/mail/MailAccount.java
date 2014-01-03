@@ -262,11 +262,9 @@ public class MailAccount {
     }
     for (Entry<String, String> prop : getStoreProperties().entrySet()) {
       String key = prop.getKey();
-      props.put(BeeUtils.isPrefix(key, pfx) ? key : pfx + key, prop.getValue());
+      props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
     }
     Session session = Session.getInstance(props, null);
-    session.setDebug(logger.isDebugEnabled());
-
     Store store = session.getStore(protocol);
     store.connect(getStoreHost(), getStorePort(), getStoreLogin(), getStorePassword());
     return store;
@@ -293,11 +291,9 @@ public class MailAccount {
     }
     for (Entry<String, String> prop : getTransportProperties().entrySet()) {
       String key = prop.getKey();
-      props.put(BeeUtils.isPrefix(key, pfx) ? key : pfx + key, prop.getValue());
+      props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
     }
     Session session = Session.getInstance(props, null);
-    session.setDebug(logger.isDebugEnabled());
-
     Transport transport = session.getTransport(protocol);
     transport.connect(getTransportHost(), getTransportPort(), getTransportLogin(),
         getTransportPassword());

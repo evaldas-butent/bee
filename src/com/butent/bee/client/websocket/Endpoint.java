@@ -2,8 +2,11 @@ package com.butent.bee.client.websocket;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.user.client.Timer;
 
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
@@ -59,6 +62,8 @@ public final class Endpoint {
 
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
 
+  private static Boolean enabled;
+
   private static WebSocket socket;
   private static String sessionId;
 
@@ -68,7 +73,7 @@ public final class Endpoint {
 
   public static void cancelPropgress(String progressId) {
     Assert.notEmpty(progressId);
-    
+
     dequeuePropgress(progressId);
     send(ProgressMessage.cancel(progressId));
   }
@@ -88,6 +93,11 @@ public final class Endpoint {
   public static void enqueuePropgress(final String progressId, Consumer<String> consumer) {
     Assert.notEmpty(progressId);
     Assert.notNull(consumer);
+
+    if (!isEnabled()) {
+      consumer.accept(null);
+      return;
+    }
 
     progressQueue.put(progressId, consumer);
     send(ProgressMessage.open(progressId));
@@ -111,7 +121,10 @@ public final class Endpoint {
     List<Property> info = Lists.newArrayList();
 
     if (socket == null) {
-      info.add(new Property(WebSocket.class.getSimpleName(), BeeConst.NULL));
+      PropertyUtils.addProperties(info,
+          "Enabled", (enabled == null) ? BeeConst.NULL : Boolean.toString(enabled),
+          WebSocket.class.getSimpleName(), BeeConst.NULL);
+
     } else {
       PropertyUtils.addProperties(info,
           "Session Id", sessionId,
@@ -142,13 +155,26 @@ public final class Endpoint {
     return socket != null && socket.getReadyState() == ReadyState.CLOSED.value;
   }
 
+  public static boolean isEnabled() {
+    if (enabled == null) {
+      enabled = Features.supportsWebSockets() && !BeeConst.isOff(Settings.getWebSocketUrl());
+    }
+    return enabled;
+  }
+
   public static boolean isOpen() {
     return socket != null && socket.getReadyState() == ReadyState.OPEN.value;
   }
 
   public static void open(Long userId) {
-    if (Features.supportsWebSockets() && (socket == null || isClosed()) && userId != null) {
-      socket = Browser.getWindow().newWebSocket(url(userId));
+    if (isEnabled() && (socket == null || isClosed()) && userId != null) {
+
+      try {
+        socket = Browser.getWindow().newWebSocket(url(userId));
+      } catch (JavaScriptException ex) {
+        socket = null;
+        logger.severe(ex, "cannot open websocket");
+      }
 
       if (socket != null) {
         socket.setOnopen(new EventListener() {
@@ -184,8 +210,10 @@ public final class Endpoint {
 
   public static void send(Message message) {
     if (!isOpen()) {
-      logger.warning("ws is not open");
-    
+      if (isEnabled()) {
+        logger.warning("ws is not open");
+      }
+
     } else if (message == null) {
       WsUtils.onEmptyMessage(message);
 
@@ -200,7 +228,7 @@ public final class Endpoint {
   public static void setSessionId(String sessionId) {
     Endpoint.sessionId = sessionId;
   }
-  
+
   static boolean startPropgress(String progressId) {
     if (!progressQueue.isEmpty()) {
       Consumer<String> starter = progressQueue.remove(progressId);
@@ -237,7 +265,7 @@ public final class Endpoint {
   }
 
   private static void onError(JsEvent event) {
-    logger.severe("ws error", JsUtils.toJson(event));
+    logger.severe("ws error event", JsUtils.toString(event));
   }
 
   private static void onMessage(MessageEvent event) {
@@ -264,8 +292,12 @@ public final class Endpoint {
   }
 
   private static String url(long userId) {
-    String href = Browser.getWindow().getLocation().getHref();
-    return "ws" + Paths.ensureEndSeparator(href.substring(4)) + "ws/" + Long.toString(userId);
+    String url = Settings.getWebSocketUrl();
+    if (BeeUtils.isEmpty(url)) {
+      String href = GWT.getHostPageBaseURL();
+      url = "ws" + Paths.ensureEndSeparator(href.substring(4)) + "ws/";
+    }
+    return Paths.ensureEndSeparator(url) + Long.toString(userId);
   }
 
   private Endpoint() {

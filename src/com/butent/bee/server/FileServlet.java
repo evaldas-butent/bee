@@ -65,13 +65,11 @@ public class FileServlet extends LoginServlet {
     if (DataUtils.isId(fileId)) {
       try {
         StoredFile sf = fs.getFile(fileId);
+        path = sf.getPath();
+        fileName = BeeUtils.notEmpty(fileName, sf.getName());
+        mimeType = sf.getType();
+        isTemporary = sf.isTemporary();
 
-        if (sf != null) {
-          path = sf.getPath();
-          fileName = BeeUtils.notEmpty(fileName, sf.getName());
-          mimeType = sf.getType();
-          isTemporary = sf.isTemporary();
-        }
       } catch (IOException e) {
         HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         return;

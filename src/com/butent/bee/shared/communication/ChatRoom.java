@@ -24,11 +24,11 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   public enum Type implements HasCaption {
     PUBLIC(Localized.getConstants().roomTypePublic()),
     PRIVATE(Localized.getConstants().roomTypePrivate());
-    
-    public static final Type DEFAULT = PUBLIC; 
-    
+
+    public static final Type DEFAULT = PUBLIC;
+
     private final String caption;
-    
+
     private Type(String caption) {
       this.caption = caption;
     }
@@ -43,9 +43,9 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     ID, NAME, TYPE, OWNERS, DWELLERS, USERS, MESSAGES, MESSAGE_COUNT, MAX_TIME
   }
 
-  public static final int DEFAULT_CAPACITY = 1000;
+  public static final int DEFAULT_CAPACITY = 1024;
 
-  public static final int MAX_NAME_LENGTH = 30;
+  public static final int MAX_NAME_LENGTH = 32;
 
   private static long idCounter = 1;
 
@@ -86,13 +86,6 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     this.messages = Lists.newArrayList();
   }
 
-  public void addMessage(TextMessage message) {
-    if (message != null && message.isValid()) {
-      messages.add(message);
-      aggregate(message);
-    }
-  }
-
   public boolean addOwner(Long ownerId) {
     if (DataUtils.isId(ownerId) && !getOwners().contains(ownerId)) {
       getOwners().add(ownerId);
@@ -101,16 +94,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
       return false;
     }
   }
-  
-  public void aggregate(TextMessage message) {
-    if (message != null && message.isValid()) {
-      setMessageCount(getMessageCount() + 1);
-      if (message.getMillis() > 0) {
-        setMaxTime(Math.max(getMaxTime(), message.getMillis()));
-      }
-    }
-  }
-  
+
   public void clear() {
     messages.clear();
 
@@ -283,6 +267,10 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return users;
   }
 
+  public void incrementMassageCount() {
+    setMessageCount(getMessageCount() + 1);
+  }
+
   public boolean invite(Long dwellerId) {
     if (DataUtils.isId(dwellerId) && !getDwellers().contains(dwellerId)) {
       getDwellers().add(dwellerId);
@@ -405,6 +393,12 @@ public class ChatRoom implements BeeSerializable, HasInfo {
         "messages", (getMessages() == null) ? null : BeeUtils.toString(getMessages().size()),
         "message count", BeeUtils.toString(getMessageCount()),
         "max time", formatMillis(getMaxTime()));
+  }
+
+  public void updateMaxTime(long time) {
+    if (time > 0) {
+      setMaxTime(Math.max(getMaxTime(), time));
+    }
   }
 
   private void setId(long id) {

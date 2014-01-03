@@ -335,14 +335,6 @@ public class Global implements Module {
       @Override
       public void accept(String key, String value) {
         int row = table.getRowCount();
-
-        if (row == 0) {
-          table.setText(row, 0, keyCaption);
-          table.getCellFormatter().setHorizontalAlignment(row, 0, TextAlign.CENTER);
-          table.setText(row, 1, valueCaption);
-          table.getCellFormatter().setHorizontalAlignment(row, 1, TextAlign.CENTER);
-          row++;
-        }
         InputText input = new InputText();
         table.setWidget(row, 0, input);
 
@@ -368,14 +360,21 @@ public class Global implements Module {
                 break;
               }
             }
-            if (table.getRowCount() == 1) {
-              table.clear();
-            }
           }
         });
         table.setWidget(row, 2, delete);
       }
     };
+    Label cap = new Label(keyCaption);
+    StyleUtils.setMinWidth(cap, 100);
+    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
+    table.setWidget(0, 0, cap);
+
+    cap = new Label(valueCaption);
+    StyleUtils.setMinWidth(cap, 100);
+    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
+    table.setWidget(0, 1, cap);
+
     for (String key : map.keySet()) {
       rowCreator.accept(key, map.get(key));
     }

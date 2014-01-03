@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.ListBox;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -42,6 +41,7 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -99,10 +99,6 @@ public final class NewMailMessage extends AbstractFormInterceptor
     public void onSuccess() {
       save(true);
     }
-  }
-
-  public static void create() {
-    create(null, null, null, null, null, null);
   }
 
   public static void create(final Set<Long> to, final Set<Long> cc, final Set<Long> bcc,

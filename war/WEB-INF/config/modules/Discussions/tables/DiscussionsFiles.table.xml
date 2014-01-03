@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Discussion" notNull="true" relation="Discussions" cascade="DELETE" label="=discussion" />
     <Relation name="Comment" relation="DiscussionsComments" cascade="DELETE" label="=discussComment" />
-    <Relation name="File" relation="Files" notNull="true" label="=discussFile" />
+    <Relation name="File" relation="Files" notNull="true" editable="true" label="=discussFile" />
     
     <String name="Caption" precision="100" label="=discussFileCaption"/>
   </Fields>

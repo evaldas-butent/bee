@@ -20,6 +20,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -95,9 +96,12 @@ public class Users {
           Global.inputString(Global.getUsers().getFirstName(userId), null, new StringCallback() {
             @Override
             public void onSuccess(String value) {
-              String from = Endpoint.getSessionId();
-              if (!BeeUtils.isEmpty(from)) {
-                Endpoint.send(new NotificationMessage(from, getSessionId(), BeeUtils.trim(value)));
+              String fromSession = Endpoint.getSessionId();
+              Long fromUser = BeeKeeper.getUser().getUserId();
+
+              if (!BeeUtils.isEmpty(fromSession) && fromUser != null) {
+                Endpoint.send(NotificationMessage.dialog(fromSession, getSessionId(),
+                    new TextMessage(fromUser, BeeUtils.trim(value))));
               }
             }
           }, null, NotificationMessage.MAX_LENGTH);
@@ -400,7 +404,6 @@ public class Users {
   private void updateHeader(boolean initial) {
     Flow header = BeeKeeper.getScreen().getDomainHeader(Domain.ONLINE, null);
     if (header == null) {
-      logger.warning(Domain.ONLINE, "header not available");
       return;
     }
 

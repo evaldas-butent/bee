@@ -58,7 +58,9 @@ import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.WebNotification;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.ClientRect;
@@ -318,8 +320,8 @@ public final class CliWorker {
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
 
-    } else if ("eval".equals(z)) {
-      eval(args);
+    } else if ("eval".equals(z) && !args.isEmpty()) {
+      inform(args, JsUtils.evalToString(args));
 
     } else if (z.startsWith("exch")) {
       if (arr.length >= 4) {
@@ -332,6 +334,9 @@ public final class CliWorker {
         showListOfCurrencies();
       }
 
+    } else if ("exec".equals(z) && !args.isEmpty()) {
+      logger.debug(JsUtils.evalToString(args));
+      
     } else if ("exit".equals(z)) {
       Bee.exit();
 
@@ -542,6 +547,9 @@ public final class CliWorker {
 
     } else if ("widget".equals(z) && arr.length >= 2) {
       showWidgetInfo(arr, errorPopup);
+
+    } else if ("wn".equals(z) || z.startsWith("webnot")) {
+      showWebNote(arr);
 
     } else if ("ws".equals(z) || z.startsWith("websock")) {
       doWebSocket(args, arr);
@@ -1458,14 +1466,6 @@ public final class CliWorker {
     }
   }
 
-  private static void eval(String xpr) {
-    if (BeeUtils.isEmpty(xpr)) {
-      Global.sayHuh();
-    } else {
-      inform(xpr, JsUtils.evalToString(xpr));
-    }
-  }
-
   private static void getCharsets() {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("cs");
@@ -1829,8 +1829,6 @@ public final class CliWorker {
     showTable("Selectors", new PropertiesData(info));
   }
 
-  // CHECKSTYLE:ON
-
   private static void rebuildSomething(final String args, final boolean errorPopup) {
     final String progressId;
 
@@ -1976,6 +1974,7 @@ public final class CliWorker {
       }
     }
   }-*/;
+  // CHECKSTYLE:ON
 
   private static void setDebug(String args) {
     if (BeeUtils.same(args, "ec")) {
@@ -3361,7 +3360,7 @@ public final class CliWorker {
       return;
     }
 
-    String matrix[][] = new String[rs.getNumberOfRows()][rs.getNumberOfColumns()];
+    String[][] matrix = new String[rs.getNumberOfRows()][rs.getNumberOfColumns()];
 
     for (int i = 0; i < rs.getNumberOfRows(); i++) {
       for (int j = 0; j < rs.getNumberOfColumns(); j++) {
@@ -3787,6 +3786,85 @@ public final class CliWorker {
       public void onResponse(ResponseObject response) {
         showExtData(BeeUtils.joinWords("Views", args),
             PropertyUtils.restoreExtended((String) response.getResponse()));
+      }
+    });
+  }
+  
+  private static void showWebNote(String[] arr) {
+    String title = null;
+    
+    String dir = null;
+    String lang = null;
+    String body = null;
+    String tag = null;
+    String icon = null;
+    
+    for (int i = 1; i < arr.length; i++) {
+      String s = arr[i];
+      
+      if (s.length() > 2 && s.charAt(1) == BeeConst.CHAR_EQ) {
+        String v = s.substring(2).trim();
+
+        switch (s.charAt(0)) {
+          case 'd':
+            dir = v;
+            break;
+          case 'l':
+            lang = v;
+            break;
+          case 'b':
+            body = v;
+            break;
+          case 't':
+            tag = v;
+            break;
+          case 'i':
+            icon = v;
+            break;
+
+          default:
+            title = BeeUtils.joinWords(title, s);
+        }
+
+      } else {
+        title = BeeUtils.joinWords(title, s);
+      }
+    }
+    
+    NotificationOptions options = null;
+    if (!BeeUtils.allEmpty(dir, lang, body, tag, icon)) {
+      options = new NotificationOptions();
+      
+      if (dir != null) {
+        options.setDir(EnumUtils.getEnumByName(NotificationOptions.NotificationDirection.class,
+            dir));
+      }
+      if (lang != null) {
+        options.setLang(lang);
+      }
+      if (body != null) {
+        options.setBody(body);
+      }
+      if (tag != null) {
+        options.setTag(tag);
+      }
+      if (icon != null) {
+        options.setIcon(icon);
+      }
+    }
+    
+    logger.debug(title, options);
+
+    WebNotification.create(title, options, new Callback<WebNotification>() {
+      @Override
+      public void onFailure(String... reason) {
+        logger.warning(ArrayUtils.joinWords(reason));
+      }
+
+      @Override
+      public void onSuccess(WebNotification result) {
+        logger.debug("success");
+        logger.addSeparator();
       }
     });
   }

@@ -75,71 +75,72 @@ public class FileStorageBean {
 
   public StoredFile getFile(Long fileId) throws IOException {
     Assert.notNull(fileId);
-    StoredFile storedFile = null;
 
     SimpleRow row = qs.getRow(new SqlSelect()
         .addFields(TBL_FILES, COL_FILE_REPO, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
         .addFrom(TBL_FILES)
         .setWhere(sys.idEquals(TBL_FILES, fileId)));
 
-    if (row != null) {
-      storedFile = new StoredFile(fileId, row.getValue(COL_FILE_NAME),
-          row.getLong(COL_FILE_SIZE), row.getValue(COL_FILE_TYPE));
-
-      String repo = row.getValue(COL_FILE_REPO);
-
-      if (BeeUtils.isEmpty(repo)) {
-        SqlSelect query = new SqlSelect().setLimit(10)
-            .addFields(TBL_FILE_PARTS, COL_FILE_PART)
-            .addFrom(TBL_FILE_PARTS)
-            .setWhere(SqlUtils.equals(TBL_FILE_PARTS, COL_FILE_FILE, fileId))
-            .addOrder(TBL_FILE_PARTS, sys.getIdName(TBL_FILE_PARTS));
-
-        File tmp = File.createTempFile("bee_", null);
-        tmp.deleteOnExit();
-        OutputStream out = new FileOutputStream(tmp);
-        SimpleRowSet rs = qs.getData(query);
-
-        while (rs.getNumberOfRows() > 0) {
-          for (SimpleRow r : rs) {
-            byte[] buffer = Codec.fromBase64(r.getValue(COL_FILE_PART));
-            out.write(buffer, 0, buffer.length);
-          }
-          if (rs.getNumberOfRows() < query.getLimit()) {
-            break;
-          }
-          rs = qs.getData(query.setOffset(query.getOffset() + query.getLimit()));
-        }
-        out.flush();
-        out.close();
-
-        ZipInputStream in = new ZipInputStream(new FileInputStream(tmp));
-
-        if (in.getNextEntry() != null) {
-          File res = File.createTempFile("bee_", null);
-          res.deleteOnExit();
-          repo = res.getAbsolutePath();
-
-          out = new FileOutputStream(res);
-          byte[] buffer = new byte[BUFFER_SIZE];
-          int bytesRead;
-
-          try {
-            while ((bytesRead = in.read(buffer)) > 0) {
-              out.write(buffer, 0, bytesRead);
-            }
-            in.closeEntry();
-            out.flush();
-          } finally {
-            out.close();
-            in.close();
-          }
-        }
-        tmp.delete();
-        storedFile.setTemporary(true);
-      }
-      storedFile.setPath(repo);
+    if (row == null) {
+      throw new IOException("File not found: id =" + fileId);
     }
+    StoredFile storedFile = new StoredFile(fileId, row.getValue(COL_FILE_NAME),
+        row.getLong(COL_FILE_SIZE), row.getValue(COL_FILE_TYPE));
+
+    String repo = row.getValue(COL_FILE_REPO);
+
+    if (BeeUtils.isEmpty(repo)) {
+      SqlSelect query = new SqlSelect().setLimit(10)
+          .addFields(TBL_FILE_PARTS, COL_FILE_PART)
+          .addFrom(TBL_FILE_PARTS)
+          .setWhere(SqlUtils.equals(TBL_FILE_PARTS, COL_FILE_FILE, fileId))
+          .addOrder(TBL_FILE_PARTS, sys.getIdName(TBL_FILE_PARTS));
+
+      File tmp = File.createTempFile("bee_", null);
+      tmp.deleteOnExit();
+      OutputStream out = new FileOutputStream(tmp);
+      SimpleRowSet rs = qs.getData(query);
+
+      while (rs.getNumberOfRows() > 0) {
+        for (SimpleRow r : rs) {
+          byte[] buffer = Codec.fromBase64(r.getValue(COL_FILE_PART));
+          out.write(buffer, 0, buffer.length);
+        }
+        if (rs.getNumberOfRows() < query.getLimit()) {
+          break;
+        }
+        rs = qs.getData(query.setOffset(query.getOffset() + query.getLimit()));
+      }
+      out.flush();
+      out.close();
+
+      ZipInputStream in = new ZipInputStream(new FileInputStream(tmp));
+
+      if (in.getNextEntry() != null) {
+        File res = File.createTempFile("bee_", null);
+        res.deleteOnExit();
+        repo = res.getAbsolutePath();
+
+        out = new FileOutputStream(res);
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int bytesRead;
+
+        try {
+          while ((bytesRead = in.read(buffer)) > 0) {
+            out.write(buffer, 0, bytesRead);
+          }
+          in.closeEntry();
+          out.flush();
+        } finally {
+          out.close();
+          in.close();
+        }
+      }
+      tmp.delete();
+      storedFile.setTemporary(true);
+    }
+    storedFile.setPath(repo);
+
     return storedFile;
   }
 

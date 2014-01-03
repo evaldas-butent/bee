@@ -213,6 +213,15 @@ public final class BeeConst {
     }
   }
 
+  public static boolean isOff(String s) {
+    if (s == null) {
+      return false;
+    } else {
+      return STRING_MINUS.equals(s.trim()) 
+          || s.trim().toLowerCase().equals(STRING_FALSE.toLowerCase());
+    }
+  }
+  
   /**
    * Returns the state of server.
    * 
