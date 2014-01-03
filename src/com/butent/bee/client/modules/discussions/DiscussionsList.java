@@ -29,15 +29,39 @@ final class DiscussionsList {
     ACTIVE(Localized.getConstants().discussActive()) {
       @Override
       Filter getFilter(LongValue userId) {
-        return ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.ACTIVE
+        Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
+        Filter isOwner = ComparisonFilter.isEqual(COL_OWNER, userId);
+        Filter isPublic = ComparisonFilter.notEmpty(COL_ACCESSIBILITY);
+        Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
+        Filter isActive =
+            ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.ACTIVE
             .ordinal()));
+
+        Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
+            VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
+            ComparisonFilter.and(isUserFilter, isMemberFilter));
+        return ComparisonFilter.and(ComparisonFilter.or(
+            ComparisonFilter.or(discussUsersFilter, isOwner), isPublic),
+            isActive);
       }
     },
     CLOSED(Localized.getConstants().discussClosed()) {
       @Override
       Filter getFilter(LongValue userId) {
-        return ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.CLOSED
+        Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
+        Filter isOwner = ComparisonFilter.isEqual(COL_OWNER, userId);
+        Filter isPublic = ComparisonFilter.notEmpty(COL_ACCESSIBILITY);
+        Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
+        Filter isActive =
+            ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.CLOSED
             .ordinal()));
+
+        Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
+            VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
+            ComparisonFilter.and(isUserFilter, isMemberFilter));
+        return ComparisonFilter.and(ComparisonFilter.or(
+            ComparisonFilter.or(discussUsersFilter, isOwner), isPublic),
+            isActive);
       }
     },
     OBSERVED(Localized.getConstants().discussObserved()) {
