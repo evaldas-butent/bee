@@ -55,12 +55,12 @@ final class DiscussionsList {
         return ComparisonFilter.and(activeStatusFilter, notOwnerFilter, discussUsersFilter);
       }
     },
-    STARRED(Localized.getConstants().discussClosed()) {
+    STARRED(Localized.getConstants().discussStarred()) {
       @Override
       Filter getFilter(LongValue userId) {
         Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
         Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
-        Filter isStarred = ComparisonFilter.isEqual(COL_STAR, Value.getValue(true));
+        Filter isStarred = ComparisonFilter.notEmpty(COL_STAR);
         Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
             VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
             ComparisonFilter.and(isUserFilter, isMemberFilter, isStarred));

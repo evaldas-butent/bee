@@ -86,20 +86,20 @@
           <Label name="membersLabel" text="=discussMembers" style="&membersLbl;" />
           <MultiSelector viewName="Users" property="Members"
             renderColumns="FirstName LastName" editSource="CompanyPerson"
-            style="&membersInp;" disablable="true" label="=discussMembers" />
+            style="&membersInp;" label="=discussMembers" />
         </FlowPanel>
 
         <FlowPanel>
           <Label text="=companies" style="&relCompaniesLbl;" />
           <MultiSelector viewName="Companies" property="Companies"
-            renderColumns="Name" style="&relCompaniesInp;" disablable="true" />
+            renderColumns="Name" style="&relCompaniesInp;"  />
         </FlowPanel>
 
         <FlowPanel>
           <Label text="=persons" style="&relPersonsLbl;" />
           <MultiSelector viewName="Persons" property="Persons"
             renderColumns="FirstName LastName" style="&relPersonsInp;"
-            disablable="true" />
+             />
         </FlowPanel>
 
         <FlowPanel>
@@ -107,7 +107,7 @@
           <MultiSelector viewName="Appointments" property="Appointments"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
             newRowEnabled="false" style="&relAppoitmentsInp;"
-            disablable="true" />
+            />
         </FlowPanel>
 
         <FlowPanel>
@@ -117,14 +117,14 @@
         ExecutorFirstName ExecutorLastName"
             choiceColumns="Summary ExecutorFirstName 
         ExecutorLastName StartTime FinishTime"
-            newRowEnabled="false" style="&relTasksInp;" disablable="true" />
+            newRowEnabled="false" style="&relTasksInp;" />
         </FlowPanel>
 
         <FlowPanel>
           <Label text="=documents" style="&relDocumentsLbl;" />
           <MultiSelector viewName="Documents" property="Documents"
             renderColumns="Name DocumentDate Number" choiceColumns="Name DocumentDate Number"
-            newRowEnabled="false" style="&relDocumentsInp;" disablable="true" />
+            newRowEnabled="false" style="&relDocumentsInp;" />
         </FlowPanel>
 
         <FlowPanel>

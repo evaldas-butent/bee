@@ -387,7 +387,32 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     // boolean accessCheckBoxValue = form.getWidgetByName(name)
 
-    form.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
+    // form.setEnabled((isOwner(userId, BeeUtils.unbox(owner)));
+
+    form.setEnabled(false);
+
+    MultiSelector members = getMultiSelector(form, PROP_MEMBERS);
+    Widget accessWidget = form.getWidgetBySource(COL_ACCESSIBILITY);
+    InputBoolean accessibility = (InputBoolean) accessWidget;
+
+    // LogUtils.getRootLogger().debug("CheckBox:", accessWidget.getElement().);
+    // accessibility.setEnabled(true);
+
+    accessWidget.getElement();
+    // accessibility.se
+
+    if (!BeeUtils.isEmpty(accessibility.getValue())) {
+      accessibility.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
+
+      if (!BeeUtils.isEmpty(members.getValue())) {
+        members.clearDisplay();
+        members.clearValue();
+      }
+    }
+
+    if (!BeeUtils.isEmpty(members.getValue())) {
+      members.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
+    }
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
 
