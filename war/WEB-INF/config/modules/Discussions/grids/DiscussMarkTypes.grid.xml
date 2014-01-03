@@ -7,17 +7,9 @@
     <DataColumn name="Name"  visible="true" />
     <DataColumn name="ImageResourceName" visible="true" minWidth="70" />
     
-    <CalcColumn name="Preview" type="string" cellType="html"  visible="true" maxWidth="90"
-      horizontalAlignment="center" autoFit="true" caption="-" sortable="false">
-       <render>
-        <ui:function>
-          if(row.ImageResourceName != null) {        
-            return $wnd.Bee_getImageResourceHtml(row.ImageResourceName);
-          } else {
-            return "";
-          }          
-        </ui:function>
-      </render>     
-    </CalcColumn>
+    <PropColumn name="PreviewImage" type="string" cellType="html" horizontalAlignment="center"
+      caption ="-" >
+      <renderer type="image" />
+    </PropColumn>
   </g:columns>
 </g:Grid>

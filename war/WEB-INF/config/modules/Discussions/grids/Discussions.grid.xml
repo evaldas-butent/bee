@@ -25,28 +25,19 @@
 
     <DataColumn name="Created" visible="true" minWidth="120"
       autoFit="true" />
-
-    <!-- <PropColumn name="Attachment" type="string" cellType="html" horizontalAlignment="center" 
-      width="20" maxWidth="20"> <renderer type="attachment" /> </PropColumn> -->
-
-    <CalcColumn name="FilesCount" type="string" cellType="html"  visible="true" maxWidth="90"
-      horizontalAlignment="center" autoFit="true" caption="-" sortable="false">
-       <render>
-        <ui:function>
-          var result ="";
-          if (row.FilesCount > 0) {
-          result = result + $wnd.Bee_getImageResourceHtml("attachment") + "&lt;sup&gt;" + row.FilesCount + "&lt;/sup&gt;  ";
-          }
-          
-          if (row.RelCount > 0) {
-           result = result + $wnd.Bee_getImageResourceHtml("link");
-          }
-            
-          return result;
-        </ui:function>
-      </render>     
-    </CalcColumn> 
+      
+    <PropColumn name="FilesCount" type="integer" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20"
+      label="=discussHasFiles">
+      <renderer type="attachment" />
+    </PropColumn>
     
+    <PropColumn name="RelationsCount" type="string" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20"
+      label="=discussHasRelations">
+      <renderer type="image" />
+    </PropColumn>
+
     <CalcColumn name="LastComment" type="string" cellType="html"
       minWidth="150" autoFit="true" caption="=discussLastComment">
       <renderToken source="LastComment" format="date_time_short" />

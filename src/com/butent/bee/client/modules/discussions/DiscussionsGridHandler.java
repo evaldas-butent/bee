@@ -35,7 +35,6 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
-  // private static final String NAME_MARK_COUNT = "MarkCount";
 
   private final ListType type;
   private final Long userId;
@@ -49,8 +48,10 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public String getColumnCaption(String columnName) {
     if (PROP_STAR.equals(columnName)) {
       return Stars.getDefaultHeader();
-    } else if (PROP_ATTACHMENT.equals(columnName)) {
+    } else if (PROP_FILES_COUNT.equals(columnName)) {
       return Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT));
+    } else if (PROP_RELATIONS_COUNT.equals(columnName)) {
+      return Images.asString(Images.get("link"));
     } else {
       return super.getColumnCaption(columnName);
     }

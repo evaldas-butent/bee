@@ -104,6 +104,8 @@ public final class DiscussionsConstants {
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_LAST_COMMET = "LastComment";
+  public static final String ALS_FILES_COUNT = "FilesCount";
+  public static final String ALS_RELATIONS_COUNT = "RelCount";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
@@ -112,6 +114,7 @@ public final class DiscussionsConstants {
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_DELETED = "Deleted";
+  public static final String COL_IMAGE_RESOURCE_NAME = "ImageResourceName";
   public static final String COL_MARK_NAME = "Name";
   public static final String COL_MARK_RESOURCE = "ImageResourceName";
   public static final String COL_FILE = "File";
@@ -160,6 +163,9 @@ public final class DiscussionsConstants {
   public static final String PROP_MARK_COUNT = "MarkCount";
   public static final String PROP_MARK_TYPES = "MarkTypes";
   public static final String PROP_MARK_DATA = "MarkData";
+  public static final String PROP_RELATIONS_COUNT = "RelationsCount";
+  public static final String PROP_FILES_COUNT = "FilesCount";
+  public static final String PROP_PREVIEW_IMAGE = "PreviewImage";
 
   public static final String PROP_PARAMETERS = "Parameters";
 

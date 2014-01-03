@@ -852,6 +852,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       public void onClick(ClickEvent event) {
         List<String> stats = DiscussionsUtils.getMarkStats(commentId, markData);
 
+        if (BeeUtils.isEmpty(stats)) {
+          BeeKeeper.getScreen().notifyInfo(Localized.getConstants().noData());
+          return;
+        }
+
         Widget label = new CustomDiv();
         label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
         label.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_LABEL + STYLE_STATS);

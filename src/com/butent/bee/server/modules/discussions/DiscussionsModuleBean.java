@@ -76,6 +76,7 @@ import javax.ejb.TimerService;
 public class DiscussionsModuleBean implements BeeModule {
 
   private static final int MAX_NUMBERS_OF_ROWS = 100;
+  private static final String IMG_LINK = "link";
 
   private static BeeLogger logger = LogUtils.getLogger(DiscussionsModuleBean.class);
 
@@ -181,7 +182,6 @@ public class DiscussionsModuleBean implements BeeModule {
           if (!rowSet.isEmpty()) {
             Set<Long> discussionsIds = Sets.newHashSet();
 
-
             if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
               for (BeeRow row : rowSet.getRows()) {
                 discussionsIds.add(row.getId());
@@ -253,15 +253,51 @@ public class DiscussionsModuleBean implements BeeModule {
 
             Map<Long, Integer> markCounts = getDiscussionsMarksCount(discussionsIds);
             for (BeeRow row : rowSet.getRows()) {
-              String value =
+              String markValue =
                   markCounts.get(row.getId()) != null ? BeeUtils
                       .toString(markCounts.get(row.getId())) : "";
-              row.setProperty(PROP_MARK_COUNT, value);
+              row.setProperty(PROP_MARK_COUNT, markValue);
+
+              row.setProperty(PROP_FILES_COUNT,
+                  row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT)));
+
+              String relValue = "";
+              int rc =
+                  BeeUtils.unbox(row.getInteger(rowSet.getColumnIndex(ALS_RELATIONS_COUNT)));
+
+              if (rc > 0) {
+                relValue += IMG_LINK;
+              }
+
+              row.setProperty(PROP_RELATIONS_COUNT, relValue);
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void setMarkTypesRowProperties(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
+
+        if (BeeUtils.same(event.getTargetName(), VIEW_DISCUSSIONS_MARK_TYPES)) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (!rowSet.isEmpty()) {
+
+
+            if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
+              for (BeeRow row : rowSet.getRows()) {
+                row.setProperty(PROP_PREVIEW_IMAGE,
+                    row.getString(rowSet.getColumnIndex(COL_IMAGE_RESOURCE_NAME)));
+              }
             }
           }
         }
       }
     });
+
   }
 
   private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,
@@ -303,7 +339,7 @@ public class DiscussionsModuleBean implements BeeModule {
     if (commentId != null) {
       row.setProperty(PROP_LAST_COMMENT, BeeUtils.toString(commentId));
     }
-    
+
     BeeRowSet rs = getDiscussionMarkTypeData();
     if (!rs.isEmpty()) {
       row.setProperty(PROP_MARK_TYPES, rs.serialize());
@@ -312,11 +348,11 @@ public class DiscussionsModuleBean implements BeeModule {
     Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(DISCUSSIONS_MODULE);
     if (!discussModuleParams.isEmpty()) {
       Map<String, String> paramsMap = Maps.newHashMap();
-      
+
       for (BeeParameter p : discussModuleParams) {
         paramsMap.put(p.getName(), p.getValue());
       }
-      
+
       row.setProperty(PROP_PARAMETERS, Codec.beeSerialize(paramsMap));
     }
   }
@@ -762,11 +798,11 @@ public class DiscussionsModuleBean implements BeeModule {
         .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT),
             SqlUtils.inList(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, discussionIds)))
         .addGroup(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION);
-    
+
     SimpleRowSet rs = qs.getData(select);
     Map<Long, Integer> ls = Maps.newHashMap();
-    
-    for (String [] row : rs.getRows()) {
+
+    for (String[] row : rs.getRows()) {
       ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
           BeeUtils.toInt(row[rs.getColumnIndex(PROP_MARK_COUNT)]));
     }
@@ -785,8 +821,8 @@ public class DiscussionsModuleBean implements BeeModule {
             CommonsConstants.COL_FIRST_NAME)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
             CommonsConstants.COL_LAST_NAME)
-            .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
-            .addFromLeft(CommonsConstants.TBL_USERS,
+        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
+        .addFromLeft(CommonsConstants.TBL_USERS,
             sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMENTS_MARKS,
                 CommonsConstants.COL_USER))
         .addField(TBL_COMMENTS_MARK_TYPES, COL_MARK_NAME, COL_MARK_NAME)
@@ -802,14 +838,13 @@ public class DiscussionsModuleBean implements BeeModule {
     select.setWhere(SqlUtils.sqlTrue());
 
     if (!BeeUtils.isEmpty(filter)) {
-        select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.inList(
-            TBL_DISCUSSIONS_COMENTS_MARKS, sys
-                .getIdName(TBL_DISCUSSIONS_COMENTS_MARKS),
+      select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.inList(
+          TBL_DISCUSSIONS_COMENTS_MARKS, sys
+              .getIdName(TBL_DISCUSSIONS_COMENTS_MARKS),
           filter)));
     } else {
       select.setWhere(SqlUtils.sqlFalse());
     }
-
 
     SimpleRowSet rs = qs.getData(select);
 
@@ -830,8 +865,6 @@ public class DiscussionsModuleBean implements BeeModule {
             TBL_DISCUSSIONS_USERS, sys.getIdName(TBL_DISCUSSIONS_USERS));
     return Lists.newArrayList(qs.getLongColumn(query));
   }
-
-
 
   private Multimap<String, Long> getDiscussionRelations(long discussionId) {
     Multimap<String, Long> res = HashMultimap.create();

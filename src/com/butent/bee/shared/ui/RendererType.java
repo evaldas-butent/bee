@@ -16,7 +16,8 @@ public enum RendererType {
   FILE_SIZE("fileSize", true),
   PHOTO("photo", true),
   MAIL("mail", false),
-  URL("url", true);
+  URL("url", true),
+  IMAGE("image", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {
