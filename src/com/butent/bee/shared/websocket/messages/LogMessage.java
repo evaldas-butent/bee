@@ -33,6 +33,11 @@ public class LogMessage extends Message {
     this.level = level;
   }
 
+  @Override
+  public String brief() {
+    return getText();
+  }
+  
   public LogLevel getLevel() {
     return level;
   }

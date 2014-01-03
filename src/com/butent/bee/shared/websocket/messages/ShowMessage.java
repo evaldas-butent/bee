@@ -51,6 +51,11 @@ public class ShowMessage extends Message {
     this.subject = subject;
   }
 
+  @Override
+  public String brief() {
+    return string(getSubject());
+  }
+  
   public Subject getSubject() {
     return subject;
   }

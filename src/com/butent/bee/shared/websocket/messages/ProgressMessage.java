@@ -49,6 +49,11 @@ public class ProgressMessage extends Message {
     this.state = state;
   }
 
+  @Override
+  public String brief() {
+    return (getValue() == null) ? string(getState()) : string(getValue());
+  }
+  
   public String getProgressId() {
     return progressId;
   }

@@ -1141,6 +1141,9 @@
 .bee-StackContainer {
   position: relative;
 }
+.bee-StackContent {
+  overflow: auto;
+}
 
 .bee-StackHeader {
   cursor: pointer;
@@ -1569,7 +1572,7 @@
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
   border-left: 5px solid #fd6268;
-  color: #222;
+  background-color: WhiteSmoke;
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
@@ -2268,20 +2271,9 @@
 .bee-Online-size,
 .bee-Rooms-size {
   position: absolute;
-  top: 2px;
+  top: 3px;
   right: 10px;
   display: inline-block;
-  padding: 3px 7px;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  background-color: #999;
-  border-radius: 10px;
-}
-.bee-Online-updated,
-.bee-Rooms-updated {
-  animation: rotate 1s;
-  -webkit-animation: rotate 1s;
 }
 
 .bee-Online-item,
@@ -2303,21 +2295,26 @@
   visibility: visible;
 }
 
+.bee-Online-item {
+  border-bottom: 1px solid #ccc;
+}
+
 .bee-Online-name {
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
-  margin: 3px 1em 1px 1em;
+  color: #555;
+  margin: 5px 1em;
   cursor: pointer;
 }
 .bee-Online-name:hover {
   text-decoration: underline;
+  color: black;
 }
 
 .bee-Online-tweet,
 .bee-Online-home {
   font-size: 18px;
-  margin-right: 5px;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -2351,10 +2348,9 @@
 .bee-Room-settingsCommand,
 .bee-Room-deleteCommand {
   font-size: 18px;
-  margin-right: 5px;
   padding: 3px;
   cursor: pointer;
-  color: #555;
+  color: #888;
 }
 
 .bee-Room-guest {
@@ -2363,15 +2359,6 @@
 
 .bee-Room-usersBadge {
   margin-left: 5px;
-  padding: 3px 7px;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  background-color: #999;
-  border-radius: 10px;
-}
-.bee-Room-usersBadge.bee-Room-empty {
-  visibility: hidden;
 }
 .bee-Room-usersPanel {
   flex: 1;
@@ -2496,6 +2483,10 @@
   margin-left: 5px;
 }
 
+.bee-Conversation-wrapper {
+  max-height: 300px;
+  overflow: auto;
+}
 .bee-Conversation-messages {
   border-collapse: collapse;
 }
@@ -2546,4 +2537,20 @@
   background-color: red;
   color: white;
   border-radius: 10px;
+}
+
+.bee-Badge {
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background-color: #aaa;
+  border-radius: 10px;
+}
+.bee-Badge-empty {
+  visibility: hidden;
+}
+.bee-Badge-updated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
 }

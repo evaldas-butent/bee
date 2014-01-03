@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -297,9 +298,8 @@ public class Chat extends Flow implements Presenter, View, Printable {
   protected void onLoad() {
     super.onLoad();
 
-    int count = messagePanel.getWidgetCount();
-    if (count > 1) {
-      messagePanel.getWidget(count - 1).getElement().scrollIntoView();
+    if (messagePanel.getWidgetCount() > 1) {
+      DomUtils.scrollToBottom(messagePanel);
     }
   }
 

@@ -30,6 +30,11 @@ public class SessionMessage extends Message {
     super(Type.SESSION);
   }
   
+  @Override
+  public String brief() {
+    return string(getState());
+  }
+
   public SessionUser getSessionUser() {
     return sessionUser;
   }

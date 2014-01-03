@@ -221,7 +221,7 @@ public final class Endpoint {
       String data = message.encode();
       socket.send(data);
 
-      logger.info("->", message.getType().name().toLowerCase(), data.length());
+      logger.info("->", data.length(), message.getType().name().toLowerCase(), message.brief());
     }
   }
 
@@ -274,7 +274,8 @@ public final class Endpoint {
     if (data instanceof String) {
       Message message = Message.decode((String) data);
       if (message != null) {
-        logger.info("<-", message.getType().name().toLowerCase(), ((String) data).length());
+        logger.info("<-", ((String) data).length(), message.getType().name().toLowerCase(),
+            message.brief());
         dispatcher.dispatch(message);
       }
 

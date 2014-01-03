@@ -2,7 +2,6 @@ package com.butent.bee.client;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
@@ -19,6 +18,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.websocket.Endpoint;
+import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
@@ -168,7 +168,7 @@ public class Rooms implements HasInfo {
     private final FaLabel settingsWidget;
     private final FaLabel deleteWidget;
 
-    private final CustomDiv usersBadge;
+    private final Badge usersBadge;
     private final Flow usersPanel;
     private final CustomDiv timeLabel;
 
@@ -239,18 +239,16 @@ public class Rooms implements HasInfo {
 
       Flow infoPanel = new Flow(STYLE_ROOM_PREFIX + "infoPanel");
 
-      this.usersBadge = new CustomDiv(STYLE_ROOM_PREFIX + "usersBadge");
-      this.usersPanel = new Flow(STYLE_ROOM_PREFIX + "usersPanel");
-
       int userCount = ChatUtils.countOtherUsers(chatRoom.getUsers());
+
+      this.usersBadge = new Badge(userCount, STYLE_ROOM_PREFIX + "usersBadge");
+      infoPanel.add(usersBadge);
+
+      this.usersPanel = new Flow(STYLE_ROOM_PREFIX + "usersPanel");
       if (userCount > 0) {
-        usersBadge.setText(BeeUtils.toString(userCount));
         ChatUtils.renderOtherUsers(usersPanel, chatRoom.getUsers(), STYLE_USER);
-      } else {
-        usersBadge.addStyleName(STYLE_ROOM_EMPTY);
       }
 
-      infoPanel.add(usersBadge);
       infoPanel.add(usersPanel);
 
       this.timeLabel = new CustomDiv(STYLE_ROOM_PREFIX + "maxTime");
@@ -283,17 +281,11 @@ public class Rooms implements HasInfo {
 
     private void updateUsers(Collection<Long> users) {
       int count = ChatUtils.countOtherUsers(users);
+      usersBadge.update(count);
 
       if (count > 0) {
-        usersBadge.setText(BeeUtils.toString(count));
-        usersBadge.removeStyleName(STYLE_ROOM_EMPTY);
-        
         ChatUtils.renderOtherUsers(usersPanel, users, STYLE_USER);
-
       } else {
-        usersBadge.setText(BeeConst.STRING_EMPTY);
-        usersBadge.addStyleName(STYLE_ROOM_EMPTY);
-
         usersPanel.clear();
       }
     }
@@ -302,13 +294,11 @@ public class Rooms implements HasInfo {
   private static final BeeLogger logger = LogUtils.getLogger(Rooms.class);
 
   private static final String STYLE_ROOMS_PREFIX = "bee-Rooms-";
-  private static final String STYLE_ROOMS_UPDATED = STYLE_ROOMS_PREFIX + "updated";
 
   private static final String STYLE_ROOM_PREFIX = "bee-Room-";
   private static final String STYLE_GUEST = STYLE_ROOM_PREFIX + "guest";
   private static final String STYLE_USER = STYLE_ROOM_PREFIX + "user";
   private static final String STYLE_ROOM_UPDATED = STYLE_ROOM_PREFIX + "updated";
-  private static final String STYLE_ROOM_EMPTY = STYLE_ROOM_PREFIX + "empty";
 
   private static final int TIMER_PERIOD = 10000;
 
@@ -338,7 +328,7 @@ public class Rooms implements HasInfo {
 
   private final Timer timer;
 
-  private Label sizeBadge;
+  private Badge sizeBadge;
 
   Rooms() {
     this.timer = new Timer() {
@@ -611,7 +601,7 @@ public class Rooms implements HasInfo {
     return null;
   }
 
-  private Label getSizeBadge() {
+  private Badge getSizeBadge() {
     return sizeBadge;
   }
 
@@ -765,7 +755,7 @@ public class Rooms implements HasInfo {
     }
   }
 
-  private void setSizeBadge(Label sizeBadge) {
+  private void setSizeBadge(Badge sizeBadge) {
     this.sizeBadge = sizeBadge;
   }
 
@@ -822,22 +812,14 @@ public class Rooms implements HasInfo {
     }
 
     if (getSizeBadge() == null) {
-      Label badge = new Label();
-      badge.addStyleName(STYLE_ROOMS_PREFIX + "size");
+      Badge badge = new Badge(chatRooms.size(), STYLE_ROOMS_PREFIX + "size");
+
       header.add(badge);
-
       setSizeBadge(badge);
+
+    } else {
+      getSizeBadge().update(chatRooms.size());
     }
-
-    getSizeBadge().setText(BeeUtils.toString(chatRooms.size()));
-
-    getSizeBadge().removeStyleName(STYLE_ROOMS_UPDATED);
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        getSizeBadge().addStyleName(STYLE_ROOMS_UPDATED);
-      }
-    });
   }
 
   private void updateRoom(ChatRoom source) {

@@ -26,6 +26,11 @@ public class InfoMessage extends Message implements HasCaption, HasInfo {
   }
   
   @Override
+  public String brief() {
+    return BeeUtils.joinWords(getCaption(), BeeUtils.size(getInfo()));
+  }
+  
+  @Override
   public String getCaption() {
     return caption;
   }

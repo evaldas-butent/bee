@@ -15,6 +15,11 @@ public class EchoMessage extends Message {
     super(Type.ECHO);
   }
 
+  @Override
+  public String brief() {
+    return getText();
+  }
+
   public String getText() {
     return text;
   }

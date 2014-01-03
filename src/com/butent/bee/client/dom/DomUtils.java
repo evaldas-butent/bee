@@ -1598,6 +1598,16 @@ public final class DomUtils {
     Assert.notNull(obj);
     resizeVerticalBy(obj.getElement(), dh);
   }
+  
+  public static void scrollToBottom(Element elem) {
+    Assert.notNull(elem);
+    elem.setScrollTop(elem.getScrollHeight());
+  }
+
+  public static void scrollToBottom(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToBottom(obj.getElement());
+  }
 
   public static void setAttribute(UIObject obj, String name, int value) {
     setAttribute(obj, name, Integer.toString(value));

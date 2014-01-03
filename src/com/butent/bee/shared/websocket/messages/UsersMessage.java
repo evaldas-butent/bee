@@ -23,6 +23,11 @@ public class UsersMessage extends Message {
     super(Type.USERS);
   }
 
+  @Override
+  public String brief() {
+    return BeeUtils.toString(getData().size());
+  }
+  
   public List<UserData> getData() {
     return data;
   }
