@@ -549,7 +549,7 @@ public class Rooms implements HasInfo {
     }
 
     RoomSettings roomSettings = new RoomSettings(original);
-    openSettings(roomSettings, true, new Consumer<RoomSettings>() {
+    openSettings(roomSettings, false, new Consumer<RoomSettings>() {
       @Override
       public void accept(RoomSettings input) {
         if (!input.isValid()) {

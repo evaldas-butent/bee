@@ -95,6 +95,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.maps.ApiLoader;
 import com.butent.bee.client.maps.LatLng;
+import com.butent.bee.client.maps.MapContainer;
 import com.butent.bee.client.maps.MapOptions;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
@@ -3010,7 +3011,7 @@ public final class CliWorker {
         MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom)
             : MapOptions.create(latLng);
 
-        final MapWidget widget = MapWidget.create(mapOptions, caption);
+        final MapWidget widget = MapWidget.create(mapOptions);
 
         if (widget != null) {
           if (pos < arr.length - 2) {
@@ -3035,8 +3036,9 @@ public final class CliWorker {
               }
             });
           }
-
-          BeeKeeper.getScreen().showWidget(widget, true);
+          
+          MapContainer container = new MapContainer(caption, widget);
+          BeeKeeper.getScreen().showWidget(container, true);
         }
       }
     });
