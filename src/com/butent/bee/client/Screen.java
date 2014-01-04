@@ -58,6 +58,8 @@ public interface Screen extends Module, NotificationListener {
   
   void onLoad();
   
+  void onWidgetChange(IdentifiableWidget widget);
+  
   boolean removeDomainEntry(Domain domain, Long key);
 
   void removeProgress(String id);

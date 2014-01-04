@@ -11,7 +11,9 @@ import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.Domain;
@@ -37,6 +39,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -223,7 +226,7 @@ public class Rooms implements HasInfo {
         public void onClick(ClickEvent event) {
           ChatRoom room = findRoom(roomId);
           if (room != null) {
-            Endpoint.send(RoomStateMessage.remove(room));
+            onDelete(room);
           }
         }
       });
@@ -252,7 +255,9 @@ public class Rooms implements HasInfo {
       infoPanel.add(usersPanel);
 
       this.timeLabel = new CustomDiv(STYLE_ROOM_PREFIX + "maxTime");
-      timeLabel.setText(ChatUtils.elapsed(chatRoom.getMaxTime()));
+      if (chatRoom.getMaxTime() > 0) {
+        ChatUtils.updateTime(timeLabel, chatRoom.getMaxTime());
+      }
 
       infoPanel.add(timeLabel);
       add(infoPanel);
@@ -276,7 +281,7 @@ public class Rooms implements HasInfo {
     }
 
     private void updateTime(long maxTime) {
-      timeLabel.setText(ChatUtils.elapsed(maxTime));
+      ChatUtils.updateTime(timeLabel, maxTime);
     }
 
     private void updateUsers(Collection<Long> users) {
@@ -322,6 +327,17 @@ public class Rooms implements HasInfo {
     return null;
   }
 
+  private static void onDelete(final ChatRoom room) {
+    List<String> messages = Lists.newArrayList(Localized.getConstants().roomDeleteQuestion());
+
+    Global.confirmDelete(room.getName(), Icon.WARNING, messages, new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        Endpoint.send(RoomStateMessage.remove(room));
+      }
+    });
+  }
+
   private final List<ChatRoom> chatRooms = Lists.newArrayList();
 
   private final RoomsPanel roomsPanel = new RoomsPanel();
@@ -353,7 +369,7 @@ public class Rooms implements HasInfo {
       RoomWidget roomWidget = roomsPanel.findRoomWidget(room.getId());
       if (roomWidget != null) {
         roomWidget.updateTime(room.getMaxTime());
-        
+
         if (!BeeKeeper.getUser().is(chatMessage.getTextMessage().getUserId())) {
           roomWidget.addStyleName(STYLE_ROOM_UPDATED);
         }
@@ -363,6 +379,19 @@ public class Rooms implements HasInfo {
       if (chat != null) {
         chat.addMessage(chatMessage.getTextMessage(), true);
       }
+    }
+  }
+
+  public void configure(long roomId) {
+    ChatRoom room = findRoom(roomId);
+    if (room == null) {
+      return;
+    }
+
+    if (room.isOwner(BeeKeeper.getUser().getUserId())) {
+      editSetting(roomId);
+    } else {
+      showInfo(roomId);
     }
   }
 
@@ -739,7 +768,7 @@ public class Rooms implements HasInfo {
 
     if (room != null) {
       chatRooms.remove(room);
-      
+
       RoomWidget widget = roomsPanel.findRoomWidget(roomId);
       if (widget != null) {
         roomsPanel.remove(widget);
@@ -800,7 +829,10 @@ public class Rooms implements HasInfo {
     row++;
     table.setText(row, 0, Localized.getConstants().roomUpdateTime());
     table.setText(row, 1, BeeUtils.bracket(room.getMessageCount()));
-    table.setText(row, 2, ChatUtils.elapsed(room.getMaxTime()));
+    if (room.getMaxTime() > 0) {
+      table.setText(row, 2, BeeUtils.joinWords(ChatUtils.elapsed(room.getMaxTime()),
+          TimeUtils.renderDateTime(room.getMaxTime(), true)));
+    }
 
     Global.showModalWidget(room.getName(), table);
   }

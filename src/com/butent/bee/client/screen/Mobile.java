@@ -104,6 +104,10 @@ public class Mobile extends ScreenImpl {
   public UserInterface getUserInterface() {
     return UserInterface.MOBILE;
   }
+
+  @Override
+  public void onWidgetChange(IdentifiableWidget widget) {
+  }
   
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {

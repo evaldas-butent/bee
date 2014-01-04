@@ -424,6 +424,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String rightStateVisible();
 
+  String roomDeleteQuestion();
+
   String roomDwellers();
   
   String roomName();

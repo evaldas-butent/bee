@@ -2277,8 +2277,7 @@
 }
 
 .bee-Online-item,
-.bee-Room-headerPanel,
-.bee-Room-infoPanel {
+.bee-Room-headerPanel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -2286,8 +2285,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
 }
-.bee-Online-item:hover,
-.bee-Room-container:hover {
+.bee-Online-item:hover {
   background-color: #f2f2f2;
 }
 .bee-Online-item:hover .bee-Online-tweet,
@@ -2333,15 +2331,23 @@
   transition: background-color 1s;  
 }
 
+.bee-Room-headerPanel {
+  margin-bottom: 5px;
+}  
+
 .bee-Room-nameLabel {
   font-weight: bold;
-  color: #333;
+  color: #888;
   text-decoration: underline;
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
-  margin: 3px 1em;
+  margin-left: 1em;
+  margin-right: 1em;
   cursor: pointer;
+}
+.bee-Room-container:hover .bee-Room-nameLabel {
+  color: #00e;
 }
 
 .bee-Room-infoCommand,
@@ -2357,13 +2363,24 @@
   display: none;
 }
 
+.bee-Room-infoPanel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+
 .bee-Room-usersBadge {
-  margin-left: 5px;
+  margin-left: 2px;
 }
 .bee-Room-usersPanel {
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
+  max-height: 100px;
+  overflow: auto;
 }
 .bee-Room-user {
   display: inline-block;
@@ -2373,12 +2390,12 @@
 }
 .bee-Room-maxTime {
   margin-left: 5px;
-  margin-right: 5px;
+  margin-right: 2px;
   color: #777;
 }
 
 .bee-Room-updated {
-  background-color: #ff8;
+  background-color: #ffa;
 }
 
 .bee-Rooms-plus {
@@ -2422,17 +2439,21 @@
   margin-left: 2em;
 }
 
+.bee-Chat-autoScroll-label {
+  padding-right: 1em;
+}
+
 .bee-Chat-messages {
   position: absolute;
   top: 30px;
-  bottom: 11%;
+  bottom: 16%;
   left: 0;
   right: 0;
   overflow: auto;
 }
 .bee-Chat-footer {
   position: absolute;
-  height: 10%;
+  height: 15%;
   bottom: 0;
   left: 0;
   right: 0;
@@ -2482,21 +2503,32 @@
   position: absolute;
   top: 5%;
   left: 1%;
-  width: 50%;
-  height: 90%;
+  width: 90%;
+  height: 60%;
 }
 .bee-Chat-submit {
   position: absolute;
   top: 10%;
-  left: 53%;
-  font-size: x-large;
+  left: 93%;
+  font-size: medium;
+  color: #777;
+  padding: 3px 8px;
+  border-radius: 8px;
+  cursor: pointer;
 }
+.bee-Chat-submit:hover {
+  background-color: #0a0;
+  color: white;
+}
+
 .bee-Chat-online {
   position: absolute;
-  top: 3px;
+  top: 70%;
   bottom: 0;
-  left: 60%;
+  left: 0;
   right: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .bee-Chat-user {
   display: inline-block;
@@ -2506,7 +2538,7 @@
 }
 
 .bee-Conversation-wrapper {
-  max-height: 300px;
+  max-height: 400px;
   overflow: auto;
 }
 .bee-Conversation-messages {

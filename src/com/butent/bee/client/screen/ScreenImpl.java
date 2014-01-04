@@ -88,7 +88,7 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void activateWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "activateWidget: view widget is null");
+    Assert.notNull(widget, "activateWidget: widget is null");
     getWorkspace().activateWidget(widget);
   }
 
@@ -135,7 +135,7 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void closeWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "closeWidget: view widget is null");
+    Assert.notNull(widget, "closeWidget: widget is null");
     getWorkspace().closeWidget(widget);
   }
 
@@ -267,6 +267,12 @@ public class ScreenImpl implements Screen {
     Global.getSearch().focus();
   }
 
+  @Override
+  public void onWidgetChange(IdentifiableWidget widget) {
+    Assert.notNull(widget, "onWidgetChange: widget is null");
+    getWorkspace().onWidgetChange(widget);
+  }
+  
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     if (getCentralScrutinizer() == null) {

@@ -107,6 +107,10 @@ public class EcScreen extends ScreenImpl {
     EcKeeper.showPromo(true);
     EcKeeper.restoreShoppingCarts();
   }
+  
+  @Override
+  public void onWidgetChange(IdentifiableWidget widget) {
+  }
 
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {

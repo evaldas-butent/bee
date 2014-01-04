@@ -41,5 +41,7 @@ public interface HeaderView extends View, IndexedPanel, Printable {
 
   void setMessage(String message);
 
+  void setMessageTitle(String title);
+
   void showAction(Action action, boolean visible);
 }

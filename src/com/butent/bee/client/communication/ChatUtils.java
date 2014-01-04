@@ -1,6 +1,7 @@
 package com.butent.bee.client.communication;
 
 import com.google.common.base.Objects;
+import com.google.gwt.user.client.ui.IsWidget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -9,6 +10,7 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -63,7 +65,7 @@ public final class ChatUtils {
     if (!container.isEmpty()) {
       container.clear();
     }
-    
+   
     if (BeeUtils.isEmpty(users)) {
       return;
     }
@@ -81,6 +83,13 @@ public final class ChatUtils {
         
         container.add(widget);
       }
+    }
+  }
+
+  public static <T extends HasHtml & IsWidget> void updateTime(T widget, long time) {
+    if (widget != null && time > 0) {
+      widget.setText(elapsed(time));
+      widget.asWidget().setTitle(TimeUtils.renderDateTime(time));
     }
   }
   
