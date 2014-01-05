@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.news.Feed;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
@@ -91,6 +92,7 @@ public final class CommonsConstants {
     EnumUtils.register(ReminderMethod.class);
     EnumUtils.register(SupportedLocale.class);
     EnumUtils.register(UserInterface.class);
+    EnumUtils.register(Feed.class);
   }
 
   public static final String COMMONS_MODULE = "Commons";
@@ -199,8 +201,10 @@ public final class CommonsConstants {
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
-  public static final String VIEW_USERS = "Users";
   public static final String VIEW_PERSONS = "Persons";
+
+  public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_FEEDS = "UserFeeds";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
@@ -287,6 +291,8 @@ public final class CommonsConstants {
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
+  public static final String COL_ITEM_PRICE = "Price";
+  public static final String COL_ITEM_CURRENCY = "Currency";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -352,6 +358,8 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_KEY = "Key";
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
 
+  public static final String COL_FEED = "Feed";
+  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";

@@ -92,6 +92,8 @@ public class Global implements Module {
   private static final Users users = new Users();
   private static final Rooms rooms = new Rooms();
 
+  private static final NewsAggregator newsAggregator = new NewsAggregator();
+
   private static boolean debug;
 
   public static void addStyleSheet(String name, String text) {
@@ -187,6 +189,10 @@ public class Global implements Module {
 
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
+  }
+  
+  public static NewsAggregator getNewsAggregator() {
+    return newsAggregator;
   }
 
   public static void getParameter(String module, String prm, final Consumer<String> prmConsumer) {

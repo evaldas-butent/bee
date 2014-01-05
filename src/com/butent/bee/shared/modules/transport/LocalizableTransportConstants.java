@@ -288,6 +288,8 @@ public interface LocalizableTransportConstants {
 
   String trRegistrationReceived();
 
+  String trRegistrations();
+
   String trRegistrationStatusConfirmed();
 
   String trRegistrationStatusNew();
@@ -389,6 +391,8 @@ public interface LocalizableTransportConstants {
   String trRequestStatusNew();
 
   String trRequestStatusRejected();
+  
+  String trRequestsUnregistered();
 
   String trRequestTemplateName();
 
@@ -409,6 +413,8 @@ public interface LocalizableTransportConstants {
   String trSendToERP();
 
   String trSendToERPConfirm();
+  
+  String trTransportationOrders();
 
   String trTripStatusActive();
 
@@ -479,4 +485,6 @@ public interface LocalizableTransportConstants {
   String vehicleTankCapacity();
 
   String vehicleType();
+
+  String vehicles();
 }

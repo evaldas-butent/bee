@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
+import com.butent.bee.server.data.NewsBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -56,6 +57,8 @@ public class DispatcherBean {
   UserServiceBean userService;
   @EJB
   SystemBean system;
+  @EJB
+  NewsBean news;
 
   public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
@@ -156,6 +159,16 @@ public class DispatcherBean {
             }
             break;
             
+          case NEWS:
+            ResponseObject newsData = news.getNews();
+            if (newsData != null) {
+              response.addMessagesFrom(newsData);
+              if (!newsData.hasErrors() && newsData.hasResponse()) {
+                data.put(component.key(), newsData.getResponse());
+              }
+            }
+            break;
+
           case USERS:
             data.put(component.key(), userService.getAllUserData());
             break;

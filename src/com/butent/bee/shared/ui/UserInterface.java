@@ -192,14 +192,15 @@ public enum UserInterface implements HasCaption {
   };
 
   public enum Component {
+    AUTOCOMPLETE(false),
     DATA_INFO(false),
+    DECORATORS(false),
     DICTIONARY(false),
     FAVORITES(false),
     FILTERS(false),
-    DECORATORS(false),
     GRIDS(false),
     MENU(false),
-    AUTOCOMPLETE(false),
+    NEWS(false),
     USERS(true);
     
     private final boolean required;

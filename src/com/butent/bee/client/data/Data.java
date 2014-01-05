@@ -167,6 +167,11 @@ public final class Data {
     return BeeUtils.notEmpty(Localized.maybeTranslate(dataInfo.getCaption()), viewName);
   }
 
+  public static String getViewTable(String viewName) {
+    DataInfo dataInfo = getDataInfo(viewName);
+    return (dataInfo == null) ? null : dataInfo.getTableName();
+  }
+
   public static void init() {
     BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);

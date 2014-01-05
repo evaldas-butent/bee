@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="CargoRequestUsage"
+  idName="CargoRequestUsageID"
+  >
+  <Fields>
+    <Relation name="CargoRequest" notNull="true" relation="CargoRequests" cascade="DELETE" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+
+    <Long name="Access" />
+    <Long name="Update" />
+
+    <Integer name="Star" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="CargoRequest User" />
+  </Constraints>
+</Table>

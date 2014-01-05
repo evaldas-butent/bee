@@ -18,6 +18,7 @@ import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
+import com.butent.bee.server.data.NewsBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
@@ -129,6 +130,8 @@ public class UiServiceBean {
   InitializationBean ib;
   @EJB
   TecDocBean tcd;
+  @EJB
+  NewsBean news;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
@@ -198,6 +201,13 @@ public class UiServiceBean {
       response = getAutocomplete();
     } else if (BeeUtils.same(svc, Service.UPDATE_AUTOCOMPLETE)) {
       response = updateAutocomplete(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_NEWS)) {
+      response = news.getNews();
+    } else if (BeeUtils.same(svc, Service.SUBSCRIBE_TO_FEEDS)) {
+      response = news.subscribe(reqInfo);
+    } else if (BeeUtils.same(svc, Service.READ_FEED)) {
+      response = news.onReadFeed(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
       response = importOsamaTiekejai(reqInfo);

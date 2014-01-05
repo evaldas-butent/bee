@@ -323,7 +323,7 @@ class MessageDispatcher {
         } else if (lm.hasCoordinates()) {
           String title = Global.getUsers().getUserSignatureBySession(from);
           if (BeeUtils.isPositive(lm.getAccuracy())) {
-            caption = BeeUtils.joinWords(title, "+-", lm.getAccuracy(), "m");
+            caption = BeeUtils.joinWords(title, BeeConst.CHAR_PLUS_MINUS, lm.getAccuracy(), "m");
           } else {
             caption = title;
           }
