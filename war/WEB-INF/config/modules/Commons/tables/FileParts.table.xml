@@ -7,6 +7,6 @@
   >
   <Fields>
     <Relation name="File" relation="Files" notNull="true" cascade="DELETE" />
-    <Text name="Part" />
+    <Blob name="Part" />
   </Fields>
 </Table>

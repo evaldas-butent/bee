@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.calendar;
 
 public interface LocalizableCalendarConstants {
 
+  String appointments();
+
   String calAppointmentEnd();
 
   String calAppointmentStart();

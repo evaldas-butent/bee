@@ -1,9 +1,13 @@
 package com.butent.bee.client.dialog;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.user.client.Timer;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.dom.Features;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -31,6 +35,8 @@ public class WebNotification extends JavaScriptObject {
 
     void onSuccess();
   }
+  
+  private static final int PERMISSION_TIMEOUT = 5000;
 
   public static void create(final String title, final NotificationOptions options,
       final Callback<WebNotification> callback) {
@@ -41,9 +47,23 @@ public class WebNotification extends JavaScriptObject {
       }
 
     } else {
+
+      final Timer timer = new Timer() {
+        @Override
+        public void run() {
+          fallback(title, options);
+          if (callback != null) {
+            callback.onFailure("timeout");
+          }
+        }
+      };
+      timer.schedule(PERMISSION_TIMEOUT);
+      
       PermissionCallback permissionCallback = new PermissionCallback() {
         @Override
         public void onSuccess() {
+          timer.cancel();
+
           WebNotification notification;
           if (options == null) {
             notification = createImpl(title);
@@ -58,12 +78,17 @@ public class WebNotification extends JavaScriptObject {
 
         @Override
         public void onFailure() {
+          if (timer.isRunning()) {
+            timer.cancel();
+            fallback(title, options);
+          }
+
           if (callback != null) {
             callback.onFailure(NotificationPermission.DENIED.getValue());
           }
         }
       };
-
+      
       requestPermission(permissionCallback);
     }
   }
@@ -93,6 +118,24 @@ public class WebNotification extends JavaScriptObject {
     return new Notification(title);
   }-*/;
 
+  private static void fallback(String title, NotificationOptions options) {
+    if (options == null) {
+      BeeKeeper.getScreen().notifyInfo(title);
+
+    } else {
+      Image image = BeeUtils.isEmpty(options.getIcon()) ? null : new Image(options.getIcon());
+      if (image != null) {
+        StyleUtils.setMaxWidth(image, 40);
+        StyleUtils.setMaxHeight(image, 40);
+      }
+
+      String body = (image == null) ? options.getBody()
+          : BeeUtils.joinWords(image.getElement().getString(), options.getBody());
+
+      BeeKeeper.getScreen().notifyWarning(title, body);
+    }
+  }
+  
   private static native boolean isDeniedImpl() /*-{
     return Notification.permission === "denied";
   }-*/;

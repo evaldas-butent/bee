@@ -168,6 +168,8 @@ public interface LocalizableCrmConstants {
 
   String documentFileExists();
   
+  String documents();
+  
   String endingDate();
 
   String financialInfo();

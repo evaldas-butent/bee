@@ -21,6 +21,11 @@ public class OnlineMessage extends Message {
     super(Type.ONLINE);
   }
   
+  @Override
+  public String brief() {
+    return BeeUtils.toString(getSessionUsers().size());
+  }
+
   public List<SessionUser> getSessionUsers() {
     return sessionUsers;
   }

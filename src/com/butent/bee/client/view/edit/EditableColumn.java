@@ -246,6 +246,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
         return BeeUtils.isDouble(value) ? value.trim() : null;
 
       case TEXT:
+      case BLOB:
       case TIME_OF_DAY:
         return BeeUtils.trimRight(value);
     }

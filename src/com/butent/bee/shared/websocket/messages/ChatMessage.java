@@ -25,6 +25,11 @@ public class ChatMessage extends Message {
     super(Type.CHAT);
   }
   
+  @Override
+  public String brief() {
+    return (getTextMessage() == null) ? null : getTextMessage().getText();
+  }
+  
   public long getRoomId() {
     return roomId;
   }

@@ -6,32 +6,23 @@ import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.ui.HasCaption;
 
-public final class MapWidget extends CustomWidget implements RequiresResize, HasCaption {
+public final class MapWidget extends CustomWidget implements RequiresResize {
 
   public static MapWidget create(MapOptions options) {
-    return create(options, null);
-  }
-
-  public static MapWidget create(MapOptions options, String caption) {
     if (options == null) {
       return null;
     } else {
-      return new MapWidget(options, caption);
+      return new MapWidget(options);
     }
   }
 
   private MapOptions mapOptions;
   private MapImpl impl;
   
-  private String caption;
-
-  private MapWidget(MapOptions options, String caption) {
-    super(Document.get().createDivElement());
-
+  private MapWidget(MapOptions options) {
+    super(Document.get().createDivElement(), "bee-Map");
     this.mapOptions = options;
-    this.caption = caption;
   }
 
   public void fitBounds(LatLngBounds bounds) {
@@ -42,11 +33,6 @@ public final class MapWidget extends CustomWidget implements RequiresResize, Has
 
   public LatLngBounds getBounds() {
     return (impl == null) ? null : impl.getBounds();
-  }
-
-  @Override
-  public String getCaption() {
-    return caption;
   }
 
   public LatLng getCenter() {
@@ -103,10 +89,6 @@ public final class MapWidget extends CustomWidget implements RequiresResize, Has
     if (impl != null) {
       impl.panToBounds(latLngBounds);
     }
-  }
-
-  public void setCaption(String caption) {
-    this.caption = caption;
   }
 
   public void setCenter(LatLng latlng) {

@@ -31,7 +31,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     CellSource source = new CellSource(SourceType.COLUMN, column.getId(), index, column.getType());
     source.setPrecision(column.getPrecision());
     source.setScale(column.getScale());
-    
+
     if (column.isText()) {
       source.setIsText(true);
     }
@@ -64,7 +64,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
-  
+
   private boolean isText;
 
   private CellSource(SourceType sourceType, String name, Integer index, ValueType valueType) {
@@ -336,8 +336,7 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
           return (doubleValue == null) ? null : BeeUtils.toString(doubleValue);
 
         case TEXT:
-          return getString(row);
-
+        case BLOB:
         case TIME_OF_DAY:
           return getString(row);
       }

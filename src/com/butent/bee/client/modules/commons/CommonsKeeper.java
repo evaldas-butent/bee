@@ -106,6 +106,8 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
+    GridFactory.registerGridInterceptor(VIEW_USER_FEEDS, new UserFeedsInterceptor());
+
     SelectorEvent.register(new CommonsSelectorHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);

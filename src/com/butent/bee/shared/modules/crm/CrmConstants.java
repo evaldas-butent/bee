@@ -150,6 +150,8 @@ public final class CrmConstants {
 
   public static final String TBL_EVENT_DURATIONS = "EventDurations";
 
+  public static final String TBL_DOCUMENTS = "Documents";
+  
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
@@ -190,6 +192,7 @@ public final class CrmConstants {
   public static final String COL_ORDER = "Order";
 
   public static final String COL_DOCUMENT = "Document";
+  public static final String COL_DOCUMENT_NAME = "Name";
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
   public static final String COL_DOCUMENT_CATEGORY = "Category";

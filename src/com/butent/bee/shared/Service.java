@@ -82,6 +82,10 @@ public final class Service {
 
   public static final String GET_AUTOCOMPLETE = DATA_SERVICE_PREFIX + "get_autocomplete";
   public static final String UPDATE_AUTOCOMPLETE = DATA_SERVICE_PREFIX + "update_autocomplete";
+
+  public static final String GET_NEWS = DATA_SERVICE_PREFIX + "get_news";
+  public static final String SUBSCRIBE_TO_FEEDS = DATA_SERVICE_PREFIX + "subscribe_to_feeds";
+  public static final String READ_FEED = DATA_SERVICE_PREFIX + "read_feed";
   
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -148,6 +152,7 @@ public final class Service {
   public static final String VAR_TABLE = RPC_VAR_PREFIX + "table";
   public static final String VAR_COLUMN = RPC_VAR_PREFIX + "column";
   public static final String VAR_VALUE = RPC_VAR_PREFIX + "value";
+  public static final String VAR_ID = RPC_VAR_PREFIX + "id";
 
   public static final String VAR_FILTER_COLUMN = RPC_VAR_PREFIX + "filter_column";
   public static final String VAR_VALUE_COLUMN = RPC_VAR_PREFIX + "value_column";
@@ -175,6 +180,7 @@ public final class Service {
   public static final String VAR_UI = RPC_VAR_PREFIX + "ui";
 
   public static final String VAR_PROGRESS = RPC_VAR_PREFIX + "progress";
+  public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

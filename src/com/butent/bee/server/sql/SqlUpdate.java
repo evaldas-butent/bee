@@ -18,7 +18,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
   private final String target;
   private IsFrom fromSource;
   private IsCondition fromJoin;
-  private Map<String, IsSql> updates = Maps.newLinkedHashMap();
+  private final Map<String, IsSql> updates = Maps.newLinkedHashMap();
   private IsCondition whereClause;
 
   /**
@@ -39,7 +39,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
    * @return object's SqlInsert instance.
    */
   public SqlUpdate addConstant(String field, Object value) {
-    return addExpression(field, SqlUtils.constant(value));
+    return addExpression(field, value instanceof IsSql ? (IsSql) value : SqlUtils.constant(value));
   }
 
   /**

@@ -38,9 +38,9 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
+import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
@@ -120,7 +120,7 @@ public final class GridFactory {
     }
 
     private boolean hasFilter() {
-      return filter != null || !BeeUtils.isEmpty(filterDescription) 
+      return filter != null || !BeeUtils.isEmpty(filterDescription)
           || !BeeUtils.isEmpty(currentUserFilter);
     }
   }
@@ -188,6 +188,7 @@ public final class GridFactory {
         return new DoubleColumn(cellSource);
 
       case TEXT:
+      case BLOB:
         if (cellSource.isText()) {
           return new AreaColumn(cellSource);
         } else {

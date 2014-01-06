@@ -56,7 +56,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   }
 
   private static String formatMillis(long millis) {
-    return (millis > 0) ? TimeUtils.toString(millis) : null;
+    return (millis > 0) ? TimeUtils.renderDateTime(millis, true) : null;
   }
 
   private long id;

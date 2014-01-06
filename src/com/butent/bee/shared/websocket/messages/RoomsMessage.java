@@ -22,6 +22,11 @@ public class RoomsMessage extends Message {
     super(Type.ROOMS);
   }
 
+  @Override
+  public String brief() {
+    return BeeUtils.toString(getData().size());
+  }
+  
   public List<ChatRoom> getData() {
     return data;
   }

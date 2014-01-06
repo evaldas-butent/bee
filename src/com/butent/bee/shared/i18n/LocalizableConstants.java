@@ -224,6 +224,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String fax();
 
+  String feed();
+
+  String feedNew();
+
+  String feeds();
+  
+  String feedSubscriptionDate();
+
   String fileDataCorrection();
 
   String fileDescription();
@@ -423,6 +431,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String rightStateAmendable();
 
   String rightStateVisible();
+
+  String roomDeleteQuestion();
 
   String roomDwellers();
   

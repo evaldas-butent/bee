@@ -51,6 +51,11 @@ public class LocationMessage extends Message implements HasRecipient {
     this.to = to;
   }
 
+  @Override
+  public String brief() {
+    return BeeUtils.joinWords(string(getLatitude()), string(getLongitude()));
+  }
+  
   public Double getAccuracy() {
     return accuracy;
   }

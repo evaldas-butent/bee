@@ -1152,6 +1152,9 @@
 .bee-StackContainer {
   position: relative;
 }
+.bee-StackContent {
+  overflow: auto;
+}
 
 .bee-StackHeader {
   cursor: pointer;
@@ -1580,7 +1583,7 @@
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
   border-left: 5px solid #fd6268;
-  color: #222;
+  background-color: WhiteSmoke;
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
@@ -2276,25 +2279,13 @@
 .bee-Online-size,
 .bee-Rooms-size {
   position: absolute;
-  top: 2px;
+  top: 3px;
   right: 10px;
   display: inline-block;
-  padding: 3px 7px;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  background-color: #999;
-  border-radius: 10px;
-}
-.bee-Online-updated,
-.bee-Rooms-updated {
-  animation: rotate 1s;
-  -webkit-animation: rotate 1s;
 }
 
 .bee-Online-item,
-.bee-Room-headerPanel,
-.bee-Room-infoPanel {
+.bee-Room-headerPanel {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -2302,8 +2293,7 @@
   -webkit-align-items: center;
   -ms-flex-align: center;
 }
-.bee-Online-item:hover,
-.bee-Room-container:hover {
+.bee-Online-item:hover {
   background-color: #f2f2f2;
 }
 .bee-Online-item:hover .bee-Online-tweet,
@@ -2311,21 +2301,26 @@
   visibility: visible;
 }
 
+.bee-Online-item {
+  border-bottom: 1px solid #ccc;
+}
+
 .bee-Online-name {
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
-  margin: 3px 1em 1px 1em;
+  color: #555;
+  margin: 5px 1em;
   cursor: pointer;
 }
 .bee-Online-name:hover {
   text-decoration: underline;
+  color: black;
 }
 
 .bee-Online-tweet,
 .bee-Online-home {
   font-size: 18px;
-  margin-right: 5px;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -2344,47 +2339,56 @@
   transition: background-color 1s;  
 }
 
+.bee-Room-headerPanel {
+  margin-bottom: 5px;
+}  
+
 .bee-Room-nameLabel {
   font-weight: bold;
-  color: #333;
+  color: #888;
   text-decoration: underline;
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
-  margin: 3px 1em;
+  margin-left: 1em;
+  margin-right: 1em;
   cursor: pointer;
+}
+.bee-Room-container:hover .bee-Room-nameLabel {
+  color: #00e;
 }
 
 .bee-Room-infoCommand,
 .bee-Room-settingsCommand,
 .bee-Room-deleteCommand {
   font-size: 18px;
-  margin-right: 5px;
   padding: 3px;
   cursor: pointer;
-  color: #555;
+  color: #888;
 }
 
 .bee-Room-guest {
   display: none;
 }
 
-.bee-Room-usersBadge {
-  margin-left: 5px;
-  padding: 3px 7px;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  background-color: #999;
-  border-radius: 10px;
+.bee-Room-infoPanel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
 }
-.bee-Room-usersBadge.bee-Room-empty {
-  visibility: hidden;
+
+.bee-Room-usersBadge {
+  margin-left: 2px;
 }
 .bee-Room-usersPanel {
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
+  max-height: 100px;
+  overflow: auto;
 }
 .bee-Room-user {
   display: inline-block;
@@ -2394,12 +2398,12 @@
 }
 .bee-Room-maxTime {
   margin-left: 5px;
-  margin-right: 5px;
+  margin-right: 2px;
   color: #777;
 }
 
 .bee-Room-updated {
-  background-color: #ff8;
+  background-color: #ffa;
 }
 
 .bee-Rooms-plus {
@@ -2421,17 +2425,43 @@
   background-color: red;
 }
 
+.bee-Room-details {
+  border-collapse: collapse;
+}
+.bee-Room-details td {
+  padding: 8px;
+  max-width: 400px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-Room-editor-table {
+  border-collapse: collapse;
+}
+.bee-Room-editor-table td {
+  padding: 8px;
+}
+.bee-Room-editor-commands-cell {
+  text-align: right;
+}
+.bee-Room-editor-cancel {
+  margin-left: 2em;
+}
+
+.bee-Chat-autoScroll-label {
+  padding-right: 1em;
+}
+
 .bee-Chat-messages {
   position: absolute;
   top: 30px;
-  bottom: 11%;
+  bottom: 16%;
   left: 0;
   right: 0;
   overflow: auto;
 }
 .bee-Chat-footer {
   position: absolute;
-  height: 10%;
+  height: 15%;
   bottom: 0;
   left: 0;
   right: 0;
@@ -2481,21 +2511,32 @@
   position: absolute;
   top: 5%;
   left: 1%;
-  width: 50%;
-  height: 90%;
+  width: 90%;
+  height: 60%;
 }
 .bee-Chat-submit {
   position: absolute;
   top: 10%;
-  left: 53%;
-  font-size: x-large;
+  left: 93%;
+  font-size: medium;
+  color: #777;
+  padding: 3px 8px;
+  border-radius: 8px;
+  cursor: pointer;
 }
+.bee-Chat-submit:hover {
+  background-color: #0a0;
+  color: white;
+}
+
 .bee-Chat-online {
   position: absolute;
-  top: 3px;
+  top: 70%;
   bottom: 0;
-  left: 60%;
+  left: 0;
   right: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .bee-Chat-user {
   display: inline-block;
@@ -2504,6 +2545,10 @@
   margin-left: 5px;
 }
 
+.bee-Conversation-wrapper {
+  max-height: 400px;
+  overflow: auto;
+}
 .bee-Conversation-messages {
   border-collapse: collapse;
 }
@@ -2554,4 +2599,28 @@
   background-color: red;
   color: white;
   border-radius: 10px;
+}
+
+.bee-Badge {
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background-color: #aaa;
+  border-radius: 10px;
+}
+.bee-Badge-empty {
+  visibility: hidden;
+}
+.bee-Badge-updated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+.bee-MapContainer .bee-Map {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }

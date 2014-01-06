@@ -459,8 +459,8 @@ public final class TimeUtils {
    * @return the String representation of milliseconds.
    */
   public static String millisToString(int millis) {
-    if (millis >= 0 && millis < 1000) {
-      return Integer.toString(millis + 1000).substring(1);
+    if (millis >= 0 && millis < MILLIS_PER_SECOND) {
+      return Integer.toString(millis + MILLIS_PER_SECOND).substring(1);
     } else {
       return Integer.toString(millis);
     }
@@ -747,6 +747,14 @@ public final class TimeUtils {
     }
   }
 
+  public static String renderDateTime(long time) {
+    return renderDateTime(time, false);
+  }
+
+  public static String renderDateTime(long time, boolean showMillis) {
+    return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
+  }
+  
   public static String renderMinutes(int minutes, boolean leadingZero) {
     int hours = minutes / MINUTES_PER_HOUR;
     return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + DateTime.TIME_FIELD_SEPARATOR
@@ -1038,12 +1046,8 @@ public final class TimeUtils {
    * @return seconds.
    */
   public static String toSeconds(long millis) {
-    return Long.toString(millis / 1000) + BeeConst.STRING_POINT
-        + BeeUtils.toLeadingZeroes((int) (millis % 1000), 3);
-  }
-
-  public static String toString(long millis) {
-    return new DateTime(millis).toString();
+    return Long.toString(millis / MILLIS_PER_SECOND) + BeeConst.STRING_POINT
+        + BeeUtils.toLeadingZeroes((int) (millis % MILLIS_PER_SECOND), 3);
   }
 
   public static String toTimeString(long millis) {

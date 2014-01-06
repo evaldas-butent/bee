@@ -562,6 +562,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         focusCommand.execute();
       }
     }
+    
+    if (hasData() && DataUtils.hasId(row)) {
+      Global.getNewsAggregator().onAccess(getViewName(), row.getId());
+    }
   }
 
   @Override

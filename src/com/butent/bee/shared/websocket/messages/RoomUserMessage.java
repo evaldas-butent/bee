@@ -44,6 +44,11 @@ public class RoomUserMessage extends Message {
     super(Type.ROOM_USER);
   }
 
+  @Override
+  public String brief() {
+    return BeeUtils.joinWords(getRoomId(), getUserId(), join());
+  }
+  
   public long getRoomId() {
     return roomId;
   }

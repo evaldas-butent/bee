@@ -97,7 +97,7 @@ public final class MapUtils {
         MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom)
             : MapOptions.create(latLng);
 
-        final MapWidget widget = MapWidget.create(mapOptions, caption);
+        final MapWidget widget = MapWidget.create(mapOptions);
 
         if (widget != null) {
           widget.addAttachHandler(new AttachEvent.Handler() {
@@ -115,8 +115,9 @@ public final class MapUtils {
               }
             }
           });
-
-          BeeKeeper.getScreen().showWidget(widget, true);
+          
+          MapContainer container = new MapContainer(caption, widget);
+          BeeKeeper.getScreen().showWidget(container, true);
         }
       }
     });

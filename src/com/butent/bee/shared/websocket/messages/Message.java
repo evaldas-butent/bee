@@ -133,11 +133,13 @@ public abstract class Message {
     this.type = type;
   }
   
+  public abstract String brief();
+  
   public String encode() {
     List<String> data = Lists.newArrayList(Codec.pack(getType()), serialize());
     return Codec.beeSerialize(data);
   }
-  
+
   public Type getType() {
     return type;
   }

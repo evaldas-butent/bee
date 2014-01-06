@@ -39,6 +39,11 @@ public class AdminMessage extends Message implements HasRecipient {
     this.to = to;
   }
 
+  @Override
+  public String brief() {
+    return BeeUtils.notEmpty(getResponse(), getCommand());
+  }
+
   public String getCommand() {
     return command;
   }
@@ -50,7 +55,7 @@ public class AdminMessage extends Message implements HasRecipient {
   public String getResponse() {
     return response;
   }
-
+  
   @Override
   public String getTo() {
     return to;

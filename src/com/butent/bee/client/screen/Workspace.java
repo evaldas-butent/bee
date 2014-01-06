@@ -171,14 +171,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         getStylePrefix() + "newTab");
     newTab.setHtml(BeeConst.STRING_PLUS);
     newTab.setTitle(Localized.getConstants().newTab());
-    
+
     newTab.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         insertEmptyPanel(getPageCount());
       }
     });
-    
+
     getTabBar().add(newTab);
   }
 
@@ -390,7 +390,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     return panel.getActiveTile();
   }
-  
+
   List<IdentifiableWidget> getOpenWidgets() {
     List<IdentifiableWidget> result = Lists.newArrayList();
 
@@ -400,7 +400,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         result.addAll(((TilePanel) contentPanel).getContentWidgets());
       }
     }
-    
+
     return result;
   }
 
@@ -412,6 +412,15 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
     showError("page not found for tile" + tile.getId());
     return BeeConst.UNDEF;
+  }
+
+  void onWidgetChange(IdentifiableWidget widget) {
+    if (widget != null) {
+      Tile tile = TilePanel.getTile(widget.asWidget());
+      if (tile != null) {
+        updateCaption(tile, null);
+      }
+    }
   }
 
   void openInNewPlace(IdentifiableWidget widget) {
@@ -472,7 +481,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         panel.setActiveTileId(nearestTile.getId());
 
         resizePage(pageIndex);
-        
+
         nearestTile.activate(pageIndex == getSelectedIndex());
       } else {
         resizePage(pageIndex);

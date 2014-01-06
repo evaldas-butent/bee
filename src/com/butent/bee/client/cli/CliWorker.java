@@ -57,6 +57,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
@@ -94,6 +95,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.maps.ApiLoader;
 import com.butent.bee.client.maps.LatLng;
+import com.butent.bee.client.maps.MapContainer;
 import com.butent.bee.client.maps.MapOptions;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
@@ -143,6 +145,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.css.CssAngle;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
@@ -188,6 +191,8 @@ import com.butent.bee.shared.utils.Wildcards.Pattern;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
+import com.butent.bee.shared.websocket.messages.NotificationMessage;
+import com.butent.bee.shared.websocket.messages.NotificationMessage.DisplayMode;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 
@@ -230,7 +235,7 @@ public final class CliWorker {
       whereAmI();
 
     } else if (z.startsWith("adm") && !args.isEmpty()) {
-      doAdmin(args, errorPopup);
+      doAdmin(z.substring(3), args, errorPopup);
 
     } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
       doAjaxKeys(arr);
@@ -336,7 +341,7 @@ public final class CliWorker {
 
     } else if ("exec".equals(z) && !args.isEmpty()) {
       logger.debug(JsUtils.evalToString(args));
-      
+
     } else if ("exit".equals(z)) {
       Bee.exit();
 
@@ -860,7 +865,7 @@ public final class CliWorker {
     BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.HTML, src);
   }
 
-  private static void doAdmin(String args, boolean errorPopup) {
+  private static void doAdmin(String note, String args, boolean errorPopup) {
     String cmnd;
 
     boolean all;
@@ -888,7 +893,7 @@ public final class CliWorker {
 
         List<String> userNames = NameUtils.toList(userList);
         for (String userName : userNames) {
-          Long userId = Global.getUsers().parseUserName(userName);
+          Long userId = Global.getUsers().parseUserName(userName, true);
           if (userId == null) {
             showError(errorPopup, "user not found", userName);
             return;
@@ -917,8 +922,38 @@ public final class CliWorker {
       return;
     }
 
-    for (String session : sessions) {
-      Endpoint.send(AdminMessage.command(Endpoint.getSessionId(), session, cmnd));
+    DisplayMode displayMode = null;
+    for (DisplayMode dm : DisplayMode.values()) {
+      if (BeeUtils.containsSame(note, BeeUtils.left(dm.name(), 3))) {
+        displayMode = dm;
+        break;
+      }
+    }
+
+    if (displayMode == null) {
+      for (String session : sessions) {
+        Endpoint.send(AdminMessage.command(Endpoint.getSessionId(), session, cmnd));
+      }
+
+    } else {
+      Icon icon = null;
+      for (Icon ic : Icon.values()) {
+        if (BeeUtils.containsSame(note, BeeUtils.left(ic.name(), 3))) {
+          icon = ic;
+          break;
+        }
+      }
+      
+      for (String session : sessions) {
+        NotificationMessage notificationMessage = NotificationMessage.create(displayMode,
+            Endpoint.getSessionId(), session,
+            new TextMessage(BeeKeeper.getUser().getUserId(), cmnd));
+        if (icon != null) {
+          notificationMessage.setIcon(icon.name());
+        }
+        
+        Endpoint.send(notificationMessage);
+      }
     }
   }
 
@@ -1851,7 +1886,7 @@ public final class CliWorker {
     } else {
       progressId = null;
     }
-    
+
     final ResponseCallback responseCallback = new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -1944,7 +1979,7 @@ public final class CliWorker {
         }
       }
     };
-    
+
     if (progressId == null) {
       BeeKeeper.getRpc().sendText(Service.REBUILD, args, responseCallback);
 
@@ -1956,7 +1991,7 @@ public final class CliWorker {
           if (!BeeUtils.isEmpty(input)) {
             params.addQueryItem(Service.VAR_PROGRESS, input);
           }
-          
+
           BeeKeeper.getRpc().sendText(params, args, responseCallback);
         }
       });
@@ -1974,6 +2009,7 @@ public final class CliWorker {
       }
     }
   }-*/;
+
   // CHECKSTYLE:ON
 
   private static void setDebug(String args) {
@@ -2975,7 +3011,7 @@ public final class CliWorker {
         MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom)
             : MapOptions.create(latLng);
 
-        final MapWidget widget = MapWidget.create(mapOptions, caption);
+        final MapWidget widget = MapWidget.create(mapOptions);
 
         if (widget != null) {
           if (pos < arr.length - 2) {
@@ -3000,8 +3036,9 @@ public final class CliWorker {
               }
             });
           }
-
-          BeeKeeper.getScreen().showWidget(widget, true);
+          
+          MapContainer container = new MapContainer(caption, widget);
+          BeeKeeper.getScreen().showWidget(container, true);
         }
       }
     });
@@ -3789,19 +3826,19 @@ public final class CliWorker {
       }
     });
   }
-  
+
   private static void showWebNote(String[] arr) {
     String title = null;
-    
+
     String dir = null;
     String lang = null;
     String body = null;
     String tag = null;
     String icon = null;
-    
+
     for (int i = 1; i < arr.length; i++) {
       String s = arr[i];
-      
+
       if (s.length() > 2 && s.charAt(1) == BeeConst.CHAR_EQ) {
         String v = s.substring(2).trim();
 
@@ -3830,11 +3867,11 @@ public final class CliWorker {
         title = BeeUtils.joinWords(title, s);
       }
     }
-    
+
     NotificationOptions options = null;
     if (!BeeUtils.allEmpty(dir, lang, body, tag, icon)) {
       options = new NotificationOptions();
-      
+
       if (dir != null) {
         options.setDir(EnumUtils.getEnumByName(NotificationOptions.NotificationDirection.class,
             dir));
@@ -3852,7 +3889,7 @@ public final class CliWorker {
         options.setIcon(icon);
       }
     }
-    
+
     logger.debug(title, options);
 
     WebNotification.create(title, options, new Callback<WebNotification>() {

@@ -17,6 +17,11 @@ public class NotificationMessage extends Message implements HasRecipient {
 
   public static final int MAX_LENGTH = 280;
 
+  public static NotificationMessage create(DisplayMode displayMode, String from, String to,
+      TextMessage textMessage) {
+    return new NotificationMessage(from, to, displayMode, textMessage);
+  }
+
   public static NotificationMessage dialog(String from, String to, TextMessage textMessage) {
     return new NotificationMessage(from, to, DisplayMode.DIALOG, textMessage);
   }
@@ -54,9 +59,19 @@ public class NotificationMessage extends Message implements HasRecipient {
     this.from = from;
     this.to = to;
     this.displayMode = displayMode;
-    
+
     if (textMessage != null && textMessage.isValid()) {
       this.messages.add(textMessage);
+    }
+  }
+
+  @Override
+  public String brief() {
+    if (getMessages().isEmpty()) {
+      return null;
+    } else {
+      TextMessage lastMessage = getMessages().get(getMessages().size() - 1);
+      return (lastMessage == null) ? null : lastMessage.getText();
     }
   }
 
@@ -81,25 +96,34 @@ public class NotificationMessage extends Message implements HasRecipient {
     return to;
   }
 
+  public Long getUserId() {
+    if (getMessages().isEmpty()) {
+      return null;
+    } else {
+      TextMessage lastMessage = getMessages().get(getMessages().size() - 1);
+      return (lastMessage == null) ? null : lastMessage.getUserId();
+    }
+  }
+
   public boolean isValid() {
-    return !BeeUtils.anyEmpty(getFrom(), getTo()) && getDisplayMode() != null 
+    return !BeeUtils.anyEmpty(getFrom(), getTo()) && getDisplayMode() != null
         && !getMessages().isEmpty();
   }
-  
+
   public NotificationMessage reply(TextMessage textMessage) {
     NotificationMessage copy = new NotificationMessage();
-    
+
     copy.setFrom(getTo());
     copy.setTo(getFrom());
-    
+
     copy.setDisplayMode(getDisplayMode());
     copy.setIcon(getIcon());
-    
+
     copy.getMessages().addAll(getMessages());
     if (textMessage != null && textMessage.isValid()) {
       copy.getMessages().add(textMessage);
     }
-    
+
     return copy;
   }
 

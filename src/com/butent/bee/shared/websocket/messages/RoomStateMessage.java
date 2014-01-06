@@ -42,6 +42,11 @@ public class RoomStateMessage extends Message {
     super(Type.ROOM_STATE);
   }
   
+  @Override
+  public String brief() {
+    return string(getState());
+  }
+  
   public ChatRoom getRoom() {
     return room;
   }

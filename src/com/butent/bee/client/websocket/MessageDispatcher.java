@@ -16,9 +16,12 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.WebNotification;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.widget.FaLabel;
@@ -81,9 +84,8 @@ class MessageDispatcher {
     String title = (userData == null) ? BeeUtils.joinWords("Message from user", fromUser)
         : userData.getUserSign();
 
-    Icon icon = BeeUtils.isEmpty(notificationMessage.getIcon()) ? null 
+    Icon icon = BeeUtils.isEmpty(notificationMessage.getIcon()) ? null
         : EnumUtils.getEnumByName(Icon.class, notificationMessage.getIcon());
-    String text = lastMessage.getText();
 
     switch (notificationMessage.getDisplayMode()) {
       case DIALOG:
@@ -123,7 +125,10 @@ class MessageDispatcher {
           }
         }
 
-        container.add(table);
+        final Simple wrapper = new Simple(table);
+        wrapper.addStyleName(CONVERSATION_STYLE_PREFIX + "wrapper");
+
+        container.add(wrapper);
 
         final InputText input = new InputText();
         input.addStyleName(CONVERSATION_STYLE_PREFIX + "input");
@@ -133,8 +138,9 @@ class MessageDispatcher {
           @Override
           public void onKeyDown(KeyDownEvent event) {
             if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER && !input.isEmpty()) {
-              reply(notificationMessage, input.getValue());
-              dialog.close();
+              if (reply(notificationMessage, input.getValue())) {
+                dialog.close();
+              }
             }
           }
         });
@@ -151,8 +157,7 @@ class MessageDispatcher {
           public void onClick(ClickEvent event) {
             if (input.isEmpty()) {
               input.setFocus(true);
-            } else {
-              reply(notificationMessage, input.getValue());
+            } else if (reply(notificationMessage, input.getValue())) {
               dialog.close();
             }
           }
@@ -178,13 +183,20 @@ class MessageDispatcher {
         dialog.setAnimationEnabled(true);
         dialog.setHideOnEscape(true);
 
+        dialog.addOpenHandler(new OpenEvent.Handler() {
+          @Override
+          public void onOpen(OpenEvent event) {
+            DomUtils.scrollToBottom(wrapper);
+            input.setFocus(true);
+          }
+        });
+
         dialog.center();
-        input.setFocus(true);
         break;
 
       case EXTERNAL_NOTIFICATION:
         NotificationOptions options = new NotificationOptions();
-        options.setBody(text);
+        options.setBody(lastMessage.getText());
 
         if (icon != null) {
           options.setIcon(icon.getImageResource().getSafeUri().asString());
@@ -196,20 +208,46 @@ class MessageDispatcher {
         break;
 
       case INTERNAL_NOTIFICATION:
-        BeeKeeper.getScreen().notifyInfo(title + BeeConst.STRING_COLON,
-            (icon == null) ? null : Images.asString(icon.getImageResource()), text);
+        String line1 = title + BeeConst.STRING_COLON;
+        String line2 = (icon == null) ? lastMessage.getText()
+            : BeeUtils.joinWords(Images.asString(icon.getImageResource()), lastMessage.getText());
+
+        if (Icon.ALARM == icon || Icon.ERROR == icon) {
+          BeeKeeper.getScreen().notifySevere(line1, line2);
+        } else if (Icon.WARNING == icon) {
+          BeeKeeper.getScreen().notifyWarning(line1, line2);
+        } else {
+          BeeKeeper.getScreen().notifyInfo(line1, line2);
+        }
         break;
 
       case POPUP:
-        Global.messageBox(title, icon, text);
+        Global.messageBox(title, icon, lastMessage.getText());
         break;
     }
   }
 
-  private static void reply(NotificationMessage notificationMessage, String text) {
-    TextMessage textMessage = new TextMessage(BeeKeeper.getUser().getUserId(), text);
+  private static boolean reply(NotificationMessage notificationMessage, String text) {
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (userId == null) {
+      return false;
+    }
+
+    if (!Global.getUsers().isOpen(notificationMessage.getFrom())) {
+      String signature = Global.getUsers().getSignature(notificationMessage.getUserId());
+      String msg = BeeUtils.joinWords(signature, "disconnected");
+
+      logger.warning(msg);
+      BeeKeeper.getScreen().notifyWarning(msg);
+      return false;
+    }
+
+    TextMessage textMessage = new TextMessage(userId, text);
     if (textMessage.isValid()) {
       Endpoint.send(notificationMessage.reply(textMessage));
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -227,8 +265,6 @@ class MessageDispatcher {
           logger.debug(message.getClass().getSimpleName(), "response", am.getResponse());
 
         } else if (!BeeUtils.isEmpty(am.getCommand())) {
-          logger.debug(message.getClass().getSimpleName(), am.getCommand());
-
           boolean ok = CliWorker.execute(am.getCommand(), false);
           if (!ok) {
             Endpoint.send(AdminMessage.response(Endpoint.getSessionId(), am.getFrom(),
@@ -287,7 +323,7 @@ class MessageDispatcher {
         } else if (lm.hasCoordinates()) {
           String title = Global.getUsers().getUserSignatureBySession(from);
           if (BeeUtils.isPositive(lm.getAccuracy())) {
-            caption = BeeUtils.joinWords(title, "+-", lm.getAccuracy(), "m");
+            caption = BeeUtils.joinWords(title, BeeConst.CHAR_PLUS_MINUS, lm.getAccuracy(), "m");
           } else {
             caption = title;
           }
@@ -354,13 +390,9 @@ class MessageDispatcher {
           }
 
         } else if (pm.isUpdate()) {
-          if (Global.isDebug()) {
-            logger.debug(message);
-          }
           BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
 
         } else if (pm.isCanceled() || pm.isClosed()) {
-          logger.debug(message);
           BeeKeeper.getScreen().removeProgress(progressId);
 
         } else {

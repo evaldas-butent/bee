@@ -3,7 +3,6 @@ package com.butent.bee.client;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,10 +14,10 @@ import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.websocket.Endpoint;
+import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
@@ -140,14 +139,13 @@ public class Users {
   private static final BeeLogger logger = LogUtils.getLogger(Users.class);
 
   private static final String STYLE_PREFIX = "bee-Online-";
-  private static final String STYLE_UPDATED = STYLE_PREFIX + "updated";
 
   private final Map<Long, UserData> users = Maps.newHashMap();
   private final Map<String, Long> openSessions = Maps.newHashMap();
 
   private final OnlinePanel onlinePanel = new OnlinePanel();
 
-  private Label sizeBadge;
+  private Badge sizeBadge;
 
   Users() {
   }
@@ -253,6 +251,10 @@ public class Users {
     return (userData == null) ? null : userData.getUserSign();
   }
 
+  public boolean isOpen(String sessionId) {
+    return !BeeUtils.isEmpty(sessionId) && openSessions.containsKey(sessionId);
+  }
+  
   public void loadUserData(String serialized) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (ArrayUtils.isEmpty(arr)) {
@@ -268,8 +270,11 @@ public class Users {
     updateUserData(data);
   }
 
-  public Long parseUserName(String input) {
+  public Long parseUserName(String input, boolean online) {
     if (users.isEmpty() || BeeUtils.isEmpty(input)) {
+      return null;
+    }
+    if (online && openSessions.isEmpty()) {
       return null;
     }
 
@@ -283,25 +288,30 @@ public class Users {
     List<Long> lastNameContains = Lists.newArrayList();
 
     for (UserData userData : users.values()) {
+      long userId = userData.getUserId();
+      if (online && !openSessions.containsValue(userId)) {
+        continue;
+      }
+
       if (BeeUtils.same(userData.getLogin(), input)) {
-        loginEquals.add(userData.getUserId());
+        loginEquals.add(userId);
       }
       if (BeeUtils.containsSame(userData.getLogin(), input)) {
-        loginContains.add(userData.getUserId());
+        loginContains.add(userId);
       }
 
       if (BeeUtils.same(userData.getFirstName(), input)) {
-        firstNameEquals.add(userData.getUserId());
+        firstNameEquals.add(userId);
       }
       if (BeeUtils.containsSame(userData.getFirstName(), input)) {
-        firstNameContains.add(userData.getUserId());
+        firstNameContains.add(userId);
       }
 
       if (BeeUtils.same(userData.getLastName(), input)) {
-        lastNameEquals.add(userData.getUserId());
+        lastNameEquals.add(userId);
       }
       if (BeeUtils.containsSame(userData.getLastName(), input)) {
-        lastNameContains.add(userData.getUserId());
+        lastNameContains.add(userId);
       }
     }
 
@@ -393,11 +403,11 @@ public class Users {
     logger.info("users", users.size());
   }
 
-  private Label getSizeBadge() {
+  private Badge getSizeBadge() {
     return sizeBadge;
   }
 
-  private void setSizeBadge(Label sizeBadge) {
+  private void setSizeBadge(Badge sizeBadge) {
     this.sizeBadge = sizeBadge;
   }
 
@@ -406,25 +416,20 @@ public class Users {
     if (header == null) {
       return;
     }
+    
+    int size = openSessions.size();
 
     if (getSizeBadge() == null) {
-      Label badge = new Label();
-      badge.addStyleName(STYLE_PREFIX + "size");
+      Badge badge = new Badge(size, STYLE_PREFIX + "size");
+
       header.add(badge);
-
       setSizeBadge(badge);
-    }
+    
+    } else if (initial) {
+      getSizeBadge().setValue(size);
 
-    getSizeBadge().setText(BeeUtils.toString(openSessions.size()));
-
-    if (!initial) {
-      getSizeBadge().removeStyleName(STYLE_UPDATED);
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          getSizeBadge().addStyleName(STYLE_UPDATED);
-        }
-      });
+    } else {
+      getSizeBadge().update(size);
     }
   }
 }
