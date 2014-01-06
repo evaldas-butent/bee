@@ -10,7 +10,6 @@ import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
@@ -22,10 +21,11 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasIntStep;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
@@ -126,6 +126,7 @@ public final class EditorFactory {
         break;
 
       case TEXT:
+      case BLOB:
         if (isText) {
           editor = new InputArea();
         } else {
@@ -174,7 +175,7 @@ public final class EditorFactory {
       case DATE_TIME:
         editor = new InputDateTime();
         break;
-        
+
       case COLOR:
         if (Features.supportsInputColor()) {
           editor = new ColorEditor();
@@ -182,7 +183,7 @@ public final class EditorFactory {
           editor = new InputText();
         }
         break;
-        
+
       case INTEGER:
         editor = new InputInteger();
         break;
@@ -225,11 +226,11 @@ public final class EditorFactory {
       case TEXT:
         editor = new TextEditor();
         break;
-        
+
       case TIME:
         editor = new InputTime();
         break;
-      
+
       case TIME_OF_DAY:
         editor = new InputTimeOfDay();
         break;

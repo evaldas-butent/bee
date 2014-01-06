@@ -248,6 +248,8 @@ class PostgreSqlBuilder extends SqlBuilder {
         return "NUMERIC(1)";
       case DOUBLE:
         return "DOUBLE PRECISION";
+      case BLOB:
+        return "BYTEA";
       default:
         return super.sqlType(type, precision, scale);
     }

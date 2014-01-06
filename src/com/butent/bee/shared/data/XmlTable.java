@@ -27,7 +27,7 @@ public class XmlTable {
 
   @XmlSeeAlso({XmlBoolean.class,
       XmlInteger.class, XmlLong.class, XmlDouble.class, XmlNumeric.class,
-      XmlChar.class, XmlString.class, XmlText.class,
+      XmlChar.class, XmlString.class, XmlText.class, XmlBlob.class,
       XmlDate.class, XmlDateTime.class,
       XmlRelation.class, XmlEnum.class})
   public abstract static class XmlField {
@@ -122,6 +122,10 @@ public class XmlTable {
 
   @XmlRootElement(name = "Text", namespace = DataUtils.TABLE_NAMESPACE)
   public static class XmlText extends XmlField {
+  }
+
+  @XmlRootElement(name = "Blob", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlBlob extends XmlField {
   }
 
   @XmlRootElement(name = "Date", namespace = DataUtils.TABLE_NAMESPACE)

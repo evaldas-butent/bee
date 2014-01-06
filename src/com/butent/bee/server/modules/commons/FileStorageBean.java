@@ -20,13 +20,13 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -52,7 +53,6 @@ import javax.ejb.Singleton;
 public class FileStorageBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileStorageBean.class);
-  private static BeeLogger messyLogger = LogUtils.getLogger(QueryServiceBean.class);
 
   private static final int BUFFER_SIZE = 8192;
 
@@ -99,17 +99,18 @@ public class FileStorageBean {
       File tmp = File.createTempFile("bee_", null);
       tmp.deleteOnExit();
       OutputStream out = new FileOutputStream(tmp);
-      SimpleRowSet rs = qs.getData(query);
+      List<byte[]> rs = qs.getBytesColumn(query);
 
-      while (rs.getNumberOfRows() > 0) {
-        for (SimpleRow r : rs) {
-          byte[] buffer = Codec.fromBase64(r.getValue(COL_FILE_PART));
-          out.write(buffer, 0, buffer.length);
+      while (rs.size() > 0) {
+        for (byte[] bytes : rs) {
+          if (bytes != null) {
+            out.write(bytes, 0, bytes.length);
+          }
         }
-        if (rs.getNumberOfRows() < query.getLimit()) {
+        if (rs.size() < query.getLimit()) {
           break;
         }
-        rs = qs.getData(query.setOffset(query.getOffset() + query.getLimit()));
+        rs = qs.getBytesColumn(query.setOffset(query.getOffset() + query.getLimit()));
       }
       out.flush();
       out.close();
@@ -275,40 +276,20 @@ public class FileStorageBean {
               .addConstant(COL_FILE_TYPE, mimeType));
         }
         if (!storeAsFile) {
-          boolean isDebugEnabled = messyLogger.isDebugEnabled();
-
-          if (isDebugEnabled) {
-            messyLogger.setLevel(LogLevel.INFO);
-          }
+          buffer = new byte[0x100000];
           in = new FileInputStream(tmp);
-          buffer = new byte[BUFFER_SIZE - BUFFER_SIZE % 3];
-          size = BeeUtils.toLong(Math.floor(Math.pow(2, 20) / buffer.length));
-          int c = 0;
-          StringBuilder sb = new StringBuilder();
 
           try {
             while ((bytesRead = in.read(buffer)) > 0) {
-              c++;
-              sb.append(Codec.toBase64(buffer));
+              long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS)
+                  .addConstant(COL_FILE_FILE, id));
 
-              if (c == size) {
-                qs.insertData(new SqlInsert(TBL_FILE_PARTS)
-                    .addConstant(COL_FILE_FILE, id)
-                    .addConstant(COL_FILE_PART, sb.toString()));
-                c = 0;
-                sb = new StringBuilder();
-              }
+              qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART, new ByteArrayInputStream(buffer));
             }
-            if (c > 0) {
-              qs.insertData(new SqlInsert(TBL_FILE_PARTS)
-                  .addConstant(COL_FILE_FILE, id)
-                  .addConstant(COL_FILE_PART, sb.toString()));
-            }
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
           } finally {
             in.close();
-          }
-          if (isDebugEnabled) {
-            messyLogger.setLevel(LogLevel.DEBUG);
           }
         }
       }

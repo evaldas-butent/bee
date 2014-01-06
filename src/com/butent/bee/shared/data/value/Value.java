@@ -24,6 +24,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
       case BOOLEAN:
         return BooleanValue.getNullValue();
       case TEXT:
+      case BLOB:
         return TextValue.getNullValue();
       case NUMBER:
         return NumberValue.getNullValue();
@@ -91,6 +92,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
       case BOOLEAN:
         return new BooleanValue(BeeUtils.toBooleanOrNull(value));
       case TEXT:
+      case BLOB:
         return new TextValue(value);
       case NUMBER:
         return new NumberValue(BeeUtils.toDoubleOrNull(value));
@@ -167,7 +169,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
   public abstract int hashCode();
 
   public abstract boolean isEmpty();
-  
+
   public abstract boolean isNull();
 
   @Override
@@ -190,7 +192,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
 
   @Override
   public abstract String toString();
-  
+
   protected int precompareTo(Value o) {
     if (this == o) {
       return BeeConst.COMPARE_EQUAL;

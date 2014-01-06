@@ -288,7 +288,7 @@ public class DataEditorBean {
       }
       event.setAfter();
       sys.postDataEvent(event);
-      
+
       news.onUpdate(tblInfo.tableName, row.getId());
     }
     return response;
@@ -555,6 +555,8 @@ public class DataEditorBean {
                 break;
               case TEXT:
                 v = BeeUtils.randomString(BeeUtils.randomInt(1, 2000), chars);
+                break;
+              case BLOB:
                 break;
             }
           }

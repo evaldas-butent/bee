@@ -205,6 +205,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
         return BeeUtils.isDouble(value) ? value.trim() : null;
 
       case TEXT:
+      case BLOB:
       case TIME_OF_DAY:
         return BeeUtils.trimRight(value);
     }
@@ -442,7 +443,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
         getDisplayWidget().refresh((Widget) getEditor(), row);
       }
     }
-    
+
     setDirty(false);
   }
 

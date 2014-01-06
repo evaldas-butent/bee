@@ -118,7 +118,7 @@ public final class UiHelper {
     if (parent == null || styleNames == null) {
       return result;
     }
-    
+
     if (StyleUtils.hasAnyClass(parent.getElement(), styleNames)) {
       result.add(parent);
     }
@@ -134,7 +134,7 @@ public final class UiHelper {
 
     return result;
   }
-  
+
   public static DataView getDataView(Widget widget) {
     if (widget == null) {
       return null;
@@ -294,6 +294,7 @@ public final class UiHelper {
 
         case DECIMAL:
         case TEXT:
+        case BLOB:
       }
     }
 
@@ -392,7 +393,6 @@ public final class UiHelper {
     }
   }
 
-
   public static void maybeSetTitle(Widget widget, String title) {
     if (widget != null && !BeeUtils.isEmpty(title)) {
       widget.setTitle(title);
@@ -470,7 +470,7 @@ public final class UiHelper {
     widget.setText(newText);
     widget.setCursorPos(pos + 1);
   }
-  
+
   public static void selectDeferred(final TextBox widget) {
     Assert.notNull(widget);
     final String text = widget.getText();

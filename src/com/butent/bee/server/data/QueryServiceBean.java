@@ -15,6 +15,7 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -44,9 +46,12 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -108,6 +113,33 @@ public class QueryServiceBean {
   private static final String EDITABLE_STATE_COLUMN = RightsState.EDITABLE.name();
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
+
+  private static SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
+    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
+    int cc = rsCols.size();
+    String[] columns = new String[cc];
+
+    for (int i = 0; i < cc; i++) {
+      columns[i] = rsCols.get(i).getId();
+    }
+    SimpleRowSet res = new SimpleRowSet(columns);
+
+    while (rs.next()) {
+      String[] row = new String[cc];
+
+      for (int i = 0; i < cc; i++) {
+        if (rsCols.get(i).getType() == ValueType.BLOB) {
+          byte[] bytes = rs.getBytes(i + 1);
+          row[i] = bytes != null ? Codec.toBase64(bytes) : null;
+        } else {
+          row[i] = rs.getString(i + 1);
+        }
+      }
+      res.addRow(row);
+    }
+    logger.debug("cols:", res.getNumberOfColumns(), "rows:", res.getNumberOfRows());
+    return res;
+  }
 
   @EJB
   DataSourceBean dsb;
@@ -250,6 +282,23 @@ public class QueryServiceBean {
 
   public Boolean[] getBooleanColumn(IsQuery query) {
     return getSingleColumn(query).getBooleanColumn(0);
+  }
+
+  public List<byte[]> getBytesColumn(SqlSelect query) {
+    Assert.state(query.getFields().size() == 1, "Only one column allowed");
+
+    return getData(null, query, new ResultSetProcessor<List<byte[]>>() {
+      @Override
+      public List<byte[]> processResultSet(ResultSet rs) throws SQLException {
+        List<byte[]> data = Lists.newArrayList();
+
+        while (rs.next()) {
+          data.add(rs.getBytes(1));
+        }
+        logger.debug("cols:", 1, "rows:", data.size());
+        return data;
+      }
+    });
   }
 
   public String[] getColumn(IsQuery query) {
@@ -642,6 +691,46 @@ public class QueryServiceBean {
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public int updateBlob(String table, long id, String field, ByteArrayInputStream data)
+      throws SQLException {
+
+    String dsn = SqlBuilderFactory.getDsn();
+    BeeDataSource bds = dsb.locateDs(dsn);
+
+    if (bds == null) {
+      throw new SQLException("Data source [" + dsn + "] not found");
+    }
+    DataSource dataSource = bds.getDs();
+    int cnt = 0;
+    Connection con = null;
+    PreparedStatement stmt = null;
+
+    try {
+      String sql = new SqlUpdate(table)
+          .addConstant(field, SqlUtils.expression("?"))
+          .setWhere(sys.idEquals(table, id)).getQuery();
+
+      logger.debug("SQL:", sql);
+
+      con = dataSource.getConnection();
+      stmt = con.prepareStatement(sql);
+      stmt.setBinaryStream(1, data, data.available());
+
+      long start = System.nanoTime();
+      stmt.execute();
+      logger.debug(String.format("[%.6f]", (System.nanoTime() - start) / 1e9));
+
+      cnt = stmt.getUpdateCount();
+      logger.debug("affected rows:", cnt);
+
+    } finally {
+      JdbcUtils.closeStatement(stmt);
+      JdbcUtils.closeConnection(con);
+    }
+    return cnt;
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public int updateData(IsQuery query) {
     return updateDataWithResponse(query).getResponse(-1, logger);
   }
@@ -849,6 +938,11 @@ public class QueryServiceBean {
             }
             break;
 
+          case BLOB:
+            byte[] bytes = rs.getBytes(i + 1);
+            values[i] = bytes != null ? Codec.toBase64(bytes) : null;
+            break;
+
           default:
             values[i] = rs.getString(colIndex);
         }
@@ -880,27 +974,5 @@ public class QueryServiceBean {
     }
     logger.debug("cols:", cc, "rows:", result.getNumberOfRows());
     return result;
-  }
-
-  private static SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
-    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
-    int cc = rsCols.size();
-    String[] columns = new String[cc];
-
-    for (int i = 0; i < cc; i++) {
-      columns[i] = rsCols.get(i).getId();
-    }
-    SimpleRowSet res = new SimpleRowSet(columns);
-
-    while (rs.next()) {
-      String[] row = new String[cc];
-
-      for (int i = 0; i < cc; i++) {
-        row[i] = rs.getString(i + 1);
-      }
-      res.addRow(row);
-    }
-    logger.debug("cols:", res.getNumberOfColumns(), "rows:", res.getNumberOfRows());
-    return res;
   }
 }

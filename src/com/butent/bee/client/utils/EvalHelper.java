@@ -77,6 +77,7 @@ public final class EvalHelper {
         break;
 
       case TEXT:
+      case BLOB:
       case TIME_OF_DAY:
         JsUtils.setProperty(jso, name, value);
         break;
@@ -93,7 +94,7 @@ public final class EvalHelper {
       setJsoProperty(jso, column.getId(), column.getType(), row.getString(i));
     }
   }
-  
+
   private static JsDate toJs(DateTime date) {
     if (date == null) {
       return null;

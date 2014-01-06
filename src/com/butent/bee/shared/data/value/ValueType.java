@@ -13,16 +13,16 @@ import java.util.Map;
  * {@code Object} type using {@link #createValue(Object)}.
  */
 public enum ValueType {
-  BOOLEAN("boolean", 'b'), NUMBER("double", 'n'), TEXT("string", 's'),
+  BOOLEAN("boolean", 'b'), NUMBER("double", 'n'), TEXT("string", 's'), BLOB("blob", 's'),
   DATE("date", 'd'), TIME_OF_DAY("timeofday", 's'), DATE_TIME("datetime", 'd'),
   INTEGER("integer", 'n'), LONG("long", 'n'), DECIMAL("decimal", 'n');
 
   private static final Map<String, ValueType> typeCodeToValueType;
-  
-  private static final char GROUP_BOOL = 'b'; 
-  private static final char GROUP_DT = 'd'; 
-  private static final char GROUP_NUM = 'n'; 
-  private static final char GROUP_STR = 's'; 
+
+  private static final char GROUP_BOOL = 'b';
+  private static final char GROUP_DT = 'd';
+  private static final char GROUP_NUM = 'n';
+  private static final char GROUP_STR = 's';
 
   static {
     typeCodeToValueType = Maps.newHashMap();
@@ -44,14 +44,14 @@ public enum ValueType {
     }
     return type.getGroupCode() == GROUP_BOOL;
   }
-  
+
   public static boolean isDateOrDateTime(ValueType type) {
     if (type == null) {
       return false;
     }
     return type.getGroupCode() == GROUP_DT;
   }
-  
+
   public static boolean isNumeric(ValueType type) {
     if (type == null) {
       return false;
@@ -65,7 +65,7 @@ public enum ValueType {
     }
     return type.getGroupCode() == GROUP_STR;
   }
-  
+
   private final String typeCode;
   private final char groupCode;
 
