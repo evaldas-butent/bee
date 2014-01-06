@@ -1,10 +1,13 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Label;
@@ -25,14 +28,14 @@ public class NewsAggregator {
 
   private static final class NewsPanel extends Flow {
 
-    private static final String STYLE_PREFIX = "bee-News-";
-
     private NewsPanel() {
       super(STYLE_PREFIX + "panel");
     }
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(NewsAggregator.class);
+
+  private static final String STYLE_PREFIX = "bee-News-";
 
   private final NewsPanel newsPanel = new NewsPanel();
 
@@ -77,14 +80,27 @@ public class NewsAggregator {
       }
 
       for (String s : arr) {
-        Subscription subscription = Subscription.restore(s);
+        final Subscription subscription = Subscription.restore(s);
         subscriptions.add(subscription);
 
         if (!subscription.isEmpty()) {
-          newsPanel.add(new Label(subscription.getCaption()));
+          Label subscriptionLabel = new Label(subscription.getCaption());
+          subscriptionLabel.addStyleName(STYLE_PREFIX + "feed");
+          newsPanel.add(subscriptionLabel);
 
-          for (Headline headline : subscription.getHeadlines()) {
-            newsPanel.add(new Label(headline.getCaption()));
+          for (final Headline headline : subscription.getHeadlines()) {
+            Label headlineLabel = new Label(headline.getCaption());
+            headlineLabel.addStyleName(STYLE_PREFIX + "headline");
+            
+            headlineLabel.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                RowEditor.openRow(subscription.getFeed().getHeadlineView(), headline.getId(), false,
+                    null);
+              }
+            });
+            
+            newsPanel.add(headlineLabel);
           }
         }
       }

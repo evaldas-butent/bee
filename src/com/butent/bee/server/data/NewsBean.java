@@ -18,9 +18,12 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.news.Feed;
 import com.butent.bee.shared.data.news.Headline;
 import com.butent.bee.shared.data.news.Subscription;
@@ -299,26 +302,86 @@ public class NewsBean {
         }
       }
 
+      Set<Long> newIds = Sets.newHashSet();
+      Set<Long> updIds = Sets.newHashSet();
+
       if (userAccess.isEmpty()) {
-        for (Long id : otherUpdates.keySet()) {
-          result.add(Headline.forInsert(id, BeeUtils.toString(id)));
-        }
-   
+        newIds.addAll(otherUpdates.keySet());
+
       } else {
         for (Map.Entry<Long, Long> updateEntry : otherUpdates.entrySet()) {
           Long id = updateEntry.getKey();
 
           Long access = userAccess.get(id);
           if (access == null) {
-            result.add(Headline.forInsert(id, BeeUtils.toString(id)));
+            newIds.add(id);
           } else if (access < updateEntry.getValue()) {
-            result.add(Headline.forUpdate(id, BeeUtils.toString(id)));
+            updIds.add(id);
           }
         }
+      }
+
+      List<Headline> headlines = getHeadlines(feed, newIds, updIds);
+      if (!headlines.isEmpty()) {
+        result.addAll(headlines);
       }
     }
 
     return result;
+  }
+
+  private List<Headline> getHeadlines(Feed feed, Collection<Long> newIds, Collection<Long> updIds) {
+    List<Headline> headlines = Lists.newArrayList();
+
+    boolean hasNew = !BeeUtils.isEmpty(newIds);
+    boolean hasUpd = !BeeUtils.isEmpty(updIds);
+
+    if (!hasNew && !hasUpd) {
+      return headlines;
+    }
+
+    Set<Long> ids = Sets.newHashSet();
+    if (hasNew) {
+      ids.addAll(newIds);
+    }
+    if (hasUpd) {
+      ids.addAll(updIds);
+    }
+
+    String viewName = feed.getHeadlineView();
+    if (!sys.isView(viewName)) {
+      logger.severe("feed", feed.name(), "view", viewName, "not available");
+      return headlines;
+    }
+
+    List<String> headlineColumns = feed.getHeadlineColumns();
+    if (BeeUtils.isEmpty(headlineColumns)) {
+      logger.severe("feed", feed.name(), "headline columns not specified");
+      return headlines;
+    }
+
+    BeeRowSet rowSet = qs.getViewData(viewName, Filter.idIn(ids), null, headlineColumns);
+    if (DataUtils.isEmpty(rowSet)) {
+      return headlines;
+    }
+
+    List<Integer> indexes = Lists.newArrayList();
+    for (String column : headlineColumns) {
+      indexes.add(rowSet.getColumnIndex(column));
+    }
+
+    for (BeeRow row : rowSet.getRows()) {
+      long id = row.getId();
+      String caption = DataUtils.join(row, indexes, Headline.CAPTION_SEPARATOR);
+
+      if (hasNew && newIds.contains(id)) {
+        headlines.add(Headline.forInsert(id, caption));
+      } else {
+        headlines.add(Headline.forUpdate(id, caption));
+      }
+    }
+
+    return headlines;
   }
 
   private String getUsageRelationColumn(Feed feed) {

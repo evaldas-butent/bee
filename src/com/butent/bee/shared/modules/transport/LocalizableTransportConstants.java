@@ -116,6 +116,8 @@ public interface LocalizableTransportConstants {
 
   String trailerTimeBoard();
 
+  String transport();
+
   String transportationCustomers();
 
   String trAssessment();

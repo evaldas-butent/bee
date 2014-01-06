@@ -249,10 +249,12 @@ public class CrmModuleBean implements BeeModule {
           if (!rowSet.isEmpty()) {
             int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
 
-            for (BeeRow row : rowSet.getRows()) {
-              String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
-              if (!BeeUtils.isEmpty(icon)) {
-                row.setProperty(CommonsConstants.PROP_ICON, icon);
+            if (!BeeConst.isUndef(fnIndex)) {
+              for (BeeRow row : rowSet.getRows()) {
+                String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
+                if (!BeeUtils.isEmpty(icon)) {
+                  row.setProperty(CommonsConstants.PROP_ICON, icon);
+                }
               }
             }
           }

@@ -176,6 +176,8 @@ public interface LocalizableEcConstants {
 
   String ecMaxedOut();
 
+  String ecMenu();
+
   String ecMoreItems();
 
   String ecNothingToOrder();
