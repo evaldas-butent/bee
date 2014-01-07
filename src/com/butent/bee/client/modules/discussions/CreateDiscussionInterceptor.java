@@ -127,15 +127,22 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         public void onValueChange(ValueChangeEvent<String> event) {
           MultiSelector ms = getMultiSelector(form, PROP_MEMBERS);
           Label lbl = getLabel(form, WIDGET_LABEL_MEMBERS);
-
-          if (ms != null) {
-            ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
-            ms.setNullable(BeeUtils.toBoolean(ac.getValue()));
-            ms.clearValue();
-          }
+          boolean checked = BeeUtils.toBoolean(ac.getValue());
 
           if (lbl != null) {
             lbl.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.toBoolean(ac.getValue()));
+          }
+
+          if (ms != null) {
+            ms.setEnabled(!checked);
+            ms.setNullable(checked);
+            
+            if (checked) {
+              ms.clearValue();
+              form.getActiveRow().setProperty(PROP_MEMBERS, null);
+            } else {
+              form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
+            }
           }
         }
       });

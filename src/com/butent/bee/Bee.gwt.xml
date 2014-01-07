@@ -12,7 +12,7 @@
   <inherits name='elemental.Elemental'/>
   
   <inherits name='com.butent.bee.Screen'/>
-
+  
   <set-property name='user.agent' value='safari'/>
 
   <extend-property name='locale' values='lt, en'/>    
@@ -24,7 +24,7 @@
   
   <set-property name='locale' value='lt, en'/>
   <set-property-fallback name="locale" value="lt"/>
-  
+    
   <entry-point class='com.butent.bee.client.Bee'/>
 
   <replace-with class='com.butent.bee.client.screen.ScreenImpl'>

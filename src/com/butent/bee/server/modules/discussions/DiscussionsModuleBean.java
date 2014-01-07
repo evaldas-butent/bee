@@ -252,11 +252,16 @@ public class DiscussionsModuleBean implements BeeModule {
             }
 
             Map<Long, Integer> markCounts = getDiscussionsMarksCount(discussionsIds);
+            Map<Long, String> lastCommentData = getDisscussionsLastComment(discussionsIds);
             for (BeeRow row : rowSet.getRows()) {
               String markValue =
                   markCounts.get(row.getId()) != null ? BeeUtils
                       .toString(markCounts.get(row.getId())) : "";
               row.setProperty(PROP_MARK_COUNT, markValue);
+
+              String lastCommentVal = lastCommentData.get(row.getId());
+
+              row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
 
               row.setProperty(PROP_FILES_COUNT,
                   row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT)));
@@ -788,6 +793,80 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return markList;
+  }
+
+  private Map<Long, String> getDisscussionsLastComment(Set<Long> discussionIds) {
+    Map<Long, String> ls = Maps.newHashMap();
+
+    SqlSelect select = new SqlSelect()
+            .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
+            .addMax(TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS),
+            ALS_LAST_COMMET)
+
+        .addFrom(TBL_DISCUSSIONS)
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
+            .setWhere(
+                SqlUtils
+                    .and(SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, sys
+                        .getIdName(TBL_DISCUSSIONS_COMMENTS)),
+            SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), discussionIds)))
+            .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION);
+
+    SimpleRowSet maxComments = qs.getData(select);
+
+    if (maxComments.isEmpty()) {
+      return ls;
+    }
+
+    select =
+        new SqlSelect()
+            .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
+            .addField(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, COL_PUBLISH_TIME)
+            .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+                CommonsConstants.COL_FIRST_NAME)
+            .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
+                CommonsConstants.COL_LAST_NAME)
+            .addFrom(TBL_DISCUSSIONS)
+            .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
+            .addFromLeft(
+                CommonsConstants.TBL_USERS,
+                sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMMENTS,
+                    COL_PUBLISHER))
+            .addFromLeft(
+                CommonsConstants.TBL_COMPANY_PERSONS,
+                sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                    CommonsConstants.COL_COMPANY_PERSON))
+            .addFromLeft(
+                CommonsConstants.TBL_PERSONS,
+                sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                    CommonsConstants.COL_PERSON))
+            .setWhere(
+                SqlUtils
+                    .and(SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, sys
+                        .getIdName(TBL_DISCUSSIONS_COMMENTS)),
+                        SqlUtils.inList(TBL_DISCUSSIONS_COMMENTS,
+                            sys.getIdName(TBL_DISCUSSIONS_COMMENTS),
+                            (Object[]) maxComments.getColumn(maxComments
+                                .getColumnIndex(ALS_LAST_COMMET))),
+                        SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS),
+                            (Object[]) maxComments.getColumn(maxComments
+                                .getColumnIndex(COL_DISCUSSION)))));
+    /* .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION); */
+
+    SimpleRowSet rs = qs.getData(select);
+
+    for (String[] row : rs.getRows()) {
+      ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
+          BeeUtils.joinWords(DateTime.restore(row[rs.getColumnIndex(COL_PUBLISH_TIME)])
+              .toString()
+              + ",", row[rs
+              .getColumnIndex(CommonsConstants.COL_FIRST_NAME)], row[rs
+              .getColumnIndex(CommonsConstants.COL_LAST_NAME)]));
+    }
+
+    return ls;
   }
 
   private Map<Long, Integer> getDiscussionsMarksCount(Set<Long> discussionIds) {

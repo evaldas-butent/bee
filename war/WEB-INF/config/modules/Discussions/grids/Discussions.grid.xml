@@ -37,12 +37,17 @@
       label="=discussHasRelations">
       <renderer type="image" />
     </PropColumn>
+    
+    <PropColumn name="LastCommentData" type="string" cellType="html"
+      caption="=discussLastComment" label="=discussLastComment" maxWidth="150">      
+    </PropColumn>
 
-    <CalcColumn name="LastComment" type="string" cellType="html"
-      minWidth="150" autoFit="true" caption="=discussLastComment">
+<!--
+     <CalcColumn name="LastComment" type="string" cellType="html"
+      minWidth="150" autoFit="true" caption="LastComment">
       <renderToken source="LastComment" format="date_time_short" />
     </CalcColumn>
-    
+ -->
     <CalcColumn name="CommentCount" type="integer"
       maxWidth="90" autoFit="true" caption="=discussTotalComments">
         <render>

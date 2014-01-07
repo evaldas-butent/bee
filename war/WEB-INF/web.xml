@@ -44,7 +44,7 @@
   <data-source>
     <name>BeeDS</name>
     <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
-    <server-name>127.0.0.1</server-name>
+    <server-name>192.168.0.240</server-name>
     <port-number>5432</port-number>
     <database-name>bee</database-name>
     <user>postgres</user>

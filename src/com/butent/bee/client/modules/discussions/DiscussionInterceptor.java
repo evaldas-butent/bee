@@ -296,6 +296,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           if (value) {
             ms.clearValue();
             ms.setValue(null);
+            getFormView().getActiveRow().setProperty(PROP_MEMBERS, null);
+          } else {
+            getFormView().getActiveRow().setValue(getFormView().getDataIndex(COL_ACCESSIBILITY),
+                (Boolean) null);
           }
         }
       });
@@ -385,33 +389,25 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
-    // boolean accessCheckBoxValue = form.getWidgetByName(name)
-
-    // form.setEnabled((isOwner(userId, BeeUtils.unbox(owner)));
-
     form.setEnabled(false);
-
+    
     MultiSelector members = getMultiSelector(form, PROP_MEMBERS);
     Widget accessWidget = form.getWidgetBySource(COL_ACCESSIBILITY);
     InputBoolean accessibility = (InputBoolean) accessWidget;
 
-    // LogUtils.getRootLogger().debug("CheckBox:", accessWidget.getElement().);
-    // accessibility.setEnabled(true);
-
-    accessWidget.getElement();
-    // accessibility.se
+    accessibility.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
 
     if (!BeeUtils.isEmpty(accessibility.getValue())) {
-      accessibility.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
-
       if (!BeeUtils.isEmpty(members.getValue())) {
         members.clearDisplay();
         members.clearValue();
+        row.setProperty(PROP_MEMBERS, null);
       }
     }
 
     if (!BeeUtils.isEmpty(members.getValue())) {
-      members.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
+      members.setEnabled(isMember(userId, form, row));
+      row.setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
     }
 
     BeeRow visitedRow = DataUtils.cloneRow(row);

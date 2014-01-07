@@ -148,6 +148,7 @@ public final class DiscussionsConstants {
   public static final String PROP_LAST_ACCESS = "LastAccess";
   public static final String PROP_LAST_PUBLISH = "LastPublish";
   public static final String PROP_LAST_COMMENT = "LastComment";
+  public static final String PROP_LAST_COMMENT_DATA = "LastCommentData";
   public static final String PROP_MEMBERS = "Members";
   public static final String PROP_STAR = "Star";
   public static final String PROP_USER = "User";

@@ -80,13 +80,13 @@
           <DataSelector source="Owner" editSource="OwnerPerson"
             style="&ownerInp;" readOnly="true" />
           <CheckBox name="Accessibility" source="Accessibility"
-            text="=discussPublic" />
+            text="=discussPublic" disablable="false" />
         </FlowPanel>
         <FlowPanel>
           <Label name="membersLabel" text="=discussMembers" style="&membersLbl;" />
           <MultiSelector viewName="Users" property="Members"
             renderColumns="FirstName LastName" editSource="CompanyPerson"
-            style="&membersInp;" label="=discussMembers" />
+            style="&membersInp;" label="=discussMembers" disablable="false" />
         </FlowPanel>
 
         <FlowPanel>
