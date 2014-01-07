@@ -6,7 +6,7 @@
   >
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
-    <Relation name="Customer" relation="Companies" notNull="true" label="=client" />
+    <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
     <Relation name="CustomerPerson" relation="CompanyPersons" label="=personContact" />
     <String name="Contacts" precision="50" label="=contacts" />
     <Relation name="Payer" relation="Companies" label="=payer" />

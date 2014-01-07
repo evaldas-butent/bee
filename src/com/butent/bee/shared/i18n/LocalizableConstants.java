@@ -338,6 +338,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String no();
 
+  String noChanges();
+
   String noData();
 
   String notANumber();

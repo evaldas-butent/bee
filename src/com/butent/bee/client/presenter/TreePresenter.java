@@ -295,7 +295,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           }
         }
         if (BeeUtils.isEmpty(columns)) {
-          return "No changes";
+          return Localized.getConstants().noChanges();
         }
         return null;
       }
