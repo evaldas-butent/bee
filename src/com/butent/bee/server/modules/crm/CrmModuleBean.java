@@ -71,6 +71,33 @@ public class CrmModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(CrmModuleBean.class);
 
+  // private SqlSelect getUpdatedTasks(long userId, Feed feed, long startTime) {
+  // SqlSelect query = new SqlSelect().addFrom(TBL_TASK_EVENTS)
+  // .addFields(CrmConstants.TBL_TASK_EVENTS, COL_TASK)
+  // .addMax(CrmConstants.TBL_TASK_EVENTS, COL_PUBLISH_TIME)
+  // .addGroup(CrmConstants.TBL_TASK_EVENTS, COL_TASK);
+  //
+  // IsCondition where = SqlUtils.and(SqlUtils.notEqual(TBL_TASK_EVENTS, COL_PUBLISHER, userId),
+  // SqlUtils.more(TBL_TASK_EVENTS, COL_PUBLISH_TIME, startTime));
+  //
+  // IsCondition typeWhere = null;
+  //
+  // switch (feed) {
+  // case TASKS_ASSIGNED:
+  // break;
+  // case TASKS_DELEGATED:
+  // break;
+  // case TASKS_OBSERVED:
+  // break;
+  // default:
+  // break;
+  //
+  // }
+  //
+  // query.setWhere(SqlUtils.and(where, typeWhere));
+  // return query;
+  // }
+
   @EJB
   SystemBean sys;
   @EJB

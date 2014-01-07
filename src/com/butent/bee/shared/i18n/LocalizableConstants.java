@@ -201,9 +201,9 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String doFilter();
 
   String domainNews();
-  
+
   String domainOnline();
-  
+
   String domainRooms();
 
   String email();
@@ -226,11 +226,65 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String feed();
 
+  String feedAppointmentsAll();
+
+  String feedAppointmentsMy();
+
+  String feedCompaniesAll();
+
+  String feedCompaniesMy();
+
+  String feedDocuments();
+
+  String feedEcClientsAll();
+
+  String feedEcClientsMy();
+
+  String feedEcOrdersAll();
+
+  String feedEcOrdersMy();
+
+  String feedEcRegistrations();
+
+  String feedGoods();
+
   String feedNew();
 
+  String feedPersons();
+
   String feeds();
-  
+
   String feedSubscriptionDate();
+
+  String feedTasksAll();
+
+  String feedTasksAssigned();
+
+  String feedTasksDelegated();
+
+  String feedTasksObserved();
+
+  String feedTrCargo();  
+
+  String feedTrDrivers();  
+
+  String feedTrOrdersAll();  
+
+  String feedTrOrdersMy();  
+
+  String feedTrRegistrations();  
+
+  String feedTrRequestsAll();  
+
+  String feedTrRequestsMy();
+  
+  String feedTrRequestsUnregisteredAll();
+
+  String feedTrRequestsUnregisteredMy();
+
+  String feedTrTrips();
+
+  String feedTrVehicles();
 
   String fileDataCorrection();
 
@@ -437,23 +491,23 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String roomDeleteQuestion();
 
   String roomDwellers();
-  
+
   String roomName();
-  
+
   String roomNew();
-  
+
   String roomOwners();
-  
+
   String roomSettings();
-  
+
   String roomTypePrivate();
-  
+
   String roomTypePublic();
-  
+
   String roomUpdateTime();
 
   String roomUsers();
-  
+
   String rowIsReadOnly();
 
   String saveChanges();

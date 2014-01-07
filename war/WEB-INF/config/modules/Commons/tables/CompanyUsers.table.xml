@@ -3,7 +3,6 @@
 
   name="CompanyUsers"
   idName="CompanyUserResponsibilityId"
-  x="501" y="339"
   >
   <Fields>
     <Relation name="Company" relation="Companies" notNull="true" label="=company"/>

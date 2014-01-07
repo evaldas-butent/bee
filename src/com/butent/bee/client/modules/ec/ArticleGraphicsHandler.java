@@ -23,6 +23,7 @@ import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -73,13 +74,13 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
 
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription) {
+      ColumnDescription columnDescription, CellSource cellSource) {
 
     if (BeeUtils.same(columnName, COL_TCD_GRAPHICS_RESOURCE)) {
       return new PictureRenderer(DataUtils.getColumnIndex(COL_TCD_GRAPHICS_TYPE, dataColumns),
           DataUtils.getColumnIndex(COL_TCD_GRAPHICS_RESOURCE, dataColumns));
     } else {
-      return super.getRenderer(columnName, dataColumns, columnDescription);
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
   }
 

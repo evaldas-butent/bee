@@ -13,13 +13,12 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.news.Feed;
 import com.butent.bee.shared.data.news.Headline;
+import com.butent.bee.shared.data.news.NewsUtils;
 import com.butent.bee.shared.data.news.Subscription;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -84,22 +83,23 @@ public class NewsAggregator {
         subscriptions.add(subscription);
 
         if (!subscription.isEmpty()) {
-          Label subscriptionLabel = new Label(subscription.getCaption());
+          Label subscriptionLabel = new Label(subscription.getLabel());
           subscriptionLabel.addStyleName(STYLE_PREFIX + "feed");
           newsPanel.add(subscriptionLabel);
 
           for (final Headline headline : subscription.getHeadlines()) {
             Label headlineLabel = new Label(headline.getCaption());
             headlineLabel.addStyleName(STYLE_PREFIX + "headline");
-            
+
             headlineLabel.addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
-                RowEditor.openRow(subscription.getFeed().getHeadlineView(), headline.getId(), false,
+                RowEditor.openRow(subscription.getFeed().getHeadlineView(), headline.getId(),
+                    false,
                     null);
               }
             });
-            
+
             newsPanel.add(headlineLabel);
           }
         }
@@ -111,20 +111,14 @@ public class NewsAggregator {
 
   public void onAccess(String viewName, long rowId) {
     String table = Data.getViewTable(viewName);
-    if (BeeUtils.isEmpty(table)) {
-      return;
+
+    if (NewsUtils.hasUsageTable(table)) {
+      ParameterList parameters = BeeKeeper.getRpc().createParameters(Service.ACCESS);
+      parameters.addQueryItem(Service.VAR_TABLE, table);
+      parameters.addQueryItem(Service.VAR_ID, rowId);
+
+      BeeKeeper.getRpc().makeRequest(parameters);
     }
-
-    Feed feed = Feed.findFeedWithUsageTable(table);
-    if (feed == null) {
-      return;
-    }
-
-    ParameterList parameters = BeeKeeper.getRpc().createParameters(Service.READ_FEED);
-    parameters.addQueryItem(Service.VAR_FEED, feed.ordinal());
-    parameters.addQueryItem(Service.VAR_ID, rowId);
-
-    BeeKeeper.getRpc().makeRequest(parameters);
   }
 
   public void refresh() {

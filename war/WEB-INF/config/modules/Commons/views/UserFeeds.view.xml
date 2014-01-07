@@ -8,13 +8,13 @@
     <SimpleColumn name="User" />
     <SimpleColumn name="Feed" />
 
+    <SimpleColumn name="Caption" />
     <SimpleColumn name="SubscriptionDate" />
     <SimpleColumn name="Ordinal" />
   </Columns>
 
   <Order>
     <OrderBy column="Ordinal" />
-    <OrderBy column="Feed" />
   </Order>
 </View>
  

@@ -943,7 +943,7 @@ public final class CliWorker {
           break;
         }
       }
-      
+
       for (String session : sessions) {
         NotificationMessage notificationMessage = NotificationMessage.create(displayMode,
             Endpoint.getSessionId(), session,
@@ -951,7 +951,7 @@ public final class CliWorker {
         if (icon != null) {
           notificationMessage.setIcon(icon.name());
         }
-        
+
         Endpoint.send(notificationMessage);
       }
     }
@@ -2304,10 +2304,32 @@ public final class CliWorker {
   }
 
   private static void showDataInfo(String viewName, boolean errorPopup) {
-    if (BeeUtils.isEmpty(viewName)) {
-      List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
+    if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
+      Data.getDataInfoProvider().load();
+
+    } else {
+      if (!BeeUtils.isEmpty(viewName)) {
+        DataInfo dataInfo = Data.getDataInfo(viewName, false);
+        if (dataInfo != null) {
+          showExtData(viewName, dataInfo.getExtendedInfo());
+          return;
+        }
+      }
+
+      List<DataInfo> list = Lists.newArrayList();
+      if (BeeUtils.isEmpty(viewName)) {
+        list.addAll(Data.getDataInfoProvider().getViews());
+      } else {
+        for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
+          if (BeeUtils.containsSame(dataInfo.getViewName(), viewName)
+              || BeeUtils.containsSame(dataInfo.getTableName(), viewName)) {
+            list.add(dataInfo);
+          }
+        }
+      }
+
       if (list.isEmpty()) {
-        showError(errorPopup, "no data infos available");
+        showError(errorPopup, viewName, "no data infos available");
         return;
       }
 
@@ -2327,15 +2349,6 @@ public final class CliWorker {
         data[i][6] = BeeUtils.toString(di.getRowCount());
       }
       showMatrix("Data info", data, "view", "table", "id", "version", "cc", "vc", "rc");
-
-    } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
-      Data.getDataInfoProvider().load();
-
-    } else {
-      DataInfo dataInfo = Data.getDataInfo(viewName);
-      if (dataInfo != null) {
-        showExtData(viewName, dataInfo.getExtendedInfo());
-      }
     }
   }
 
@@ -3036,7 +3049,7 @@ public final class CliWorker {
               }
             });
           }
-          
+
           MapContainer container = new MapContainer(caption, widget);
           BeeKeeper.getScreen().showWidget(container, true);
         }

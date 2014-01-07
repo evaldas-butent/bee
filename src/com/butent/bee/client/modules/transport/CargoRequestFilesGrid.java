@@ -14,6 +14,7 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -51,14 +52,15 @@ class CargoRequestFilesGrid extends AbstractGridInterceptor {
 
   @Override
   public AbstractCellRenderer getRenderer(String columnName,
-      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+      CellSource cellSource) {
 
     if (BeeUtils.same(columnName, TransportConstants.COL_CRF_FILE)) {
       return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
           DataUtils.getColumnIndex(TransportConstants.COL_CRF_CAPTION, dataColumns));
 
     } else {
-      return super.getRenderer(columnName, dataColumns, columnDescription);
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
   }
 

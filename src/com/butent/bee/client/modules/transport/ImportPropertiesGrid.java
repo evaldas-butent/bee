@@ -21,6 +21,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
@@ -50,7 +51,8 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
 
   @Override
   public AbstractCellRenderer getRenderer(final String columnName,
-      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+      CellSource cellSource) {
 
     if (BeeUtils.same(columnName, COL_IMPORT_PROPERTY)) {
       return new AbstractCellRenderer(null) {
@@ -66,7 +68,7 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
         }
       };
     }
-    return super.getRenderer(columnName, dataColumns, columnDescription);
+    return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
   }
 
   private void addNewProperty() {

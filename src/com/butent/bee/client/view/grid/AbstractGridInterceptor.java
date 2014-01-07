@@ -21,6 +21,7 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -234,7 +235,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription) {
+      ColumnDescription columnDescription, CellSource cellSource) {
     return null;
   }
 

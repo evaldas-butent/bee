@@ -206,8 +206,8 @@ public class UiServiceBean {
       response = news.getNews();
     } else if (BeeUtils.same(svc, Service.SUBSCRIBE_TO_FEEDS)) {
       response = news.subscribe(reqInfo);
-    } else if (BeeUtils.same(svc, Service.READ_FEED)) {
-      response = news.onReadFeed(reqInfo);
+    } else if (BeeUtils.same(svc, Service.ACCESS)) {
+      response = news.onAccess(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
       response = importOsamaTiekejai(reqInfo);
