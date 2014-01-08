@@ -36,10 +36,8 @@
 
     <ExternalJoin source="DiscussionsComments" joinType="LEFT"
       name="Discussion">
-      <!-- 
-      <AggregateColumn alias="LastComment" aggregate="MAX"
-        name="PublishTime" />
-       -->        
+      <AggregateColumn alias="LastCommentPublishTime" aggregate="MAX"
+        name="PublishTime" />    
       <AggregateColumn alias="CommentCount" aggregate="COUNT_DISTINCT"
         name="PublishTime" />
     </ExternalJoin>

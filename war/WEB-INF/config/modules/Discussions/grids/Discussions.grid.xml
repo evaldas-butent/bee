@@ -15,7 +15,7 @@
       <renderer type="star" />
     </PropColumn>
 
-    <DataColumn name="Subject" minWidth="300"  visible="true" />
+    <DataColumn name="Subject" minWidth="450"  visible="true" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" autoFit="true" />
@@ -27,7 +27,7 @@
       autoFit="true" />
       
     <PropColumn name="FilesCount" type="integer" cellType="html"
-      horizontalAlignment="center" width="20" maxWidth="20"
+      horizontalAlignment="center" width="20" maxWidth="30" autoFit="true"
       label="=discussHasFiles">
       <renderer type="attachment" />
     </PropColumn>
@@ -39,7 +39,8 @@
     </PropColumn>
     
     <PropColumn name="LastCommentData" type="string" cellType="html"
-      caption="=discussLastComment" label="=discussLastComment" maxWidth="150">      
+      caption="=discussLastComment" label="=discussLastComment" width="180"
+      sortBy="LastCommentPublishTime">      
     </PropColumn>
 
 <!--
