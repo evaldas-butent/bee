@@ -15,14 +15,14 @@
   
   <set-property name='user.agent' value='safari'/>
 
-  <extend-property name='locale' values='lt, en'/>    
+  <extend-property name='locale' values='lt, en, ru'/>    
     
   <!-- Disable some locale
   <extend-property name='locale' values='ru'/>  
   <extend-property name='locale' values='fi'/>
   -->
   
-  <set-property name='locale' value='lt, en'/>
+  <set-property name='locale' value='lt, en, ru'/>
   <set-property-fallback name="locale" value="lt"/>
     
   <entry-point class='com.butent.bee.client.Bee'/>
