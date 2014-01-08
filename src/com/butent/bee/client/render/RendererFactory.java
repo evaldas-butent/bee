@@ -40,12 +40,14 @@ public final class RendererFactory {
   }
   
   public static AbstractCellRenderer getGridColumnRenderer(String gridName, String columnName,
-      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+      CellSource cellSource) {
+
     ProvidesGridColumnRenderer provider = gcrProviders.get(gridName, columnName);
     if (provider == null) {
       return null;
     } else {
-      return provider.getRenderer(columnName, dataColumns, columnDescription);
+      return provider.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
   }
 

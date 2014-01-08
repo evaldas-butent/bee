@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -21,7 +22,8 @@ public class TotalRenderer extends AbstractCellRenderer {
   public static class Provider implements ProvidesGridColumnRenderer {
     @Override
     public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+        CellSource cellSource) {
 
       return new TotalRenderer(dataColumns);
     }

@@ -257,6 +257,10 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_CREDIT_LIMIT = "CreditLimit";
   public static final String COL_COMPANY_LIMIT_CURRENCY = "LimitCurrency";
   public static final String COL_COMPANY_CREDIT_DAYS = "CreditDays";
+
+  public static final String COL_COMPANY_USER_USER = "User";
+  public static final String COL_COMPANY_USER_RESPONSIBILITY = "Responsibility";
+  
   public static final String COL_PERSON = "Person";
 
   public static final String COL_POSITION = "Position";

@@ -16,6 +16,8 @@ public final class Headline implements BeeSerializable, HasCaption {
     NEW, UPDATED
   }
 
+  public static final String CAPTION_SEPARATOR = " ";
+      
   public static Headline forInsert(long id, String caption) {
     return new Headline(id, caption, Type.NEW);
   }

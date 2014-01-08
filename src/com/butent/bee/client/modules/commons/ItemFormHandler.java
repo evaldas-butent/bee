@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HasHandlers;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -25,7 +27,6 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -50,9 +51,9 @@ class ItemFormHandler extends AbstractFormInterceptor {
       String colName = event.getColumns().get(i).getId();
       String value = event.getValues().get(i);
 
-      if (BeeUtils.same(colName, "Price")) {
+      if (BeeUtils.same(colName, COL_ITEM_PRICE)) {
         price = value;
-      } else if (BeeUtils.same(colName, "Currency")) {
+      } else if (BeeUtils.same(colName, COL_ITEM_CURRENCY)) {
         currency = value;
       }
     }
@@ -64,17 +65,16 @@ class ItemFormHandler extends AbstractFormInterceptor {
       return;
     }
 
-    BeeRowSet rs = new BeeRowSet("Items", event.getColumns());
+    BeeRowSet rs = new BeeRowSet(VIEW_ITEMS, event.getColumns());
     rs.addRow(0, ArrayUtils.toArray(event.getValues()));
 
-    ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_ITEM_CREATE);
-    args.addDataItem(CommonsConstants.VAR_ITEM_DATA, Codec.beeSerialize(rs));
-    
-    String categories = 
-        getFormView().getActiveRow().getProperty(CommonsConstants.PROP_CATEGORIES);
+    ParameterList args = CommonsKeeper.createArgs(SVC_ITEM_CREATE);
+    args.addDataItem(VAR_ITEM_DATA, Codec.beeSerialize(rs));
+
+    String categories = getFormView().getActiveRow().getProperty(PROP_CATEGORIES);
 
     if (!BeeUtils.isEmpty(categories)) {
-      args.addDataItem(CommonsConstants.VAR_ITEM_CATEGORIES, categories);
+      args.addDataItem(VAR_ITEM_CATEGORIES, categories);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -92,7 +92,7 @@ class ItemFormHandler extends AbstractFormInterceptor {
         }
       }
     });
-    
+
     event.consume();
   }
 
@@ -100,26 +100,25 @@ class ItemFormHandler extends AbstractFormInterceptor {
   public boolean onStartEdit(final FormView form, final IsRow row,
       final Scheduler.ScheduledCommand focusCommand) {
 
-    Filter flt = ComparisonFilter.isEqual(CommonsConstants.COL_ITEM, new LongValue(row.getId()));
+    Filter flt = ComparisonFilter.isEqual(COL_ITEM, new LongValue(row.getId()));
 
-    Queries.getRowSet(CommonsConstants.TBL_ITEM_CATEGORIES, null, flt, null,
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (!result.isEmpty()) {
-              List<Long> categ = Lists.newArrayList();
+    Queries.getRowSet(TBL_ITEM_CATEGORIES, null, flt, null, new RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        if (!result.isEmpty()) {
+          List<Long> categ = Lists.newArrayList();
 
-              int index = result.getColumnIndex(CommonsConstants.COL_CATEGORY);
-              for (IsRow r : result.getRows()) {
-                categ.add(r.getLong(index));
-              }
-              row.setProperty(CommonsConstants.PROP_CATEGORIES, DataUtils.buildIdList(categ));
-            }
-            
-            form.updateRow(row, true);
-            focusCommand.execute();
+          int index = result.getColumnIndex(COL_CATEGORY);
+          for (IsRow r : result.getRows()) {
+            categ.add(r.getLong(index));
           }
-        });
+          row.setProperty(PROP_CATEGORIES, DataUtils.buildIdList(categ));
+        }
+
+        form.updateRow(row, true);
+        focusCommand.execute();
+      }
+    });
 
     return false;
   }
@@ -133,13 +132,12 @@ class ItemFormHandler extends AbstractFormInterceptor {
         ItemGridHandler grd = (ItemGridHandler) gcb;
 
         if (grd.showServices()) {
-          newRow.setValue(form.getDataIndex(CommonsConstants.COL_ITEM_IS_SERVICE), 1);
+          newRow.setValue(form.getDataIndex(COL_ITEM_IS_SERVICE), 1);
         }
 
         IsRow category = grd.getSelectedCategory();
         if (category != null) {
-          newRow.setProperty(CommonsConstants.PROP_CATEGORIES,
-              BeeUtils.toString(category.getId()));
+          newRow.setProperty(PROP_CATEGORIES, BeeUtils.toString(category.getId()));
         }
       }
     }

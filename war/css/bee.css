@@ -2624,3 +2624,14 @@
   left: 0;
   right: 0;
 }
+
+.bee-News-feed {
+  font-weight: bold;
+  padding-top: 1ex;
+  padding-bottom: 1ex;
+}
+.bee-News-headline {
+  padding-left: 1em;
+  text-decoration: underline;
+  cursor: pointer;
+}

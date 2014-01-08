@@ -5,7 +5,7 @@
   newRowPopup="true" editInPlace="Locale Interface BlockAfter BlockBefore"
   >
   <g:columns>
-    <IdColumn name="Id" caption="ID" />
+    <IdColumn name="Id" caption="=captionId" />
     <DataColumn name="Login" caption="=userLogin" visible="true" />
 
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName"

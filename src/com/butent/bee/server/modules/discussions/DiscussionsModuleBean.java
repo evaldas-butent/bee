@@ -860,7 +860,7 @@ public class DiscussionsModuleBean implements BeeModule {
     for (String[] row : rs.getRows()) {
       ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
           BeeUtils.joinWords(DateTime.restore(row[rs.getColumnIndex(COL_PUBLISH_TIME)])
-              .toString()
+              .toCompactString()
               + ",", row[rs
               .getColumnIndex(CommonsConstants.COL_FIRST_NAME)], row[rs
               .getColumnIndex(CommonsConstants.COL_LAST_NAME)]));

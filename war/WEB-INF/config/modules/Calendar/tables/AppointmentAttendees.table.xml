@@ -5,8 +5,10 @@
   idName="AppointmentAttendeeID"
   >
   <Fields>
-    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" label="=calAppointment" />
-    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" label="=calAttendee"/>
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE"
+      label="=calAppointment" />
+    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" 
+      label="=calAttendee" />
 
     <Boolean name="Optional" />
     <Enum name="ResponseStatus" key="ResponseStatus" />

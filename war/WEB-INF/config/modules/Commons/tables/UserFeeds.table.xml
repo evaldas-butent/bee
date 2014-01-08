@@ -6,8 +6,9 @@
   >
   <Fields>
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
-    <Enum name="Feed" precision="2" key="Feed" notNull="true" label="=feed" />
-
+    <String name="Feed" precision="60" notNull="true" label="=feed" />
+    
+    <String name="Caption" precision="100" label="=caption" />
     <DateTime name="SubscriptionDate" defExpr="CURRENT_TIME" label="=feedSubscriptionDate" />
     <Integer name="Ordinal" label="=ordinal" />
   </Fields>

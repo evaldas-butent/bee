@@ -426,10 +426,11 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
     AbstractCellRenderer renderer = null;
     if (gridInterceptor != null) {
-      renderer = gridInterceptor.getRenderer(columnId, dataColumns, cd);
+      renderer = gridInterceptor.getRenderer(columnId, dataColumns, cd, cellSource);
     }
     if (renderer == null) {
-      renderer = RendererFactory.getGridColumnRenderer(getGridName(), columnId, dataColumns, cd);
+      renderer = RendererFactory.getGridColumnRenderer(getGridName(), columnId, dataColumns, cd,
+          cellSource);
     }
     if (renderer == null) {
       renderer = RendererFactory.getRenderer(cd.getRendererDescription(), cd.getRender(),

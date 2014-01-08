@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -21,12 +22,15 @@ public class Subscription implements BeeSerializable, HasCaption {
   }
 
   private Feed feed;
+
+  private String caption;
   private DateTime date;
 
   private final List<Headline> headlines = Lists.newArrayList();
 
-  public Subscription(Feed feed, DateTime date) {
+  public Subscription(Feed feed, String caption, DateTime date) {
     this.feed = feed;
+    this.caption = caption;
     this.date = date;
   }
 
@@ -70,10 +74,11 @@ public class Subscription implements BeeSerializable, HasCaption {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 3);
+    Assert.lengthEquals(arr, 4);
 
     int i = 0;
     setFeed(Codec.unpack(Feed.class, arr[i++]));
+    setCaption(arr[i++]);
     setDate(DateTime.restore(arr[i++]));
 
     String[] hArr = Codec.beeDeserializeCollection(arr[i++]);
@@ -90,7 +95,7 @@ public class Subscription implements BeeSerializable, HasCaption {
 
   @Override
   public String getCaption() {
-    return (getFeed() == null) ? null : getFeed().getCaption();
+    return caption;
   }
 
   public DateTime getDate() {
@@ -105,18 +110,30 @@ public class Subscription implements BeeSerializable, HasCaption {
     return headlines;
   }
 
+  public String getLabel() {
+    if (getFeed() == null) {
+      return getCaption();
+    } else {
+      return BeeUtils.notEmpty(getCaption(), getFeed().getCaption());
+    }
+  }
+
   public boolean isEmpty() {
     return headlines.isEmpty();
   }
 
   @Override
   public String serialize() {
-    Object[] arr = new Object[] {Codec.pack(getFeed()), getDate(), headlines};
+    Object[] arr = new Object[] {Codec.pack(getFeed()), getCaption(), getDate(), headlines};
     return Codec.beeSerialize(arr);
   }
 
   public int size() {
     return headlines.size();
+  }
+
+  private void setCaption(String caption) {
+    this.caption = caption;
   }
 
   private void setDate(DateTime date) {

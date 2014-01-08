@@ -1,22 +1,24 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.news.Feed;
 import com.butent.bee.shared.data.news.Headline;
+import com.butent.bee.shared.data.news.NewsUtils;
 import com.butent.bee.shared.data.news.Subscription;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -25,14 +27,14 @@ public class NewsAggregator {
 
   private static final class NewsPanel extends Flow {
 
-    private static final String STYLE_PREFIX = "bee-News-";
-
     private NewsPanel() {
       super(STYLE_PREFIX + "panel");
     }
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(NewsAggregator.class);
+
+  private static final String STYLE_PREFIX = "bee-News-";
 
   private final NewsPanel newsPanel = new NewsPanel();
 
@@ -77,14 +79,28 @@ public class NewsAggregator {
       }
 
       for (String s : arr) {
-        Subscription subscription = Subscription.restore(s);
+        final Subscription subscription = Subscription.restore(s);
         subscriptions.add(subscription);
 
         if (!subscription.isEmpty()) {
-          newsPanel.add(new Label(subscription.getCaption()));
+          Label subscriptionLabel = new Label(subscription.getLabel());
+          subscriptionLabel.addStyleName(STYLE_PREFIX + "feed");
+          newsPanel.add(subscriptionLabel);
 
-          for (Headline headline : subscription.getHeadlines()) {
-            newsPanel.add(new Label(headline.getCaption()));
+          for (final Headline headline : subscription.getHeadlines()) {
+            Label headlineLabel = new Label(headline.getCaption());
+            headlineLabel.addStyleName(STYLE_PREFIX + "headline");
+
+            headlineLabel.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                RowEditor.openRow(subscription.getFeed().getHeadlineView(), headline.getId(),
+                    false,
+                    null);
+              }
+            });
+
+            newsPanel.add(headlineLabel);
           }
         }
       }
@@ -95,20 +111,14 @@ public class NewsAggregator {
 
   public void onAccess(String viewName, long rowId) {
     String table = Data.getViewTable(viewName);
-    if (BeeUtils.isEmpty(table)) {
-      return;
+
+    if (NewsUtils.hasUsageTable(table)) {
+      ParameterList parameters = BeeKeeper.getRpc().createParameters(Service.ACCESS);
+      parameters.addQueryItem(Service.VAR_TABLE, table);
+      parameters.addQueryItem(Service.VAR_ID, rowId);
+
+      BeeKeeper.getRpc().makeRequest(parameters);
     }
-
-    Feed feed = Feed.findFeedWithUsageTable(table);
-    if (feed == null) {
-      return;
-    }
-
-    ParameterList parameters = BeeKeeper.getRpc().createParameters(Service.READ_FEED);
-    parameters.addQueryItem(Service.VAR_FEED, feed.ordinal());
-    parameters.addQueryItem(Service.VAR_ID, rowId);
-
-    BeeKeeper.getRpc().makeRequest(parameters);
   }
 
   public void refresh() {

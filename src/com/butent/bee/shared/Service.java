@@ -85,7 +85,7 @@ public final class Service {
 
   public static final String GET_NEWS = DATA_SERVICE_PREFIX + "get_news";
   public static final String SUBSCRIBE_TO_FEEDS = DATA_SERVICE_PREFIX + "subscribe_to_feeds";
-  public static final String READ_FEED = DATA_SERVICE_PREFIX + "read_feed";
+  public static final String ACCESS = DATA_SERVICE_PREFIX + "access";
   
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";

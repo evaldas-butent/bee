@@ -30,6 +30,8 @@ public interface LocalizableCalendarConstants {
 
   String calDaysView();
 
+  String calendar();
+
   String calEnterAttendees();
 
   String calEnterClient();
