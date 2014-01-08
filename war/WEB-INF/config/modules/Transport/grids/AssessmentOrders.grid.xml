@@ -15,7 +15,7 @@
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessor" caption="PID" width="40" />
+    <DataColumn name="Assessor" caption="=captionPId" width="40" />
     <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />
     <DataColumn name="Status" width="70" />
     <DataColumn name="OrderNo" caption="=orderNumber" width="70" />

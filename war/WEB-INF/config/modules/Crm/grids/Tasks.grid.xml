@@ -16,7 +16,7 @@
       <renderer type="star" />
     </PropColumn>
 
-    <IdColumn name="Id" caption="ID" />
+    <IdColumn name="Id" caption="=captionId" />
 
     <DataColumn name="Priority" />
     <DataColumn name="Summary" maxWidth="200" visible="true" />

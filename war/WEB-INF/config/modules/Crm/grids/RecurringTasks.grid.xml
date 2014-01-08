@@ -7,7 +7,7 @@
   editShowId="true"
   >
   <g:columns>
-    <IdColumn name="Id" caption="ID" />
+    <IdColumn name="Id" caption="=captionId" />
 
     <DataColumn name="Priority" />
     <DataColumn name="Summary" />
