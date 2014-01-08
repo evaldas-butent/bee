@@ -1,11 +1,12 @@
-package com.butent.bee.server.data;
+package com.butent.bee.server.news;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeTable.BeeRelation;
+import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
@@ -21,13 +22,13 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.news.Feed;
-import com.butent.bee.shared.data.news.Headline;
-import com.butent.bee.shared.data.news.NewsUtils;
-import com.butent.bee.shared.data.news.Subscription;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.NewsUtils;
+import com.butent.bee.shared.news.Subscription;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -56,11 +57,6 @@ public class NewsBean {
   private static final String COL_UF_CAPTION = "Caption";
   private static final String COL_UF_SUBSCRIPTION_DATE = "SubscriptionDate";
   private static final String COL_UF_ORDINAL = "Ordinal";
-
-  private static final String COL_USAGE_USER = "User";
-
-  private static final String COL_USAGE_ACCESS = "Access";
-  private static final String COL_USAGE_UPDATE = "Update";
 
   @EJB
   UserServiceBean usr;
@@ -101,7 +97,7 @@ public class NewsBean {
 
       Subscription subscription = new Subscription(feed, caption, date);
 
-      List<Headline> headlines = getHeadlines(userId, feed, date);
+      List<Headline> headlines = getHeadlines(feed, userId, date);
       if (!headlines.isEmpty()) {
         subscription.getHeadlines().addAll(headlines);
         countHeadlines += headlines.size();
@@ -138,21 +134,22 @@ public class NewsBean {
       return ResponseObject.error(reqInfo.getService(), "table", table, "has no usage table");
     }
 
-    String relationColumn = getUsageRelationColumn(table, usageTable);
+    String relationColumn = NewsHelper.getUsageRelationColumn(table, usageTable, sys);
     if (BeeUtils.isEmpty(relationColumn)) {
       return ResponseObject.error(reqInfo.getService(), "relation column not found for");
     }
 
-    IsCondition where = SqlUtils.equals(usageTable, relationColumn, dataId, COL_USAGE_USER, userId);
+    IsCondition where = SqlUtils.equals(usageTable, relationColumn, dataId,
+        NewsHelper.COL_USAGE_USER, userId);
 
     if (qs.sqlExists(usageTable, where)) {
       return qs.updateDataWithResponse(new SqlUpdate(usageTable)
-          .addConstant(COL_USAGE_ACCESS, System.currentTimeMillis())
+          .addConstant(NewsHelper.COL_USAGE_ACCESS, System.currentTimeMillis())
           .setWhere(where));
 
     } else {
       return qs.insertDataWithResponse(new SqlInsert(usageTable)
-          .addFields(relationColumn, COL_USAGE_USER, COL_USAGE_ACCESS)
+          .addFields(relationColumn, NewsHelper.COL_USAGE_USER, NewsHelper.COL_USAGE_ACCESS)
           .addValues(dataId, userId, System.currentTimeMillis()));
     }
   }
@@ -167,7 +164,7 @@ public class NewsBean {
       return;
     }
 
-    String relationColumn = getUsageRelationColumn(table, usageTable);
+    String relationColumn = NewsHelper.getUsageRelationColumn(table, usageTable, sys);
     if (BeeUtils.isEmpty(relationColumn)) {
       return;
     }
@@ -179,17 +176,19 @@ public class NewsBean {
 
     long now = System.currentTimeMillis();
 
-    IsCondition where = SqlUtils.equals(usageTable, relationColumn, rowId, COL_USAGE_USER, userId);
+    IsCondition where = SqlUtils.equals(usageTable, relationColumn, rowId,
+        NewsHelper.COL_USAGE_USER, userId);
 
     if (qs.sqlExists(usageTable, where)) {
       qs.updateData(new SqlUpdate(usageTable)
-          .addConstant(COL_USAGE_ACCESS, now)
-          .addConstant(COL_USAGE_UPDATE, now)
+          .addConstant(NewsHelper.COL_USAGE_ACCESS, now)
+          .addConstant(NewsHelper.COL_USAGE_UPDATE, now)
           .setWhere(where));
 
     } else {
       qs.insertData(new SqlInsert(usageTable)
-          .addFields(relationColumn, COL_USAGE_USER, COL_USAGE_ACCESS, COL_USAGE_UPDATE)
+          .addFields(relationColumn, NewsHelper.COL_USAGE_USER, NewsHelper.COL_USAGE_ACCESS,
+              NewsHelper.COL_USAGE_UPDATE)
           .addValues(rowId, userId, now, now));
     }
   }
@@ -230,19 +229,14 @@ public class NewsBean {
     return ResponseObject.response(feeds.size());
   }
 
-  private Map<Long, Long> getAccess(long userId, Feed feed, String usageTable,
-      String relationColumn) {
+  private Map<Long, Long> getAccess(Feed feed, String usageTable, String relationColumn,
+      long userId, DateTime startDate) {
 
     Map<Long, Long> access = Maps.newHashMap();
 
-    if (!BeeUtils.anyEmpty(usageTable, relationColumn)) {
-      SqlSelect query = new SqlSelect()
-          .addFields(usageTable, relationColumn)
-          .addMax(usageTable, COL_USAGE_ACCESS)
-          .addFrom(usageTable)
-          .setWhere(SqlUtils.equals(usageTable, COL_USAGE_USER, userId))
-          .addGroup(usageTable, relationColumn);
-
+    SqlSelect query = NewsHelper.getQueryForAccess(feed, usageTable, relationColumn, userId,
+        startDate);
+    if (query != null) {
       SimpleRowSet data = qs.getData(query);
       if (!DataUtils.isEmpty(data)) {
         for (SimpleRow row : data) {
@@ -254,33 +248,26 @@ public class NewsBean {
     return access;
   }
 
-  private List<Headline> getHeadlines(long userId, Feed feed, DateTime startDate) {
+  private List<Headline> getHeadlines(Feed feed, long userId, DateTime startDate) {
     List<Headline> result = Lists.newArrayList();
 
-    String table = feed.getTable();
-    String usageTable = NewsUtils.getUsageTable(table);
-
-    if (!BeeUtils.isEmpty(table) && !sys.isTable(table)) {
-      logger.severe("feed", feed.name(), "table not recognized", table);
+    if (NewsHelper.hasChannel(feed)) {
+      List<Headline> headlines = NewsHelper.getHeadlines(feed, userId, startDate);
+      if (!BeeUtils.isEmpty(headlines)) {
+        result.addAll(headlines);
+      }
       return result;
     }
 
-    if (!BeeUtils.isEmpty(usageTable) && !sys.isTable(usageTable)) {
-      logger.severe("feed", feed.name(), "usage table not recognized", usageTable);
-      return result;
-    }
+    String usageTable = feed.getUsageTable();
+    String relationColumn = NewsHelper.getUsageRelationColumn(feed.getTable(), usageTable, sys);
 
-    String relationColumn = BeeUtils.isEmpty(usageTable) ? null
-        : getUsageRelationColumn(table, usageTable);
-
-    long startTime = (startDate == null) ? 0L : startDate.getTime();
-
-    Map<Long, Long> updates = getUpdates(userId, feed, usageTable, relationColumn, startTime);
+    Map<Long, Long> updates = getUpdates(feed, usageTable, relationColumn, userId, startDate);
     if (updates.isEmpty()) {
       return result;
     }
 
-    Map<Long, Long> access = getAccess(userId, feed, usageTable, relationColumn);
+    Map<Long, Long> access = getAccess(feed, usageTable, relationColumn, userId, startDate);
 
     Set<Long> newIds = Sets.newHashSet();
     Set<Long> updIds = Sets.newHashSet();
@@ -308,22 +295,17 @@ public class NewsBean {
 
     return result;
   }
-  
-  private Map<Long, Long> getUpdates(long userId, Feed feed, String usageTable,
-      String relationColumn, long startTime) {
+
+  private Map<Long, Long> getUpdates(Feed feed, String usageTable, String relationColumn,
+      long userId, DateTime startDate) {
 
     Map<Long, Long> updates = Maps.newHashMap();
 
-    if (!BeeUtils.anyEmpty(usageTable, relationColumn)) {
-      SqlSelect query = new SqlSelect()
-          .addFields(usageTable, relationColumn)
-          .addMax(usageTable, COL_USAGE_UPDATE)
-          .addFrom(usageTable)
-          .setWhere(SqlUtils.and(SqlUtils.notEqual(usageTable, COL_USAGE_USER, userId),
-              SqlUtils.more(usageTable, COL_USAGE_UPDATE, startTime)))
-          .addGroup(usageTable, relationColumn);
-
+    SqlSelect query = NewsHelper.getQueryForUpdates(feed, usageTable, relationColumn,
+        userId, startDate);
+    if (query != null) {
       SimpleRowSet data = qs.getData(query);
+
       if (!DataUtils.isEmpty(data)) {
         for (SimpleRow row : data) {
           updates.put(row.getLong(0), row.getLong(1));
@@ -332,21 +314,6 @@ public class NewsBean {
     }
 
     return updates;
-  }
-
-  private String getUsageRelationColumn(String table, String usageTable) {
-    Collection<BeeField> fields = sys.getTableFields(usageTable);
-
-    if (fields != null) {
-      for (BeeField field : fields) {
-        if (field instanceof BeeRelation && table.equals(((BeeRelation) field).getRelation())) {
-          return field.getName();
-        }
-      }
-    }
-
-    logger.severe("table", table, "usage table", usageTable, "relation column not found");
-    return null;
   }
 
   private List<Headline> queryHeadlines(Feed feed, Collection<Long> newIds,

@@ -13,6 +13,7 @@ import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;

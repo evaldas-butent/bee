@@ -4,12 +4,12 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
-import com.butent.bee.server.data.NewsBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;

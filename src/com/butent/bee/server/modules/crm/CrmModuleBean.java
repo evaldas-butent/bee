@@ -18,6 +18,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -47,6 +48,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -288,6 +290,13 @@ public class CrmModuleBean implements BeeModule {
         }
       }
     });
+    
+    TaskUsageQueryProvider usageQueryProvider = new TaskUsageQueryProvider();
+    
+    NewsHelper.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);
+    NewsHelper.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
+    NewsHelper.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
+    NewsHelper.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
   }
 
   private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,

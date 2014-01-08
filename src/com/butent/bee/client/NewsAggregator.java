@@ -13,11 +13,11 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.news.Headline;
-import com.butent.bee.shared.data.news.NewsUtils;
-import com.butent.bee.shared.data.news.Subscription;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.NewsUtils;
+import com.butent.bee.shared.news.Subscription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.Codec;
 
