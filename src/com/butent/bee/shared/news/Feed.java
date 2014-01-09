@@ -1,4 +1,4 @@
-package com.butent.bee.shared.data.news;
+package com.butent.bee.shared.news;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -171,5 +171,9 @@ public enum Feed implements HasCaption {
 
   public String getTable() {
     return table;
+  }
+  
+  public String getUsageTable() {
+    return (table == null) ? null : NewsUtils.getUsageTable(table);
   }
 }

@@ -7,9 +7,10 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="Item" width="650" height="250"
+  name="Item" caption="=item"
+  width="650" height="250"
   >
-  <FlowPanel style="margin: 2ex 1em 0 1em;">
+  <FlowPanel style="padding: 2ex 1em 0 1em;">
     <FlowPanel class="flexBox-horizontal">
       <Label text="=name" class="bee-required" style="&lbl1;" />
       <InputText source="Name" style="width: 500px;" autocomplete="true" />

@@ -180,6 +180,8 @@ public final class CrmConstants {
   public static final String COL_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
   public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
+  public static final String COL_TASK_ID = "TaskID";
+
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
 

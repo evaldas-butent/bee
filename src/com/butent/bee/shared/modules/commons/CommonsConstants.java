@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.news.Feed;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;

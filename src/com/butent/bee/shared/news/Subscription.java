@@ -1,4 +1,4 @@
-package com.butent.bee.shared.data.news;
+package com.butent.bee.shared.news;
 
 import com.google.common.collect.Lists;
 
