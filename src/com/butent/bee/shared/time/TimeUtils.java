@@ -68,6 +68,8 @@ public final class TimeUtils {
   public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
   public static final RangeOptions CLOSED_NOT_REQUIRED = new RangeOptions(false, false, false);
 
+  public static final String PERIOD_SEPARATOR = "--";
+  
   private static final String[] FIELD_NAME = {
       "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
       "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
@@ -761,6 +763,25 @@ public final class TimeUtils {
         + padTwo(minutes % MINUTES_PER_HOUR);
   }
 
+  public static String renderPeriod(DateTime start, DateTime end) {
+    if (start == null) {
+      if (end == null) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + renderCompact(end);
+      }
+
+    } else if (end == null) {
+      return renderCompact(start) + PERIOD_SEPARATOR;
+
+    } else if (sameDate(start, end)) {
+      return renderCompact(start) + PERIOD_SEPARATOR + end.toCompactTimeString();
+
+    } else {
+      return renderCompact(start) + PERIOD_SEPARATOR + renderCompact(end);
+    }
+  }
+  
   public static String renderTime(int hour, int minute, int second, int millis,
       boolean leadingZero) {
     StringBuilder sb = new StringBuilder();

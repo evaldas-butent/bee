@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.commons;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -28,7 +27,8 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -55,6 +55,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.NewsUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -85,9 +87,6 @@ import lt.lb.webservices.exchangerates.ExchangeRatesWS;
 public class CommonsModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(CommonsModuleBean.class);
-
-  private static final Splitter ID_SPLITTER =
-      Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
   private static Collection<? extends BeeParameter> getSqlEngineParameters() {
     List<BeeParameter> params = Lists.newArrayList();
@@ -124,6 +123,8 @@ public class CommonsModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  NewsBean news;
 
   @Resource
   EJBContext ctx;
@@ -165,10 +166,7 @@ public class CommonsModuleBean implements BeeModule {
     ResponseObject response = null;
     String svc = reqInfo.getParameter(COMMONS_METHOD);
 
-    if (BeeUtils.isPrefix(svc, COMMONS_ITEM_PREFIX)) {
-      response = doItemEvent(svc, reqInfo);
-
-    } else if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
+    if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
       response = prm.doService(svc, reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
@@ -301,6 +299,45 @@ public class CommonsModuleBean implements BeeModule {
             }
           }
         }
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.COMPANIES_MY, new UsageQueryProvider() {
+      @Override
+      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+
+        SqlSelect query = news.getAccessQuery(userId, TBL_COMPANIES);
+        
+        String usageTable = NewsUtils.getUsageTable(TBL_COMPANIES);
+        String urc = news.getUsageRelationColumn(TBL_COMPANIES, usageTable);
+        
+        query.addFromInner(TBL_COMPANY_USERS,
+            SqlUtils.join(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable, urc));
+        query.setWhere(SqlUtils.and(query.getWhere(), userCompany(userId)));
+
+        return query;
+      }
+
+      @Override
+      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+
+        String usageTable = feed.getUsageTable();
+
+        return new SqlSelect()
+            .addFields(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY)
+            .addMax(usageTable, NewsUtils.COL_USAGE_UPDATE)
+            .addFrom(TBL_COMPANY_USERS)
+            .addFromInner(usageTable,
+                sys.joinTables(TBL_COMPANY_USERS, usageTable, relationColumn))
+            .setWhere(SqlUtils.and(news.getUpdatesCondition(usageTable, userId, startDate),
+                userCompany(userId)))
+            .addGroup(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY);
+      }
+
+      private IsCondition userCompany(long userId) {
+        return SqlUtils.equals(TBL_COMPANY_USERS, COL_COMPANY_USER_USER, userId);
       }
     });
   }
@@ -652,86 +689,6 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     return qs.insertDataWithResponse(insUser);
-  }
-
-  private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
-
-    if (BeeUtils.same(svc, SVC_ADD_CATEGORIES)) {
-      int cnt = 0;
-      long itemId = BeeUtils.toLong(reqInfo.getParameter(VAR_ITEM_ID));
-      String categories = reqInfo.getParameter(VAR_ITEM_CATEGORIES);
-
-      for (String catId : ID_SPLITTER.split(categories)) {
-        response = qs.insertDataWithResponse(new SqlInsert(TBL_ITEM_CATEGORIES)
-            .addConstant(COL_ITEM, itemId)
-            .addConstant(COL_CATEGORY, BeeUtils.toLong(catId)));
-
-        if (response.hasErrors()) {
-          break;
-        }
-        cnt++;
-      }
-      if (!response.hasErrors()) {
-        response = ResponseObject.response(cnt);
-      }
-    } else if (BeeUtils.same(svc, SVC_REMOVE_CATEGORIES)) {
-      long itemId = BeeUtils.toLong(reqInfo.getParameter(VAR_ITEM_ID));
-      String categories = reqInfo.getParameter(VAR_ITEM_CATEGORIES);
-
-      String tbl = TBL_ITEM_CATEGORIES;
-      HasConditions catClause = SqlUtils.or();
-      IsCondition cond = SqlUtils.and(SqlUtils.equals(tbl, COL_ITEM, itemId),
-          catClause);
-
-      for (String catId : ID_SPLITTER.split(categories)) {
-        catClause.add(SqlUtils.equals(tbl, COL_CATEGORY, BeeUtils.toLong(catId)));
-      }
-      response = qs.updateDataWithResponse(new SqlDelete(tbl).setWhere(cond));
-
-    } else if (BeeUtils.same(svc, SVC_ITEM_CREATE)) {
-      BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(VAR_ITEM_DATA));
-      String categories = reqInfo.getParameter(VAR_ITEM_CATEGORIES);
-      response = deb.commitRow(rs, false);
-
-      if (!response.hasErrors()) {
-        long itemId = ((BeeRow) response.getResponse()).getId();
-
-        if (!BeeUtils.isEmpty(categories)) {
-          for (String catId : ID_SPLITTER.split(categories)) {
-            response =
-                qs.insertDataWithResponse(new SqlInsert(TBL_ITEM_CATEGORIES)
-                    .addConstant(COL_ITEM, itemId)
-                    .addConstant(COL_CATEGORY, BeeUtils.toLong(catId)));
-
-            if (response.hasErrors()) {
-              break;
-            }
-          }
-        }
-        if (!response.hasErrors()) {
-          BeeView view = sys.getView(rs.getViewName());
-          rs = qs.getViewData(view.getName(), ComparisonFilter.compareId(itemId));
-
-          if (rs.isEmpty()) {
-            String msg = "Optimistic lock exception";
-            logger.warning(msg);
-            response = ResponseObject.error(msg);
-          } else {
-            response.setResponse(rs.getRow(0));
-          }
-        }
-      }
-    }
-    if (response == null) {
-      String msg = BeeUtils.joinWords("Items service not recognized:", svc);
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
-
-    } else if (response.hasErrors()) {
-      ctx.setRollbackOnly();
-    }
-    return response;
   }
 
   private ResponseObject getCompanyInfo(Long companyId, String locale) {

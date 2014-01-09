@@ -19,8 +19,6 @@ import java.util.List;
 
 public final class CalendarUtils {
 
-  private static final String PERIOD_SEPARATOR = " - ";
-
   private static final DateTimeFormat DATE_TIME_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
   private static final DateTimeFormat DATE_FORMAT =
@@ -303,17 +301,17 @@ public final class CalendarUtils {
       if (end == null) {
         return BeeConst.STRING_EMPTY;
       } else {
-        return PERIOD_SEPARATOR + renderDateTime(end);
+        return TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
       }
 
     } else if (end == null) {
-      return renderDateTime(start) + PERIOD_SEPARATOR;
+      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR;
 
     } else if (TimeUtils.sameDate(start, end)) {
-      return renderDateTime(start) + PERIOD_SEPARATOR + TIME_FORMAT.format(end);
+      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR + TIME_FORMAT.format(end);
 
     } else {
-      return renderDateTime(start) + PERIOD_SEPARATOR + renderDateTime(end);
+      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
     }
   }
 

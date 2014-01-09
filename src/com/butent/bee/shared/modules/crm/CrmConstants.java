@@ -1,8 +1,10 @@
 package com.butent.bee.shared.modules.crm;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class CrmConstants {
@@ -63,14 +65,49 @@ public final class CrmConstants {
     }
   }
 
-  public enum TaskStatus implements HasCaption {
-    NOT_VISITED(Localized.getConstants().crmTaskStatusNotVisited()),
-    ACTIVE(Localized.getConstants().crmTaskStatusActive()),
-    SCHEDULED(Localized.getConstants().crmTaskStatusScheduled()),
-    SUSPENDED(Localized.getConstants().crmTaskStatusSuspended()),
-    COMPLETED(Localized.getConstants().crmTaskStatusCompleted()),
-    APPROVED(Localized.getConstants().crmTaskStatusApproved()),
-    CANCELED(Localized.getConstants().crmTaskStatusCanceled());
+  public enum TaskStatus implements HasLocalizedCaption {
+    NOT_VISITED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusNotVisited();
+      }
+    },
+    ACTIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusActive();
+      }
+    },
+    SCHEDULED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusScheduled();
+      }
+    },
+    SUSPENDED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusSuspended();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusCompleted();
+      }
+    },
+    APPROVED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusApproved();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusCanceled();
+      }
+    };
 
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {
@@ -81,15 +118,9 @@ public final class CrmConstants {
       return false;
     }
 
-    private final String caption;
-
-    private TaskStatus(String caption) {
-      this.caption = caption;
-    }
-
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
 
     public boolean is(Integer status) {

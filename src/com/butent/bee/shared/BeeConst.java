@@ -2,6 +2,10 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Stores all default values (databases, boolean, separators etc.).
  */
@@ -158,6 +162,9 @@ public final class BeeConst {
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;
 
+  public static final Set<String> EMPTY_IMMUTABLE_STRING_SET = Collections.emptySet();
+  public static final List<String> EMPTY_IMMUTABLE_STRING_LIST = Collections.emptyList();
+  
   private static String home = SERVER;
 
   /**

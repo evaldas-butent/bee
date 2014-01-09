@@ -185,7 +185,10 @@ public class DataEditorBean {
     ResponseObject response = new ResponseObject();
     DataEvent event = null;
     BeeView view = sys.getView(rs.getViewName());
+
     BeeRow row = rs.getRow(rowIndex);
+    boolean isNew = DataUtils.isNewRow(row);
+    
     Map<String, TableInfo> updates = Maps.newHashMap();
 
     if (!BeeUtils.isPositive(rs.getNumberOfColumns())) {
@@ -195,7 +198,7 @@ public class DataEditorBean {
       response.addError("View", BeeUtils.bracket(view.getName()), "is read only.");
 
     } else {
-      if (row.getId() == DataUtils.NEW_ROW_ID) {
+      if (isNew) {
         event = new ViewInsertEvent(rs.getViewName(), rs.getColumns(), row);
       } else {
         event = new ViewUpdateEvent(rs.getViewName(), rs.getColumns(), row);
@@ -284,13 +287,13 @@ public class DataEditorBean {
     } else {
       row.setVersion(tblInfo.version);
 
-      if (row.getId() == DataUtils.NEW_ROW_ID) {
+      if (isNew) {
         row.setId(id);
       }
       event.setAfter();
       sys.postDataEvent(event);
 
-      news.onUpdate(tblInfo.tableName, row.getId());
+      news.onUpdate(tblInfo.tableName, rs.getColumns(), id, isNew);
     }
     return response;
   }
