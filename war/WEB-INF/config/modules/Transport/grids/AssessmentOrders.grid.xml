@@ -36,9 +36,9 @@
     <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
     <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
 
-    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
-    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
-    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
+    <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
+    <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
 
     <DataColumn name="Number" caption="=refNumber" width="70" />
     <DataColumn name="Cmr" caption="CMR" width="70" />
