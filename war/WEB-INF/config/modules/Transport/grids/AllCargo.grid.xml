@@ -21,9 +21,8 @@
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
       searchBy="UnloadingCountryName" />
 
-    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
-    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
-    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
+    <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
+    <DataColumn name="Outsized" caption="=dangerousShort" width="15" sortable="false" />
     <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
     <DataColumn name="CargoNotes" caption="=cargoNotes" maxWidth="200" whiteSpace="pre-wrap" />
