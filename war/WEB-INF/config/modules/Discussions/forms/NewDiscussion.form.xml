@@ -16,9 +16,9 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewDiscussion" caption="=discussNew" width="650" height="520">
+  name="NewDiscussion" caption="=discussNew" width="675" height="530">
 
-  <FlowPanel style="padding: 10px 2px 2px 10px;"> 
+  <FlowPanel style="padding: 10px 2px 2px 10px;">
     
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=discussSubject" class="bee-required" style="&lbl1;min-width:70px;" />
@@ -26,7 +26,7 @@
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=discussDescription" style="&top1; padding-right:12px;" />
+      <Label text="=discussDescription" style="&top1; padding-right:8px;min-width:70px;" />
       <RichTextEditor name="Description" style="width: 540px; height: 200px;" />
     </FlowPanel>
 
@@ -42,9 +42,12 @@
     
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <CheckBox name="Accessibility" source="Accessibility" text="=discussPublic" style="&top1; min-width:70px; padding-right:18px;" />
-      <Label name="membersLabel" text="=discussMembers" style="&top1; min-width:70px; padding-right:18px;" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label name="membersLabel" text="=discussMembers" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector name="Members" viewName="Users" property="Members" renderColumns="FirstName LastName"
-        editPopup="true" editSource="CompanyPerson" disablable="true" style="&inp1x;" label="=discussMembers" />
+        editPopup="true" editSource="CompanyPerson" disablable="true" style="&inp2x;" label="=discussMembers" />
     </FlowPanel>
 
     &separator;
@@ -53,26 +56,26 @@
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=companies" style="&top1;min-width:70px; padding-right:18px;" />
+      <Label text="=companies" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=persons" style="&top1;min-width:70px; padding-right:18px;" />
+      <Label text="=persons" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
         editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=appointments" style="&top1;min-width:70px; padding-right:18px;" />
+      <Label text="=appointments" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=tasks" style="&top1;min-width:70px; padding-right:18px;" />
+      <Label text="=tasks" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Tasks" property="Tasks" 
         renderColumns="Summary ExecutorFirstName ExecutorLastName"
         choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
@@ -80,7 +83,7 @@
     </FlowPanel>
     
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=documents" style="&top1;min-width:70px; padding-right:18px;" />
+      <Label text="=documents" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Documents" property="Documents" 
         renderColumns="Name DocumentDate Number"
         choiceColumns="Name DocumentDate Number"
