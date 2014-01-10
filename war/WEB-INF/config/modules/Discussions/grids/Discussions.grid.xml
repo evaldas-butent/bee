@@ -27,7 +27,7 @@
       autoFit="true" />
       
     <PropColumn name="FilesCount" type="integer" cellType="html"
-      horizontalAlignment="center" width="20" maxWidth="30" autoFit="true"
+      horizontalAlignment="center" width="20" maxWidth="100" autoFit="true"
       label="=discussHasFiles">
       <renderer type="attachment" />
     </PropColumn>
@@ -42,13 +42,7 @@
       caption="=discussLastComment" label="=discussLastComment" width="180"
       sortBy="LastCommentPublishTime">      
     </PropColumn>
-
-<!--
-     <CalcColumn name="LastComment" type="string" cellType="html"
-      minWidth="150" autoFit="true" caption="LastComment">
-      <renderToken source="LastComment" format="date_time_short" />
-    </CalcColumn>
- -->
+    
     <CalcColumn name="CommentCount" type="integer"
       maxWidth="90" autoFit="true" caption="=discussTotalComments">
         <render>
@@ -59,10 +53,21 @@
     <PropColumn name="MarkCount" type="decimal"  format="#" horizontalAlignment="center"
       maxWidth="90" autoFit="true" caption="=discussTotalMarks">
     </PropColumn>      
-
+    
+  <DataColumn name="Accessibility" caption="=discussPublic" maxWidth="20"  visible="false" />
+    
   </g:columns>
-  <g:rowStyle>
+  
+   <g:rowStyle>
     <ui:inline>="background-color:#ccc"</ui:inline>
     <ui:expression>row.Status == 1</ui:expression>
   </g:rowStyle>
+  
+  <g:predefinedFilter name="discuss_public" label="=discussPublic1">
+    <g:column name="Accessibility" emptyValues="false" />
+  </g:predefinedFilter>
+  <g:predefinedFilter name="discuss_members_only" label="=discussMembersOnly">
+    <g:column name="Accessibility" emptyValues="true" />
+  </g:predefinedFilter>
+  
 </g:Grid>

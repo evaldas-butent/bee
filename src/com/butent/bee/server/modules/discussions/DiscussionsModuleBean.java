@@ -256,7 +256,7 @@ public class DiscussionsModuleBean implements BeeModule {
             for (BeeRow row : rowSet.getRows()) {
               String markValue =
                   markCounts.get(row.getId()) != null ? BeeUtils
-                      .toString(markCounts.get(row.getId())) : "";
+                      .toString(markCounts.get(row.getId())) : "0";
               row.setProperty(PROP_MARK_COUNT, markValue);
 
               String lastCommentVal = lastCommentData.get(row.getId());
