@@ -526,6 +526,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String selectAtLeastOneRow();
 
+  String service();
+
   String services();
 
   String settings();

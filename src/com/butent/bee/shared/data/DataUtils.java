@@ -738,10 +738,11 @@ public final class DataUtils {
   }
 
   public static String join(IsRow row, List<Integer> indexes) {
-    return join(row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
+    return join(null, row, indexes, BeeConst.DEFAULT_LIST_SEPARATOR);
   }
 
-  public static String join(IsRow row, List<Integer> indexes, String separator) {
+  public static String join(List<BeeColumn> columns, IsRow row, List<Integer> indexes,
+      String separator) {
     Assert.notNull(row);
     Assert.notEmpty(indexes);
 
@@ -749,7 +750,7 @@ public final class DataUtils {
     String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
     for (int index : indexes) {
-      String value = render(null, row, index);
+      String value = render(BeeUtils.getQuietly(columns, index), row, index);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);

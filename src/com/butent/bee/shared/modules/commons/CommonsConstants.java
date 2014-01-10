@@ -118,20 +118,10 @@ public final class CommonsConstants {
   public static final String VAR_HISTORY_VIEW = Service.RPC_VAR_PREFIX + "history_view";
   public static final String VAR_HISTORY_IDS = Service.RPC_VAR_PREFIX + "history_ids";
 
-  public static final String COMMONS_ITEM_PREFIX = "item_";
-
-  public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
-  public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
-  public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
-
   public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
   public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
 
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
-
-  public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
-  public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
-  public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
 
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
@@ -258,6 +248,7 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_LIMIT_CURRENCY = "LimitCurrency";
   public static final String COL_COMPANY_CREDIT_DAYS = "CreditDays";
 
+  public static final String COL_COMPANY_USER_COMPANY = "Company";
   public static final String COL_COMPANY_USER_USER = "User";
   public static final String COL_COMPANY_USER_RESPONSIBILITY = "Responsibility";
   
@@ -389,7 +380,6 @@ public final class CommonsConstants {
   public static final String PRM_COMPANY_NAME = "CompanyName";
   public static final String PRM_URL = "Url";
 
-  public static final String PROP_CATEGORIES = "CategList";
   public static final String PROP_ICON = "Icon";
 
   public static final String STYLE_SHEET = "commons";

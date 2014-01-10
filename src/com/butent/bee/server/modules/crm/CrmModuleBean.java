@@ -18,7 +18,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
-import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -32,6 +32,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -49,6 +50,8 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -73,33 +76,6 @@ public class CrmModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(CrmModuleBean.class);
 
-  // private SqlSelect getUpdatedTasks(long userId, Feed feed, long startTime) {
-  // SqlSelect query = new SqlSelect().addFrom(TBL_TASK_EVENTS)
-  // .addFields(CrmConstants.TBL_TASK_EVENTS, COL_TASK)
-  // .addMax(CrmConstants.TBL_TASK_EVENTS, COL_PUBLISH_TIME)
-  // .addGroup(CrmConstants.TBL_TASK_EVENTS, COL_TASK);
-  //
-  // IsCondition where = SqlUtils.and(SqlUtils.notEqual(TBL_TASK_EVENTS, COL_PUBLISHER, userId),
-  // SqlUtils.more(TBL_TASK_EVENTS, COL_PUBLISH_TIME, startTime));
-  //
-  // IsCondition typeWhere = null;
-  //
-  // switch (feed) {
-  // case TASKS_ASSIGNED:
-  // break;
-  // case TASKS_DELEGATED:
-  // break;
-  // case TASKS_OBSERVED:
-  // break;
-  // default:
-  // break;
-  //
-  // }
-  //
-  // query.setWhere(SqlUtils.and(where, typeWhere));
-  // return query;
-  // }
-
   @EJB
   SystemBean sys;
   @EJB
@@ -108,6 +84,9 @@ public class CrmModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  NewsBean news;
+
   @Resource
   EJBContext ctx;
 
@@ -290,13 +269,49 @@ public class CrmModuleBean implements BeeModule {
         }
       }
     });
-    
+
     TaskUsageQueryProvider usageQueryProvider = new TaskUsageQueryProvider();
-    
-    NewsHelper.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);
-    NewsHelper.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
-    NewsHelper.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
-    NewsHelper.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
+
+    news.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);
+    news.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
+    news.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
+    news.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
+
+    HeadlineProducer headlineProducer = new HeadlineProducer() {
+      @Override
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+        String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
+        if (BeeUtils.isEmpty(caption)) {
+          caption = BeeUtils.bracket(row.getId());
+        }
+
+        List<String> subtitles = Lists.newArrayList();
+
+        DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
+        if (finish != null) {
+          subtitles.add(finish.toCompactString());
+        }
+
+        TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
+            DataUtils.getInteger(rowSet, row, COL_STATUS));
+        if (status != null) {
+          subtitles.add(status.getCaption(usr.getLocalizableConstants(userId)));
+        }
+
+        if (feed != Feed.TASKS_ASSIGNED) {
+          subtitles.add(BeeUtils.joinWords(
+              DataUtils.getString(rowSet, row, COL_EXECUTOR_FIRST_NAME),
+              DataUtils.getString(rowSet, row, COL_EXECUTOR_LAST_NAME)));
+        }
+
+        return Headline.create(row.getId(), caption, subtitles, isNew);
+      }
+    };
+
+    news.registerHeadlineProducer(Feed.TASKS_ALL, headlineProducer);
+    news.registerHeadlineProducer(Feed.TASKS_ASSIGNED, headlineProducer);
+    news.registerHeadlineProducer(Feed.TASKS_DELEGATED, headlineProducer);
+    news.registerHeadlineProducer(Feed.TASKS_OBSERVED, headlineProducer);
   }
 
   private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,
