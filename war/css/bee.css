@@ -2268,12 +2268,15 @@
   cursor: pointer;
 }
 
+.bee-News-size,
 .bee-Online-size,
 .bee-Rooms-size {
   position: absolute;
   top: 3px;
   right: 10px;
   display: inline-block;
+  color: white;
+  background-color: #aaa;
 }
 
 .bee-Online-item,
@@ -2374,6 +2377,8 @@
 
 .bee-Room-usersBadge {
   margin-left: 2px;
+  color: white;
+  background-color: #aaa;
 }
 .bee-Room-usersPanel {
   flex: 1;
@@ -2597,8 +2602,6 @@
   padding: 2px 6px;
   font-size: 12px;
   font-weight: bold;
-  color: white;
-  background-color: #aaa;
   border-radius: 10px;
 }
 .bee-Badge-empty {

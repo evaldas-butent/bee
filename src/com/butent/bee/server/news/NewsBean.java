@@ -27,7 +27,6 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.news.Channel;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -54,15 +53,6 @@ public class NewsBean {
 
   private static BeeLogger logger = LogUtils.getLogger(NewsBean.class);
 
-  private static final String TBL_USER_FEEDS = "UserFeeds";
-
-  private static final String COL_UF_USER = "User";
-  private static final String COL_UF_FEED = CommonsConstants.COL_FEED;
-
-  private static final String COL_UF_CAPTION = "Caption";
-  private static final String COL_UF_SUBSCRIPTION_DATE = "SubscriptionDate";
-  private static final String COL_UF_ORDINAL = "Ordinal";
-
   private static final int ID_CHUNK_SIZE = 3;
 
   @EJB
@@ -79,10 +69,12 @@ public class NewsBean {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_USER_FEEDS, COL_UF_FEED, COL_UF_CAPTION, COL_UF_SUBSCRIPTION_DATE)
-        .addFrom(TBL_USER_FEEDS)
-        .setWhere(SqlUtils.equals(TBL_USER_FEEDS, COL_UF_USER, userId))
-        .addOrder(TBL_USER_FEEDS, COL_UF_ORDINAL, sys.getIdName(TBL_USER_FEEDS));
+        .addFields(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED, 
+            NewsConstants.COL_UF_CAPTION, NewsConstants.COL_UF_SUBSCRIPTION_DATE)
+        .addFrom(NewsConstants.TBL_USER_FEEDS)
+        .setWhere(SqlUtils.equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_USER, userId))
+        .addOrder(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_ORDINAL,
+            sys.getIdName(NewsConstants.TBL_USER_FEEDS));
 
     SimpleRowSet userFeeds = qs.getData(query);
     if (DataUtils.isEmpty(userFeeds)) {
@@ -93,14 +85,14 @@ public class NewsBean {
     int countHeadlines = 0;
 
     for (SimpleRow row : userFeeds) {
-      Feed feed = EnumUtils.getEnumByName(Feed.class, row.getValue(COL_UF_FEED));
+      Feed feed = EnumUtils.getEnumByName(Feed.class, row.getValue(NewsConstants.COL_UF_FEED));
       if (feed == null) {
-        logger.warning("invalid user feed name", row.getValue(COL_UF_FEED));
+        logger.warning("invalid user feed name", row.getValue(NewsConstants.COL_UF_FEED));
         continue;
       }
 
-      String caption = row.getValue(COL_UF_CAPTION);
-      DateTime date = row.getDateTime(COL_UF_SUBSCRIPTION_DATE);
+      String caption = row.getValue(NewsConstants.COL_UF_CAPTION);
+      DateTime date = row.getDateTime(NewsConstants.COL_UF_SUBSCRIPTION_DATE);
 
       Subscription subscription = new Subscription(feed, caption, date);
 
@@ -264,8 +256,9 @@ public class NewsBean {
     long time = TimeUtils.nowMinutes().getTime();
 
     for (Feed feed : feeds) {
-      SqlInsert insert = new SqlInsert(TBL_USER_FEEDS)
-          .addFields(COL_UF_USER, COL_UF_FEED, COL_UF_SUBSCRIPTION_DATE)
+      SqlInsert insert = new SqlInsert(NewsConstants.TBL_USER_FEEDS)
+          .addFields(NewsConstants.COL_UF_USER, NewsConstants.COL_UF_FEED,
+              NewsConstants.COL_UF_SUBSCRIPTION_DATE)
           .addValues(userId, feed.name(), time);
 
       ResponseObject response = qs.insertDataWithResponse(insert);

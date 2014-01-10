@@ -28,9 +28,9 @@ import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
-import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
@@ -57,7 +57,6 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
@@ -471,101 +470,55 @@ public class TransportModuleBean implements BeeModule {
         }
       }
     });
-    
-    news.registerUsageQueryProvider(Feed.ORDER_CARGO, new UsageQueryProvider() {
-      @Override
-      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getAccessQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(), userId);
-      }
 
+    news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
       @Override
-      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getUpdatesQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(), userId, startDate);
-      }
-      
-      private List<IsCondition> getConditions() {
+      protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.notNull(TBL_ORDER_CARGO, COL_ORDER));
       }
 
-      private List<Pair<String, IsCondition>> getJoins() {
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
         return NewsHelper.buildJoin(TBL_ORDER_CARGO, news.joinUsage(TBL_ORDER_CARGO));
       }
     });
 
-    news.registerUsageQueryProvider(Feed.TRANSPORTATION_ORDERS_MY, new UsageQueryProvider() {
-      @Override
-      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getAccessQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(userId), userId);
-      }
-      
-      @Override
-      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getUpdatesQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(userId), userId, startDate);
-      }
-      
-      private List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER, userId));
-      }
-      
-      private List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
-      }
-    });
+    news.registerUsageQueryProvider(Feed.TRANSPORTATION_ORDERS_MY,
+        new ExtendedUsageQueryProvider() {
+          @Override
+          protected List<IsCondition> getConditions(long userId) {
+            return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER,
+                userId));
+          }
 
-    news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new UsageQueryProvider() {
+          @Override
+          protected List<Pair<String, IsCondition>> getJoins() {
+            return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
+          }
+        });
+
+    news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
       @Override
-      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getAccessQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(userId), userId);
-      }
-      
-      @Override
-      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getUpdatesQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(userId), userId, startDate);
-      }
-      
-      private List<IsCondition> getConditions(long userId) {
+      protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.equals(TBL_CARGO_REQUESTS,
             COL_CARGO_REQUEST_MANAGER, userId));
       }
-      
-      private List<Pair<String, IsCondition>> getJoins() {
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
         return NewsHelper.buildJoin(TBL_CARGO_REQUESTS, news.joinUsage(TBL_CARGO_REQUESTS));
       }
     });
 
-    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new UsageQueryProvider() {
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
       @Override
-      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getAccessQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(userId), userId);
-      }
-      
-      @Override
-      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        return NewsHelper.getUpdatesQuery(feed.getUsageTable(), relationColumn,
-            getJoins(), getConditions(userId), userId, startDate);
-      }
-      
-      private List<IsCondition> getConditions(long userId) {
+      protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.equals(TBL_SHIPMENT_REQUESTS,
             COL_QUERY_MANAGER, userId));
       }
-      
-      private List<Pair<String, IsCondition>> getJoins() {
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
         return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS, news.joinUsage(TBL_SHIPMENT_REQUESTS));
       }
     });

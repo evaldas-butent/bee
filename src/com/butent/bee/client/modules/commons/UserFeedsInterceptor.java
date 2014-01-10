@@ -21,8 +21,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -53,7 +53,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     List<? extends IsRow> data = presenter.getGridView().getRowData();
-    int dataIndex = getDataIndex(CommonsConstants.COL_FEED);
+    int dataIndex = getDataIndex(NewsConstants.COL_UF_FEED);
 
     List<Feed> feeds = Lists.newArrayList();
     for (Feed feed : Feed.values()) {
@@ -121,7 +121,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription, CellSource cellSource) {
-    if (BeeUtils.same(columnName, CommonsConstants.COL_FEED)) {
+    if (BeeUtils.same(columnName, NewsConstants.COL_UF_FEED)) {
       return new FeedCaptionRenderer(cellSource);
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);

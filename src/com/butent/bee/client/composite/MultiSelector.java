@@ -90,7 +90,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       add(label);
 
       CustomDiv close = new CustomDiv(STYLE_CLOSE);
-      close.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+      close.setText(String.valueOf(BeeConst.CHAR_TIMES));
 
       close.addClickHandler(new ClickHandler() {
         @Override

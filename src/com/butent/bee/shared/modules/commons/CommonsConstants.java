@@ -194,7 +194,6 @@ public final class CommonsConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_USERS = "Users";
-  public static final String VIEW_USER_FEEDS = "UserFeeds";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
@@ -218,7 +217,6 @@ public final class CommonsConstants {
   public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
 
   public static final String GRID_PERSONS = "Persons";
-
   public static final String GRID_HISTORY = "History";
 
   public static final String COL_RELATION = "Relation";
@@ -353,8 +351,6 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_KEY = "Key";
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
 
-  public static final String COL_FEED = "Feed";
-  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";

@@ -127,7 +127,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       add(label);
 
       CustomDiv closeTab = new CustomDiv(getStylePrefix() + "closeTab");
-      closeTab.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+      closeTab.setText(String.valueOf(BeeConst.CHAR_TIMES));
       closeTab.setTitle(Localized.getConstants().closeTab());
       add(closeTab);
 

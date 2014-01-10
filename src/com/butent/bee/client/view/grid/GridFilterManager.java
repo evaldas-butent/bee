@@ -332,7 +332,7 @@ public class GridFilterManager {
     button.addClickHandler(clickHandler);
 
     CustomDiv clear = new CustomDiv(STYLE_SUPPLIER_CLEAR);
-    clear.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+    clear.setText(String.valueOf(BeeConst.CHAR_TIMES));
     clear.setTitle(Action.REMOVE_FILTER.getCaption());
 
     clear.addClickHandler(new ClickHandler() {

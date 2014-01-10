@@ -17,9 +17,20 @@ import java.util.Map;
 
 public final class NewsConstants {
 
+  public static final String TBL_USER_FEEDS = "UserFeeds";
+
+  public static final String COL_UF_USER = "User";
+  public static final String COL_UF_FEED = "Feed";
+
+  public static final String COL_UF_CAPTION = "Caption";
+  public static final String COL_UF_SUBSCRIPTION_DATE = "SubscriptionDate";
+  public static final String COL_UF_ORDINAL = "Ordinal";
+
   public static final String COL_USAGE_USER = "User";
   public static final String COL_USAGE_ACCESS = "Access";
   public static final String COL_USAGE_UPDATE = "Update";
+  
+  public static final String GRID_USER_FEEDS = "UserFeeds";
   
   private static final Map<String, String> usageTables = Maps.newHashMap();
   private static final Multimap<String, String> observedColumns = HashMultimap.create();

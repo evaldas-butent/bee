@@ -25,7 +25,7 @@ public class FaLabel extends Label {
     if (fa == null) {
       clear();
     } else {
-      getElement().setInnerText(String.valueOf(fa.getCode()));
+      setText(String.valueOf(fa.getCode()));
     }
   }
 
