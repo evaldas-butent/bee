@@ -1,6 +1,8 @@
 package com.butent.bee.shared.news;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -11,8 +13,12 @@ import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public enum Feed implements HasLocalizedCaption {
   TASKS_ASSIGNED(CrmConstants.TBL_TASKS, CrmConstants.VIEW_TASKS) {
@@ -230,7 +236,40 @@ public enum Feed implements HasLocalizedCaption {
       return constants.feedTrDrivers();
     }
   };
+  
+  private static final String SEPARATOR = BeeConst.STRING_COMMA;
+  private static final Splitter splitter = Splitter.on(SEPARATOR).omitEmptyStrings().trimResults();
 
+  public static String join(Collection<Feed> feeds) {
+    if (BeeUtils.isEmpty(feeds)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    Set<Integer> ordinals = Sets.newHashSet();
+    for (Feed feed : feeds) {
+      if (feed != null) {
+        ordinals.add(feed.ordinal());
+      }
+    }
+
+    return BeeUtils.join(SEPARATOR, ordinals);
+  }
+
+  public static List<Feed> split(String input) {
+    List<Feed> feeds = Lists.newArrayList();
+    if (BeeUtils.isEmpty(input)) {
+      return feeds;
+    }
+
+    for (String s : splitter.split(input)) {
+      Feed feed = EnumUtils.getEnumByIndex(Feed.class, s);
+      if (feed != null) {
+        feeds.add(feed);
+      }
+    }
+    return feeds;
+  }
+  
   private final String table;
 
   private final String headlineView;
@@ -268,7 +307,7 @@ public enum Feed implements HasLocalizedCaption {
   }
 
   public String getUsageTable() {
-    return (table == null) ? null : NewsUtils.getUsageTable(table);
+    return (table == null) ? null : NewsConstants.getUsageTable(table);
   }
 
   public boolean in(Feed... feeds) {

@@ -28,6 +28,7 @@ import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -56,7 +57,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.news.Feed;
-import com.butent.bee.shared.news.NewsUtils;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -307,16 +308,14 @@ public class CommonsModuleBean implements BeeModule {
       public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
           DateTime startDate) {
 
-        SqlSelect query = news.getAccessQuery(userId, TBL_COMPANIES);
-        
-        String usageTable = NewsUtils.getUsageTable(TBL_COMPANIES);
-        String urc = news.getUsageRelationColumn(TBL_COMPANIES, usageTable);
-        
-        query.addFromInner(TBL_COMPANY_USERS,
-            SqlUtils.join(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable, urc));
-        query.setWhere(SqlUtils.and(query.getWhere(), userCompany(userId)));
+        String usageTable = NewsConstants.getUsageTable(TBL_COMPANIES);
+        String urc = news.getUsageRelationColumn(TBL_COMPANIES);
 
-        return query;
+        List<Pair<String, IsCondition>> joins = NewsHelper.buildJoin(TBL_COMPANY_USERS,
+            SqlUtils.join(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable, urc));
+        
+        return NewsHelper.getAccessQuery(usageTable, urc, joins, getUserCompanyCondition(userId),
+            userId);
       }
 
       @Override
@@ -325,19 +324,16 @@ public class CommonsModuleBean implements BeeModule {
 
         String usageTable = feed.getUsageTable();
 
-        return new SqlSelect()
-            .addFields(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY)
-            .addMax(usageTable, NewsUtils.COL_USAGE_UPDATE)
-            .addFrom(TBL_COMPANY_USERS)
-            .addFromInner(usageTable,
-                sys.joinTables(TBL_COMPANY_USERS, usageTable, relationColumn))
-            .setWhere(SqlUtils.and(news.getUpdatesCondition(usageTable, userId, startDate),
-                userCompany(userId)))
-            .addGroup(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY);
+        List<Pair<String, IsCondition>> joins = NewsHelper.buildJoin(usageTable,
+            sys.joinTables(TBL_COMPANY_USERS, usageTable, relationColumn));
+        
+        return NewsHelper.getUpdatesQuery(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable,
+            joins, getUserCompanyCondition(userId), userId, startDate);
       }
 
-      private IsCondition userCompany(long userId) {
-        return SqlUtils.equals(TBL_COMPANY_USERS, COL_COMPANY_USER_USER, userId);
+      private List<IsCondition> getUserCompanyCondition(long userId) {
+        return Lists.newArrayList(SqlUtils.equals(TBL_COMPANY_USERS, COL_COMPANY_USER_USER,
+            userId));
       }
     });
   }

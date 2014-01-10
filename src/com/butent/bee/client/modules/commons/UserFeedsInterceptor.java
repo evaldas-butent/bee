@@ -23,7 +23,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.news.Feed;
-import com.butent.bee.shared.news.NewsUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -136,7 +135,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
         if (DataUtils.isId(result)) {
           ParameterList params = BeeKeeper.getRpc().createParameters(Service.SUBSCRIBE_TO_FEEDS);
           params.addDataItem(Service.VAR_USER, result);
-          params.addDataItem(Service.VAR_FEED, NewsUtils.joinFeeds(feeds));
+          params.addDataItem(Service.VAR_FEED, Feed.join(feeds));
 
           BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
             @Override

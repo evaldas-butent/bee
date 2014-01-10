@@ -26,6 +26,9 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -41,6 +44,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -63,6 +67,10 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -110,6 +118,9 @@ public class CalendarModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  NewsBean news;
+
   @Resource
   TimerService timerService;
 
@@ -350,6 +361,113 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
     });
+
+    news.registerUsageQueryProvider(Feed.APPOINTMENTS_MY, new UsageQueryProvider() {
+      @Override
+      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+
+        Long companyPerson = usr.getCompanyPerson(userId);
+        if (companyPerson == null) {
+          return null;
+        }
+
+        String idColumn = sys.getIdName(TBL_APPOINTMENTS);
+        String usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENTS);
+
+        return new SqlSelect()
+            .addFields(TBL_APPOINTMENTS, idColumn)
+            .addMax(usageTable, NewsConstants.COL_USAGE_ACCESS)
+            .addFrom(TBL_APPOINTMENTS)
+            .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENTS))
+            .addFromLeft(TBL_APPOINTMENT_ATTENDEES,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
+            .addFromLeft(TBL_ATTENDEES,
+                sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+            .setWhere(
+                SqlUtils.and(SqlUtils.equals(usageTable, NewsConstants.COL_USAGE_USER, userId),
+                    SqlUtils.or(SqlUtils.equals(TBL_APPOINTMENTS, COL_ORGANIZER, companyPerson),
+                        SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))))
+            .addGroup(TBL_APPOINTMENTS, idColumn);
+      }
+
+      @Override
+      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        Long companyPerson = usr.getCompanyPerson(userId);
+        if (companyPerson == null) {
+          return null;
+        }
+
+        String idColumn = sys.getIdName(TBL_APPOINTMENTS);
+        String usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENTS);
+
+        SqlSelect subquery = new SqlSelect()
+            .addFields(TBL_APPOINTMENTS, idColumn)
+            .addFields(usageTable, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(TBL_APPOINTMENTS)
+            .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENTS))
+            .addFromLeft(TBL_APPOINTMENT_ATTENDEES,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
+            .addFromLeft(TBL_ATTENDEES,
+                sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+            .setWhere(SqlUtils.and(NewsHelper.getUpdatesCondition(usageTable, userId, startDate),
+                SqlUtils.or(SqlUtils.equals(TBL_APPOINTMENTS, COL_ORGANIZER, companyPerson),
+                    SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))));
+
+        usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENT_ATTENDEES);
+
+        subquery.addUnion(new SqlSelect()
+            .addFields(TBL_APPOINTMENTS, idColumn)
+            .addFields(usageTable, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(TBL_APPOINTMENTS)
+            .addFromInner(TBL_APPOINTMENT_ATTENDEES,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
+            .addFromInner(TBL_ATTENDEES,
+                sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+            .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENT_ATTENDEES))
+            .setWhere(SqlUtils.and(NewsHelper.getUpdatesCondition(usageTable, userId, startDate),
+                SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))));
+
+        String alias = SqlUtils.uniqueName();
+
+        return new SqlSelect()
+            .addFields(alias, idColumn)
+            .addMax(alias, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(subquery, alias)
+            .addGroup(alias, idColumn);
+      }
+    });
+
+    HeadlineProducer headlineProducer = new HeadlineProducer() {
+      @Override
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+        String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
+        if (BeeUtils.isEmpty(caption)) {
+          caption = BeeUtils.bracket(row.getId());
+        }
+
+        List<String> subtitles = Lists.newArrayList();
+
+        String period = TimeUtils.renderPeriod(
+            DataUtils.getDateTime(rowSet, row, COL_START_DATE_TIME),
+            DataUtils.getDateTime(rowSet, row, COL_END_DATE_TIME));
+        if (!BeeUtils.isEmpty(period)) {
+          subtitles.add(period);
+        }
+
+        AppointmentStatus status = EnumUtils.getEnumByIndex(AppointmentStatus.class,
+            DataUtils.getInteger(rowSet, row, COL_STATUS));
+        if (status != null) {
+          subtitles.add(status.getCaption(usr.getLocalizableConstants(userId)));
+        }
+
+        return Headline.create(row.getId(), caption, subtitles, isNew);
+      }
+    };
+
+    news.registerHeadlineProducer(Feed.APPOINTMENTS_MY, headlineProducer);
+    news.registerHeadlineProducer(Feed.APPOINTMENTS_ALL, headlineProducer);
   }
 
   private boolean checkTable(String name) {

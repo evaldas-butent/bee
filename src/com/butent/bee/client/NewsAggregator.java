@@ -20,7 +20,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
-import com.butent.bee.shared.news.NewsUtils;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.news.Subscription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -159,7 +159,7 @@ public class NewsAggregator {
   public void onAccess(String viewName, long rowId) {
     String table = Data.getViewTable(viewName);
 
-    if (NewsUtils.hasUsageTable(table)) {
+    if (NewsConstants.hasUsageTable(table)) {
       ParameterList parameters = BeeKeeper.getRpc().createParameters(Service.ACCESS);
       parameters.addQueryItem(Service.VAR_TABLE, table);
       parameters.addQueryItem(Service.VAR_ID, rowId);
