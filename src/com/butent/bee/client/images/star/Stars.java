@@ -84,6 +84,10 @@ public final class Stars {
     return Images.asString(resources.starColorless());
   }
 
+  public static ImageResource getDefaultHeaderResource() {
+    return resources.starColorless();
+  }
+
   public static String getHtml(int index) {
     return Images.asString(get(index));
   }

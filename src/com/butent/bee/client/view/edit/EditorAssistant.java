@@ -143,13 +143,17 @@ public final class EditorAssistant {
         @Override
         public void onSuccess(int value) {
           if (oldValue == null || value != oldValue) {
-            source.set(row, value);
+            source.set(row, value == 0 ? null : value);
             if (element != null) {
-              element.setInnerHTML(Stars.getHtml(value));
+              if (value == 0) {
+                element.setInnerHTML(BeeConst.STRING_EMPTY);
+              } else {
+                element.setInnerHTML(Stars.getHtml(value));
+              }
             }
 
             if (updater != null) {
-              updater.accept(value);
+              updater.accept(value == 0 ? null : value);
             }
           }
 

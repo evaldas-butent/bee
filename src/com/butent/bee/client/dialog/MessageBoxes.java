@@ -411,6 +411,10 @@ public class MessageBoxes {
 
     TabBar cluster = new TabBar(STYLE_STAR_CLUSTER, Orientation.HORIZONTAL);
 
+    Image delStar = new Image(Stars.getDefaultHeaderResource());
+
+    cluster.addItem(delStar);
+
     for (int i = 0; i < starCount; i++) {
       Image image = new Image(Stars.get(i));
       cluster.addItem(image);
@@ -438,7 +442,7 @@ public class MessageBoxes {
         }
       }
     });
-
+    
     popup.setWidget(cluster);
 
     popup.setAnimationEnabled(true);
