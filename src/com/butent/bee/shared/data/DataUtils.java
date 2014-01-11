@@ -702,7 +702,7 @@ public final class DataUtils {
         continue;
       }
       
-      String value = render(dataInfo.getColumns().get(i), row, i);
+      String value = render((i >= 0) ? dataInfo.getColumns().get(i) : null, row, i);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);

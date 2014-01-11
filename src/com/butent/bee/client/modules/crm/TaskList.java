@@ -23,6 +23,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.star.Stars;
@@ -42,6 +43,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.css.CssUnit;
@@ -901,7 +903,7 @@ final class TaskList {
     }
   }
 
-  private enum Type implements HasCaption {
+  public enum Type implements HasCaption {
     ASSIGNED(Localized.getConstants().crmTasksAssignedTasks()) {
       @Override
       Filter getFilter(LongValue userValue) {
@@ -950,6 +952,11 @@ final class TaskList {
 
   private static final String STYLE_MODE_NEW = "bee-crm-Mode-new";
   private static final String STYLE_MODE_UPD = "bee-crm-Mode-upd";
+  
+  public static void open(Type type, GridOptions gridOptions) {
+    Assert.notNull(type);
+    GridFactory.openGrid(GRID_TASKS, new GridHandler(type), gridOptions);
+  }
 
   public static void open(String args) {
     Type type = null;

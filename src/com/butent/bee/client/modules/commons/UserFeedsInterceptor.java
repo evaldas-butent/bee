@@ -47,7 +47,14 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   private static final int MAX_VISIBLE_ITEM_COUNT = 30;
   private static final int VISIBLE_ITEM_COUNT_RESERVE = 3;
 
+  private final Long userId;
+
+  public UserFeedsInterceptor(Long userId) {
+    this.userId = userId;
+  }
+
   UserFeedsInterceptor() {
+    this(null);
   }
 
   @Override
@@ -129,26 +136,35 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   }
 
   private void subscribe(final List<Feed> feeds) {
-    getGridView().ensureRelId(new IdCallback() {
+    if (DataUtils.isId(userId)) {
+      subscribe(userId, feeds);
+
+    } else {
+      getGridView().ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(final Long result) {
+          if (DataUtils.isId(result)) {
+            subscribe(result, feeds);
+          }
+        }
+      });
+    }
+  }
+
+  private void subscribe(final long user, final List<Feed> feeds) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.SUBSCRIBE_TO_FEEDS);
+    params.addDataItem(Service.VAR_USER, user);
+    params.addDataItem(Service.VAR_FEED, Feed.join(feeds));
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
-      public void onSuccess(final Long result) {
-        if (DataUtils.isId(result)) {
-          ParameterList params = BeeKeeper.getRpc().createParameters(Service.SUBSCRIBE_TO_FEEDS);
-          params.addDataItem(Service.VAR_USER, result);
-          params.addDataItem(Service.VAR_FEED, Feed.join(feeds));
+      public void onResponse(ResponseObject response) {
+        if (!response.hasErrors()) {
+          getGridPresenter().refresh(false);
 
-          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              if (!response.hasErrors()) {
-                getGridPresenter().refresh(false);
-
-                if (BeeKeeper.getUser().is(result)) {
-                  Global.getNewsAggregator().refresh();
-                }
-              }
-            }
-          });
+          if (BeeKeeper.getUser().is(user)) {
+            Global.getNewsAggregator().refresh();
+          }
         }
       }
     });

@@ -1,8 +1,10 @@
 package com.butent.bee.shared.news;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasCaption;
@@ -10,6 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Set;
 
 public class Subscription implements BeeSerializable, HasCaption {
 
@@ -58,6 +61,15 @@ public class Subscription implements BeeSerializable, HasCaption {
 
     return count;
   }
+  
+  public boolean contains(long id) {
+    for (Headline headline : headlines) {
+      if (headline.getId() == id) {
+        return true; 
+      }
+    }
+    return false;
+  }
 
   public int countUpdated() {
     int count = 0;
@@ -93,6 +105,24 @@ public class Subscription implements BeeSerializable, HasCaption {
     }
   }
 
+  public boolean remove(long id) {
+    int index = BeeConst.UNDEF;
+
+    for (int i = 0; i < headlines.size(); i++) {
+      if (headlines.get(i).getId() == id) {
+        index = i;
+        break;
+      }
+    }
+    
+    if (BeeConst.isUndef(index)) {
+      return false;
+    } else {
+      headlines.remove(index);
+      return true;
+    }
+  }
+  
   @Override
   public String getCaption() {
     return caption;
@@ -108,6 +138,16 @@ public class Subscription implements BeeSerializable, HasCaption {
 
   public List<Headline> getHeadlines() {
     return headlines;
+  }
+  
+  public Set<Long> getIdSet() {
+    Set<Long> result = Sets.newHashSet();
+    
+    for (Headline headline : headlines) {
+      result.add(headline.getId());
+    }
+    
+    return result;
   }
 
   public String getLabel() {

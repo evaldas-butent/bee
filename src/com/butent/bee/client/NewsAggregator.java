@@ -1,6 +1,7 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,15 +13,27 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.commons.UserFeedsInterceptor;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -33,9 +46,12 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class NewsAggregator {
+public class NewsAggregator implements HandlesAllDataEvents {
 
   private final class HeadlinePanel extends Flow {
 
@@ -44,78 +60,95 @@ public class NewsAggregator {
     private static final String STYLE_UPD = STYLE_HEADLINE_PREFIX + "upd";
 
     private final long dataId;
+    private final boolean isNew;
 
     private HeadlinePanel(Headline headline) {
       super(STYLE_HEADLINE_PREFIX + "panel");
 
       this.dataId = headline.getId();
-
-      Flow header = new Flow(STYLE_HEADLINE_PREFIX + "header");
+      this.isNew = headline.isNew();
 
       CustomDiv typeWidget = new CustomDiv(headline.isNew() ? STYLE_NEW : STYLE_UPD);
-      header.add(typeWidget);
+      add(typeWidget);
 
       Label captionWidget = new Label(headline.getCaption());
       captionWidget.addStyleName(STYLE_HEADLINE_PREFIX + "caption");
 
+      if (!BeeUtils.isEmpty(headline.getSubtitle())) {
+        captionWidget.setTitle(headline.getSubtitle());
+      }
+
       captionWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          showHeadline(HeadlinePanel.this);
+          readHeadline(HeadlinePanel.this);
         }
       });
 
-      header.add(captionWidget);
+      add(captionWidget);
 
-      Label closeWidget = new Label(String.valueOf(BeeConst.CHAR_TIMES));
-      closeWidget.addStyleName(STYLE_HEADLINE_PREFIX + "close");
+      Label dismiss = new Label(String.valueOf(BeeConst.CHAR_TIMES));
+      dismiss.addStyleName(STYLE_HEADLINE_PREFIX + "dismiss");
 
-      closeWidget.addClickHandler(new ClickHandler() {
+      dismiss.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          closeHeadline(HeadlinePanel.this);
+          dismissHeadline(HeadlinePanel.this);
         }
       });
 
-      header.add(closeWidget);
-
-      add(header);
-
-      if (!BeeUtils.isEmpty(headline.getSubtitle())) {
-        Label subtitle = new Label(headline.getSubtitle());
-        subtitle.addStyleName(STYLE_HEADLINE_PREFIX + "subtitle");
-
-        add(subtitle);
-      }
+      add(dismiss);
     }
 
     private long getDataId() {
       return dataId;
     }
-    
+
     private Feed getFeed() {
-      for (Widget parent = getParent(); parent != null;  parent = parent.getParent()) {
+      for (Widget parent = getParent(); parent != null; parent = parent.getParent()) {
         if (parent instanceof SubscriptionPanel) {
           return ((SubscriptionPanel) parent).getFeed();
         }
       }
       return null;
     }
+    
+    private boolean isNew() {
+      return isNew;
+    }
   }
 
   private final class NewsPanel extends Flow {
 
-    private static final String STYLE_LOADING = "bee-News-loading";
-    private static final String STYLE_NOT_LOADING = "bee-News-not-loading";
+    private static final String STYLE_LOADING = STYLE_PREFIX + "loading";
+    private static final String STYLE_NOT_LOADING = STYLE_PREFIX + "not-loading";
 
+    private static final String STYLE_EMPTY = STYLE_PREFIX + "empty";
+
+    private final FaLabel disclosureWidget;
     private final FaLabel loadingWidget;
 
     private final Flow content;
 
+    private boolean open;
+
     private NewsPanel() {
       super(STYLE_PREFIX + "panel");
+      addStyleName(STYLE_EMPTY);
 
       Flow header = new Flow(STYLE_PREFIX + "header");
+
+      this.disclosureWidget = new FaLabel(FontAwesome.CARET_RIGHT);
+      disclosureWidget.addStyleName(STYLE_PREFIX + "disclosure");
+
+      disclosureWidget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          toggleOpen();
+        }
+      });
+
+      header.add(disclosureWidget);
 
       FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
       refreshWidget.setTitle(Localized.getConstants().actionRefresh());
@@ -137,8 +170,11 @@ public class NewsAggregator {
       settingsWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
+          UserFeedsInterceptor interceptor =
+              new UserFeedsInterceptor(BeeKeeper.getUser().getUserId());
           GridOptions gridOptions = GridOptions.forCurrentUserFilter(NewsConstants.COL_UF_USER);
-          GridFactory.openGrid(NewsConstants.GRID_USER_FEEDS, gridOptions);
+
+          GridFactory.openGrid(NewsConstants.GRID_USER_FEEDS, interceptor, gridOptions);
         }
       });
 
@@ -156,12 +192,24 @@ public class NewsAggregator {
     }
 
     private void addSubscriptionPanel(SubscriptionPanel subscriptionPanel) {
+      if (content.isEmpty()) {
+        removeStyleName(STYLE_EMPTY);
+      }
       content.add(subscriptionPanel);
+    }
+
+    private SubscriptionPanel asSubscriptionPanel(Widget widget) {
+      if (widget instanceof SubscriptionPanel) {
+        return (SubscriptionPanel) widget;
+      } else {
+        return null;
+      }
     }
 
     private void clearSubscriptions() {
       if (!content.isEmpty()) {
         content.clear();
+        addStyleName(STYLE_EMPTY);
       }
     }
 
@@ -170,16 +218,65 @@ public class NewsAggregator {
       loadingWidget.removeStyleName(STYLE_LOADING);
     }
 
+    private SubscriptionPanel findSubscriptionPanel(Feed feed) {
+      for (Widget widget : content) {
+        SubscriptionPanel subscriptionPanel = asSubscriptionPanel(widget);
+        if (subscriptionPanel != null && subscriptionPanel.getFeed() == feed) {
+          return subscriptionPanel;
+        }
+      }
+      return null;
+    }
+
+    private boolean isOpen() {
+      return open;
+    }
+
+    private boolean removeHeadline(Feed feed, long dataId) {
+      SubscriptionPanel subscriptionPanel = findSubscriptionPanel(feed);
+
+      if (subscriptionPanel == null) {
+        return false;
+
+      } else {
+        boolean ok = subscriptionPanel.removeHeadline(dataId);
+
+        if (ok && !subscriptionPanel.hasHeadlines()) {
+          content.remove(subscriptionPanel);
+          if (content.isEmpty()) {
+            addStyleName(STYLE_EMPTY);
+          }
+        }
+
+        return ok;
+      }
+    }
+
+    private void setOpen(boolean open) {
+      this.open = open;
+    }
+
     private void startRefresh() {
       loadingWidget.addStyleName(STYLE_LOADING);
       loadingWidget.removeStyleName(STYLE_NOT_LOADING);
+    }
+
+    private void toggleOpen() {
+      setOpen(!isOpen());
+      disclosureWidget.setChar(isOpen() ? FontAwesome.CARET_DOWN : FontAwesome.CARET_RIGHT);
+
+      for (Widget widget : content) {
+        SubscriptionPanel subscriptionPanel = asSubscriptionPanel(widget);
+        if (subscriptionPanel != null && subscriptionPanel.isOpen() != isOpen()) {
+          subscriptionPanel.toggleOpen();
+        }
+      }
     }
   }
 
   private final class SubscriptionPanel extends Flow {
 
     private static final String STYLE_SUBSCRIPTION_PREFIX = STYLE_PREFIX + "subscription-";
-    private static final String STYLE_OPEN = STYLE_SUBSCRIPTION_PREFIX + "open";
     private static final String STYLE_CLOSED = STYLE_SUBSCRIPTION_PREFIX + "closed";
 
     private final Feed feed;
@@ -194,7 +291,9 @@ public class NewsAggregator {
 
     private SubscriptionPanel(Subscription subscription, boolean open) {
       super(STYLE_SUBSCRIPTION_PREFIX + "panel");
-      addStyleName(open ? STYLE_OPEN : STYLE_CLOSED);
+      if (!open) {
+        addStyleName(STYLE_CLOSED);
+      }
 
       this.feed = subscription.getFeed();
       this.open = open;
@@ -225,23 +324,24 @@ public class NewsAggregator {
 
       header.add(feedLabel);
 
-      FaLabel show = new FaLabel(FontAwesome.TABLE);
-      show.addStyleName(STYLE_SUBSCRIPTION_PREFIX + "show");
-
-      show.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          showSubsciption();
-        }
-      });
-
-      header.add(show);
-
       this.newSize = new Badge(subscription.countNew(), STYLE_SUBSCRIPTION_PREFIX + "new-size");
       header.add(newSize);
 
       this.updSize = new Badge(subscription.countUpdated(), STYLE_SUBSCRIPTION_PREFIX + "upd-size");
       header.add(updSize);
+
+      FaLabel filter = new FaLabel(FontAwesome.FILTER);
+      filter.addStyleName(STYLE_SUBSCRIPTION_PREFIX + "filter");
+      filter.setTitle(Localized.getConstants().actionFilter());
+
+      filter.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          onFilter(getFeed());
+        }
+      });
+
+      header.add(filter);
 
       add(header);
 
@@ -255,12 +355,46 @@ public class NewsAggregator {
       add(content);
     }
 
+    private HeadlinePanel findHeadlinePanel(long dataId) {
+      for (Widget widget : content) {
+        if (widget instanceof HeadlinePanel && ((HeadlinePanel) widget).getDataId() == dataId) {
+          return (HeadlinePanel) widget;
+        }
+      }
+      return null;
+    }
+
     private Feed getFeed() {
       return feed;
     }
 
+    private boolean hasHeadlines() {
+      return !content.isEmpty();
+    }
+
     private boolean isOpen() {
       return open;
+    }
+
+    private boolean removeHeadline(long dataId) {
+      HeadlinePanel headlinePanel = findHeadlinePanel(dataId);
+
+      if (headlinePanel == null) {
+        return false;
+      
+      } else {
+        boolean ok = content.remove(headlinePanel);
+
+        if (ok) {
+          if (headlinePanel.isNew()) {
+            newSize.decrement();
+          } else {
+            updSize.decrement();
+          }
+        }
+        
+        return ok;
+      }
     }
 
     private void setOpen(boolean open) {
@@ -270,7 +404,7 @@ public class NewsAggregator {
     private void toggleOpen() {
       setOpen(!isOpen());
 
-      addStyleName(isOpen() ? STYLE_OPEN : STYLE_CLOSED);
+      setStyleName(STYLE_CLOSED, !isOpen());
       disclosure.setChar(isOpen() ? FontAwesome.CARET_DOWN : FontAwesome.CARET_RIGHT);
     }
   }
@@ -279,7 +413,7 @@ public class NewsAggregator {
 
   private static final String STYLE_PREFIX = "bee-News-";
 
-  private static void showHeadline(HeadlinePanel headlinePanel) {
+  private static void readHeadline(HeadlinePanel headlinePanel) {
     Feed feed = headlinePanel.getFeed();
     if (feed != null) {
       RowEditor.openRow(feed.getHeadlineView(), headlinePanel.getDataId(), false, null);
@@ -291,6 +425,10 @@ public class NewsAggregator {
   private final NewsPanel newsPanel = new NewsPanel();
 
   private Badge sizeBadge;
+
+  private EnumMap<Feed, Consumer<GridOptions>> registeredFilterHandlers =
+      Maps.newEnumMap(Feed.class);
+  private Map<String, Consumer<Long>> registeredAccessHandlers = Maps.newHashMap();
 
   NewsAggregator() {
   }
@@ -330,7 +468,8 @@ public class NewsAggregator {
         subscriptions.add(subscription);
 
         if (!subscription.isEmpty()) {
-          SubscriptionPanel subscriptionPanel = new SubscriptionPanel(subscription, false);
+          SubscriptionPanel subscriptionPanel = new SubscriptionPanel(subscription,
+              newsPanel.isOpen());
           newsPanel.addSubscriptionPanel(subscriptionPanel);
         }
       }
@@ -341,6 +480,10 @@ public class NewsAggregator {
   }
 
   public void onAccess(String viewName, long rowId) {
+    if (registeredAccessHandlers.containsKey(viewName)) {
+      registeredAccessHandlers.get(viewName).accept(rowId);
+    }
+
     String table = Data.getViewTable(viewName);
 
     if (NewsConstants.hasUsageTable(table)) {
@@ -350,6 +493,39 @@ public class NewsAggregator {
 
       BeeKeeper.getRpc().makeRequest(parameters);
     }
+    
+    removeData(viewName, rowId);
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+  }
+
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    List<Subscription> filteredSubscriptions = filterSubscriptions(event.getViewName());
+    if (!filteredSubscriptions.isEmpty()) {
+      for (RowInfo rowInfo : event.getRows()) {
+        removeHeadline(filteredSubscriptions, rowInfo.getId());
+      }
+    }
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    removeData(event.getViewName(), event.getRowId());
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
   }
 
   public void refresh() {
@@ -371,6 +547,20 @@ public class NewsAggregator {
     });
   }
 
+  public void registerAccessHandler(String viewName, Consumer<Long> handler) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(handler);
+
+    registeredAccessHandlers.put(viewName, handler);
+  }
+
+  public void registerFilterHandler(Feed feed, Consumer<GridOptions> handler) {
+    Assert.notNull(feed);
+    Assert.notNull(handler);
+    
+    registeredFilterHandlers.put(feed, handler);
+  }
+
   private void clear(boolean clearSizeBadge) {
     if (!subscriptions.isEmpty()) {
       subscriptions.clear();
@@ -382,23 +572,82 @@ public class NewsAggregator {
     }
   }
 
-  private void closeHeadline(HeadlinePanel headlinePanel) {
+  private void dismissHeadline(HeadlinePanel headlinePanel) {
     Feed feed = headlinePanel.getFeed();
     if (feed != null) {
       onAccess(feed.getHeadlineView(), headlinePanel.getDataId());
     }
   }
 
+  private List<Subscription> filterSubscriptions(String viewName) {
+    List<Subscription> result = Lists.newArrayList();
+
+    for (Subscription subscription : subscriptions) {
+      if (Data.sameTable(viewName, subscription.getFeed().getHeadlineView())) {
+        result.add(subscription);
+      }
+    }
+
+    return result;
+  }
+
+  private Subscription findSubscription(Feed feed) {
+    for (Subscription subscription : subscriptions) {
+      if (subscription.getFeed() == feed) {
+        return subscription;
+      }
+    }
+    return null;
+  }
+
   private Badge getSizeBadge() {
     return sizeBadge;
   }
 
-  private void setSizeBadge(Badge sizeBadge) {
-    this.sizeBadge = sizeBadge;
+  private void onFilter(Feed feed) {
+    Subscription subscription = findSubscription(feed);
+
+    if (subscription != null && !subscription.isEmpty()) {
+      Set<Long> idSet = subscription.getIdSet();
+
+      String caption = BeeUtils.joinWords(Domain.NEWS.getCaption(), feed.getCaption());
+      Filter filter = Filter.idIn(idSet);
+      GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
+
+      if (registeredFilterHandlers.containsKey(feed)) {
+        registeredFilterHandlers.get(feed).accept(gridOptions);
+      } else {
+        GridFactory.openGrid(feed.getHeadlineView(), gridOptions);
+      }
+    }
   }
 
-  private void showSubsciption() {
+  private void removeData(String viewName, long rowId) {
+    List<Subscription> filteredSubscriptions = filterSubscriptions(viewName);
+    if (!filteredSubscriptions.isEmpty()) {
+      removeHeadline(filteredSubscriptions, rowId);
+    }
+  }
 
+  private void removeHeadline(List<Subscription> subs, long rowId) {
+    boolean changed = false;
+
+    for (Subscription subscription : subs) {
+      if (subscription.contains(rowId)) {
+        subscription.remove(rowId);
+        newsPanel.removeHeadline(subscription.getFeed(), rowId);
+
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      updateHeader();
+    }
+  }
+
+  private void setSizeBadge(Badge sizeBadge) {
+    this.sizeBadge = sizeBadge;
   }
 
   private void updateHeader() {

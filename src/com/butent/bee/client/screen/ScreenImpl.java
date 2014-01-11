@@ -265,6 +265,10 @@ public class ScreenImpl implements Screen {
   @Override
   public void onLoad() {
     Global.getSearch().focus();
+    
+    if (Global.getNewsAggregator().hasNews()) {
+      activateDomainEntry(Domain.NEWS, null);
+    }
   }
 
   @Override

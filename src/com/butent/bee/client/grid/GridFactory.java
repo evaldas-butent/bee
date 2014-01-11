@@ -82,6 +82,10 @@ public final class GridFactory {
 
   public static final class GridOptions implements HasCaption {
 
+    public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
+      return (BeeUtils.isEmpty(cap) && flt == null) ? null : new GridOptions(cap, null, flt, null);
+    }
+
     public static GridOptions forCurrentUserFilter(String column) {
       return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column);
     }

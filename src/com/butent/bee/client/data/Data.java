@@ -172,6 +172,15 @@ public final class Data {
     return (dataInfo == null) ? null : dataInfo.getTableName();
   }
 
+  public static boolean sameTable(String v1, String v2) {
+    String t1 = getViewTable(v1);
+    if (BeeUtils.isEmpty(t1)) {
+      return false;
+    } else {
+      return v1.equals(v2) || t1.equals(getViewTable(v2));
+    }
+  }
+  
   public static void init() {
     BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);

@@ -422,13 +422,31 @@ public class NewsBean {
       return headlines;
     }
 
-    List<String> headlineColumns = feed.getHeadlineColumns();
-    if (!hasProducer && BeeUtils.isEmpty(headlineColumns)) {
-      logger.severe("feed", feed, "headline columns not specified");
+    List<String> labelColumns = feed.getLabelColumns();
+    List<String> titleColumns = feed.getTitleColumns();
+    
+    if (!hasProducer && BeeUtils.isEmpty(labelColumns)) {
+      logger.severe("feed", feed, "label columns not specified");
       return headlines;
     }
+    
+    List<String> headlineColumns;
+    if (BeeUtils.isEmpty(labelColumns) && BeeUtils.isEmpty(titleColumns)) {
+      headlineColumns = null;
 
-    List<Integer> indexes = Lists.newArrayList();
+    } else {
+      headlineColumns = Lists.newArrayList();
+
+      if (!BeeUtils.isEmpty(labelColumns)) {
+        headlineColumns.addAll(labelColumns);
+      }
+      if (!BeeUtils.isEmpty(titleColumns)) {
+        headlineColumns.addAll(titleColumns);
+      }
+    }
+
+    List<Integer> labelIndexes = Lists.newArrayList();
+    List<Integer> titleIndexes = Lists.newArrayList();
 
     for (int pos = 0; pos < ids.size(); pos += ID_CHUNK_SIZE) {
       List<Long> chunk = ids.subList(pos, Math.min(pos + ID_CHUNK_SIZE, ids.size()));
@@ -439,9 +457,15 @@ public class NewsBean {
         continue;
       }
 
-      if (indexes.isEmpty() && !hasProducer) {
-        for (String column : headlineColumns) {
-          indexes.add(rowSet.getColumnIndex(column));
+      if (labelIndexes.isEmpty() && !hasProducer) {
+        for (String column : labelColumns) {
+          labelIndexes.add(rowSet.getColumnIndex(column));
+        }
+        
+        if (!BeeUtils.isEmpty(titleColumns)) {
+          for (String column : titleColumns) {
+            titleIndexes.add(rowSet.getColumnIndex(column));
+          }
         }
       }
 
@@ -455,12 +479,26 @@ public class NewsBean {
           }
 
         } else {
-          String caption = DataUtils.join(rowSet.getColumns(), row, indexes, Headline.SEPARATOR);
+          String caption = DataUtils.join(rowSet.getColumns(), row, labelIndexes, 
+              Headline.SEPARATOR);
+          
+          String title;
+          if (titleIndexes.isEmpty()) {
+            title = null;
+          } else {
+            title = DataUtils.join(rowSet.getColumns(), row, titleIndexes, Headline.SEPARATOR);
+          }
+          
           if (BeeUtils.isEmpty(caption)) {
-            caption = BeeUtils.bracket(row.getId());
+            if (BeeUtils.isEmpty(title)) {
+              caption = BeeUtils.bracket(row.getId());
+            } else {
+              caption = title;
+              title = null;
+            }
           }
 
-          headlines.add(Headline.create(row.getId(), caption, isNew));
+          headlines.add(Headline.create(row.getId(), caption, title, isNew));
         }
       }
     }
