@@ -62,6 +62,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -74,8 +75,6 @@ import java.util.Collection;
 import java.util.List;
 
 final class TaskList {
-
-  private static final int DEFAULT_STAR_COUNT = 3;
 
   //CHECKSTYLE:OFF
   public interface SlackTemplate extends SafeHtmlTemplates {
@@ -94,10 +93,14 @@ final class TaskList {
     private static final String NAME_STAR = "Star";
 
     private final Type type;
+    private final String caption;
+
     private final Long userId;
 
-    private GridHandler(Type type) {
+    private GridHandler(Type type, String caption) {
       this.type = type;
+      this.caption = caption;
+    
       this.userId = BeeKeeper.getUser().getUserId();
     }
 
@@ -140,7 +143,7 @@ final class TaskList {
 
     @Override
     public String getCaption() {
-      return type.getCaption();
+      return caption;
     }
 
     @Override
@@ -234,9 +237,9 @@ final class TaskList {
           new Queries.IntCallback() {
             @Override
             public void onSuccess(Integer result) {
-              BeeKeeper.getBus().fireEvent(new CellUpdateEvent(VIEW_TASKS, rowId,
+              CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, rowId,
                   event.getRowValue().getVersion(), source,
-                  (value == null) ? null : BeeUtils.toString(value)));
+                  (value == null) ? null : BeeUtils.toString(value));
             }
           });
     }
@@ -295,6 +298,19 @@ final class TaskList {
       abstract String getValue();
     }
 
+    private static Widget createMode(String styleName) {
+      return new CustomDiv(styleName);
+    }
+
+    private static Filter getNewFilter() {
+      return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
+          Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isEmpty(COL_LAST_ACCESS)));
+    }
+
+    private static Filter getUpdFilter() {
+      return null;
+    }
+
     private Mode mode;
 
     private ModeFilterSupplier(String options) {
@@ -345,10 +361,6 @@ final class TaskList {
     @Override
     protected String getStylePrefix() {
       return "bee-crm-FilterSupplier-Mode-";
-    }
-
-    private static Widget createMode(String styleName) {
-      return new CustomDiv(styleName);
     }
 
     private Widget createWidget() {
@@ -450,21 +462,16 @@ final class TaskList {
       return mode;
     }
 
-    private static Filter getNewFilter() {
-      return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-          Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isEmpty(COL_LAST_ACCESS)));
-    }
-
-    private static Filter getUpdFilter() {
-      return null;
-    }
-
     private void setMode(Mode mode) {
       this.mode = mode;
     }
   }
 
   private static final class ModeRenderer extends AbstractCellRenderer {
+
+    private static String renderMode(String styleName) {
+      return "<div class=\"" + styleName + "\"></div>";
+    }
 
     private ModeRenderer() {
       super(null);
@@ -490,10 +497,6 @@ final class TaskList {
         return renderMode(TaskList.STYLE_MODE_UPD);
       }
       return BeeConst.STRING_EMPTY;
-    }
-
-    private static String renderMode(String styleName) {
-      return "<div class=\"" + styleName + "\"></div>";
     }
   }
 
@@ -673,11 +676,37 @@ final class TaskList {
         Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
             .omitEmptyStrings().trimResults();
 
+    private static String getLabel(long minutes) {
+      if (Math.abs(minutes) < TimeUtils.MINUTES_PER_DAY) {
+        return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR)
+            + DateTime.TIME_FIELD_SEPARATOR
+            + TimeUtils.padTwo((int) (minutes % TimeUtils.MINUTES_PER_HOUR));
+      } else {
+        return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_DAY);
+      }
+    }
+    private static long getMinutes(TaskStatus status, DateTime start, DateTime finish) {
+      if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED) {
+        return 0;
+      }
+
+      DateTime now = TimeUtils.nowMinutes();
+
+      if (finish != null && TimeUtils.isLess(finish, now)) {
+        return (finish.getTime() - now.getTime()) / TimeUtils.MILLIS_PER_MINUTE;
+      } else if (CrmUtils.isScheduled(start)) {
+        return TimeUtils.dayDiff(now, start) * TimeUtils.MINUTES_PER_DAY;
+      } else {
+        return 0;
+      }
+    }
     private final int statusIndex;
+
     private final int startIndex;
     private final int finishIndex;
 
     private int minBarWidth = 10;
+
     private int maxBarWidth = 100;
 
     private int maxWidthDays = 30;
@@ -728,16 +757,6 @@ final class TaskList {
       return StyleUtils.buildWidth(width, CssUnit.PCT);
     }
 
-    private static String getLabel(long minutes) {
-      if (Math.abs(minutes) < TimeUtils.MINUTES_PER_DAY) {
-        return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR)
-            + DateTime.TIME_FIELD_SEPARATOR
-            + TimeUtils.padTwo((int) (minutes % TimeUtils.MINUTES_PER_HOUR));
-      } else {
-        return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_DAY);
-      }
-    }
-
     private int getMaxBarWidth() {
       return maxBarWidth;
     }
@@ -748,22 +767,6 @@ final class TaskList {
 
     private int getMinBarWidth() {
       return minBarWidth;
-    }
-
-    private static long getMinutes(TaskStatus status, DateTime start, DateTime finish) {
-      if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED) {
-        return 0;
-      }
-
-      DateTime now = TimeUtils.nowMinutes();
-
-      if (finish != null && TimeUtils.isLess(finish, now)) {
-        return (finish.getTime() - now.getTime()) / TimeUtils.MILLIS_PER_MINUTE;
-      } else if (CrmUtils.isScheduled(start)) {
-        return TimeUtils.dayDiff(now, start) * TimeUtils.MINUTES_PER_DAY;
-      } else {
-        return 0;
-      }
     }
 
     private void setMaxBarWidth(int maxBarWidth) {
@@ -903,15 +906,15 @@ final class TaskList {
     }
   }
 
-  public enum Type implements HasCaption {
-    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks()) {
+  private enum Type implements HasCaption {
+    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
       @Override
       Filter getFilter(LongValue userValue) {
         return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
       }
     },
 
-    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks()) {
+    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks(), Feed.TASKS_DELEGATED) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
@@ -919,7 +922,7 @@ final class TaskList {
       }
     },
 
-    OBSERVED(Localized.getConstants().crmTasksObservedTasks()) {
+    OBSERVED(Localized.getConstants().crmTasksObservedTasks(), Feed.TASKS_OBSERVED) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
@@ -929,17 +932,28 @@ final class TaskList {
       }
     },
 
-    GENERAL(Localized.getConstants().crmTasksList()) {
+    GENERAL(Localized.getConstants().crmTasksList(), Feed.TASKS_ALL) {
       @Override
       Filter getFilter(LongValue userValue) {
         return null;
       }
     };
+    
+    private static Type getByFeed(Feed input) {
+      for (Type type : values()) {
+        if (type.feed == input) {
+          return type;
+        }
+      }
+      return null;
+    }
 
     private final String caption;
+    private final Feed feed;
 
-    private Type(String caption) {
+    private Type(String caption, Feed feed) {
       this.caption = caption;
+      this.feed = feed;
     }
 
     @Override
@@ -950,15 +964,27 @@ final class TaskList {
     abstract Filter getFilter(LongValue userValue);
   }
 
+  private static final int DEFAULT_STAR_COUNT = 3;
+
   private static final String STYLE_MODE_NEW = "bee-crm-Mode-new";
   private static final String STYLE_MODE_UPD = "bee-crm-Mode-upd";
   
-  public static void open(Type type, GridOptions gridOptions) {
+  static Consumer<GridOptions> getFeedFilterHandler(Feed feed) {
+    final Type type = Type.getByFeed(feed);
     Assert.notNull(type);
-    GridFactory.openGrid(GRID_TASKS, new GridHandler(type), gridOptions);
+    
+    Consumer<GridOptions> consumer = new Consumer<GridFactory.GridOptions>() {
+      @Override
+      public void accept(GridOptions input) {
+        String caption = BeeUtils.notEmpty(input.getCaption(), type.getCaption());
+        GridFactory.openGrid(GRID_TASKS, new GridHandler(type, caption), input);
+      }
+    };    
+    
+    return consumer;
   }
 
-  public static void open(String args) {
+  static void open(String args) {
     Type type = null;
 
     for (Type z : Type.values()) {
@@ -971,7 +997,7 @@ final class TaskList {
     if (type == null) {
       Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", args));
     } else {
-      GridFactory.openGrid(GRID_TASKS, new GridHandler(type));
+      GridFactory.openGrid(GRID_TASKS, new GridHandler(type, type.getCaption()));
     }
   }
 

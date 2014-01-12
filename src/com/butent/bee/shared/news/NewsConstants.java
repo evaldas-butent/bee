@@ -18,6 +18,7 @@ import java.util.Map;
 public final class NewsConstants {
 
   public static final String TBL_USER_FEEDS = "UserFeeds";
+  public static final String VIEW_USER_FEEDS = "UserFeeds";
 
   public static final String COL_UF_USER = "User";
   public static final String COL_UF_FEED = "Feed";

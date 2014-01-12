@@ -31,6 +31,11 @@ public class UsersMessage extends Message {
   public List<UserData> getData() {
     return data;
   }
+  
+  @Override
+  public boolean isValid() {
+    return !BeeUtils.isEmpty(getData());
+  }
 
   @Override
   public String toString() {

@@ -193,7 +193,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
       @Override
       public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
+        RowUpdateEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result);
         if (event.getCallback() != null) {
           event.getCallback().onSuccess(result);
         }

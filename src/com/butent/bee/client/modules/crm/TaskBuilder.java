@@ -22,7 +22,6 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
@@ -32,13 +31,13 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -143,13 +142,9 @@ class TaskBuilder extends AbstractFormInterceptor {
           
           String message =
               BeeUtils.joinWords(Localized.getConstants().crmCreatedNewTasks(), ":", tasks.size());
-          GridView gridView = getGridView();
-          if (gridView != null) {
-            gridView.notifyInfo(message);
-            gridView.getViewPresenter().handleAction(Action.REFRESH);
-          } else {
-            BeeKeeper.getScreen().notifyInfo(message);
-          }
+          BeeKeeper.getScreen().notifyInfo(message);
+          
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 
         } else {
           event.getCallback().onFailure("Unknown response");

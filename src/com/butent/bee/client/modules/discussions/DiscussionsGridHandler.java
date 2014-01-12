@@ -91,9 +91,9 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
           @Override
           public void onSuccess(Integer result) {
-            BeeKeeper.getBus().fireEvent(
-                new CellUpdateEvent(VIEW_DISCUSSIONS, rowId, event.getRowValue().getVersion(),
-                    source, (value == null) ? null : BeeUtils.toString(value)));
+            CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, rowId,
+                event.getRowValue().getVersion(), source,
+                (value == null) ? null : BeeUtils.toString(value));
           }
         });
   }

@@ -5,6 +5,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -613,8 +614,9 @@ public class ScreenImpl implements Screen {
     Flow panel = new Flow();
     panel.add(getCentralScrutinizer());
     panel.add(createCopyright("bee-"));
-
-    return Pair.of(panel, 240);
+    
+    int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
+    return Pair.of(panel, width);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

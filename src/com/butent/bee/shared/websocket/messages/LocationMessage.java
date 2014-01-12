@@ -90,6 +90,11 @@ public class LocationMessage extends Message implements HasRecipient {
   }
 
   @Override
+  public boolean isValid() {
+    return !BeeUtils.anyEmpty(getFrom(), getTo());
+  }
+  
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()), "from", getFrom(), "to", getTo(),
         "latitude", string(getLatitude()), "longitude", string(getLongitude()),

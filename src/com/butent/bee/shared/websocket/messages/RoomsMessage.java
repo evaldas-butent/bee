@@ -30,6 +30,11 @@ public class RoomsMessage extends Message {
   public List<ChatRoom> getData() {
     return data;
   }
+  
+  @Override
+  public boolean isValid() {
+    return !BeeUtils.isEmpty(getData());
+  }
 
   @Override
   public String toString() {

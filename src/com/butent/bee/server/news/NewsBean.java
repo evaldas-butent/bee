@@ -15,7 +15,9 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -24,6 +26,9 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.FiresModificationEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -37,6 +42,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +59,7 @@ public class NewsBean {
 
   private static BeeLogger logger = LogUtils.getLogger(NewsBean.class);
 
-  private static final int ID_CHUNK_SIZE = 3;
+  private static final int ID_CHUNK_SIZE = 50;
 
   @EJB
   UserServiceBean usr;
@@ -67,14 +73,15 @@ public class NewsBean {
     if (!DataUtils.isId(userId)) {
       return ResponseObject.error("user id not available");
     }
+    
+    String idName = sys.getIdName(NewsConstants.TBL_USER_FEEDS);
 
     SqlSelect query = new SqlSelect()
-        .addFields(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED, 
+        .addFields(NewsConstants.TBL_USER_FEEDS, idName, NewsConstants.COL_UF_FEED, 
             NewsConstants.COL_UF_CAPTION, NewsConstants.COL_UF_SUBSCRIPTION_DATE)
         .addFrom(NewsConstants.TBL_USER_FEEDS)
         .setWhere(SqlUtils.equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_USER, userId))
-        .addOrder(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_ORDINAL,
-            sys.getIdName(NewsConstants.TBL_USER_FEEDS));
+        .addOrder(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_ORDINAL, idName);
 
     SimpleRowSet userFeeds = qs.getData(query);
     if (DataUtils.isEmpty(userFeeds)) {
@@ -85,16 +92,22 @@ public class NewsBean {
     int countHeadlines = 0;
 
     for (SimpleRow row : userFeeds) {
+      Long rowId = row.getLong(idName);
+      if (!DataUtils.isId(rowId)) {
+        logger.severe("invalid user feed row id", rowId);
+        continue;
+      }
+
       Feed feed = EnumUtils.getEnumByName(Feed.class, row.getValue(NewsConstants.COL_UF_FEED));
       if (feed == null) {
-        logger.warning("invalid user feed name", row.getValue(NewsConstants.COL_UF_FEED));
+        logger.severe("invalid user feed name", row.getValue(NewsConstants.COL_UF_FEED));
         continue;
       }
 
       String caption = row.getValue(NewsConstants.COL_UF_CAPTION);
       DateTime date = row.getDateTime(NewsConstants.COL_UF_SUBSCRIPTION_DATE);
 
-      Subscription subscription = new Subscription(feed, caption, date);
+      Subscription subscription = new Subscription(rowId, feed, caption, date);
 
       List<Headline> headlines = getHeadlines(feed, userId, date);
       if (!headlines.isEmpty()) {
@@ -238,7 +251,7 @@ public class NewsBean {
   public ResponseObject subscribe(RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
 
-    Long userId = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_USER));
+    final Long userId = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_USER));
     if (!DataUtils.isId(userId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_USER);
     }
@@ -266,6 +279,15 @@ public class NewsBean {
         return response;
       }
     }
+    
+    FiresModificationEvents commando = new FiresModificationEvents() {
+      @Override
+      public void fireModificationEvent(ModificationEvent<?> event, Locality locality) {
+        Endpoint.sendToUser(userId, new ModificationMessage(event));
+      }
+    };
+    
+    DataChangeEvent.fireRefresh(commando, NewsConstants.VIEW_USER_FEEDS);
 
     logger.info(reqInfo.getService(), "user", userId, "subscribed to", feeds);
     return ResponseObject.response(feeds.size());

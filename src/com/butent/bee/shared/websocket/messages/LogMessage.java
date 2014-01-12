@@ -42,6 +42,11 @@ public class LogMessage extends Message {
     return level;
   }
 
+  @Override
+  public boolean isValid() {
+    return getLevel() != null;
+  }
+  
   private void setLevel(LogLevel level) {
     this.level = level;
   }

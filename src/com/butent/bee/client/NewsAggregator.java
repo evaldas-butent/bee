@@ -28,6 +28,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -112,7 +113,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       }
       return null;
     }
-    
+
     private boolean isNew() {
       return isNew;
     }
@@ -123,7 +124,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     private static final String STYLE_LOADING = STYLE_PREFIX + "loading";
     private static final String STYLE_NOT_LOADING = STYLE_PREFIX + "not-loading";
 
-    private static final String STYLE_EMPTY = STYLE_PREFIX + "empty";
+    private static final String STYLE_NOTHING_HAPPENS = STYLE_PREFIX + "nothing-happens";
 
     private final FaLabel disclosureWidget;
     private final FaLabel loadingWidget;
@@ -134,7 +135,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
     private NewsPanel() {
       super(STYLE_PREFIX + "panel");
-      addStyleName(STYLE_EMPTY);
+      addStyleName(STYLE_APATHY);
+      addStyleName(STYLE_NOTHING_HAPPENS);
 
       Flow header = new Flow(STYLE_PREFIX + "header");
 
@@ -193,7 +195,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
     private void addSubscriptionPanel(SubscriptionPanel subscriptionPanel) {
       if (content.isEmpty()) {
-        removeStyleName(STYLE_EMPTY);
+        removeStyleName(STYLE_NOTHING_HAPPENS);
       }
       content.add(subscriptionPanel);
     }
@@ -209,7 +211,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     private void clearSubscriptions() {
       if (!content.isEmpty()) {
         content.clear();
-        addStyleName(STYLE_EMPTY);
+        addStyleName(STYLE_NOTHING_HAPPENS);
       }
     }
 
@@ -228,6 +230,19 @@ public class NewsAggregator implements HandlesAllDataEvents {
       return null;
     }
 
+    private Map<Feed, Boolean> getOpenness() {
+      EnumMap<Feed, Boolean> result = Maps.newEnumMap(Feed.class);
+
+      for (Widget widget : content) {
+        SubscriptionPanel subscriptionPanel = asSubscriptionPanel(widget);
+        if (subscriptionPanel != null) {
+          result.put(subscriptionPanel.getFeed(), subscriptionPanel.isOpen());
+        }
+      }
+
+      return result;
+    }
+
     private boolean isOpen() {
       return open;
     }
@@ -244,8 +259,24 @@ public class NewsAggregator implements HandlesAllDataEvents {
         if (ok && !subscriptionPanel.hasHeadlines()) {
           content.remove(subscriptionPanel);
           if (content.isEmpty()) {
-            addStyleName(STYLE_EMPTY);
+            addStyleName(STYLE_NOTHING_HAPPENS);
           }
+        }
+
+        return ok;
+      }
+    }
+
+    private boolean removeSubscription(Feed feed) {
+      SubscriptionPanel subscriptionPanel = findSubscriptionPanel(feed);
+
+      if (subscriptionPanel == null) {
+        return false;
+
+      } else {
+        boolean ok = content.remove(subscriptionPanel);
+        if (content.isEmpty()) {
+          addStyleName(STYLE_NOTHING_HAPPENS);
         }
 
         return ok;
@@ -381,7 +412,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       if (headlinePanel == null) {
         return false;
-      
+
       } else {
         boolean ok = content.remove(headlinePanel);
 
@@ -392,7 +423,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
             updSize.decrement();
           }
         }
-        
+
         return ok;
       }
     }
@@ -412,6 +443,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
   private static final BeeLogger logger = LogUtils.getLogger(NewsAggregator.class);
 
   private static final String STYLE_PREFIX = "bee-News-";
+  private static final String STYLE_APATHY = STYLE_PREFIX + "apathy";
 
   private static void readHeadline(HeadlinePanel headlinePanel) {
     Feed feed = headlinePanel.getFeed();
@@ -461,6 +493,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
       logger.severe("cannot deserialize subscriptions");
 
     } else {
+      Map<Feed, Boolean> openness = newsPanel.getOpenness();
+
       clear(false);
 
       for (String s : arr) {
@@ -468,11 +502,15 @@ public class NewsAggregator implements HandlesAllDataEvents {
         subscriptions.add(subscription);
 
         if (!subscription.isEmpty()) {
-          SubscriptionPanel subscriptionPanel = new SubscriptionPanel(subscription,
-              newsPanel.isOpen());
+          boolean open = openness.containsKey(subscription.getFeed())
+              ? openness.get(subscription.getFeed()) : newsPanel.isOpen();
+          SubscriptionPanel subscriptionPanel = new SubscriptionPanel(subscription, open);
+
           newsPanel.addSubscriptionPanel(subscriptionPanel);
         }
       }
+
+      newsPanel.removeStyleName(STYLE_APATHY);
 
       updateHeader();
       logger.info("subscriptions", subscriptions.size(), countNews());
@@ -493,39 +531,64 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       BeeKeeper.getRpc().makeRequest(parameters);
     }
-    
+
     removeData(viewName, rowId);
   }
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
+    if (requiresRefresh(event)) {
+      refresh();
+    }
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
+    if (requiresRefresh(event)) {
+      refresh();
+    }
   }
 
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
-    List<Subscription> filteredSubscriptions = filterSubscriptions(event.getViewName());
-    if (!filteredSubscriptions.isEmpty()) {
+    if (event.hasView(NewsConstants.VIEW_USER_FEEDS)) {
       for (RowInfo rowInfo : event.getRows()) {
-        removeHeadline(filteredSubscriptions, rowInfo.getId());
+        Subscription subscription = findSubscription(rowInfo.getId());
+        if (subscription != null) {
+          removeSubscription(subscription);
+        }
       }
+
+    } else if (requiresRefresh(event)) {
+      refresh();
     }
   }
 
   @Override
   public void onRowDelete(RowDeleteEvent event) {
-    removeData(event.getViewName(), event.getRowId());
+    if (event.hasView(NewsConstants.VIEW_USER_FEEDS)) {
+      Subscription subscription = findSubscription(event.getRowId());
+      if (subscription != null) {
+        removeSubscription(subscription);
+      }
+
+    } else if (requiresRefresh(event)) {
+      refresh();
+    }
   }
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
+    if (requiresRefresh(event)) {
+      refresh();
+    }
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
+    if (requiresRefresh(event)) {
+      refresh();
+    }
   }
 
   public void refresh() {
@@ -557,13 +620,34 @@ public class NewsAggregator implements HandlesAllDataEvents {
   public void registerFilterHandler(Feed feed, Consumer<GridOptions> handler) {
     Assert.notNull(feed);
     Assert.notNull(handler);
-    
+
     registeredFilterHandlers.put(feed, handler);
+  }
+
+  public boolean removeSubscription(Subscription subscription) {
+    if (subscriptions.contains(subscription)) {
+      if (subscriptions.size() == 1) {
+        clear(true);
+
+      } else {
+        subscriptions.remove(subscription);
+        newsPanel.removeSubscription(subscription.getFeed());
+
+        updateHeader();
+      }
+
+      logger.info("unsubscribed", subscription.getFeed());
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   private void clear(boolean clearSizeBadge) {
     if (!subscriptions.isEmpty()) {
       subscriptions.clear();
+      newsPanel.addStyleName(STYLE_APATHY);
     }
     newsPanel.clearSubscriptions();
 
@@ -583,7 +667,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     List<Subscription> result = Lists.newArrayList();
 
     for (Subscription subscription : subscriptions) {
-      if (Data.sameTable(viewName, subscription.getFeed().getHeadlineView())) {
+      if (Data.sameTable(viewName, subscription.getHeadlineView())) {
         result.add(subscription);
       }
     }
@@ -600,6 +684,15 @@ public class NewsAggregator implements HandlesAllDataEvents {
     return null;
   }
 
+  private Subscription findSubscription(long rowId) {
+    for (Subscription subscription : subscriptions) {
+      if (subscription.getRowId() == rowId) {
+        return subscription;
+      }
+    }
+    return null;
+  }
+
   private Badge getSizeBadge() {
     return sizeBadge;
   }
@@ -610,7 +703,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     if (subscription != null && !subscription.isEmpty()) {
       Set<Long> idSet = subscription.getIdSet();
 
-      String caption = BeeUtils.joinWords(Domain.NEWS.getCaption(), feed.getCaption());
+      String caption = BeeUtils.join(" - ", Domain.NEWS.getCaption(), feed.getCaption());
       Filter filter = Filter.idIn(idSet);
       GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
 
@@ -643,6 +736,34 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
     if (changed) {
       updateHeader();
+    }
+  }
+
+  private boolean requiresRefresh(ModificationEvent<?> event) {
+    if (event == null) {
+      return false;
+
+    } else if (event.hasView(NewsConstants.VIEW_USER_FEEDS)) {
+      return true;
+
+    } else if (subscriptions.isEmpty()) {
+      return false;
+
+    } else {
+      boolean requires = false;
+      String table = Data.getViewTable(event.getViewName());
+
+      if (!BeeUtils.isEmpty(table)) {
+        for (Subscription subscription : subscriptions) {
+          if (table.equals(subscription.getTable())
+              || table.equals(Data.getViewTable(subscription.getHeadlineView()))) {
+            requires = true;
+            break;
+          }
+        }
+      }
+
+      return requires;
     }
   }
 

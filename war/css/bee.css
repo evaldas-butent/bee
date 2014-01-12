@@ -2653,7 +2653,10 @@
   right: 10px;
 }
 
-.bee-News-empty .bee-News-disclosure {
+.bee-News-nothing-happens .bee-News-disclosure {
+  display: none;
+}
+.bee-News-apathy .bee-News-refresh {
   display: none;
 }
 

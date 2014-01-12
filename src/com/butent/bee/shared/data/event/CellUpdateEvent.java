@@ -1,20 +1,22 @@
 package com.butent.bee.shared.data.event;
 
-import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 /**
  * Handles an event when a cell value is updated in table based user interface components.
  */
 
-public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements DataEvent {
+public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> {
 
   /**
    * Requires implementing classes to have a method to handle cell update event.
@@ -26,22 +28,40 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
 
   private static final Type<Handler> TYPE = new Type<Handler>();
 
+  public static void fire(FiresModificationEvents em, String viewName, long rowId, long version,
+      CellSource source, String value) {
+
+    Assert.notNull(em);
+    Assert.notEmpty(viewName);
+    Assert.isTrue(DataUtils.isId(rowId));
+    Assert.notNull(source);
+    
+    em.fireModificationEvent(new CellUpdateEvent(viewName, rowId, version, source, value),
+        Locality.ENTANGLED);
+  }
+
+  public static void forward(Handler handler, String viewName, long rowId, long version,
+      CellSource source, String value) {
+    Assert.notNull(handler);
+    handler.onCellUpdate(new CellUpdateEvent(viewName, rowId, version, source, value));
+  }
+  
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
     Assert.notNull(eventBus);
     Assert.notNull(handler);
     return eventBus.addHandler(TYPE, handler);
   }
 
-  private final String viewName;
+  private String viewName;
 
-  private final long rowId;
-  private final long version;
+  private long rowId;
+  private long version;
 
-  private final CellSource source;
+  private CellSource source;
 
-  private final String value;
+  private String value;
 
-  public CellUpdateEvent(String viewName, long rowId, long version, CellSource source,
+  private CellUpdateEvent(String viewName, long rowId, long version, CellSource source,
       String value) {
     this.viewName = viewName;
 
@@ -51,6 +71,9 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
     this.source = Assert.notNull(source);
     
     this.value = value;
+  }
+  
+  CellUpdateEvent() {
   }
   
   public boolean applyTo(BeeRowSet rowSet) {
@@ -73,12 +96,31 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
   }
   
   @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Assert.lengthEquals(arr, 5);
+    
+    int i = 0;
+
+    this.viewName = arr[i++];
+    this.rowId = BeeUtils.toLong(arr[i++]);
+    this.version = BeeUtils.toLong(arr[i++]);
+    this.source = CellSource.restore(arr[i++]);
+    this.value = arr[i++];
+  }
+
+  @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
   }
 
   public CellSource getCellSource() {
     return source;
+  }
+
+  @Override
+  public Kind getKind() {
+    return Kind.UPDATE_CELL;
   }
 
   public long getRowId() {
@@ -92,7 +134,7 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
   public long getVersion() {
     return version;
   }
-
+  
   @Override
   public String getViewName() {
     return viewName;
@@ -101,10 +143,16 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
   public boolean hasColumn() {
     return source.hasColumn();
   }
-  
+
   @Override
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
+  }
+
+  @Override
+  public String serialize() {
+    Object[] arr = new Object[] {getViewName(), getRowId(), getVersion(), getCellSource(), value};
+    return Codec.beeSerialize(arr);
   }
 
   @Override

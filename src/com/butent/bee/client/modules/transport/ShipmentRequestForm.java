@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -130,7 +131,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
                 updateStatus(status);
                 refreshCommands(status);
 
-                DataChangeEvent.fireRefresh(VIEW_ORDERS);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDERS);
               }
             });
           }

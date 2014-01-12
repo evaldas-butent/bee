@@ -48,6 +48,12 @@ public abstract class Message {
         return new LogMessage();
       }
     },
+    MODIFICATION {
+      @Override
+      Message createMessage() {
+        return new ModificationMessage();
+      }
+    },
     NOTIFICATION {
       @Override
       Message createMessage() {
@@ -143,6 +149,8 @@ public abstract class Message {
   public Type getType() {
     return type;
   }
+  
+  public abstract boolean isValid();
 
   @Override
   public abstract String toString();

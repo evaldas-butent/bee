@@ -15,6 +15,6 @@ public class RowUpdateCallback extends RowCallback {
 
   @Override
   public void onSuccess(BeeRow result) {
-    BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
+    RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
   }
 }

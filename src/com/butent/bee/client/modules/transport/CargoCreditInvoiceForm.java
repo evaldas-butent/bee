@@ -63,7 +63,7 @@ public class CargoCreditInvoiceForm extends PrintFormInterceptor {
           Queries.getRow(form.getViewName(), form.getActiveRow().getId(), new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
+              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
             }
           });
         }

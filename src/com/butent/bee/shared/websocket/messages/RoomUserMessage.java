@@ -57,6 +57,11 @@ public class RoomUserMessage extends Message {
     return userId;
   }
 
+  @Override
+  public boolean isValid() {
+    return getRoomId() > 0 && DataUtils.isId(getUserId());
+  }
+  
   public boolean join() {
     return join;
   }

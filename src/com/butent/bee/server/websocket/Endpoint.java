@@ -17,6 +17,7 @@ import com.butent.bee.shared.websocket.messages.HasRecipient;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
 import com.butent.bee.shared.websocket.messages.RoomUserMessage;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,6 +67,14 @@ public class Endpoint {
   public static void sendToAll(Message message) {
     for (Session session : openSessions) {
       if (session.isOpen()) {
+        send(session, message);
+      }
+    }
+  }
+
+  public static void sendToUser(long userId, Message message) {
+    for (Session session : openSessions) {
+      if (session.isOpen() && Objects.equals(getUserId(session), userId)) {
         send(session, message);
       }
     }
@@ -110,6 +120,14 @@ public class Endpoint {
     }
   }
 
+  private static void sendToOtherSessions(Message message, String mySessionId) {
+    for (Session session : openSessions) {
+      if (session.isOpen() && !mySessionId.equals(session.getId())) {
+        send(session, message);
+      }
+    }
+  }
+  
   private static void sendToNeighbors(ChatRoom room, Message message, String mySessionId) {
     for (Session session : openSessions) {
       if (session.isOpen() && !mySessionId.equals(session.getId())
@@ -167,6 +185,16 @@ public class Endpoint {
 
         } else {
           logger.log(level, logMessage.getText());
+        }
+        break;
+        
+      case MODIFICATION:
+        ModificationMessage modificationMessage = (ModificationMessage) message;
+        
+        if (modificationMessage.isValid()) {
+          sendToOtherSessions(modificationMessage, session.getId());
+        } else {
+          WsUtils.onEmptyMessage(message, toLog(session));
         }
         break;
 

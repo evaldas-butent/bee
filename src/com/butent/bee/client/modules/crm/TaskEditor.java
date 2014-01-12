@@ -413,7 +413,7 @@ class TaskEditor extends AbstractFormInterceptor {
         BeeRow data = getResponseRow(TaskEvent.EDIT.getCaption(), result, this);
 
         if (data != null) {
-          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_TASKS, data));
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
         }
       }
     });
@@ -472,7 +472,7 @@ class TaskEditor extends AbstractFormInterceptor {
           return;
         }
 
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_TASKS, data));
+        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
         Widget fileWidget = form.getWidgetByName(PROP_FILES);
         if (fileWidget instanceof FileGroup) {
@@ -1205,7 +1205,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private void onResponse(BeeRow data) {
-    BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_TASKS, data));
+    RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
     FormView form = getFormView();
 

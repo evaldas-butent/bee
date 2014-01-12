@@ -38,6 +38,7 @@ public class ChatMessage extends Message {
     return textMessage;
   }
   
+  @Override
   public boolean isValid() {
     return getTextMessage() != null && getTextMessage().isValid();
   }

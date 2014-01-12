@@ -11,8 +11,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.modules.crm.TaskList.Type;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -95,33 +93,13 @@ public final class CrmKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
-        new Consumer<GridOptions>() {
-          @Override
-          public void accept(GridOptions input) {
-            TaskList.open(Type.ASSIGNED, input);
-          }
-        });
+        TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
-        new Consumer<GridOptions>() {
-      @Override
-      public void accept(GridOptions input) {
-        TaskList.open(Type.DELEGATED, input);
-      }
-    });
+        TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
-        new Consumer<GridOptions>() {
-      @Override
-      public void accept(GridOptions input) {
-        TaskList.open(Type.OBSERVED, input);
-      }
-    });
+        TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
-        new Consumer<GridOptions>() {
-      @Override
-      public void accept(GridOptions input) {
-        TaskList.open(Type.GENERAL, input);
-      }
-    });
+        TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
     
     Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new Consumer<Long>() {
       @Override

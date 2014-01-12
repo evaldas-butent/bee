@@ -25,6 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -219,14 +220,14 @@ public final class Data {
     }
   }
 
-  public static void onTableChange(String tableName, Collection<DataChangeEvent.Effect> effects) {
+  public static void onTableChange(String tableName, EnumSet<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
     for (String viewName : viewNames) {
-      DataChangeEvent.fire(viewName, effects);
+      DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
     }
   }
 
-  public static void onViewChange(String viewName, Collection<DataChangeEvent.Effect> effects) {
+  public static void onViewChange(String viewName, EnumSet<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 

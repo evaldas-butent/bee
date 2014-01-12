@@ -264,7 +264,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
                 @Override
                 public void onSuccess(Integer result) {
-                  BeeKeeper.getBus().fireEvent(new RowDeleteEvent(VIEW_APPOINTMENTS, id));
+                  RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_APPOINTMENTS, id);
                 }
               });
             }
@@ -1349,9 +1349,9 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
             }
 
             if (isNew) {
-              BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
+              RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result, getFormView().getId());
             } else {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
+              RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
             }
 
             Appointment appointment = new Appointment(result);

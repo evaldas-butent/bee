@@ -31,10 +31,12 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Paragraph;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -50,6 +52,7 @@ import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
 import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
@@ -348,6 +351,20 @@ class MessageDispatcher {
         }
         break;
 
+      case MODIFICATION:
+        ModificationMessage modificationMessage = (ModificationMessage) message;
+        
+        if (modificationMessage.isValid()) {
+          ModificationEvent<?> event = modificationMessage.getEvent();
+          event.setLocality(Locality.ENTANGLED);
+        
+          BeeKeeper.getBus().fireEvent(modificationMessage.getEvent());
+
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+        
       case NOTIFICATION:
         NotificationMessage notificationMessage = (NotificationMessage) message;
 

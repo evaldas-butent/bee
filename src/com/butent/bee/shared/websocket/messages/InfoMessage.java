@@ -41,6 +41,11 @@ public class InfoMessage extends Message implements HasCaption, HasInfo {
   }
 
   @Override
+  public boolean isValid() {
+    return !BeeUtils.isEmpty(getInfo());
+  }
+
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()), "caption", getCaption(),
         "info", BeeUtils.isEmpty(info) ? null : info.toString());

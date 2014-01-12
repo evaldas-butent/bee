@@ -91,7 +91,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_UNSUPPLIED_ITEMS);
       }
     });
   }
@@ -135,14 +135,14 @@ class EcOrderForm extends AbstractFormInterceptor {
     List<BeeColumn> columns = Data.getColumns(VIEW_ORDER_ITEMS, colNames);
 
     final Holder<Integer> latch = Holder.of(0);
-    RowInsertCallback insertCallback = new RowInsertCallback(VIEW_ORDER_ITEMS) {
+    RowInsertCallback insertCallback = new RowInsertCallback(VIEW_ORDER_ITEMS, null) {
       @Override
       public void onSuccess(BeeRow result) {
         super.onSuccess(result);
 
         latch.set(latch.get() + 1);
         if (BeeUtils.unbox(latch.get()) == selectedIds.size()) {
-          DataChangeEvent.fireRefresh(VIEW_ORDER_ITEMS);
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_ITEMS);
         }
       }
     };
@@ -163,7 +163,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       Queries.deleteRows(VIEW_UNSUPPLIED_ITEMS, delete, new Queries.IntCallback() {
         @Override
         public void onSuccess(Integer result) {
-          DataChangeEvent.fireReset(VIEW_UNSUPPLIED_ITEMS);
+          DataChangeEvent.fireReset(BeeKeeper.getBus(), VIEW_UNSUPPLIED_ITEMS);
         }
       });
     }
@@ -252,7 +252,7 @@ class EcOrderForm extends AbstractFormInterceptor {
       public void onResponse(ResponseObject response) {
         response.notify(getFormView());
         if (!response.hasErrors()) {
-          DataChangeEvent.fireRefresh(VIEW_ORDER_EVENTS);
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_EVENTS);
         }
       }
     });
@@ -349,8 +349,8 @@ class EcOrderForm extends AbstractFormInterceptor {
               endRequest();
 
             } else {
-              DataChangeEvent.fireRefresh(VIEW_UNSUPPLIED_ITEMS);
-              DataChangeEvent.fireRefresh(VIEW_ORDER_EVENTS);
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_UNSUPPLIED_ITEMS);
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_EVENTS);
 
               Queries.getRow(getViewName(), rowId, new RowCallback() {
                 @Override
@@ -364,7 +364,7 @@ class EcOrderForm extends AbstractFormInterceptor {
                   if (rowId == getActiveRowId() && !getFormView().observesData()) {
                     getFormView().updateRow(result, false);
                   }
-                  BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
 
                   endRequest();
                 }
@@ -634,7 +634,7 @@ class EcOrderForm extends AbstractFormInterceptor {
             if (DataUtils.sameId(result, getActiveRow()) && !getFormView().observesData()) {
               getFormView().updateRow(result, false);
             }
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
+            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
 
             registerOrderEvent(result.getId(), status);
             if (addToUnsupplied) {

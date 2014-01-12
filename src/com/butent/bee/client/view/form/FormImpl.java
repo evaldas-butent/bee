@@ -1179,7 +1179,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
       setActiveRow(newRow);
-      refreshData(false, false);
+      refreshData(true, false);
     }
   }
 
@@ -1229,7 +1229,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     };
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, getChildrenForInsert(),
-        callback);
+        callback, getId());
     if (getFormInterceptor() != null) {
       getFormInterceptor().onReadyForInsert(this, event);
       if (event.isConsumed()) {

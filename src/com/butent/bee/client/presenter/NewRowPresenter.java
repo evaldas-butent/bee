@@ -148,7 +148,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
       @Override
       public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowInsertEvent(dataInfo.getViewName(), result));
+        RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result,
+            event.getSourceId());
 
         if (formView.getFormInterceptor() != null) {
           formView.getFormInterceptor().afterInsertRow(result);
@@ -192,7 +193,7 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
             @Override
             public void onSuccess(BeeRow result) {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
+              RowUpdateEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result);
               if (callback != null) {
                 callback.onSuccess(result);
               }
@@ -249,7 +250,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
     AutocompleteProvider.retainValues(formView);
     
     Collection<RowChildren> children = formView.getChildrenForInsert();
-    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, children, callback);
+    ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, children, callback,
+        formView.getId());
 
     if (formView.getFormInterceptor() != null) {
       formView.getFormInterceptor().onReadyForInsert(formView, event);

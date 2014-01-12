@@ -61,6 +61,11 @@ public class ShowMessage extends Message {
   }
 
   @Override
+  public boolean isValid() {
+    return getSubject() != null;
+  }
+  
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()), "subject", string(getSubject()));
   }

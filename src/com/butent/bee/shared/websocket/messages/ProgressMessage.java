@@ -87,6 +87,11 @@ public class ProgressMessage extends Message {
   }
 
   @Override
+  public boolean isValid() {
+    return !BeeUtils.isEmpty(getProgressId()) && getState() != null;
+  }
+  
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()), "progressId", getProgressId(),
         "state", string(getState()), "value", string(getValue()));

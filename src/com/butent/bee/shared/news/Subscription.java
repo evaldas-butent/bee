@@ -23,6 +23,8 @@ public class Subscription implements BeeSerializable, HasCaption {
     subscription.deserialize(s);
     return subscription;
   }
+  
+  private long rowId;
 
   private Feed feed;
 
@@ -31,7 +33,8 @@ public class Subscription implements BeeSerializable, HasCaption {
 
   private final List<Headline> headlines = Lists.newArrayList();
 
-  public Subscription(Feed feed, String caption, DateTime date) {
+  public Subscription(long rowId, Feed feed, String caption, DateTime date) {
+    this.rowId = rowId;
     this.feed = feed;
     this.caption = caption;
     this.date = date;
@@ -50,6 +53,15 @@ public class Subscription implements BeeSerializable, HasCaption {
     headlines.clear();
   }
 
+  public boolean contains(long id) {
+    for (Headline headline : headlines) {
+      if (headline.getId() == id) {
+        return true; 
+      }
+    }
+    return false;
+  }
+  
   public int countNew() {
     int count = 0;
 
@@ -60,15 +72,6 @@ public class Subscription implements BeeSerializable, HasCaption {
     }
 
     return count;
-  }
-  
-  public boolean contains(long id) {
-    for (Headline headline : headlines) {
-      if (headline.getId() == id) {
-        return true; 
-      }
-    }
-    return false;
   }
 
   public int countUpdated() {
@@ -86,9 +89,10 @@ public class Subscription implements BeeSerializable, HasCaption {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 4);
+    Assert.lengthEquals(arr, 5);
 
     int i = 0;
+    setRowId(BeeUtils.toLong(arr[i++]));
     setFeed(Codec.unpack(Feed.class, arr[i++]));
     setCaption(arr[i++]);
     setDate(DateTime.restore(arr[i++]));
@@ -103,6 +107,57 @@ public class Subscription implements BeeSerializable, HasCaption {
         add(Headline.restore(h));
       }
     }
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
+  }
+  
+  public DateTime getDate() {
+    return date;
+  }
+
+  public Feed getFeed() {
+    return feed;
+  }
+
+  public List<Headline> getHeadlines() {
+    return headlines;
+  }
+  
+  public String getHeadlineView() {
+    return (getFeed() == null) ? null : getFeed().getHeadlineView();
+  }
+
+  public Set<Long> getIdSet() {
+    Set<Long> result = Sets.newHashSet();
+    
+    for (Headline headline : headlines) {
+      result.add(headline.getId());
+    }
+    
+    return result;
+  }
+  
+  public String getLabel() {
+    if (getFeed() == null) {
+      return getCaption();
+    } else {
+      return BeeUtils.notEmpty(getCaption(), getFeed().getCaption());
+    }
+  }
+
+  public long getRowId() {
+    return rowId;
+  }
+
+  public String getTable() {
+    return (getFeed() == null) ? null : getFeed().getTable();
+  }
+  
+  public boolean isEmpty() {
+    return headlines.isEmpty();
   }
 
   public boolean remove(long id) {
@@ -122,49 +177,11 @@ public class Subscription implements BeeSerializable, HasCaption {
       return true;
     }
   }
-  
-  @Override
-  public String getCaption() {
-    return caption;
-  }
-
-  public DateTime getDate() {
-    return date;
-  }
-
-  public Feed getFeed() {
-    return feed;
-  }
-
-  public List<Headline> getHeadlines() {
-    return headlines;
-  }
-  
-  public Set<Long> getIdSet() {
-    Set<Long> result = Sets.newHashSet();
-    
-    for (Headline headline : headlines) {
-      result.add(headline.getId());
-    }
-    
-    return result;
-  }
-
-  public String getLabel() {
-    if (getFeed() == null) {
-      return getCaption();
-    } else {
-      return BeeUtils.notEmpty(getCaption(), getFeed().getCaption());
-    }
-  }
-
-  public boolean isEmpty() {
-    return headlines.isEmpty();
-  }
 
   @Override
   public String serialize() {
-    Object[] arr = new Object[] {Codec.pack(getFeed()), getCaption(), getDate(), headlines};
+    Object[] arr = new Object[] {getRowId(), Codec.pack(getFeed()), getCaption(), getDate(),
+        headlines};
     return Codec.beeSerialize(arr);
   }
 
@@ -182,5 +199,9 @@ public class Subscription implements BeeSerializable, HasCaption {
 
   private void setFeed(Feed feed) {
     this.feed = feed;
+  }
+
+  private void setRowId(long rowId) {
+    this.rowId = rowId;
   }
 }

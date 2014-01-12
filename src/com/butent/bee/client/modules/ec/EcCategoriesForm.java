@@ -93,8 +93,7 @@ class EcCategoriesForm extends AbstractFormInterceptor implements CatchHandler<I
                   return;
                 }
                 treeView.removeItem(source);
-                BeeKeeper.getBus()
-                    .fireEvent(new RowDeleteEvent(presenter.getViewName(), source.getId()));
+                RowDeleteEvent.fire(BeeKeeper.getBus(), presenter.getViewName(), source.getId());
               }
             });
             break;

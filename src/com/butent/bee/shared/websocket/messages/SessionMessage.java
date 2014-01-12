@@ -50,6 +50,11 @@ public class SessionMessage extends Message {
   public boolean isOpen() {
     return getState() == State.OPEN;
   }
+  
+  @Override
+  public boolean isValid() {
+    return getSessionUser() != null && getState() != null;
+  }
 
   @Override
   public String toString() {
