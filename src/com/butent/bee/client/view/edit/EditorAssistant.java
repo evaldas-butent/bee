@@ -142,7 +142,7 @@ public final class EditorAssistant {
 
         @Override
         public void onSuccess(int value) {
-          if (oldValue == null || value != oldValue /* || (value == 1 && oldValue == 1) */) {
+          if (oldValue == null || (value - 1) != oldValue) {
             source.set(row, value == 0 ? null : value - 1);
             if (element != null) {
               if (value == 0) {

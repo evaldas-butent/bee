@@ -455,9 +455,9 @@ public class MessageBoxes {
 
     int focusIndex;
 
-    if (defaultValue != null && cluster.isIndex(defaultValue)) {
-      cluster.selectTab(defaultValue, false);
-      focusIndex = defaultValue;
+    if (defaultValue != null && cluster.isIndex(defaultValue + 1)) {
+      cluster.selectTab(defaultValue + 1, false);
+      focusIndex = defaultValue + 1;
     } else {
       focusIndex = 0;
     }
