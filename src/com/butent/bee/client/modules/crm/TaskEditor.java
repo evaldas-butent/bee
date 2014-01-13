@@ -455,6 +455,11 @@ class TaskEditor extends AbstractFormInterceptor {
     rowSet.addRow(visitedRow);
 
     ParameterList params = CrmKeeper.createTaskRequestParameters(TaskEvent.VISIT);
+
+    if (newStatus == TaskStatus.ACTIVE) {
+      params.addQueryItem(VAR_TASK_VISITED, 1);
+    }
+
     params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
     params.addDataItem(VAR_TASK_USERS, getTaskUsers(form, row));
 

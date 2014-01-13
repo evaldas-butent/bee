@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -181,14 +182,25 @@ public class NewsBean {
     logger.debug("news on access", userId, table, dataId, usageTable);
     return response;
   }
+  
+  public void maybeRecordUpdate(String viewName, Long rowId) {
+    maybeRecordUpdate(viewName, rowId, null);
+  }
 
-  public void onUpdate(String table, List<BeeColumn> columns, Long rowId, boolean isNew) {
+  public void maybeRecordUpdate(String viewName, Long rowId, List<BeeColumn> checkColumns) {
+    if (!sys.isView(viewName)) {
+      return;
+    }
+    
+    BeeView view = sys.getView(viewName);
+    String table = view.getSourceName();
+    
     String usageTable = NewsConstants.getUsageTable(table);
     if (BeeUtils.isEmpty(usageTable)) {
       return;
     }
     
-    if (!isNew && !NewsConstants.anyObserved(table, columns)) {
+    if (!BeeUtils.isEmpty(checkColumns) && !NewsConstants.anyObserved(table, checkColumns)) {
       return;
     }
 

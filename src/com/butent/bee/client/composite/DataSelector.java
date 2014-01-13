@@ -100,7 +100,7 @@ import java.util.Map;
  */
 
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasTextBox,
-    HasRelatedRow, HasCapsLock , HasKeyDownHandlers {
+    HasRelatedRow, HasCapsLock, HasKeyDownHandlers {
 
   protected final class InputWidget extends InputText implements HasMouseWheelHandlers {
 

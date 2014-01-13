@@ -4,10 +4,12 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -44,11 +46,33 @@ public class Bee implements EntryPoint {
 
   public static void exit() {
     Bee.keeper.exit();
-    
+
     ClientLogManager.close();
     BodyPanel.get().clear();
-    
+
     Endpoint.close();
+
+    if (BeeKeeper.getRpc().hasPendingRequests()) {
+      Timer timer = new Timer() {
+        @Override
+        public void run() {
+          List<RpcInfo> pendingRequests = BeeKeeper.getRpc().getPendingRequests();
+          for (RpcInfo info : pendingRequests) {
+            info.cancel();
+          }
+          
+          logout();
+        }
+      };
+
+      timer.schedule(1000);
+
+    } else {
+      logout();
+    }
+  }
+
+  private static void logout() {
     BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
   }
 
@@ -64,7 +88,7 @@ public class Bee implements EntryPoint {
     if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
       DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
     }
-    
+
     List<String> extStyleSheets = Settings.getStyleSheets();
     if (!BeeUtils.isEmpty(extStyleSheets)) {
       for (String styleSheet : extStyleSheets) {
@@ -99,7 +123,7 @@ public class Bee implements EntryPoint {
         start();
       }
     });
-    
+
     List<String> extScripts = Settings.getScripts();
     if (!BeeUtils.isEmpty(extScripts)) {
       for (String script : extScripts) {
@@ -121,7 +145,7 @@ public class Bee implements EntryPoint {
           case AUTOCOMPLETE:
             AutocompleteProvider.load(serialized);
             break;
-            
+
           case DATA_INFO:
             Data.getDataInfoProvider().restore(serialized);
             break;
@@ -150,11 +174,11 @@ public class Bee implements EntryPoint {
           case MENU:
             BeeKeeper.getMenu().restore(serialized);
             break;
-            
+
           case NEWS:
             Global.getNewsAggregator().loadSubscriptions(serialized);
             break;
-            
+
           case USERS:
             Global.getUsers().loadUserData(serialized);
             break;
@@ -171,7 +195,7 @@ public class Bee implements EntryPoint {
     Data.init();
 
     Historian.start();
-    
+
     Endpoint.open(BeeKeeper.getUser().getUserId());
 
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");

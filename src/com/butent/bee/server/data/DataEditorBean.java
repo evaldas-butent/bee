@@ -292,8 +292,12 @@ public class DataEditorBean {
       }
       event.setAfter();
       sys.postDataEvent(event);
-
-      news.onUpdate(tblInfo.tableName, rs.getColumns(), id, isNew);
+      
+      if (isNew) {
+        news.maybeRecordUpdate(rs.getViewName(), id);
+      } else {
+        news.maybeRecordUpdate(rs.getViewName(), id, rs.getColumns());
+      }
     }
     return response;
   }

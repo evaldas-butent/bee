@@ -41,7 +41,7 @@ body {
 }
 .bee-SignIn-Locale-flag {
   cursor: pointer;
-  width: 32px;
+  width: 24px;
   transition: width 200ms;
 }
 

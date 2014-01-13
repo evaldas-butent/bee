@@ -322,12 +322,12 @@ public class CrmModuleBean implements BeeModule {
     if (!DataUtils.isId(taskId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_ID);
     }
-    
+
     Long userId = usr.getCurrentUserId();
     if (!DataUtils.isId(userId)) {
       return ResponseObject.error(reqInfo.getService(), "user id not available");
     }
-    
+
     IsCondition where = SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId, COL_USER, userId);
     if (qs.sqlExists(TBL_TASK_USERS, where)) {
       return registerTaskVisit(taskId, userId, System.currentTimeMillis());
@@ -336,7 +336,7 @@ public class CrmModuleBean implements BeeModule {
       return ResponseObject.emptyResponse();
     }
   }
-  
+
   private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,
       Long eventId) {
     long taskId = row.getId();
@@ -575,7 +575,12 @@ public class CrmModuleBean implements BeeModule {
 
       case VISIT:
 
-        response = commitTaskData(taskData, oldUsers, false, updatedRelations, eventId);
+        if (reqInfo.hasParameter(VAR_TASK_VISITED)) {
+          response = registerTaskEvent(taskId, currentUser, event, now);
+        }
+        if (response == null || !response.hasErrors()) {
+          response = commitTaskData(taskData, oldUsers, false, updatedRelations, eventId);
+        }
         break;
 
       case FORWARD:
