@@ -153,7 +153,7 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
             public void onResponse(ResponseObject response) {
               latch.set(latch.get() - 1);
               if (!BeeUtils.isPositive(latch.get())) {
-                DataChangeEvent.fireRefresh(getViewName());
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
               }
             }
           });

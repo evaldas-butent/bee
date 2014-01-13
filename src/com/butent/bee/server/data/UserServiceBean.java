@@ -252,6 +252,11 @@ public class UserServiceBean {
     return data;
   }
 
+  public Long getCompanyPerson(Long userId) {
+    UserInfo userInfo = getUserInfo(userId);
+    return (userInfo == null) ? null : userInfo.getCompanyPerson();
+  }
+  
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notNull(p);

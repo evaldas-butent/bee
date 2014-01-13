@@ -31,6 +31,11 @@ public class OnlineMessage extends Message {
   }
 
   @Override
+  public boolean isValid() {
+    return !BeeUtils.isEmpty(getSessionUsers());
+  }
+  
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()),
         "session users", BeeUtils.isEmpty(getSessionUsers()) ? null : getSessionUsers().toString());

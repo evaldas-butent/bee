@@ -59,9 +59,13 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -84,7 +88,7 @@ import java.util.List;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
     Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain,
-    HandlesDeleteEvents {
+    HandlesAllDataEvents {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
@@ -107,14 +111,18 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
 
+  private static boolean hasNonLocalAppointment(ModificationEvent<?> event) {
+    return event.isSpookyActionAtADistance() && VIEW_APPOINTMENTS.equals(event.getViewName());
+  }
+
   private final long calendarId;
 
   private final HeaderView header;
-
   private final CalendarWidget calendar;
-  private final Label dateBox;
 
+  private final Label dateBox;
   private final TabBar viewTabs;
+
   private final List<ViewType> views = Lists.newArrayList();
 
   private final Timer timer;
@@ -253,7 +261,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     registry.add(AppointmentEvent.register(this));
     registry.add(VisibilityChangeEvent.register(this));
-    registry.addAll(BeeKeeper.getBus().registerDeleteHandler(this, false));
+    
+    registry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
 
     updateUcAttendees(ucAttendees, false);
 
@@ -319,7 +328,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   public void handleAction(Action action) {
     switch (action) {
       case REFRESH:
-        refresh();
+        refresh(true);
         break;
 
       case CONFIGURE:
@@ -355,6 +364,20 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         calendar.removeAppointment(event.getAppointment().getId(), false);
       }
       calendar.addAppointment(event.getAppointment(), true);
+    }
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (hasNonLocalAppointment(event)) {
+      refresh(false);
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (hasNonLocalAppointment(event)) {
+      refresh(false);
     }
   }
 
@@ -422,6 +445,20 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       if (removed) {
         refreshCalendar(false);
       }
+    }
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (hasNonLocalAppointment(event)) {
+      refresh(false);
+    }
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (hasNonLocalAppointment(event)) {
+      refresh(false);
     }
   }
 
@@ -628,8 +665,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     popup.showRelativeTo(dateBox.getElement());
   }
 
-  private void refresh() {
-    calendar.loadAppointments(true);
+  private void refresh(boolean scroll) {
+    calendar.loadAppointments(true, scroll);
   }
 
   private void refreshCalendar(boolean scroll) {
@@ -734,7 +771,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
           @Override
           public void onSuccess(BeeRow result) {
             row.setVersion(result.getVersion());
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_APPOINTMENTS, result));
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_APPOINTMENTS, result);
           }
         });
 
@@ -743,7 +780,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     return true;
   }
-
+  
   private int updateViews(CalendarSettings settings) {
     if (!views.isEmpty()) {
       viewTabs.clear();

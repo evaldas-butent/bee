@@ -144,7 +144,7 @@ final class SelfServiceUtils {
             if (DataUtils.sameId(result, form.getActiveRow()) && !form.observesData()) {
               form.updateRow(result, false);
             }
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
+            RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
           }
         });
   }

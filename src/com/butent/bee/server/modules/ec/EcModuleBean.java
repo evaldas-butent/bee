@@ -30,6 +30,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -102,6 +105,7 @@ import com.butent.bee.shared.modules.ec.EcOrderEvent;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -220,6 +224,8 @@ public class EcModuleBean implements BeeModule {
 
   @EJB
   MailModuleBean mail;
+  @EJB
+  NewsBean news;
 
   @Override
   public Collection<String> dependsOn() {
@@ -567,6 +573,32 @@ public class EcModuleBean implements BeeModule {
             }
           }
         }
+      }
+    });
+    
+    news.registerUsageQueryProvider(Feed.EC_CLIENTS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_CLIENTS, news.joinUsage(TBL_CLIENTS),
+            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_CLIENTS, COL_CLIENT_MANAGER));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.EC_ORDERS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
+      }
+      
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_ORDERS, news.joinUsage(TBL_ORDERS),
+            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_ORDERS, COL_ORDER_MANAGER));
       }
     });
   }

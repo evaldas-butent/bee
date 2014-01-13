@@ -125,7 +125,7 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
           public void onSuccess(Long id) {
             Queries.insert(getViewName(), grid.getDataColumns(),
                 Lists.newArrayList(BeeUtils.toString(id), property.getValue(), value.getValue()),
-                null, new RowInsertCallback(getViewName()) {
+                null, new RowInsertCallback(getViewName(), grid.getId()) {
                   @Override
                   public void onSuccess(BeeRow newRow) {
                     super.onSuccess(newRow);

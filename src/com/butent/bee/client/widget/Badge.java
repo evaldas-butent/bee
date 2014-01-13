@@ -22,9 +22,21 @@ public class Badge extends CustomDiv {
     }
   }
 
+  public void decrement() {
+    update(getValue() - 1);
+  }
+  
   @Override
   public String getIdPrefix() {
     return "badge";
+  }
+  
+  public int getValue() {
+    return BeeUtils.toInt(getText());
+  }
+  
+  public void increment() {
+    update(getValue() + 1);
   }
   
   public void setValue(int value) {

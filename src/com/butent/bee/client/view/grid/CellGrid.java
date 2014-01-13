@@ -1049,6 +1049,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       autoFitColumn(col);
     }
   }
+  
+  public boolean containsRow(long rowId) {
+    for (IsRow row : getRowData()) {
+      if (row.getId() == rowId) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   public void deactivate() {
     activateCell(BeeConst.UNDEF, BeeConst.UNDEF);

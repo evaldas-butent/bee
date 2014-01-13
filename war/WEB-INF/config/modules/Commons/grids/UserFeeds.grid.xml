@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="UserFeeds" viewName="UserFeeds" caption="=feeds"
+  name="UserFeeds" viewName="UserFeeds" caption="=feeds" autoFit="true"
   >
   <g:columns>
     <DataColumn name="Ordinal" width="60" />

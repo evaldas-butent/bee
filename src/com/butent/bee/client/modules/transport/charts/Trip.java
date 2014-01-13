@@ -91,7 +91,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
               @Override
               public void onSuccess(BeeRow result) {
                 if (fire) {
-                  BeeKeeper.getBus().fireEvent(new RowInsertEvent(VIEW_NAME, result));
+                  RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_NAME, result, null);
                 }
 
                 callback.onSuccess(result.getId());
@@ -404,7 +404,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
                 Data.getColumns(viewName, Lists.newArrayList(COL_TRIP, COL_DRIVER));
             List<String> values = Queries.asList(getTripId(), driver.getId());
 
-            Queries.insert(viewName, columns, values, null, new RowInsertCallback(viewName));
+            Queries.insert(viewName, columns, values, null, new RowInsertCallback(viewName, null));
           }
         });
   }

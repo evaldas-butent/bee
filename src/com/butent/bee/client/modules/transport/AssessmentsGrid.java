@@ -77,9 +77,8 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
             Queries.deleteRow(TBL_ORDERS, orderId, 0, new IntCallback() {
               @Override
               public void onSuccess(Integer result) {
-                BeeKeeper.getBus().fireEvent(new RowDeleteEvent(TBL_ORDERS, orderId));
-                BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(),
-                    activeRow.getId()));
+                RowDeleteEvent.fire(BeeKeeper.getBus(), TBL_ORDERS, orderId);
+                RowDeleteEvent.fire(BeeKeeper.getBus(), presenter.getViewName(), activeRow.getId());
               }
             });
             if (!rowSet.isEmpty()) {
@@ -92,7 +91,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
                 @Override
                 public void onSuccess(Integer result) {
                   for (RowInfo row : rows) {
-                    BeeKeeper.getBus().fireEvent(new RowDeleteEvent(expeditionTrips, row.getId()));
+                    RowDeleteEvent.fire(BeeKeeper.getBus(), expeditionTrips, row.getId());
                   }
                 }
               });

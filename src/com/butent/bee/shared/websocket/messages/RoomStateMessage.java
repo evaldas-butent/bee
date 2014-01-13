@@ -71,6 +71,7 @@ public class RoomStateMessage extends Message {
     return getState() == State.UPDATING;
   }
 
+  @Override
   public boolean isValid() {
     return getRoom() != null && getState() != null;
   }

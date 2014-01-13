@@ -4,8 +4,9 @@ import com.google.gwt.resources.client.ImageResource;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasCaption;
 
-public enum Domain {
+public enum Domain implements HasCaption {
   NEWS(Global.getImages().feed(), Localized.getConstants().domainNews(), false, false),
   FAVORITES(Global.getImages().bookmark(), null, false, false),
   CALENDAR(Global.getImages().calendar(), null, true, true),
@@ -28,7 +29,8 @@ public enum Domain {
     this.removable = removable;
   }
 
-  String getCaption() {
+  @Override
+  public String getCaption() {
     return caption;
   }
 

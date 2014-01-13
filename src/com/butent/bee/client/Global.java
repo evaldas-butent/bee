@@ -636,6 +636,7 @@ public class Global implements Module {
     initCache();
     initImages();
     initFavorites();
+    initNewsAggregator();
 
     exportMethods();
   }
@@ -669,5 +670,9 @@ public class Global implements Module {
 
   private static void initImages() {
     Images.init(getImages());
+  }
+  
+  private static void initNewsAggregator() {
+    BeeKeeper.getBus().registerDataHandler(getNewsAggregator(), true);
   }
 }

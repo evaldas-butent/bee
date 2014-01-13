@@ -2276,12 +2276,16 @@
   cursor: pointer;
 }
 
+.bee-News-size,
 .bee-Online-size,
 .bee-Rooms-size {
   position: absolute;
   top: 3px;
   right: 10px;
   display: inline-block;
+  font-weight: bold;
+  color: white;
+  background-color: #aaa;
 }
 
 .bee-Online-item,
@@ -2382,6 +2386,8 @@
 
 .bee-Room-usersBadge {
   margin-left: 2px;
+  color: white;
+  background-color: #aaa;
 }
 .bee-Room-usersPanel {
   flex: 1;
@@ -2602,11 +2608,8 @@
 }
 
 .bee-Badge {
-  padding: 2px 6px;
+  padding: 1px 5px;
   font-size: 12px;
-  font-weight: bold;
-  color: white;
-  background-color: #aaa;
   border-radius: 10px;
 }
 .bee-Badge-empty {
@@ -2625,13 +2628,190 @@
   right: 0;
 }
 
-.bee-News-feed {
-  font-weight: bold;
-  padding-top: 1ex;
-  padding-bottom: 1ex;
+.bee-News-header {
+  position: relative;
+  height: 30px;
+  background-color: #f0eeef;  
 }
-.bee-News-headline {
-  padding-left: 1em;
-  text-decoration: underline;
+
+.bee-News-disclosure,
+.bee-News-refresh,
+.bee-News-settings {
+  position: absolute;
+  top: 5px;
+  color: #888;
+  font-size: 18px;
+  padding: 1px 3px;
   cursor: pointer;
+}
+.bee-News-disclosure:hover,
+.bee-News-refresh:hover,
+.bee-News-settings:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-News-disclosure {
+  left: 3px;
+}
+.bee-News-refresh {
+  right: 40px;
+}
+.bee-News-settings {
+  right: 10px;
+}
+
+.bee-News-nothing-happens .bee-News-disclosure {
+  display: none;
+}
+.bee-News-apathy .bee-News-refresh {
+  display: none;
+}
+
+.bee-News-loading {
+  position: absolute;
+  top: 5px;
+  left: 45%;
+  font-size: 20px;
+  animation: rotate 1s linear infinite;
+  -webkit-animation: rotate 1s linear infinite;
+}
+.bee-News-not-loading {
+  display: none;
+}
+
+.bee-News-content {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+
+.bee-News-subscription-panel {
+  padding-top: 3px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-News-subscription-header {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+.bee-News-subscription-header:hover {
+  background-color: #f2f2f2;
+}
+.bee-News-subscription-label {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  max-height: 60px;
+  overflow: auto;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.bee-News-subscription-disclosure,
+.bee-News-subscription-filter {
+  display: inline-block;
+  color: #888;
+  padding: 1px 3px;
+  cursor: pointer;
+}
+.bee-News-subscription-disclosure:hover,
+.bee-News-subscription-filter:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-News-subscription-disclosure {
+  font-size: 15px;
+  margin-left: 1px;
+  margin-right: 2px;
+}
+.bee-News-subscription-filter {
+  font-size: 18px;
+  margin-left: 4px;
+  margin-right: 2px;
+}
+
+.bee-News-subscription-new-size,
+.bee-News-subscription-upd-size {
+  margin-left: 2px;
+  border: 1px solid silver;
+  color: #888;
+}
+.bee-News-subscription-new-size {
+  background-color: lightgreen;
+}
+.bee-News-subscription-upd-size {
+  background-color: yellow;
+}
+.bee-News-subscription-new-size.bee-Badge-empty,
+.bee-News-subscription-upd-size.bee-Badge-empty {
+  display: none;
+}
+
+.bee-News-subscription-closed .bee-News-subscription-content {
+  display: none;
+}
+
+.bee-News-headline-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-News-headline-panel:hover {
+  background-color: #f2f2f2;
+}
+.bee-News-headline-panel:hover .bee-News-headline-dismiss {
+  visibility: visible;
+}
+
+.bee-News-headline-new,
+.bee-News-headline-upd {
+  width: 10px;
+  height: 10px;
+  border: 1px solid silver;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 1em;
+  margin-right: 4px;
+}
+.bee-News-headline-new {
+  background-color: lightgreen;
+}
+.bee-News-headline-upd {
+  background-color: yellow;
+}
+
+.bee-News-headline-caption {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  max-height: 60px;
+  overflow: auto;
+  cursor: pointer;
+}
+.bee-News-headline-caption:hover {
+  text-decoration: underline;
+}
+
+.bee-News-headline-dismiss {
+  font-size: 17px;
+  margin-left: 2px;
+  margin-right: 2px;
+  cursor: pointer;
+  visibility: hidden;
+}
+.bee-News-headline-dismiss:hover {
+  color: red;
 }

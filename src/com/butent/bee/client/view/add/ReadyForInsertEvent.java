@@ -36,16 +36,19 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
   private final List<String> values;
   private final Collection<RowChildren> children;
   private final RowCallback callback;
+  
+  private final String sourceId;
 
   private boolean consumed;
 
   public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values,
-      Collection<RowChildren> children, RowCallback callback) {
+      Collection<RowChildren> children, RowCallback callback, String sourceId) {
     super();
     this.columns = columns;
     this.values = values;
     this.children = children;
     this.callback = callback;
+    this.sourceId = sourceId;
   }
 
   @Override
@@ -68,6 +71,10 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
 
   public List<BeeColumn> getColumns() {
     return columns;
+  }
+  
+  public String getSourceId() {
+    return sourceId;
   }
 
   public List<String> getValues() {

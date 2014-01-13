@@ -111,8 +111,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         long version = activeRow.getVersion();
 
         if (BeeUtils.isEmpty(getViewName())) {
-          getDataProvider().onRowDelete(new RowDeleteEvent(getViewName(), rowId));
+          RowDeleteEvent.forward(getDataProvider(), getViewName(), rowId);
           afterDelete(rowId);
+
         } else {
           Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
             @Override
@@ -122,11 +123,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
             @Override
             public void onSuccess(Integer result) {
-              BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
+              RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rowId);
               afterDelete(rowId);
             }
           });
         }
+
       } else {
         final long[] rowIds = new long[count];
         int i = 0;
@@ -134,9 +136,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           rowIds[i] = rowInfo.getId();
           i++;
         }
+      
         if (BeeUtils.isEmpty(getViewName())) {
-          getDataProvider().onMultiDelete(new MultiDeleteEvent(getViewName(), rows));
+          MultiDeleteEvent.forward(getDataProvider(), getViewName(), rows);
           afterMulti(rowIds);
+        
         } else {
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
@@ -146,7 +150,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
             @Override
             public void onSuccess(Integer result) {
-              BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
+              MultiDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rows);
               afterMulti(rowIds);
               showInfo(Localized.getMessages().deletedRows(result));
             }
@@ -445,12 +449,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow result) {
-            BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(result);
             }
           }
         });
+  }
+  
+  public boolean hasFilter() {
+    return getDataProvider().hasFilter();
   }
 
   @Override
@@ -464,8 +472,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         getDataProvider().getColumnIndex(columnId));
 
     if (BeeUtils.isEmpty(getViewName())) {
-      getDataProvider().onCellUpdate(new CellUpdateEvent(getViewName(), rowId, version,
-          source, newValue));
+      CellUpdateEvent.forward(getDataProvider(), getViewName(), rowId, version, source, newValue);
       return true;
     }
 
@@ -489,11 +496,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
 
         if (rowMode) {
-          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
+          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
         } else {
           String value = row.getString(0);
-          BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), rowId, row.getVersion(),
-              source, value));
+          CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowId, row.getVersion(),
+              source, value);
         }
       }
     };
@@ -521,7 +528,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow row) {
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
+            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(row);
             }

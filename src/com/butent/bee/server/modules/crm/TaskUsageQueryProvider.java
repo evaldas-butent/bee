@@ -2,12 +2,12 @@ package com.butent.bee.server.modules.crm;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.news.Feed;
-import com.butent.bee.shared.news.NewsUtils;
 import com.butent.bee.shared.time.DateTime;
 
 final class TaskUsageQueryProvider implements UsageQueryProvider {
@@ -84,7 +84,7 @@ final class TaskUsageQueryProvider implements UsageQueryProvider {
         .addGroup(TBL_TASK_EVENTS, COL_TASK);
 
     IsCondition where = SqlUtils.and(SqlUtils.notEqual(TBL_TASK_EVENTS, COL_PUBLISHER, userId),
-        SqlUtils.more(TBL_TASK_EVENTS, COL_PUBLISH_TIME, NewsUtils.getStartTime(startDate)));
+        SqlUtils.more(TBL_TASK_EVENTS, COL_PUBLISH_TIME, NewsHelper.getStartTime(startDate)));
 
     switch (feed) {
       case TASKS_ASSIGNED:

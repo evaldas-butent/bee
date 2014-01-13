@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -25,6 +26,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -100,6 +102,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -253,6 +256,9 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   private final Map<String, String> properties = Maps.newHashMap();
 
   private final List<String> dynamicColumnGroups = Lists.newArrayList();
+
+  private final List<com.google.web.bindery.event.shared.HandlerRegistration> registry = 
+      Lists.newArrayList();
 
   public GridImpl(GridDescription gridDescription, String gridKey,
       List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor) {
@@ -1275,6 +1281,52 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   }
 
   @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (!event.hasView(getViewName())) {
+      return;
+    }
+    if (event.getRow() == null) {
+      return;
+    }
+    
+    if (event.hasSourceId(getId())) {
+      return;
+    }
+    if (BeeUtils.isEmpty(event.getSourceId()) && !event.isSpookyActionAtADistance()) {
+      return;
+    }
+    
+    if (getGrid().getPageSize() > 0 && getGrid().getRowCount() > getGrid().getPageSize()) {
+      return;
+    }
+    
+    if (isChild()) {
+      if (!DataUtils.isId(getRelId())) {
+        return;
+      }
+      
+      int index = DataUtils.getColumnIndex(getRelColumn(), getDataColumns());
+      if (index < 0) {
+        return;
+      }
+      
+      if (!Objects.equal(getRelId(), event.getRow().getLong(index))) {
+        return;
+      }
+    
+    } else if (getViewPresenter() == null || getViewPresenter().hasFilter()) {
+      return;
+    }
+    
+    if (getGrid().containsRow(event.getRowId())) {
+      return;
+    }
+    
+    getGrid().insertRow(event.getRow(), false);
+    logger.info("grid", getId(), getViewName(), "insert row", event.getRowId());
+  }
+
+  @Override
   public void onSettingsChange(SettingsChangeEvent event) {
     GridSettings.onSettingsChange(gridKey, event);
   }
@@ -1390,7 +1442,16 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   }
 
   @Override
+  protected void onLoad() {
+    super.onLoad();
+
+    registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+  }
+
+  @Override
   protected void onUnload() {
+    EventUtils.clearRegistry(registry);
+
     if (getNewRowPopup() != null) {
       getNewRowPopup().unload();
     }
@@ -2289,7 +2350,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     AutocompleteProvider.retainValues(form);
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values,
-        form.getChildrenForInsert(), callback);
+        form.getChildrenForInsert(), callback, getId());
 
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().onReadyForInsert(this, event);

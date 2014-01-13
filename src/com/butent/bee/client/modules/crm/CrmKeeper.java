@@ -13,10 +13,12 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -89,6 +91,25 @@ public final class CrmKeeper {
     DocumentHandler.register();
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
+        TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
+    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
+        TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
+    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
+        TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
+    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
+        TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
+    
+    Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new Consumer<Long>() {
+      @Override
+      public void accept(Long input) {
+        ParameterList params = createArgs(SVC_ACCESS_TASK);
+        params.addQueryItem(VAR_TASK_ID, input);
+        
+        BeeKeeper.getRpc().makeRequest(params);
+      }
+    });
   }
 
   static ParameterList createArgs(String method) {

@@ -135,7 +135,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     return view;
   }
 
-  public void loadAppointments(boolean force) {
+  public void loadAppointments(boolean force, final boolean scroll) {
     if (getView() != null) {
       final long startMillis = System.currentTimeMillis();
       final Range<DateTime> range = getView().getVisibleRange();
@@ -145,7 +145,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
         public void onSuccess(Integer result) {
           logger.debug("load", CalendarUtils.renderRange(range), result,
               TimeUtils.elapsedMillis(startMillis));
-          refresh(true);
+          refresh(scroll);
         }
       });
     }
@@ -253,7 +253,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     }
     
     if (changed) {
-      loadAppointments(false);
+      loadAppointments(false, true);
     }
     
     return changed;

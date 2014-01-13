@@ -139,6 +139,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
     return Filter.and(lst);
   }
+  
+  public boolean hasFilter() {
+    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
+  }
 
   public Filter getUserFilter() {
     return userFilter;

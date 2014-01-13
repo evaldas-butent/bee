@@ -108,7 +108,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
         @Override
         public void onSuccess(BeeRow row) {
-          BeeKeeper.getBus().fireEvent(new RowInsertEvent(gridView.getViewName(), row));
+          RowInsertEvent.fire(BeeKeeper.getBus(), gridView.getViewName(), row, gridView.getId());
           gridView.getGrid().insertRow(row, false);
         }
       });

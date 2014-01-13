@@ -23,6 +23,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class CommonsKeeper {
@@ -106,7 +107,7 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
-    GridFactory.registerGridInterceptor(VIEW_USER_FEEDS, new UserFeedsInterceptor());
+    GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

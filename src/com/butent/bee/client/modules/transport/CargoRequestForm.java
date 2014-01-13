@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
@@ -133,7 +134,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
             SelfServiceUtils.updateStatus(getFormView(), COL_CARGO_REQUEST_STATUS, status);
             refreshCommands(status);
 
-            DataChangeEvent.fireRefresh(VIEW_ORDERS);
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDERS);
           }
         });
       }
@@ -166,7 +167,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
     RowFactory.createRow(tInfo, tRow, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        DataChangeEvent.fireRefresh(VIEW_CARGO_REQUEST_TEMPLATES);
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CARGO_REQUEST_TEMPLATES);
       }
     });
   }

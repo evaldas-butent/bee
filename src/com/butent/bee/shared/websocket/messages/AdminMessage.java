@@ -62,6 +62,12 @@ public class AdminMessage extends Message implements HasRecipient {
   }
 
   @Override
+  public boolean isValid() {
+    return !BeeUtils.anyEmpty(getFrom(), getTo()) 
+        && BeeUtils.isEmpty(getCommand()) != BeeUtils.isEmpty(getResponse()); 
+  }
+
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()), "from", getFrom(), "to", getTo(),
         "command", getCommand(), "response", getResponse());

@@ -4,6 +4,7 @@ import com.google.gwt.text.shared.AbstractRenderer;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.value.HasValueType;
@@ -14,12 +15,17 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.math.BigDecimal;
 
 public final class CellSource extends AbstractRenderer<IsRow> implements HasPrecision, HasScale,
-    HasValueType {
+    HasValueType, BeeSerializable {
 
+  private enum Serial {
+    SOURCE_TYPE, NAME, INDEX, VALUE_TYPE, PRECISION, SCALE, IS_TEXT
+  }
+  
   private enum SourceType {
     COLUMN, PROPERTY, ID, VERSION;
   }
@@ -54,19 +60,31 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     return new CellSource(SourceType.VERSION, name, DataUtils.VERSION_INDEX,
         DataUtils.VERSION_TYPE);
   }
+  
+  public static CellSource restore(String s) {
+    Assert.notEmpty(s);
+    
+    CellSource cellSource = new CellSource();
+    cellSource.deserialize(s);
+    return cellSource;
+  }
 
-  private final SourceType sourceType;
+  private SourceType sourceType;
 
-  private final String name;
-  private final Integer index;
+  private String name;
+  private Integer index;
 
-  private final ValueType valueType;
+  private ValueType valueType;
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 
   private boolean isText;
 
+  private CellSource() {
+    super();
+  }
+  
   private CellSource(SourceType sourceType, String name, Integer index, ValueType valueType) {
     super();
 
@@ -95,6 +113,48 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
       case VERSION:
         row.setVersion(DataUtils.NEW_ROW_VERSION);
         break;
+    }
+  }
+
+  @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
+
+    for (int i = 0; i < members.length; i++) {
+      Serial member = members[i];
+      String value = arr[i];
+
+      switch (member) {
+        case INDEX:
+          this.index = BeeUtils.toIntOrNull(value);
+          break;
+
+        case IS_TEXT:
+          setIsText(Codec.unpack(value));
+          break;
+        
+        case NAME:
+          this.name = value;
+          break;
+        
+        case PRECISION:
+          setPrecision(BeeUtils.toInt(value));
+          break;
+        
+        case SCALE:
+          setScale(BeeUtils.toInt(value));
+          break;
+        
+        case SOURCE_TYPE:
+          this.sourceType = Codec.unpack(SourceType.class, value);
+          break;
+        
+        case VALUE_TYPE:
+          this.valueType = Codec.unpack(ValueType.class, value);
+          break;
+      }
     }
   }
 
@@ -345,6 +405,46 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     }
   }
 
+  @Override
+  public String serialize() {
+    Serial[] members = Serial.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
+
+    for (Serial member : members) {
+      switch (member) {
+        case INDEX:
+          arr[i++] = getIndex();
+          break;
+
+        case IS_TEXT:
+          arr[i++] = Codec.pack(isText());
+          break;
+        
+        case NAME:
+          arr[i++] = getName(); 
+          break;
+
+        case PRECISION:
+          arr[i++] = getPrecision();
+          break;
+
+        case SCALE:
+          arr[i++] = getScale();
+          break;
+
+        case SOURCE_TYPE:
+          arr[i++] = Codec.pack(sourceType);
+          break;
+
+        case VALUE_TYPE:
+          arr[i++] = Codec.pack(getValueType());
+          break;
+      }
+    }
+    return Codec.beeSerialize(arr);
+  }
+
   public void set(IsRow row, Integer value) {
     Assert.notNull(row);
 
@@ -389,6 +489,10 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
     }
   }
 
+  public void setIsText(boolean isText) {
+    this.isText = isText;
+  }
+
   @Override
   public void setPrecision(int precision) {
     this.precision = precision;
@@ -397,9 +501,5 @@ public final class CellSource extends AbstractRenderer<IsRow> implements HasPrec
   @Override
   public void setScale(int scale) {
     this.scale = scale;
-  }
-
-  public void setIsText(boolean isText) {
-    this.isText = isText;
   }
 }

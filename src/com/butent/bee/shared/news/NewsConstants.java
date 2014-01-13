@@ -1,40 +1,40 @@
 package com.butent.bee.shared.news;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public final class NewsUtils {
+public final class NewsConstants {
+
+  public static final String TBL_USER_FEEDS = "UserFeeds";
+  public static final String VIEW_USER_FEEDS = "UserFeeds";
+
+  public static final String COL_UF_USER = "User";
+  public static final String COL_UF_FEED = "Feed";
+
+  public static final String COL_UF_CAPTION = "Caption";
+  public static final String COL_UF_SUBSCRIPTION_DATE = "SubscriptionDate";
+  public static final String COL_UF_ORDINAL = "Ordinal";
 
   public static final String COL_USAGE_USER = "User";
   public static final String COL_USAGE_ACCESS = "Access";
   public static final String COL_USAGE_UPDATE = "Update";
   
+  public static final String GRID_USER_FEEDS = "UserFeeds";
+  
   private static final Map<String, String> usageTables = Maps.newHashMap();
   private static final Multimap<String, String> observedColumns = HashMultimap.create();
-
-  private static final String FEED_SEPARATOR = BeeConst.STRING_COMMA;
-  private static final Splitter feedSplitter =
-      Splitter.on(FEED_SEPARATOR).omitEmptyStrings().trimResults();
 
   static {
     initUsageTables();
@@ -52,10 +52,6 @@ public final class NewsUtils {
     return false;
   }
 
-  public static long getStartTime(DateTime startDate) {
-    return (startDate == null) ? 0L : startDate.getTime();
-  }
-
   public static String getUsageTable(String table) {
     return (table == null) ? null : usageTables.get(table);
   }
@@ -68,35 +64,6 @@ public final class NewsUtils {
     return (table == null) ? false : usageTables.containsKey(table);
   }
 
-  public static String joinFeeds(Collection<Feed> feeds) {
-    if (BeeUtils.isEmpty(feeds)) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    Set<Integer> ordinals = Sets.newHashSet();
-    for (Feed feed : feeds) {
-      if (feed != null) {
-        ordinals.add(feed.ordinal());
-      }
-    }
-
-    return BeeUtils.join(FEED_SEPARATOR, ordinals);
-  }
-
-  public static List<Feed> splitFeeds(String input) {
-    List<Feed> feeds = Lists.newArrayList();
-    if (BeeUtils.isEmpty(input)) {
-      return feeds;
-    }
-
-    for (String s : feedSplitter.split(input)) {
-      Feed feed = EnumUtils.getEnumByIndex(Feed.class, s);
-      if (feed != null) {
-        feeds.add(feed);
-      }
-    }
-    return feeds;
-  }
 
   private static void initObservedColumns() {
     observedColumns.put(CommonsConstants.TBL_COMPANY_USERS,
@@ -113,6 +80,8 @@ public final class NewsUtils {
 
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_START_DATE_TIME);
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_END_DATE_TIME);
+    observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_STATUS);
+    observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_ORGANIZER);
 
     observedColumns.put(EcConstants.TBL_CLIENTS, EcConstants.COL_CLIENT_MANAGER);
     observedColumns.put(EcConstants.TBL_ORDERS, EcConstants.COL_ORDER_STATUS);
@@ -164,6 +133,6 @@ public final class NewsUtils {
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");
   }
 
-  private NewsUtils() {
+  private NewsConstants() {
   }
 }

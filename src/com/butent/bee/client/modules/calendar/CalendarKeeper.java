@@ -479,6 +479,8 @@ public final class CalendarKeeper {
 
               Global.inputWidget(result.getCaption(), result, builder.getModalCallback(),
                   RowEditor.DIALOG_STYLE, null, enabledActions);
+              
+              Global.getNewsAggregator().onAccess(VIEW_APPOINTMENTS, appointment.getId());
             }
           }
         });

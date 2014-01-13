@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.OptionElement;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -15,15 +14,13 @@ import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.news.Feed;
-import com.butent.bee.shared.news.NewsUtils;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -48,13 +45,28 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   private static final int MAX_VISIBLE_ITEM_COUNT = 30;
   private static final int VISIBLE_ITEM_COUNT_RESERVE = 3;
 
+  private static void subscribe(long user, List<Feed> feeds) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.SUBSCRIBE_TO_FEEDS);
+    params.addDataItem(Service.VAR_USER, user);
+    params.addDataItem(Service.VAR_FEED, Feed.join(feeds));
+
+    BeeKeeper.getRpc().makeRequest(params);
+  }
+
+  private final Long userId;
+
+  public UserFeedsInterceptor(Long userId) {
+    this.userId = userId;
+  }
+
   UserFeedsInterceptor() {
+    this(null);
   }
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     List<? extends IsRow> data = presenter.getGridView().getRowData();
-    int dataIndex = getDataIndex(CommonsConstants.COL_FEED);
+    int dataIndex = getDataIndex(NewsConstants.COL_UF_FEED);
 
     List<Feed> feeds = Lists.newArrayList();
     for (Feed feed : Feed.values()) {
@@ -122,7 +134,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription, CellSource cellSource) {
-    if (BeeUtils.same(columnName, CommonsConstants.COL_FEED)) {
+    if (BeeUtils.same(columnName, NewsConstants.COL_UF_FEED)) {
       return new FeedCaptionRenderer(cellSource);
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
@@ -130,28 +142,18 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   }
 
   private void subscribe(final List<Feed> feeds) {
-    getGridView().ensureRelId(new IdCallback() {
-      @Override
-      public void onSuccess(final Long result) {
-        if (DataUtils.isId(result)) {
-          ParameterList params = BeeKeeper.getRpc().createParameters(Service.SUBSCRIBE_TO_FEEDS);
-          params.addDataItem(Service.VAR_USER, result);
-          params.addDataItem(Service.VAR_FEED, NewsUtils.joinFeeds(feeds));
+    if (DataUtils.isId(userId)) {
+      subscribe(userId, feeds);
 
-          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              if (!response.hasErrors()) {
-                getGridPresenter().refresh(false);
-
-                if (BeeKeeper.getUser().is(result)) {
-                  Global.getNewsAggregator().refresh();
-                }
-              }
-            }
-          });
+    } else {
+      getGridView().ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(final Long result) {
+          if (DataUtils.isId(result)) {
+            subscribe(result, feeds);
+          }
         }
-      }
-    });
+      });
+    }
   }
 }

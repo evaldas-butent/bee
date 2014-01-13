@@ -25,6 +25,11 @@ public class EchoMessage extends Message {
   }
 
   @Override
+  public boolean isValid() {
+    return !BeeUtils.isEmpty(getText());
+  }
+
+  @Override
   public String toString() {
     return BeeUtils.joinOptions("type", string(getType()), "text", getText());
   }

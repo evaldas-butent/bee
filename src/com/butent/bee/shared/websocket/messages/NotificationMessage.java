@@ -105,6 +105,7 @@ public class NotificationMessage extends Message implements HasRecipient {
     }
   }
 
+  @Override
   public boolean isValid() {
     return !BeeUtils.anyEmpty(getFrom(), getTo()) && getDisplayMode() != null
         && !getMessages().isEmpty();

@@ -83,7 +83,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
         @Override
         public void onSuccess(Integer result) {
-          BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
+          RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rowId);
         }
       });
     }
@@ -243,7 +243,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow result) {
-            BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(result);
             }
@@ -273,15 +273,15 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
 
         if (rowMode) {
-          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
+          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
         } else {
 
           CellSource source = CellSource.forColumn(event.getColumn(),
               getDataProvider().getColumnIndex(event.getColumn().getId()));
           String value = row.getString(0);
 
-          BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), row.getId(),
-              row.getVersion(), source, value));
+          CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row.getId(), row.getVersion(),
+              source, value);
         }
       }
     };

@@ -380,7 +380,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         BeeRow data = getResponseRow(DiscussionEvent.MODIFY.getCaption(), result, this);
 
         if (data != null) {
-          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
+          // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
         }
       }
     });
@@ -433,7 +434,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           return;
         }
 
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
+        // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
+        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
         Widget fileWidget = form.getWidgetByName(PROP_FILES);
         if (fileWidget instanceof FileGroup) {
@@ -1191,7 +1193,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void onResponse(BeeRow data) {
-    BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
+    // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));\
+    RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
     FormView form = getFormView();
 

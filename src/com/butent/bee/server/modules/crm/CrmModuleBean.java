@@ -134,6 +134,9 @@ public class CrmModuleBean implements BeeModule {
     if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
       response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_ACCESS_TASK)) {
+      response = accessTask(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_TASK_DATA)) {
       response = getTaskData(reqInfo);
 
@@ -314,6 +317,26 @@ public class CrmModuleBean implements BeeModule {
     news.registerHeadlineProducer(Feed.TASKS_OBSERVED, headlineProducer);
   }
 
+  private ResponseObject accessTask(RequestInfo reqInfo) {
+    Long taskId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_ID));
+    if (!DataUtils.isId(taskId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_ID);
+    }
+    
+    Long userId = usr.getCurrentUserId();
+    if (!DataUtils.isId(userId)) {
+      return ResponseObject.error(reqInfo.getService(), "user id not available");
+    }
+    
+    IsCondition where = SqlUtils.equals(TBL_TASK_USERS, COL_TASK, taskId, COL_USER, userId);
+    if (qs.sqlExists(TBL_TASK_USERS, where)) {
+      return registerTaskVisit(taskId, userId, System.currentTimeMillis());
+    } else {
+      logger.warning("task", taskId, "access by unauthorized user", userId);
+      return ResponseObject.emptyResponse();
+    }
+  }
+  
   private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,
       Long eventId) {
     long taskId = row.getId();
@@ -552,13 +575,7 @@ public class CrmModuleBean implements BeeModule {
 
       case VISIT:
 
-        if (oldUsers.contains(currentUser)) {
-          response = registerTaskVisit(taskId, currentUser, now);
-        }
-
-        if (response == null || !response.hasErrors()) {
-          response = commitTaskData(taskData, oldUsers, false, updatedRelations, eventId);
-        }
+        response = commitTaskData(taskData, oldUsers, false, updatedRelations, eventId);
         break;
 
       case FORWARD:

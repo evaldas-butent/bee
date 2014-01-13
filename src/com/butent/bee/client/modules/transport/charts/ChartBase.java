@@ -209,7 +209,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       headerView.addCommandItem(filterLabel);
 
       this.removeFilter = new CustomDiv(STYLE_ACTION_REMOVE_FILTER);
-      removeFilter.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+      removeFilter.setText(String.valueOf(BeeConst.CHAR_TIMES));
       
       removeFilter.addClickHandler(new ClickHandler() {
         @Override
