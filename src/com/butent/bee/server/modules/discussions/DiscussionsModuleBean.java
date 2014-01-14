@@ -261,16 +261,23 @@ public class DiscussionsModuleBean implements BeeModule {
               String lastCommentVal = lastCommentData.get(row.getId());
 
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
-
-              row.setProperty(PROP_FILES_COUNT,
-                  row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT)));
+              
+              String filesCountVal = "";
+              if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_FILES_COUNT))) {
+                filesCountVal = row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT));
+              }
+              
+              row.setProperty(PROP_FILES_COUNT, filesCountVal);
 
               String relValue = "";
-              int rc =
-                  BeeUtils.unbox(row.getInteger(rowSet.getColumnIndex(ALS_RELATIONS_COUNT)));
 
-              if (rc > 0) {
-                relValue += IMG_LINK;
+              if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_RELATIONS_COUNT))) {
+                int rc =
+                    BeeUtils.unbox(row.getInteger(rowSet.getColumnIndex(ALS_RELATIONS_COUNT)));
+
+                if (rc > 0) {
+                  relValue += IMG_LINK;
+                }
               }
 
               row.setProperty(PROP_RELATIONS_COUNT, relValue);
@@ -717,7 +724,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject doMark(Long discussionId, Long commentId, Long markId, Long userId) {
     SqlInsert insert =
-        new SqlInsert(TBL_DISCUSSIONS_COMENTS_MARKS).addConstant(COL_DISCUSSION, discussionId)
+        new SqlInsert(TBL_DISCUSSIONS_COMMENTS_MARKS).addConstant(COL_DISCUSSION, discussionId)
             .addConstant(COL_COMMENT, commentId)
             .addConstant(COL_MARK, markId)
             .addConstant(CommonsConstants.COL_USER, userId);
@@ -797,12 +804,12 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_DISCUSSIONS_COMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMENTS_MARKS))
-        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
+        .addFields(TBL_DISCUSSIONS_COMMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS_MARKS))
+        .addFrom(TBL_DISCUSSIONS_COMMENTS_MARKS)
         .setWhere(
-            SqlUtils.equals(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION,
+            SqlUtils.equals(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION,
                 discussionId)).addOrder(
-            TBL_DISCUSSIONS_COMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMENTS_MARKS));
+            TBL_DISCUSSIONS_COMMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS_MARKS));
 
     Long[] result = qs.getLongColumn(query);
     List<Long> markList = Lists.newArrayList();
@@ -892,12 +899,12 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private Map<Long, Integer> getDiscussionsMarksCount(Set<Long> discussionIds) {
     SqlSelect select = new SqlSelect()
-        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
-        .addCount(TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK, PROP_MARK_COUNT)
-        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
-        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT),
-            SqlUtils.inList(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, discussionIds)))
-        .addGroup(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION);
+        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
+        .addCount(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_MARK, PROP_MARK_COUNT)
+        .addFrom(TBL_DISCUSSIONS_COMMENTS_MARKS)
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_COMMENT),
+            SqlUtils.inList(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION, discussionIds)))
+        .addGroup(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION);
 
     SimpleRowSet rs = qs.getData(select);
     Map<Long, Integer> ls = Maps.newHashMap();
@@ -912,18 +919,18 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private SimpleRowSet getDiscussionMarksData(List<Long> filter) {
     SqlSelect select = new SqlSelect()
-        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
-        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_COMMENT, COL_COMMENT)
-        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK, COL_MARK)
-        .addField(TBL_DISCUSSIONS_COMENTS_MARKS, CommonsConstants.COL_USER,
+        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
+        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_COMMENT, COL_COMMENT)
+        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_MARK, COL_MARK)
+        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, CommonsConstants.COL_USER,
             CommonsConstants.COL_USER)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
             CommonsConstants.COL_FIRST_NAME)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
             CommonsConstants.COL_LAST_NAME)
-        .addFrom(TBL_DISCUSSIONS_COMENTS_MARKS)
+        .addFrom(TBL_DISCUSSIONS_COMMENTS_MARKS)
         .addFromLeft(CommonsConstants.TBL_USERS,
-            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMENTS_MARKS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMMENTS_MARKS,
                 CommonsConstants.COL_USER))
         .addField(TBL_COMMENTS_MARK_TYPES, COL_MARK_NAME, COL_MARK_NAME)
         .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
@@ -933,14 +940,14 @@ public class DiscussionsModuleBean implements BeeModule {
             sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
                 CommonsConstants.COL_PERSON))
         .addFromLeft(TBL_COMMENTS_MARK_TYPES,
-            sys.joinTables(TBL_COMMENTS_MARK_TYPES, TBL_DISCUSSIONS_COMENTS_MARKS, COL_MARK));
+            sys.joinTables(TBL_COMMENTS_MARK_TYPES, TBL_DISCUSSIONS_COMMENTS_MARKS, COL_MARK));
 
     select.setWhere(SqlUtils.sqlTrue());
 
     if (!BeeUtils.isEmpty(filter)) {
       select.setWhere(SqlUtils.and(select.getWhere(), SqlUtils.inList(
-          TBL_DISCUSSIONS_COMENTS_MARKS, sys
-              .getIdName(TBL_DISCUSSIONS_COMENTS_MARKS),
+          TBL_DISCUSSIONS_COMMENTS_MARKS, sys
+              .getIdName(TBL_DISCUSSIONS_COMMENTS_MARKS),
           filter)));
     } else {
       select.setWhere(SqlUtils.sqlFalse());

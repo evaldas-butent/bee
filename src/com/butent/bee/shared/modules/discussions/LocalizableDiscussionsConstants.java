@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.discussions;
 
 public interface LocalizableDiscussionsConstants {
 
+  String discussions();
+
   String discussActionActivate();
 
   String discussActionClose();

@@ -134,7 +134,11 @@ public final class DiscussionsConstants {
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
   public static final String COL_SUBJECT = "Subject";
-
+  public static final String COL_CREATED = "Created";
+  
+  public static final String [] FEED_OBSERVED_COMMENTS_COLUMNS = {COL_COMMENT, COL_COMMENT_TEXT, 
+      COL_DISCUSSION, COL_DELETED, COL_PARENT_COMMENT};
+  
   public static final String FORM_NEW_DISCUSSION = "NewDiscussion";
   public static final String FORM_DISCUSSION = "Discussion";
 
@@ -181,8 +185,9 @@ public final class DiscussionsConstants {
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
-  public static final String TBL_DISCUSSIONS_COMENTS_MARKS = "DiscussCommentsMarks";
+  public static final String TBL_DISCUSSIONS_COMMENTS_MARKS = "DiscussCommentsMarks";
   public static final String TBL_COMMENTS_MARK_TYPES = "CommentsMarksTypes";
+  public static final String TBL_DISCUSSIONS_USAGE = "DiscussionsUsage";
 
   public static final long VALUE_MEMBER = 1;
 
@@ -207,6 +212,9 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
 
   public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
+  public static final String[] FEED_OBSERVED_DISCUSSION_COLUMNS = {
+      COL_CREATED, COL_SUBJECT, COL_DESCRIPTION, ALS_FILES_COUNT, ALS_RELATIONS_COUNT,
+      ALS_LAST_COMMET, "CommentCount"};
 
   private DiscussionsConstants() {
 
