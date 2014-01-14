@@ -8,7 +8,7 @@
     <Relation name="Discussion" notNull="true" relation="Discussions" cascade="DELETE" label="=discussion"/>
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user"/>
     <DateTime name="LastAccess" label="=discussLastAccess" />
-    <Integer name="Member" defValue="1" notNull="true" label="=discussMember" />
+    <Integer name="Member" defValue="1" label="=discussMember" />
     <Integer name="Star"/>
   </Fields>
 

@@ -82,14 +82,24 @@ final class DiscussionsList {
     STARRED(Localized.getConstants().discussStarred()) {
       @Override
       Filter getFilter(LongValue userId) {
-        Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
-        Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
-        Filter isStarred = ComparisonFilter.notEmpty(COL_STAR);
-        Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
-            VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-            ComparisonFilter.and(isUserFilter, isMemberFilter, isStarred));
+        Filter isPublic = Filter.notEmpty(COL_ACCESSIBILITY);
+        Filter isMember =
+            Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
+                ComparisonFilter.and(ComparisonFilter.isEqual(COL_USER, userId),
+                ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true))));
+        
+        Filter isStarred =
+            Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
+                ComparisonFilter.and(ComparisonFilter.notEmpty(COL_STAR),
+                    ComparisonFilter.isEqual(COL_USER, userId)));
 
-        return discussUsersFilter;
+        Filter notPublicIsMember = Filter.and(Filter.isNot(isPublic), isMember);
+        Filter isPublicNotMember = Filter.and(isPublic, Filter.isNot(isMember));
+        Filter isPublicIsMember = Filter.and(isPublic, isMember);
+
+        return ComparisonFilter.and(isStarred, Filter.or(Lists.newArrayList(notPublicIsMember,
+            isPublicNotMember,
+            isPublicIsMember)));
       }
     };
 

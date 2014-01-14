@@ -22,7 +22,6 @@ import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -275,6 +274,11 @@ public class DiscussionsModuleBean implements BeeModule {
               }
 
               row.setProperty(PROP_RELATIONS_COUNT, relValue);
+              
+              if (BeeUtils.isEmpty(row.getProperty(PROP_USER))) {
+                row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+                createDiscussionUser(row.getId(), usr.getCurrentUserId(), null, false);
+              }
             }
           }
         }
@@ -290,7 +294,6 @@ public class DiscussionsModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
-
 
             if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
               for (BeeRow row : rowSet.getRows()) {
@@ -391,16 +394,32 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject createDiscussionUser(long discussionId, long userId, Long time,
       boolean isMember) {
-    SqlInsert insert = new SqlInsert(TBL_DISCUSSIONS_USERS)
-        .addConstant(COL_DISCUSSION, discussionId)
-        .addConstant(CommonsConstants.COL_USER, userId)
-        .addConstant(COL_MEMBER, isMember);
+
+    SqlUpdate update = new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(COL_MEMBER, isMember)
+            .setWhere(
+                SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER,
+                    userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId)));
 
     if (time != null) {
-      insert.addConstant(COL_LAST_ACCESS, time);
+      update.addConstant(COL_LAST_ACCESS, time);
     }
 
-    return qs.insertDataWithResponse(insert);
+    ResponseObject resp = qs.updateDataWithResponse(update);
+
+    if (!resp.hasResponse() || BeeUtils.unbox((Integer) resp.getResponse()) <= 0) {
+
+      SqlInsert insert = new SqlInsert(TBL_DISCUSSIONS_USERS)
+          .addConstant(COL_DISCUSSION, discussionId)
+          .addConstant(CommonsConstants.COL_USER, userId)
+          .addConstant(COL_MEMBER, isMember);
+
+      if (time != null) {
+        insert.addConstant(COL_LAST_ACCESS, time);
+      }
+      return qs.insertDataWithResponse(insert);
+    }
+
+    return resp;
   }
 
   private ResponseObject commitDiscussionComment(long discussionId, long userId,
@@ -798,19 +817,21 @@ public class DiscussionsModuleBean implements BeeModule {
   private Map<Long, String> getDisscussionsLastComment(Set<Long> discussionIds) {
     Map<Long, String> ls = Maps.newHashMap();
 
-    SqlSelect select = new SqlSelect()
+    SqlSelect select =
+        new SqlSelect()
             .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
             .addMax(TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS),
-            ALS_LAST_COMMET)
+                ALS_LAST_COMMET)
 
-        .addFrom(TBL_DISCUSSIONS)
+            .addFrom(TBL_DISCUSSIONS)
             .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
-            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
             .setWhere(
                 SqlUtils
                     .and(SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, sys
                         .getIdName(TBL_DISCUSSIONS_COMMENTS)),
-            SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), discussionIds)))
+                        SqlUtils.inList(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS),
+                            discussionIds)))
             .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION);
 
     SimpleRowSet maxComments = qs.getData(select);
@@ -1046,7 +1067,9 @@ public class DiscussionsModuleBean implements BeeModule {
       IsCondition condition =
           SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
               CommonsConstants.COL_USER, user);
-      qs.updateData(new SqlDelete(TBL_DISCUSSIONS_USERS).setWhere(condition));
+      qs.updateData(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(COL_MEMBER, false).setWhere(
+          condition));
     }
   }
+
 }
