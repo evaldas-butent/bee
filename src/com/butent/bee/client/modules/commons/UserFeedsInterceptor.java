@@ -6,18 +6,22 @@ import com.google.gwt.dom.client.OptionElement;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -45,12 +49,19 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
   private static final int MAX_VISIBLE_ITEM_COUNT = 30;
   private static final int VISIBLE_ITEM_COUNT_RESERVE = 3;
 
-  private static void subscribe(long user, List<Feed> feeds) {
+  private static void subscribe(final long user, final List<Feed> feeds) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.SUBSCRIBE_TO_FEEDS);
     params.addDataItem(Service.VAR_USER, user);
     params.addDataItem(Service.VAR_FEED, Feed.join(feeds));
 
-    BeeKeeper.getRpc().makeRequest(params);
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (!response.hasErrors() && !Endpoint.isOpen()) {
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), NewsConstants.VIEW_USER_FEEDS);
+        }
+      }
+    });    
   }
 
   private final Long userId;

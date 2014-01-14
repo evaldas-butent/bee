@@ -172,6 +172,8 @@ public final class CrmConstants {
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
 
+  public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
+
   public static final String TBL_REQUESTS = "Requests";
   public static final String TBL_REQUEST_FILES = "RequestFiles";
 

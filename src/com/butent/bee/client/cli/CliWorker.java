@@ -46,6 +46,7 @@ import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
@@ -473,7 +474,7 @@ public final class CliWorker {
       animate(arr);
 
     } else if ("rpc".equals(z)) {
-      showRpc();
+      showRpc(args);
 
     } else if ("rooms".equals(z)) {
       showPropData("Client Rooms", Global.getRooms().getInfo());
@@ -3395,9 +3396,35 @@ public final class CliWorker {
     Global.showModalWidget(table);
   }
 
-  private static void showRpc() {
+  private static void showRpc(String args) {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
+      
+    } else if (BeeUtils.contains(args, 'p')) {
+      List<RpcInfo> requests = BeeKeeper.getRpc().getPendingRequests();
+
+      if (requests.isEmpty()) {
+        inform("no pending requests found");
+      } else {
+        String[][] data = new String[requests.size()][6];
+
+        for (int i = 0; i < requests.size(); i++) {
+          RpcInfo info = requests.get(i);
+          
+          int j = 0;
+          data[i][j++] = BeeUtils.toString(info.getId());
+          data[i][j++] = info.getStartTime();
+          data[i][j++] = info.getService();
+          data[i][j++] = info.getStateString();
+          data[i][j++] = (info.getRequest() == null) 
+              ? BeeConst.NULL : BeeUtils.toString(info.getRequest().isPending());
+          data[i][j++] = TimeUtils.elapsedSeconds(info.getStartMillis());
+        }
+
+        showMatrix("Pending requests", data,
+            "id", "start", "service", "state", "pending", "elapsed");
+      }
+      
     } else {
       Global.showGrid("rpc", new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));

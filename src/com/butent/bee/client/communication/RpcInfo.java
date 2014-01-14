@@ -107,7 +107,7 @@ public class RpcInfo {
     this.reqData = data;
     this.respCallback = callback;
   }
- 
+
   public void addState(State state) {
     if (state != null) {
       getStates().add(state);
@@ -122,7 +122,7 @@ public class RpcInfo {
       getRequest().cancel();
     }
     addState(State.CANCELED);
-    
+
     return wasPending;
   }
 
@@ -308,6 +308,10 @@ public class RpcInfo {
     }
   }
 
+  public long getStartMillis() {
+    return (long) duration.getStart();
+  }
+
   public String getStartTime() {
     return duration.getStartTime();
   }
@@ -338,13 +342,21 @@ public class RpcInfo {
   public String getTimeoutString() {
     return duration.getTimeoutAsTime();
   }
-  
+
   public Object getUserData() {
     return userData;
   }
 
   public boolean isCanceled() {
     return getStates().contains(State.CANCELED);
+  }
+
+  public boolean isPending() {
+    if (getRequest() != null && getRequest().isPending()) {
+      return true;
+    } else {
+      return !isCanceled() && getStates().contains(State.OPEN);
+    }
   }
 
   public void setErrMsg(String errMsg) {

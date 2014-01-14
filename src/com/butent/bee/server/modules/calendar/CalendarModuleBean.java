@@ -611,6 +611,8 @@ public class CalendarModuleBean implements BeeModule {
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
     if (appointments == null || appointments.isEmpty()) {
+      logger.debug("no appointments found where", filter);
+      logger.debug("visible where", visible);
       return appointments;
     }
 
@@ -1447,12 +1449,12 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {
-      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": rowSet is empty");
+      return ResponseObject.error(reqInfo.getService(), ": rowSet is empty");
     }
 
     long appId = newRowSet.getRow(0).getId();
     if (!DataUtils.isId(appId)) {
-      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": invalid row id", appId);
+      return ResponseObject.error(reqInfo.getService(), ": invalid row id", appId);
     }
 
     String propIds = newRowSet.getTableProperty(COL_PROPERTY);
@@ -1462,12 +1464,12 @@ public class CalendarModuleBean implements BeeModule {
     String viewName = VIEW_APPOINTMENTS;
     BeeRowSet oldRowSet = qs.getViewData(viewName, ComparisonFilter.compareId(appId));
     if (oldRowSet == null || oldRowSet.isEmpty()) {
-      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": old row not found", appId);
+      return ResponseObject.error(reqInfo.getService(), ": old row not found", appId);
     }
 
     BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRowSet.getRow(0),
         newRowSet.getRow(0), null);
-
+    
     ResponseObject response;
     if (updated == null) {
       response = ResponseObject.response(oldRowSet.getRow(0));
@@ -1492,35 +1494,48 @@ public class CalendarModuleBean implements BeeModule {
     List<Long> newAttendees = DataUtils.parseIdList(attIds);
     List<Long> newReminders = DataUtils.parseIdList(rtIds);
 
-    updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
+    boolean childrenChanged = updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
         COL_PROPERTY, oldProperties, newProperties);
-    updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
+    childrenChanged |= updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
         COL_ATTENDEE, oldAttendees, newAttendees);
 
     if (!oldReminders.isEmpty() || !newReminders.isEmpty()) {
-      updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
+      childrenChanged |= updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
           COL_REMINDER_TYPE, oldReminders, newReminders);
 
       createNotificationTimers(Pair.of(TBL_APPOINTMENTS, appId));
     }
+    
+    if (childrenChanged) {
+      news.maybeRecordUpdate(VIEW_APPOINTMENTS, appId);
+    }
+    
     return response;
   }
 
-  private void updateChildren(String tblName, String parentRelation, long parentId,
+  private boolean updateChildren(String tblName, String parentRelation, long parentId,
       String columnId, List<Long> oldValues, List<Long> newValues) {
+
     List<Long> insert = Lists.newArrayList(newValues);
     insert.removeAll(oldValues);
 
     List<Long> delete = Lists.newArrayList(oldValues);
     delete.removeAll(newValues);
 
-    for (Long value : insert) {
-      qs.insertData(new SqlInsert(tblName).addConstant(parentRelation, parentId)
-          .addConstant(columnId, value));
-    }
-    for (Long value : delete) {
-      IsCondition condition = SqlUtils.equals(tblName, parentRelation, parentId, columnId, value);
-      qs.updateData(new SqlDelete(tblName).setWhere(condition));
+    if (insert.isEmpty() && delete.isEmpty()) {
+      return false;
+    
+    } else {
+      for (Long value : insert) {
+        qs.insertData(new SqlInsert(tblName).addConstant(parentRelation, parentId)
+            .addConstant(columnId, value));
+      }
+      for (Long value : delete) {
+        IsCondition condition = SqlUtils.equals(tblName, parentRelation, parentId, columnId, value);
+        qs.updateData(new SqlDelete(tblName).setWhere(condition));
+      }
+
+      return true;
     }
   }
 }

@@ -552,11 +552,7 @@ public final class CalendarKeeper {
       params.addQueryItem(PARAM_USER_CALENDAR_ID, settings.getId());
       params.addQueryItem(PARAM_ACTIVE_VIEW, settings.getActiveView().ordinal());
 
-      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-        }
-      });
+      BeeKeeper.getRpc().makeRequest(params);
     }
   }
 
