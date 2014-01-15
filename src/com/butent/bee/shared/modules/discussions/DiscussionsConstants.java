@@ -112,6 +112,7 @@ public final class DiscussionsConstants {
   public static final String COL_COMMENT = "Comment";
   public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_DISCUSSION = "Discussion";
+  public static final String COL_DISCUSSION_ID = "DiscussionID";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_DELETED = "Deleted";
   public static final String COL_IMAGE_RESOURCE_NAME = "ImageResourceName";
@@ -135,10 +136,7 @@ public final class DiscussionsConstants {
   public static final String COL_STATUS = "Status";
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_CREATED = "Created";
-  
-  public static final String [] FEED_OBSERVED_COMMENTS_COLUMNS = {COL_COMMENT, COL_COMMENT_TEXT, 
-      COL_DISCUSSION, COL_DELETED, COL_PARENT_COMMENT};
-  
+
   public static final String FORM_NEW_DISCUSSION = "NewDiscussion";
   public static final String FORM_DISCUSSION = "Discussion";
 
@@ -212,9 +210,6 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
 
   public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
-  public static final String[] FEED_OBSERVED_DISCUSSION_COLUMNS = {
-      COL_CREATED, COL_SUBJECT, COL_DESCRIPTION, ALS_FILES_COUNT, ALS_RELATIONS_COUNT,
-      ALS_LAST_COMMET, "CommentCount"};
 
   private DiscussionsConstants() {
 

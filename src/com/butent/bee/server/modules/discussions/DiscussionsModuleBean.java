@@ -21,6 +21,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
+import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -89,9 +91,11 @@ public class DiscussionsModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  NewsBean news;
+
   @Resource
   EJBContext ctx;
-
   @Resource
   TimerService timerService;
 
@@ -312,6 +316,8 @@ public class DiscussionsModuleBean implements BeeModule {
         }
       }
     });
+
+    news.registerUsageQueryProvider(Feed.DISCUSSIONS, new DiscussionsUsageQueryProvider());
 
   }
 

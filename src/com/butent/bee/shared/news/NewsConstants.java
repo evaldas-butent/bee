@@ -106,7 +106,6 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
     
-    initDiscussionObservedColumns();
   }
 
   private static void initUsageTables() {
@@ -136,12 +135,6 @@ public final class NewsConstants {
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");
     usageTables.put(DiscussionsConstants.TBL_DISCUSSIONS,
         DiscussionsConstants.TBL_DISCUSSIONS_USAGE);
-  }
-
-  private static void initDiscussionObservedColumns() {
-    for (String col : DiscussionsConstants.FEED_OBSERVED_DISCUSSION_COLUMNS) {
-      observedColumns.put(DiscussionsConstants.TBL_DISCUSSIONS, col);
-    }
   }
 
   private NewsConstants() {

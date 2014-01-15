@@ -28,7 +28,6 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -39,10 +38,10 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -209,13 +208,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           event.getCallback().onSuccess(null);
 
           String message = Localized.getConstants().discussCreatedNewDiscussion();
-          GridView gridView = getGridView();
-          if (gridView != null) {
-            gridView.notifyInfo(message);
-            gridView.getViewPresenter().handleAction(Action.REFRESH);
-          } else {
-            BeeKeeper.getScreen().notifyInfo(message);
-          }
+
+          BeeKeeper.getScreen().notifyInfo(message);
+
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
+
         } else {
           event.getCallback().onFailure("Unknown response");
         }
