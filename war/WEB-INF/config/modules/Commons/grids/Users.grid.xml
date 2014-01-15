@@ -11,7 +11,7 @@
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName"
       visible="true" />
     <DataColumn name="CompanyName" caption="=company" />
-    <DataColumn name="Position" visible="false" />
+    <DataColumn name="PositionName" visible="false" />
 
     <DataColumn name="Locale" />
     <DataColumn name="Interface" />

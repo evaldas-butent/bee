@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
@@ -84,15 +85,32 @@ public final class CommonsConstants {
       return this.name().toLowerCase();
     }
   }
+  
+  public enum UserGroupVisibility implements HasCaption {
+    PRIVATE(Localized.getConstants().userGroupPrivate()),
+    PUBLIC(Localized.getConstants().userGroupPublic());
+
+    private final String caption;
+
+    private UserGroupVisibility(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
 
   public static void register() {
-    EnumUtils.register(RightsObjectType.class);
-    EnumUtils.register(RightsState.class);
+    EnumUtils.register(Feed.class);
     EnumUtils.register(ParameterType.class);
     EnumUtils.register(ReminderMethod.class);
+    EnumUtils.register(RightsObjectType.class);
+    EnumUtils.register(RightsState.class);
     EnumUtils.register(SupportedLocale.class);
+    EnumUtils.register(UserGroupVisibility.class);
     EnumUtils.register(UserInterface.class);
-    EnumUtils.register(Feed.class);
   }
 
   public static final String COMMONS_MODULE = "Commons";
@@ -194,6 +212,7 @@ public final class CommonsConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
@@ -218,6 +237,7 @@ public final class CommonsConstants {
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_HISTORY = "History";
+  public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String COL_RELATION = "Relation";
 
@@ -351,6 +371,9 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_KEY = "Key";
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
 
+  public static final String COL_UG_GROUP = "Group";
+  public static final String COL_UG_USER = "User";
+  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";

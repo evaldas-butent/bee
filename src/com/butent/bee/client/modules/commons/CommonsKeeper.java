@@ -108,6 +108,7 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
+    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UserGroupMembersInterceptor());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

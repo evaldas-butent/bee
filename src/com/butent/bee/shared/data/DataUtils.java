@@ -373,6 +373,20 @@ public final class DataUtils {
     return result;
   }
 
+  public static List<BeeColumn> getColumns(List<BeeColumn> columns, List<String> input) {
+    List<BeeColumn> result = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(input)) {
+      for (String s : input) {
+        BeeColumn column = getColumn(s, columns);
+        if (column != null) {
+          result.add(column);
+        }
+      }
+    }
+    return result;
+  }
+
   public static ValueType getColumnType(String columnId, List<? extends IsColumn> columns) {
     ValueType type = null;
     IsColumn column = getColumn(columnId, columns);
@@ -433,7 +447,7 @@ public final class DataUtils {
   public static Double getDouble(List<? extends IsColumn> columns, IsRow row, String columnId) {
     return row.getDouble(getColumnIndex(columnId, columns));
   }
-  
+
   public static Set<Long> getIdSetDifference(String s1, String s2) {
     Set<Long> difference = parseIdSet(s1);
     if (!difference.isEmpty() || !BeeUtils.isEmpty(s2)) {
@@ -616,7 +630,7 @@ public final class DataUtils {
   public static BeeRowSet getUpdated(String viewName, long rowId, long rowVersion,
       List<BeeColumn> columns, List<String> oldValues, List<String> newValues,
       Collection<RowChildren> children) {
-    
+
     if (BeeUtils.isEmpty(columns)) {
       return null;
     }
@@ -678,7 +692,7 @@ public final class DataUtils {
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
-  
+
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
@@ -691,17 +705,17 @@ public final class DataUtils {
     Assert.notNull(dataInfo);
     Assert.notNull(row);
     Assert.notEmpty(colNames);
-    
+
     StringBuilder sb = new StringBuilder();
     String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
-    
+
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
       if (BeeConst.isUndef(i)) {
         logger.warning(dataInfo.getViewName(), "column not found:", colName);
         continue;
       }
-      
+
       String value = render((i >= 0) ? dataInfo.getColumns().get(i) : null, row, i);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
@@ -829,7 +843,7 @@ public final class DataUtils {
           colNames.add(column.getId());
         }
       }
-      
+
       if (exclude.isEmpty()) {
         if (!colNames.isEmpty()) {
           result.addAll(colNames);
@@ -1280,7 +1294,7 @@ public final class DataUtils {
     }
     return !wh.matches(".*[\\(\\)].*");
   }
-  
+
   private DataUtils() {
   }
 }

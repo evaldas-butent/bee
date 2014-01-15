@@ -584,6 +584,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String userFullName();
 
+  String userGroupPrivate();
+
+  String userGroupPublic();
+
   String userLogin();
 
   String users();
