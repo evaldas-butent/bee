@@ -103,7 +103,7 @@ final class SelfServiceUtils {
   }
   
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = ComparisonFilter.notEmpty(COL_EXPEDITION_TYPE_SELF_SERVICE);
+    Filter filter = ComparisonFilter.notNull(COL_EXPEDITION_TYPE_SELF_SERVICE);
     Order order = Order.ascending(COL_EXPEDITION_TYPE_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME);
     
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
@@ -116,7 +116,7 @@ final class SelfServiceUtils {
   }
 
   static void setDefaultShippingTerm(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = ComparisonFilter.notEmpty(COL_SHIPPING_TERM_SELF_SERVICE);
+    Filter filter = ComparisonFilter.notNull(COL_SHIPPING_TERM_SELF_SERVICE);
     Order order = Order.ascending(COL_SHIPPING_TERM_SELF_SERVICE, COL_SHIPPING_TERM_NAME);
 
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);

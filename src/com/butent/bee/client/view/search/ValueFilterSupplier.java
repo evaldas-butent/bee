@@ -226,12 +226,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   private Filter buildIsEmpty() {
     if (searchBy.size() <= 1) {
-      return Filter.isEmpty(getColumnId());
+      return Filter.isNull(getColumnId());
 
     } else {
       CompoundFilter filter = Filter.and();
       for (String by : searchBy) {
-        filter.add(Filter.isEmpty(by));
+        filter.add(Filter.isNull(by));
       }
       return filter;
     }
@@ -239,12 +239,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   private Filter buildNotEmpty() {
     if (searchBy.size() <= 1) {
-      return Filter.notEmpty(getColumnId());
+      return Filter.notNull(getColumnId());
 
     } else {
       CompoundFilter filter = Filter.or();
       for (String by : searchBy) {
-        filter.add(Filter.notEmpty(by));
+        filter.add(Filter.notNull(by));
       }
       return filter;
     }

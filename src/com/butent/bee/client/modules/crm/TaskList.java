@@ -304,7 +304,7 @@ final class TaskList {
 
     private static Filter getNewFilter() {
       return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-          Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isEmpty(COL_LAST_ACCESS)));
+          Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isNull(COL_LAST_ACCESS)));
     }
 
     private static Filter getUpdFilter() {
@@ -834,7 +834,7 @@ final class TaskList {
     public Filter parse(FilterValue input) {
       if (input != null && BeeUtils.isFalse(input.getEmptyValues())) {
         return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-            Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.notEmpty(COL_STAR)));
+            Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.notNull(COL_STAR)));
       } else {
         return null;
       }

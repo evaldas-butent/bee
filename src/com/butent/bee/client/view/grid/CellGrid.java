@@ -922,7 +922,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       new RowChangeScheduler(defaultRowChangeSensitivityMillis);
 
   private Predicate<IsRow> rowEditable;
-  
+
   private String caption;
 
   public CellGrid() {
@@ -1801,6 +1801,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (newRow.getProperties() != null) {
       rowValue.setProperties(newRow.getProperties().copy());
+    } else {
+      rowValue.setProperties(null);
     }
 
     refreshRow(row);

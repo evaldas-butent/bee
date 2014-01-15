@@ -175,7 +175,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
     for (Integer ordinal : ordinals) {
       if (ordinal != null) {
         if (ordinal.equals(nullIndex)) {
-          filters.add(Filter.isEmpty(getColumnId()));
+          filters.add(Filter.isNull(getColumnId()));
         } else {
           filters.add(ComparisonFilter.isEqual(getColumnId(), new IntegerValue(ordinal)));
         }

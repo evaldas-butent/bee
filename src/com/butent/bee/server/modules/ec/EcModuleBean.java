@@ -938,9 +938,9 @@ public class EcModuleBean implements BeeModule {
     DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
 
     Filter filter = Filter.and(
-        Filter.or(Filter.isEmpty(COL_BANNER_SHOW_AFTER),
+        Filter.or(Filter.isNull(COL_BANNER_SHOW_AFTER),
             ComparisonFilter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
-        Filter.or(Filter.isEmpty(COL_BANNER_SHOW_BEFORE),
+        Filter.or(Filter.isNull(COL_BANNER_SHOW_BEFORE),
             ComparisonFilter.isMore(COL_BANNER_SHOW_BEFORE, now)));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_BANNERS, filter);

@@ -54,9 +54,9 @@
       <AggregateColumn aggregate="MAX" name="Outsized" />
       <AggregateColumn aggregate="MAX" name="Dangerous" />
       
-      <AggregateJoin name="UnloadingPlace" joinType="LEFT">
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <AggregateColumn name="Date" alias="UnloadingDate" aggregate="MIN" />
-      </AggregateJoin>
+      </SimpleJoin>
       
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
         <HiddenColumn name="Sale" />
@@ -66,7 +66,7 @@
             <x:number>0</x:number>
           </x:nvl>
         </AggregateColumn>
-        <AggregateJoin name="Sale" joinType="LEFT">
+        <SimpleJoin name="Sale" joinType="LEFT">
           <HiddenColumn name="Amount" />
           <HiddenColumn name="Paid" />
           <AggregateColumn name="Debt" aggregate="MAX">
@@ -79,13 +79,13 @@
             </x:minus>
           </AggregateColumn>
           <AggregateColumn name="Proforma" aggregate="MAX" />
-        </AggregateJoin>
+        </SimpleJoin>
       </ExternalJoin>
       
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
-        <AggregateJoin name="Trip" joinType="LEFT">
+        <SimpleJoin name="Trip" joinType="LEFT">
           <AggregateColumn name="Expedition" aggregate="MAX" />
-        </AggregateJoin>
+        </SimpleJoin>
       </ExternalJoin>
     </ExternalJoin>
   </Columns>

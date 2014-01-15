@@ -33,7 +33,7 @@ class InvoiceCreator extends Button implements ClickHandler {
 
   @Override
   public void onClick(ClickEvent event) {
-    final Filter flt = Filter.and(filter, Filter.isEmpty(TradeConstants.COL_SALE));
+    final Filter flt = Filter.and(filter, Filter.isNull(TradeConstants.COL_SALE));
 
     Queries.getRowCount(VIEW_CARGO_INVOICE_INCOMES, flt, new IntCallback() {
       @Override

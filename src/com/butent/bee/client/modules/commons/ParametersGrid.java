@@ -152,7 +152,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
                 public void accept(Collection<String> result) {
                   consumer.accept(Codec.beeSerialize(result), null);
                 }
-              });
+              }, null);
           break;
 
         case MAP:

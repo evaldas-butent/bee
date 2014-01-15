@@ -12,15 +12,15 @@ import java.util.List;
  * Implements a filter which checks for empty values in a specified column.
  */
 
-public class ColumnIsEmptyFilter extends Filter {
+public class ColumnIsNullFilter extends Filter {
 
   private String column;
 
-  protected ColumnIsEmptyFilter() {
+  protected ColumnIsNullFilter() {
     super();
   }
 
-  protected ColumnIsEmptyFilter(String column) {
+  protected ColumnIsNullFilter(String column) {
     Assert.notEmpty(column);
     this.column = column;
   }
@@ -42,7 +42,7 @@ public class ColumnIsEmptyFilter extends Filter {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    ColumnIsEmptyFilter other = (ColumnIsEmptyFilter) obj;
+    ColumnIsNullFilter other = (ColumnIsNullFilter) obj;
 
     if (!column.equals(other.column)) {
       return false;

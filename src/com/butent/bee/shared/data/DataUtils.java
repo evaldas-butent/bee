@@ -970,14 +970,14 @@ public final class DataUtils {
           flt = ComparisonFilter.compareWithColumn(column, operator, column2);
 
         } else if (BeeUtils.isEmpty(value) && !isOperator) {
-          flt = Filter.notEmpty(colName);
+          flt = Filter.notNull(colName);
 
         } else {
           value = value.replaceFirst("^\"(.*)\"$", "$1") // Unquote
               .replaceAll("\"\"", "\"");
 
           if (BeeUtils.isEmpty(value)) {
-            flt = Filter.isEmpty(colName);
+            flt = Filter.isNull(colName);
           } else {
             flt = ComparisonFilter.compareWithValue(column, operator, value);
           }

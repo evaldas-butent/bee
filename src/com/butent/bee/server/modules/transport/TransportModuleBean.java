@@ -171,11 +171,11 @@ public class TransportModuleBean implements BeeModule {
       response = getDtbData();
 
     } else if (BeeUtils.same(svc, SVC_GET_TRUCK_TB_DATA)) {
-      response = getVehicleTbData(svc, Filter.notEmpty(COL_IS_TRUCK), VehicleType.TRUCK,
+      response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRUCK), VehicleType.TRUCK,
           COL_TRUCK_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_TRAILER_TB_DATA)) {
-      response = getVehicleTbData(svc, Filter.notEmpty(COL_IS_TRAILER), VehicleType.TRAILER,
+      response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRAILER), VehicleType.TRAILER,
           COL_TRAILER_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {

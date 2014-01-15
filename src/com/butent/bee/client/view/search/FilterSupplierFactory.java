@@ -59,7 +59,8 @@ public final class FilterSupplierFactory {
     if (supplier == null) {
       if (!BeeUtils.isEmpty(enumKey)) {
         supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, enumKey);
-      } else if (relation != null) {
+      } else if (relation != null
+          && !BeeUtils.containsKey(relation.getAttributes(), "viewColumn")) {
         supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, label,
             renderColumns, orderColumns, relation, options);
       }

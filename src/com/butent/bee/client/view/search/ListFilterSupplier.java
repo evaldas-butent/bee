@@ -237,7 +237,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
 
     for (String value : input) {
       if (value == null || value.isEmpty()) {
-        filters.add(Filter.isEmpty(columnId));
+        filters.add(Filter.isNull(columnId));
 
       } else if (isForeign()) {
         filters.add(ComparisonFilter.isEqual(columnId, 

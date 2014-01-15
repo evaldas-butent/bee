@@ -54,7 +54,7 @@ public class BooleanFilterSupplier extends AbstractFilterSupplier {
     if (b == null) {
       return null;
     } else {
-      return b ? Filter.notEmpty(getColumnId()) : Filter.isEmpty(getColumnId()); 
+      return b ? Filter.notNull(getColumnId()) : Filter.isNull(getColumnId()); 
     }
   }
 

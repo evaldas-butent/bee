@@ -56,11 +56,11 @@ import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -113,10 +113,10 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
-import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
@@ -257,7 +257,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
   private final List<String> dynamicColumnGroups = Lists.newArrayList();
 
-  private final List<com.google.web.bindery.event.shared.HandlerRegistration> registry = 
+  private final List<com.google.web.bindery.event.shared.HandlerRegistration> registry =
       Lists.newArrayList();
 
   public GridImpl(GridDescription gridDescription, String gridKey,
@@ -466,6 +466,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
       case DATA:
       case RELATED:
+      case AUTO:
         if (dataIndex >= 0) {
           column = GridFactory.createColumn(cellSource, cellType, renderer);
 
@@ -1288,40 +1289,40 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (event.getRow() == null) {
       return;
     }
-    
+
     if (event.hasSourceId(getId())) {
       return;
     }
     if (BeeUtils.isEmpty(event.getSourceId()) && !event.isSpookyActionAtADistance()) {
       return;
     }
-    
+
     if (getGrid().getPageSize() > 0 && getGrid().getRowCount() > getGrid().getPageSize()) {
       return;
     }
-    
+
     if (isChild()) {
       if (!DataUtils.isId(getRelId())) {
         return;
       }
-      
+
       int index = DataUtils.getColumnIndex(getRelColumn(), getDataColumns());
       if (index < 0) {
         return;
       }
-      
+
       if (!Objects.equal(getRelId(), event.getRow().getLong(index))) {
         return;
       }
-    
+
     } else if (getViewPresenter() == null || getViewPresenter().hasFilter()) {
       return;
     }
-    
+
     if (getGrid().containsRow(event.getRowId())) {
       return;
     }
-    
+
     getGrid().insertRow(event.getRow(), false);
     logger.info("grid", getId(), getViewName(), "insert row", event.getRowId());
   }

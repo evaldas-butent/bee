@@ -22,10 +22,10 @@
       <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
         <AggregateColumn name="Address" alias="RecipientCount" aggregate="COUNT" />
 
-        <AggregateJoin name="Address" joinType="LEFT">
+        <SimpleJoin name="Address" joinType="LEFT">
           <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
           <AggregateColumn name="Email" alias="RecipientEmail" aggregate="MAX" />
-        </AggregateJoin>
+        </SimpleJoin>
       </ExternalJoin>
     </SimpleJoin>
     </Columns>

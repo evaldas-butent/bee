@@ -96,9 +96,9 @@
     <SimpleColumn name="ExchangeOfPalettes" />
 
     <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
-      <AggregateJoin name="Trip" joinType="LEFT">
+      <SimpleJoin name="Trip" joinType="LEFT">
         <AggregateColumn name="Expedition" aggregate="MAX" />
-      </AggregateJoin>
+      </SimpleJoin>
     </ExternalJoin>
     
     <SimpleColumn name="Notes" />

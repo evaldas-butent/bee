@@ -444,9 +444,8 @@ public class SystemBean {
     for (BeeTable table : getTables()) {
       for (BeeForeignKey fKey : table.getForeignKeys()) {
         Assert.state(isTable(fKey.getRefTable()),
-            BeeUtils.joinWords(
-                "Unknown field", BeeUtils.bracket(table.getName() + "." + fKey.getFields()),
-                "relation:", BeeUtils.bracket(fKey.getRefTable())));
+            BeeUtils.joinWords("Unknown relation:", table.getName() + "." + fKey.getFields(),
+                "->", fKey.getRefTable()));
 
         if (!BeeUtils.isEmpty(fKey.getRefFields())) {
           BeeTable refTable = getTable(fKey.getRefTable());

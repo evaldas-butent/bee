@@ -2,6 +2,7 @@
 package com.butent.bee.shared.data;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -17,8 +18,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 public class XmlView {
 
   @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlIdColumn.class,
-      XmlAggregateColumn.class, XmlSimpleJoin.class, XmlAggregateJoin.class,
-      XmlExternalJoin.class })
+      XmlAggregateColumn.class, XmlSimpleJoin.class, XmlExternalJoin.class})
   public abstract static class XmlColumn {
     @XmlAttribute
     public String name;
@@ -42,12 +42,14 @@ public class XmlView {
   public static class XmlHiddenColumn extends XmlSimpleColumn {
   }
 
-  @XmlRootElement(name = "IdColumn", namespace = DataUtils.VIEW_NAMESPACE)
-  public static class XmlIdColumn extends XmlColumn {
-  }
-
   @XmlRootElement(name = "AggregateColumn", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlAggregateColumn extends XmlSimpleColumn {
+    @XmlAttribute
+    public String aggregate;
+  }
+
+  @XmlRootElement(name = "IdColumn", namespace = DataUtils.VIEW_NAMESPACE)
+  public static class XmlIdColumn extends XmlColumn {
     @XmlAttribute
     public String aggregate;
   }
@@ -56,18 +58,20 @@ public class XmlView {
   public static class XmlSimpleJoin extends XmlColumn {
     @XmlAttribute
     public String joinType;
-    @XmlAttribute
-    public String source;
     @XmlElementRef
     public Collection<XmlColumn> columns;
   }
 
   @XmlRootElement(name = "ExternalJoin", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlExternalJoin extends XmlSimpleJoin {
+    @XmlAttribute
+    public String source;
   }
 
-  @XmlRootElement(name = "AggregateJoin", namespace = DataUtils.VIEW_NAMESPACE)
-  public static class XmlAggregateJoin extends XmlSimpleJoin {
+  @XmlRootElement(name = "GroupBy", namespace = DataUtils.VIEW_NAMESPACE)
+  public static class XmlGroup {
+    @XmlAttribute
+    public Set<String> columns;
   }
 
   @XmlRootElement(name = "OrderBy", namespace = DataUtils.VIEW_NAMESPACE)
@@ -111,6 +115,9 @@ public class XmlView {
   @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
   public Collection<XmlColumn> columns;
+
+  @XmlElementRef
+  public XmlGroup groupBy;
 
   @XmlElementWrapper(name = "Order", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
