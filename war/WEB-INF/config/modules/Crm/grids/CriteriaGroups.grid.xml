@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="CriteriaGroups" viewName="CriteriaGroups" caption="=criteriaGroups"
+  flexGrow="1" filter="Name" headerMode="grid"
+  >
+  <g:columns>
+    <AutoColumn name="Name" viewName="DistinctCriteriaGroups" viewColumn="Name" visible="true" required="true" />
+  </g:columns>
+</g:Grid>

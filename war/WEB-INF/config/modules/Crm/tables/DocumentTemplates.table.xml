@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="DocumentTemplates"
+  idName="TemplateID"
+  >
+  <Fields>
+    <Relation name="Category" relation="DocumentTree" notNull="true" label="=documentCategory" />
+    <String name="Name" precision="30" notNull="true" label="=templateName" />
+    <Relation name="Data" relation="DocumentData" unique="true" label="=documentData" editable="true" />
+  </Fields>
+</Table>

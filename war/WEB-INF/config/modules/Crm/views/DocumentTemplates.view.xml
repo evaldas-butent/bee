@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DocumentTemplates" source="DocumentTemplates"
+  caption="=documentTemplates" newRowCaption="=newDocumentTemplate"
+  editForm="DocumentTemplate" newRowForm="DocumentTemplate"
+  >
+  <Columns>
+    <SimpleColumn name="Category" />
+    <SimpleJoin joinType="LEFT" name="Category">
+      <SimpleColumn name="Name" alias="CategoryName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Name" />
+
+    <SimpleColumn name="Data" />
+    <SimpleJoin joinType="LEFT" name="Data">
+      <SimpleColumn name="Content" />
+    </SimpleJoin>
+  </Columns>
+</View>
+ 

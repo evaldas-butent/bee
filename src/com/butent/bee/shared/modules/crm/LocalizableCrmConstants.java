@@ -1,23 +1,23 @@
 package com.butent.bee.shared.modules.crm;
 
 public interface LocalizableCrmConstants {
-  
+
   String author();
-  
+
   String createdOn();
-  
+
   String creditDays();
-  
+
   String creditLimit();
-  
+
   String creditTolerance();
 
   String crmActionComment();
 
   String crmActionFinish();
-  
+
   String crmActionForward();
-  
+
   String crmActionSuspend();
 
   String crmAdded();
@@ -29,7 +29,7 @@ public interface LocalizableCrmConstants {
   String crmDurationType();
 
   String crmEnterComment();
-  
+
   String crmEnterCompleteDate();
 
   String crmEnterConfirmDate();
@@ -149,7 +149,7 @@ public interface LocalizableCrmConstants {
   String crmTaskStatusApproved();
 
   String crmTaskStatusCanceled();
-  
+
   String crmTaskStatusCompleted();
 
   String crmTaskStatusNotVisited();
@@ -167,13 +167,13 @@ public interface LocalizableCrmConstants {
   String customer();
 
   String documentFileExists();
-  
+
   String documents();
-  
+
   String endingDate();
 
   String financialInfo();
-  
+
   String financialState();
 
   String hideZeroTimes();
@@ -183,17 +183,19 @@ public interface LocalizableCrmConstants {
   String hoursByTypes();
 
   String hoursByUsers();
-  
+
   String informationSource();
-  
+
   String limitCurrency();
-  
+
+  String mainCriteria();
+
   String manager();
 
   String rating();
-  
+
   String relationship();
-  
+
   String relationshipInfo();
 
   String requestFinish();
@@ -207,7 +209,7 @@ public interface LocalizableCrmConstants {
   String result();
 
   String specifyResult();
-  
+
   String startingDate();
 
   String taskFilterAll();
@@ -215,28 +217,28 @@ public interface LocalizableCrmConstants {
   String taskFilterLate();
 
   String taskFilterNew();
-  
+
   String taskFilterNewOrUpdated();
-  
+
   String taskFilterNotVisitedOrActive();
-  
-  String taskFilterNotVisitedOrActiveOrCompleted(); 
-  
+
+  String taskFilterNotVisitedOrActiveOrCompleted();
+
   String taskFilterScheduled();
 
   String taskFilterStarred();
-  
+
   String taskFilterUpdated();
 
   String taskLabelLate();
-  
+
   String taskLabelScheduled();
-  
+
   String taskLabelStarred();
-  
+
   String taskReminder();
 
   String taskTemplate();
-  
+
   String taskTheme();
 }

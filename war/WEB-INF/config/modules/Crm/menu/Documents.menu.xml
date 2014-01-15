@@ -7,6 +7,8 @@ name="Documents" label="=documents" order="50"
 
   <Item name="Categories" label="=documentCategories" service="form" parameters="DocumentTree" separator="true" />
 
+  <Item name="Templates" label="=documentTemplates" service="grid" parameters="DocumentTemplates" separator="true" />
+
   <Item name="Types" label="=documentTypes" service="grid" parameters="DocumentTypes" separator="true" />
   <Item name="Places" label="=documentPlaces" service="grid" parameters="DocumentPlaces" />
   <Item name="Statuses" label="=documentStatuses" service="grid" parameters="DocumentStatuses" />

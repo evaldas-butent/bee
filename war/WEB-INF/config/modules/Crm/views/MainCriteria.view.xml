@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="MainCriteria" source="CriteriaGroups" filter="!(Name)"
+  >
+  <Columns>
+    <SimpleColumn name="Data" />
+    <HiddenColumn name="Name" />
+
+    <ExternalJoin source="Criteria" name="Group" joinType="LEFT">
+      <IdColumn name="ID" />
+      <SimpleColumn name="Criterion" />
+      <SimpleColumn name="Value" />
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Criterion" />
+  </Order>
+</View>

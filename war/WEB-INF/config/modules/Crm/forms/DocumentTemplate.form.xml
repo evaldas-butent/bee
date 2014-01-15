@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="DocumentTemplate" caption="=documentTemplate"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <HorizontalPanel style="margin-bottom:10px">
+      <Label text="=documentCategory" class="bee-required" horizontalAlignment="right" />
+      <DataSelector source="Category" />
+      <Label text="=templateName" class="bee-required" horizontalAlignment="right" />
+      <InputText source="Name" />
+    </HorizontalPanel>
+    
+    <TabbedPages class="flexible">
+      <page>
+        <text>=criteria</text>
+        <FlowPanel class="flexBox-vertical">
+          <FieldSet style="margin:10px; border:1px solid #ccc">
+            <Legend name="MainCriteriaEditor" class="bee-Button" text="=mainCriteria" />
+            <FlowPanel name="MainCriteriaContainer" />
+          </FieldSet>
+        
+          <FlowPanel class="flexBox-horizontal flexible">
+            <ChildGrid name="CriteriaGroups" relColumn="Data" source="Data" style="width:350px; margin-right:20px" />
+            <ChildGrid class="flexible" name="Criteria" parent="CriteriaGroups" relColumn="Group" style="margin-top:30px" />
+          </FlowPanel>
+        </FlowPanel>
+      </page>
+      <page>
+        <text>=content</text>
+        <FlowPanel>
+          <RichTextEditor source="Content" class="occupy-1" />
+        </FlowPanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>  
