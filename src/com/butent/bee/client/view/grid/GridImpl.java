@@ -1623,7 +1623,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       container.setWidget(r, 0, label);
       container.getCellFormatter().setStyleName(r, 0, RowFactory.STYLE_NEW_ROW_LABEL_CELL);
 
-      Editor editor = editableColumn.createEditor(true);
+      Editor editor = editableColumn.createEditor(true, getGridInterceptor());
       editor.asWidget().addStyleName(RowFactory.STYLE_NEW_ROW_INPUT);
       editor.asWidget().addStyleName(BeeUtils.join(BeeConst.STRING_MINUS,
           RowFactory.STYLE_NEW_ROW_INPUT, getGridName(), columnName));
@@ -2205,8 +2205,9 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       event.getSourceElement().blur();
     }
 
-    editableColumn.openEditor(this, event.getSourceElement(), getGrid().getElement(),
-        getGrid().getZIndex() + 1, rowValue, BeeUtils.toChar(event.getCharCode()), this);
+    editableColumn.openEditor(this, getGridInterceptor(), event.getSourceElement(),
+        getGrid().getElement(), getGrid().getZIndex() + 1, rowValue,
+        BeeUtils.toChar(event.getCharCode()), this);
   }
 
   private void openNewRow(boolean copy) {

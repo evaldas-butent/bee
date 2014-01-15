@@ -141,7 +141,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     return cellValidationBus.addCellValidationHandler(handler);
   }
 
-  public Editor createEditor(boolean embedded) {
+  public Editor createEditor(boolean embedded, EditorConsumer consumer) {
     Editor result;
 
     String format = null;
@@ -183,6 +183,11 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     if (result instanceof HasBounds) {
       UiHelper.setBounds((HasBounds) result, getMinValue(), getMaxValue());
     }
+    
+    if (consumer != null) {
+      consumer.afterCreateEditor(getColumnId(), result, embedded);
+    }
+    
     return result;
   }
 
@@ -425,15 +430,16 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     endEdit(null, false);
   }
 
-  public void openEditor(HasWidgets editorContainer, Element sourceElement,
-      Element adjustElement, int zIndex, IsRow row, char charCode, EditEndEvent.Handler handler) {
+  public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer, 
+      Element sourceElement, Element adjustElement, int zIndex, IsRow row, char charCode,
+      EditEndEvent.Handler handler) {
     Assert.notNull(handler);
 
     setCloseHandler(handler);
     setRowValue(row);
     setState(State.OPEN);
 
-    ensureEditor(editorContainer);
+    ensureEditor(editorContainer, editorConsumer);
     Element editorElement = getEditor().asWidget().getElement();
 
     if (sourceElement != null) {
@@ -624,11 +630,11 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     return false;
   }
 
-  private void ensureEditor(HasWidgets editorContainer) {
+  private void ensureEditor(HasWidgets editorContainer, EditorConsumer editorConsumer) {
     if (getEditor() != null) {
       return;
     }
-    setEditor(createEditor(false));
+    setEditor(createEditor(false, editorConsumer));
 
     getEditor().asWidget().addStyleName(STYLE_EDITOR);
     bindEditor();

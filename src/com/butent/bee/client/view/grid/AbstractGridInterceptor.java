@@ -15,6 +15,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
@@ -70,6 +71,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void afterCreateColumns(GridView gridView) {
+  }
+
+  @Override
+  public void afterCreateEditor(String source, Editor editor, boolean embedded) {
   }
 
   @Override
