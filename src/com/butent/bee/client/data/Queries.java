@@ -501,6 +501,35 @@ public final class Queries {
     doRow(Service.INSERT_ROW, rowSet, callback);
   }
 
+  public static void insertRows(BeeRowSet rowSet) {
+    if (checkRowSet(Service.INSERT_ROWS, rowSet, null)) {
+      insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
+    }
+  }
+  
+  public static void insertRows(BeeRowSet rowSet, final IntCallback callback) {
+    if (!checkRowSet(Service.INSERT_ROWS, rowSet, callback)) {
+      return;
+    }
+
+    final String viewName = rowSet.getViewName();
+
+    BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (checkResponse(Service.INSERT_ROWS, viewName, response, Integer.class, callback)) {
+              int count = BeeUtils.toInt(response.getResponseAsString());
+              logger.info(viewName, "inserted", count, "rows");
+
+              if (callback != null) {
+                callback.onSuccess(count);
+              }
+            }
+          }
+        });
+  }
+
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
   }

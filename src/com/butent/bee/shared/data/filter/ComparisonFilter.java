@@ -11,7 +11,6 @@ import java.util.StringTokenizer;
 /**
  * Is an abstract class, extends {@code Filter) class, determines implementation of comparison
  * filters.
-
  */
 public abstract class ComparisonFilter extends Filter {
 

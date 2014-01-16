@@ -31,11 +31,18 @@
     </Table>
 
     <br/>
-    <HorizontalPanel style="border-spacing: 10px;">
-      <Label text="=userRoles" class="bee-required" />
-      <ChildSelector childTable="UserRoles" viewName="Roles" style="width: 400px;" 
-        required="true" />
-    </HorizontalPanel>
+    <Table style="border-spacing: 10px;">
+      <row>
+        <Label text="=userRoles" class="bee-required" />
+        <ChildSelector childTable="UserRoles" viewName="Roles" style="width: 400px;" 
+          required="true" />
+      </row>
+
+      <row>
+        <Label text="=groups" />
+        <ChildSelector childTable="UserGroups" viewName="UserGroupSettings" style="width: 400px;" />
+      </row>
+    </Table>
       
     <br/>
     <ChildGrid class="flexible" name="UserFeeds" relColumn="User" />

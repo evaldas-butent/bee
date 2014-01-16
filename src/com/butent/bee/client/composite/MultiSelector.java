@@ -141,6 +141,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
         RendererFactory.createRenderer(viewName, columns));    
   }
   
+  public static MultiSelector autonomous(Relation relation, List<String> renderColumns) {
+    Assert.notNull(relation);
+    Assert.notEmpty(relation.getViewName());
+    Assert.notEmpty(renderColumns);
+
+    return autonomous(relation,
+        RendererFactory.createRenderer(relation.getViewName(), renderColumns));    
+  }
+
   public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
     Assert.notNull(relation);
 

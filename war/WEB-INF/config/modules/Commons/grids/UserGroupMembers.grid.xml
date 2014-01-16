@@ -2,12 +2,12 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="UserGroupMembers" viewName="UserGroupMembers" caption="=userGroupMembers"
-  autoFit="true" newRowColumns="-"
+  newRowColumns="-" minColumnWidth="100" flexGrow="1"
   >
   <g:columns>
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
-    <DataColumn name="CompanyName" />
+    <DataColumn name="CompanyName" caption="=company" />
     <DataColumn name="PositionName" />
   </g:columns>
 </g:Grid>
