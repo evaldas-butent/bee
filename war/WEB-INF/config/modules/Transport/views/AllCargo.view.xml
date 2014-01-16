@@ -42,7 +42,7 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleJoin source="OrderCargo" name="Order" joinType="LEFT">
+    <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
       <IdColumn name="Cargo" />
     
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
@@ -95,7 +95,7 @@
 
       <SimpleColumn name="Notes" alias="CargoNotes" />
 
-      <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+      <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <SimpleColumn name="Trip" />
         <SimpleJoin name="Trip" joinType="LEFT">
           <SimpleColumn name="TripNo" />
@@ -119,7 +119,7 @@
           <SimpleColumn name="ForwarderVehicle" />
           <SimpleColumn name="ForwarderDriver" />
 
-          <SimpleJoin source="TripDrivers" name="Trip" joinType="LEFT">
+          <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
             <SimpleJoin name="Driver" joinType="LEFT">
               <SimpleJoin name="CompanyPerson" joinType="LEFT">
                 <SimpleJoin name="Person" joinType="LEFT">
@@ -128,10 +128,10 @@
                 </SimpleJoin>
               </SimpleJoin>
             </SimpleJoin>
-          </SimpleJoin>
+          </ExternalJoin>
         </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
+      </ExternalJoin>
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />

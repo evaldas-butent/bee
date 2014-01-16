@@ -185,8 +185,12 @@ public final class CrmConstants {
 
   public static final String TBL_EVENT_DURATIONS = "EventDurations";
 
+  public static final String TBL_DOCUMENT_CATEGORIES = "DocumentTree";
   public static final String TBL_DOCUMENTS = "Documents";
-  
+  public static final String TBL_DOCUMENT_TEMPLATES = "DocumentTemplates";
+  public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
+  public static final String TBL_CRITERIA = "Criteria";
+
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
@@ -200,6 +204,8 @@ public final class CrmConstants {
 
   public static final String VIEW_DOCUMENTS = "Documents";
   public static final String VIEW_DOCUMENT_FILES = "DocumentFiles";
+
+  public static final String VIEW_MAIN_CRITERIA = "MainCriteria";
 
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
@@ -295,6 +301,14 @@ public final class CrmConstants {
   public static final String COL_REQUEST_MANAGER = "Manager";
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_FINISHED = "Finished";
+
+  public static final String COL_DOCUMENT_TEMPLATE = "Template";
+  public static final String COL_DOCUMENT_DATA = "Data";
+  public static final String COL_DOCUMENT_CONTENT = "Content";
+  public static final String COL_CRITERIA_GROUP = "Group";
+  public static final String COL_CRITERIA_GROUP_NAME = "Name";
+  public static final String COL_CRITERION_NAME = "Criterion";
+  public static final String COL_CRITERION_VALUE = "Value";
 
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";

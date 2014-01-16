@@ -407,10 +407,14 @@ public final class DocumentHandler {
   private static final String DOCUMENT_VIEW_NAME = "Documents";
 
   public static void register() {
+    GridFactory.registerGridInterceptor(TBL_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
+
     GridFactory.registerGridInterceptor("Documents", new DocumentGridHandler());
     GridFactory.registerGridInterceptor("DocumentFiles", new FileGridHandler());
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
+
+    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentTemplateForm());
 
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
   }

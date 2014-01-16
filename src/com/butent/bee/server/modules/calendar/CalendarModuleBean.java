@@ -101,7 +101,7 @@ import javax.ejb.TimerService;
 @Lock(LockType.READ)
 public class CalendarModuleBean implements BeeModule {
 
-  private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notEmpty(COL_START_DATE_TIME),
+  private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notNull(COL_START_DATE_TIME),
       ComparisonFilter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
 
   private static BeeLogger logger = LogUtils.getLogger(CalendarModuleBean.class);
@@ -604,8 +604,8 @@ public class CalendarModuleBean implements BeeModule {
 
     Filter visible = Filter.or().add(
         ComparisonFilter.isEqual(COL_CREATOR, new LongValue(userId)),
-        Filter.isEmpty(COL_CREATOR),
-        Filter.isEmpty(COL_VISIBILITY),
+        Filter.isNull(COL_CREATOR),
+        Filter.isNull(COL_VISIBILITY),
         ComparisonFilter.isNotEqual(COL_VISIBILITY,
             new IntegerValue(Visibility.PRIVATE.ordinal())));
 

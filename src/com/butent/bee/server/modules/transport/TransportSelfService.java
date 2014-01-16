@@ -511,11 +511,11 @@ public class TransportSelfService extends LoginServlet {
 
     Tbody shipmentFields = tbody().append(
         qSelector(constants.trRequestExpeditionType(), COL_QUERY_EXPEDITION,
-            VIEW_EXPEDITION_TYPES, ComparisonFilter.notEmpty(COL_EXPEDITION_TYPE_SELF_SERVICE),
+            VIEW_EXPEDITION_TYPES, ComparisonFilter.notNull(COL_EXPEDITION_TYPE_SELF_SERVICE),
             Order.ascending(COL_EXPEDITION_TYPE_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME),
             Lists.newArrayList(COL_EXPEDITION_TYPE_NAME), true, false),
         qSelector(constants.trRequestShippingTerms(), COL_CARGO_SHIPPING_TERM,
-            VIEW_SHIPPING_TERMS, ComparisonFilter.notEmpty(COL_SHIPPING_TERM_SELF_SERVICE),
+            VIEW_SHIPPING_TERMS, ComparisonFilter.notNull(COL_SHIPPING_TERM_SELF_SERVICE),
             Order.ascending(COL_SHIPPING_TERM_SELF_SERVICE, COL_SHIPPING_TERM_NAME),
             Lists.newArrayList(COL_SHIPPING_TERM_NAME), true, false),
         qField(constants.trRequestDeliveryDate(), COL_QUERY_DELIVERY_DATE, false),
@@ -703,7 +703,7 @@ public class TransportSelfService extends LoginServlet {
 
   private Node qSelector(String label, String name, String viewName, String colName,
       boolean required, boolean emptyOption) {
-    return qSelector(label, name, viewName, ComparisonFilter.notEmpty(colName),
+    return qSelector(label, name, viewName, ComparisonFilter.notNull(colName),
         new Order(colName, true), Lists.newArrayList(colName), required, emptyOption);
   }
 

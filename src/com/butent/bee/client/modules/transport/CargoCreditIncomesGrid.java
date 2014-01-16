@@ -67,7 +67,7 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
   @Override
   public Map<String, Filter> getInitialParentFilters() {
     return ImmutableMap.of("pyp",
-        Filter.and(Filter.isEmpty(COL_SALE_PROFORMA), Filter.isEmpty(COL_PURCHASE)));
+        Filter.and(Filter.isNull(COL_SALE_PROFORMA), Filter.isNull(COL_PURCHASE)));
   }
 
   @Override

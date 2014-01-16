@@ -7,6 +7,12 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -56,7 +62,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   public static Filter and(Filter f1, Filter f2, Filter f3) {
     return and(and(f1, f2), f3);
   }
-  
+
   public static Filter any(String column, Collection<Long> values) {
     Assert.notEmpty(column);
     Assert.notNull(values);
@@ -83,12 +89,93 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return filter;
   }
 
+  public static Filter compareId(long value) {
+    return compareId(Operator.EQ, value);
+  }
+
+  public static Filter compareId(Operator op, long value) {
+    Assert.notNull(op);
+    return new IdFilter(op, value);
+  }
+
+  public static Filter compareId(Operator op, String value) {
+    if (!BeeUtils.isLong(value)) {
+      LogUtils.getRootLogger().warning("Not an ID value:", value);
+      return null;
+    }
+    return compareId(op, BeeUtils.toLong(value));
+  }
+
+  public static Filter compareVersion(long value) {
+    return compareVersion(Operator.EQ, value);
+  }
+
+  public static Filter compareVersion(Operator op, long value) {
+    Assert.notNull(op);
+    return new VersionFilter(op, value);
+  }
+
+  public static Filter compareVersion(Operator op, String value) {
+    Assert.notNull(op);
+    DateTime time = TimeUtils.parseDateTime(value);
+
+    if (time == null) {
+      LogUtils.getRootLogger().warning("Not a DATETIME value:", value);
+      return null;
+    }
+    return compareVersion(op, time.getTime());
+  }
+
+  public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {
+    Assert.notEmpty(leftColumn);
+    Assert.notNull(op);
+    Assert.notEmpty(rightColumn);
+    return new ColumnColumnFilter(leftColumn, op, rightColumn);
+  }
+
+  public static Filter compareWithColumn(IsColumn left, Operator op, IsColumn right) {
+    Assert.noNulls(left, op, right);
+    String leftColumn = left.getId();
+    ValueType leftType = left.getType();
+    String rightColumn = right.getId();
+    ValueType rightType = right.getType();
+
+    if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
+      LogUtils.getRootLogger().warning("Incompatible column types:", leftColumn,
+          BeeUtils.parenthesize(leftType), "AND", rightColumn, BeeUtils.parenthesize(rightType));
+      return null;
+    }
+    return compareWithColumn(leftColumn, op, rightColumn);
+  }
+
+  public static Filter compareWithValue(String column, Operator op, Value value) {
+    Assert.notEmpty(column);
+    Assert.noNulls(op, value);
+    return new ColumnValueFilter(column, op, value);
+  }
+
+  public static Filter compareWithValue(IsColumn column, Operator op, String value) {
+    Assert.noNulls(column, op);
+    Assert.notEmpty(value);
+
+    if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
+      LogUtils.getRootLogger().warning("Not a numeric value:", value);
+      return null;
+    }
+    return compareWithValue(column.getId(), op, Value.parseValue(column.getType(), value, true));
+  }
+
+  public static Filter contains(String column, String value) {
+    Assert.notEmpty(value);
+    return new ColumnValueFilter(column, Operator.CONTAINS, new TextValue(value));
+  }
+
   public static Filter idIn(Collection<Long> values) {
     Assert.notNull(values);
     if (values.isEmpty()) {
       return null;
     }
-
+  
     CompoundFilter filter = or();
     for (Long value : values) {
       filter.add(ComparisonFilter.compareId(value));
@@ -101,14 +188,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     if (values.isEmpty()) {
       return null;
     }
-
+  
     CompoundFilter filter = and();
     for (Long value : values) {
       filter.add(ComparisonFilter.compareId(Operator.NE, value));
     }
     return filter;
   }
-  
+
   public static Filter in(String column, String inView, String inColumn) {
     return in(column, inView, inColumn, null);
   }
@@ -117,17 +204,36 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notEmpty(column);
     Assert.notEmpty(inView);
     Assert.notEmpty(inColumn);
-
+  
     return new ColumnInFilter(column, inView, inColumn, inFilter);
   }
 
-  public static Filter isEmpty(String column) {
-    Assert.notEmpty(column);
-    return new ColumnIsEmptyFilter(column);
+  public static Filter isEqual(String column, Value value) {
+    return compareWithValue(column, Operator.EQ, value);
   }
 
   public static Filter isFalse() {
     return new IsFalseFilter();
+  }
+
+  public static Filter isLess(String column, Value value) {
+    return compareWithValue(column, Operator.LT, value);
+  }
+
+  public static Filter isLessEqual(String column, Value value) {
+    return compareWithValue(column, Operator.LE, value);
+  }
+
+  public static Filter isMore(String column, Value value) {
+    return compareWithValue(column, Operator.GT, value);
+  }
+
+  public static Filter isMoreEqual(String column, Value value) {
+    return compareWithValue(column, Operator.GE, value);
+  }
+
+  public static Filter isNotEqual(String column, Value value) {
+    return compareWithValue(column, Operator.NE, value);
   }
 
   public static Filter isNot(Filter filter) {
@@ -135,13 +241,18 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new CompoundFilter(CompoundType.NOT, filter);
   }
 
+  public static Filter isNull(String column) {
+    Assert.notEmpty(column);
+    return new ColumnIsNullFilter(column);
+  }
+
   public static Filter isTrue() {
     return new IsTrueFilter();
   }
 
-  public static Filter notEmpty(String column) {
+  public static Filter notNull(String column) {
     Assert.notEmpty(column);
-    return new ColumnNotEmptyFilter(column);
+    return new ColumnNotNullFilter(column);
   }
 
   public static CompoundFilter or() {
@@ -200,11 +311,11 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     } else if (NameUtils.getClassName(ColumnColumnFilter.class).equals(clazz)) {
       flt = new ColumnColumnFilter();
 
-    } else if (NameUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
-      flt = new ColumnIsEmptyFilter();
+    } else if (NameUtils.getClassName(ColumnIsNullFilter.class).equals(clazz)) {
+      flt = new ColumnIsNullFilter();
 
-    } else if (NameUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
-      flt = new ColumnNotEmptyFilter();
+    } else if (NameUtils.getClassName(ColumnNotNullFilter.class).equals(clazz)) {
+      flt = new ColumnNotNullFilter();
 
     } else if (NameUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();
@@ -223,7 +334,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
     } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
       flt = new ColumnInFilter();
-      
+
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);
     }
@@ -241,7 +352,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     if (this == obj) {
       return true;
     } else if (obj instanceof Filter) {
-      return toString().equals(obj.toString()); 
+      return toString().equals(obj.toString());
     } else {
       return false;
     }

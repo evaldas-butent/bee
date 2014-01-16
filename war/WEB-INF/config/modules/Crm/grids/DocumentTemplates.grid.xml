@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+  
+  name="DocumentTemplates" viewName="DocumentTemplates" caption="=documentTemplates"
+  flexGrow="1" enableCopy="Category"
+  >
+  
+  <g:west size="200" splitterSize="2">
+    <w:DataTree name="DocumentTree" caption="=documentCategories" source="TemplateTree"
+      parentColumn="Parent" hideActions="true">
+      <w:calc>
+        <ui:expression>row.CategoryName + (row.TemplateCount > 0 ? ' [' + row.TemplateCount + ']' : '')</ui:expression>
+      </w:calc>
+    </w:DataTree>
+  </g:west>
+  
+  <g:columns>
+    <DataColumn name="CategoryName" caption="=documentCategory" visible="false" />
+    <DataColumn name="Name" />
+    <PropColumn name="Criterion" type="string" dynamic="true" />
+  </g:columns>
+</g:Grid>

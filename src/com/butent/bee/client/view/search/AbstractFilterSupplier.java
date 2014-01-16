@@ -381,9 +381,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     if (emptiness == null) {
       return null;
     } else if (emptiness) {
-      return Filter.isEmpty(columnId);
+      return Filter.isNull(columnId);
     } else {
-      return Filter.notEmpty(columnId);
+      return Filter.notNull(columnId);
     }
   }
 

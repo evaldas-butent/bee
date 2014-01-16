@@ -64,7 +64,7 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
 
   @Override
   public Map<String, Filter> getInitialParentFilters() {
-    return ImmutableMap.of("pyp", Filter.isEmpty(COL_SALE));
+    return ImmutableMap.of("pyp", Filter.isNull(COL_SALE));
   }
 
   @Override

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DistinctCriteria" source="Criteria" filter="Criterion"
+  >
+  <Columns>
+    <SimpleColumn name="Criterion" />
+
+    <SimpleJoin name="Group" joinType="INNER">
+      <HiddenColumn name="Name" />
+      
+      <SimpleJoin name="Data" joinType="INNER">
+        <ExternalJoin source="DocumentTemplates" name="Data" joinType="INNER">
+          <HiddenColumn name="Data" />
+          <HiddenColumn name="Category" />
+        </ExternalJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <GroupBy columns="Criterion" />
+  <Order>
+    <OrderBy column="Criterion" />
+  </Order>
+</View>

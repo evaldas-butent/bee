@@ -220,7 +220,7 @@ class SelectorHandler implements SelectorEvent.Handler {
       if (DataUtils.isId(id)) {
         filter = ComparisonFilter.isEqual(COL_PROPERTY_GROUP, new LongValue(id));
       } else {
-        filter = Filter.isEmpty(COL_PROPERTY_GROUP);
+        filter = Filter.isNull(COL_PROPERTY_GROUP);
       }
 
     } else if (BeeUtils.same(gridView.getViewName(), VIEW_ATTENDEE_PROPS)) {

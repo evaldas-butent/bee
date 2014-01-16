@@ -3,12 +3,14 @@ package com.butent.bee.server.modules.crm;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -266,6 +268,34 @@ public class CrmModuleBean implements BeeModule {
                 if (!BeeUtils.isEmpty(icon)) {
                   row.setProperty(CommonsConstants.PROP_ICON, icon);
                 }
+              }
+            }
+          }
+        } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TEMPLATES)) {
+          Map<Long, IsRow> indexedRows = Maps.newHashMap();
+          BeeRowSet rowSet = event.getRowset();
+          int idx = rowSet.getColumnIndex(COL_DOCUMENT_DATA);
+
+          for (BeeRow row : rowSet.getRows()) {
+            Long id = row.getLong(idx);
+
+            if (DataUtils.isId(id)) {
+              indexedRows.put(id, row);
+            }
+          }
+          if (!indexedRows.isEmpty()) {
+            BeeView view = sys.getView(VIEW_MAIN_CRITERIA);
+            SqlSelect query = view.getQuery();
+
+            query.setWhere(SqlUtils.and(query.getWhere(),
+                SqlUtils.inList(view.getSourceAlias(), COL_DOCUMENT_DATA, indexedRows.keySet())));
+
+            for (SimpleRow row : qs.getData(query)) {
+              IsRow r = indexedRows.get(row.getLong(COL_DOCUMENT_DATA));
+
+              if (r != null) {
+                r.setProperty(COL_CRITERION_NAME + row.getValue(COL_CRITERION_NAME),
+                    row.getValue(COL_CRITERION_VALUE));
               }
             }
           }

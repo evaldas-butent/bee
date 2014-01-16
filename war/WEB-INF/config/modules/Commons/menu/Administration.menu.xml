@@ -4,6 +4,7 @@
 name="Administration" label="=administration" order="1000"
 >
   <Item name="Users" label="=users" service="grid" parameters="Users" />
+  <Item name="UserGroupSettings" label="=userGroups" service="grid" parameters="UserGroupSettings" />
 
   <Item name="Roles" label="=roles" service="form" parameters="Roles" separator="true" />
   <Item name="Objects" label="=objects" service="form" parameters="Objects" />

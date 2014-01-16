@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
+import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.Stacking;
@@ -151,8 +152,11 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
       format = getEditorDescription().getFormat();
 
     } else if (getRelation() != null) {
-      result = new DataSelector(getRelation(), embedded);
-
+      if (BeeUtils.containsKey(getRelation().getAttributes(), "viewColumn")) {
+        result = Autocomplete.create(getRelation(), embedded);
+      } else {
+        result = new DataSelector(getRelation(), embedded);
+      }
     } else if (!BeeUtils.isEmpty(getEnumKey())) {
       result = new ListBox();
       ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));

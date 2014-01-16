@@ -18,6 +18,7 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
@@ -83,6 +84,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void beforeRender(GridView gridView, RenderingEvent event);
   
   String getColumnCaption(String columnName);
+  
+  List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
   

@@ -31,7 +31,7 @@ final class DiscussionsList {
       Filter getFilter(LongValue userId) {
         Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
         Filter isOwner = ComparisonFilter.isEqual(COL_OWNER, userId);
-        Filter isPublic = ComparisonFilter.notEmpty(COL_ACCESSIBILITY);
+        Filter isPublic = ComparisonFilter.notNull(COL_ACCESSIBILITY);
         Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
         Filter isActive =
             ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.ACTIVE
@@ -50,7 +50,7 @@ final class DiscussionsList {
       Filter getFilter(LongValue userId) {
         Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
         Filter isOwner = ComparisonFilter.isEqual(COL_OWNER, userId);
-        Filter isPublic = ComparisonFilter.notEmpty(COL_ACCESSIBILITY);
+        Filter isPublic = ComparisonFilter.notNull(COL_ACCESSIBILITY);
         Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
         Filter isActive =
             ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.CLOSED
@@ -82,7 +82,7 @@ final class DiscussionsList {
     STARRED(Localized.getConstants().discussStarred()) {
       @Override
       Filter getFilter(LongValue userId) {
-        Filter isPublic = Filter.notEmpty(COL_ACCESSIBILITY);
+        Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
         Filter isMember =
             Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
                 ComparisonFilter.and(ComparisonFilter.isEqual(COL_USER, userId),
@@ -90,7 +90,7 @@ final class DiscussionsList {
         
         Filter isStarred =
             Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-                ComparisonFilter.and(ComparisonFilter.notEmpty(COL_STAR),
+                ComparisonFilter.and(ComparisonFilter.notNull(COL_STAR),
                     ComparisonFilter.isEqual(COL_USER, userId)));
 
         Filter notPublicIsMember = Filter.and(Filter.isNot(isPublic), isMember);

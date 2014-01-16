@@ -31,7 +31,7 @@
     <SimpleColumn name="DateTo" />
     <SimpleColumn name="Notes" />
 
-    <SimpleJoin source="TripDrivers" name="Trip" joinType="LEFT">
+    <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
       <SimpleJoin name="Driver" joinType="LEFT">
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
           <SimpleJoin name="Person" joinType="LEFT">
@@ -40,7 +40,7 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-    </SimpleJoin>
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" />

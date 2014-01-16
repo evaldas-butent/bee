@@ -276,6 +276,14 @@ public class GridLoaderBean {
 
       if (ColType.RELATED.equals(colType)) {
         column.setRelation(getRelation(columnElement));
+
+      } else if (ColType.AUTO.equals(colType)) {
+        Relation relation = Relation.create(columnElement.getAttribute(UiConstants.ATTR_VIEW_NAME),
+            Lists.newArrayList(columnElement.getAttribute("viewColumn")));
+
+        relation.setAttributes(XmlUtils.getAttributes(columnElement));
+
+        column.setRelation(relation);
       }
 
       if (initColumn(view, column)) {
@@ -486,6 +494,7 @@ public class GridLoaderBean {
 
       case DATA:
       case RELATED:
+      case AUTO:
         if (view.hasColumn(source)) {
           if (view.isColReadOnly(source)
               || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0) {
@@ -682,7 +691,7 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(renderTokens)) {
       dst.setRenderTokens(renderTokens);
     }
-    
+
     Element footerElement = XmlUtils.getFirstChildElement(src, TAG_FOOTER);
     if (footerElement != null) {
       dst.setFooterDescription(new FooterDescription(XmlUtils.getAttributes(footerElement)));

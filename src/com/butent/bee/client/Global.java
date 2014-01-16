@@ -2,6 +2,7 @@ package com.butent.bee.client;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Objects;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -36,6 +37,7 @@ import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.client.widget.FaLabel;
@@ -190,7 +192,7 @@ public class Global implements Module {
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
   }
-  
+
   public static NewsAggregator getNewsAggregator() {
     return newsAggregator;
   }
@@ -235,15 +237,25 @@ public class Global implements Module {
   }
 
   public static void inputCollection(String caption, String valueCaption, final boolean unique,
-      Collection<String> collection, final Consumer<Collection<String>> consumer) {
+      Collection<String> collection, final Consumer<Collection<String>> consumer,
+      final Supplier<Editor> supplier) {
+
+    Assert.notNull(consumer);
 
     final HtmlTable table = new HtmlTable();
     final Consumer<String> rowCreator = new Consumer<String>() {
       @Override
       public void accept(String value) {
+        Editor input = null;
+
+        if (supplier != null) {
+          input = supplier.get();
+        }
+        if (input == null) {
+          input = new InputText();
+        }
         int row = table.getRowCount();
-        InputText input = new InputText();
-        table.setWidget(row, 0, input);
+        table.setWidget(row, 0, input.asWidget());
 
         if (!BeeUtils.isEmpty(value)) {
           input.setValue(value);
@@ -266,8 +278,10 @@ public class Global implements Module {
         table.setWidget(row, 1, delete);
       }
     };
-    for (String value : collection) {
-      rowCreator.accept(value);
+    if (!BeeUtils.isEmpty(collection)) {
+      for (String value : collection) {
+        rowCreator.accept(value);
+      }
     }
     FlowPanel widget = new FlowPanel();
     Label cap = new Label(valueCaption);
@@ -299,7 +313,7 @@ public class Global implements Module {
           Set<String> values = Sets.newHashSet();
 
           for (int i = 0; i < table.getRowCount(); i++) {
-            InputText input = (InputText) table.getWidget(i, 0);
+            Editor input = (Editor) table.getWidget(i, 0);
 
             if (BeeUtils.isEmpty(input.getValue())) {
               error = Localized.getConstants().valueRequired();
@@ -309,7 +323,7 @@ public class Global implements Module {
               values.add(BeeUtils.normalize(input.getValue()));
               continue;
             }
-            UiHelper.focus(input);
+            UiHelper.focus(input.asWidget());
             break;
           }
         }
@@ -326,7 +340,7 @@ public class Global implements Module {
           result = Lists.newArrayList();
         }
         for (int i = 0; i < table.getRowCount(); i++) {
-          result.add(((InputText) table.getWidget(i, 0)).getValue());
+          result.add(((Editor) table.getWidget(i, 0)).getValue());
         }
         consumer.accept(result);
       }
@@ -671,7 +685,7 @@ public class Global implements Module {
   private static void initImages() {
     Images.init(getImages());
   }
-  
+
   private static void initNewsAggregator() {
     BeeKeeper.getBus().registerDataHandler(getNewsAggregator(), true);
   }

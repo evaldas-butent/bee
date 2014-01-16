@@ -35,9 +35,9 @@
 
     <SimpleColumn name="Description" />
 
-    <SimpleJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+    <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
       <SimpleColumn name="Cargo" />
-    </SimpleJoin>
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />
