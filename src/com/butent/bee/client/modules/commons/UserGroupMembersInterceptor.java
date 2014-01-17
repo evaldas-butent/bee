@@ -5,22 +5,21 @@ import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -33,8 +32,21 @@ class UserGroupMembersInterceptor extends AbstractGridInterceptor {
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    final MultiSelector selector = MultiSelector.autonomous(VIEW_USERS,
+    Relation relation = Relation.create();
+    relation.setViewName(VIEW_USERS);
+
+    relation.getChoiceColumns().add(COL_FIRST_NAME);
+    relation.getChoiceColumns().add(COL_LAST_NAME);
+    relation.getChoiceColumns().add(ALS_COMPANY_NAME);
+    relation.getChoiceColumns().add(ALS_POSITION_NAME);
+
+    relation.getSearchableColumns().addAll(relation.getChoiceColumns());
+
+    final MultiSelector selector = MultiSelector.autonomous(relation,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
+    
+    int width = presenter.getGridView().asWidget().getOffsetWidth();
+    StyleUtils.setWidth(selector, BeeUtils.clamp(width - 50, 300, 600));
 
     List<? extends IsRow> data = presenter.getGridView().getRowData();
 
@@ -54,15 +66,16 @@ class UserGroupMembersInterceptor extends AbstractGridInterceptor {
       }
     }
 
-    Global.inputWidget(Localized.getConstants().users(), selector, new InputCallback() {
-      @Override
-      public void onSuccess() {
-        List<Long> users = DataUtils.parseIdList(selector.getValue());
-        if (!users.isEmpty()) {
-          addMembers(users);
-        }
-      }
-    }, "bee-" + GRID_USER_GROUP_MEMBERS + "-add", presenter.getHeader().getElement());
+    Global.inputWidget(Localized.getConstants().userGroupAddMembers(), selector,
+        new InputCallback() {
+          @Override
+          public void onSuccess() {
+            List<Long> users = DataUtils.parseIdList(selector.getValue());
+            if (!users.isEmpty()) {
+              addMembers(users);
+            }
+          }
+        }, null, presenter.getHeader().getElement());
 
     return false;
   }
@@ -79,16 +92,13 @@ class UserGroupMembersInterceptor extends AbstractGridInterceptor {
         if (DataUtils.isId(group)) {
           List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
               Lists.newArrayList(COL_UG_GROUP, COL_UG_USER));
+          BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
 
           for (Long user : users) {
-            Queries.insert(getViewName(), columns, Queries.asList(group, user), null,
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow row) {
-                    RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), row, null);
-                  }
-                });
+            rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+                Queries.asList(group, user));
           }
+          Queries.insertRows(rowSet);
         }
       }
     });

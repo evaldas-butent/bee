@@ -162,6 +162,7 @@ public class UiServiceBean {
       response = generateData(reqInfo);
     } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
       response = getViewSize(reqInfo);
+
     } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
       response = deleteRows(reqInfo);
     } else if (BeeUtils.same(svc, Service.DELETE)) {
@@ -174,6 +175,9 @@ public class UiServiceBean {
       response = update(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
       response = insertRow(reqInfo);
+    } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
+      response = insertRows(reqInfo);
+    
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
@@ -1275,6 +1279,26 @@ public class UiServiceBean {
 
   private ResponseObject insertRow(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
+  }
+
+  private ResponseObject insertRows(RequestInfo reqInfo) {
+    BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(reqInfo.getService(), "row set is empty");
+    }
+    
+    int count = 0;
+
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      ResponseObject response = deb.commitRow(rowSet, i, RowInfo.class);
+      if (response.hasErrors()) {
+        return response;
+      }
+      
+      count++;
+    }
+
+    return ResponseObject.response(count);
   }
 
   private ResponseObject rebuildData(RequestInfo reqInfo) {
