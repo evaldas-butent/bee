@@ -569,7 +569,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : removed) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(getDeleteNote(LABEL_OBSERVERS, label));
+            notes.add(getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
 
@@ -577,7 +577,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : added) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(getInsertNote(LABEL_OBSERVERS, label));
+            notes.add(getInsertNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
       }

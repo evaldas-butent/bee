@@ -248,7 +248,7 @@ public class CalendarModuleBean implements BeeModule {
             COL_ORGANIZER_FIRST_NAME, COL_ORGANIZER_LAST_NAME,
             COL_COMPANY_NAME, COL_COMPANY_EMAIL,
             COL_VEHICLE_NUMBER, COL_VEHICLE_PARENT_MODEL, COL_VEHICLE_MODEL), query),
-        DataUtils.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
+        Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
     BeeRowSet appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
     if (appointments != null) {

@@ -303,12 +303,11 @@ final class TaskList {
     }
 
     private static Filter getNewFilter() {
-      return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-          Filter.and(BeeKeeper.getUser().getFilter(COL_USER), Filter.isNull(COL_LAST_ACCESS)));
+      return Filter.custom(FILTER_TASKS_NEW);
     }
 
     private static Filter getUpdFilter() {
-      return null;
+      return Filter.custom(FILTER_TASKS_UPDATED);
     }
 
     private Mode mode;

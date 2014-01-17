@@ -20,10 +20,10 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
@@ -311,7 +311,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       }
 
     } else if (containsColumnName(input)) {
-      return DataUtils.parseCondition(input, columns, idColumnName, versionColumnName);
+      return FilterParser.parse(input, columns, idColumnName, versionColumnName);
 
     } else {
       operator = ValueType.isString(getColumnType()) ? Operator.CONTAINS : Operator.EQ;

@@ -285,7 +285,7 @@ public class CrmModuleBean implements BeeModule {
           }
           if (!indexedRows.isEmpty()) {
             BeeView view = sys.getView(VIEW_MAIN_CRITERIA);
-            SqlSelect query = view.getQuery();
+            SqlSelect query = view.getQuery(null);
 
             query.setWhere(SqlUtils.and(query.getWhere(),
                 SqlUtils.inList(view.getSourceAlias(), COL_DOCUMENT_DATA, indexedRows.keySet())));
@@ -345,6 +345,43 @@ public class CrmModuleBean implements BeeModule {
     news.registerHeadlineProducer(Feed.TASKS_ASSIGNED, headlineProducer);
     news.registerHeadlineProducer(Feed.TASKS_DELEGATED, headlineProducer);
     news.registerHeadlineProducer(Feed.TASKS_OBSERVED, headlineProducer);
+
+    BeeView.registerConditionProvider(FILTER_TASKS_NEW, new BeeView.ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        Long userId = usr.getCurrentUserId();
+        if (userId == null) {
+          return null;
+        }
+
+        return SqlUtils.in(TBL_TASKS, COL_TASK_ID, TBL_TASK_USERS, COL_TASK,
+            SqlUtils.and(SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId),
+                SqlUtils.isNull(TBL_TASK_USERS, COL_LAST_ACCESS)));
+      }
+    });
+
+    BeeView.registerConditionProvider(FILTER_TASKS_UPDATED, new BeeView.ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        Long userId = usr.getCurrentUserId();
+        if (userId == null) {
+          return null;
+        }
+        
+        SqlSelect query = new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_TASK_EVENTS, COL_TASK)
+            .addFrom(TBL_TASK_EVENTS)
+            .addFromInner(TBL_TASK_USERS,
+                SqlUtils.join(TBL_TASK_EVENTS, COL_TASK, TBL_TASK_USERS, COL_TASK))
+            .setWhere(SqlUtils.and(
+                SqlUtils.notEqual(TBL_TASK_EVENTS, COL_PUBLISHER, userId),
+                SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId),
+                SqlUtils.joinMore(TBL_TASK_EVENTS, COL_PUBLISH_TIME, 
+                    TBL_TASK_USERS, COL_LAST_ACCESS)));
+
+        return SqlUtils.in(TBL_TASKS, COL_TASK_ID, query);
+      }
+    });
   }
 
   private ResponseObject accessTask(RequestInfo reqInfo) {

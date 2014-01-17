@@ -1,11 +1,14 @@
 package com.butent.bee.shared.data.filter;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -13,6 +16,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -89,6 +93,30 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return filter;
   }
 
+  public static Filter anyItemContains(String column, Class<? extends Enum<?>> clazz,
+      String value) {
+    Assert.notEmpty(column);
+    Assert.notNull(clazz);
+    Assert.notEmpty(value);
+
+    List<Filter> filters = Lists.newArrayList();
+
+    String item;
+    for (Enum<?> constant : clazz.getEnumConstants()) {
+      if (constant instanceof HasCaption) {
+        item = ((HasCaption) constant).getCaption();
+      } else {
+        item = constant.name();
+      }
+
+      if (BeeUtils.containsSame(item, value)) {
+        filters.add(ComparisonFilter.isEqual(column, new IntegerValue(constant.ordinal())));
+      }
+    }
+
+    return Filter.or(filters);
+  }
+  
   public static Filter compareId(long value) {
     return compareId(Operator.EQ, value);
   }
@@ -168,6 +196,26 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   public static Filter contains(String column, String value) {
     Assert.notEmpty(value);
     return new ColumnValueFilter(column, Operator.CONTAINS, new TextValue(value));
+  }
+  
+  public static Filter custom(String key) {
+    Assert.notEmpty(key);
+    return new CustomFilter(key);
+  }
+
+  public static Filter custom(String key, String arg) {
+    Assert.notEmpty(key);
+    return new CustomFilter(key, Lists.newArrayList(arg));
+  }
+
+  public static Filter custom(String key, String arg1, String arg2) {
+    Assert.notEmpty(key);
+    return new CustomFilter(key, Lists.newArrayList(arg1, arg2));
+  }
+
+  public static Filter custom(String key, List<String> args) {
+    Assert.notEmpty(key);
+    return new CustomFilter(key, args);
   }
 
   public static Filter idIn(Collection<Long> values) {
@@ -334,6 +382,9 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
     } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
       flt = new ColumnInFilter();
+
+    } else if (NameUtils.getClassName(CustomFilter.class).equals(clazz)) {
+      flt = new CustomFilter();
 
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);

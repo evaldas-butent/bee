@@ -86,8 +86,11 @@ public class XmlView {
   public String name;
   @XmlAttribute
   public String source;
+
   @XmlAttribute
   public String filter;
+  @XmlAttribute
+  public String currentUserFilter;
 
   @XmlAttribute
   public boolean readOnly;

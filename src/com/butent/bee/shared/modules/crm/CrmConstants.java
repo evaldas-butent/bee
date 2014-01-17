@@ -344,9 +344,10 @@ public final class CrmConstants {
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
-  public static final String LABEL_OBSERVERS = Localized.getConstants().crmTaskObservers();
-
   public static final String STYLE_SHEET = "crm";
+
+  public static final String FILTER_TASKS_NEW = "tasks_new";
+  public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
   private CrmConstants() {
   }

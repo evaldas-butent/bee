@@ -809,7 +809,7 @@ public class CommonsModuleBean implements BeeModule {
     }
     BeeView view = sys.getView(viewName);
 
-    SqlSelect query = view.getQuery(ComparisonFilter.idIn(idList), null)
+    SqlSelect query = view.getQuery(ComparisonFilter.idIn(idList), null, null)
         .resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();

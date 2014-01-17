@@ -8,9 +8,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class SearchBox extends InputText implements SearchView {
     } else if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
       return null;
     } else {
-      return DataUtils.parseCondition(getValue(), columns, idColumnName, versionColumnName);
+      return FilterParser.parse(getValue(), columns, idColumnName, versionColumnName);
     }
   }
 
