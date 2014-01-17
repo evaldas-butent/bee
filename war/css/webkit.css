@@ -12,6 +12,10 @@
   -webkit-filter: contrast(10) invert(1) !important;
 }
 
+.bee-Header-commandPanel .bee-Image:hover {
+    -webkit-filter: contrast(10) invert(1) !important;
+}
+
 .bee-Workspace-actionMenu-item img {
   -webkit-filter: grayscale(50%);
 }

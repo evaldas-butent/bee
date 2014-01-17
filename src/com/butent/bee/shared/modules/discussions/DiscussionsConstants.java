@@ -13,6 +13,10 @@ public final class DiscussionsConstants {
     VISIT(Localized.getConstants().discussEventVisited(), null, null),
     ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
         .discussActionActivate(), "silverDiscussActivate"),
+    DEACTIVATE(Localized.getConstants().discussEventDeactivated(), Localized.getConstants()
+        .discussActionDeactivate(), null),
+    CLOSE(Localized.getConstants().discussEventClosed(), Localized.getConstants()
+        .discussActionClose(), "silverDiscussClose"),
     COMMENT(Localized.getConstants().discussEventCommented(), Localized.getConstants()
         .discussActionComment(), "silverDiscussComment"),
     COMMENT_DELETE(Localized.getConstants().discussEventCommentDeleted(), Localized.getConstants()
@@ -21,11 +25,7 @@ public final class DiscussionsConstants {
         .discussActionReply(), "replyToAll"),
     MARK(Localized.getConstants().discussEventMarked(), Localized.getConstants()
         .discussActionMark(), null),
-    MODIFY(Localized.getConstants().discussEventModified(), null, null),
-    DEACTIVATE(Localized.getConstants().discussEventDeactivated(), Localized.getConstants()
-        .discussActionDeactivate(), null),
-    CLOSE(Localized.getConstants().discussEventClosed(), Localized.getConstants()
-        .discussActionClose(), "silverDiscussClose");
+    MODIFY(Localized.getConstants().discussEventModified(), null, null);
 
     private final String caption;
     private final String commandLabel;

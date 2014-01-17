@@ -486,8 +486,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       cmd = new Button(label);
     }
 
-    cmd.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-
     if (cmd instanceof HasCommand) {
       ((HasClickHandlers) cmd).addClickHandler(new ClickHandler() {
 
