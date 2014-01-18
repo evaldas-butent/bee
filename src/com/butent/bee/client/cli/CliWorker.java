@@ -287,7 +287,7 @@ public final class CliWorker {
       showDataInfo(args, errorPopup);
 
     } else if (z.startsWith("color")) {
-      showColor(args, errorPopup);
+      showColor(arr);
 
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
@@ -2227,73 +2227,74 @@ public final class CliWorker {
     });
   }
 
-  private static void showColor(String args, boolean errorPopup) {
-    if (BeeUtils.isEmpty(args)) {
-      Map<String, String> names = Color.getNames();
+  private static void showColor(String[] arr) {
+    Map<String, String> output = Maps.newHashMap();
 
-      List<String> keys = Lists.newArrayList(names.keySet());
-      Collections.sort(keys);
+    if (arr.length > 1) {
+      for (int i = 1; i < arr.length; i++) {
+        String normalized = Color.normalize(arr[i]);
 
-      HtmlTable table = new HtmlTable();
+        if (BeeUtils.isEmpty(normalized)) {
+          boolean found = false;
+          
+          for (Map.Entry<String, String> entry : Color.getNames().entrySet()) {
+            if (Wildcards.isLike(entry.getKey(), arr[i]) 
+                || Wildcards.isLike(entry.getValue(), arr[i])) {
+              output.put(entry.getKey(), entry.getValue());
+              found = true;
+            }
+          }
+          
+          if (!found) {
+            logger.warning("color not recognized", arr[i]);
+          }
 
-      for (int row = 0; row < keys.size(); row++) {
-        String key = keys.get(row);
-        String value = names.get(key);
-
-        if (value.length() != 7 || !"#".equals(value.substring(0, 1))) {
-          logger.warning(key, value);
+        } else {
+          output.put(arr[i], normalized);
         }
-
-        int col = 0;
-        table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
-        table.setHtml(row, col, BeeUtils.toString(row + 1));
-        col++;
-
-        table.setHtml(row, col, key);
-        col++;
-
-        CustomDiv keySwatch = new CustomDiv();
-        StyleUtils.setSize(keySwatch, 60, 20);
-        StyleUtils.setBackgroundColor(keySwatch, key);
-        table.setWidget(row, col, keySwatch);
-        col++;
-
-        CustomDiv valueSwatch = new CustomDiv();
-        StyleUtils.setSize(valueSwatch, 60, 20);
-        StyleUtils.setBackgroundColor(valueSwatch, value);
-        table.setWidget(row, col, valueSwatch);
-        col++;
-
-        table.setHtml(row, col, value);
       }
-
-      BeeKeeper.getScreen().updateActivePanel(table);
 
     } else {
-      String normalized = Color.normalize(args);
-      if (BeeUtils.isEmpty(normalized)) {
-        showError(errorPopup, args, "color not recognized");
-        return;
-      }
-
-      HtmlTable table = new HtmlTable();
-
-      table.setHtml(0, 0, args);
-
-      CustomDiv argSwatch = new CustomDiv();
-      StyleUtils.setSize(argSwatch, 50, 50);
-      StyleUtils.setBackgroundColor(argSwatch, args);
-      table.setWidget(0, 1, argSwatch);
-
-      table.setHtml(1, 0, normalized);
-
-      CustomDiv normSwatch = new CustomDiv();
-      StyleUtils.setSize(normSwatch, 50, 50);
-      StyleUtils.setBackgroundColor(normSwatch, normalized);
-      table.setWidget(1, 1, normSwatch);
-
-      Global.showModalWidget(table);
+      output.putAll(Color.getNames());
     }
+
+    if (output.isEmpty()) {
+      return;
+    }
+
+    List<String> keys = Lists.newArrayList(output.keySet());
+    Collections.sort(keys);
+
+    HtmlTable table = new HtmlTable();
+
+    for (int row = 0; row < keys.size(); row++) {
+      String key = keys.get(row);
+      String value = output.get(key);
+
+      int col = 0;
+      table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
+      table.setHtml(row, col, BeeUtils.toString(row + 1));
+      col++;
+
+      table.setHtml(row, col, key);
+      col++;
+
+      CustomDiv keySwatch = new CustomDiv();
+      StyleUtils.setSize(keySwatch, 60, 20);
+      StyleUtils.setBackgroundColor(keySwatch, key);
+      table.setWidget(row, col, keySwatch);
+      col++;
+
+      CustomDiv valueSwatch = new CustomDiv();
+      StyleUtils.setSize(valueSwatch, 60, 20);
+      StyleUtils.setBackgroundColor(valueSwatch, value);
+      table.setWidget(row, col, valueSwatch);
+      col++;
+
+      table.setHtml(row, col, value);
+    }
+
+    BeeKeeper.getScreen().updateActivePanel(table);
   }
 
   private static void showCurrentExchangeRate(String currency) {
@@ -3399,7 +3400,7 @@ public final class CliWorker {
   private static void showRpc(String args) {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       inform("RpcList empty");
-      
+
     } else if (BeeUtils.contains(args, 'p')) {
       List<RpcInfo> requests = BeeKeeper.getRpc().getPendingRequests();
 
@@ -3410,13 +3411,13 @@ public final class CliWorker {
 
         for (int i = 0; i < requests.size(); i++) {
           RpcInfo info = requests.get(i);
-          
+
           int j = 0;
           data[i][j++] = BeeUtils.toString(info.getId());
           data[i][j++] = info.getStartTime();
           data[i][j++] = info.getService();
           data[i][j++] = info.getStateString();
-          data[i][j++] = (info.getRequest() == null) 
+          data[i][j++] = (info.getRequest() == null)
               ? BeeConst.NULL : BeeUtils.toString(info.getRequest().isPending());
           data[i][j++] = TimeUtils.elapsedSeconds(info.getStartMillis());
         }
@@ -3424,7 +3425,7 @@ public final class CliWorker {
         showMatrix("Pending requests", data,
             "id", "start", "service", "state", "pending", "elapsed");
       }
-      
+
     } else {
       Global.showGrid("rpc", new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));

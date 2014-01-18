@@ -898,7 +898,7 @@ public class DataEditorBean {
 
   private boolean refreshUpdates(Map<String, TableInfo> updates, BeeView view) {
     long id = 0;
-    SqlSelect ss = view.getQuery(null).resetFields();
+    SqlSelect ss = view.getQuery().resetFields();
 
     for (TableInfo tblInfo : updates.values()) {
       if (id == 0 && BeeUtils.isEmpty(tblInfo.relation)) {

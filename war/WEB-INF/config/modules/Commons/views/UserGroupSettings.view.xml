@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserGroupSettings" source="UserGroupSettings" currentUserFilter="Owner"
+  name="UserGroupSettings" source="UserGroupSettings"
   caption="=userGroups" newRowCaption="=newUserGroup"
   editForm="UserGroup" newRowForm="UserGroup"
   >

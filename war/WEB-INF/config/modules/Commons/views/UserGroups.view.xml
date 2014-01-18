@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserGroups" source="UserGroups" currentUserFilter="Owner" 
+  name="UserGroups" source="UserGroups" 
   >
   <Columns>
     <SimpleColumn name="User" />
@@ -9,7 +9,6 @@
     
     <SimpleJoin name="Group" joinType="INNER">
       <SimpleColumn alias="GroupName" name="Name" />
-      <SimpleColumn name="Owner" />
     </SimpleJoin>
   </Columns>
 

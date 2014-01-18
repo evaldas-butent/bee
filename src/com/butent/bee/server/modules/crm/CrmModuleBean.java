@@ -285,7 +285,7 @@ public class CrmModuleBean implements BeeModule {
           }
           if (!indexedRows.isEmpty()) {
             BeeView view = sys.getView(VIEW_MAIN_CRITERIA);
-            SqlSelect query = view.getQuery(null);
+            SqlSelect query = view.getQuery();
 
             query.setWhere(SqlUtils.and(query.getWhere(),
                 SqlUtils.inList(view.getSourceAlias(), COL_DOCUMENT_DATA, indexedRows.keySet())));

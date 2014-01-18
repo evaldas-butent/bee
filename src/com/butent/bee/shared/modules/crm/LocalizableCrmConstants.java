@@ -30,6 +30,8 @@ public interface LocalizableCrmConstants {
 
   String crmEnterComment();
 
+  String crmEnterCommentOrDuration();
+
   String crmEnterCompleteDate();
 
   String crmEnterConfirmDate();

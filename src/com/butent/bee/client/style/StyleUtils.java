@@ -2292,7 +2292,7 @@ public final class StyleUtils {
   }
 
   public static String toCssLength(double value, CssUnit unit) {
-    return BeeUtils.toString(value) + normalizeUnit(unit).getCaption();
+    return BeeUtils.toString(value, 5) + normalizeUnit(unit).getCaption();
   }
 
   public static SafeStyles toSafeStyles(String s) {

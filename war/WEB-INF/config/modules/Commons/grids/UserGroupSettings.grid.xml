@@ -2,6 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="UserGroupSettings" viewName="UserGroupSettings" caption="=userGroups"
+  currentUserFilter="Owner"
   >
   <g:columns>
     <DataColumn name="Name" minWidth="150" flexGrow="1" />
