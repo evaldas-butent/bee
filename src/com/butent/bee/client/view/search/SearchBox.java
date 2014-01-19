@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -46,7 +47,8 @@ public class SearchBox extends InputText implements SearchView {
     } else if (!BeeUtils.isEmpty(excludeSearchers) && excludeSearchers.contains(getId())) {
       return null;
     } else {
-      return FilterParser.parse(getValue(), columns, idColumnName, versionColumnName);
+      return FilterParser.parse(getValue(), columns, idColumnName, versionColumnName,
+          BeeKeeper.getUser().getUserId());
     }
   }
 

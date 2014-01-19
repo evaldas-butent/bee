@@ -169,6 +169,7 @@ public final class CommonsConstants {
   public static final String TBL_OBJECTS = "Objects";
   public static final String TBL_RIGHTS = "Rights";
   public static final String TBL_USER_HISTORY = "UserHistory";
+  public static final String TBL_USER_GROUPS = "UserGroups";
 
   public static final String TBL_FILES = "Files";
   public static final String TBL_FILE_PARTS = "FileParts";

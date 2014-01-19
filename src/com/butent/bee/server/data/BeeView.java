@@ -853,7 +853,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     for (String col : columns.keySet()) {
       cols.add(new BeeColumn(getColumnType(col).toValueType(), col));
     }
-    Filter f = FilterParser.parse(flt, cols, getSourceIdName(), getSourceVersionName());
+    Filter f = FilterParser.parse(flt, cols, getSourceIdName(), getSourceVersionName(), null);
 
     if (f == null) {
       logger.warning("Error in filter expression:", flt);

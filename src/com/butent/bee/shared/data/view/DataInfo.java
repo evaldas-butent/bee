@@ -580,8 +580,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return DataUtils.parseColumns(input, getColumns(), getIdColumn(), getVersionColumn());
   }
 
-  public Filter parseFilter(String input) {
-    return FilterParser.parse(input, getColumns(), getIdColumn(), getVersionColumn());
+  public Filter parseFilter(String input, Long userId) {
+    return FilterParser.parse(input, getColumns(), getIdColumn(), getVersionColumn(), userId);
   }
 
   public Order parseOrder(String input) {

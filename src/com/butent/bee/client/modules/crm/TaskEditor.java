@@ -350,7 +350,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
 
   private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_APPOINTMENTS, PROP_TASKS);
+      PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_TASKS);
 
   private final long userId;
 
@@ -857,14 +857,14 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         if (newStart != null && TimeUtils.isLeq(newEnd, newStart)) {
-          showError(Localized.getConstants().crmFinishDateMustGreaterThanStart());
+          showError(Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
           return;
         }
 
         DateTime now = TimeUtils.nowMinutes();
         if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
           Global.showError("Time travel not supported",
-              Lists.newArrayList(Localized.getConstants().crmFinishDateMustGreaterThan() + " "
+              Lists.newArrayList(Localized.getConstants().crmFinishDateMustBeGreaterThan() + " "
                   + now.toCompactString()));
           return;
         }

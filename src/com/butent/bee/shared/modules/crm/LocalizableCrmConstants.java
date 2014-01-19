@@ -52,16 +52,20 @@ public interface LocalizableCrmConstants {
 
   String crmFinishDate();
 
-  String crmFinishDateMustGreaterThan();
+  String crmFinishDateMustBeGreaterThan();
 
-  String crmFinishDateMustGreaterThanStart();
+  String crmFinishDateMustBeGreaterThanStart();
 
-  String crmFinishTimeMustGreaterThanStart();
+  String crmFinishTimeMustBeGreaterThanStart();
 
   String crmNewRequest();
 
   String crmNewTask();
 
+  String crmReminderTimeMustBeGreaterThan();
+  
+  String crmReminderTimeMustBeLessThan();
+  
   String crmRequest();
 
   String crmSelectedSameExecutor();

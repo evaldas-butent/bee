@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -311,7 +312,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       }
 
     } else if (containsColumnName(input)) {
-      return FilterParser.parse(input, columns, idColumnName, versionColumnName);
+      return FilterParser.parse(input, columns, idColumnName, versionColumnName,
+          BeeKeeper.getUser().getUserId());
 
     } else {
       operator = ValueType.isString(getColumnType()) ? Operator.CONTAINS : Operator.EQ;

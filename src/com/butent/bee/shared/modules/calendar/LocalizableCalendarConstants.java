@@ -36,9 +36,9 @@ public interface LocalizableCalendarConstants {
 
   String calEnterClient();
 
-  String calEnterDurationOrPlanedEndDate();
+  String calEnterDurationOrPlannedEndDate();
 
-  String calEnterPlanedStartTime();
+  String calEnterPlannedStartTime();
 
   String calEnterRepairType();
 
@@ -56,7 +56,7 @@ public interface LocalizableCalendarConstants {
 
   String calOpaque();
 
-  String calPlanedEndDateMustBeGreater();
+  String calPlannedEndDateMustBeGreater();
 
   String calPrivate();
 

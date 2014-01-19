@@ -50,6 +50,9 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_END_DATE = "End_Date";
   private static final String NAME_END_TIME = "End_Time";
 
+  private static final String NAME_REMINDER_DATE = "Reminder_Date";
+  private static final String NAME_REMINDER_TIME = "Reminder_Time";
+
   private static final String NAME_FILES = "Files";
 
   TaskBuilder() {
@@ -89,8 +92,24 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
     if (start != null && TimeUtils.isLeq(end, start)) {
-      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustGreaterThanStart());
+      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustBeGreaterThanStart());
       return;
+    }
+    
+    DateTime reminderTime = getReminderTime(end);
+    if (reminderTime != null) {
+      DateTime now = TimeUtils.nowMinutes();
+      if (TimeUtils.isLess(reminderTime, now)) {
+        event.getCallback().onFailure(BeeUtils.joinWords(
+            Localized.getConstants().crmReminderTimeMustBeGreaterThan(), now));
+        return;
+      }
+
+      if (TimeUtils.isMeq(reminderTime, end)) {
+        event.getCallback().onFailure(BeeUtils.joinWords(
+            Localized.getConstants().crmReminderTimeMustBeLessThan(), end));
+        return;
+      }
     }
 
     if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
@@ -98,7 +117,8 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
-    if (BeeUtils.isEmpty(activeRow.getProperty(PROP_EXECUTORS))) {
+    if (BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
+        activeRow.getProperty(PROP_EXECUTOR_GROUPS))) {
       event.getCallback().onFailure(Localized.getConstants().crmSelectExecutor());
       return;
     }
@@ -109,6 +129,10 @@ class TaskBuilder extends AbstractFormInterceptor {
       Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
     }
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
+    
+    if (reminderTime != null) {
+      Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);
+    }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS, COL_START_TIME), true);
@@ -135,6 +159,8 @@ class TaskBuilder extends AbstractFormInterceptor {
           clearValue(NAME_START_TIME);
           clearValue(NAME_END_DATE);
           clearValue(NAME_END_TIME);
+          clearValue(NAME_REMINDER_DATE);
+          clearValue(NAME_REMINDER_TIME);
 
           createFiles(tasks);
 
@@ -219,6 +245,19 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
   }
 
+  private DateTime getReminderTime(DateTime end) {
+    HasDateValue datePart = getDate(NAME_REMINDER_DATE);
+    Long timePart = getMillis(NAME_REMINDER_TIME);
+    
+    if (datePart == null && timePart == null) {
+      return null;
+    } else if (datePart == null) {
+      return TimeUtils.combine(end, timePart);
+    } else {
+      return TimeUtils.combine(datePart, timePart);
+    }
+  }
+  
   private DateTime getStart() {
     HasDateValue datePart = getDate(NAME_START_DATE);
     if (datePart == null) {

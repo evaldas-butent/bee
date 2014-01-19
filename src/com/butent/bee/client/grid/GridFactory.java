@@ -121,7 +121,8 @@ public final class GridFactory {
         f1 = null;
       } else {
         DataInfo dataInfo = Data.getDataInfo(viewName);
-        f1 = (dataInfo == null) ? null : dataInfo.parseFilter(filterDescription);
+        f1 = (dataInfo == null) ? null : dataInfo.parseFilter(filterDescription,
+            BeeKeeper.getUser().getUserId());
       }
 
       Filter f2 = BeeUtils.isEmpty(currentUserFilter) ? null

@@ -73,8 +73,6 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
-
-//    LogUtils.getLogger("").debug(PROP_COMPANIES, exclusions);
   }
   
   private static void handleExecutors(SelectorEvent event, IsRow taskRow) {
@@ -85,8 +83,6 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
-
-    // LogUtils.getLogger("").debug(PROP_EXECUTORS, exclusions);
   }
 
   private static void handleObservers(SelectorEvent event, IsRow taskRow) {
@@ -111,8 +107,6 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
-
-    // LogUtils.getLogger("").debug(PROP_OBSERVERS, exclusions);
   }
 
   private static void handleTasks(SelectorEvent event, IsRow taskRow) {
@@ -127,8 +121,6 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
 
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
-
-    // LogUtils.getLogger("").debug(PROP_TASKS, exclusions);
   }
 
   private static void handleTemplate(SelectorEvent event, FormView form, IsRow taskRow) {

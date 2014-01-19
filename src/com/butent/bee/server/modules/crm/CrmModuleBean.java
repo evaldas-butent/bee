@@ -367,7 +367,7 @@ public class CrmModuleBean implements BeeModule {
         if (userId == null) {
           return null;
         }
-        
+
         SqlSelect query = new SqlSelect().setDistinctMode(true)
             .addFields(TBL_TASK_EVENTS, COL_TASK)
             .addFrom(TBL_TASK_EVENTS)
@@ -376,7 +376,7 @@ public class CrmModuleBean implements BeeModule {
             .setWhere(SqlUtils.and(
                 SqlUtils.notEqual(TBL_TASK_EVENTS, COL_PUBLISHER, userId),
                 SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId),
-                SqlUtils.joinMore(TBL_TASK_EVENTS, COL_PUBLISH_TIME, 
+                SqlUtils.joinMore(TBL_TASK_EVENTS, COL_PUBLISH_TIME,
                     TBL_TASK_USERS, COL_LAST_ACCESS)));
 
         return SqlUtils.in(TBL_TASKS, COL_TASK_ID, query);
@@ -572,6 +572,24 @@ public class CrmModuleBean implements BeeModule {
 
         List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
         List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
+        
+        Set<Long> executorMembers = getUserGroupMembers(properties.get(PROP_EXECUTOR_GROUPS));
+        if (!executorMembers.isEmpty()) {
+          for (Long member : executorMembers) {
+            if (!executors.contains(member) && !observers.contains(member)) {
+              executors.add(member);
+            }
+          }
+        }
+
+        Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
+        if (!observerMembers.isEmpty()) {
+          for (Long member : observerMembers) {
+            if (!observers.contains(member)) {
+              observers.add(member);
+            }
+          }
+        }
 
         List<Long> tasks = Lists.newArrayList();
 
@@ -1070,6 +1088,33 @@ public class CrmModuleBean implements BeeModule {
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
+  }
+
+  private Set<Long> getUserGroupMembers(String groupList) {
+    Set<Long> users = Sets.newHashSet();
+
+    Set<Long> groups = DataUtils.parseIdSet(groupList);
+    if (groups.isEmpty()) {
+      return users;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFrom(CommonsConstants.TBL_USER_GROUPS)
+        .setWhere(SqlUtils.inList(CommonsConstants.TBL_USER_GROUPS,
+            CommonsConstants.COL_UG_GROUP, groups));
+    
+    Long[] members = qs.getLongColumn(query);
+    if (members != null) {
+      for (Long member : members) {
+        if (member != null) {
+          users.add(member);
+        }
+      }
+    }
+
+    return users;
   }
 
   private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {

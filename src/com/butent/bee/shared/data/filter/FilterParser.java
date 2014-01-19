@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -16,7 +17,7 @@ public final class FilterParser {
   private static BeeLogger logger = LogUtils.getLogger(FilterParser.class);
   
   public static Filter parse(String input, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
+      String idColumnName, String versionColumnName, Long userId) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(input)) {
@@ -34,7 +35,7 @@ public final class FilterParser {
 
       if (flt != null) {
         for (String part : parts) {
-          Filter ff = parse(part, columns, idColumnName, versionColumnName);
+          Filter ff = parse(part, columns, idColumnName, versionColumnName, userId);
 
           if (ff == null) {
             flt = null;
@@ -48,7 +49,7 @@ public final class FilterParser {
         String ptrn = "^\\s*" + CompoundType.NOT.toTextString() + "\\s*\\(\\s*(.*)\\s*\\)\\s*$";
 
         if (s.matches(ptrn)) {
-          flt = parse(s.replaceFirst(ptrn, "$1"), columns, idColumnName, versionColumnName);
+          flt = parse(s.replaceFirst(ptrn, "$1"), columns, idColumnName, versionColumnName, userId);
           if (flt != null) {
             flt = Filter.isNot(flt);
           }
@@ -57,7 +58,7 @@ public final class FilterParser {
           flt = CustomFilter.tryParse(s);
 
         } else {
-          flt = parseExpression(s, columns, idColumnName, versionColumnName);
+          flt = parseExpression(s, columns, idColumnName, versionColumnName, userId);
         }
       }
     }
@@ -150,7 +151,7 @@ public final class FilterParser {
   }
   
   private static Filter parseExpression(String expr, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
+      String idColumnName, String versionColumnName, Long userId) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(expr)) {
@@ -200,10 +201,14 @@ public final class FilterParser {
 
           if (BeeUtils.isEmpty(value)) {
             flt = Filter.isNull(colName);
+          } else if ("{u}".equals(value) && column.getType() == ValueType.LONG && userId != null) {
+            flt = ComparisonFilter.compareWithValue(column.getId(), operator,
+                new LongValue(userId));
           } else {
             flt = ComparisonFilter.compareWithValue(column, operator, value);
           }
         }
+
         if (notMode && flt != null) {
           flt = Filter.isNot(flt);
         }

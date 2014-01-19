@@ -71,6 +71,11 @@
 
       <FlowPanel style="&section;">
         <FlowPanel name="TaskExtensions" style="&inp2; margin-left: 100px;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=crmReminderDate" style="&lbl1;" />
+        <InputDateTime source="ReminderTime" style="&inp2;" disablable="true" />
         <Label text="=crmReminder" style="&lbl3;" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
           style="&inp4;" disablable="true" />
@@ -114,6 +119,12 @@
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
           newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label text="=discussions" style="&top1;" />
+        <MultiSelector viewName="Discussions" property="Discussions"
+          renderColumns="Subject" newRowEnabled="false" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

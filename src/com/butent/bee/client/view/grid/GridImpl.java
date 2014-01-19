@@ -335,7 +335,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
         Holder<List<String>> listHolder = Holder.of(renderColumns);
 
         cd.getRelation().initialize(Data.getDataInfoProvider(), getViewName(),
-            sourceHolder, listHolder, Relation.RenderMode.TARGET);
+            sourceHolder, listHolder, Relation.RenderMode.TARGET, BeeKeeper.getUser().getUserId());
 
         source = sourceHolder.get();
         renderColumns = listHolder.get();
