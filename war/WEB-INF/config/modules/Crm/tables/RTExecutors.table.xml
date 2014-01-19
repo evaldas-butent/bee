@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="RTExecutors"
+  idName="RTExecutorID"
+  >
+  <Fields>
+    <Relation name="RecurringTask" notNull="true" relation="RecurringTasks" cascade="DELETE"
+      label="=crmRecurringTask" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="RecurringTask User" />
+  </Constraints>
+</Table>

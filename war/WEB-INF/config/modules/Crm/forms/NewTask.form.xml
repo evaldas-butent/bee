@@ -54,7 +54,8 @@
           <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <Label text="=company" />
-        <DataSelector source="Company" editPopup="true" style="width: 200px;" />
+        <DataSelector source="Company" editPopup="true" newRowEnabled="false"
+          style="width: 200px;" />
       </row>
 
       <row>
@@ -62,7 +63,7 @@
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
           style="&inp2;" />
         <Label text="=personContact" />
-        <DataSelector source="Contact" editPopup="true" style="width: 200px;"
+        <DataSelector source="Contact" editPopup="true" newRowEnabled="false" style="width: 200px;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
       </row>
@@ -106,27 +107,28 @@
       <row>
         <Label text="=crmTaskExecutors" />
         <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
-          editPopup="true" editSource="CompanyPerson" style="&inp2x;"
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
           label="=crmTaskExecutors" />
       </row>
 
       <row>
         <Label text="=crmTaskExecutorGroups" />
         <MultiSelector viewName="UserGroupSettings" property="ExecutorGroups" renderColumns="Name"
-          editPopup="true" style="&inp2y;" label="=crmTaskExecutorGroups"
+          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
           filter="Owner {u} or Visibility 1" />
       </row>
 
       <row>
         <Label text="=crmTaskObservers" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskObservers" />
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
+          label="=crmTaskObservers" />
       </row>
 
       <row>
         <Label text="=crmTaskObserverGroups" />
         <MultiSelector viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
-          editPopup="true" style="&inp2y;" label="=crmTaskObserverGroups"
+          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
           filter="Owner {u} or Visibility 1" />
       </row>
     </Table>
@@ -140,13 +142,13 @@
       <row>
         <Label text="=companies" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-          editPopup="true" style="&inp2x;" />
+          editPopup="true" newRowEnabled="false" style="&inp2x;" />
       </row>
 
       <row>
         <Label text="=persons" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-          editPopup="true" style="&inp2x;" />
+          editPopup="true" newRowEnabled="false" style="&inp2x;" />
       </row>
 
       <row>

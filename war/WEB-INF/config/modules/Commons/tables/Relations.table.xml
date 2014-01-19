@@ -11,6 +11,7 @@
     <Relation name="Person" relation="Persons" label="=person" cascade="DELETE" />
     <Relation name="Appointment" relation="Appointments" label="=appointment" cascade="DELETE" />
     <Relation name="Task" relation="Tasks" label="=crmTask" cascade="DELETE" />
+    <Relation name="RecurringTask" relation="RecurringTasks" label="=crmRecurringTask" cascade="DELETE" />
     <Relation name="Document" relation="Documents" label="=document" cascade="DELETE" />
     <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" cascade="DELETE" />
     <Relation name="Driver" relation="Drivers" label="=vehicleDriver" cascade="DELETE" />

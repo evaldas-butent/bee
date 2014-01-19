@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="RTObserverGroups"
+  idName="RTObserverGroupID"
+  >
+  <Fields>
+    <Relation name="RecurringTask" notNull="true" relation="RecurringTasks" cascade="DELETE"
+      label="=crmRecurringTask" />
+    <Relation name="Group" notNull="true" relation="UserGroupSettings" cascade="DELETE"
+      label="=group" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="RecurringTask Group" />
+  </Constraints>
+</Table>

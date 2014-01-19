@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
   
   name="Tasks" viewName="Tasks" caption="=tasks"
   cacheData="false" asyncThreshold="-1" favorite="Summary"
-  order="TaskId desc"
+  order="TaskID desc"
   >
   <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
@@ -21,7 +19,7 @@
     <DataColumn name="Priority" />
     <DataColumn name="Summary" maxWidth="200" visible="true" />
 
-    <RelColumn name="Company" editEnabled="true" />
+    <RelColumn name="Company" />
 
     <DataColumn name="Status" visible="true" />
     <CalcColumn name="Slack" type="string" cellType="html" width="60" caption="=crmTaskDelayPlannedShort" />

@@ -1,110 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY inline "display: inline-block;">
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: right; padding-right: 8px;">
+  <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px;">
 
-  <!ENTITY section "margin-top: 2px;">
-  <!ENTITY header "font-style: italic;">
-  <!ENTITY separator "<br/>">
-
-  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 2px;">
-  <!ENTITY top1 "float: left; width: 100px; padding-top: 2px;">
-  <!ENTITY inp2 "&inline; width: 140px;">
-  <!ENTITY inp2x "&inline; width: 440px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 10px;">
-  <!ENTITY inp4 "&inline;">
+  <!ENTITY inp2x "width: 500px;">
+  <!ENTITY inp2y "width: 400px;">
+  
+  <!ENTITY timeStep "30">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="RecurringTask" viewName="RecurringTasks" caption="=crmRecurringTask">
+  name="RecurringTask" viewName="RecurringTasks" caption="=crmRecurringTask"
+  width="700" height="600">
 
-  <FlowPanel class="flexBox-horizontal" style="margin-top: 1ex;">
-    <FlowPanel style="margin-left: 5px;">
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskPriority" style="&lbl3;" />
-        <ListBox source="Priority" style="&inp4;" />
-      </FlowPanel>
+  <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
+  
+    <Table style="&tbl;" cellStyle="padding-bottom: 5px;">
+      <col index="0" cellStyle="&col1;" />
+      <col index="2" cellStyle="&col3;" />
 
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskManager" style="&lbl1;" />
-        <DataSelector source="Owner" style="&inp2;" />
-        <Label text="=company" style="&lbl3;" />
-        <DataSelector source="Company" style="&inp4; width: 140px;" />
-      </FlowPanel>
+      <row>
+        <Label text="=crmRTScheduleAfter" class="bee-required" />
+        <InputDateTime source="ScheduleAfter" />
+        <Label text="=crmRTScheduleBefore" />
+        <InputDateTime source="ScheduleBefore" />
+      </row>
 
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskExecutor" style="&lbl1;" />
-        <DataSelector source="Executor" style="&inp2;" />
-        <Label text="=personContact" style="&lbl3;" />
-        <DataSelector source="Contact" style="&inp4; width: 140px;"
-          renderColumns="ContactFirstName ContactLastName"
+      <row>
+        <Label text="=crmTaskManager" class="bee-required" />
+        <DataSelector source="Owner" editPopup="true" newRowEnabled="false"
+          renderColumns="OwnerFirstName OwnerLastName"
           choiceColumns="FirstName LastName CompanyName" />
-      </FlowPanel>
+        <Label text="=priority" />
+        <Radio source="Priority" />
+      </row>
 
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskCreated" style="&lbl1;" />
-        <InputDateTime source="Created" style="&inp2;" />
-        <Label text="=crmTaskExpectedDuration" style="&lbl3;" />
-        <InputTime source="ExpectedDuration" step="30" style="&inp4; width: 50px;" />
-      </FlowPanel>
+      <row>
+        <Label text="=company" />
+        <DataSelector source="Company" editPopup="true" newRowEnabled="false" />
+        <Label text="=personContact" />
+        <DataSelector source="Contact" editPopup="true" newRowEnabled="false"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
+      </row>
+    </Table>
+    
+    <br/>
+    <Table style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+      
+      <row>
+        <Label text="=taskTheme" class="bee-required" />
+        <InputText source="Summary" style="&inp2x;" autocomplete="true" />
+      </row>
 
-      <FlowPanel style="&section;">
-        <Label text="=crmStartDate" style="&lbl1;" />
-        <InputDateTime source="StartTime" style="&inp2;" />
-      </FlowPanel>
+      <row>
+        <Label text="=description" />
+        <InputArea source="Description" style="&inp2x; height: 60px;" />
+      </row>
+    </Table>
 
-      <FlowPanel style="&section;">
-        <Label text="=crmFinishDate" style="&lbl1;" />
-        <InputDateTime source="FinishTime" style="&inp2;" />
-      </FlowPanel>
+    <br/>
+    <Table style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
 
-      <FlowPanel style="&section;">
-        <Label text="=crmReminder" style="&lbl1;" />
-        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-          style="&inp2;" />
-      </FlowPanel>
+      <row>
+        <Label text="=crmTaskExecutors" />
+        <ChildSelector childTable="RTExecutors" viewName="Users" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" style="&inp2x;" label="=crmTaskExecutors" />
+      </row>
 
-      &separator;
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;" />
-        <InputText source="Summary" style="&inp2x;" />
-      </FlowPanel>
+      <row>
+        <Label text="=crmTaskExecutorGroups" />
+        <ChildSelector childTable="RTExecutorGroups" viewName="UserGroupSettings"
+          renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;"
+          label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1" />
+      </row>
 
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskDescription" style="&top1;" />
-        <InputArea source="Description" style="width: 440px; height: 60px;" />
-      </FlowPanel>
+      <row>
+        <Label text="=crmTaskObservers" />
+        <ChildSelector childTable="RTObservers" viewName="Users" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" style="&inp2x;" label="=crmTaskObservers" />
+      </row>
 
-      &separator;
-      <FlowPanel style="&section;">
-        <Label text="=crmFiles" style="&top1;" />
-        <FileGroup property="Files" />
-      </FlowPanel>
+      <row>
+        <Label text="=crmTaskObserverGroups" />
+        <ChildSelector childTable="RTObserverGroups" viewName="UserGroupSettings"
+          renderColumns="Name" editPopup="true" newRowEnabled="false"
+          style="&inp2y;" label="=crmTaskObserverGroups" filter="Owner {u} or Visibility 1" />
+      </row>
+    </Table>
 
-      &separator;
-      <FlowPanel style="&section;">
-        <Label text="=crmTaskObservers" style="&top1;" />
-        <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          style="&inp2x;" />
-      </FlowPanel>
+    <br/>
+    <TabbedPages class="flexible">
+      <page>
+        <text>=crmRecurrence</text>
+        <FlowPanel>
+          <br/>
+          <Table style="&tbl;" cellStyle="&cell;">
+            <col index="0" cellStyle="&col1;" />
+      
+            <row>
+              <Label text="=crmRTDayOfMonth" />
+              <InputText source="DayOfMonth" />
+            </row>
+            <row>
+              <Label text="=crmRTMonth" />
+              <InputText source="Month" />
+            </row>
+            <row>
+              <Label text="=crmRTDayOfWeek" />
+              <InputText source="DayOfWeek" />
+            </row>
+            <row>
+              <Label text="=crmRTYear" />
+              <InputText source="Year" />
+            </row>
+          </Table>
+          
+          <br/>
+          <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
+            <Label text="=crmRTStartAt" />
+            <InputTimeOfDay source="StartAt" step="&timeStep;" style="width: 50px;" />
+            <Label text="=duration" />
+            <InputSpinner source="DurationDays" minValue="0" maxValue="31" style="width: 40px;" />
+            <InputSpinner source="DurationHours" minValue="0" maxValue="23" style="width: 40px;" />
+            <InputSpinner source="DurationMinutes" minValue="0" maxValue="59" style="width: 40px;" />
+          </HorizontalPanel>
 
-      &separator;
-      <FlowPanel style="&section;">
-        <Label text="=relatedTo" style="&header;" />
-      </FlowPanel>
+          <br/>
+          <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
+            <Label text="=taskReminder" />
+            <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" />
+            <Label text="=crmRTRemindBefore" />
+            <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="width: 40px;" />
+            <Label text="=crmRTRemindAt" />
+            <InputTimeOfDay source="RemindAt" step="&timeStep;" style="width: 50px;" />
+          </HorizontalPanel>
+        </FlowPanel>
+      </page>
 
-      <FlowPanel style="&section;">
-        <Label text="=companies" style="&top1;" />
-        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-          style="&inp2x;" />
-      </FlowPanel>
-
-      <FlowPanel style="&section;">
-        <Label text="=persons" style="&top1;" />
-        <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-          style="&inp2x;" />
-      </FlowPanel>
-    </FlowPanel>
+      <page>
+        <text>=relatedTo</text>
+        <Table style="&tbl; margin-top: 2ex;" cellStyle="&cell;">
+          <col index="0" cellStyle="&col1;" />
+      
+          <row>
+            <Label text="=companies" />
+            <ChildSelector childTable="Relations" viewName="Companies" renderColumns="Name"
+              editPopup="true" newRowEnabled="false" style="&inp2x;" />
+          </row>
+    
+          <row>
+            <Label text="=persons" />
+            <ChildSelector childTable="Relations" viewName="Persons" 
+              renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" 
+              style="&inp2x;" />
+          </row>
+    
+          <row>
+            <Label text="=appointments" />
+            <ChildSelector childTable="Relations" viewName="Appointments"
+              renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+              newRowEnabled="false" editPopup="true" style="&inp2x;" />
+          </row>
+    
+          <row>
+            <Label text="=discussions" />
+            <ChildSelector childTable="Relations" viewName="Discussions"
+              renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp2x;" />
+          </row>
+    
+          <row>
+            <Label text="=tasks" />
+            <ChildSelector childTable="Relations" viewName="Tasks" 
+              renderColumns="Summary ExecutorFirstName ExecutorLastName"
+              choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+              newRowEnabled="false" editPopup="true" style="&inp2x;" />
+            </row>
+        </Table>
+      </page>
+    </TabbedPages>
   </FlowPanel>
-</f:Form>  
+</f:Form>

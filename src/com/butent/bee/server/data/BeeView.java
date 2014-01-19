@@ -718,6 +718,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     String alias;
     String colName;
 
+    boolean idUsed = false;
+
     if (o != null) {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
@@ -735,10 +737,21 @@ public class BeeView implements BeeObject, HasExtendedInfo {
               alias = getColumnSource(col);
               colName = getColumnField(col);
             }
+
+          } else if (BeeUtils.same(col, idCol)) {
+            alias = src;
+            colName = idCol;
+            idUsed = true;
+
+          } else if (BeeUtils.same(col, verCol)) {
+            alias = src;
+            colName = verCol;
+
           } else {
             logger.warning("view: ", getName(), "order by:", col, ". Column not recognized");
             continue;
           }
+
           if (!ordCol.isAscending()) {
             ss.addOrderDesc(alias, colName);
           } else {
@@ -747,12 +760,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
       }
     }
+
     if (hasGrouping) {
       ss.addMin(src, idCol)
           .addOrder(null, idCol);
     } else {
-      ss.addFields(src, idCol, verCol)
-          .addOrder(src, idCol);
+      ss.addFields(src, idCol, verCol);
+      if (!idUsed) {
+        ss.addOrder(src, idCol);
+      }
     }
     return ss;
   }
@@ -1117,7 +1133,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private void setFilter(SqlSelect ss, Filter flt, ViewFinder viewFinder) {
     CompoundFilter f = Filter.and();
-    
+
     if (filter != null) {
       f.add(filter);
     }
