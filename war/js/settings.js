@@ -11,5 +11,6 @@ var BeeSettings = {
   logCapacity: 1000,
   actionSensitivityMillis: 300,
   minimizeNumberOfConcurrentRequests: true,
+  //webSocketUrl: "ws://crm.osama.lt/b-novo/ws",
   showUserPhoto: true
 };
