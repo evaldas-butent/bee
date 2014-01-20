@@ -84,14 +84,18 @@ class TaskBuilder extends AbstractFormInterceptor {
     IsRow activeRow = getFormView().getActiveRow();
 
     DateTime start = getStart();
-    DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
-
-    if (end == null) {
-      event.getCallback()
-          .onFailure(Localized.getConstants().crmEnterFinishOrStartOrEstimatedTime());
+    if (start == null) {
+      event.getCallback().onFailure(Localized.getConstants().crmEnterStartDate());
       return;
     }
-    if (start != null && TimeUtils.isLeq(end, start)) {
+
+    DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
+    if (end == null) {
+      event.getCallback().onFailure(Localized.getConstants().crmEnterFinishDateOrEstimatedTime());
+      return;
+    }
+
+    if (TimeUtils.isLeq(end, start)) {
       event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustBeGreaterThanStart());
       return;
     }
@@ -125,9 +129,7 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     BeeRow newRow = DataUtils.cloneRow(activeRow);
 
-    if (start != null) {
-      Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
-    }
+    Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
     
     if (reminderTime != null) {
@@ -135,7 +137,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
-        newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS, COL_START_TIME), true);
+        newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
 
     ParameterList args = CrmKeeper.createTaskRequestParameters(TaskEvent.CREATE);
     args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));

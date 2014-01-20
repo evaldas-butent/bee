@@ -116,6 +116,12 @@
       </FlowPanel>
 
       <FlowPanel style="&section;">
+        <Label text="=documents" style="&top1;" />
+        <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"
+          newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
         <Label text="=appointments" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"

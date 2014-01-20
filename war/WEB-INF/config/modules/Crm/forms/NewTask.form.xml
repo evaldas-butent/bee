@@ -38,9 +38,9 @@
       </row>
 
       <row>
-        <Label text="=startingDate" />
+        <Label text="=startingDate" class="bee-required" />
         <FlowPanel>
-          <InputDate name="Start_Date" style="&dateStyle;" />
+          <InputDate name="Start_Date" style="&dateStyle;" required="true" />
           <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <Label text="=crmTaskExpectedDuration" />
@@ -148,6 +148,12 @@
       <row>
         <Label text="=persons" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" style="&inp2x;" />
+      </row>
+
+      <row>
+        <Label text="=documents" />
+        <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"
           editPopup="true" newRowEnabled="false" style="&inp2x;" />
       </row>
 

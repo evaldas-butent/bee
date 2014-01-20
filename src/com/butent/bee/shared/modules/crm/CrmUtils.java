@@ -72,6 +72,7 @@ public final class CrmUtils {
     if (taskPropertyToRelation.isEmpty()) {
       taskPropertyToRelation.put(PROP_COMPANIES, COL_COMPANY);
       taskPropertyToRelation.put(PROP_PERSONS, COL_PERSON);
+      taskPropertyToRelation.put(PROP_DOCUMENTS, COL_DOCUMENT);
       taskPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
       taskPropertyToRelation.put(PROP_DISCUSSIONS, DiscussionsConstants.COL_DISCUSSION);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);

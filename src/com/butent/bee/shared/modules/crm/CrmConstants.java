@@ -318,6 +318,7 @@ public final class CrmConstants {
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";
+  public static final String PROP_DOCUMENTS = "Documents";
   public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_DISCUSSIONS = "Discussions";
   public static final String PROP_TASKS = "Tasks";

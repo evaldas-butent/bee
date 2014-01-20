@@ -591,11 +591,11 @@ public class CrmModuleBean implements BeeModule {
           }
         }
 
+        DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
+
         List<Long> tasks = Lists.newArrayList();
 
         for (long executor : executors) {
-          DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
-
           BeeRow newRow = DataUtils.cloneRow(taskRow);
           newRow.setValue(taskData.getColumnIndex(COL_EXECUTOR), executor);
 

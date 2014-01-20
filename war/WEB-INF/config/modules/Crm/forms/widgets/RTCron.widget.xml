@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FlowPanel [
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY spinner "width: 40px;">
+  <!ENTITY tod "width: 50px;">
+  <!ENTITY timeStep "30">
+]>
+<FlowPanel xmlns="http://www.butent.com/widget">
+  <br/>
+
+  <Table style="&tbl;" cellStyle="padding-bottom: 3px;">
+    <col index="0" cellStyle="text-align: right; padding-right: 1em;" />
+
+    <row>
+      <Label text="=crmRTDayOfMonth" />
+      <InputText source="DayOfMonth" />
+    </row>
+    <row>
+      <Label text="=crmRTMonth" />
+      <InputText source="Month" />
+    </row>
+    <row>
+      <Label text="=crmRTDayOfWeek" />
+      <InputText source="DayOfWeek" />
+    </row>
+    <row>
+      <Label text="=crmRTYear" />
+      <InputText source="Year" />
+    </row>
+  </Table>
+  
+  <br/>
+  <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
+    <Label text="=crmRTStartAt" />
+    <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />
+    <Label text="=duration" />
+    <InputSpinner source="DurationDays" minValue="0" maxValue="31" style="&spinner;" />
+    <InputSpinner source="DurationHours" minValue="0" maxValue="23" style="&spinner;" />
+    <InputSpinner source="DurationMinutes" minValue="0" maxValue="59" style="&spinner;" />
+  </HorizontalPanel>
+
+  <br/>
+  <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
+    <Label text="=taskReminder" />
+    <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" />
+    <Label text="=crmRTRemindBefore" />
+    <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="&spinner;" />
+    <Label text="=crmRTRemindAt" />
+    <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
+  </HorizontalPanel>
+</FlowPanel>

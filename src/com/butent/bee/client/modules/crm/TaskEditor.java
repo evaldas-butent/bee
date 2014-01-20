@@ -350,7 +350,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
 
   private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_TASKS);
+      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_TASKS);
 
   private final long userId;
 
@@ -830,7 +830,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
 
     final String startId = isScheduled
-        ? dialog.addDateTime(Localized.getConstants().crmStartDate(), false,
+        ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true,
             getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
 
@@ -843,7 +843,8 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime oldStart = getDateTime(COL_START_TIME);
         DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-        DateTime newStart = (startId == null) ? oldStart : dialog.getDateTime(startId);
+        DateTime newStart = (startId == null) ? oldStart 
+            : BeeUtils.nvl(dialog.getDateTime(startId), oldStart);
         DateTime newEnd = dialog.getDateTime(endId);
 
         if (newEnd == null) {
@@ -856,7 +857,7 @@ class TaskEditor extends AbstractFormInterceptor {
           return;
         }
 
-        if (newStart != null && TimeUtils.isLeq(newEnd, newStart)) {
+        if (TimeUtils.isLeq(newEnd, newStart)) {
           showError(Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
           return;
         }
@@ -870,7 +871,7 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         BeeRow newRow = getNewRow();
-        if (!Objects.equal(newStart, oldStart)) {
+        if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
           newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
         }
         if (!Objects.equal(newEnd, oldEnd)) {

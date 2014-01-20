@@ -44,7 +44,9 @@ public interface LocalizableCrmConstants {
 
   String crmEnterFinishDate();
 
-  String crmEnterFinishOrStartOrEstimatedTime();
+  String crmEnterFinishDateOrEstimatedTime();
+
+  String crmEnterStartDate();
 
   String crmEnterSubject();
 

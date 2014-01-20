@@ -778,8 +778,7 @@ final class TaskList {
     GENERAL(Localized.getConstants().crmTasksList(), Feed.TASKS_ALL) {
       @Override
       Filter getFilter(LongValue userValue) {
-        return Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-            ComparisonFilter.isEqual(COL_USER, userValue));
+        return null; 
       }
     };
 

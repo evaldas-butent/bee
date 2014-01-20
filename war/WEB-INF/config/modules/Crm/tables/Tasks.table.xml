@@ -10,7 +10,7 @@
     <Enum name="Priority" key="TaskPriority" notNull="true" defValue="1" label="=crmTaskPriority" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=crmTaskCreated" />
-    <DateTime name="StartTime" label="=crmStartDate" />
+    <DateTime name="StartTime" notNull="true" label="=crmStartDate" />
     <DateTime name="FinishTime" notNull="true" label="=crmFinishDate" />
     <DateTime name="Completed" label="=crmTaskCompleteDate" />
     <DateTime name="Approved" label="=crmTaskConfirmDate" />

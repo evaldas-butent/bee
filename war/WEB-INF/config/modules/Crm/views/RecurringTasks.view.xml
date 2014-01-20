@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="RecurringTasks" source="RecurringTasks" caption="=crmRecurringTasks"
-  newRowForm="RecurringTask" newRowCaption="=crmNewRecurringTask"
+  newRowForm="NewRecurringTask" newRowCaption="=crmNewRecurringTask"
   editForm="RecurringTask" rowCaption="Summary" 
   >
   <Columns>
