@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -115,8 +116,15 @@ public final class GridFactory {
     }
 
     private Filter buildFilter(String viewName) {
-      Filter f1 = BeeUtils.isEmpty(filterDescription) ? null
-          : DataUtils.parseFilter(filterDescription, Data.getDataInfoProvider(), viewName);
+      Filter f1;
+      if (BeeUtils.isEmpty(filterDescription)) {
+        f1 = null;
+      } else {
+        DataInfo dataInfo = Data.getDataInfo(viewName);
+        f1 = (dataInfo == null) ? null : dataInfo.parseFilter(filterDescription,
+            BeeKeeper.getUser().getUserId());
+      }
+
       Filter f2 = BeeUtils.isEmpty(currentUserFilter) ? null
           : BeeKeeper.getUser().getFilter(currentUserFilter);
 

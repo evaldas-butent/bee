@@ -502,7 +502,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   public void initialize(DataInfo.Provider provider, String targetView, Holder<String> target,
-      Holder<List<String>> renderColumns, RenderMode mode) {
+      Holder<List<String>> renderColumns, RenderMode mode, Long userId) {
 
     setTargetViewName(targetView);
 
@@ -580,7 +580,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
     if (sourceInfo != null) {
       if (!BeeUtils.isEmpty(flt)) {
-        setFilter(sourceInfo.parseFilter(flt));
+        setFilter(sourceInfo.parseFilter(flt, userId));
       }
       if (!BeeUtils.isEmpty(cuf)) {
         setCurrentUserFilter(cuf);

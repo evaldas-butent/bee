@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.ReplacementPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -579,8 +580,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return DataUtils.parseColumns(input, getColumns(), getIdColumn(), getVersionColumn());
   }
 
-  public Filter parseFilter(String input) {
-    return DataUtils.parseCondition(input, getColumns(), getIdColumn(), getVersionColumn());
+  public Filter parseFilter(String input, Long userId) {
+    return FilterParser.parse(input, getColumns(), getIdColumn(), getVersionColumn(), userId);
   }
 
   public Order parseOrder(String input) {

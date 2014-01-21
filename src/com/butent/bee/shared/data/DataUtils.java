@@ -9,12 +9,6 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
-import com.butent.bee.shared.data.filter.CompoundType;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -23,7 +17,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -36,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Contains a set of utility functions for data management, for example {@code parseExpression}.
+ * Contains a set of utility functions for data management.
  */
 
 public final class DataUtils {
@@ -76,30 +69,6 @@ public final class DataUtils {
 
   private static int defaultAsyncThreshold = 100;
   private static int maxInitialRowSetSize = 50;
-
-  public static Filter anyItemContains(String column, Class<? extends Enum<?>> clazz,
-      String value) {
-    Assert.notEmpty(column);
-    Assert.notNull(clazz);
-    Assert.notEmpty(value);
-
-    List<Filter> filters = Lists.newArrayList();
-
-    String item;
-    for (Enum<?> constant : clazz.getEnumConstants()) {
-      if (constant instanceof HasCaption) {
-        item = ((HasCaption) constant).getCaption();
-      } else {
-        item = constant.name();
-      }
-
-      if (BeeUtils.containsSame(item, value)) {
-        filters.add(ComparisonFilter.isEqual(column, new IntegerValue(constant.ordinal())));
-      }
-    }
-
-    return Filter.or(filters);
-  }
 
   public static long assertId(Long id) {
     Assert.isTrue(isId(id), "invalid row id");
@@ -883,124 +852,6 @@ public final class DataUtils {
     }
   }
 
-  public static Filter parseCondition(String cond, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
-    Filter flt = null;
-
-    if (!BeeUtils.isEmpty(cond)) {
-      List<String> parts = getParts(cond, "\\s+[oO][rR]\\s+");
-
-      if (parts.size() > 1) {
-        flt = Filter.or();
-      } else {
-        parts = getParts(cond, "\\s+[aA][nN][dD]\\s+");
-
-        if (parts.size() > 1) {
-          flt = Filter.and();
-        }
-      }
-      if (flt != null) {
-        for (String part : parts) {
-          Filter ff = parseCondition(part, columns, idColumnName, versionColumnName);
-
-          if (ff == null) {
-            flt = null;
-            break;
-          }
-          ((CompoundFilter) flt).add(ff);
-        }
-      } else {
-        String s = parts.get(0);
-        String ptrn = "^\\s*" + CompoundType.NOT.toTextString() + "\\s*\\(\\s*(.*)\\s*\\)\\s*$";
-
-        if (s.matches(ptrn)) {
-          flt = parseCondition(s.replaceFirst(ptrn, "$1"), columns,
-              idColumnName, versionColumnName);
-
-          if (flt != null) {
-            flt = Filter.isNot(flt);
-          }
-        } else {
-          flt = parseExpression(s, columns, idColumnName, versionColumnName);
-        }
-      }
-    }
-    return flt;
-  }
-
-  public static Filter parseExpression(String expr, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
-    Filter flt = null;
-
-    if (!BeeUtils.isEmpty(expr)) {
-      String s = expr.trim();
-      IsColumn column = detectColumn(s, columns, idColumnName, versionColumnName);
-
-      if (column != null) {
-        String colName = column.getId();
-        String value = s.substring(colName.length()).trim();
-
-        String pattern = "^" + CompoundType.NOT.toTextString() + "\\s*\\((.*)\\)$";
-        boolean notMode = value.matches(pattern);
-
-        if (notMode) {
-          value = value.replaceFirst(pattern, "$1").trim();
-        }
-        Operator operator = Operator.detectOperator(value);
-        boolean isOperator = operator != null;
-
-        if (isOperator) {
-          value = value.replaceFirst("^\\" + operator.toTextString() + "\\s*", "");
-        } else {
-          if (ValueType.isString(column.getType())) {
-            operator = Operator.CONTAINS;
-          } else {
-            operator = Operator.EQ;
-          }
-        }
-        IsColumn column2 = isColumn(value, columns);
-
-        if (BeeUtils.same(colName, idColumnName)) {
-          flt = ComparisonFilter.compareId(operator, value);
-
-        } else if (BeeUtils.same(colName, versionColumnName)) {
-          flt = ComparisonFilter.compareVersion(operator, value);
-
-        } else if (column2 != null) {
-          flt = ComparisonFilter.compareWithColumn(column, operator, column2);
-
-        } else if (BeeUtils.isEmpty(value) && !isOperator) {
-          flt = Filter.notNull(colName);
-
-        } else {
-          value = value.replaceFirst("^\"(.*)\"$", "$1") // Unquote
-              .replaceAll("\"\"", "\"");
-
-          if (BeeUtils.isEmpty(value)) {
-            flt = Filter.isNull(colName);
-          } else {
-            flt = ComparisonFilter.compareWithValue(column, operator, value);
-          }
-        }
-        if (notMode && flt != null) {
-          flt = Filter.isNot(flt);
-        }
-      } else {
-        logger.warning("Unknown column in expression: " + expr);
-      }
-    }
-    return flt;
-  }
-
-  public static Filter parseFilter(String input, DataInfo.Provider provider, String viewName) {
-    if (BeeUtils.isEmpty(input)) {
-      return null;
-    }
-    Assert.notNull(provider);
-
-    DataInfo dataInfo = provider.getDataInfo(viewName, true);
-    return (dataInfo == null) ? null : dataInfo.parseFilter(input);
-  }
 
   public static List<Long> parseIdList(String input) {
     List<Long> result = Lists.newArrayList();
@@ -1193,106 +1044,6 @@ public final class DataUtils {
     for (int i = 0; i < target.getNumberOfCells(); i++) {
       target.setValue(i, source.getString(i));
     }
-  }
-
-  private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
-
-    if (BeeUtils.isEmpty(expr)) {
-      return null;
-    }
-    IsColumn column = null;
-    int len = 0;
-
-    if (!BeeUtils.isEmpty(columns)) {
-      for (IsColumn col : columns) {
-        String s = col.getId();
-        if (BeeUtils.startsWith(expr, s) && BeeUtils.hasLength(s, len + 1)) {
-          column = col;
-          len = s.length();
-        }
-      }
-    }
-    if (BeeUtils.hasLength(idColumnName, len + 1) && BeeUtils.startsWith(expr, idColumnName)) {
-      column = new BeeColumn(ValueType.LONG, idColumnName);
-      len = idColumnName.length();
-    }
-    if (BeeUtils.hasLength(versionColumnName, len + 1)
-        && BeeUtils.startsWith(expr, versionColumnName)) {
-      column = new BeeColumn(ValueType.DATE_TIME, versionColumnName);
-    }
-    return column;
-  }
-
-  private static List<String> getParts(String expr, String pattern) {
-    String s = expr;
-    String ptrn = "^\\s*\\(\\s*(.+)\\s*\\)\\s*$"; // Unparenthesize
-    String x = s.replaceFirst(ptrn, "$1");
-
-    while (validPart(x)) {
-      s = x;
-      if (!x.matches(ptrn)) {
-        break;
-      }
-      x = x.replaceFirst(ptrn, "$1");
-    }
-    List<String> parts = Lists.newArrayList();
-    int cnt = s.split(pattern).length;
-    boolean ok = false;
-
-    for (int i = 2; i <= cnt; i++) {
-      String[] pair = s.split(pattern, i);
-      String right = pair[pair.length - 1];
-      String left = s.substring(0, s.lastIndexOf(right)).replaceFirst(pattern + "$", "");
-
-      if (validPart(left)) {
-        parts.add(left);
-        parts.addAll(getParts(right, pattern));
-        ok = true;
-
-      } else if (validPart(right)) {
-        parts.addAll(getParts(left, pattern));
-        parts.add(right);
-        ok = true;
-      }
-      if (ok) {
-        break;
-      }
-    }
-    if (!ok) {
-      parts.add(s);
-    }
-    return parts;
-  }
-
-  private static IsColumn isColumn(String expr, List<? extends IsColumn> columns) {
-    if (!BeeUtils.isEmpty(expr) && !BeeUtils.isEmpty(columns)) {
-      for (IsColumn col : columns) {
-        if (BeeUtils.same(col.getId(), expr)) {
-          return col;
-        }
-      }
-    }
-    return null;
-  }
-
-  private static boolean validPart(String expr) {
-    String wh = expr;
-    String regex = "^(.*)\"(.*)\"(.*)$";
-
-    while (wh.matches(regex)) {
-      String s = wh.replaceFirst(regex, "$2");
-      wh = wh.replaceFirst(regex, "$1" + s.replaceAll("[\\(\\)]", "") + "$3");
-    }
-    if (wh.contains("\"")) {
-      return false;
-    }
-    regex = "^(.*)\\((.*)\\)(.*)$";
-
-    while (wh.matches(regex)) {
-      wh = wh.replaceFirst(regex, "$1" + "$2" + "$3");
-    }
-    return !wh.matches(".*[\\(\\)].*");
   }
 
   private DataUtils() {

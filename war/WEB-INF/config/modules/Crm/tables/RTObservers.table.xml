@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
   
-  name="TaskTemplUsers"
-  idName="TaskTemplUserID"
+  name="RTObservers"
+  idName="RTObserverID"
   >
   <Fields>
-    <Relation name="Template" notNull="true" relation="TaskTemplates" cascade="DELETE" label="=crmTasksTemplate"/>
+    <Relation name="RecurringTask" notNull="true" relation="RecurringTasks" cascade="DELETE"
+      label="=crmRecurringTask" />
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
-    <Boolean name="Executor" label="=crmTaskExecutor" />
   </Fields>
 
   <Constraints>
-    <Unique fields="Template User" />
+    <Unique fields="RecurringTask User" />
   </Constraints>
 </Table>

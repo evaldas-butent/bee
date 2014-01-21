@@ -106,7 +106,7 @@
       <InputTimeOfDay name="StartTime" step="30"
         style="&absolute; left: 280px; top: 128px; width: 40px;" />
 
-      <InputSpinner name="Hours" caption="=calDuration" minValue="0" maxValue="99"
+      <InputSpinner name="Hours" caption="=duration" minValue="0" maxValue="99"
         style="width: 40px;" d:size="60" d:unit="px"
         d:rootStyle="&absolute; left: 360px; top: 128px;" />
       <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"

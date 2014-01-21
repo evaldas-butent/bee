@@ -13,10 +13,8 @@ name="Tasks" label="=tasks" order="30"
 
   <Item name="AllTasks" label="=crmTasksList" service="task_list" parameters="g" separator="true" />
 
-<!--   <Item name="RecurringTasks" label="=crmRecurringTasks" service="grid" parameters="RecurringTasks" separator="true" /> -->
-<!--   <Item name="NewRecurringTask" label="=crmNewRecurringTask" service="new" parameters="RecurringTasks" /> -->
-
-<!--   <Item name="TaskFactory" label="=crmTasksFactory" service="task_factory" separator="true" /> -->
+  <Item name="NewRecurringTask" label="=crmNewRecurringTask" service="new" parameters="RecurringTasks" separator="true" />
+  <Item name="RecurringTasks" label="=crmRecurringTasks" service="grid" parameters="RecurringTasks"  />
 
   <Item name="TaskTemplates" label="=crmTasksTemplates" service="grid" parameters="TaskTemplates" separator="true" />
 

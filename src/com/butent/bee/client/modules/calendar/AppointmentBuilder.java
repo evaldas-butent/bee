@@ -1575,15 +1575,15 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     DateTime end = getEnd(start);
 
     if (start == null) {
-      getFormView().notifySevere(Localized.getConstants().calEnterPlanedStartTime());
+      getFormView().notifySevere(Localized.getConstants().calEnterPlannedStartTime());
       return false;
     }
     if (end == null) {
-      getFormView().notifySevere(Localized.getConstants().calEnterDurationOrPlanedEndDate());
+      getFormView().notifySevere(Localized.getConstants().calEnterDurationOrPlannedEndDate());
       return false;
     }
     if (TimeUtils.isLeq(end, start)) {
-      getFormView().notifySevere(Localized.getConstants().calPlanedEndDateMustBeGreater());
+      getFormView().notifySevere(Localized.getConstants().calPlannedEndDateMustBeGreater());
       return false;
     }
 

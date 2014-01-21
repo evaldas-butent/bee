@@ -345,6 +345,43 @@ public class CrmModuleBean implements BeeModule {
     news.registerHeadlineProducer(Feed.TASKS_ASSIGNED, headlineProducer);
     news.registerHeadlineProducer(Feed.TASKS_DELEGATED, headlineProducer);
     news.registerHeadlineProducer(Feed.TASKS_OBSERVED, headlineProducer);
+
+    BeeView.registerConditionProvider(FILTER_TASKS_NEW, new BeeView.ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        Long userId = usr.getCurrentUserId();
+        if (userId == null) {
+          return null;
+        }
+
+        return SqlUtils.in(TBL_TASKS, COL_TASK_ID, TBL_TASK_USERS, COL_TASK,
+            SqlUtils.and(SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId),
+                SqlUtils.isNull(TBL_TASK_USERS, COL_LAST_ACCESS)));
+      }
+    });
+
+    BeeView.registerConditionProvider(FILTER_TASKS_UPDATED, new BeeView.ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        Long userId = usr.getCurrentUserId();
+        if (userId == null) {
+          return null;
+        }
+
+        SqlSelect query = new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_TASK_EVENTS, COL_TASK)
+            .addFrom(TBL_TASK_EVENTS)
+            .addFromInner(TBL_TASK_USERS,
+                SqlUtils.join(TBL_TASK_EVENTS, COL_TASK, TBL_TASK_USERS, COL_TASK))
+            .setWhere(SqlUtils.and(
+                SqlUtils.notEqual(TBL_TASK_EVENTS, COL_PUBLISHER, userId),
+                SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId),
+                SqlUtils.joinMore(TBL_TASK_EVENTS, COL_PUBLISH_TIME,
+                    TBL_TASK_USERS, COL_LAST_ACCESS)));
+
+        return SqlUtils.in(TBL_TASKS, COL_TASK_ID, query);
+      }
+    });
   }
 
   private ResponseObject accessTask(RequestInfo reqInfo) {
@@ -535,12 +572,30 @@ public class CrmModuleBean implements BeeModule {
 
         List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
         List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
+        
+        Set<Long> executorMembers = getUserGroupMembers(properties.get(PROP_EXECUTOR_GROUPS));
+        if (!executorMembers.isEmpty()) {
+          for (Long member : executorMembers) {
+            if (!executors.contains(member) && !observers.contains(member)) {
+              executors.add(member);
+            }
+          }
+        }
+
+        Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
+        if (!observerMembers.isEmpty()) {
+          for (Long member : observerMembers) {
+            if (!observers.contains(member)) {
+              observers.add(member);
+            }
+          }
+        }
+
+        DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
 
         List<Long> tasks = Lists.newArrayList();
 
         for (long executor : executors) {
-          DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
-
           BeeRow newRow = DataUtils.cloneRow(taskRow);
           newRow.setValue(taskData.getColumnIndex(COL_EXECUTOR), executor);
 
@@ -1033,6 +1088,33 @@ public class CrmModuleBean implements BeeModule {
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
+  }
+
+  private Set<Long> getUserGroupMembers(String groupList) {
+    Set<Long> users = Sets.newHashSet();
+
+    Set<Long> groups = DataUtils.parseIdSet(groupList);
+    if (groups.isEmpty()) {
+      return users;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFrom(CommonsConstants.TBL_USER_GROUPS)
+        .setWhere(SqlUtils.inList(CommonsConstants.TBL_USER_GROUPS,
+            CommonsConstants.COL_UG_GROUP, groups));
+    
+    Long[] members = qs.getLongColumn(query);
+    if (members != null) {
+      for (Long member : members) {
+        if (member != null) {
+          users.add(member);
+        }
+      }
+    }
+
+    return users;
   }
 
   private ResponseObject getUsersHoursReport(RequestInfo reqInfo) {

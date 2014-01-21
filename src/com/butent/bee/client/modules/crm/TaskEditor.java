@@ -350,7 +350,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
 
   private final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
-      PROP_APPOINTMENTS, PROP_TASKS);
+      PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_TASKS);
 
   private final long userId;
 
@@ -569,7 +569,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : removed) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(getDeleteNote(LABEL_OBSERVERS, label));
+            notes.add(getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
 
@@ -577,7 +577,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : added) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(getInsertNote(LABEL_OBSERVERS, label));
+            notes.add(getInsertNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
       }
@@ -708,7 +708,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final TaskDialog dialog =
         new TaskDialog(Localized.getConstants().crmTaskCommentTimeRegistration());
 
-    final String cid = dialog.addComment(true);
+    final String cid = dialog.addComment(false);
     final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
@@ -718,41 +718,18 @@ class TaskEditor extends AbstractFormInterceptor {
       public void execute() {
 
         String comment = dialog.getComment(cid);
-        if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.getConstants().crmEnterComment());
+        String time = dialog.getTime(durIds.get(COL_DURATION));
+
+        if (BeeUtils.allEmpty(comment, time)) {
+          showError(Localized.getConstants().crmEnterCommentOrDuration());
           return;
         }
-
-        final long taskId = getTaskId();
 
         ParameterList params = createParams(TaskEvent.COMMENT, comment);
 
         if (setDurationParams(dialog, durIds, params)) {
-          final List<NewFileInfo> files = dialog.getFiles(fid);
-
+          sendRequest(params, TaskEvent.COMMENT, dialog.getFiles(fid));
           dialog.close();
-
-          sendRequest(params, new Callback<ResponseObject>() {
-            @Override
-            public void onFailure(String... reason) {
-              getFormView().notifySevere(reason);
-            }
-
-            @Override
-            public void onSuccess(ResponseObject result) {
-              BeeRow data = getResponseRow(TaskEvent.COMMENT.getCaption(), result, this);
-              if (data == null) {
-                return;
-              }
-
-              onResponse(data);
-
-              Long teId = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_EVENT_ID));
-              if (DataUtils.isId(teId) && !files.isEmpty()) {
-                sendFiles(files, taskId, teId);
-              }
-            }
-          });
         }
       }
     });
@@ -763,10 +740,11 @@ class TaskEditor extends AbstractFormInterceptor {
   private void doComplete() {
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskFinishing());
 
-    final String did =
-        dialog.addDateTime(Localized.getConstants().crmTaskCompleteDate(), true, TimeUtils
-            .nowMinutes());
-    final String cid = dialog.addComment(true);
+    final String did = dialog.addDateTime(Localized.getConstants().crmTaskCompleteDate(), true,
+        TimeUtils.nowMinutes());
+
+    final String cid = dialog.addComment(false);
+    final String fid = dialog.addFileCollector();
 
     final Map<String, String> durIds = dialog.addDuration();
 
@@ -781,10 +759,6 @@ class TaskEditor extends AbstractFormInterceptor {
         }
 
         String comment = dialog.getComment(cid);
-        if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.getConstants().crmEnterComment());
-          return;
-        }
 
         BeeRow newRow = getNewRow(TaskStatus.COMPLETED);
         newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
@@ -792,7 +766,7 @@ class TaskEditor extends AbstractFormInterceptor {
         ParameterList params = createParams(TaskEvent.COMPLETE, newRow, comment);
 
         if (setDurationParams(dialog, durIds, params)) {
-          sendRequest(params, TaskEvent.COMPLETE);
+          sendRequest(params, TaskEvent.COMPLETE, dialog.getFiles(fid));
           dialog.close();
         }
       }
@@ -856,8 +830,8 @@ class TaskEditor extends AbstractFormInterceptor {
     final boolean isScheduled = TaskStatus.SCHEDULED.is(getStatus());
 
     final String startId = isScheduled
-            ? dialog.addDateTime(Localized.getConstants().crmStartDate(), false,
-                getDateTime(COL_START_TIME)) : null;
+        ? dialog.addDateTime(Localized.getConstants().crmStartDate(), true,
+            getDateTime(COL_START_TIME)) : null;
     final String endId = dialog.addDateTime(Localized.getConstants().crmFinishDate(), true, null);
 
     final String cid = dialog.addComment(false);
@@ -869,7 +843,8 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime oldStart = getDateTime(COL_START_TIME);
         DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-        DateTime newStart = (startId == null) ? oldStart : dialog.getDateTime(startId);
+        DateTime newStart = (startId == null) ? oldStart 
+            : BeeUtils.nvl(dialog.getDateTime(startId), oldStart);
         DateTime newEnd = dialog.getDateTime(endId);
 
         if (newEnd == null) {
@@ -882,21 +857,21 @@ class TaskEditor extends AbstractFormInterceptor {
           return;
         }
 
-        if (newStart != null && TimeUtils.isLeq(newEnd, newStart)) {
-          showError(Localized.getConstants().crmFinishDateMustGreaterThanStart());
+        if (TimeUtils.isLeq(newEnd, newStart)) {
+          showError(Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
           return;
         }
 
         DateTime now = TimeUtils.nowMinutes();
         if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
           Global.showError("Time travel not supported",
-              Lists.newArrayList(Localized.getConstants().crmFinishDateMustGreaterThan() + " "
+              Lists.newArrayList(Localized.getConstants().crmFinishDateMustBeGreaterThan() + " "
                   + now.toCompactString()));
           return;
         }
 
         BeeRow newRow = getNewRow();
-        if (!Objects.equal(newStart, oldStart)) {
+        if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
           newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
         }
         if (!Objects.equal(newEnd, oldEnd)) {
@@ -927,7 +902,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String sid =
         dialog.addSelector(Localized.getConstants().crmTaskExecutor(), CommonsConstants.VIEW_USERS,
-        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), true, exclusions);
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), true, exclusions);
 
     final String cid = dialog.addComment(true);
 
@@ -1090,10 +1065,6 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private Integer getStatus() {
     return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
-  }
-
-  private long getTaskId() {
-    return getFormView().getActiveRow().getId();
   }
 
   private static String getTaskUsers(FormView form, IsRow row) {
@@ -1298,7 +1269,13 @@ class TaskEditor extends AbstractFormInterceptor {
     });
   }
 
-  private void sendRequest(ParameterList params, final TaskEvent event) {
+  private void sendRequest(ParameterList params, TaskEvent event) {
+    sendRequest(params, event, null);
+  }
+
+  private void sendRequest(ParameterList params, final TaskEvent event,
+      final List<NewFileInfo> files) {
+
     Callback<ResponseObject> callback = new Callback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
@@ -1310,6 +1287,13 @@ class TaskEditor extends AbstractFormInterceptor {
         BeeRow data = getResponseRow(event.getCaption(), result, this);
         if (data != null) {
           onResponse(data);
+
+          if (!BeeUtils.isEmpty(files)) {
+            Long teId = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_EVENT_ID));
+            if (DataUtils.isId(teId)) {
+              sendFiles(files, data.getId(), teId);
+            }
+          }
         }
       }
     };
@@ -1524,7 +1508,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static void showEventsAndDuration(FormView form, BeeRowSet rowSet,
       List<StoredFile> files) {
-    
+
     Widget widget = form.getWidgetByName(VIEW_TASK_EVENTS);
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
       return;

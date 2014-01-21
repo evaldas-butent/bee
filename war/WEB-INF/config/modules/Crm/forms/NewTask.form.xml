@@ -2,17 +2,16 @@
 <!DOCTYPE Form [
   <!ENTITY inline "display: inline-block;">
 
-  <!ENTITY section "margin-top: 4px;">
-  <!ENTITY header "font-style: italic;">
   <!ENTITY separator "<hr/>">
 
-  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 8px; min-height: 20px; max-height: 20px; padding-top: 1px;">
-  <!ENTITY top1 "text-align: right; padding-right: 8px; max-width: 128px; padding-top: 1px;">
-  <!ENTITY inp2 "&inline; max-width: 150px; min-width: 150px;">
-  <!ENTITY inp2x "&inline; width: 540px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 20px;">
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+  <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
 
-  <!ENTITY inp4 "&inline;">
+  <!ENTITY inp2 "width: 150px;">
+  <!ENTITY inp2x "width: 500px;">
+  <!ENTITY inp2y "width: 400px;">
 
   <!ENTITY dateStyle "&inline; min-width: 90px; max-width: 90px;">
   <!ENTITY timeStyle "&inline; min-width: 50px; max-width: 50px; width: 50px; margin-left: 10px;">
@@ -22,108 +21,163 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewTask" caption="=crmNewTask" width="650" height="520">
+  name="NewTask" caption="=crmNewTask" width="700" height="600">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
+  
+    <Table style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+      <col index="2" cellStyle="&col3;" />
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=taskTemplate" style="&top1;" />
-      <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
-        newRowEnabled="false" style="&inp2;" />
-      <Label text="=priority" style="&inline; width: 128px; text-align:right; padding-right:8px; padding-top: 1px; " />
-      <Radio source="Priority" style="&inp4; min-width:200px;" />
-    </FlowPanel>
+      <row>
+        <Label text="=taskTemplate" />
+        <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
+          newRowEnabled="false" style="&inp2;" />
+        <Label text="=priority" />
+        <Radio source="Priority" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=startingDate" style="&lbl1;" />
-      <InputDate name="Start_Date" style="&dateStyle;" />
-      <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label text="=crmTaskExpectedDuration" style="&lbl3;" />
-      <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; min-width: 50px;max-width: 50px;" />
-    </FlowPanel>
+      <row>
+        <Label text="=startingDate" class="bee-required" />
+        <FlowPanel>
+          <InputDate name="Start_Date" style="&dateStyle;" required="true" />
+          <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+        <Label text="=crmTaskExpectedDuration" />
+        <InputTime source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=endingDate" style="&lbl1;" />
-      <InputDate name="End_Date" style="&dateStyle;" />
-      <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label text="=company" style="&inline; width: 107px; text-align:right; padding-right:21px; padding-top: 1px; margin-left: 20px;" />
-      <DataSelector source="Company" editPopup="true" style="&inp4; width: 202px;" />
-    </FlowPanel>
+      <row>
+        <Label text="=endingDate" />
+        <FlowPanel>
+          <InputDate name="End_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+        <Label text="=company" />
+        <DataSelector source="Company" editPopup="true" newRowEnabled="false"
+          style="width: 200px;" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=taskReminder" style="&lbl1;" />
-      <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-        style="&inp2;" />
-      <Label text="=personContact" style="&lbl3;" />
-      <DataSelector source="Contact" style="&inp4; width: 202px;" editPopup="true"
-        renderColumns="ContactFirstName ContactLastName"
-        choiceColumns="FirstName LastName CompanyName" options="Company" />
-    </FlowPanel>
+      <row>
+        <Label text="=taskReminder" />
+        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
+          style="&inp2;" />
+        <Label text="=personContact" />
+        <DataSelector source="Contact" editPopup="true" newRowEnabled="false" style="width: 200px;"
+          renderColumns="ContactFirstName ContactLastName"
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
+      </row>
+
+      <row>
+        <Label text="=crmReminderDate" />
+        <FlowPanel>
+          <InputDate name="Reminder_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+      </row>
+    </Table>
 
     &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=taskTheme" class="bee-required" style="&lbl1;min-width:70px;" />
-      <InputText source="Summary" style="&inp2x;" autocomplete="true" />
-    </FlowPanel>
+    <Table style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+      
+      <row>
+        <Label text="=taskTheme" class="bee-required" />
+        <InputText source="Summary" style="&inp2x;" autocomplete="true" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=description" style="&top1; padding-right:12px;" />
-      <InputArea source="Description" style="width: 540px; height: 60px;" />
-    </FlowPanel>
+      <row>
+        <Label text="=description" />
+        <InputArea source="Description" style="&inp2x; height: 60px;" />
+      </row>
+    </Table>
 
     &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=documentFiles" style="&top1; min-width:60px;" />
+    <FlowPanel style="margin-top: 4px;" class="flexBox-horizontal-top">
+      <Label text="=documentFiles" style="width: 128px;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
       </FileCollector>
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=crmTaskExecutors" class="bee-required" style="&top1; padding-right:12px;" />
-      <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
-        editPopup="true" editSource="CompanyPerson" style="&inp2x;"
-        label="=crmTaskExecutors" required="true" />
-    </FlowPanel>
+    <Table style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=crmTaskObservers" style="&top1; min-width:60px; padding-right:18px;" />
-      <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-        editPopup="true" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskObservers" />
-    </FlowPanel>
+      <row>
+        <Label text="=crmTaskExecutors" />
+        <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
+          label="=crmTaskExecutors" />
+      </row>
+
+      <row>
+        <Label text="=crmTaskExecutorGroups" />
+        <MultiSelector viewName="UserGroupSettings" property="ExecutorGroups" renderColumns="Name"
+          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
+          filter="Owner {u} or Visibility 1" />
+      </row>
+
+      <row>
+        <Label text="=crmTaskObservers" />
+        <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
+          label="=crmTaskObservers" />
+      </row>
+
+      <row>
+        <Label text="=crmTaskObserverGroups" />
+        <MultiSelector viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
+          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
+          filter="Owner {u} or Visibility 1" />
+      </row>
+    </Table>
 
     &separator;
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=relatedTo" style="&header;" />
-    </FlowPanel>
+    <Label text="=relatedTo" style="font-style: italic; margin-bottom: 2px;" />
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=companies" style="&top1;min-width:60px; padding-right:18px;" />
-      <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-        editPopup="true" style="&inp2x;" />
-    </FlowPanel>
+    <Table style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+  
+      <row>
+        <Label text="=companies" />
+        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+          editPopup="true" newRowEnabled="false" style="&inp2x;" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=persons" style="&top1;min-width:60px; padding-right:18px;" />
-      <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-        editPopup="true" style="&inp2x;" />
-    </FlowPanel>
+      <row>
+        <Label text="=persons" />
+        <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+          editPopup="true" newRowEnabled="false" style="&inp2x;" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=appointments" style="&top1;min-width:60px; padding-right:18px;" />
-      <MultiSelector viewName="Appointments" property="Appointments"
-        renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-        newRowEnabled="false" editPopup="true" style="&inp2x;" />
-    </FlowPanel>
+      <row>
+        <Label text="=documents" />
+        <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"
+          editPopup="true" newRowEnabled="false" style="&inp2x;" />
+      </row>
 
-    <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=tasks" style="&top1;min-width:60px; padding-right:18px;" />
-      <MultiSelector viewName="Tasks" property="Tasks" 
-        renderColumns="Summary ExecutorFirstName ExecutorLastName"
-        choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-        newRowEnabled="false" editPopup="true" style="&inp2x;" />
-    </FlowPanel>
+      <row>
+        <Label text="=appointments" />
+        <MultiSelector viewName="Appointments" property="Appointments"
+          renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+          newRowEnabled="false" editPopup="true" style="&inp2x;" />
+      </row>
+
+      <row>
+        <Label text="=discussions" />
+        <MultiSelector viewName="Discussions" property="Discussions"
+          renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp2x;" />
+      </row>
+
+      <row>
+        <Label text="=tasks" />
+        <MultiSelector viewName="Tasks" property="Tasks" 
+          renderColumns="Summary ExecutorFirstName ExecutorLastName"
+          choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+          newRowEnabled="false" editPopup="true" style="&inp2x;" />
+        </row>
+    </Table>
 
   </FlowPanel>
 </f:Form>  

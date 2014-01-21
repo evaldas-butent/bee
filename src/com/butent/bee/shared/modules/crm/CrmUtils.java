@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 
@@ -71,7 +72,9 @@ public final class CrmUtils {
     if (taskPropertyToRelation.isEmpty()) {
       taskPropertyToRelation.put(PROP_COMPANIES, COL_COMPANY);
       taskPropertyToRelation.put(PROP_PERSONS, COL_PERSON);
+      taskPropertyToRelation.put(PROP_DOCUMENTS, COL_DOCUMENT);
       taskPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
+      taskPropertyToRelation.put(PROP_DISCUSSIONS, DiscussionsConstants.COL_DISCUSSION);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);
     }
     return taskPropertyToRelation;

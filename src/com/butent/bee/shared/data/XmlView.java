@@ -86,6 +86,7 @@ public class XmlView {
   public String name;
   @XmlAttribute
   public String source;
+
   @XmlAttribute
   public String filter;
 

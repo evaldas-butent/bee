@@ -1,109 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form [
-  <!ENTITY inline "display: inline-block;">
-
-  <!ENTITY section "margin-top: 4px;">
-  <!ENTITY header "font-style: italic;">
-  <!ENTITY separator "<hr/>">
-
-  <!ENTITY lbl1 "&inline; width: 128px; padding-top: 2px;">
-  <!ENTITY top1 "float: left; width: 128px; padding-top: 2px;">
-  <!ENTITY inp2 "&inline; width: 150px;">
-  <!ENTITY inp2x "&inline; width: 500px;">
-  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 20px;">
-  <!ENTITY inp4 "&inline;">
-
-  <!ENTITY dateStyle "&inline; width: 90px;">
-  <!ENTITY timeStyle "&inline; width: 50px; margin-left: 6px;">
-  <!ENTITY timeStep "30">
-]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewRecurringTask" caption="=crmNewRecurringTask">
+  name="RecurringTask" viewName="RecurringTasks" caption="=crmRecurringTask"
+  width="700" height="600">
 
-  <FlowPanel style="margin: 10px 5px 2px 5px;">
+  <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
+    <xi:include href="widgets/RTBody.widget.xml" />
 
-    <FlowPanel style="&section;">
-      <Label text="=crmTaskPriority" style="&lbl3;" />
-      <Radio source="Priority" style="&inp4;" />
-    </FlowPanel>
+    <br/>
+    <TabbedPages class="flexible">
+      <page>
+        <text>=crmRecurrence</text>
+        <xi:include href="widgets/RTCron.widget.xml" />
+      </page>
 
-    <FlowPanel style="&section;">
-      <Label text="=crmStartDate" style="&lbl1;" />
-      <InputDate name="Start_Date" style="&dateStyle;" />
-      <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label text="=crmTaskExpectedDuration" style="&lbl3;" />
-      <InputTime source="ExpectedDuration" step="&timeStep;" style="&inp4; width: 50px;" />
-    </FlowPanel>
-
-    <FlowPanel style="&section;">
-      <Label text="=crmFinishDate" style="&lbl1;" />
-      <InputDate name="End_Date" style="&dateStyle;" />
-      <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
-      <Label text="=company" style="&lbl3;" />
-      <DataSelector source="Company" editPopup="true"
-        style="&inp4; width: 200px;" />
-    </FlowPanel>
-
-    <FlowPanel style="&section;">
-      <Label text="=crmReminder" style="&lbl1;" />
-      <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-        style="&inp2;" />
-      <Label text="=personContact" style="&lbl3;" />
-      <DataSelector source="Contact" style="&inp4; width: 200px;" editPopup="true"
-        renderColumns="ContactFirstName ContactLastName"
-        choiceColumns="FirstName LastName CompanyName" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;" />
-      <InputText source="Summary" style="&inp2x;" />
-    </FlowPanel>
-
-    <FlowPanel style="&section;">
-      <Label text="=crmTaskDescription" style="&top1;" />
-      <InputArea source="Description" style="width: 500px; height: 60px;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label text="=crmFiles" style="&top1;" />
-      <FileCollector name="Files" editableColumns="name">
-        <face resource="attachment" />
-      </FileCollector>
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label text="=crmTaskExecutors" class="bee-required" style="&top1;" />
-      <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
-        editPopup="true" style="&inp2x;" />
-    </FlowPanel>
-
-    <FlowPanel style="&section;">
-      <Label text="=crmTaskObservers" style="&top1;" />
-      <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-        editPopup="true" style="&inp2x;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label text="=relatedTo" style="&header;" />
-    </FlowPanel>
-
-    <FlowPanel style="&section;">
-      <Label text="=companies" style="&top1;" />
-      <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-        editPopup="true" style="&inp2x;" />
-    </FlowPanel>
-
-    <FlowPanel style="&section;">
-      <Label text="=persons" style="&top1;" />
-      <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-        editPopup="true" style="&inp2x;" />
-    </FlowPanel>
+      <page>
+        <text>=relatedTo</text>
+        <xi:include href="widgets/RTRelations.widget.xml" />
+      </page>
+      
+      <page>
+        <text>=crmFiles</text>
+        <FlowPanel>
+          <br/>
+          <FileCollector name="Files" editableColumns="name" style="margin-left: 2em;">
+            <face resource="attachment" />
+          </FileCollector>
+        </FlowPanel>
+      </page>
+    </TabbedPages>
   </FlowPanel>
-</f:Form>  
+</f:Form>

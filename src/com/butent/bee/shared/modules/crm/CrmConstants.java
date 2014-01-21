@@ -265,6 +265,7 @@ public final class CrmConstants {
   public static final String COL_CONTACT_LAST_NAME = "ContactLastName";
 
   public static final String COL_REMINDER = "Reminder";
+  public static final String COL_REMINDER_TIME = "ReminderTime";
   public static final String COL_STATUS = "Status";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
 
@@ -311,11 +312,15 @@ public final class CrmConstants {
   public static final String COL_CRITERION_VALUE = "Value";
 
   public static final String PROP_EXECUTORS = "Executors";
+  public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";
+  public static final String PROP_OBSERVER_GROUPS = "ObserverGroups";
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";
+  public static final String PROP_DOCUMENTS = "Documents";
   public static final String PROP_APPOINTMENTS = "Appointments";
+  public static final String PROP_DISCUSSIONS = "Discussions";
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";
@@ -344,9 +349,10 @@ public final class CrmConstants {
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
-  public static final String LABEL_OBSERVERS = Localized.getConstants().crmTaskObservers();
-
   public static final String STYLE_SHEET = "crm";
+
+  public static final String FILTER_TASKS_NEW = "tasks_new";
+  public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
   private CrmConstants() {
   }

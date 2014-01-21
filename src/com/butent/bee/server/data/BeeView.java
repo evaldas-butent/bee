@@ -19,7 +19,6 @@ import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -53,7 +52,9 @@ import com.butent.bee.shared.data.filter.ColumnIsNullFilter;
 import com.butent.bee.shared.data.filter.ColumnNotNullFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.filter.IsFalseFilter;
 import com.butent.bee.shared.data.filter.IsTrueFilter;
@@ -73,6 +74,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements database view management - contains parameters for views and their fields and methods
@@ -80,6 +82,10 @@ import java.util.Set;
  */
 
 public class BeeView implements BeeObject, HasExtendedInfo {
+
+  public interface ConditionProvider {
+    IsCondition getCondition(BeeView view, List<String> args);
+  }
 
   public interface ViewFinder extends Function<String, BeeView> {
   }
@@ -356,6 +362,16 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private static BeeLogger logger = LogUtils.getLogger(BeeView.class);
 
+  private static final Map<String, ConditionProvider> conditionProviders =
+      new ConcurrentHashMap<>();
+
+  public static void registerConditionProvider(String key, ConditionProvider provider) {
+    Assert.notEmpty(key);
+    Assert.notNull(provider);
+
+    conditionProviders.put(key, provider);
+  }
+
   private static void initColumn(ColumnInfo info, BeeColumn column) {
     column.setId(info.getName());
     column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
@@ -405,7 +421,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private final boolean hasGrouping;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
-  private Filter filter;
+  private final Filter filter;
 
   private Order order;
 
@@ -449,9 +465,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
     setGrouping(grouping);
 
-    if (!BeeUtils.isEmpty(xmlView.filter)) {
+    if (BeeUtils.isEmpty(xmlView.filter)) {
+      this.filter = null;
+    } else {
       this.filter = parseFilter(xmlView.filter);
     }
+
     if (!BeeUtils.isEmpty(xmlView.orders)) {
       this.order = new Order();
 
@@ -590,6 +609,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
         return getCondition((ColumnInFilter) flt, viewFinder);
 
+      } else if (NameUtils.getClassName(CustomFilter.class).equals(clazz)) {
+        return getCondition((CustomFilter) flt);
+
       } else {
         Assert.unsupported("Unsupported class name: " + clazz);
       }
@@ -672,7 +694,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public SqlSelect getQuery(Filter flt, Order ord, List<String> cols, ViewFinder viewFinder) {
-
     SqlSelect ss = query.copyOf();
     Collection<String> activeCols = null;
 
@@ -697,6 +718,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     String alias;
     String colName;
 
+    boolean idUsed = false;
+
     if (o != null) {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
@@ -714,10 +737,21 @@ public class BeeView implements BeeObject, HasExtendedInfo {
               alias = getColumnSource(col);
               colName = getColumnField(col);
             }
+
+          } else if (BeeUtils.same(col, idCol)) {
+            alias = src;
+            colName = idCol;
+            idUsed = true;
+
+          } else if (BeeUtils.same(col, verCol)) {
+            alias = src;
+            colName = verCol;
+
           } else {
             logger.warning("view: ", getName(), "order by:", col, ". Column not recognized");
             continue;
           }
+
           if (!ordCol.isAscending()) {
             ss.addOrderDesc(alias, colName);
           } else {
@@ -726,12 +760,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
       }
     }
+
     if (hasGrouping) {
       ss.addMin(src, idCol)
           .addOrder(null, idCol);
     } else {
-      ss.addFields(src, idCol, verCol)
-          .addOrder(src, idCol);
+      ss.addFields(src, idCol, verCol);
+      if (!idUsed) {
+        ss.addOrder(src, idCol);
+      }
     }
     return ss;
   }
@@ -832,7 +869,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     for (String col : columns.keySet()) {
       cols.add(new BeeColumn(getColumnType(col).toValueType(), col));
     }
-    Filter f = DataUtils.parseCondition(flt, cols, getSourceIdName(), getSourceVersionName());
+    Filter f = FilterParser.parse(flt, cols, getSourceIdName(), getSourceVersionName(), null);
 
     if (f == null) {
       logger.warning("Error in filter expression:", flt);
@@ -1054,6 +1091,16 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return condition;
   }
 
+  private IsCondition getCondition(CustomFilter flt) {
+    ConditionProvider provider = conditionProviders.get(flt.getKey());
+    if (provider == null) {
+      logger.severe("custom filter", flt, "provider not registered");
+      return null;
+    } else {
+      return provider.getCondition(this, flt.getArgs());
+    }
+  }
+
   private IsCondition getCondition(IdFilter flt) {
     return SqlUtils.compare(SqlUtils.field(getSourceAlias(), getSourceIdName()),
         flt.getOperator(), SqlUtils.constant(flt.getValue()));
@@ -1086,7 +1133,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private void setFilter(SqlSelect ss, Filter flt, ViewFinder viewFinder) {
     CompoundFilter f = Filter.and();
-    f.add(filter, flt);
+
+    if (filter != null) {
+      f.add(filter);
+    }
+    if (flt != null) {
+      f.add(flt);
+    }
 
     if (!f.isEmpty()) {
       IsCondition condition = getCondition(f, viewFinder);

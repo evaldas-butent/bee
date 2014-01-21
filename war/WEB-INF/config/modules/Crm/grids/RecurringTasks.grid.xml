@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
   
   name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
   editShowId="true"
@@ -10,17 +8,32 @@
     <IdColumn name="Id" caption="=captionId" />
 
     <DataColumn name="Priority" />
-    <DataColumn name="Summary" />
+    <DataColumn name="Summary" visible="true" />
     <DataColumn name="Description" />
 
     <RelColumn name="Company" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+      sortBy="ContactLastName ContactFirstName" />
 
-    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
-    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+      sortBy="OwnerLastName OwnerFirstName" />
 
-    <DataColumn name="StartTime" />
-    <DataColumn name="FinishTime" />
+    <DataColumn name="ScheduleAfter" />
+    <DataColumn name="ScheduleBefore" />
 
-    <DataColumn name="Recurrence" />
+    <DataColumn name="DayOfMonth" />
+    <DataColumn name="Month" />
+    <DataColumn name="DayOfWeek" />
+    <DataColumn name="Year" />
+
+    <DataColumn name="StartAt" />
+
+    <DataColumn name="DurationDays" />
+    <DataColumn name="DurationHours" />
+    <DataColumn name="DurationMinutes" />
+    
+    <RelColumn name="Reminder" />
+    <DataColumn name="RemindBefore" />
+    <DataColumn name="RemindAt" />
   </g:columns>
 </g:Grid>

@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.xml.client.Element;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.ColorEditor;
@@ -1530,7 +1531,8 @@ public enum FormWidget {
     Holder<String> sourceHolder = Holder.of(source);
     Holder<List<String>> listHolder = Holder.of(renderColumns);
 
-    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder, renderMode);
+    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder, renderMode,
+        BeeKeeper.getUser().getUserId());
     if (relation.getViewName() == null) {
       logger.severe("Cannot create relation:");
       logger.severe(viewName, source, renderColumns);
