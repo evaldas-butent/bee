@@ -17,6 +17,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -28,7 +29,7 @@ import java.util.List;
 class CargoRequestFilesGrid extends AbstractGridInterceptor {
 
   private FileCollector collector;
-  
+
   CargoRequestFilesGrid() {
   }
 
@@ -57,7 +58,8 @@ class CargoRequestFilesGrid extends AbstractGridInterceptor {
 
     if (BeeUtils.same(columnName, TransportConstants.COL_CRF_FILE)) {
       return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
-          DataUtils.getColumnIndex(TransportConstants.COL_CRF_CAPTION, dataColumns));
+          DataUtils.getColumnIndex(TransportConstants.COL_CRF_CAPTION, dataColumns),
+          DataUtils.getColumnIndex(CommonsConstants.COL_FILE_NAME, dataColumns));
 
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);

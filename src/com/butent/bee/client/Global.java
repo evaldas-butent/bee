@@ -314,13 +314,14 @@ public class Global implements Module {
 
           for (int i = 0; i < table.getRowCount(); i++) {
             Editor input = (Editor) table.getWidget(i, 0);
+            String value = input.getNormalizedValue();
 
-            if (BeeUtils.isEmpty(input.getValue())) {
+            if (BeeUtils.isEmpty(value)) {
               error = Localized.getConstants().valueRequired();
-            } else if (unique && values.contains(BeeUtils.normalize(input.getValue()))) {
-              error = Localized.getMessages().valueExists(input.getValue());
+            } else if (unique && values.contains(BeeUtils.normalize(value))) {
+              error = Localized.getMessages().valueExists(value);
             } else {
-              values.add(BeeUtils.normalize(input.getValue()));
+              values.add(BeeUtils.normalize(value));
               continue;
             }
             UiHelper.focus(input.asWidget());
@@ -340,7 +341,7 @@ public class Global implements Module {
           result = Lists.newArrayList();
         }
         for (int i = 0; i < table.getRowCount(); i++) {
-          result.add(((Editor) table.getWidget(i, 0)).getValue());
+          result.add(((Editor) table.getWidget(i, 0)).getNormalizedValue());
         }
         consumer.accept(result);
       }

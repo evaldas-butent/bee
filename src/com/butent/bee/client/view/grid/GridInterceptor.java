@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid;
 
 import com.google.gwt.xml.client.Element;
 
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -82,13 +83,15 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void beforeRefresh(GridPresenter presenter);
 
   void beforeRender(GridView gridView, RenderingEvent event);
-  
+
+  boolean ensureRelId(IdCallback callback);
+
   String getColumnCaption(String columnName);
-  
+
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
-  
+
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);
 
@@ -111,15 +114,15 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   BeeRowSet getInitialRowSet(GridDescription gridDescription);
 
   GridInterceptor getInstance();
-  
+
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
   String getRowCaption(IsRow row, boolean edit);
 
   boolean isRowEditable(IsRow row);
-      
+
   void onAttach(GridView gridView);
-  
+
   boolean onClose(GridPresenter presenter);
 
   boolean onLoad(GridDescription gridDescription);

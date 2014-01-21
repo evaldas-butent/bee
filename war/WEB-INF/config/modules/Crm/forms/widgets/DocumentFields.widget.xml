@@ -23,7 +23,7 @@
   </row>
 
   <row>
-    <Label text="=documentCategory" />
+    <Label text="=documentCategory" class="bee-required" />
     <DataSelector source="Category" />
     <Label text="=documentType" horizontalAlignment="right" />
     <DataSelector source="Type" />

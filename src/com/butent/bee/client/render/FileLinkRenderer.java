@@ -13,13 +13,15 @@ public class FileLinkRenderer extends AbstractCellRenderer {
   private static final AnchorElement anchorElement = Document.get().createAnchorElement();
 
   private final int idIndex;
-  private final int captionIndex;
+  private final Integer captionIndex;
+  private final Integer nameIndex;
 
-  public FileLinkRenderer(int idIndex, int captionIndex) {
+  public FileLinkRenderer(int idIndex, Integer captionIndex, Integer nameIndex) {
     super(null);
 
     this.idIndex = idIndex;
     this.captionIndex = captionIndex;
+    this.nameIndex = nameIndex;
   }
 
   @Override
@@ -27,14 +29,20 @@ public class FileLinkRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     }
-
     Long id = row.getLong(idIndex);
-    String text = row.getString(captionIndex);
+    String text = null;
 
-    if (!DataUtils.isId(id) || BeeUtils.isEmpty(text)) {
+    if (DataUtils.isId(id)) {
+      if (captionIndex != null) {
+        text = row.getString(captionIndex);
+      }
+      if (BeeUtils.isEmpty(text) && nameIndex != null) {
+        text = row.getString(nameIndex);
+      }
+    }
+    if (BeeUtils.isEmpty(text)) {
       return null;
     }
-
     anchorElement.setHref(FileUtils.getUrl(text, id));
     anchorElement.setInnerText(text);
 

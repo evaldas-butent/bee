@@ -42,10 +42,10 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.HasRowChildren;
@@ -432,7 +432,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
@@ -483,7 +483,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getNotification().clear();
     }
   }
-  
+
   @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
@@ -562,7 +562,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         focusCommand.execute();
       }
     }
-    
+
     if (hasData() && DataUtils.hasId(row)) {
       Global.getNewsAggregator().onAccess(getViewName(), row.getId());
     }
@@ -666,7 +666,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return null;
     }
   }
-  
+
   @Override
   public Long getDataLong(String source) {
     int index = getDataIndex(source);
@@ -864,7 +864,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public boolean isEnabled() {
     return enabled;
   }
-  
+
   @Override
   public boolean isFlushable() {
     return isAdding() || isEditing();
@@ -1211,7 +1211,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     AutocompleteProvider.retainValues(this);
-    
+
     RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
@@ -1222,7 +1222,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       @Override
       public void onSuccess(BeeRow result) {
         if (getFormInterceptor() != null) {
-          getFormInterceptor().afterInsertRow(result);
+          getFormInterceptor().afterInsertRow(result, false);
         }
         finishNewRow(result);
       }
@@ -1481,7 +1481,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       row = DataUtils.createEmptyRow(getDataColumns().size());
     }
     IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
-    
+
     if (getActiveRow() != null && copy) {
       for (int i = 0; i < getDataColumns().size(); i++) {
         if (!row.isNull(i)) {
@@ -1572,7 +1572,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   protected void onLoad() {
     super.onLoad();
     Previewer.ensureRegistered(this);
-    
+
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }

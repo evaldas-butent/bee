@@ -11,14 +11,19 @@ import com.google.gwt.user.client.ui.HasWidgets;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
@@ -26,20 +31,20 @@ import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
@@ -55,7 +60,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-public class DocumentTemplateForm extends AbstractFormInterceptor implements ClickHandler {
+public class DocumentDataForm extends AbstractFormInterceptor implements ClickHandler {
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {
 
@@ -122,6 +127,12 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
         ((Autocomplete) editor).addAutocompleteHandler(new AutocompleteFilter(source, null));
       }
     }
+
+    @Override
+    public boolean ensureRelId(final IdCallback callback) {
+      ensureDataId(null, callback);
+      return true;
+    }
   };
 
   @Override
@@ -149,55 +160,20 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
   }
 
   @Override
-  public void afterInsertRow(IsRow result) {
+  public void afterInsertRow(IsRow result, boolean forced) {
+    if (!forced) {
+      save(result);
+    }
+  }
+
+  @Override
+  public void afterUpdateRow(IsRow result) {
     save(result);
   }
 
   @Override
-  public void beforeRefresh(final FormView form, final IsRow row) {
-    criteriaHistory.clear();
-    criteria.clear();
-    ids.clear();
-    groupId = null;
-    render();
-    Long dataId = form.getDataLong(COL_DOCUMENT_DATA);
-
-    if (!DataUtils.isId(dataId)) {
-      return;
-    }
-    Queries.getRowSet(VIEW_MAIN_CRITERIA, null,
-        Filter.isEqual(COL_DOCUMENT_DATA, Value.getValue(dataId)),
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (result.getNumberOfRows() > 0) {
-              groupId = result.getRow(0).getId();
-
-              for (BeeRow crit : result.getRows()) {
-                String name = Data.getString(VIEW_MAIN_CRITERIA, crit, COL_CRITERION_NAME);
-
-                if (!BeeUtils.isEmpty(name)) {
-                  String value = Data.getString(VIEW_MAIN_CRITERIA, crit, COL_CRITERION_VALUE);
-
-                  Autocomplete box = createAutocomplete("DistinctCriterionValues",
-                      COL_CRITERION_VALUE, name);
-
-                  box.setValue(value);
-
-                  criteriaHistory.put(name, value);
-                  criteria.put(name, box);
-                  ids.put(name, Data.getLong(VIEW_MAIN_CRITERIA, crit, "ID"));
-                }
-              }
-              render();
-            }
-          }
-        });
-  }
-
-  @Override
   public FormInterceptor getInstance() {
-    return new DocumentTemplateForm();
+    return new DocumentDataForm();
   }
 
   @Override
@@ -238,24 +214,73 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
   }
 
   @Override
-  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-    boolean exists = false;
-
-    for (BeeColumn column : event.getColumns()) {
-      if (BeeUtils.same(column.getId(), COL_DOCUMENT_CONTENT)) {
-        exists = true;
-        break;
-      }
-    }
-    if (!exists) {
-      event.getColumns().add(Data.getColumn(getViewName(), COL_DOCUMENT_CONTENT));
-      event.getValues().add(null);
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    if (BeeUtils.isEmpty(event.getColumns())) {
+      save(getActiveRow());
     }
   }
 
   @Override
-  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-    save(event.getNewRow());
+  public void onStart(FormView form) {
+    if (getHeaderView() == null) {
+      return;
+    }
+    final LocalizableConstants loc = Localized.getConstants();
+
+    getHeaderView().addCommandItem(new Button(loc.documentNew(),
+        new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            Global.inputString(loc.documentNew(), loc.documentName(),
+                new StringCallback() {
+                  @Override
+                  public void onSuccess(final String value) {
+                    DocumentHandler.copyDocumentData(getDataLong(COL_DOCUMENT_DATA),
+                        new IdCallback() {
+                          @Override
+                          public void onSuccess(Long dataId) {
+                            Queries.insert(TBL_DOCUMENTS,
+                                Data.getColumns(TBL_DOCUMENTS,
+                                    Lists.newArrayList(COL_DOCUMENT_CATEGORY,
+                                        COL_DOCUMENT_NAME, COL_DOCUMENT_DATA)),
+                                Lists.newArrayList(getDataValue(COL_DOCUMENT_CATEGORY), value,
+                                    DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
+                                null, new RowInsertCallback(TBL_DOCUMENTS, null) {
+                                  @Override
+                                  public void onSuccess(BeeRow result) {
+                                    super.onSuccess(result);
+                                    RowEditor.openRow(TBL_DOCUMENTS, result, true);
+                                  }
+                                });
+                          }
+                        });
+                  }
+                });
+          }
+        }));
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    requery(row);
+    return true;
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    requery(newRow);
+  }
+
+  protected String parseContent(String content) {
+    String result = content;
+
+    for (Entry<String, Editor> entry : criteria.entrySet()) {
+      String criterion = entry.getKey();
+      String value = entry.getValue().getNormalizedValue();
+
+      result = result.replace("{" + criterion + "}", value);
+    }
+    return result;
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {
@@ -264,6 +289,33 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
 
     input.addAutocompleteHandler(new AutocompleteFilter(null, value));
     return input;
+  }
+
+  private void ensureDataId(IsRow row, final IdCallback callback) {
+    final FormView form = getFormView();
+    final BeeRow newRow = DataUtils.cloneRow(row == null ? form.getActiveRow() : row);
+    final int idx = form.getDataIndex(COL_DOCUMENT_DATA);
+    Long dataId = newRow.getLong(idx);
+
+    if (DataUtils.isId(dataId)) {
+      callback.onSuccess(dataId);
+    } else {
+      Queries.insert(TBL_DOCUMENT_DATA, Data.getColumns(TBL_DOCUMENT_DATA,
+          Lists.newArrayList(COL_DOCUMENT_CONTENT)), Lists.newArrayList((String) null), null,
+          new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              long id = result.getId();
+              newRow.setValue(idx, id);
+
+              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), newRow);
+              callback.onSuccess(id);
+
+              Queries.update(form.getViewName(), newRow.getId(), COL_DOCUMENT_DATA,
+                  Value.getValue(id));
+            }
+          });
+    }
   }
 
   private void render() {
@@ -286,7 +338,48 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
     }
   }
 
-  private boolean save(IsRow row) {
+  private void requery(IsRow row) {
+    criteriaHistory.clear();
+    criteria.clear();
+    ids.clear();
+    groupId = null;
+    render();
+    Long dataId = row.getLong(getDataIndex(COL_DOCUMENT_DATA));
+
+    if (!DataUtils.isId(dataId)) {
+      return;
+    }
+    Queries.getRowSet(VIEW_MAIN_CRITERIA, null,
+        Filter.isEqual(COL_DOCUMENT_DATA, Value.getValue(dataId)),
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.getNumberOfRows() > 0) {
+              groupId = result.getRow(0).getId();
+
+              for (BeeRow crit : result.getRows()) {
+                String name = Data.getString(VIEW_MAIN_CRITERIA, crit, COL_CRITERION_NAME);
+
+                if (!BeeUtils.isEmpty(name)) {
+                  String value = Data.getString(VIEW_MAIN_CRITERIA, crit, COL_CRITERION_VALUE);
+
+                  Autocomplete box = createAutocomplete("DistinctCriterionValues",
+                      COL_CRITERION_VALUE, name);
+
+                  box.setValue(value);
+
+                  criteriaHistory.put(name, value);
+                  criteria.put(name, box);
+                  ids.put(name, Data.getLong(VIEW_MAIN_CRITERIA, crit, "ID"));
+                }
+              }
+              render();
+            }
+          }
+        });
+  }
+
+  private boolean save(final IsRow row) {
     final Map<String, String> newValues = Maps.newLinkedHashMap();
     Map<Long, String> changedValues = Maps.newHashMap();
     CompoundFilter flt = Filter.or();
@@ -317,16 +410,13 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
     if (row == null) {
       return BeeUtils.isPositive(holder.get());
     }
-    final long templateId = row.getId();
-    final String dataId = row.getString(getFormView().getDataIndex(COL_DOCUMENT_DATA));
-
     final ScheduledCommand scheduler = new ScheduledCommand() {
       @Override
       public void execute() {
         holder.set(holder.get() - 1);
 
         if (!BeeUtils.isPositive(holder.get())) {
-          Queries.getRow(getViewName(), templateId, new RowUpdateCallback(getViewName()) {
+          Queries.getRow(getViewName(), row.getId(), new RowUpdateCallback(getViewName()) {
             @Override
             public void onSuccess(BeeRow result) {
               super.onSuccess(result);
@@ -354,14 +444,19 @@ public class DocumentTemplateForm extends AbstractFormInterceptor implements Cli
         }
       };
       if (!DataUtils.isId(groupId)) {
-        Queries.insert(TBL_CRITERIA_GROUPS,
-            Data.getColumns(TBL_CRITERIA_GROUPS, Lists.newArrayList(COL_DOCUMENT_DATA)),
-            Lists.newArrayList(dataId), null, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-                consumer.accept(result.getId());
-              }
-            });
+        ensureDataId(row, new IdCallback() {
+          @Override
+          public void onSuccess(Long dataId) {
+            Queries.insert(TBL_CRITERIA_GROUPS,
+                Data.getColumns(TBL_CRITERIA_GROUPS, Lists.newArrayList(COL_DOCUMENT_DATA)),
+                Lists.newArrayList(BeeUtils.toString(dataId)), null, new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow result) {
+                    consumer.accept(result.getId());
+                  }
+                });
+          }
+        });
       } else {
         consumer.accept(groupId);
       }

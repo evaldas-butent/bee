@@ -264,20 +264,20 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String feedTasksObserved();
 
-  String feedTrCargo();  
+  String feedTrCargo();
 
-  String feedTrDrivers();  
+  String feedTrDrivers();
 
-  String feedTrOrdersAll();  
+  String feedTrOrdersAll();
 
-  String feedTrOrdersMy();  
+  String feedTrOrdersMy();
 
-  String feedTrRegistrations();  
+  String feedTrRegistrations();
 
-  String feedTrRequestsAll();  
+  String feedTrRequestsAll();
 
   String feedTrRequestsMy();
-  
+
   String feedTrRequestsUnregisteredAll();
 
   String feedTrRequestsUnregisteredMy();
@@ -285,6 +285,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String feedTrTrips();
 
   String feedTrVehicles();
+
+  String file();
 
   String fileDataCorrection();
 
