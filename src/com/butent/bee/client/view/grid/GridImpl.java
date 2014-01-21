@@ -85,6 +85,7 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
 import com.butent.bee.client.widget.Label;

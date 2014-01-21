@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" label="=crmTask" />
     <Relation name="TaskEvent" relation="TaskEvents" cascade="DELETE" label="=crmTaskEvent" />
-    <Relation name="File" relation="Files" notNull="true" editable="true" label="=crmFile" />
-    <String name="Caption" precision="100" label="=crmTaskFileCaption"/>
+    <Relation name="File" relation="Files" notNull="true" editable="true" label="=file" />
+    <String name="Caption" precision="100" label="=caption"/>
   </Fields>
 </Table>

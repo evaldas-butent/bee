@@ -169,7 +169,7 @@ public class CrmModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_CREATE_PDF_DOCUMENT)) {
       String content = reqInfo.getParameter(COL_DOCUMENT_CONTENT);
       long id = BeeUtils.toLong(reqInfo.getParameter(COL_DOCUMENT));
-      String name = reqInfo.getParameter(COL_FILE_NAME);
+      String name = reqInfo.getParameter(CommonsConstants.ALS_FILE_NAME);
 
       if (!BeeUtils.isSuffix(name, ".pdf")) {
         name = name + ".pdf";
@@ -308,21 +308,10 @@ public class CrmModuleBean implements BeeModule {
             }
           }
 
-        } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_FILES)) {
-          BeeRowSet rowSet = event.getRowset();
+        } else if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENT_FILES, VIEW_RT_FILES)) {
+          ExtensionIcons.setIcons(event.getRowset(), CommonsConstants.ALS_FILE_NAME,
+              CommonsConstants.PROP_ICON); 
 
-          if (!rowSet.isEmpty()) {
-            int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
-
-            if (!BeeConst.isUndef(fnIndex)) {
-              for (BeeRow row : rowSet.getRows()) {
-                String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
-                if (!BeeUtils.isEmpty(icon)) {
-                  row.setProperty(CommonsConstants.PROP_ICON, icon);
-                }
-              }
-            }
-          }
         } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TEMPLATES)) {
           Map<Long, IsRow> indexedRows = Maps.newHashMap();
           BeeRowSet rowSet = event.getRowset();
@@ -1022,9 +1011,9 @@ public class CrmModuleBean implements BeeModule {
 
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf = new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE),
-          DataUtils.getString(rowSet, row, COL_FILE_NAME),
-          DataUtils.getLong(rowSet, row, COL_FILE_SIZE),
-          DataUtils.getString(rowSet, row, COL_FILE_TYPE));
+          DataUtils.getString(rowSet, row, CommonsConstants.ALS_FILE_NAME),
+          DataUtils.getLong(rowSet, row, CommonsConstants.ALS_FILE_SIZE),
+          DataUtils.getString(rowSet, row, CommonsConstants.ALS_FILE_TYPE));
 
       Long teId = DataUtils.getLong(rowSet, row, COL_TASK_EVENT);
       if (teId != null) {

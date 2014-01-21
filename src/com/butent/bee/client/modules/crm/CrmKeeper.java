@@ -12,11 +12,13 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -56,10 +58,17 @@ public final class CrmKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
 
+    FormFactory.registerFormInterceptor(FORM_NEW_RECURRING_TASK, new RecurringTaskHandler());
+    FormFactory.registerFormInterceptor(FORM_RECURRING_TASK, new RecurringTaskHandler());
+
     FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
     FormFactory.registerFormInterceptor(FORM_REQUEST, new RequestEditor());
 
     GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());
+
+    GridFactory.registerGridInterceptor(GRID_RT_FILES, 
+        new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
+            CommonsConstants.ALS_FILE_NAME));
 
     BeeKeeper.getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       @Override

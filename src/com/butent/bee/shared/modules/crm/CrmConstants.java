@@ -205,6 +205,7 @@ public final class CrmConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+  public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_DOCUMENTS = "Documents";
 
@@ -251,9 +252,6 @@ public final class CrmConstants {
   public static final String COL_DOCUMENT_STATUS_NAME = "StatusName";
 
   public static final String COL_FILE = "File";
-  public static final String COL_FILE_NAME = "FileName";
-  public static final String COL_FILE_SIZE = "FileSize";
-  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
@@ -315,6 +313,10 @@ public final class CrmConstants {
   public static final String COL_CRITERION_NAME = "Criterion";
   public static final String COL_CRITERION_VALUE = "Value";
 
+  public static final String COL_RTF_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTF_FILE = "File";
+  public static final String COL_RTF_CAPTION = "Caption";
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";
@@ -340,10 +342,16 @@ public final class CrmConstants {
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
+  public static final String GRID_RT_FILES = "RTFiles";
+
   public static final String GRID_REQUESTS = "Requests";
 
+  public static final String FORM_NEW_RECURRING_TASK = "NewRecurringTask";
+  public static final String FORM_RECURRING_TASK = "RecurringTask";
+  
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+
   public static final String FORM_TASKS_REPORT = "TasksReport";
 
   public static final String FORM_NEW_REQUEST = "NewRequest";

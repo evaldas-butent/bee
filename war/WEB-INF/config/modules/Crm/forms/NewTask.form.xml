@@ -94,7 +94,7 @@
 
     &separator;
     <FlowPanel style="margin-top: 4px;" class="flexBox-horizontal-top">
-      <Label text="=documentFiles" style="width: 128px;" />
+      <Label text="=files" style="width: 128px;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
       </FileCollector>

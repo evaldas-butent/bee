@@ -7,8 +7,8 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.GridDescription;
 

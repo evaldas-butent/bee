@@ -8,7 +8,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;

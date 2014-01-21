@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -59,7 +60,7 @@ public class DocumentForm extends DocumentDataForm {
           public void onSuccess(String value) {
             ParameterList args = CrmKeeper.createArgs(SVC_CREATE_PDF_DOCUMENT);
             args.addDataItem(COL_DOCUMENT, getActiveRowId());
-            args.addDataItem(COL_FILE_NAME, value);
+            args.addDataItem(CommonsConstants.ALS_FILE_NAME, value);
             args.addDataItem(COL_DOCUMENT_CONTENT, parseContent(content));
 
             BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

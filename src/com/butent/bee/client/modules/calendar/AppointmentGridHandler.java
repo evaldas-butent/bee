@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;

@@ -23,7 +23,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;

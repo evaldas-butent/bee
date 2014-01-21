@@ -38,9 +38,9 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -260,7 +260,7 @@ public final class DocumentHandler {
       if (BeeUtils.same(columnName, COL_FILE)) {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
             DataUtils.getColumnIndex(COL_CAPTION, dataColumns),
-            DataUtils.getColumnIndex(COL_FILE_NAME, dataColumns));
+            DataUtils.getColumnIndex(CommonsConstants.ALS_FILE_NAME, dataColumns));
 
       } else {
         return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
@@ -312,8 +312,8 @@ public final class DocumentHandler {
         return result;
       }
 
-      int nameIndex = gridView.getDataIndex(COL_FILE_NAME);
-      int sizeIndex = gridView.getDataIndex(COL_FILE_SIZE);
+      int nameIndex = gridView.getDataIndex(CommonsConstants.ALS_FILE_NAME);
+      int sizeIndex = gridView.getDataIndex(CommonsConstants.ALS_FILE_SIZE);
       int dateIndex = gridView.getDataIndex(COL_FILE_DATE);
 
       Set<NewFileInfo> oldFiles = Sets.newHashSet();

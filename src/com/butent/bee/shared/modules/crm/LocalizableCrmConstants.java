@@ -50,8 +50,6 @@ public interface LocalizableCrmConstants {
 
   String crmEnterSubject();
 
-  String crmFiles();
-
   String crmFinishDate();
 
   String crmFinishDateMustBeGreaterThan();

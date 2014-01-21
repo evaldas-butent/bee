@@ -296,6 +296,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String fileOriginalName();
 
+  String files();
+
   String fileSize();
 
   String fileType();

@@ -12,7 +12,7 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;

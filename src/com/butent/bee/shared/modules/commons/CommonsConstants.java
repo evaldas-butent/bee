@@ -385,6 +385,10 @@ public final class CommonsConstants {
   public static final String ALS_EMAIL_ID = "EmailId";
 
   public static final String ALS_POSITION_NAME = "PositionName";
+
+  public static final String ALS_FILE_NAME = "FileName";
+  public static final String ALS_FILE_SIZE = "FileSize";
+  public static final String ALS_FILE_TYPE = "FileType";
   
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";

@@ -36,9 +36,10 @@ import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -53,6 +54,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -433,7 +435,9 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES, new CargoRequestFilesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
+        new FileGridInterceptor(COL_CRF_REQUEST, COL_CRF_FILE, COL_CRF_CAPTION,
+            CommonsConstants.ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
 

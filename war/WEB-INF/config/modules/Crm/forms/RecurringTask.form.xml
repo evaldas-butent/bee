@@ -23,7 +23,7 @@
       </page>
       
       <page>
-        <text>=crmFiles</text>
+        <text>=files</text>
         <ChildGrid name="RTFiles" relColumn="RecurringTask" />
       </page>
     </TabbedPages>

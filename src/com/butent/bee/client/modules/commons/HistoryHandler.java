@@ -21,7 +21,7 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;

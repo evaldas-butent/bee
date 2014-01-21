@@ -33,10 +33,10 @@ public class FileLinkRenderer extends AbstractCellRenderer {
     String text = null;
 
     if (DataUtils.isId(id)) {
-      if (captionIndex != null) {
+      if (BeeUtils.isNonNegative(captionIndex)) {
         text = row.getString(captionIndex);
       }
-      if (BeeUtils.isEmpty(text) && nameIndex != null) {
+      if (BeeUtils.isEmpty(text) && BeeUtils.isNonNegative(nameIndex)) {
         text = row.getString(nameIndex);
       }
     }

@@ -23,7 +23,7 @@
       </page>
       
       <page>
-        <text>=crmFiles</text>
+        <text>=files</text>
         <FlowPanel>
           <br/>
           <FileCollector name="Files" editableColumns="name" style="margin-left: 2em;">

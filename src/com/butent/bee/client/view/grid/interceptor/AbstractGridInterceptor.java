@@ -1,4 +1,4 @@
-package com.butent.bee.client.view.grid;
+package com.butent.bee.client.view.grid.interceptor;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
@@ -19,6 +19,8 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.grid.DynamicColumnIdentity;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;

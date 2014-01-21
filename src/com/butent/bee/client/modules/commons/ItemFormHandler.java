@@ -7,7 +7,7 @@ import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
