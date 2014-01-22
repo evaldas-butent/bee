@@ -8,6 +8,10 @@ public class DateRange implements HasDateRange {
     return new DateRange(Range.closed(min, max));
   }
   
+  public static DateRange day(JustDate date) {
+    return closed(date, date);
+  }
+  
   private final Range<JustDate> range;
 
   public DateRange(Range<JustDate> range) {
