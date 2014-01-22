@@ -161,7 +161,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
       col++;
 
-      styleName = STYLE_DIALOG + "fileCillector";
+      styleName = STYLE_DIALOG + "fileCollector";
       final FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
       collector.addStyleName(styleName);
 

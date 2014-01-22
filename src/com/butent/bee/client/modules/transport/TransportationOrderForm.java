@@ -22,7 +22,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -133,7 +133,12 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
           Value.getValue(row.getId()))));
     }
     if (Data.isViewEditable(VIEW_CARGO_TRIPS)) {
-      hdr.addCommandItem(new Button(Localized.getConstants().trAssignTrip(), this));
+      Image button = new Image(Global.getImages().silverTruck());
+      button.setTitle(Localized.getConstants().trAssignTrip());
+      button.setAlt(button.getTitle());
+      button.addClickHandler(this);
+
+      hdr.addCommandItem(button);
     }
     hdr.addCommandItem(new Profit(COL_ORDER, row.getId()));
 

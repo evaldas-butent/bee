@@ -39,7 +39,7 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -71,12 +71,13 @@ public final class TransportHandler {
     }
   }
 
-  static final class Profit extends Button implements ClickHandler {
+  static final class Profit extends Image implements ClickHandler {
     private final String idName;
     private final long id;
 
     public Profit(String idName, long id) {
-      super(Localized.getConstants().profit());
+      super(Global.getImages().silverProfit());
+      setTitle(Localized.getConstants().profit());
       addClickHandler(this);
       this.idName = idName;
       this.id = id;

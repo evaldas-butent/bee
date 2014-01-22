@@ -262,6 +262,12 @@ public final class Images {
     @Source("silver/filter_remove_25x14.png")
     ImageResource silverFilterRemove();
     
+    @Source("silver/invoice_17x18.png")
+    ImageResource silverInvoive();
+
+    @Source("silver/mail_17x18.png")
+    ImageResource silverMail();
+
     @Source("silver/minus_button_17x18.png")
     ImageResource silverMinus();
     
@@ -270,6 +276,9 @@ public final class Images {
     
     @Source("silver/print_17x18.png")
     ImageResource silverPrint();
+
+    @Source("silver/profit_17x18.png")
+    ImageResource silverProfit();
 
     @Source("silver/reload_17x18.png")
     ImageResource silverReload();
@@ -289,6 +298,9 @@ public final class Images {
     @Source("silver/tringle_up_11x9.png")
     ImageResource silverTringleUp();
     
+    @Source("silver/truck_17x18.png")
+    ImageResource silverTruck();
+
     @Source("slider.gif")
     ImageResource slider();
 
@@ -489,15 +501,19 @@ public final class Images {
     map.put(key("silverEdit"), resources.silverEdit());
     map.put(key("silverFilter"), resources.silverFilter());
     map.put(key("silverFilterRemove"), resources.silverFilterRemove());
+    map.put(key("silverInvoice"), resources.silverInvoive());
+    map.put(key("silverMail"), resources.silverMail());
     map.put(key("silverMinus"), resources.silverMinus());
     map.put(key("silverPlus"), resources.silverPlus());
     map.put(key("silverPrint"), resources.silverPrint());
+    map.put(key("silverProfit"), resources.silverProfit());
     map.put(key("silverReload"), resources.silverReload());
     map.put(key("silverSave"), resources.silverSave());
     map.put(key("silverSmile"), resources.silverSmile());
     map.put(key("silverSad"), resources.silverSad());
     map.put(key("silverTringleDown"), resources.silverTringleDown());
     map.put(key("silverTringleUp"), resources.silverTringleUp());
+    map.put(key("silverTruck"), resources.silverTruck());
   }
   
   public static List<NewFileInfo> sanitizeInput(Collection<NewFileInfo> input,
