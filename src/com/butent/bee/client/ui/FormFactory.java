@@ -71,9 +71,11 @@ public final class FormFactory {
 
     void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
 
-    void afterInsertRow(IsRow result);
+    void afterInsertRow(IsRow result, boolean forced);
 
     void afterRefresh(FormView form, IsRow row);
+
+    void afterUpdateRow(IsRow result);
 
     boolean beforeAction(Action action, Presenter presenter);
 
@@ -86,7 +88,7 @@ public final class FormFactory {
     Integer getDataInt(String source);
 
     Long getDataLong(String source);
-    
+
     String getDataValue(String source);
 
     FormView getFormView();
@@ -100,7 +102,7 @@ public final class FormFactory {
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
-    
+
     void notifyRequired(String message);
 
     void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
@@ -110,7 +112,7 @@ public final class FormFactory {
     void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event);
 
     void onSaveChanges(HasHandlers listener, SaveChangesEvent event);
-    
+
     void onSetActiveRow(IsRow row);
 
     void onShow(Presenter presenter);

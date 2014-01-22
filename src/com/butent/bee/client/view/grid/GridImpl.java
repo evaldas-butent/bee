@@ -85,6 +85,7 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.view.search.FilterSupplierFactory;
 import com.butent.bee.client.widget.Label;
@@ -153,6 +154,12 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
     @Override
     public void onSuccess(BeeRow result) {
+      FormView form = getForm(true);
+
+      if (form.getFormInterceptor() != null) {
+        form.getFormInterceptor().afterUpdateRow(result);
+      }
+
       closeEditForm();
 
       if (getGridInterceptor() != null) {
@@ -803,7 +810,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
   public void createParentRow(final NotificationListener notificationListener,
       final Callback<IsRow> callback) {
 
-    final FormView form = getForm(false);
+    final FormView form = getForm(!isAdding());
 
     if (!form.validate(notificationListener, false)) {
       return;
@@ -814,33 +821,38 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
     IsRow row = form.getActiveRow();
 
-    prepareForInsert(row, form, new RowCallback() {
-      @Override
-      public void onFailure(String... reason) {
-        if (callback != null) {
-          callback.onFailure(reason);
-        }
-      }
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        if (form.getFormInterceptor() != null) {
-          form.getFormInterceptor().afterInsertRow(result);
-        }
-        form.updateRow(result, true);
-
-        IsRow copy = DataUtils.cloneRow(result);
-        getGrid().insertRow(copy, false);
-
-        if (callback != null) {
-          callback.onSuccess(result);
+    if (DataUtils.isNewRow(row)) {
+      prepareForInsert(row, form, new RowCallback() {
+        @Override
+        public void onFailure(String... reason) {
+          if (callback != null) {
+            callback.onFailure(reason);
+          }
         }
 
-        if (getGridInterceptor() != null) {
-          getGridInterceptor().afterInsertRow(result);
+        @Override
+        public void onSuccess(BeeRow result) {
+          if (form.getFormInterceptor() != null) {
+            form.getFormInterceptor().afterInsertRow(result, true);
+          }
+          form.observeData();
+          form.updateRow(result, true);
+
+          IsRow copy = DataUtils.cloneRow(result);
+          getGrid().insertRow(copy, false);
+
+          if (callback != null) {
+            callback.onSuccess(result);
+          }
+
+          if (getGridInterceptor() != null) {
+            getGridInterceptor().afterInsertRow(result);
+          }
         }
-      }
-    });
+      });
+    } else if (callback != null) {
+      callback.onSuccess(row);
+    }
   }
 
   @Override
@@ -875,8 +887,13 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
             public void onSuccess(IsRow result) {
               if (DataUtils.isId(getRelId())) {
                 callback.onSuccess(getRelId());
+
               } else {
-                callback.onFailure(getViewName(), "parent row not created");
+                if (getGridInterceptor() == null
+                    || !getGridInterceptor().ensureRelId(callback)) {
+
+                  callback.onFailure(getViewName(), "parent row not created");
+                }
               }
             }
           });
@@ -941,7 +958,7 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
           @Override
           public void onSuccess(BeeRow result) {
             if (form.getFormInterceptor() != null) {
-              form.getFormInterceptor().afterInsertRow(result);
+              form.getFormInterceptor().afterInsertRow(result, false);
             }
 
             finishNewRow(result);
@@ -966,6 +983,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
           @Override
           public void onSuccess(BeeRow result) {
+            if (form.getFormInterceptor() != null) {
+              form.getFormInterceptor().afterUpdateRow(result);
+            }
+
             finishNewRow(null);
 
             if (getGridInterceptor() != null) {

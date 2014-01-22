@@ -7,8 +7,8 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;

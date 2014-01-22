@@ -55,7 +55,7 @@ public class LoginServlet extends HttpServlet {
   protected static final String ID_SUFFIX_LABEL = "-label";
   protected static final String ID_SUFFIX_INPUT = "-input";
   protected static final String ID_SUFFIX_LIST = "-list";
-  
+
   protected static final String FORM_NAME = "login";
 
   protected static final String STYLE_PREFIX = "bee-SignIn-";
@@ -74,13 +74,13 @@ public class LoginServlet extends HttpServlet {
     return func + BeeConst.STRING_LEFT_PARENTHESIS + BeeConst.STRING_QUOT + param
         + BeeConst.STRING_QUOT + BeeConst.STRING_RIGHT_PARENTHESIS;
   }
-  
+
   protected static String getLanguage(HttpServletRequest req) {
     String language = req.getParameter(HttpConst.PARAM_LOCALE);
     if (BeeUtils.isEmpty(language)) {
       language = SupportedLocale.normalizeLanguage(HttpUtils.getLanguage(req));
     }
-    
+
     return language;
   }
 
@@ -153,7 +153,7 @@ public class LoginServlet extends HttpServlet {
     }
 
     for (String script : ui.getScripts()) {
-      String src = script.contains("://") ? script 
+      String src = script.contains("://") ? script
           : resource(contextPath, Paths.getScriptPath(script));
       doc.getHead().append(script().src(src));
     }
@@ -190,7 +190,7 @@ public class LoginServlet extends HttpServlet {
         link().rel(Rel.SHORTCUT_ICON).href(resource(contextPath, Paths.getImagePath(FAV_ICON))),
         link().styleSheet(resource(contextPath, Paths.getStyleSheetPath("login"))),
         script().src(resource(contextPath, Paths.getScriptPath("login"))));
-    
+
     String scriptName = getLoginScriptName();
     if (!BeeUtils.isEmpty(scriptName)) {
       doc.getHead().append(script().src(resource(contextPath, Paths.getScriptPath(scriptName))));
@@ -266,7 +266,7 @@ public class LoginServlet extends HttpServlet {
 
     return doc.buildLines();
   }
-  
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
@@ -326,7 +326,7 @@ public class LoginServlet extends HttpServlet {
   protected Node getLoginExtension(HttpServletRequest req) {
     return null;
   }
-  
+
   protected String getLoginScriptName() {
     return null;
   }

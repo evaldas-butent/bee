@@ -197,7 +197,7 @@ class TaskEditor extends AbstractFormInterceptor {
       int col = 0;
 
       String styleName = STYLE_DIALOG + "-filesLabel";
-      Label label = new Label(Localized.getConstants().crmFiles());
+      Label label = new Label(Localized.getConstants().files());
       label.addStyleName(styleName);
 
       table.setWidget(row, col, label);

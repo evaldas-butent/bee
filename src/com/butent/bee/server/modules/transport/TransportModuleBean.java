@@ -419,18 +419,7 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       public void getFileIcons(ViewQueryEvent event) {
         if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
-          BeeRowSet rowSet = event.getRowset();
-
-          if (!rowSet.isEmpty()) {
-            int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
-
-            for (BeeRow row : rowSet.getRows()) {
-              String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
-              if (!BeeUtils.isEmpty(icon)) {
-                row.setProperty(PROP_ICON, icon);
-              }
-            }
-          }
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }
 

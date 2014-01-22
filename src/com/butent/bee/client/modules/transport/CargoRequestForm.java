@@ -56,12 +56,10 @@ class CargoRequestForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void afterInsertRow(IsRow result) {
+  public void afterInsertRow(IsRow result, boolean forced) {
     if (getCollector() != null && !getCollector().isEmpty()) {
-      SelfServiceUtils.sendFiles(result.getId(), getCollector().getFiles(), null);
+      SelfServiceUtils.sendFiles(result.getId(), getCollector().getFiles());
     }
-
-    super.afterInsertRow(result);
   }
 
   @Override

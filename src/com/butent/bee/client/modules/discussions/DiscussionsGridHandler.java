@@ -9,7 +9,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditorAssistant;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;

@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Request" notNull="true" relation="Requests" cascade="DELETE" label="=crmRequest" />
-    <Relation name="File" relation="Files" notNull="true" editable="true" label="=crmFile" />
+    <Relation name="File" relation="Files" notNull="true" editable="true" label="=file" />
     <String name="Caption" precision="100" label="=crmRequestFileCaption"/>
   </Fields>
 </Table>

@@ -150,6 +150,8 @@ public final class CrmConstants {
   public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
       + "users_hours";
 
+  public static final String SVC_CREATE_PDF_DOCUMENT = "create_pdf_document";
+  public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
@@ -187,7 +189,9 @@ public final class CrmConstants {
 
   public static final String TBL_DOCUMENT_CATEGORIES = "DocumentTree";
   public static final String TBL_DOCUMENTS = "Documents";
+  public static final String TBL_DOCUMENT_FILES = "DocumentFiles";
   public static final String TBL_DOCUMENT_TEMPLATES = "DocumentTemplates";
+  public static final String TBL_DOCUMENT_DATA = "DocumentData";
   public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String TBL_CRITERIA = "Criteria";
 
@@ -201,9 +205,9 @@ public final class CrmConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+  public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_DOCUMENTS = "Documents";
-  public static final String VIEW_DOCUMENT_FILES = "DocumentFiles";
 
   public static final String VIEW_MAIN_CRITERIA = "MainCriteria";
 
@@ -248,9 +252,6 @@ public final class CrmConstants {
   public static final String COL_DOCUMENT_STATUS_NAME = "StatusName";
 
   public static final String COL_FILE = "File";
-  public static final String COL_FILE_NAME = "FileName";
-  public static final String COL_FILE_SIZE = "FileSize";
-  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
@@ -304,12 +305,17 @@ public final class CrmConstants {
   public static final String COL_REQUEST_FINISHED = "Finished";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";
+  public static final String COL_DOCUMENT_TEMPLATE_NAME = "Name";
   public static final String COL_DOCUMENT_DATA = "Data";
   public static final String COL_DOCUMENT_CONTENT = "Content";
   public static final String COL_CRITERIA_GROUP = "Group";
   public static final String COL_CRITERIA_GROUP_NAME = "Name";
   public static final String COL_CRITERION_NAME = "Criterion";
   public static final String COL_CRITERION_VALUE = "Value";
+
+  public static final String COL_RTF_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTF_FILE = "File";
+  public static final String COL_RTF_CAPTION = "Caption";
 
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
@@ -336,10 +342,16 @@ public final class CrmConstants {
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
+  public static final String GRID_RT_FILES = "RTFiles";
+
   public static final String GRID_REQUESTS = "Requests";
 
+  public static final String FORM_NEW_RECURRING_TASK = "NewRecurringTask";
+  public static final String FORM_RECURRING_TASK = "RecurringTask";
+  
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+
   public static final String FORM_TASKS_REPORT = "TasksReport";
 
   public static final String FORM_NEW_REQUEST = "NewRequest";

@@ -1,8 +1,9 @@
-package com.butent.bee.client.view.grid;
+package com.butent.bee.client.view.grid.interceptor;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
 
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -18,6 +19,8 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.grid.DynamicColumnIdentity;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -40,7 +43,7 @@ import java.util.Map;
 
 public class AbstractGridInterceptor implements GridInterceptor {
 
-  public static final List<String> DELETE_ROW_MESSAGE = 
+  public static final List<String> DELETE_ROW_MESSAGE =
       Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
@@ -158,6 +161,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public boolean ensureRelId(IdCallback callback) {
+    return false;
+  }
+
+  @Override
   public String getCaption() {
     return null;
   }
@@ -213,7 +221,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   public GridPresenter getGridPresenter() {
     return gridPresenter;
   }
-  
+
   @Override
   public GridView getGridView() {
     return (getGridPresenter() == null) ? null : getGridPresenter().getGridView();

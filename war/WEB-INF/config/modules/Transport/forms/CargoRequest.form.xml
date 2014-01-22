@@ -43,7 +43,7 @@
 
     <TabbedPages style="height: 200px;">
       <page>
-        <text>=trRequestFiles</text>
+        <text>=files</text>
         <ChildGrid name="CargoRequestFiles" relColumn="CargoRequest" disablable="false" />
       </page>
       <page>

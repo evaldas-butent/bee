@@ -39,6 +39,11 @@
     <SimpleColumn name="Returned" />
 
     <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Data" />
+    <SimpleJoin joinType="LEFT" name="Data">
+      <SimpleColumn name="Content" />
+    </SimpleJoin>
   </Columns>
 </View>
  

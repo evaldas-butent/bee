@@ -47,11 +47,15 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public void afterInsertRow(IsRow result) {
+  public void afterInsertRow(IsRow result, boolean forced) {
   }
-  
+
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+  }
+
+  @Override
+  public void afterUpdateRow(IsRow result) {
   }
 
   @Override
@@ -92,7 +96,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   public Integer getDataInt(String source) {
     return (getFormView() == null) ? null : getFormView().getDataInt(source);
   }
-  
+
   @Override
   public Long getDataLong(String source) {
     return (getFormView() == null) ? null : getFormView().getDataLong(source);
@@ -102,7 +106,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   public String getDataValue(String source) {
     return (getFormView() == null) ? null : getFormView().getDataValue(source);
   }
-  
+
   @Override
   public Domain getDomain() {
     return null;
@@ -124,7 +128,7 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
 
   @Override
   public HeaderView getHeaderView() {
-    return (getFormView() == null || getFormView().getViewPresenter() == null) ? null 
+    return (getFormView() == null || getFormView().getViewPresenter() == null) ? null
         : getFormView().getViewPresenter().getHeader();
   }
 

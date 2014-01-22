@@ -50,8 +50,6 @@ public interface LocalizableCrmConstants {
 
   String crmEnterSubject();
 
-  String crmFiles();
-
   String crmFinishDate();
 
   String crmFinishDateMustBeGreaterThan();
@@ -65,9 +63,9 @@ public interface LocalizableCrmConstants {
   String crmNewTask();
 
   String crmReminderTimeMustBeGreaterThan();
-  
+
   String crmReminderTimeMustBeLessThan();
-  
+
   String crmRequest();
 
   String crmSelectedSameExecutor();
@@ -174,7 +172,13 @@ public interface LocalizableCrmConstants {
 
   String customer();
 
+  String documentContentIsEmpty();
+
   String documentFileExists();
+
+  String documentName();
+
+  String documentNew();
 
   String documents();
 
@@ -199,6 +203,8 @@ public interface LocalizableCrmConstants {
   String mainCriteria();
 
   String manager();
+
+  String newDocumentTemplate();
 
   String rating();
 
@@ -249,4 +255,6 @@ public interface LocalizableCrmConstants {
   String taskTemplate();
 
   String taskTheme();
+
+  String templateName();
 }
