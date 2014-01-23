@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -953,6 +954,10 @@ public final class BeeUtils {
     }
   }
 
+  public static boolean isAsciiLetter(char c) {
+    return Ascii.isUpperCase(c) || Ascii.isLowerCase(c);
+  }
+  
   public static boolean isBetween(Double d, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (!isDouble(d)) {
