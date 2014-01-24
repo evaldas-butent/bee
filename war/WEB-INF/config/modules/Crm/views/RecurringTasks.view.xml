@@ -41,6 +41,8 @@
     <SimpleColumn name="ScheduleAfter" />
     <SimpleColumn name="ScheduleBefore" />
 
+    <SimpleColumn name="WorkdayTransition" />
+
     <SimpleColumn name="DayOfMonth" />
     <SimpleColumn name="Month" />
     <SimpleColumn name="DayOfWeek" />

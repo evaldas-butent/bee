@@ -18,6 +18,8 @@
     <DateTime name="ScheduleAfter" notNull="true" label="=crmRTScheduleAfter" />
     <DateTime name="ScheduleBefore" label="=crmRTScheduleBefore" />
 
+    <Enum name="WorkdayTransition" key="WorkdayTransition" notNull="true" defValue="1" />
+
     <String name="DayOfMonth" precision="100" label="=crmRTDayOfMonth" />
     <String name="Month" precision="30" label="=crmRTMonth" />
     <String name="DayOfWeek" precision="60" label="=crmRTDayOfWeek" />

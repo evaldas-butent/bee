@@ -109,6 +109,10 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     return Ints.compare(getDays(), other.getDays());
   }
 
+  public void decrement() {
+    setDays(getDays() - 1);
+  }
+
   /**
    * Deserializes {@code s} to {@code JustDate} object.
    * 
@@ -138,7 +142,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   public JustDate getDate() {
     return this;
   }
-
+  
   @Override
   public DateTime getDateTime() {
     return new DateTime(this);
@@ -212,7 +216,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   public ValueType getType() {
     return ValueType.DATE;
   }
-  
+
   /**
    * Return the value of year.
    * 
@@ -223,13 +227,17 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     ensureFields();
     return fields[Grego.IDX_YEAR];
   }
-
+  
   /**
    * Returns hash code of {@code JustDate} object.
    */
   @Override
   public int hashCode() {
     return getDays();
+  }
+
+  public void increment() {
+    setDays(getDays() + 1);
   }
 
   /**
@@ -240,13 +248,13 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     return Integer.toString(days);
   }
 
+  public void setDate(int year, int month, int dom) {
+    setDays(Grego.fieldsToDay(year, month, dom));
+  }
+  
   public void setDate(JustDate date) {
     Assert.notNull(date);
     setDays(date.getDays());
-  }
-  
-  public void setDate(int year, int month, int dom) {
-    setDays(Grego.fieldsToDay(year, month, dom));
   }
 
   /**

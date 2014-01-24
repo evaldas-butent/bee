@@ -6,17 +6,25 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.TreeMultimap;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public final class CronExpression {
+public final class CronExpression implements HasInfo {
 
   public static class Builder {
 
@@ -50,7 +58,7 @@ public final class CronExpression {
     }
 
     private static void itemFailure(Field field, Item item) {
-      logger.warning(field.caption, "invalid item state", item);
+      logger.severe(field.caption, "invalid item state", item);
     }
 
     private static String normalize(String input) {
@@ -58,6 +66,10 @@ public final class CronExpression {
     }
 
     private static List<Item> parse(Field field, String input) {
+      return parse(field, input, null);
+    }
+
+    private static List<Item> parse(Field field, String input, Consumer<String> failureHandler) {
       List<Item> items = Lists.newArrayList();
       if (BeeUtils.isEmpty(input)) {
         return items;
@@ -250,8 +262,13 @@ public final class CronExpression {
 
         if (item != null) {
           items.add(item);
+
         } else if (!ok) {
-          parseFailure(field, input, s);
+          if (failureHandler == null) {
+            parseFailure(field, input, s);
+          } else {
+            failureHandler.accept(s);
+          }
         }
       }
 
@@ -263,7 +280,7 @@ public final class CronExpression {
           input.equals(item) ? null : BeeUtils.bracket(item));
     }
 
-    private JustDate base;
+    private JustDate baseDate;
     private String seconds;
 
     private String minutes;
@@ -277,16 +294,17 @@ public final class CronExpression {
     private String year;
     private WorkdayTransition workdayTransition;
 
-    private final Set<DateRange> exclude = Sets.newHashSet();
+    private final Set<JustDate> exclude = Sets.newHashSet();
+    private final Set<JustDate> include = Sets.newHashSet();
+    private final Set<JustDate> working = Sets.newHashSet();
+    private final Set<JustDate> nonWorking = Sets.newHashSet();
 
-    private final Set<DateRange> include = Sets.newHashSet();
-
-    public Builder(JustDate base) {
-      this.base = base;
+    public Builder(JustDate baseDate) {
+      this.baseDate = baseDate;
     }
 
     public CronExpression build() {
-      CronExpression result = new CronExpression(base, BeeUtils.nvl(workdayTransition,
+      CronExpression result = new CronExpression(baseDate, BeeUtils.nvl(workdayTransition,
           WorkdayTransition.DEFAULT));
 
       List<Item> items = parse(Field.SECONDS, seconds);
@@ -357,11 +375,11 @@ public final class CronExpression {
       items = parse(Field.DAY_OF_WEEK, dayOfWeek);
       for (Item item : items) {
         if (item.lower != null && item.step != null && item.step > 1) {
-          int bound = BeeUtils.nvl(item.upper, item.lower); 
+          int bound = BeeUtils.nvl(item.upper, item.lower);
           for (int weekday = item.lower; weekday <= bound; weekday++) {
             result.addWeekStep(weekday, item.step);
           }
-          
+
         } else if (item.isSimple()) {
           result.addDaysOfWeek(item.getSimpleValues());
 
@@ -385,14 +403,36 @@ public final class CronExpression {
         }
       }
 
-      if (!exclude.isEmpty()) {
-        result.setExclude(exclude);
+      for (JustDate date : exclude) {
+        result.exclude(date);
       }
-      if (!include.isEmpty()) {
-        result.setInclude(include);
+      for (JustDate date : include) {
+        result.include(date);
+      }
+      for (JustDate date : working) {
+        result.working(date);
+      }
+      for (JustDate date : nonWorking) {
+        result.nonWorking(date);
       }
 
       return result;
+    }
+
+    public Builder date(JustDate date, ScheduleDateMode mode) {
+      if (mode != null) {
+        switch (mode) {
+          case EXCLUDE:
+            return exclude(date);
+          case INCLUDE:
+            return include(date);
+          case WORK:
+            return working(date);
+          case NON_WORK:
+            return nonWorking(date);
+        }
+      }
+      return this;
     }
 
     public Builder dayOfMonth(String input) {
@@ -405,16 +445,9 @@ public final class CronExpression {
       return this;
     }
 
-    public Builder exclude(DateRange range) {
-      if (range != null) {
-        exclude.add(range);
-      }
-      return this;
-    }
-
     public Builder exclude(JustDate date) {
       if (date != null) {
-        exclude.add(DateRange.day(date));
+        exclude.add(date);
       }
       return this;
     }
@@ -424,16 +457,9 @@ public final class CronExpression {
       return this;
     }
 
-    public Builder include(DateRange range) {
-      if (range != null) {
-        include.add(range);
-      }
-      return this;
-    }
-
     public Builder include(JustDate date) {
       if (date != null) {
-        include.add(DateRange.day(date));
+        include.add(date);
       }
       return this;
     }
@@ -448,6 +474,23 @@ public final class CronExpression {
       return this;
     }
 
+    public Builder nonWorking(JustDate date) {
+      if (date != null) {
+        nonWorking.add(date);
+      }
+      return this;
+    }
+
+    public Builder range(DateRange range, ScheduleDateMode mode) {
+      if (range != null) {
+        List<JustDate> dates = range.getValues();
+        for (JustDate date : dates) {
+          date(date, mode);
+        }
+      }
+      return this;
+    }
+
     public Builder seconds(String input) {
       this.seconds = append(seconds, input);
       return this;
@@ -455,6 +498,13 @@ public final class CronExpression {
 
     public Builder workdayTransition(WorkdayTransition wt) {
       this.workdayTransition = wt;
+      return this;
+    }
+
+    public Builder working(JustDate date) {
+      if (date != null) {
+        working.add(date);
+      }
       return this;
     }
 
@@ -546,12 +596,6 @@ public final class CronExpression {
         return null;
       }
     }
-  }
-
-  public enum WorkdayTransition {
-    NONE, NEAREST, FORWARD, BACKWARD;
-
-    private static final WorkdayTransition DEFAULT = NEAREST;
   }
 
   private static final class Item {
@@ -774,6 +818,23 @@ public final class CronExpression {
 
   private static BeeLogger logger = LogUtils.getLogger(CronExpression.class);
 
+  public static List<String> validate(Field field, String input) {
+    Assert.notNull(field);
+
+    final List<String> failures = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(input)) {
+      Builder.parse(field, input, new Consumer<String>() {
+        @Override
+        public void accept(String failure) {
+          failures.add(failure);
+        }
+      });
+    }
+
+    return failures;
+  }
+
   private static Integer parseMonth(String input) {
     return parseNames(input, MONTHS, 1);
   }
@@ -797,6 +858,29 @@ public final class CronExpression {
 
   private static Integer parseWeekday(String input) {
     return parseNames(input, WEEKDAYS, 1);
+  }
+
+  private static String string(Multimap<Integer, Integer> values) {
+    if (values.isEmpty()) {
+      return null;
+    } else {
+      TreeMultimap<Integer, Integer> map = TreeMultimap.create(values);
+      return map.toString();
+    }
+  }
+
+  private static <T extends Comparable<T>> String string(Set<T> values) {
+    if (BeeUtils.isEmpty(values)) {
+      return null;
+
+    } else if (values.size() == 1) {
+      return values.toString();
+
+    } else {
+      List<T> list = Lists.newArrayList(values);
+      Collections.sort(list);
+      return list.toString();
+    }
   }
 
   private static List<Token> tokenize(String s) {
@@ -889,8 +973,8 @@ public final class CronExpression {
     return tokens;
   }
 
-  @SuppressWarnings("unused")
-  private final JustDate base;
+  private final JustDate baseDate;
+  private final WorkdayTransition workdayTransition;
 
   private final Set<Integer> seconds = Sets.newHashSet();
   private final Set<Integer> minutes = Sets.newHashSet();
@@ -907,21 +991,52 @@ public final class CronExpression {
   private final Multimap<Integer, Integer> weekSteps = HashMultimap.create();
 
   private final Set<Integer> lastWeekdays = Sets.newHashSet();
-
-  @SuppressWarnings("unused")
   private boolean lastWorkday;
+
   private final Set<Integer> nearestWorkdays = Sets.newHashSet();
 
   private final Set<Integer> years = Sets.newHashSet();
 
-  private final WorkdayTransition workdayTransition;
+  private final Set<JustDate> exclude = Sets.newHashSet();
+  private final Set<JustDate> include = Sets.newHashSet();
 
-  private final Set<DateRange> exclude = Sets.newHashSet();
-  private final Set<DateRange> include = Sets.newHashSet();
+  private final Set<JustDate> working = Sets.newHashSet();
+  private final Set<JustDate> nonWorking = Sets.newHashSet();
 
-  private CronExpression(JustDate base, WorkdayTransition workdayTransition) {
-    this.base = base;
+  private CronExpression(JustDate baseDate, WorkdayTransition workdayTransition) {
+    this.baseDate = (baseDate == null) ? TimeUtils.startOfYear(MIN_YEAR) : baseDate;
     this.workdayTransition = workdayTransition;
+  }
+
+  @Override
+  public List<Property> getInfo() {
+    List<Property> info = PropertyUtils.createProperties(
+        "Base Date", baseDate,
+        "Workday Transition", workdayTransition,
+        "Seconds", string(seconds),
+        "Minutes", string(minutes),
+        "Hours", string(hours),
+        "Days of Month", string(daysOfMonth),
+        "Day Steps", string(daySteps),
+        "Months", string(months),
+        "Month Steps", string(monthSteps),
+        "Days of Week", string(daysOfWeek),
+        "Weekday Ordinals", string(weekdayOrdinals),
+        "Week Steps", string(weekSteps),
+        "Last Weekdays", string(lastWeekdays),
+        "Last Workday", lastWorkday ? BeeConst.STRING_TRUE : null,
+        "Nearest Workdays", string(nearestWorkdays),
+        "Years", string(years),
+        "Exclude", string(exclude),
+        "Include", string(include),
+        "Working", string(working),
+        "Non Working", string(nonWorking));
+
+    if (info.isEmpty()) {
+      PropertyUtils.addWhenEmpty(info, getClass());
+    }
+
+    return info;
   }
 
   private void addDayOfMonth(int dom) {
@@ -984,15 +1099,314 @@ public final class CronExpression {
     this.years.addAll(values);
   }
 
-  private void setExclude(Set<DateRange> exclude) {
-    this.exclude.addAll(exclude);
+  private JustDate checkWorkday(JustDate date) {
+    if (lastWorkday) {
+      JustDate last = TimeUtils.endOfMonth(date);
+
+      while (true) {
+        if (isWorkday(last)) {
+          return date.equals(last) ? last : null;
+        }
+
+        if (TimeUtils.isMore(last, date) && last.getDom() > 1) {
+          last.decrement();
+        } else {
+          break;
+        }
+      }
+
+      return null;
+    }
+
+    if (!nearestWorkdays.isEmpty() && nearestWorkdays.contains(date)) {
+      return nearestWorkday(date);
+    }
+
+    switch (workdayTransition) {
+      case BACKWARD:
+        if (isWorkday(date)) {
+          return date;
+        } else {
+          return previousWorkday(date);
+        }
+
+      case FORWARD:
+        if (isWorkday(date)) {
+          return date;
+        } else {
+          return nextWorkday(date);
+        }
+
+      case NEAREST:
+        return nearestWorkday(date);
+
+      case NONE:
+        return date;
+    }
+
+    Assert.untouchable();
+    return null;
   }
 
-  private void setInclude(Set<DateRange> include) {
-    this.include.addAll(include);
+  private void exclude(JustDate date) {
+    this.exclude.add(date);
+  }
+
+  public List<JustDate> getDates(JustDate min, JustDate max, Integer count) {
+    List<JustDate> result = Lists.newArrayList();
+
+    JustDate start = BeeUtils.max(TimeUtils.startOfMonth(min), baseDate);
+    JustDate end = (max == null) ? TimeUtils.endOfYear(MAX_YEAR) : TimeUtils.endOfMonth(max);
+
+    JustDate date = JustDate.copyOf(start);
+
+    while (true) {
+      Boolean match = matches(date);
+
+      if (BeeUtils.isTrue(match) && !result.contains(date)) {
+        result.add(JustDate.copyOf(date));
+
+        if (BeeUtils.isPositive(count) && result.size() >= count) {
+          break;
+        }
+      }
+
+      if (match == null) {
+        JustDate workday = checkWorkday(date);
+
+        if (workday != null && TimeUtils.isMeq(workday, start) && !result.contains(workday)) {
+          result.add(JustDate.copyOf(workday));
+
+          if (BeeUtils.isPositive(count) && result.size() >= count) {
+            break;
+          }
+        }
+      }
+
+      date.increment();
+      if (TimeUtils.isMore(date, end)) {
+        break;
+      }
+    }
+
+    if (result.size() > 1) {
+      Collections.sort(result);
+    }
+
+    return result;
+  }
+
+  private void include(JustDate date) {
+    this.include.add(date);
+  }
+
+  private boolean isExcluded(JustDate date) {
+    if (exclude.isEmpty()) {
+      return false;
+    } else {
+      return exclude.contains(date);
+    }
+  }
+
+  private boolean isWorkday(JustDate date) {
+    if (isExcluded(date)) {
+      return false;
+    }
+
+    if (!working.isEmpty() && working.contains(date)) {
+      return true;
+    }
+    if (!nonWorking.isEmpty() && nonWorking.contains(date)) {
+      return false;
+    }
+
+    return date.getDow() < 6;
+  }
+
+  private Boolean matches(JustDate date) {
+    if (isExcluded(date)) {
+      return false;
+    }
+    if (!include.isEmpty() && include.contains(date)) {
+      return true;
+    }
+
+    if (!daysOfMonth.isEmpty() && !matchesDayOfMonth(date)) {
+      return false;
+    }
+    if (!daySteps.isEmpty() && !matchesDayStep(date)) {
+      return false;
+    }
+
+    if (!months.isEmpty() && !months.contains(date.getMonth())) {
+      return false;
+    }
+    if (!monthSteps.isEmpty() && !matchesMonthStep(date)) {
+      return false;
+    }
+
+    if (!daysOfWeek.isEmpty() && !daysOfWeek.contains(date.getDow())) {
+      return false;
+    }
+    if (!weekdayOrdinals.isEmpty() && !matchesWeekdayOrdinals(date)) {
+      return false;
+    }
+    if (!weekSteps.isEmpty() && !matchesWeekStep(date)) {
+      return false;
+    }
+
+    if (!lastWeekdays.isEmpty() && !matchesLastWeekday(date)) {
+      return false;
+    }
+
+    if (!years.isEmpty() && !years.contains(date.getYear())) {
+      return false;
+    }
+
+    return null;
+  }
+
+  private boolean matchesDayOfMonth(JustDate date) {
+    int dom = date.getDom();
+    int lastDom = TimeUtils.monthLength(date);
+
+    for (int value : daysOfMonth) {
+      if (value < 0) {
+        if (lastDom - value == dom) {
+          return true;
+        }
+
+      } else if (value > 28) {
+        if (lastDom - dom == 31 - value) {
+          return true;
+        }
+
+      } else if (value == dom) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean matchesDayStep(JustDate date) {
+    int diff = date.getDays() - baseDate.getDays();
+
+    for (int step : daySteps) {
+      if (diff % step == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean matchesLastWeekday(JustDate date) {
+    if (lastWeekdays.contains(date.getDow())) {
+      return TimeUtils.monthLength(date) - date.getDom() < TimeUtils.DAYS_PER_WEEK;
+    } else {
+      return false;
+    }
+  }
+
+  private boolean matchesMonthStep(JustDate date) {
+    int diff = TimeUtils.monthDiff(baseDate, date);
+
+    for (int step : monthSteps) {
+      if (diff % step == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean matchesWeekdayOrdinals(JustDate date) {
+    int dow = date.getDow();
+    if (!weekdayOrdinals.containsKey(dow)) {
+      return false;
+    }
+
+    int ordinal = (date.getDom() - 1) / TimeUtils.DAYS_PER_WEEK + 1;
+    return weekdayOrdinals.containsEntry(dow, ordinal);
+  }
+
+  private boolean matchesWeekStep(JustDate date) {
+    int dow = date.getDow();
+    if (!weekSteps.containsKey(dow)) {
+      return false;
+    }
+
+    JustDate start = JustDate.copyOf(baseDate);
+    while (start.getDow() != dow) {
+      start.increment();
+    }
+
+    int diff = (date.getDays() - start.getDays()) / TimeUtils.DAYS_PER_WEEK;
+
+    Collection<Integer> steps = weekSteps.get(dow);
+    for (int step : steps) {
+      if (diff % step == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private JustDate nearestWorkday(JustDate date) {
+    if (isWorkday(date)) {
+      return date;
+    }
+
+    JustDate previous = previousWorkday(date);
+    JustDate next = nextWorkday(date);
+
+    if (previous == null) {
+      return next;
+    } else if (next == null) {
+      return previous;
+    } else if (TimeUtils.dayDiff(previous, date) < TimeUtils.dayDiff(date, next)) {
+      return previous;
+    } else {
+      return next;
+    }
+  }
+
+  private JustDate nextWorkday(JustDate date) {
+    int month = date.getMonth();
+    JustDate temp = TimeUtils.nextDay(date);
+
+    while (temp.getMonth() == month) {
+      if (isWorkday(temp)) {
+        return temp;
+      }
+
+      temp.increment();
+    }
+    return null;
+  }
+
+  private void nonWorking(JustDate date) {
+    this.nonWorking.add(date);
+  }
+
+  private JustDate previousWorkday(JustDate date) {
+    int month = date.getMonth();
+    JustDate temp = TimeUtils.previousDay(date);
+
+    while (temp.getMonth() == month) {
+      if (isWorkday(temp)) {
+        return temp;
+      }
+
+      temp.decrement();
+    }
+    return null;
   }
 
   private void setLastWorkday(boolean lastWorkday) {
     this.lastWorkday = lastWorkday;
+  }
+
+  private void working(JustDate date) {
+    this.working.add(date);
   }
 }

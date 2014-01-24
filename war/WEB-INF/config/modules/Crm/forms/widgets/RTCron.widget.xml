@@ -30,6 +30,9 @@
   </Table>
   
   <br/>
+  <Radio source="WorkdayTransition" />
+  
+  <br/>
   <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
     <Label text="=crmRTStartAt" />
     <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />

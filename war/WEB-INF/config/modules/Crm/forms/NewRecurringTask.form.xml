@@ -18,6 +18,11 @@
       </page>
 
       <page>
+        <text>Dates</text>
+        <ChildGrid name="RTDates" relColumn="RecurringTask" />
+      </page>
+
+      <page>
         <text>=relatedTo</text>
         <xi:include href="widgets/RTRelations.widget.xml" />
       </page>

@@ -21,6 +21,8 @@
     <DataColumn name="ScheduleAfter" />
     <DataColumn name="ScheduleBefore" />
 
+    <DataColumn name="WorkdayTransition" />
+
     <DataColumn name="DayOfMonth" />
     <DataColumn name="Month" />
     <DataColumn name="DayOfWeek" />

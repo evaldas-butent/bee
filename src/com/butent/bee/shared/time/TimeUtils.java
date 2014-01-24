@@ -489,6 +489,18 @@ public final class TimeUtils {
     return today().getMonth();
   }
 
+  public static int monthDiff(HasYearMonth start, HasYearMonth end) {
+    Assert.notNull(start);
+    Assert.notNull(end);
+
+    return end.getYear() * 12 + end.getMonth() - start.getYear() * 12 - start.getMonth();
+  }
+  
+  public static int monthLength(HasYearMonth ym) {
+    Assert.notNull(ym);
+    return Grego.monthLength(ym.getYear(), ym.getMonth());
+  }
+  
   public static String monthToString(int month) {
     return padTwo(month);
   }
@@ -932,7 +944,11 @@ public final class TimeUtils {
   }
 
   public static JustDate startOfYear() {
-    return startOfYear(today());
+    return startOfYear(year());
+  }
+
+  public static JustDate startOfYear(int year) {
+    return new JustDate(year, 1, 1);
   }
   
   public static JustDate startOfYear(HasYearMonth ref) {

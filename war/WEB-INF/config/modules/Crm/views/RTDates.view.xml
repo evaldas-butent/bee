@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="RTDates"
+  source="RTDates"
+  >
+  <Columns>
+    <SimpleColumn name="RecurringTask" />
+
+    <SimpleColumn name="DateMin" />
+    <SimpleColumn name="DateMax" />
+    
+    <SimpleColumn name="Mode" />
+  </Columns>
+  <Order>
+    <OrderBy column="DateMin" />
+  </Order>
+</View>
+ 

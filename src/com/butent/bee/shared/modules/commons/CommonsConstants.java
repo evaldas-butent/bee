@@ -9,6 +9,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.ScheduleDateMode;
+import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -111,6 +113,9 @@ public final class CommonsConstants {
     EnumUtils.register(SupportedLocale.class);
     EnumUtils.register(UserGroupVisibility.class);
     EnumUtils.register(UserInterface.class);
+
+    EnumUtils.register(ScheduleDateMode.class);
+    EnumUtils.register(WorkdayTransition.class);
   }
 
   public static final String COMMONS_MODULE = "Commons";
