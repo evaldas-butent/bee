@@ -373,7 +373,9 @@
 
   <xs:simpleType name="rendererType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="attachment" />
       <xs:enumeration value="list" />
+      <xs:enumeration value="image" />
       <xs:enumeration value="map" />
       <xs:enumeration value="range" />
       <xs:enumeration value="enum" />

@@ -18,6 +18,7 @@
 
     <SimpleColumn name="LastAccess" />
     <SimpleColumn name="Star" />
+    <SimpleColumn name="Member" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />

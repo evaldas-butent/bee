@@ -2,7 +2,7 @@
 <Table xmlns="http://www.butent.com/table"
 
   name="DiscussionsComments"
-  idName="DiscussionComentID"
+  idName="DiscussionCommentID"
   >
   <Fields>
     <Relation name="Discussion" notNull="true" relation="Discussions" cascade="DELETE" label="=discussion" />
@@ -11,5 +11,7 @@
     
     <DateTime name="PublishTime" notNull="true" label="=discussCommentPublished" />
     <Text name="CommentText" label="=discussComment" />
+    <Text name="Reason" label="=discussDeletionReason" defValue="-" />
+    <Boolean name="Deleted" defValue="false" />
   </Fields>
 </Table>

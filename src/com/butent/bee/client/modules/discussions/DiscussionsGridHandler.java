@@ -2,8 +2,11 @@ package com.butent.bee.client.modules.discussions;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -20,16 +23,19 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
 
 class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
 
-  @SuppressWarnings("unused")
   private final ListType type;
   private final Long userId;
 
@@ -42,9 +48,19 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public String getColumnCaption(String columnName) {
     if (PROP_STAR.equals(columnName)) {
       return Stars.getDefaultHeader();
+    } else if (PROP_FILES_COUNT.equals(columnName)) {
+      return Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT));
+    } else if (PROP_RELATIONS_COUNT.equals(columnName)) {
+      return Images.asString(Images.get("link"));
     } else {
       return super.getColumnCaption(columnName);
     }
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+      Collection<RowInfo> selectedRows, DeleteMode defMode) {
+    return DeleteMode.SINGLE;
   }
 
   @Override
@@ -59,24 +75,30 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   @Override
   public void onEditStart(final EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      IsRow row = event.getRowValue();
-      if (row == null) {
-        return;
-      }
-
-      if (row.getProperty(PROP_USER) == null) {
-        return;
-      }
+    IsRow row = event.getRowValue();
     
-      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-        @Override
-        public void accept(Integer parameter) {
-          updateStar(event, source, parameter);
-        }
-      });
+    if (row == null) {
+      return;
     }
+    
+    if (PROP_STAR.equals(event.getColumnId())) {     
+      if (row.getProperty(PROP_USER) != null) {
+
+        final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
+        EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+          @Override
+          public void accept(Integer parameter) {
+            updateStar(event, source, parameter);
+          }
+        });
+      }
+    }
+  }
+
+  @Override
+  public boolean onLoad(GridDescription gridDescription) {
+    gridDescription.setFilter(type.getFilter(new LongValue(userId)));
+    return true;
   }
 
   private void updateStar(final EditStartEvent event, final CellSource source,

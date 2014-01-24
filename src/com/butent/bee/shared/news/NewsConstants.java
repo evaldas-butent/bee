@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -104,6 +105,7 @@ public final class NewsConstants {
 
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
+    
   }
 
   private static void initUsageTables() {
@@ -131,6 +133,8 @@ public final class NewsConstants {
 
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");
+    usageTables.put(DiscussionsConstants.TBL_DISCUSSIONS,
+        DiscussionsConstants.TBL_DISCUSSIONS_USAGE);
   }
 
   private NewsConstants() {

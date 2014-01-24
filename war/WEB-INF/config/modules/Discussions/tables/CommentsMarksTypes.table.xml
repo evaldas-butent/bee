@@ -5,7 +5,7 @@
   idName="CommentMarkTypeID"
   >
   <Fields>        
-    <String name="Name" precision="100" unique="true" label="=discussCommentMarkName"/>
+    <String name="Name" precision="20" unique="true" label="=discussCommentMarkName"/>
     <String name="ImageResourceName" precision="128" label="=discussCommentMarkImageName" />
   </Fields>
 </Table>

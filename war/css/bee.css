@@ -459,8 +459,9 @@
 
 .bee-Header-commandPanel {
   margin-left: auto;
-  margin-right: 3em;
+  margin-right: 1ex;
   border-collapse: collapse;
+  margin-top: 2px
 }
 .bee-Header-commandPanel .bee-Button {
   padding: 2px 6px;
@@ -473,6 +474,11 @@
   background-color: white;
   color: black;
   border-color: #5897fb;
+}
+
+.bee-Header-commandPanel .bee-Image {
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .bee-Header-control {
@@ -568,6 +574,7 @@
 .bee-CellGridEvenRow {
   background-color: #f5f5f5;
 }
+
 .bee-CellGridOddRow {
   background-color: #fbfbfb;
 }
@@ -580,6 +587,7 @@
 .bee-CellGridActiveRow {
   background-color: #cfc !important;
 }
+
 .bee-CellGridActiveCell {
   background-color: #c7e3f9 !important;
   outline: #c7e3f9 solid 2px !important;
@@ -720,6 +728,7 @@
 .bee-Notification-error {
   background-color: #ffcccc;
 }
+
 .bee-Notification-warning {
   background-color: yellow;
 }
@@ -2191,9 +2200,6 @@
 }
 
 .bee-SlideDeck-progress {
-/*   -webkit-appearance: none; */
-/*   color: #bada55; */
-/*   border: none; */
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;

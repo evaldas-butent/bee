@@ -221,6 +221,14 @@ public final class RendererFactory {
         renderer = new StarRenderer(source);
         break;
 
+      case ATTACHMENT:
+        renderer = new AttachmentRenderer(source);
+        break;
+
+      case IMAGE:
+        renderer = new ImageRenderer(source);
+        break;
+
       case FILE_ICON:
         renderer = new FileIconRenderer(source);
         break;

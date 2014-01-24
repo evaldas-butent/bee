@@ -3,6 +3,11 @@
 
 name="Discussions" label="=discussions" order="110"
 >
+ <Item name="NewDiscussion" label="=discussNew" service="new" parameters="Discussions" />
+ <Item name="ActiveDiscussions" label="=discussActive" service="discuss_list" parameters="active" separator="true"/>
+ <Item name="ClosedDiscussions" label="=discussClosed" service="discuss_list" parameters="closed" />
+ <Item name="ObservedDiscussions" label="=discussObserved" service="discuss_list" parameters="observed" />
+ <Item name="StarredDiscussions" label="=discussStarred" service="discuss_list" parameters="starred" /> 
  <Item name="AllDiscussions" label="=discussAll" service="discuss_list" parameters="all" separator="true" /> 
  
 </Entry>

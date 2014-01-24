@@ -10,6 +10,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -249,6 +250,15 @@ public enum Feed implements HasLocalizedCaption {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrDrivers();
+    }
+  },
+
+  DISCUSSIONS(DiscussionsConstants.TBL_DISCUSSIONS,
+      DiscussionsConstants.VIEW_DISCUSSIONS,
+      Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.discussions();
     }
   };
 
