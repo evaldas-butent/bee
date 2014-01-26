@@ -107,7 +107,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
     Global.confirm(Localized.getConstants().trConfirmCreateNewOrder(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        String company = getDataValue(ALS_REQUEST_CUSTOMER_COMPANY);
+        String company = getStringValue(ALS_REQUEST_CUSTOMER_COMPANY);
         if (!DataUtils.isId(BeeUtils.toLongOrNull(company))) {
           return;
         }
@@ -115,7 +115,7 @@ class CargoRequestForm extends AbstractFormInterceptor {
         List<String> colNames = Lists.newArrayList(COL_CUSTOMER);
         List<String> values = Lists.newArrayList(company);
 
-        String manager = getDataValue(COL_CARGO_REQUEST_MANAGER);
+        String manager = getStringValue(COL_CARGO_REQUEST_MANAGER);
         if (!BeeUtils.isEmpty(manager)) {
           colNames.add(COL_ORDER_MANAGER);
           values.add(manager);

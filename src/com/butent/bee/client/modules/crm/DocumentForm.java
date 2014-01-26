@@ -49,7 +49,7 @@ public class DocumentForm extends DocumentDataForm {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT && !DataUtils.isNewRow(getActiveRow())) {
-      final String content = getDataValue(COL_DOCUMENT_CONTENT);
+      final String content = getStringValue(COL_DOCUMENT_CONTENT);
       LocalizableConstants loc = Localized.getConstants();
 
       if (BeeUtils.isEmpty(content)) {
@@ -76,7 +76,7 @@ public class DocumentForm extends DocumentDataForm {
               }
             });
           }
-        }, getDataValue(COL_DOCUMENT_NAME));
+        }, getStringValue(COL_DOCUMENT_NAME));
       }
       return false;
     }
@@ -98,7 +98,7 @@ public class DocumentForm extends DocumentDataForm {
                 new StringCallback() {
                   @Override
                   public void onSuccess(final String value) {
-                    DocumentHandler.copyDocumentData(getDataLong(COL_DOCUMENT_DATA),
+                    DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
                         new IdCallback() {
                           @Override
                           public void onSuccess(Long dataId) {
@@ -106,7 +106,7 @@ public class DocumentForm extends DocumentDataForm {
                                 Data.getColumns(TBL_DOCUMENT_TEMPLATES,
                                     Lists.newArrayList(COL_DOCUMENT_CATEGORY,
                                         COL_DOCUMENT_TEMPLATE_NAME, COL_DOCUMENT_DATA)),
-                                Lists.newArrayList(getDataValue(COL_DOCUMENT_CATEGORY), value,
+                                Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
                                     DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
                                 null, new RowInsertCallback(TBL_DOCUMENT_TEMPLATES, null) {
                                   @Override

@@ -518,6 +518,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
   }
 
+  public void setText(int row, int column, String text, String cellStyleName) {
+    setText(row, column, text);
+    getCellFormatter().addStyleName(row, column, cellStyleName);
+  }
+  
   public void setWidget(int row, int column, Widget widget) {
     prepareCell(row, column);
     if (widget != null) {

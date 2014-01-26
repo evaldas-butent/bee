@@ -68,6 +68,8 @@ public interface LocalizableCrmConstants {
 
   String crmRequest();
 
+  String crmRTActionSchedule();
+
   String crmSelectedSameExecutor();
 
   String crmSelectExecutor();

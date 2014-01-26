@@ -28,6 +28,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import elemental.js.dom.JsElement;
 
@@ -203,8 +204,10 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   public void setDown(boolean down) {
     if (down != isDown()) {
       this.down = down;
-
-      getElement().setInnerHTML(down ? downFace : upFace);
+      
+      if (!Objects.equals(downFace, upFace)) {
+        getElement().setInnerHTML(down ? downFace : upFace);
+      }
       setStyleDependentName("down", down);
     }
   }

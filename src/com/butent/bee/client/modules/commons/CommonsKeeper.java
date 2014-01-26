@@ -70,7 +70,7 @@ public final class CommonsKeeper {
 
     @Override
     public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-      if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
+      if (BeeUtils.isEmpty(getStringValue(COL_PASSWORD))) {
         event.consume();
         changePassword();
       }

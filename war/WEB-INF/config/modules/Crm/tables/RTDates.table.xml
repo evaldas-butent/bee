@@ -8,13 +8,13 @@
     <Relation name="RecurringTask" notNull="true" relation="RecurringTasks" cascade="DELETE"
       label="=crmRecurringTask" />
       
-    <Date name="DateMin" notNull="true" />
-    <Date name="DateMax" />
+    <Date name="DateFrom" notNull="true" label="=crmRTDateExceptionFrom" />
+    <Date name="DateUntil" label="=crmRTDateExceptionUntil" />
     
-    <Enum name="Mode" key="ScheduleDateMode" notNull="true" />
+    <Enum name="Mode" key="ScheduleDateMode" notNull="true" label="=crmRTDateExceptionMode" />
   </Fields>
 
   <Constraints>
-    <Unique fields="RecurringTask DateMin" />
+    <Unique fields="RecurringTask DateFrom" />
   </Constraints>
 </Table>

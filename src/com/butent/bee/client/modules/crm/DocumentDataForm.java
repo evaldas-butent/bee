@@ -78,7 +78,7 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
         CompoundFilter flt = Filter.and();
 
         for (String name : new String[] {COL_DOCUMENT_CATEGORY, COL_DOCUMENT_DATA}) {
-          Long id = getDataLong(name);
+          Long id = getLongValue(name);
 
           if (DataUtils.isId(id)) {
             if (BeeUtils.same(name, COL_DOCUMENT_CATEGORY)) {
@@ -235,7 +235,7 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
                 new StringCallback() {
                   @Override
                   public void onSuccess(final String value) {
-                    DocumentHandler.copyDocumentData(getDataLong(COL_DOCUMENT_DATA),
+                    DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
                         new IdCallback() {
                           @Override
                           public void onSuccess(Long dataId) {
@@ -243,7 +243,7 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
                                 Data.getColumns(TBL_DOCUMENTS,
                                     Lists.newArrayList(COL_DOCUMENT_CATEGORY,
                                         COL_DOCUMENT_NAME, COL_DOCUMENT_DATA)),
-                                Lists.newArrayList(getDataValue(COL_DOCUMENT_CATEGORY), value,
+                                Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
                                     DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
                                 null, new RowInsertCallback(TBL_DOCUMENTS, null) {
                                   @Override

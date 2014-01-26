@@ -96,6 +96,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -658,30 +660,20 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public Integer getDataInt(String source) {
+  public DateTime getDateTimeValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {
-      return getActiveRow().getInteger(index);
+      return getActiveRow().getDateTime(index);
     } else {
       return null;
     }
   }
-
+  
   @Override
-  public Long getDataLong(String source) {
+  public JustDate getDateValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {
-      return getActiveRow().getLong(index);
-    } else {
-      return null;
-    }
-  }
-
-  @Override
-  public String getDataValue(String source) {
-    int index = getDataIndex(source);
-    if (getActiveRow() != null && index >= 0) {
-      return getActiveRow().getString(index);
+      return getActiveRow().getDate(index);
     } else {
       return null;
     }
@@ -715,6 +707,26 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public Double getHeightValue() {
     return (getDimensions() == null) ? null : getDimensions().getHeightValue();
+  }
+
+  @Override
+  public Integer getIntegerValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getInteger(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Long getLongValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getLong(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -793,6 +805,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public State getState() {
     return state;
+  }
+
+  @Override
+  public String getStringValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
   }
 
   @Override

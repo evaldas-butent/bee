@@ -1,12 +1,13 @@
 package com.butent.bee.shared.time;
 
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 
 public enum ScheduleDateMode implements HasCaption {
-  INCLUDE("include"),
-  EXCLUDE("exclude"),
-  WORK("work"),
-  NON_WORK("fiesta");
+  INCLUDE(Localized.getConstants().scheduleDateInclude()),
+  EXCLUDE(Localized.getConstants().scheduleDateExclude()),
+  WORK(Localized.getConstants().scheduleDateWork()),
+  NON_WORK(Localized.getConstants().scheduleDateNonWork());
   
   private final String caption;
   

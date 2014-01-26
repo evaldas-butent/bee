@@ -2,6 +2,7 @@ package com.butent.bee.client.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.Presenter;
@@ -21,6 +22,8 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
@@ -78,6 +81,16 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public boolean focusSource(String source) {
+    if (getFormView() == null) {
+      return false;
+    } else {
+      Widget widget = getFormView().getWidgetBySource(source);
+      return (widget == null) ? null : UiHelper.focus(widget);
+    }
+  }
+
+  @Override
   public IsRow getActiveRow() {
     return (getFormView() == null) ? null : getFormView().getActiveRow();
   }
@@ -93,18 +106,13 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
-  public Integer getDataInt(String source) {
-    return (getFormView() == null) ? null : getFormView().getDataInt(source);
+  public DateTime getDateTimeValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getDateTimeValue(source);
   }
 
   @Override
-  public Long getDataLong(String source) {
-    return (getFormView() == null) ? null : getFormView().getDataLong(source);
-  }
-
-  @Override
-  public String getDataValue(String source) {
-    return (getFormView() == null) ? null : getFormView().getDataValue(source);
+  public JustDate getDateValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getDateValue(source);
   }
 
   @Override
@@ -136,6 +144,16 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   public abstract FormInterceptor getInstance();
 
   @Override
+  public Integer getIntegerValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getIntegerValue(source);
+  }
+
+  @Override
+  public Long getLongValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getLongValue(source);
+  }
+
+  @Override
   public AbstractCellRenderer getRenderer(WidgetDescription widgetDescription) {
     return null;
   }
@@ -143,6 +161,11 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   @Override
   public BeeRowSet getRowSet() {
     return null;
+  }
+
+  @Override
+  public String getStringValue(String source) {
+    return (getFormView() == null) ? null : getFormView().getStringValue(source);
   }
 
   @Override

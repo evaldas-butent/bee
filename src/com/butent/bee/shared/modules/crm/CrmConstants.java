@@ -205,6 +205,7 @@ public final class CrmConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+  public static final String VIEW_RT_DATES = "RTDates";
   public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_DOCUMENTS = "Documents";
@@ -312,6 +313,26 @@ public final class CrmConstants {
   public static final String COL_CRITERIA_GROUP_NAME = "Name";
   public static final String COL_CRITERION_NAME = "Criterion";
   public static final String COL_CRITERION_VALUE = "Value";
+
+  public static final String COL_RT_SCHEDULE_FROM = "ScheduleFrom";
+  public static final String COL_RT_SCHEDULE_UNTIL = "ScheduleUntil";
+  public static final String COL_RT_SCHEDULE_DAYS = "ScheduleDays";
+  public static final String COL_RT_WORKDAY_TRANSITION = "WorkdayTransition";
+  public static final String COL_RT_DAY_OF_MONTH = "DayOfMonth";
+  public static final String COL_RT_MONTH = "Month";
+  public static final String COL_RT_DAY_OF_WEEK = "DayOfWeek";
+  public static final String COL_RT_YEAR = "Year";
+  public static final String COL_RT_START_AT = "StartAt";
+  public static final String COL_RT_DURATION_DAYS = "DurationDays";
+  public static final String COL_RT_DURATION_TIME = "DurationTime";
+  public static final String COL_RT_REMINDER = "Reminder";
+  public static final String COL_RT_REMIND_BEFORE = "RemindBefore";
+  public static final String COL_RT_REMIND_AT = "RemindAt";
+
+  public static final String COL_RTD_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTD_FROM = "DateFrom";
+  public static final String COL_RTD_UNTIL = "DateUntil";
+  public static final String COL_RTD_MODE = "Mode";
 
   public static final String COL_RTF_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTF_FILE = "File";

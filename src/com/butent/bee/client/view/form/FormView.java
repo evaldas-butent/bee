@@ -27,6 +27,8 @@ import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 import java.util.Collection;
 import java.util.List;
@@ -63,25 +65,29 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   int getDataIndex(String source);
 
-  Integer getDataInt(String source);
-
-  Long getDataLong(String source);
-
-  String getDataValue(String source);
+  DateTime getDateTimeValue(String source);
 
   HasDataTable getDisplay();
-  
+
   List<EditableWidget> getEditableWidgets();
 
   FormInterceptor getFormInterceptor();
-
+  
   String getFormName();
+
+  Integer getIntegerValue(String source);
+  
+  JustDate getDateValue(String source);
+
+  Long getLongValue(String source);
 
   IsRow getOldRow();
 
   IdentifiableWidget getRootWidget();
 
   JavaScriptObject getRowJso();
+
+  String getStringValue(String source);
 
   Widget getWidgetByName(String name);
 

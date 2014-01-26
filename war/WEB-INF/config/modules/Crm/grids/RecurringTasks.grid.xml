@@ -18,8 +18,10 @@
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" />
 
-    <DataColumn name="ScheduleAfter" />
-    <DataColumn name="ScheduleBefore" />
+    <DataColumn name="ScheduleFrom" />
+    <DataColumn name="ScheduleUntil" />
+
+    <DataColumn name="ScheduleDays" />
 
     <DataColumn name="WorkdayTransition" />
 
@@ -29,10 +31,8 @@
     <DataColumn name="Year" />
 
     <DataColumn name="StartAt" />
-
     <DataColumn name="DurationDays" />
-    <DataColumn name="DurationHours" />
-    <DataColumn name="DurationMinutes" />
+    <DataColumn name="DurationTime" />
     
     <RelColumn name="Reminder" />
     <DataColumn name="RemindBefore" />

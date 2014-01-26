@@ -518,13 +518,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String saveFilter();
 
-  String scheduledEndingDate();
+  String scheduleDateExclude();
 
-  String scheduledEndingTime();
+  String scheduleDateInclude();
 
-  String scheduledStartingDate();
+  String scheduleDateNonWork();
 
-  String scheduledStartingTime();
+  String scheduleDateWork();
 
   String selectAll();
 
@@ -617,6 +617,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String width();
 
   String winter();
+
+  String workdayTransitionBackward();
+
+  String workdayTransitionForward();
+
+  String workdayTransitionNearest();
+
+  String workdayTransitionNone();
 
   String yes();
 }

@@ -416,6 +416,10 @@ public final class TimeUtils {
     return x instanceof HasDateValue || x instanceof Date;
   }
 
+  public static boolean isDow(int dow) {
+    return dow >= 1 && dow <= DAYS_PER_WEEK;
+  }
+  
   public static boolean isLeq(HasYearMonth d1, HasYearMonth d2) {
     return compare(d1, d2) <= 0;
   }

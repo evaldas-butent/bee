@@ -5,8 +5,8 @@
   name="RTDates" viewName="RTDates"
   >
   <g:columns>
-    <DataColumn name="DateMin" width="100" visible="true" />
-    <DataColumn name="DateMax" width="100" visible="true" />
+    <DataColumn name="DateFrom" width="100" visible="true" />
+    <DataColumn name="DateUntil" width="100" visible="true" />
 
     <DataColumn name="Mode" minWidth="100" visible="true" autoFit="true" />
   </g:columns>

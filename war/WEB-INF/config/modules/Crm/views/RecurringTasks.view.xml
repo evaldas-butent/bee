@@ -38,8 +38,10 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="ScheduleAfter" />
-    <SimpleColumn name="ScheduleBefore" />
+    <SimpleColumn name="ScheduleFrom" />
+    <SimpleColumn name="ScheduleUntil" />
+
+    <SimpleColumn name="ScheduleDays" />
 
     <SimpleColumn name="WorkdayTransition" />
 
@@ -49,10 +51,8 @@
     <SimpleColumn name="Year" />
 
     <SimpleColumn name="StartAt" />
-
     <SimpleColumn name="DurationDays" />
-    <SimpleColumn name="DurationHours" />
-    <SimpleColumn name="DurationMinutes" />
+    <SimpleColumn name="DurationTime" />
 
     <SimpleColumn name="Reminder" />
     <SimpleJoin name="Reminder" joinType="LEFT">

@@ -76,7 +76,7 @@
   flex-direction: row;
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
-  justify-content: space-between;  
+  justify-content: space-between;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
 }

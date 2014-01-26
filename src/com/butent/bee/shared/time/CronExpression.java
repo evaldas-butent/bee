@@ -44,10 +44,16 @@ public final class CronExpression implements HasInfo {
 
       if (t1.isWeekdayOrdinal()) {
         weekday = Field.DAY_OF_WEEK.getValue(t2);
-        ordinal = WEEKDAY_ORDINALS.indexOf(t1.value);
-      } else {
+        ordinal = WEEKDAY_ORDINALS.indexOf(t1.value) + 1;
+      
+      } else if (t2.isWeekdayOrdinal()) {
         weekday = Field.DAY_OF_WEEK.getValue(t1);
-        ordinal = WEEKDAY_ORDINALS.indexOf(t2.value);
+        ordinal = WEEKDAY_ORDINALS.indexOf(t2.value) + 1;
+   
+      } else {
+        Integer value = BeeUtils.toIntOrNull(t1.value);
+        ordinal = (value == null) ? BeeConst.UNDEF : value;
+        weekday = Field.DAY_OF_WEEK.getValue(t2);
       }
 
       if (field.supportsWeekdayOrdinals && weekday != null && ordinal >= 0) {
@@ -64,7 +70,7 @@ public final class CronExpression implements HasInfo {
     private static String normalize(String input) {
       return input.trim().toUpperCase();
     }
-
+    
     private static List<Item> parse(Field field, String input) {
       return parse(field, input, null);
     }
@@ -96,13 +102,14 @@ public final class CronExpression implements HasInfo {
               break;
 
             default:
-              if (BeeUtils.isDigit(firstChar) && field.accepts((int) firstChar)) {
-                item = Item.of(firstChar);
+              int value = BeeUtils.toInt(s);
+              if (BeeUtils.isDigit(firstChar) && field.accepts(value)) {
+                item = Item.of(value);
               }
           }
 
         } else if (firstChar == STEP_SEPARATOR) {
-          Integer increment = BeeUtils.toIntOrNull(s.substring(2));
+          Integer increment = BeeUtils.toIntOrNull(s.substring(1));
           if (field.supportsBaseIncrement && BeeUtils.isPositive(increment) && increment > 1) {
             item = Item.baseIncrement(increment);
           }
@@ -215,14 +222,13 @@ public final class CronExpression implements HasInfo {
                       if (field == Field.DAY_OF_WEEK) {
                         item = Item.weekdayBaseIncrement(value, step);
                       } else {
-                        item = Item.of(value);
+                        item = Item.incrementalRange(value, field.max, step);
                       }
                     }
                   }
                 }
 
-              } else if (t2.isOrdinalSeparator()
-                  && (t1.isWeekdayOrdinal() || t3.isWeekdayOrdinal())) {
+              } else if (t2.isOrdinalSeparator()) {
                 item = getWeekdayOrdinalItem(field, t1, t3);
               }
 
@@ -280,7 +286,7 @@ public final class CronExpression implements HasInfo {
           input.equals(item) ? null : BeeUtils.bracket(item));
     }
 
-    private JustDate baseDate;
+    private DateRange dateRange;
     private String seconds;
 
     private String minutes;
@@ -299,12 +305,16 @@ public final class CronExpression implements HasInfo {
     private final Set<JustDate> working = Sets.newHashSet();
     private final Set<JustDate> nonWorking = Sets.newHashSet();
 
-    public Builder(JustDate baseDate) {
-      this.baseDate = baseDate;
+    public Builder(DateRange dateRange) {
+      this.dateRange = normalizeRange(dateRange);
     }
 
+    public Builder(JustDate from, JustDate until) {
+      this.dateRange = normalizeRange(from, until);
+    }
+    
     public CronExpression build() {
-      CronExpression result = new CronExpression(baseDate, BeeUtils.nvl(workdayTransition,
+      CronExpression result = new CronExpression(dateRange, BeeUtils.nvl(workdayTransition,
           WorkdayTransition.DEFAULT));
 
       List<Item> items = parse(Field.SECONDS, seconds);
@@ -419,7 +429,7 @@ public final class CronExpression implements HasInfo {
       return result;
     }
 
-    public Builder date(JustDate date, ScheduleDateMode mode) {
+    public Builder dateMode(JustDate date, ScheduleDateMode mode) {
       if (mode != null) {
         switch (mode) {
           case EXCLUDE:
@@ -481,11 +491,11 @@ public final class CronExpression implements HasInfo {
       return this;
     }
 
-    public Builder range(DateRange range, ScheduleDateMode mode) {
+    public Builder rangeMode(DateRange range, ScheduleDateMode mode) {
       if (range != null) {
         List<JustDate> dates = range.getValues();
         for (JustDate date : dates) {
-          date(date, mode);
+          dateMode(date, mode);
         }
       }
       return this;
@@ -700,7 +710,7 @@ public final class CronExpression implements HasInfo {
         } else {
           int incr = BeeUtils.isPositive(step) ? step : 1;
           for (int v = lower; v <= upper; v += incr) {
-            values.add(lower);
+            values.add(v);
           }
         }
       }
@@ -803,6 +813,9 @@ public final class CronExpression implements HasInfo {
   private static final int MIN_YEAR = 2000;
   private static final int MAX_YEAR = 2099;
 
+  private static final JustDate MIN_DATE = TimeUtils.startOfYear(MIN_YEAR);
+  private static final JustDate MAX_DATE = TimeUtils.endOfYear(MAX_YEAR);
+
   private static final char CHAR_ALL = '*';
   private static final char CHAR_BLANK = '?';
   private static final char CHAR_LAST = 'L';
@@ -818,13 +831,131 @@ public final class CronExpression implements HasInfo {
 
   private static BeeLogger logger = LogUtils.getLogger(CronExpression.class);
 
+  private static final List<Property> dayOfMonthExamples = Lists.newArrayList();
+  private static final List<Property> monthExamples = Lists.newArrayList();
+  private static final List<Property> dayOfWeekExamples = Lists.newArrayList();
+
+  public static List<Property> getDayOfMonthExamples() {
+    if (dayOfMonthExamples.isEmpty()) {
+      dayOfMonthExamples.addAll(PropertyUtils.createProperties(
+          "*", "every day",
+          "5,10,20", "days 5, 10 and 20",
+          "10-12", "days 10, 11 and 12",
+          "25-5", "every day starting on the 25th day of the month and days 1, 2, 3, 4, 5",
+          "*/4", "every 4 days starting on the first day of the month",
+          "2/6", "every 6 days starting on the second day of the month",
+          "4-22/3", "days 4, 7, 10, 13, 16, 19 and 22",
+          "/3", "every 3 days starting on the lower bound",
+          "L", "the last day of the month",
+          "Last", "the last day of the month",
+          "31", "the last day of the month",
+          "-1", "the day before the last day of the month",
+          "30", "the day before the last day of the month",
+          "-2", "2 days before the last day of the month",
+          "29", "2 days before the last day of the month",
+          "28", "day 28",
+          "15W", "the nearest weekday to the 15th of the month",
+          "LW", "the last working-day of the month"));
+    }
+    return dayOfMonthExamples;
+  }
+
+  public static List<Property> getDayOfWeekExamples() {
+    if (dayOfWeekExamples.isEmpty()) {
+      dayOfWeekExamples.addAll(PropertyUtils.createProperties(
+          "*", "every day",
+          "1", "Monday",
+          "7", "Sunday",
+          "Monday", "Monday",
+          "Mon", "Monday",
+          "Tu", "Tuesday",
+          "1,4", "Monday and Thursday",
+          "Wed,Fri", "Wednesday and Friday",
+          "1-5", "Monday, Tuesday, Wednesday, Thursday and Friday",
+          "2ndMon", "the second Monday of the month",
+          "2#1", "the second Monday of the month",
+          "5L", "the last Friday of the month",
+          "L", "Sunday",
+          "Last", "Sunday",
+          "Monday/2", "every second Monday starting on the lower bound"));
+    }
+    return dayOfWeekExamples;
+  }
+  
+  public static String getItemSeparator() {
+    return String.valueOf(ITEM_SEPARATOR);
+  }
+
+  public static List<Property> getMonthExamples() {
+    if (monthExamples.isEmpty()) {
+      monthExamples.addAll(PropertyUtils.createProperties(
+          "*", "every month",
+          "1", "January",
+          "12", "December",
+          "January", "January",
+          "jan", "January",
+          "JA", "January",
+          "Jun", "June",
+          "4,7,11", "April, July and November",
+          "3-5", "March, April and May",
+          "11-1", "November, December and January",
+          "Apr-Oct/2", "April, June, August and October",
+          "*/3", "January, April, July and October",
+          "/3", "every third month starting on the lower bound",
+          "L", "December",
+          "Last", "December"));
+    }
+    return monthExamples;
+  }
+
+  public static DateRange normalizeRange(DateRange range) {
+    if (range == null) {
+      return DateRange.closed(MIN_DATE, MAX_DATE);
+    } else {
+      return normalizeRange(range.getMinDate(), range.getMaxDate());
+    }
+  }
+
+  public static DateRange normalizeRange(JustDate from, JustDate until) {
+    JustDate lower = TimeUtils.clamp(from, MIN_DATE, MAX_DATE);
+    JustDate upper = (until == null) ? MAX_DATE : TimeUtils.clamp(until, lower, MAX_DATE);
+
+    return DateRange.closed(lower, upper);
+  }
+  
+  public static Set<Integer> parseSimpleValues(Field field, String input) {
+    Assert.notNull(field);
+
+    Set<Integer> values = Sets.newHashSet();
+
+    if (!BeeUtils.isEmpty(input)) {
+      List<Item> items = Builder.parse(field, Builder.normalize(input));
+      
+      for (Item item : items) {
+        if (item.isSimple()) {
+          values.addAll(item.getSimpleValues());
+        }
+      }
+    }
+    
+    return values;
+  }
+  
+  public static List<String> split(String input) {
+    List<String> result = Lists.newArrayList();
+    if (!BeeUtils.isEmpty(input)) {
+      result.addAll(itemSplitter.splitToList(input));
+    }
+    return result;
+  }
+
   public static List<String> validate(Field field, String input) {
     Assert.notNull(field);
 
     final List<String> failures = Lists.newArrayList();
 
     if (!BeeUtils.isEmpty(input)) {
-      Builder.parse(field, input, new Consumer<String>() {
+      Builder.parse(field, Builder.normalize(input), new Consumer<String>() {
         @Override
         public void accept(String failure) {
           failures.add(failure);
@@ -927,8 +1058,9 @@ public final class CronExpression implements HasInfo {
 
       if (token == null) {
         if (BeeUtils.isDigit(ch)) {
-          StringBuilder sb = new StringBuilder(ch);
-          while (i < sb.length() - 1 && BeeUtils.isDigit(s.charAt(i + 1))) {
+          StringBuilder sb = new StringBuilder();
+          sb.append(ch);
+          while (i < s.length() - 1 && BeeUtils.isDigit(s.charAt(i + 1))) {
             sb.append(s.charAt(i + 1));
             i++;
           }
@@ -936,8 +1068,9 @@ public final class CronExpression implements HasInfo {
           token = new Token(Token.Kind.INT, sb.toString());
 
         } else if (Ascii.isUpperCase(ch)) {
-          StringBuilder sb = new StringBuilder(ch);
-          while (i < sb.length() - 1 && Ascii.isUpperCase(s.charAt(i + 1))) {
+          StringBuilder sb = new StringBuilder();
+          sb.append(ch);
+          while (i < s.length() - 1 && Ascii.isUpperCase(s.charAt(i + 1))) {
             sb.append(s.charAt(i + 1));
             i++;
           }
@@ -973,7 +1106,9 @@ public final class CronExpression implements HasInfo {
     return tokens;
   }
 
-  private final JustDate baseDate;
+  private final JustDate lowerBound;
+  private final JustDate upperBound;
+
   private final WorkdayTransition workdayTransition;
 
   private final Set<Integer> seconds = Sets.newHashSet();
@@ -989,10 +1124,9 @@ public final class CronExpression implements HasInfo {
   private final Set<Integer> daysOfWeek = Sets.newHashSet();
   private final Multimap<Integer, Integer> weekdayOrdinals = HashMultimap.create();
   private final Multimap<Integer, Integer> weekSteps = HashMultimap.create();
-
   private final Set<Integer> lastWeekdays = Sets.newHashSet();
-  private boolean lastWorkday;
 
+  private boolean lastWorkday;
   private final Set<Integer> nearestWorkdays = Sets.newHashSet();
 
   private final Set<Integer> years = Sets.newHashSet();
@@ -1003,16 +1137,74 @@ public final class CronExpression implements HasInfo {
   private final Set<JustDate> working = Sets.newHashSet();
   private final Set<JustDate> nonWorking = Sets.newHashSet();
 
-  private CronExpression(JustDate baseDate, WorkdayTransition workdayTransition) {
-    this.baseDate = (baseDate == null) ? TimeUtils.startOfYear(MIN_YEAR) : baseDate;
+  private CronExpression(DateRange dateRange, WorkdayTransition workdayTransition) {
+    this.lowerBound = dateRange.getMinDate();
+    this.upperBound = dateRange.getMaxDate();
+
     this.workdayTransition = workdayTransition;
+  }
+
+  public ScheduleDateMode getDateMode(JustDate date) {
+    if (date == null) {
+      return null;
+    } else if (isExcluded(date)) {
+      return ScheduleDateMode.EXCLUDE;
+    } else if (isIncluded(date)) {
+      return ScheduleDateMode.INCLUDE;
+    } else if (isWorkday(date)) {
+      return ScheduleDateMode.WORK;
+    } else {
+      return ScheduleDateMode.NON_WORK;
+    }
+  }
+
+  public List<JustDate> getDates(JustDate from, JustDate until) {
+    List<JustDate> result = Lists.newArrayList();
+
+    if (from != null && TimeUtils.isMore(from, upperBound)) {
+      return result;
+    }
+    if (until != null && TimeUtils.isLess(until, lowerBound)) {
+      return result;
+    }
+
+    JustDate min = clamp(from);
+    JustDate max = (until == null) ? upperBound : clamp(until);
+
+    if (TimeUtils.isMore(min, max)) {
+      return result;
+    }
+
+    DateRange range = DateRange.closed(min, max);
+
+    JustDate start = BeeUtils.max(TimeUtils.startOfMonth(min), lowerBound);
+    JustDate end = BeeUtils.min(TimeUtils.endOfMonth(max), upperBound);
+
+    JustDate date = JustDate.copyOf(start);
+
+    while (TimeUtils.isLeq(date, end)) {
+      JustDate match = match(date);
+
+      if (match != null && range.contains(match) && !result.contains(match)) {
+        result.add(JustDate.copyOf(match));
+      }
+
+      date.increment();
+    }
+
+    if (result.size() > 1) {
+      Collections.sort(result);
+    }
+
+    return result;
   }
 
   @Override
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
-        "Base Date", baseDate,
-        "Workday Transition", workdayTransition,
+        "Lower Bound", lowerBound,
+        "Upper Bound", upperBound,
+        "Workday Transition", workdayTransition.getCaption(),
         "Seconds", string(seconds),
         "Minutes", string(minutes),
         "Hours", string(hours),
@@ -1098,30 +1290,8 @@ public final class CronExpression implements HasInfo {
   private void addYears(Set<Integer> values) {
     this.years.addAll(values);
   }
-
+  
   private JustDate checkWorkday(JustDate date) {
-    if (lastWorkday) {
-      JustDate last = TimeUtils.endOfMonth(date);
-
-      while (true) {
-        if (isWorkday(last)) {
-          return date.equals(last) ? last : null;
-        }
-
-        if (TimeUtils.isMore(last, date) && last.getDom() > 1) {
-          last.decrement();
-        } else {
-          break;
-        }
-      }
-
-      return null;
-    }
-
-    if (!nearestWorkdays.isEmpty() && nearestWorkdays.contains(date)) {
-      return nearestWorkday(date);
-    }
-
     switch (workdayTransition) {
       case BACKWARD:
         if (isWorkday(date)) {
@@ -1148,52 +1318,12 @@ public final class CronExpression implements HasInfo {
     return null;
   }
 
-  private void exclude(JustDate date) {
-    this.exclude.add(date);
+  private JustDate clamp(JustDate date) {
+    return TimeUtils.clamp(date, lowerBound, upperBound);
   }
 
-  public List<JustDate> getDates(JustDate min, JustDate max, Integer count) {
-    List<JustDate> result = Lists.newArrayList();
-
-    JustDate start = BeeUtils.max(TimeUtils.startOfMonth(min), baseDate);
-    JustDate end = (max == null) ? TimeUtils.endOfYear(MAX_YEAR) : TimeUtils.endOfMonth(max);
-
-    JustDate date = JustDate.copyOf(start);
-
-    while (true) {
-      Boolean match = matches(date);
-
-      if (BeeUtils.isTrue(match) && !result.contains(date)) {
-        result.add(JustDate.copyOf(date));
-
-        if (BeeUtils.isPositive(count) && result.size() >= count) {
-          break;
-        }
-      }
-
-      if (match == null) {
-        JustDate workday = checkWorkday(date);
-
-        if (workday != null && TimeUtils.isMeq(workday, start) && !result.contains(workday)) {
-          result.add(JustDate.copyOf(workday));
-
-          if (BeeUtils.isPositive(count) && result.size() >= count) {
-            break;
-          }
-        }
-      }
-
-      date.increment();
-      if (TimeUtils.isMore(date, end)) {
-        break;
-      }
-    }
-
-    if (result.size() > 1) {
-      Collections.sort(result);
-    }
-
-    return result;
+  private void exclude(JustDate date) {
+    this.exclude.add(date);
   }
 
   private void include(JustDate date) {
@@ -1205,6 +1335,14 @@ public final class CronExpression implements HasInfo {
       return false;
     } else {
       return exclude.contains(date);
+    }
+  }
+
+  private boolean isIncluded(JustDate date) {
+    if (include.isEmpty()) {
+      return false;
+    } else {
+      return include.contains(date);
     }
   }
 
@@ -1223,47 +1361,65 @@ public final class CronExpression implements HasInfo {
     return date.getDow() < 6;
   }
 
-  private Boolean matches(JustDate date) {
+  private JustDate match(JustDate date) {
     if (isExcluded(date)) {
-      return false;
+      return null;
     }
-    if (!include.isEmpty() && include.contains(date)) {
-      return true;
-    }
-
-    if (!daysOfMonth.isEmpty() && !matchesDayOfMonth(date)) {
-      return false;
-    }
-    if (!daySteps.isEmpty() && !matchesDayStep(date)) {
-      return false;
+    if (isIncluded(date)) {
+      return date;
     }
 
     if (!months.isEmpty() && !months.contains(date.getMonth())) {
-      return false;
+      return null;
     }
     if (!monthSteps.isEmpty() && !matchesMonthStep(date)) {
-      return false;
-    }
-
-    if (!daysOfWeek.isEmpty() && !daysOfWeek.contains(date.getDow())) {
-      return false;
-    }
-    if (!weekdayOrdinals.isEmpty() && !matchesWeekdayOrdinals(date)) {
-      return false;
-    }
-    if (!weekSteps.isEmpty() && !matchesWeekStep(date)) {
-      return false;
-    }
-
-    if (!lastWeekdays.isEmpty() && !matchesLastWeekday(date)) {
-      return false;
+      return null;
     }
 
     if (!years.isEmpty() && !years.contains(date.getYear())) {
-      return false;
+      return null;
     }
 
-    return null;
+    Boolean ok = null;
+
+    if (!BeeUtils.isTrue(ok) && !daysOfMonth.isEmpty()) {
+      ok = matchesDayOfMonth(date);
+    }
+    if (!BeeUtils.isTrue(ok) && !daySteps.isEmpty()) {
+      ok = matchesDayStep(date);
+    }
+
+    if (!BeeUtils.isTrue(ok) && !daysOfWeek.isEmpty()) {
+      ok = daysOfWeek.contains(date.getDow());
+    }
+    if (!BeeUtils.isTrue(ok) && !weekdayOrdinals.isEmpty()) {
+      ok = matchesWeekdayOrdinals(date);
+    }
+    if (!BeeUtils.isTrue(ok) && !weekSteps.isEmpty()) {
+      ok = matchesWeekStep(date);
+    }
+
+    if (!BeeUtils.isTrue(ok) && !lastWeekdays.isEmpty()) {
+      ok = matchesLastWeekday(date);
+    }
+
+    if (!BeeUtils.isTrue(ok) && lastWorkday) {
+      ok = matchesLastWorkday(date);
+    }
+
+    if (!nearestWorkdays.isEmpty()) {
+      if (nearestWorkdays.contains(date.getDom())) {
+        return nearestWorkday(date);
+      } else if (!BeeUtils.isTrue(ok)) {
+        return null; 
+      }
+    }
+    
+    if (BeeUtils.isFalse(ok)) {
+      return null;
+    } else {
+      return checkWorkday(date);
+    }
   }
 
   private boolean matchesDayOfMonth(JustDate date) {
@@ -1272,7 +1428,7 @@ public final class CronExpression implements HasInfo {
 
     for (int value : daysOfMonth) {
       if (value < 0) {
-        if (lastDom - value == dom) {
+        if (lastDom + value == dom) {
           return true;
         }
 
@@ -1290,7 +1446,7 @@ public final class CronExpression implements HasInfo {
   }
 
   private boolean matchesDayStep(JustDate date) {
-    int diff = date.getDays() - baseDate.getDays();
+    int diff = date.getDays() - lowerBound.getDays();
 
     for (int step : daySteps) {
       if (diff % step == 0) {
@@ -1308,8 +1464,26 @@ public final class CronExpression implements HasInfo {
     }
   }
 
+  private boolean matchesLastWorkday(JustDate date) {
+    JustDate last = TimeUtils.endOfMonth(date);
+
+    while (true) {
+      if (isWorkday(last)) {
+        return date.equals(last);
+      }
+
+      if (TimeUtils.isMore(last, date) && last.getDom() > 1) {
+        last.decrement();
+      } else {
+        break;
+      }
+    }
+
+    return false;
+  }
+
   private boolean matchesMonthStep(JustDate date) {
-    int diff = TimeUtils.monthDiff(baseDate, date);
+    int diff = TimeUtils.monthDiff(lowerBound, date);
 
     for (int step : monthSteps) {
       if (diff % step == 0) {
@@ -1335,7 +1509,7 @@ public final class CronExpression implements HasInfo {
       return false;
     }
 
-    JustDate start = JustDate.copyOf(baseDate);
+    JustDate start = JustDate.copyOf(lowerBound);
     while (start.getDow() != dow) {
       start.increment();
     }
