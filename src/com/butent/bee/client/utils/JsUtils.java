@@ -271,6 +271,10 @@ public final class JsUtils {
     obj[p] = value;
   }-*/;
 
+  public static native void setProperty(JavaScriptObject obj, String p, JavaScriptObject value) /*-{
+    obj[p] = value;
+  }-*/;
+
   public static native void setPropertyToNull(JavaScriptObject obj, String p) /*-{
     obj[p] = null;
   }-*/;

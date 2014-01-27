@@ -19,8 +19,6 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
 
   String deleteSelectedRows(int count);
 
-  String documentSavedInFiles(String document);
-
   String endSession(String appName);
 
   String fileNotFound(String file);

@@ -1,13 +1,22 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
@@ -24,22 +33,34 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
+import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -51,6 +72,7 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -60,7 +82,101 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-public class DocumentDataForm extends AbstractFormInterceptor implements ClickHandler {
+public class DocumentDataForm extends AbstractFormInterceptor
+    implements ClickHandler, SelectionHandler<Pair<Integer, SelectionOrigin>> {
+
+  private class TinyEditor {
+
+    private JavaScriptObject tiny;
+    private String deferedContent;
+
+    public void doDefered() {
+      setContent(tiny, BeeUtils.nvl(deferedContent, ""));
+    }
+
+    public String getContent() {
+      if (isActive()) {
+        return getContent(tiny);
+      }
+      return null;
+    }
+
+    public void init(String editorId) {
+      Assert.state(!isActive());
+      Assert.notEmpty(editorId);
+
+      JavaScriptObject jso = JavaScriptObject.createObject();
+      JsUtils.setProperty(jso, "mode", "exact");
+      JsUtils.setProperty(jso, "elements", editorId);
+      JsUtils.setProperty(jso, "language", Localized.getConstants().languageTag());
+      JsUtils.setProperty(jso, "plugins", "advlist lists image charmap hr pagebreak searchreplace "
+          + "visualblocks visualchars code fullscreen table template paste textcolor");
+      JsUtils.setProperty(jso, "toolbar", "fullscreen | undo redo | styleselect "
+          + "| bold italic underline | alignleft aligncenter alignright alignjustify "
+          + "| forecolor backcolor | bullist numlist outdent indent | fontselect fontsizeselect");
+      JsUtils.setProperty(jso, "image_advtab", true);
+      JsUtils.setProperty(jso, "pagebreak_separator",
+          "<div style=\"page-break-before:always;\"></div>");
+
+      JsArrayMixed templateArray = JavaScriptObject.createArray().cast();
+
+      JavaScriptObject template = JavaScriptObject.createObject();
+      JsUtils.setProperty(template, "title", Localized.getConstants().group());
+      JsUtils.setProperty(template, "content",
+          "<p><table style=\"border-collapse:collapse;\"><tbody>"
+              + "<!--{CriteriaGroups}-->"
+              + "<tr><td colspan=\"3\" style=\"border:1px solid black;\">{Name}</td></tr>"
+              + "<!--{Criteria}--><tr><td style=\"border:1px solid black;\">{Criterion}</td>"
+              + "<td style=\"border:1px solid black;\">{Value}</td></tr>"
+              + "<!--{Criteria}--><!--{CriteriaGroups}--></tbody></table></p>");
+
+      templateArray.push(template);
+
+      JsUtils.setProperty(jso, "templates", templateArray);
+
+      initEditor(jso, this);
+    }
+
+    public boolean isActive() {
+      return tiny != null;
+    }
+
+    public boolean isDirty() {
+      if (isActive()) {
+        return isDirty(tiny);
+      }
+      return false;
+    }
+
+    public void setContent(String content) {
+      if (isActive()) {
+        setContent(tiny, BeeUtils.nvl(content, ""));
+      } else {
+        deferedContent = content;
+      }
+    }
+
+    private native String getContent(JavaScriptObject editor) /*-{
+      return editor.getContent();
+    }-*/;
+
+    private native void initEditor(JavaScriptObject object, TinyEditor ed) /*-{
+      object.init_instance_callback = function(editor) {
+        ed.@com.butent.bee.client.modules.crm.DocumentDataForm.TinyEditor::tiny = editor;
+        ed.@com.butent.bee.client.modules.crm.DocumentDataForm.TinyEditor::doDefered()();
+      };
+      $wnd.tinymce.init(object);
+    }-*/;
+
+    private native boolean isDirty(JavaScriptObject editor) /*-{
+      return editor.isDirty();
+    }-*/;
+
+    private native void setContent(JavaScriptObject editor, String content) /*-{
+      editor.setContent(content);
+      editor.isNotDirty = 1;
+    }-*/;
+  }
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {
 
@@ -120,6 +236,16 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
 
+  private final TinyEditor tinyEditor = new TinyEditor();
+
+  private final Button newDocumentButton = new Button(Localized.getConstants().documentNew(),
+      new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          createDocument();
+        }
+      });
+
   private final GridInterceptor childInterceptor = new AbstractGridInterceptor() {
     @Override
     public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -156,6 +282,8 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
         criteriaGrid = grid;
         grid.setGridInterceptor(childInterceptor);
       }
+    } else if (widget instanceof TabbedPages) {
+      ((TabbedPages) widget).addSelectionHandler(this);
     }
   }
 
@@ -169,6 +297,39 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
   @Override
   public void afterUpdateRow(IsRow result) {
     save(result);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.PRINT) {
+      String content = tinyEditor.isActive()
+          ? tinyEditor.getContent() : getStringValue(COL_DOCUMENT_CONTENT);
+
+      if (BeeUtils.isEmpty(content)) {
+        getFormView().notifyWarning(Localized.getConstants().documentContentIsEmpty());
+      } else {
+        parseContent(content, new Consumer<String>() {
+          @Override
+          public void accept(String input) {
+            Printer.print(input, null);
+          }
+        });
+      }
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    if (getHeaderView() == null) {
+      return;
+    }
+    getHeaderView().clearCommandPanel();
+
+    if (!DataUtils.isNewRow(row)) {
+      getHeaderView().addCommandItem(newDocumentButton);
+    }
   }
 
   @Override
@@ -207,57 +368,47 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
 
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+    LocalizableConstants loc = Localized.getConstants();
+    List<String> warnings = Lists.newArrayList();
+
     if (save(null)) {
-      LocalizableConstants loc = Localized.getConstants();
-      messages.add(BeeUtils.joinWords(loc.changedValues(), loc.mainCriteria()));
+      warnings.add(loc.mainCriteria());
+    }
+    if (tinyEditor.isDirty()) {
+      warnings.add(loc.content());
+    }
+    if (!BeeUtils.isEmpty(warnings)) {
+      messages.add(BeeUtils.joinWords(loc.changedValues(), warnings));
     }
   }
 
   @Override
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    includeContent(event.getColumns(), null, null, event.getValues());
+  }
+
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    includeContent(event.getColumns(),
+        event.getOldRow().getString(getDataIndex(COL_DOCUMENT_CONTENT)),
+        event.getOldValues(), event.getNewValues());
+
     if (BeeUtils.isEmpty(event.getColumns())) {
       save(getActiveRow());
     }
   }
 
   @Override
-  public void onStart(FormView form) {
-    if (getHeaderView() == null) {
-      return;
-    }
-    final LocalizableConstants loc = Localized.getConstants();
+  public void onSelection(SelectionEvent<Pair<Integer, SelectionOrigin>> event) {
+    if (!tinyEditor.isActive() && event.getSource() instanceof TabbedPages) {
+      Widget content = getFormView().getWidgetByName(COL_DOCUMENT_CONTENT);
 
-    getHeaderView().addCommandItem(new Button(loc.documentNew(),
-        new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            Global.inputString(loc.documentNew(), loc.documentName(),
-                new StringCallback() {
-                  @Override
-                  public void onSuccess(final String value) {
-                    DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
-                        new IdCallback() {
-                          @Override
-                          public void onSuccess(Long dataId) {
-                            Queries.insert(TBL_DOCUMENTS,
-                                Data.getColumns(TBL_DOCUMENTS,
-                                    Lists.newArrayList(COL_DOCUMENT_CATEGORY,
-                                        COL_DOCUMENT_NAME, COL_DOCUMENT_DATA)),
-                                Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
-                                    DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
-                                null, new RowInsertCallback(TBL_DOCUMENTS, null) {
-                                  @Override
-                                  public void onSuccess(BeeRow result) {
-                                    super.onSuccess(result);
-                                    RowEditor.openRow(TBL_DOCUMENTS, result, true);
-                                  }
-                                });
-                          }
-                        });
-                  }
-                });
-          }
-        }));
+      if (Objects.equals(((TabbedPages) event.getSource()).getSelectedWidget(), content)) {
+        if (content instanceof HasOneWidget) {
+          tinyEditor.init(DomUtils.getId(((HasOneWidget) content).getWidget()));
+        }
+      }
+    }
   }
 
   @Override
@@ -271,16 +422,43 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
     requery(newRow);
   }
 
-  protected String parseContent(String content) {
-    String result = content;
+  protected void parseContent(String content, final Consumer<String> consumer) {
+    final List<String> parts = Lists.newArrayList(Splitter
+        .on("<!--{" + TBL_CRITERIA_GROUPS + "}-->").split(content));
 
-    for (Entry<String, Editor> entry : criteria.entrySet()) {
-      String criterion = entry.getKey();
-      String value = entry.getValue().getNormalizedValue();
+    final Holder<Integer> holder = Holder.of(parts.size());
 
-      result = result.replace("{" + criterion + "}", value);
+    BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
+      @Override
+      public void accept(Integer index, String value) {
+        parts.set(index, value);
+        holder.set(holder.get() - 1);
+
+        if (!BeeUtils.isPositive(holder.get())) {
+          StringBuilder sb = new StringBuilder();
+
+          for (String part : parts) {
+            sb.append(part);
+          }
+          String result = sb.toString();
+
+          for (Entry<String, Editor> entry : criteria.entrySet()) {
+            result = result.replace("{" + entry.getKey() + "}",
+                entry.getValue().getNormalizedValue());
+          }
+          consumer.accept(result);
+        }
+      }
+    };
+    for (int i = 0; i < parts.size(); i++) {
+      String part = parts.get(i);
+
+      if (i % 2 > 0 && i < parts.size() - 1) {
+        parseGroup(part, i, executor);
+      } else {
+        executor.accept(i, part);
+      }
     }
-    return result;
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {
@@ -289,6 +467,35 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
 
     input.addAutocompleteHandler(new AutocompleteFilter(null, value));
     return input;
+  }
+
+  private void createDocument() {
+    LocalizableConstants loc = Localized.getConstants();
+
+    Global.inputString(loc.documentNew(), loc.documentName(),
+        new StringCallback() {
+          @Override
+          public void onSuccess(final String value) {
+            DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
+                new IdCallback() {
+                  @Override
+                  public void onSuccess(Long dataId) {
+                    Queries.insert(TBL_DOCUMENTS,
+                        Data.getColumns(TBL_DOCUMENTS, Lists.newArrayList(COL_DOCUMENT_CATEGORY,
+                            COL_DOCUMENT_NAME, COL_DOCUMENT_DATA)),
+                        Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
+                            DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
+                        null, new RowInsertCallback(TBL_DOCUMENTS, null) {
+                          @Override
+                          public void onSuccess(BeeRow result) {
+                            super.onSuccess(result);
+                            RowEditor.openRow(TBL_DOCUMENTS, result, true);
+                          }
+                        });
+                  }
+                });
+          }
+        });
   }
 
   private void ensureDataId(IsRow row, final IdCallback callback) {
@@ -318,6 +525,82 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
     }
   }
 
+  private void includeContent(List<BeeColumn> columns, String oldValue, List<String> oldValues,
+      List<String> newValues) {
+
+    if (tinyEditor.isDirty()) {
+      columns.add(DataUtils.getColumn(COL_DOCUMENT_CONTENT, getFormView().getDataColumns()));
+      newValues.add(tinyEditor.getContent());
+
+      if (oldValues != null) {
+        oldValues.add(oldValue);
+      }
+    }
+  }
+
+  private static String parseCriteria(String content, String group,
+      Collection<Pair<String, String>> crit) {
+
+    if (BeeUtils.isEmpty(crit)) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder();
+    List<String> parts = Splitter.on("<!--{" + TBL_CRITERIA + "}-->").splitToList(content);
+
+    for (int i = 0; i < parts.size(); i++) {
+      String part = parts.get(i).replace("{" + COL_CRITERIA_GROUP_NAME + "}", group);
+
+      if (i % 2 > 0 && i < parts.size() - 1) {
+        for (Pair<String, String> pair : crit) {
+          sb.append(part.replace("{" + COL_CRITERION_NAME + "}", pair.getA())
+              .replace("{" + COL_CRITERION_VALUE + "}", BeeUtils.nvl(pair.getB(), "")));
+        }
+      } else {
+        sb.append(part);
+      }
+    }
+    return sb.toString();
+  }
+
+  private void parseGroup(final String content, final Integer idx,
+      final BiConsumer<Integer, String> executor) {
+    if (groupsGrid == null) {
+      executor.accept(idx, null);
+      return;
+    }
+    GridView gridView = groupsGrid.getPresenter().getGridView();
+    int nameIdx = gridView.getDataIndex(COL_CRITERIA_GROUP_NAME);
+    final Map<Long, String> groups = Maps.newLinkedHashMap();
+
+    for (IsRow row : gridView.getRowData()) {
+      groups.put(row.getId(), row.getString(nameIdx));
+    }
+    if (BeeUtils.isEmpty(groups)) {
+      executor.accept(idx, null);
+      return;
+    }
+    Queries.getRowSet(TBL_CRITERIA, null, Filter.any(COL_CRITERIA_GROUP, groups.keySet()),
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            Multimap<Long, Pair<String, String>> crit = LinkedHashMultimap.create();
+            int grpIdx = result.getColumnIndex(COL_CRITERIA_GROUP);
+            int crtIdx = result.getColumnIndex(COL_CRITERION_NAME);
+            int valIdx = result.getColumnIndex(COL_CRITERION_VALUE);
+
+            for (BeeRow row : result.getRows()) {
+              crit.put(row.getLong(grpIdx), Pair.of(row.getString(crtIdx), row.getString(valIdx)));
+            }
+            StringBuilder sb = new StringBuilder();
+
+            for (Long group : groups.keySet()) {
+              sb.append(parseCriteria(content, groups.get(group), crit.get(group)));
+            }
+            executor.accept(idx, sb.toString());
+          }
+        });
+  }
+
   private void render() {
     if (panel == null) {
       getHeaderView().clearCommandPanel();
@@ -339,6 +622,7 @@ public class DocumentDataForm extends AbstractFormInterceptor implements ClickHa
   }
 
   private void requery(IsRow row) {
+    tinyEditor.setContent(row.getString(getDataIndex(COL_DOCUMENT_CONTENT)));
     criteriaHistory.clear();
     criteria.clear();
     ids.clear();

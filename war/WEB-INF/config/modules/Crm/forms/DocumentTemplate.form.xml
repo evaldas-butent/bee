@@ -20,7 +20,9 @@
       </page>
       <page>
         <text>=content</text>
-        <RichTextEditor source="Content" class="occupy-1" />
+        <SimplePanel name="Content">
+          <div class="occupy-1" />
+        </SimplePanel>
       </page>
     </TabbedPages>
   </FlowPanel>

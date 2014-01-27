@@ -90,7 +90,9 @@
     </page>
     <page>
       <text>=content</text>
-      <InputArea source="Content" class="occupy-1" />
+      <SimplePanel name="Content">
+        <div class="occupy-1" />
+      </SimplePanel>
     </page>
     <page>
       <text>=criteria</text>

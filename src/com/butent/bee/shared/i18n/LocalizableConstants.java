@@ -160,6 +160,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String contacts();
 
+  String content();
+
   String continueQuestion();
 
   String country();

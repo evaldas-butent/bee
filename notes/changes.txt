@@ -33,5 +33,4 @@
 2013.11.07 gwt-2.6.0-rc1
 2013.11.26 poi-3.10-beta2 (poi-ooxml, poi-ooxml-schemas, stax-api, xmlbeans, dom4j)
 2014.01.21 guava-16
-2014.01.21 core-renderer-R8-final.jar, itext-2.1.7.jar
 2014.01.25 gwt-2.6.0 https://google-web-toolkit.googlecode.com/files/gwt-2.6.0.zip

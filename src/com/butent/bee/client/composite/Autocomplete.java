@@ -49,6 +49,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -70,7 +71,7 @@ import java.util.Collections;
 import java.util.List;
 
 public final class Autocomplete extends Composite implements Editor, HasVisibleLines, HasTextBox,
-    HasCapsLock, HasKeyDownHandlers {
+    HasCapsLock, HasKeyDownHandlers, Launchable {
 
   protected final class InputWidget extends InputText implements HasMouseWheelHandlers {
 
@@ -574,6 +575,8 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
   private boolean handlesTabulation;
 
+  private boolean handledByForm;
+
   private Autocomplete(Relation relation, boolean embedded) {
     super();
 
@@ -732,6 +735,11 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   public boolean isOrHasPartner(Node node) {
     return getInput().isOrHasPartner(node)
         || getSelector().getPopup().getElement().isOrHasChild(node);
+  }
+
+  @Override
+  public void launch() {
+    setHandledByForm(true);
   }
 
   @Override
@@ -1031,7 +1039,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   }
 
   private boolean isHandledByForm() {
-    return false;
+    return handledByForm;
   }
 
   private boolean isInstant() {
@@ -1076,6 +1084,10 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
       this.alive = alive;
       getInput().setStyleName(STYLE_EMPTY, !alive);
     }
+  }
+
+  private void setHandledByForm(boolean handledByForm) {
+    this.handledByForm = handledByForm;
   }
 
   private void setHasMore(boolean hasMore) {

@@ -596,6 +596,7 @@ public class MailModuleBean implements BeeModule {
             if (ok) {
               if (localFolder.getParent() == null) { // INBOX
                 // TODO applyRules(message);
+                logger.warning("Message rules not implemented yet");
               }
               c++;
             }

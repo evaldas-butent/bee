@@ -421,6 +421,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
     });
   }
 
+  @SuppressWarnings("unused")
   private void reset(BeeParameter param) {
     ParameterList args = CommonsKeeper.createArgs(SVC_RESET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, param.getName());

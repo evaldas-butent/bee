@@ -62,12 +62,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import org.jsoup.Jsoup;
-import org.xhtmlrenderer.pdf.ITextRenderer;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -165,46 +159,6 @@ public class CrmModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_REQUEST_FILES)) {
       response = getRequestFiles(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REQUEST)));
-
-    } else if (BeeUtils.same(svc, SVC_CREATE_PDF_DOCUMENT)) {
-      String content = reqInfo.getParameter(COL_DOCUMENT_CONTENT);
-      long id = BeeUtils.toLong(reqInfo.getParameter(COL_DOCUMENT));
-      String name = reqInfo.getParameter(CommonsConstants.ALS_FILE_NAME);
-
-      if (!BeeUtils.isSuffix(name, ".pdf")) {
-        name = name + ".pdf";
-      }
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-      try {
-        ITextRenderer renderer = new ITextRenderer();
-
-        renderer.setDocumentFromString("<html><body>"
-            + Jsoup.parseBodyFragment(content).outerHtml() + "</body></html>");
-        renderer.layout();
-        renderer.createPDF(os);
-
-      } catch (Exception e) {
-        response = ResponseObject.error(e);
-      }
-      if (response == null) {
-        try {
-          Long fileId = fs.storeFile(new ByteArrayInputStream(os.toByteArray()),
-              name, "application/pdf");
-
-          qs.insertData(new SqlInsert(TBL_DOCUMENT_FILES)
-              .addConstant(COL_DOCUMENT, id)
-              .addConstant(COL_FILE, fileId)
-              .addConstant(COL_FILE_DATE, System.currentTimeMillis())
-              .addConstant(COL_OWNER, usr.getCurrentUserId()));
-
-        } catch (IOException e) {
-          response = ResponseObject.error(e);
-        }
-      }
-      if (response == null) {
-        response = ResponseObject.info(usr.getLocalizableMesssages().documentSavedInFiles(name));
-      }
 
     } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
@@ -310,7 +264,7 @@ public class CrmModuleBean implements BeeModule {
 
         } else if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENT_FILES, VIEW_RT_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), CommonsConstants.ALS_FILE_NAME,
-              CommonsConstants.PROP_ICON); 
+              CommonsConstants.PROP_ICON);
 
         } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TEMPLATES)) {
           Map<Long, IsRow> indexedRows = Maps.newHashMap();
@@ -534,13 +488,13 @@ public class CrmModuleBean implements BeeModule {
 
   private ResponseObject copyDocumentData(Long data) {
     Assert.state(DataUtils.isId(data));
-  
+
     Long dataId = qs.insertData(new SqlInsert(TBL_DOCUMENT_DATA)
         .addConstant(COL_DOCUMENT_CONTENT, qs.getValue(new SqlSelect()
             .addFields(TBL_DOCUMENT_DATA, COL_DOCUMENT_CONTENT)
             .addFrom(TBL_DOCUMENT_DATA)
             .setWhere(sys.idEquals(TBL_DOCUMENT_DATA, data)))));
-  
+
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addField(TBL_CRITERIA_GROUPS, sys.getIdName(TBL_CRITERIA_GROUPS), COL_CRITERIA_GROUP)
         .addFields(TBL_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
@@ -549,13 +503,13 @@ public class CrmModuleBean implements BeeModule {
         .addFromLeft(TBL_CRITERIA,
             sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
         .setWhere(SqlUtils.equals(TBL_CRITERIA_GROUPS, COL_DOCUMENT_DATA, data)));
-  
+
     Map<Long, Long> groups = Maps.newHashMap();
-  
+
     for (SimpleRow row : rs) {
       long groupId = row.getLong(COL_CRITERIA_GROUP);
       String criterion = row.getValue(COL_CRITERION_NAME);
-  
+
       if (!groups.containsKey(groupId)) {
         groups.put(groupId, qs.insertData(new SqlInsert(TBL_CRITERIA_GROUPS)
             .addConstant(COL_DOCUMENT_DATA, dataId)

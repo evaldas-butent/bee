@@ -150,7 +150,6 @@ public final class CrmConstants {
   public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
       + "users_hours";
 
-  public static final String SVC_CREATE_PDF_DOCUMENT = "create_pdf_document";
   public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
 
@@ -369,7 +368,7 @@ public final class CrmConstants {
 
   public static final String FORM_NEW_RECURRING_TASK = "NewRecurringTask";
   public static final String FORM_RECURRING_TASK = "RecurringTask";
-  
+
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
 
