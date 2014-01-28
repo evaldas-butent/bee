@@ -2,40 +2,40 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
-  editShowId="true"
+  currentUserFilter="Owner" editShowId="true"
   >
   <g:columns>
     <IdColumn name="Id" caption="=captionId" />
 
     <DataColumn name="Priority" />
     <DataColumn name="Summary" visible="true" />
-    <DataColumn name="Description" />
+    <DataColumn name="Description" visible="false" />
 
     <RelColumn name="Company" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-      sortBy="ContactLastName ContactFirstName" />
+      sortBy="ContactLastName ContactFirstName" visible="false" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-      sortBy="OwnerLastName OwnerFirstName" />
+      sortBy="OwnerLastName OwnerFirstName" visible="false" />
 
     <DataColumn name="ScheduleFrom" />
     <DataColumn name="ScheduleUntil" />
 
     <DataColumn name="ScheduleDays" />
 
-    <DataColumn name="WorkdayTransition" />
+    <DataColumn name="WorkdayTransition" visible="false" />
 
     <DataColumn name="DayOfMonth" />
     <DataColumn name="Month" />
     <DataColumn name="DayOfWeek" />
-    <DataColumn name="Year" />
+    <DataColumn name="Year" visible="false" />
 
-    <DataColumn name="StartAt" />
-    <DataColumn name="DurationDays" />
-    <DataColumn name="DurationTime" />
+    <DataColumn name="StartAt" visible="false" />
+    <DataColumn name="DurationDays" visible="false" />
+    <DataColumn name="DurationTime" visible="false" />
     
     <RelColumn name="Reminder" />
-    <DataColumn name="RemindBefore" />
-    <DataColumn name="RemindAt" />
+    <DataColumn name="RemindBefore" visible="false" />
+    <DataColumn name="RemindAt" visible="false" />
   </g:columns>
 </g:Grid>

@@ -254,6 +254,9 @@
 .bee-crm-rt-cron-input {
   width: 400px;
 }
+.bee-crm-rt-cron-error {
+  color: red;
+}
 
 .bee-crm-rt-cron-help {
   width: 16px;
@@ -293,6 +296,36 @@
   background-color: white;
   width: 26px;
   height: 22px;
+}
+
+.bee-crm-rt-month-table td.bee-crm-rt-today {
+  background-color: lightyellow;
+}
+.bee-crm-rt-today {
+  outline: blue solid 1px;
+}
+
+.bee-crm-rt-holiday {
+  color: red;
+}
+.bee-crm-rt-weekend {
+  color: #999;
+}
+.bee-crm-rt-day-scheduled.bee-crm-rt-weekend {
+  color: black;
+}
+
+.bee-crm-rt-month-table td.bee-crm-rt-day-scheduled {
+  background-color: palegreen;
+  cursor: pointer;
+}
+.bee-crm-rt-month-table td.bee-crm-rt-today.bee-crm-rt-day-scheduled {
+  background-color: yellow;
+}
+.bee-crm-rt-day-scheduled:hover {
+  font-weight: bold;
+  font-size: larger;
+  outline: black solid 1px;
 }
 
 .bee-crm-rt-info-label {

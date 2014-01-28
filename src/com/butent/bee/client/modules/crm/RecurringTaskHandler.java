@@ -23,9 +23,11 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
@@ -40,6 +42,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
 import com.butent.bee.shared.time.DateRange;
@@ -53,10 +56,11 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-class RecurringTaskHandler extends AbstractFormInterceptor {
+class RecurringTaskHandler extends AbstractFormInterceptor implements CellValidateEvent.Handler {
 
   private static final class DateMode {
     private final DateRange range;
@@ -72,15 +76,19 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
     private final int dom;
     private final int dow;
 
-    private final ScheduleDateMode mode;
     private final boolean scheduled;
 
-    private DayOfMonth(JustDate date, ScheduleDateMode mode, boolean scheduled) {
+    private final List<String> styleNames = Lists.newArrayList();
+
+    private DayOfMonth(JustDate date, boolean scheduled) {
       this.dom = date.getDom();
       this.dow = date.getDow();
 
-      this.mode = mode;
       this.scheduled = scheduled;
+    }
+
+    private void addStyleName(String styleName) {
+      styleNames.add(styleName);
     }
   }
 
@@ -94,7 +102,12 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
   private static final String STYLE_WEEKDAY_CELL = STYLE_PREFIX + "weekday-cell";
 
   private static final String STYLE_DAY_CELL = STYLE_PREFIX + "day-cell";
-  private static final String STYLE_DAY_SHEDULED = STYLE_PREFIX + "day-sheduled";
+  private static final String STYLE_DAY_SCHEDULED = STYLE_PREFIX + "day-scheduled";
+  private static final String STYLE_TODAY = STYLE_PREFIX + "today";
+  private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
+  private static final String STYLE_WEEKEND = STYLE_PREFIX + "weekend";
+
+  private static final String STYLE_SCHEDULED = STYLE_PREFIX + "scheduled";
 
   private static final String STYLE_INFO_PANEL = STYLE_PREFIX + "info-panel";
   private static final String STYLE_INFO_LABEL = STYLE_PREFIX + "info-label";
@@ -102,6 +115,43 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
   private static final String STYLE_VALUE_TOGGLE = STYLE_PREFIX + "value-toggle";
 
   private static final String STYLE_CRON_EXAMPLES = STYLE_PREFIX + "cron-examples";
+
+  private static Field getCronField(String source) {
+    switch (source) {
+      case COL_RT_DAY_OF_MONTH:
+        return Field.DAY_OF_MONTH;
+      case COL_RT_MONTH:
+        return Field.MONTH;
+      case COL_RT_DAY_OF_WEEK:
+        return Field.DAY_OF_WEEK;
+      default:
+        return null;
+    }
+  }
+
+  private static String getCronSource(Field field) {
+    switch (field) {
+      case DAY_OF_MONTH:
+        return COL_RT_DAY_OF_MONTH;
+      case MONTH:
+        return COL_RT_MONTH;
+      case DAY_OF_WEEK:
+        return COL_RT_DAY_OF_WEEK;
+      default:
+        return null;
+    }
+  }
+
+  private static int getCronValueShift(Field field) {
+    switch (field) {
+      case DAY_OF_MONTH:
+      case MONTH:
+      case DAY_OF_WEEK:
+        return 1;
+      default:
+        return 0;
+    }
+  }
 
   private static void getDateModes(Long rtId, final Consumer<List<DateMode>> consumer) {
     if (DataUtils.isId(rtId)) {
@@ -173,7 +223,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
       }
     });
   }
-
   private static Widget renderMonth(YearMonth ym, List<DayOfMonth> days) {
     Flow panel = new Flow(STYLE_MONTH_PANEL);
 
@@ -199,13 +248,18 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
       String text = BeeUtils.toString(day.dom);
 
       if (day.scheduled) {
-        Button button = new Button(text);
-        table.setWidget(row, col, button, STYLE_DAY_SHEDULED);
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULED);
+        widget.setText(text);
+
+        table.setWidget(row, col, widget, STYLE_DAY_SCHEDULED);
+
       } else {
         table.setText(row, col, text, STYLE_DAY_CELL);
-        if (day.mode != null) {
-          table.getCellFormatter().addStyleName(row, col,
-              STYLE_DAY_CELL + BeeConst.STRING_MINUS + day.mode.name().toLowerCase());
+      }
+
+      if (!day.styleNames.isEmpty()) {
+        for (String styleName : day.styleNames) {
+          table.getCellFormatter().addStyleName(row, col, styleName);
         }
       }
     }
@@ -213,7 +267,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
     panel.add(table);
     return panel;
   }
-
   private static void showExamples(Element target, List<Property> examples) {
     HtmlTable table = new HtmlTable(STYLE_CRON_EXAMPLES);
 
@@ -229,19 +282,28 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
   }
 
   private FileCollector fileCollector;
+
   private Flow dayOfMonthContainer;
   private Flow monthContainer;
-
   private Flow dayOfWeekContainer;
 
-  @SuppressWarnings("unused")
   private HasHtml dayOfMonthErrorLabel;
-  @SuppressWarnings("unused")
+
   private HasHtml monthErrorLabel;
-  @SuppressWarnings("unused")
+
   private HasHtml dayOfWeekErrorLabel;
 
   RecurringTaskHandler() {
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (BeeUtils.inList(editableWidget.getColumnId(),
+        COL_RT_DAY_OF_MONTH, COL_RT_MONTH, COL_RT_DAY_OF_WEEK)) {
+      editableWidget.addCellValidationHandler(this);
+    }
+
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
@@ -349,9 +411,9 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
       header.addCommandItem(schedule);
     }
 
-    refreshCronValues(Field.DAY_OF_MONTH, COL_RT_DAY_OF_MONTH, dayOfMonthContainer, 1);
-    refreshCronValues(Field.MONTH, COL_RT_MONTH, monthContainer, 1);
-    refreshCronValues(Field.DAY_OF_WEEK, COL_RT_DAY_OF_WEEK, dayOfWeekContainer, 1);
+    refreshCronValues(Field.DAY_OF_MONTH);
+    refreshCronValues(Field.MONTH);
+    refreshCronValues(Field.DAY_OF_WEEK);
   }
 
   @Override
@@ -366,6 +428,85 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
     }
 
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  @Override
+  public Boolean validateCell(CellValidateEvent event) {
+    LogUtils.getRootLogger().debug(event.getValidationOrigin(), event.getValidationPhase(),
+        event.getNewValue(), event.sameValue());
+
+    if (event.isCellValidation() && event.isPreValidation()) {
+      String source = event.getColumnId();
+      if (BeeUtils.isEmpty(source)) {
+        return true;
+      }
+
+      Field field = getCronField(source);
+      if (field == null) {
+        return true;
+      }
+
+      if (BeeUtils.isEmpty(event.getNewValue())) {
+        clearCronValues(field);
+        
+        HasHtml errorLabel = getCronErrorLabel(field);
+        if (errorLabel != null) {
+          errorLabel.setText(BeeConst.STRING_EMPTY);
+        }
+        
+      } else {
+        refreshCronValues(field, event.getNewValue());
+      }
+    }
+
+    return true;
+  }
+
+  private void clearCronValues(Field field) {
+    refreshCronValues(field, Collections.<Integer> emptySet());
+  }
+
+  private HasHtml getCronErrorLabel(Field field) {
+    switch (field) {
+      case DAY_OF_MONTH:
+        return dayOfMonthErrorLabel;
+      case MONTH:
+        return monthErrorLabel;
+      case DAY_OF_WEEK:
+        return dayOfWeekErrorLabel;
+      default:
+        return null;
+    }
+  }
+
+  private Consumer<String> getCronFailureHandler(Field field) {
+    final HasHtml errorLabel = getCronErrorLabel(field);
+    if (errorLabel == null) {
+      return null;
+    }
+    
+    errorLabel.setText(BeeConst.STRING_EMPTY);
+    
+    return new Consumer<String>() {
+      @Override
+      public void accept(String error) {
+        errorLabel.setText(BeeUtils.join(CronExpression.getItemSeparator(),
+            errorLabel.getText(), error));
+      }
+    };
+  }
+
+  private Flow getCronValueContainer(Field field) {
+    switch (field) {
+      case DAY_OF_MONTH:
+        return dayOfMonthContainer;
+      case MONTH:
+        return monthContainer;
+      case DAY_OF_WEEK:
+        return dayOfWeekContainer;
+      default:
+        return null;
+    }
   }
 
   private FileCollector getFileCollector() {
@@ -396,7 +537,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
     for (int i = 1; i <= 12; i++) {
       String text = BeeUtils.proper(Format.renderMonthFullStandalone(i));
       Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
-      
+
       initToggle(toggle, i, COL_RT_MONTH);
       monthContainer.add(toggle);
     }
@@ -410,10 +551,15 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
       }
     });
   }
+  
+  private void refreshCronValues(Field field) {
+    refreshCronValues(field, getStringValue(getCronSource(field)));
+  }
 
-  private void refreshCronValues(Field field, String source, Flow container, int shift) {
+  private void refreshCronValues(Field field, Set<Integer> values) {
+    Flow container = getCronValueContainer(field);
     if (container != null && !container.isEmpty()) {
-      Set<Integer> values = CronExpression.parseSimpleValues(field, getStringValue(source));
+      int shift = getCronValueShift(field);
 
       for (int i = 0; i < container.getWidgetCount(); i++) {
         Widget widget = container.getWidget(i);
@@ -422,6 +568,12 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
         }
       }
     }
+  }
+
+  private void refreshCronValues(Field field, String input) {
+    Set<Integer> values = CronExpression.parseSimpleValues(field, input,
+        getCronFailureHandler(field));
+    refreshCronValues(field, values);
   }
 
   private void timeCube(List<DateMode> dateModes) {
@@ -467,6 +619,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
 
     Flow calendarPanel = new Flow(STYLE_CALENDAR_PANEL);
 
+    JustDate today = TimeUtils.today();
+
     int monthCount = TimeUtils.monthDiff(min, max);
     for (int i = 0; i <= monthCount; i++) {
       YearMonth ym = new YearMonth(min).shiftMonth(i);
@@ -480,7 +634,18 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
         ScheduleDateMode mode = cron.getDateMode(date);
         boolean scheduled = cronDates.contains(date);
 
-        days.add(new DayOfMonth(date, mode, scheduled));
+        DayOfMonth dayOfMonth = new DayOfMonth(date, scheduled);
+
+        if (today.equals(date)) {
+          dayOfMonth.addStyleName(STYLE_TODAY);
+        }
+        if (mode == ScheduleDateMode.NON_WORK) {
+          dayOfMonth.addStyleName((dayOfMonth.dow <= 5) ? STYLE_HOLIDAY : STYLE_WEEKEND);
+        } else if (mode != null) {
+          dayOfMonth.addStyleName(STYLE_PREFIX + mode.name().toLowerCase());
+        }
+
+        days.add(dayOfMonth);
       }
 
       Widget monthWidget = renderMonth(ym, days);
@@ -532,7 +697,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor {
         changed = true;
       }
     }
-    
+
     if (changed) {
       getActiveRow().setValue(getDataIndex(source), newValue);
       getFormView().refreshBySource(source);

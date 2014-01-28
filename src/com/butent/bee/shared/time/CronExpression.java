@@ -923,13 +923,14 @@ public final class CronExpression implements HasInfo {
     return DateRange.closed(lower, upper);
   }
   
-  public static Set<Integer> parseSimpleValues(Field field, String input) {
+  public static Set<Integer> parseSimpleValues(Field field, String input,
+      Consumer<String> failureHandler) {
     Assert.notNull(field);
 
     Set<Integer> values = Sets.newHashSet();
 
     if (!BeeUtils.isEmpty(input)) {
-      List<Item> items = Builder.parse(field, Builder.normalize(input));
+      List<Item> items = Builder.parse(field, Builder.normalize(input), failureHandler);
       
       for (Item item : items) {
         if (item.isSimple()) {
