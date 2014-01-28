@@ -97,7 +97,7 @@ public class TransportSelfService extends LoginServlet {
   private static final String Q_STYLE_SELECT = Q_STYLE_PREFIX + "select";
 
   private static BeeLogger logger = LogUtils.getLogger(TransportSelfService.class);
-  
+
   private static Element qArea(String label, String name) {
     Textarea input = textarea().addClass(Q_STYLE_AREA).id(name + ID_SUFFIX_INPUT).name(name);
 
@@ -215,7 +215,7 @@ public class TransportSelfService extends LoginServlet {
 
     HttpUtils.sendResponse(resp, html);
   }
-  
+
   @Override
   protected Node getLoginExtension(HttpServletRequest req) {
     Form register = form().addClass(STYLE_PREFIX + "Command-Form-register")
@@ -240,7 +240,7 @@ public class TransportSelfService extends LoginServlet {
 
     return div().addClass(STYLE_PREFIX + "Command-container").append(register, query);
   }
-  
+
   private String doQuery(HttpServletRequest req, Map<String, String> parameters,
       LocalizableConstants constants, Map<String, String> dictionary) {
 
@@ -249,15 +249,15 @@ public class TransportSelfService extends LoginServlet {
     doc.getHead().append(
         meta().encodingDeclarationUtf8(),
         title().text(constants.trRequestNew()));
-    
+
     List<BeeColumn> columns = sys.getView(VIEW_SHIPMENT_REQUESTS).getRowSetColumns();
     BeeRow row = DataUtils.createEmptyRow(columns.size());
-    
+
     for (int i = 0; i < columns.size(); i++) {
       BeeColumn column = columns.get(i);
       String colId = column.getId();
       String value = null;
-      
+
       switch (colId) {
         case COL_QUERY_DATE:
           row.setValue(i, TimeUtils.nowMinutes());
@@ -266,11 +266,11 @@ public class TransportSelfService extends LoginServlet {
         case COL_QUERY_STATUS:
           row.setValue(i, CargoRequestStatus.NEW.ordinal());
           break;
-          
+
         case ALS_CARGO_DESCRIPTION:
           value = BeeUtils.notEmpty(parameters.get(colId), DEFAULT_CARGO_DESCRIPTION);
           break;
-          
+
         case COL_QUERY_HOST:
           value = req.getRemoteAddr();
           break;
@@ -278,13 +278,13 @@ public class TransportSelfService extends LoginServlet {
         case COL_QUERY_AGENT:
           value = req.getHeader(HttpHeaders.USER_AGENT);
           break;
-          
+
         default:
           if (parameters.containsKey(colId)) {
             value = parameters.get(colId);
           }
       }
-      
+
       if (!BeeUtils.isEmpty(value)) {
         switch (column.getType()) {
           case BOOLEAN:
@@ -310,17 +310,17 @@ public class TransportSelfService extends LoginServlet {
           case LONG:
             row.setValue(i, BeeUtils.toLongOrNull(value));
             break;
-          
+
           case NUMBER:
             row.setValue(i, BeeUtils.toDoubleOrNull(value));
             break;
-          
+
           default:
             row.setValue(i, value.trim());
         }
       }
     }
-    
+
     BeeRowSet insert = DataUtils.createRowSetForInsert(VIEW_SHIPMENT_REQUESTS, columns, row);
     ResponseObject response = proxy.commitRow(insert);
 
@@ -373,7 +373,7 @@ public class TransportSelfService extends LoginServlet {
       doc.getBody().append(div().text(BeeUtils.joinWords("response", response.getType(),
           response.getResponse())));
     }
-    
+
     return doc.buildLines();
   }
 
@@ -440,9 +440,16 @@ public class TransportSelfService extends LoginServlet {
               td().text(value)));
         }
       }
+      Form redirectForm = form().addClass(Q_STYLE_PREFIX + "form-redirect").acceptCharsetUtf8()
+          .methodPost()
+          .append(button().typeSubmit().addClass(REG_STYLE_PREFIX + "submit")
+              .text(constants.ok()))
+          .action(
+              req.getServletContext().getContextPath());
+
+      fields.append(tr().append(td(), td().append(redirectForm)));
 
       doc.getBody().append(h3().text(constants.trRegistrationReceived()), table().append(fields));
-
     } else if (response.hasMessages()) {
       for (ResponseMessage message : response.getMessages()) {
         doc.getBody().append(div().text(message.getMessage()));
@@ -574,7 +581,7 @@ public class TransportSelfService extends LoginServlet {
       if (el instanceof Input) {
         ((Input) el).list(listId);
       }
-      
+
       el = fieldPanel.queryId(COL_QUERY_UNLOADING_CITY + ID_SUFFIX_INPUT);
       if (el instanceof Input) {
         ((Input) el).list(listId);
@@ -723,7 +730,7 @@ public class TransportSelfService extends LoginServlet {
         case LONG:
           pattern = UiConstants.PATTERN_UNSIGNED_INT;
           break;
-        
+
         case DECIMAL:
         case DOUBLE:
           pattern = UiConstants.PATTERN_UNSIGNED_NUM;
@@ -741,7 +748,7 @@ public class TransportSelfService extends LoginServlet {
         default:
           precision = view.getColumnPrecision(name);
       }
-      
+
       if (pattern != null) {
         input.pattern(pattern).title(pattern);
       }
@@ -752,7 +759,7 @@ public class TransportSelfService extends LoginServlet {
     } else {
       logger.warning("column not found", VIEW_SHIPMENT_REQUESTS, name);
     }
-    
+
     return td().addClass(Q_STYLE_INPUT_CELL).append(input);
   }
 }
