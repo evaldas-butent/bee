@@ -372,15 +372,19 @@ public final class TimeUtils {
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
+ 
     if (dt == null) {
-      return true;
+      return !options.isLowerRequired() && min == null;
+    
     } else if (min == null && max == null) {
       return !options.isLowerRequired() && !options.isUpperRequired();
 
     } else if (dt instanceof DateTime || min instanceof DateTime || max instanceof DateTime) {
       return options.contains(DateTime.get(min), DateTime.get(max), DateTime.get(dt));
+
     } else if (dt instanceof JustDate || min instanceof JustDate || max instanceof JustDate) {
       return options.contains(JustDate.get(min), JustDate.get(max), JustDate.get(dt));
+    
     } else {
       return false;
     }

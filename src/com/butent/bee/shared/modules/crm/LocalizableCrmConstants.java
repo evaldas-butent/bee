@@ -22,8 +22,6 @@ public interface LocalizableCrmConstants {
 
   String crmAdded();
 
-  String crmCreatedNewTasks();
-
   String crmDeleted();
 
   String crmDurationType();

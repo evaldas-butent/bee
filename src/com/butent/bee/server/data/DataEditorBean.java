@@ -167,12 +167,12 @@ public class DataEditorBean {
     return count;
   }
 
-  public ResponseObject commitRow(BeeRowSet rs, boolean returnAllFields) {
-    Assert.notNull(rs);
-    if (rs.getNumberOfRows() != 1) {
-      return ResponseObject.error("Can commit only one row at a time");
-    }
-    return commitRow(rs, 0, returnAllFields ? BeeRow.class : RowInfo.class);
+  public ResponseObject commitRow(BeeRowSet rs) {
+    return commitRow(rs, BeeRow.class);
+  }
+
+  public ResponseObject commitRow(BeeRowSet rs, Class<?> returnType) {
+    return commitRow(rs, 0, returnType);
   }
 
   public ResponseObject commitRow(BeeRowSet rs, int rowIndex, Class<?> returnType) {
@@ -267,7 +267,7 @@ public class DataEditorBean {
 
       if (!response.hasErrors()) {
         if (RowInfo.class.equals(returnType)) {
-          response.setResponse(new BeeRow(id, tblInfo.version));
+          response.setResponse(new RowInfo(id, tblInfo.version, false));
         } else {
           BeeRowSet newRs = qs.getViewData(view.getName(), ComparisonFilter.compareId(id));
 

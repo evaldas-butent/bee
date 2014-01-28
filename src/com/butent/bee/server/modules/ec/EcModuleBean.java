@@ -737,7 +737,7 @@ public class EcModuleBean implements BeeModule {
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_CLIENTS, columns, row);
 
-    ResponseObject response = deb.commitRow(rowSet, true);
+    ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }

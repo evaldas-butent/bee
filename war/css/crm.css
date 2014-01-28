@@ -240,12 +240,11 @@
   cursor: pointer;
 }
 .bee-crm-rt-value-toggle-down {
-  outline: red solid 1px;
-  outline-offset: -1px;
+  background-color: #bfb;
 }
 .bee-crm-rt-value-toggle:hover {
-  background-color: #aaa;
-  color: white;
+  outline: red solid 1px;
+  outline-offset: -1px;
 }
 
 .bee-crm-rt-cron-label {
@@ -255,7 +254,12 @@
   width: 400px;
 }
 .bee-crm-rt-cron-error {
+  padding-left: 3px;
+  color: transparent;
+}
+.bee-crm-rt-failure {
   color: red;
+  background-color: yellow;
 }
 
 .bee-crm-rt-cron-help {
@@ -271,6 +275,18 @@
 .bee-crm-rt-cron-help:hover {
   background-color: #aaa;
   color: white;
+}
+.bee-crm-rt-cron-examples {
+  border-collapse: collapse;
+}
+.bee-crm-rt-cron-examples td {
+  padding: 2px 5px;
+}
+.bee-crm-rt-cron-examples tr:nth-child(odd) {
+  background-color: white;
+}
+.bee-crm-rt-cron-examples tr:nth-child(even) {
+  background-color: #f5f5f5;
 }
 
 .bee-crm-rt-schedule-panel {
@@ -298,15 +314,15 @@
   height: 22px;
 }
 
-.bee-crm-rt-month-table td.bee-crm-rt-today {
-  background-color: lightyellow;
-}
 .bee-crm-rt-today {
-  outline: blue solid 1px;
+  outline: #f99 ridge 5px;
 }
 
 .bee-crm-rt-holiday {
   color: red;
+}
+.bee-crm-rt-exclude {
+  text-decoration: line-through;
 }
 .bee-crm-rt-weekend {
   color: #999;
@@ -316,11 +332,11 @@
 }
 
 .bee-crm-rt-month-table td.bee-crm-rt-day-scheduled {
-  background-color: palegreen;
+  background-color: #bfb;
   cursor: pointer;
 }
-.bee-crm-rt-month-table td.bee-crm-rt-today.bee-crm-rt-day-scheduled {
-  background-color: yellow;
+.bee-crm-rt-month-table td.bee-crm-rt-infertile {
+  background-color: #cfc;
 }
 .bee-crm-rt-day-scheduled:hover {
   font-weight: bold;

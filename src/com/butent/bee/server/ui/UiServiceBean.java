@@ -1278,7 +1278,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject insertRow(RequestInfo reqInfo) {
-    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()));
   }
 
   private ResponseObject insertRows(RequestInfo reqInfo) {
@@ -1490,7 +1490,7 @@ public class UiServiceBean {
 
   private ResponseObject updateCell(RequestInfo reqInfo) {
     BeeRowSet rs = BeeRowSet.restore(reqInfo.getContent());
-    ResponseObject response = deb.commitRow(rs, false);
+    ResponseObject response = deb.commitRow(rs, RowInfo.class);
 
     if (!response.hasErrors()) {
       long rowId = rs.getRow(0).getId();
@@ -1552,7 +1552,6 @@ public class UiServiceBean {
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {
-    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()));
   }
-
 }

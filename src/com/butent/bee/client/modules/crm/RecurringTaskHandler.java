@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,8 +14,11 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -34,15 +39,17 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasHtml;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
 import com.butent.bee.shared.time.DateRange;
@@ -56,11 +63,156 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class RecurringTaskHandler extends AbstractFormInterceptor implements CellValidateEvent.Handler {
+
+  private enum Cron {
+    DAY_OF_MONTH(Field.DAY_OF_MONTH, COL_RT_DAY_OF_MONTH, 1) {
+      @Override
+      String getLabel(int value) {
+        return BeeUtils.toString(value);
+      }
+    },
+    MONTH(Field.MONTH, COL_RT_MONTH, 1) {
+      @Override
+      String getLabel(int value) {
+        return BeeUtils.proper(Format.renderMonthFullStandalone(value));
+      }
+    },
+    DAY_OF_WEEK(Field.DAY_OF_WEEK, COL_RT_DAY_OF_WEEK, 1) {
+      @Override
+      String getLabel(int value) {
+        return BeeUtils.proper(Format.renderDayOfWeek(value));
+      }
+    };
+
+    private static Cron getBySource(String source) {
+      for (Cron cron : Cron.values()) {
+        if (cron.source.equals(source)) {
+          return cron;
+        }
+      }
+
+      return null;
+    }
+
+    private final Field field;
+    private final String source;
+    private final int shift;
+
+    private Flow toggleContainer;
+    private HasHtml errorLabel;
+
+    private Cron(Field field, String source, int shift) {
+      this.field = field;
+      this.source = source;
+      this.shift = shift;
+    }
+
+    abstract String getLabel(int value);
+
+    private void clearErrors() {
+      if (errorLabel != null) {
+        errorLabel.setText(BeeConst.STRING_EMPTY);
+      }
+    }
+
+    private void clearValues() {
+      if (toggleContainer != null) {
+        for (int i = 0; i < toggleContainer.getWidgetCount(); i++) {
+          setValue(i, false);
+        }
+      }
+    }
+
+    private Consumer<Map<Integer, String>> getFailureHandler(final String input) {
+      if (errorLabel == null) {
+        return null;
+      }
+      clearErrors();
+
+      return new Consumer<Map<Integer, String>>() {
+        @Override
+        public void accept(Map<Integer, String> failures) {
+          StringBuilder sb = new StringBuilder();
+
+          int index = 0;
+          while (index < input.length()) {
+            if (failures.containsKey(index)) {
+              String failure = failures.get(index);
+              Span span = new Span().addClass(STYLE_FAILURE).text(failure);
+
+              sb.append(span.build());
+              index += failure.length();
+
+            } else {
+              sb.append(input.charAt(index));
+              index++;
+            }
+          }
+
+          errorLabel.setHtml(sb.toString());
+        }
+      };
+    }
+
+    private void initToggle(final Toggle toggle, final int value,
+        final RecurringTaskHandler handler) {
+      toggle.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          String updated = handler.updateCronValue(source, value, toggle.isDown());
+          refreshErrors(updated);
+        }
+      });
+    }
+
+    private void initValueContainer(Flow widget, RecurringTaskHandler handler) {
+      this.toggleContainer = widget;
+
+      for (int i = field.getMin(); i <= field.getMax(); i++) {
+        String text = getLabel(i);
+        Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+
+        initToggle(toggle, i, handler);
+        toggleContainer.add(toggle);
+      }
+    }
+
+    private void refreshErrors(String input) {
+      if (BeeUtils.isEmpty(input)) {
+        clearErrors();
+      } else {
+        CronExpression.parseSimpleValues(field, input, getFailureHandler(input));
+      }
+    }
+
+    private void refreshValues(String input) {
+      Set<Integer> values = CronExpression.parseSimpleValues(field, input,
+          getFailureHandler(input));
+      setValues(values);
+    }
+
+    private void setValue(int index, boolean selected) {
+      Widget widget = toggleContainer.getWidget(index);
+      if (widget instanceof Toggle) {
+        ((Toggle) widget).setDown(selected);
+
+      }
+    }
+
+    private void setValues(Set<Integer> values) {
+      if (toggleContainer != null) {
+        for (int i = 0; i < toggleContainer.getWidgetCount(); i++) {
+          setValue(i, values.contains(i + shift));
+        }
+      }
+    }
+  }
 
   private static final class DateMode {
     private final DateRange range;
@@ -80,6 +232,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     private final List<String> styleNames = Lists.newArrayList();
 
+    private final List<BeeRow> tasks = Lists.newArrayList();
+
     private DayOfMonth(JustDate date, boolean scheduled) {
       this.dom = date.getDom();
       this.dow = date.getDow();
@@ -89,6 +243,10 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     private void addStyleName(String styleName) {
       styleNames.add(styleName);
+    }
+
+    private void addTasks(Collection<BeeRow> rows) {
+      tasks.addAll(rows);
     }
   }
 
@@ -103,6 +261,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
   private static final String STYLE_DAY_CELL = STYLE_PREFIX + "day-cell";
   private static final String STYLE_DAY_SCHEDULED = STYLE_PREFIX + "day-scheduled";
+  private static final String STYLE_INFERTILE = STYLE_PREFIX + "infertile";
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
   private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
   private static final String STYLE_WEEKEND = STYLE_PREFIX + "weekend";
@@ -116,42 +275,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
   private static final String STYLE_CRON_EXAMPLES = STYLE_PREFIX + "cron-examples";
 
-  private static Field getCronField(String source) {
-    switch (source) {
-      case COL_RT_DAY_OF_MONTH:
-        return Field.DAY_OF_MONTH;
-      case COL_RT_MONTH:
-        return Field.MONTH;
-      case COL_RT_DAY_OF_WEEK:
-        return Field.DAY_OF_WEEK;
-      default:
-        return null;
-    }
-  }
-
-  private static String getCronSource(Field field) {
-    switch (field) {
-      case DAY_OF_MONTH:
-        return COL_RT_DAY_OF_MONTH;
-      case MONTH:
-        return COL_RT_MONTH;
-      case DAY_OF_WEEK:
-        return COL_RT_DAY_OF_WEEK;
-      default:
-        return null;
-    }
-  }
-
-  private static int getCronValueShift(Field field) {
-    switch (field) {
-      case DAY_OF_MONTH:
-      case MONTH:
-      case DAY_OF_WEEK:
-        return 1;
-      default:
-        return 0;
-    }
-  }
+  private static final String STYLE_FAILURE = STYLE_PREFIX + "failure";
 
   private static void getDateModes(Long rtId, final Consumer<List<DateMode>> consumer) {
     if (DataUtils.isId(rtId)) {
@@ -197,6 +321,15 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
+  private static void getOffspring(Long rtId, Queries.RowSetCallback callback) {
+    if (DataUtils.isId(rtId)) {
+      Queries.getRowSet(VIEW_TASKS, null, Filter.isEqual(COL_RECURRING_TASK, new LongValue(rtId)),
+          callback);
+    } else {
+      callback.onSuccess(null);
+    }
+  }
+
   private static void initDayOfMonthHelp(HasClickHandlers widget, final Element target) {
     widget.addClickHandler(new ClickHandler() {
       @Override
@@ -223,50 +356,28 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       }
     });
   }
-  private static Widget renderMonth(YearMonth ym, List<DayOfMonth> days) {
-    Flow panel = new Flow(STYLE_MONTH_PANEL);
 
-    Label monthLabel = new Label(BeeUtils.joinWords(ym.getYear(),
-        Format.renderMonthFullStandalone(ym).toLowerCase()));
-    monthLabel.addStyleName(STYLE_MONTH_LABEL);
+  private static void isFertile(Long rtId, final Consumer<Boolean> consumer) {
+    if (DataUtils.isId(rtId)) {
+      ParameterList params = CrmKeeper.createArgs(SVC_RT_GET_EXECUTORS);
+      params.addQueryItem(VAR_RT_ID, rtId);
 
-    panel.add(monthLabel);
-
-    HtmlTable table = new HtmlTable(STYLE_MONTH_TABLE);
-
-    String[] wn = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysNarrow();
-    for (int i = 0; i < TimeUtils.DAYS_PER_WEEK; i++) {
-      String text = (i == 6) ? wn[0] : wn[i + 1];
-      table.setText(0, i, text, STYLE_WEEKDAY_CELL);
-    }
-
-    int shift = ym.getDate().getDow() - 1;
-
-    for (DayOfMonth day : days) {
-      int row = (day.dom + shift - 1) / TimeUtils.DAYS_PER_WEEK + 1;
-      int col = day.dow - 1;
-      String text = BeeUtils.toString(day.dom);
-
-      if (day.scheduled) {
-        CustomDiv widget = new CustomDiv(STYLE_SCHEDULED);
-        widget.setText(text);
-
-        table.setWidget(row, col, widget, STYLE_DAY_SCHEDULED);
-
-      } else {
-        table.setText(row, col, text, STYLE_DAY_CELL);
-      }
-
-      if (!day.styleNames.isEmpty()) {
-        for (String styleName : day.styleNames) {
-          table.getCellFormatter().addStyleName(row, col, styleName);
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse(String.class)) {
+            consumer.accept(!BeeUtils.isEmpty(response.getResponseAsString()));
+          } else {
+            consumer.accept(false);
+          }
         }
-      }
-    }
+      });
 
-    panel.add(table);
-    return panel;
+    } else {
+      consumer.accept(false);
+    }
   }
+
   private static void showExamples(Element target, List<Property> examples) {
     HtmlTable table = new HtmlTable(STYLE_CRON_EXAMPLES);
 
@@ -282,16 +393,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   }
 
   private FileCollector fileCollector;
-
-  private Flow dayOfMonthContainer;
-  private Flow monthContainer;
-  private Flow dayOfWeekContainer;
-
-  private HasHtml dayOfMonthErrorLabel;
-
-  private HasHtml monthErrorLabel;
-
-  private HasHtml dayOfWeekErrorLabel;
 
   RecurringTaskHandler() {
   }
@@ -318,20 +419,17 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       switch (name) {
         case "DomValues":
           if (widget instanceof Flow) {
-            dayOfMonthContainer = (Flow) widget;
-            initDayOfMonthContainer();
+            Cron.DAY_OF_MONTH.initValueContainer((Flow) widget, this);
           }
           break;
         case "MonthValues":
           if (widget instanceof Flow) {
-            monthContainer = (Flow) widget;
-            initMonthContainer();
+            Cron.MONTH.initValueContainer((Flow) widget, this);
           }
           break;
         case "DowValues":
           if (widget instanceof Flow) {
-            dayOfWeekContainer = (Flow) widget;
-            initDayOfWeekContainer();
+            Cron.DAY_OF_WEEK.initValueContainer((Flow) widget, this);
           }
           break;
 
@@ -353,17 +451,17 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
         case "DomError":
           if (widget instanceof HasHtml) {
-            dayOfMonthErrorLabel = (HasHtml) widget;
+            Cron.DAY_OF_MONTH.errorLabel = (HasHtml) widget;
           }
           break;
         case "MonthError":
           if (widget instanceof HasHtml) {
-            monthErrorLabel = (HasHtml) widget;
+            Cron.MONTH.errorLabel = (HasHtml) widget;
           }
           break;
         case "DowError":
           if (widget instanceof HasHtml) {
-            dayOfWeekErrorLabel = (HasHtml) widget;
+            Cron.DAY_OF_WEEK.errorLabel = (HasHtml) widget;
           }
           break;
       }
@@ -398,10 +496,22 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
             getDateModes(id, new Consumer<List<DateMode>>() {
               @Override
-              public void accept(List<DateMode> input) {
-                if (getActiveRowId() == id) {
-                  timeCube(input);
-                }
+              public void accept(final List<DateMode> dateModes) {
+
+                getOffspring(id, new Queries.RowSetCallback() {
+                  @Override
+                  public void onSuccess(final BeeRowSet offspring) {
+
+                    isFertile(id, new Consumer<Boolean>() {
+                      @Override
+                      public void accept(Boolean fertile) {
+                        if (getActiveRowId() == id) {
+                          timeCube(dateModes, offspring, BeeUtils.isTrue(fertile));
+                        }
+                      }
+                    });
+                  }
+                });
               }
             });
           }
@@ -411,9 +521,9 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       header.addCommandItem(schedule);
     }
 
-    refreshCronValues(Field.DAY_OF_MONTH);
-    refreshCronValues(Field.MONTH);
-    refreshCronValues(Field.DAY_OF_WEEK);
+    for (Cron cron : Cron.values()) {
+      cron.refreshValues(getStringValue(cron.source));
+    }
   }
 
   @Override
@@ -432,151 +542,120 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
   @Override
   public Boolean validateCell(CellValidateEvent event) {
-    LogUtils.getRootLogger().debug(event.getValidationOrigin(), event.getValidationPhase(),
-        event.getNewValue(), event.sameValue());
-
     if (event.isCellValidation() && event.isPreValidation()) {
       String source = event.getColumnId();
       if (BeeUtils.isEmpty(source)) {
         return true;
       }
 
-      Field field = getCronField(source);
-      if (field == null) {
+      Cron cron = Cron.getBySource(source);
+      if (cron == null) {
         return true;
       }
 
       if (BeeUtils.isEmpty(event.getNewValue())) {
-        clearCronValues(field);
-        
-        HasHtml errorLabel = getCronErrorLabel(field);
-        if (errorLabel != null) {
-          errorLabel.setText(BeeConst.STRING_EMPTY);
-        }
-        
+        cron.clearValues();
+        cron.clearErrors();
+
       } else {
-        refreshCronValues(field, event.getNewValue());
+        cron.refreshValues(event.getNewValue());
       }
     }
 
     return true;
   }
 
-  private void clearCronValues(Field field) {
-    refreshCronValues(field, Collections.<Integer> emptySet());
-  }
-
-  private HasHtml getCronErrorLabel(Field field) {
-    switch (field) {
-      case DAY_OF_MONTH:
-        return dayOfMonthErrorLabel;
-      case MONTH:
-        return monthErrorLabel;
-      case DAY_OF_WEEK:
-        return dayOfWeekErrorLabel;
-      default:
-        return null;
-    }
-  }
-
-  private Consumer<String> getCronFailureHandler(Field field) {
-    final HasHtml errorLabel = getCronErrorLabel(field);
-    if (errorLabel == null) {
-      return null;
-    }
-    
-    errorLabel.setText(BeeConst.STRING_EMPTY);
-    
-    return new Consumer<String>() {
-      @Override
-      public void accept(String error) {
-        errorLabel.setText(BeeUtils.join(CronExpression.getItemSeparator(),
-            errorLabel.getText(), error));
-      }
-    };
-  }
-
-  private Flow getCronValueContainer(Field field) {
-    switch (field) {
-      case DAY_OF_MONTH:
-        return dayOfMonthContainer;
-      case MONTH:
-        return monthContainer;
-      case DAY_OF_WEEK:
-        return dayOfWeekContainer;
-      default:
-        return null;
-    }
-  }
-
   private FileCollector getFileCollector() {
     return fileCollector;
   }
 
-  private void initDayOfMonthContainer() {
-    for (int i = 1; i <= 31; i++) {
-      String text = BeeUtils.toString(i);
-      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+  private Widget renderMonth(YearMonth ym, List<DayOfMonth> days, boolean fertile) {
+    Flow panel = new Flow(STYLE_MONTH_PANEL);
 
-      initToggle(toggle, i, COL_RT_DAY_OF_MONTH);
-      dayOfMonthContainer.add(toggle);
+    Label monthLabel = new Label(BeeUtils.joinWords(ym.getYear(),
+        Format.renderMonthFullStandalone(ym).toLowerCase()));
+    monthLabel.addStyleName(STYLE_MONTH_LABEL);
+
+    panel.add(monthLabel);
+
+    HtmlTable table = new HtmlTable(STYLE_MONTH_TABLE);
+
+    String[] wn = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysNarrow();
+    for (int i = 0; i < TimeUtils.DAYS_PER_WEEK; i++) {
+      String text = (i == 6) ? wn[0] : wn[i + 1];
+      table.setText(0, i, text, STYLE_WEEKDAY_CELL);
     }
-  }
 
-  private void initDayOfWeekContainer() {
-    for (int i = 1; i <= TimeUtils.DAYS_PER_WEEK; i++) {
-      String text = BeeUtils.proper(Format.renderDayOfWeek(i));
-      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+    JustDate startOfMonth = ym.getDate();
+    int shift = startOfMonth.getDow() - 1;
 
-      initToggle(toggle, i, COL_RT_DAY_OF_WEEK);
-      dayOfWeekContainer.add(toggle);
-    }
-  }
+    for (DayOfMonth day : days) {
+      int row = (day.dom + shift - 1) / TimeUtils.DAYS_PER_WEEK + 1;
+      int col = day.dow - 1;
+      String text = BeeUtils.toString(day.dom);
 
-  private void initMonthContainer() {
-    for (int i = 1; i <= 12; i++) {
-      String text = BeeUtils.proper(Format.renderMonthFullStandalone(i));
-      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+      if (day.scheduled) {
+        CustomDiv widget = new CustomDiv(STYLE_SCHEDULED);
+        widget.setText(text);
 
-      initToggle(toggle, i, COL_RT_MONTH);
-      monthContainer.add(toggle);
-    }
-  }
+        if (fertile) {
+          final int spawnDate = startOfMonth.getDays() + day.dom - 1;
 
-  private void initToggle(final Toggle toggle, final int value, final String source) {
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        updateCronValue(source, value, toggle.isDown());
+          widget.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              Global.confirm("spawn", new ConfirmationCallback() {
+                @Override
+                public void onConfirm() {
+                  long rtId = getActiveRowId();
+
+                  if (DataUtils.isId(rtId)) {
+                    ParameterList params = CrmKeeper.createArgs(SVC_RT_SPAWN);
+                    params.addQueryItem(VAR_RT_ID, rtId);
+                    params.addQueryItem(VAR_RT_DATE, spawnDate);
+
+                    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject response) {
+                        if (response.hasResponse(BeeRowSet.class)) {
+                          BeeRowSet taskData = BeeRowSet.restore(response.getResponseAsString());
+
+                          if (!DataUtils.isEmpty(taskData)) {
+                            String message =
+                                Localized.getMessages().crmCreatedNewTasks(
+                                    taskData.getNumberOfRows());
+                            BeeKeeper.getScreen().notifyInfo(message);
+
+                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+                          }
+                        }
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          });
+        }
+
+        table.setWidget(row, col, widget, fertile ? STYLE_DAY_SCHEDULED : STYLE_INFERTILE);
+
+      } else {
+        table.setText(row, col, text, STYLE_DAY_CELL);
       }
-    });
-  }
-  
-  private void refreshCronValues(Field field) {
-    refreshCronValues(field, getStringValue(getCronSource(field)));
-  }
 
-  private void refreshCronValues(Field field, Set<Integer> values) {
-    Flow container = getCronValueContainer(field);
-    if (container != null && !container.isEmpty()) {
-      int shift = getCronValueShift(field);
-
-      for (int i = 0; i < container.getWidgetCount(); i++) {
-        Widget widget = container.getWidget(i);
-        if (widget instanceof Toggle) {
-          ((Toggle) widget).setDown(values.contains(i + shift));
+      if (!day.styleNames.isEmpty()) {
+        for (String styleName : day.styleNames) {
+          table.getCellFormatter().addStyleName(row, col, styleName);
         }
       }
     }
+
+    panel.add(table);
+    return panel;
   }
 
-  private void refreshCronValues(Field field, String input) {
-    Set<Integer> values = CronExpression.parseSimpleValues(field, input,
-        getCronFailureHandler(field));
-    refreshCronValues(field, values);
-  }
-
-  private void timeCube(List<DateMode> dateModes) {
+  private void timeCube(List<DateMode> dateModes, BeeRowSet offspring, boolean fertile) {
     JustDate from = getDateValue(COL_RT_SCHEDULE_FROM);
     JustDate until = getDateValue(COL_RT_SCHEDULE_UNTIL);
 
@@ -615,6 +694,19 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     List<JustDate> cronDates = cron.getDates(min, max);
 
+    Multimap<JustDate, BeeRow> tasks = ArrayListMultimap.create();
+    if (!DataUtils.isEmpty(offspring)) {
+      int dateIndex = offspring.getColumnIndex(COL_START_TIME);
+
+      for (BeeRow row : offspring.getRows()) {
+        JustDate start = JustDate.get(row.getDateTime(dateIndex));
+
+        if (TimeUtils.isBetweenInclusiveRequired(start, min, max)) {
+          tasks.put(start, row);
+        }
+      }
+    }
+
     Flow container = new Flow(STYLE_SCHEDULE_PANEL);
 
     Flow calendarPanel = new Flow(STYLE_CALENDAR_PANEL);
@@ -645,10 +737,14 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           dayOfMonth.addStyleName(STYLE_PREFIX + mode.name().toLowerCase());
         }
 
+        if (tasks.containsKey(date)) {
+          dayOfMonth.addTasks(tasks.get(date));
+        }
+
         days.add(dayOfMonth);
       }
 
-      Widget monthWidget = renderMonth(ym, days);
+      Widget monthWidget = renderMonth(ym, days, fertile);
       calendarPanel.add(monthWidget);
     }
 
@@ -675,33 +771,24 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     Global.showModalWidget(caption, container);
   }
 
-  private void updateCronValue(String source, int value, boolean selected) {
+  private String updateCronValue(String source, int value, boolean selected) {
     String oldValue = getStringValue(source);
-    List<String> list = CronExpression.split(getStringValue(source));
+    String newValue;
 
     String s = BeeUtils.toString(value);
-    boolean changed = false;
-
-    String newValue = null;
 
     if (selected) {
-      if (!list.contains(s)) {
-        newValue = BeeUtils.join(CronExpression.getItemSeparator(), oldValue, s);
-        changed = true;
-      }
-
+      newValue = CronExpression.appendItem(oldValue, s);
     } else {
-      if (list.contains(s)) {
-        list.remove(s);
-        newValue = list.isEmpty() ? null : BeeUtils.join(CronExpression.getItemSeparator(), list);
-        changed = true;
-      }
+      newValue = CronExpression.removeItem(oldValue, s);
     }
 
-    if (changed) {
+    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
       getActiveRow().setValue(getDataIndex(source), newValue);
       getFormView().refreshBySource(source);
     }
+
+    return newValue;
   }
 
   private boolean validateBounds(IsRow row) {

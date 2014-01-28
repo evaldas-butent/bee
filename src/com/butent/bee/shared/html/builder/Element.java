@@ -1,14 +1,14 @@
 package com.butent.bee.shared.html.builder;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Style.HasCssName;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssAngle;
 import com.butent.bee.shared.css.CssFrequency;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssTime;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.HasCssName;
 import com.butent.bee.shared.css.values.*;
 import com.butent.bee.shared.css.values.Float;
 import com.butent.bee.shared.html.Attributes;

@@ -462,7 +462,7 @@ public final class BeeUtils {
       return src.trim().toLowerCase().contains(ctxt.trim().toLowerCase());
     }
   }
-
+  
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;
@@ -814,6 +814,19 @@ public final class BeeUtils {
       return false;
     }
     return cs.length() >= min;
+  }
+
+  public static int indexOfSame(List<String> list, String s) {
+    if (isEmpty(list)) {
+      return BeeConst.UNDEF;
+    }
+
+    for (int i = 0; i < list.size(); i++) {
+      if (same(list.get(i), s)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
   }
 
   public static boolean inList(int x, int first, int second, int... rest) {
@@ -1704,19 +1717,19 @@ public final class BeeUtils {
     return null;
   }
 
-  public static int plusPercent(int x, Double p) {
-    if (x != 0 && isDouble(p)) {
-      return x + round(x * p / 100d);
-    } else {
-      return x;
-    }
-  }
-
   public static Double plusPercent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
       return d + d * p / 100d;
     } else {
       return d;
+    }
+  }
+
+  public static int plusPercent(int x, Double p) {
+    if (x != 0 && isDouble(p)) {
+      return x + round(x * p / 100d);
+    } else {
+      return x;
     }
   }
 

@@ -4,6 +4,7 @@ import com.google.common.base.Ascii;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
@@ -22,21 +23,12 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class CronExpression implements HasInfo {
 
   public static class Builder {
-
-    private static String append(String value, String input) {
-      if (BeeUtils.isEmpty(value)) {
-        return BeeUtils.isEmpty(input) ? null : normalize(input);
-      } else if (BeeUtils.isEmpty(input)) {
-        return value;
-      } else {
-        return value + String.valueOf(ITEM_SEPARATOR) + normalize(input);
-      }
-    }
 
     private static Item getWeekdayOrdinalItem(Field field, Token t1, Token t2) {
       Integer weekday;
@@ -67,26 +59,46 @@ public final class CronExpression implements HasInfo {
       logger.severe(field.caption, "invalid item state", item);
     }
 
-    private static String normalize(String input) {
-      return input.trim().toUpperCase();
-    }
-    
     private static List<Item> parse(Field field, String input) {
       return parse(field, input, null);
     }
 
-    private static List<Item> parse(Field field, String input, Consumer<String> failureHandler) {
+    private static List<Item> parse(Field field, String input,
+        Consumer<Map<Integer, String>> failureHandler) {
+
       List<Item> items = Lists.newArrayList();
       if (BeeUtils.isEmpty(input)) {
         return items;
       }
+      
+      List<Integer> separatorPositions = Lists.newArrayList(-1);
+      for (int i = 0; i < input.length(); i++) {
+        if (input.charAt(i) == ITEM_SEPARATOR) {
+          separatorPositions.add(i);
+        }
+      }
+      
+      Map<Integer, String> failures = Maps.newHashMap();
 
-      List<String> inputList = itemSplitter.splitToList(input);
-      for (String s : inputList) {
+      for (int itemIndex = 0; itemIndex < separatorPositions.size(); itemIndex++) {
+        int beginIndex = separatorPositions.get(itemIndex) + 1;
+        int endIndex = (itemIndex < separatorPositions.size() - 1) 
+            ? separatorPositions.get(itemIndex + 1) : input.length();
+            
+        if (beginIndex >= input.length() || endIndex <= beginIndex) {
+          continue;
+        }
+        
+        String inputItem = input.substring(beginIndex, endIndex);
+        if (inputItem.isEmpty()) {
+          continue;
+        }
+
+        String s = inputItem.trim().toUpperCase();
+        char firstChar = s.charAt(0);
+
         Item item = null;
         boolean ok = false;
-
-        char firstChar = s.charAt(0);
 
         if (s.length() == 1) {
           switch (firstChar) {
@@ -271,18 +283,22 @@ public final class CronExpression implements HasInfo {
 
         } else if (!ok) {
           if (failureHandler == null) {
-            parseFailure(field, input, s);
+            parseFailure(field, input, beginIndex, inputItem);
           } else {
-            failureHandler.accept(s);
+            failures.put(beginIndex, inputItem);
           }
         }
+      }
+      
+      if (failureHandler != null && !failures.isEmpty()) {
+        failureHandler.accept(failures);
       }
 
       return items;
     }
 
-    private static void parseFailure(Field field, String input, String item) {
-      logger.warning(field.caption, "cannot parse", input,
+    private static void parseFailure(Field field, String input, int at, String item) {
+      logger.warning(field.caption, "cannot parse", input, "at", at,
           input.equals(item) ? null : BeeUtils.bracket(item));
     }
 
@@ -446,12 +462,12 @@ public final class CronExpression implements HasInfo {
     }
 
     public Builder dayOfMonth(String input) {
-      this.dayOfMonth = append(dayOfMonth, input);
+      this.dayOfMonth = appendItem(dayOfMonth, input);
       return this;
     }
 
     public Builder dayOfWeek(String input) {
-      this.dayOfWeek = append(dayOfWeek, input);
+      this.dayOfWeek = appendItem(dayOfWeek, input);
       return this;
     }
 
@@ -463,7 +479,7 @@ public final class CronExpression implements HasInfo {
     }
 
     public Builder hours(String input) {
-      this.hours = append(hours, input);
+      this.hours = appendItem(hours, input);
       return this;
     }
 
@@ -475,12 +491,12 @@ public final class CronExpression implements HasInfo {
     }
 
     public Builder minutes(String input) {
-      this.minutes = append(minutes, input);
+      this.minutes = appendItem(minutes, input);
       return this;
     }
 
     public Builder month(String input) {
-      this.month = append(month, input);
+      this.month = appendItem(month, input);
       return this;
     }
 
@@ -502,7 +518,7 @@ public final class CronExpression implements HasInfo {
     }
 
     public Builder seconds(String input) {
-      this.seconds = append(seconds, input);
+      this.seconds = appendItem(seconds, input);
       return this;
     }
 
@@ -519,7 +535,7 @@ public final class CronExpression implements HasInfo {
     }
 
     public Builder year(String input) {
-      this.year = append(year, input);
+      this.year = appendItem(year, input);
       return this;
     }
   }
@@ -571,6 +587,14 @@ public final class CronExpression implements HasInfo {
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public int getMin() {
+      return min;
+    }
+
+    public int getMax() {
+      return max;
     }
 
     private boolean accepts(Integer value) {
@@ -882,10 +906,6 @@ public final class CronExpression implements HasInfo {
     return dayOfWeekExamples;
   }
   
-  public static String getItemSeparator() {
-    return String.valueOf(ITEM_SEPARATOR);
-  }
-
   public static List<Property> getMonthExamples() {
     if (monthExamples.isEmpty()) {
       monthExamples.addAll(PropertyUtils.createProperties(
@@ -908,6 +928,19 @@ public final class CronExpression implements HasInfo {
     return monthExamples;
   }
 
+  public static String appendItem(String value, String input) {
+    if (BeeUtils.isEmpty(value)) {
+      return BeeUtils.isEmpty(input) ? null : input.trim();
+
+    } else if (BeeUtils.isEmpty(input) || BeeUtils.same(value, input)
+        || BeeUtils.containsSame(splitItems(value), input)) {
+      return value;
+    
+    } else {
+      return value + String.valueOf(ITEM_SEPARATOR) + input.trim();
+    }
+  }
+  
   public static DateRange normalizeRange(DateRange range) {
     if (range == null) {
       return DateRange.closed(MIN_DATE, MAX_DATE);
@@ -924,13 +957,13 @@ public final class CronExpression implements HasInfo {
   }
   
   public static Set<Integer> parseSimpleValues(Field field, String input,
-      Consumer<String> failureHandler) {
+      Consumer<Map<Integer, String>> failureHandler) {
     Assert.notNull(field);
 
     Set<Integer> values = Sets.newHashSet();
 
     if (!BeeUtils.isEmpty(input)) {
-      List<Item> items = Builder.parse(field, Builder.normalize(input), failureHandler);
+      List<Item> items = Builder.parse(field, input, failureHandler);
       
       for (Item item : items) {
         if (item.isSimple()) {
@@ -941,30 +974,36 @@ public final class CronExpression implements HasInfo {
     
     return values;
   }
+
+  public static String removeItem(String value, String input) {
+    if (BeeUtils.isEmpty(value) || BeeUtils.isEmpty(input)) {
+      return value;
+
+    } else if (!BeeUtils.containsSame(value, input)) {
+      return value;
+    
+    } else if (BeeUtils.same(value, input)) {
+      return null;
+    
+    } else {
+      List<String> list = splitItems(value);
+      
+      int index = BeeUtils.indexOfSame(list, input);
+      while (!BeeConst.isUndef(index)) {
+        list.remove(index);
+        index = BeeUtils.indexOfSame(list, input);
+      }
+      
+      return list.isEmpty() ? null : BeeUtils.join(String.valueOf(ITEM_SEPARATOR), list);
+    }
+  }
   
-  public static List<String> split(String input) {
+  public static List<String> splitItems(String input) {
     List<String> result = Lists.newArrayList();
     if (!BeeUtils.isEmpty(input)) {
       result.addAll(itemSplitter.splitToList(input));
     }
     return result;
-  }
-
-  public static List<String> validate(Field field, String input) {
-    Assert.notNull(field);
-
-    final List<String> failures = Lists.newArrayList();
-
-    if (!BeeUtils.isEmpty(input)) {
-      Builder.parse(field, Builder.normalize(input), new Consumer<String>() {
-        @Override
-        public void accept(String failure) {
-          failures.add(failure);
-        }
-      });
-    }
-
-    return failures;
   }
 
   private static Integer parseMonth(String input) {

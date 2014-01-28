@@ -1,6 +1,6 @@
 package com.butent.bee.shared.css.values;
 
-import com.google.gwt.dom.client.Style.HasCssName;
+import com.butent.bee.shared.css.HasCssName;
 
 public enum BackgroundOrigin implements HasCssName {
   BORDER_BOX {

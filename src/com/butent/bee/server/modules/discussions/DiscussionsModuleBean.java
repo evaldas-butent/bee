@@ -494,7 +494,7 @@ public class DiscussionsModuleBean implements BeeModule {
       BeeRowSet updated = new BeeRowSet(data.getViewName(), columns);
       updated.addRow(updRow);
 
-      response = deb.commitRow(updated, true);
+      response = deb.commitRow(updated);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
         addDiscussionProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, null,
             commentId);
@@ -581,7 +581,7 @@ public class DiscussionsModuleBean implements BeeModule {
         newRow.setValue(discussData.getColumnIndex(COL_STATUS), status.ordinal());
         discussData.clearRows();
         discussData.addRow(newRow);
-        response = deb.commitRow(discussData, false);
+        response = deb.commitRow(discussData);
 
         if (response.hasErrors()) {
           break;

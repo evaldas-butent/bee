@@ -43,6 +43,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -56,6 +57,7 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -162,6 +164,12 @@ public class CrmModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
+
+    } else if (BeeUtils.same(svc, SVC_RT_GET_EXECUTORS)) {
+      response = getRecurringTaskExecutors(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_RT_SPAWN)) {
+      response = spawnTasks(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
@@ -474,7 +482,7 @@ public class CrmModuleBean implements BeeModule {
       BeeRowSet updated = new BeeRowSet(data.getViewName(), columns);
       updated.addRow(updRow);
 
-      response = deb.commitRow(updated, true);
+      response = deb.commitRow(updated);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
         addTaskProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, eventId);
       }
@@ -547,6 +555,99 @@ public class CrmModuleBean implements BeeModule {
     return response.setResponse(count);
   }
 
+  private ResponseObject createTasks(BeeRowSet data, BeeRow row, long owner) {
+    ResponseObject response = null;
+
+    Map<String, String> properties = row.getProperties();
+
+    List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
+    List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
+
+    Set<Long> executorMembers = getUserGroupMembers(properties.get(PROP_EXECUTOR_GROUPS));
+    if (!executorMembers.isEmpty()) {
+      for (Long member : executorMembers) {
+        if (!executors.contains(member) && !observers.contains(member)) {
+          executors.add(member);
+        }
+      }
+    }
+
+    Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
+    if (!observerMembers.isEmpty()) {
+      for (Long member : observerMembers) {
+        if (!observers.contains(member)) {
+          observers.add(member);
+        }
+      }
+    }
+
+    DateTime start = row.getDateTime(data.getColumnIndex(COL_START_TIME));
+
+    List<Long> tasks = Lists.newArrayList();
+
+    for (long executor : executors) {
+      BeeRow newRow = DataUtils.cloneRow(row);
+      newRow.setValue(data.getColumnIndex(COL_EXECUTOR), executor);
+
+      TaskStatus status;
+      if (CrmUtils.isScheduled(start)) {
+        status = TaskStatus.SCHEDULED;
+      } else {
+        status = (executor == owner) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
+      }
+      newRow.setValue(data.getColumnIndex(COL_STATUS), status.ordinal());
+
+      BeeRowSet rowSet = new BeeRowSet(VIEW_TASKS, data.getColumns());
+      rowSet.addRow(newRow);
+
+      response = deb.commitRow(rowSet, RowInfo.class);
+      if (response.hasErrors()) {
+        break;
+      }
+
+      long taskId = ((RowInfo) response.getResponse()).getId();
+
+      response = registerTaskEvent(taskId, owner, TaskEvent.CREATE, System.currentTimeMillis());
+      if (!response.hasErrors()) {
+        createTaskUser(taskId, owner, System.currentTimeMillis());
+      }
+
+      if (!response.hasErrors() && executor != owner) {
+        response = createTaskUser(taskId, executor, null);
+      }
+
+      if (!response.hasErrors()) {
+        for (long obsId : observers) {
+          if (obsId != owner && obsId != executor) {
+            response = createTaskUser(taskId, obsId, null);
+            if (response.hasErrors()) {
+              break;
+            }
+          }
+        }
+      }
+
+      if (!response.hasErrors()) {
+        response = createTaskRelations(taskId, properties);
+      }
+      if (!response.hasErrors()) {
+        tasks.add(taskId);
+      }
+
+      if (response.hasErrors()) {
+        break;
+      }
+    }
+
+    if (response == null) {
+      response = ResponseObject.emptyResponse();
+    } else if (!response.hasErrors() && !tasks.isEmpty()) {
+      response = ResponseObject.response(DataUtils.buildIdList(tasks));
+    }
+
+    return response;
+  }
+
   private ResponseObject createTaskUser(long taskId, long userId, Long millis) {
     SqlInsert si = new SqlInsert(TBL_TASK_USERS)
         .addConstant(COL_TASK, taskId)
@@ -601,99 +702,10 @@ public class CrmModuleBean implements BeeModule {
 
     switch (event) {
       case CREATE:
-
-        Map<String, String> properties = taskRow.getProperties();
-
-        List<Long> executors = DataUtils.parseIdList(properties.get(PROP_EXECUTORS));
-        List<Long> observers = DataUtils.parseIdList(properties.get(PROP_OBSERVERS));
-
-        Set<Long> executorMembers = getUserGroupMembers(properties.get(PROP_EXECUTOR_GROUPS));
-        if (!executorMembers.isEmpty()) {
-          for (Long member : executorMembers) {
-            if (!executors.contains(member) && !observers.contains(member)) {
-              executors.add(member);
-            }
-          }
-        }
-
-        Set<Long> observerMembers = getUserGroupMembers(properties.get(PROP_OBSERVER_GROUPS));
-        if (!observerMembers.isEmpty()) {
-          for (Long member : observerMembers) {
-            if (!observers.contains(member)) {
-              observers.add(member);
-            }
-          }
-        }
-
-        DateTime start = taskRow.getDateTime(taskData.getColumnIndex(COL_START_TIME));
-
-        List<Long> tasks = Lists.newArrayList();
-
-        for (long executor : executors) {
-          BeeRow newRow = DataUtils.cloneRow(taskRow);
-          newRow.setValue(taskData.getColumnIndex(COL_EXECUTOR), executor);
-
-          TaskStatus status;
-          if (CrmUtils.isScheduled(start)) {
-            status = TaskStatus.SCHEDULED;
-          } else {
-            status = (executor == currentUser) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
-          }
-          newRow.setValue(taskData.getColumnIndex(COL_STATUS), status.ordinal());
-
-          taskData.clearRows();
-          taskData.addRow(newRow);
-
-          response = deb.commitRow(taskData, false);
-          if (response.hasErrors()) {
-            break;
-          }
-
-          taskId = ((BeeRow) response.getResponse()).getId();
-
-          response = registerTaskEvent(taskId, currentUser, event, now);
-          if (!response.hasErrors()) {
-            createTaskUser(taskId, currentUser, now);
-          }
-
-          if (!response.hasErrors() && executor != currentUser) {
-            response = createTaskUser(taskId, executor, null);
-          }
-
-          if (!response.hasErrors()) {
-            for (long obsId : observers) {
-              if (obsId != currentUser && obsId != executor) {
-                response = createTaskUser(taskId, obsId, null);
-                if (response.hasErrors()) {
-                  break;
-                }
-              }
-            }
-          }
-
-          if (!response.hasErrors()) {
-            response = createTaskRelations(taskId, properties);
-          }
-          if (!response.hasErrors()) {
-            tasks.add(taskId);
-          }
-
-          if (response.hasErrors()) {
-            break;
-          }
-        }
-
-        if (!response.hasErrors()) {
-          if (tasks.isEmpty()) {
-            response = ResponseObject.error("No tasks created");
-          } else {
-            response = ResponseObject.response(DataUtils.buildIdList(tasks));
-          }
-        }
+        response = createTasks(taskData, taskRow, currentUser);
         break;
 
       case VISIT:
-
         if (reqInfo.hasParameter(VAR_TASK_VISITED)) {
           response = registerTaskEvent(taskId, currentUser, event, now);
         }
@@ -712,7 +724,6 @@ public class CrmModuleBean implements BeeModule {
       case APPROVE:
       case RENEW:
       case ACTIVATE:
-
         Long finishTime = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_FINISH_TIME));
 
         response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
@@ -901,6 +912,85 @@ public class CrmModuleBean implements BeeModule {
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
+  }
+
+  private Set<Long> getRecurringTaskExecutors(long rtId) {
+    Set<Long> result = Sets.newHashSet();
+
+    Long[] users = qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_RT_EXECUTORS, COL_RTEX_USER)
+        .addFrom(TBL_RT_EXECUTORS)
+        .setWhere(SqlUtils.equals(TBL_RT_EXECUTORS, COL_RTEX_RECURRING_TASK, rtId)));
+
+    if (users != null) {
+      for (Long user : users) {
+        result.add(user);
+      }
+    }
+
+    users = qs.getLongColumn(new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFrom(TBL_RT_EXECUTOR_GROUPS)
+        .addFromInner(CommonsConstants.TBL_USER_GROUPS,
+            SqlUtils.join(TBL_RT_EXECUTOR_GROUPS, COL_RTEXGR_GROUP,
+                CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
+        .setWhere(SqlUtils.equals(TBL_RT_EXECUTOR_GROUPS, COL_RTEXGR_RECURRING_TASK, rtId)));
+
+    if (users != null) {
+      for (Long user : users) {
+        result.add(user);
+      }
+    }
+
+    return result;
+  }
+
+  private ResponseObject getRecurringTaskExecutors(RequestInfo reqInfo) {
+    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
+    if (!DataUtils.isId(rtId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
+    }
+
+    Set<Long> executors = getRecurringTaskExecutors(rtId);
+
+    if (executors.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(DataUtils.buildIdList(executors));
+    }
+  }
+
+  private Set<Long> getRecurringTaskObservers(long rtId) {
+    Set<Long> result = Sets.newHashSet();
+
+    Long[] users = qs.getLongColumn(new SqlSelect()
+        .addFields(TBL_RT_OBSERVERS, COL_RTOB_USER)
+        .addFrom(TBL_RT_OBSERVERS)
+        .setWhere(SqlUtils.equals(TBL_RT_OBSERVERS, COL_RTOB_RECURRING_TASK, rtId)));
+
+    if (users != null) {
+      for (Long user : users) {
+        result.add(user);
+      }
+    }
+
+    users = qs.getLongColumn(new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFrom(TBL_RT_OBSERVER_GROUPS)
+        .addFromInner(CommonsConstants.TBL_USER_GROUPS,
+            SqlUtils.join(TBL_RT_OBSERVER_GROUPS, COL_RTOBGR_GROUP,
+                CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
+        .setWhere(SqlUtils.equals(TBL_RT_OBSERVER_GROUPS, COL_RTOBGR_RECURRING_TASK, rtId)));
+
+    if (users != null) {
+      for (Long user : users) {
+        result.add(user);
+      }
+    }
+
+    return result;
   }
 
   private ResponseObject getRequestFiles(Long requestId) {
@@ -1348,6 +1438,151 @@ public class CrmModuleBean implements BeeModule {
     return qs.updateDataWithResponse(new SqlUpdate(TBL_TASK_USERS)
         .addConstant(COL_LAST_ACCESS, millis)
         .setWhere(where));
+  }
+
+  private ResponseObject spawnTasks(RequestInfo reqInfo) {
+    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
+    if (!DataUtils.isId(rtId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
+    }
+
+    Integer spawnDate = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_RT_DATE));
+    if (!BeeUtils.isPositive(spawnDate)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_DATE);
+    }
+
+    BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, Filter.compareId(rtId));
+    if (DataUtils.isEmpty(rtData)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_RECURRING_TASKS, rtId,
+          "not available");
+    }
+
+    BeeRow rtRow = rtData.getRow(0);
+
+    Set<Long> executors = getRecurringTaskExecutors(rtId);
+    if (executors.isEmpty()) {
+      return ResponseObject.error(reqInfo.getService(), rtId, "executors not available");
+    }
+
+    Set<Long> observers = getRecurringTaskObservers(rtId);
+
+    List<BeeColumn> taskColumns = sys.getView(VIEW_TASKS).getRowSetColumns();
+
+    List<BeeColumn> columns = Lists.newArrayList();
+    List<String> values = Lists.newArrayList();
+
+    columns.add(DataUtils.getColumn(COL_SUMMARY, taskColumns));
+    values.add(DataUtils.getString(rtData, rtRow, COL_SUMMARY));
+
+    String description = DataUtils.getString(rtData, rtRow, COL_DESCRIPTION);
+    if (!BeeUtils.isEmpty(description)) {
+      columns.add(DataUtils.getColumn(COL_DESCRIPTION, taskColumns));
+      values.add(description.trim());
+    }
+
+    columns.add(DataUtils.getColumn(COL_PRIORITY, taskColumns));
+    values.add(DataUtils.getString(rtData, rtRow, COL_PRIORITY));
+
+    Long startAt = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow, COL_RT_START_AT));
+    DateTime startTime = TimeUtils.combine(new JustDate(spawnDate), startAt);
+
+    columns.add(DataUtils.getColumn(COL_START_TIME, taskColumns));
+    values.add(BeeUtils.toString(startTime.getTime()));
+
+    Integer durationDays = DataUtils.getInteger(rtData, rtRow, COL_RT_DURATION_DAYS);
+    Long durationMillis = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow,
+        COL_RT_DURATION_TIME));
+
+    if (!BeeUtils.isPositive(durationDays) && !BeeUtils.isPositive(durationMillis)) {
+      durationDays = 1;
+    }
+
+    long finishMillis = startTime.getTime();
+    if (BeeUtils.isPositive(durationDays)) {
+      finishMillis += durationDays * TimeUtils.MILLIS_PER_DAY;
+    }
+    if (BeeUtils.isPositive(durationMillis)) {
+      finishMillis += durationMillis;
+    }
+
+    columns.add(DataUtils.getColumn(COL_FINISH_TIME, taskColumns));
+    values.add(BeeUtils.toString(finishMillis));
+
+    Long owner = DataUtils.getLong(rtData, rtRow, COL_OWNER);
+    columns.add(DataUtils.getColumn(COL_OWNER, taskColumns));
+    values.add(owner.toString());
+
+    columns.add(DataUtils.getColumn(COL_EXECUTOR, taskColumns));
+    values.add(null);
+
+    Long company = DataUtils.getLong(rtData, rtRow, COL_COMPANY);
+    if (DataUtils.isId(company)) {
+      columns.add(DataUtils.getColumn(COL_COMPANY, taskColumns));
+      values.add(company.toString());
+    }
+
+    Long contact = DataUtils.getLong(rtData, rtRow, COL_CONTACT);
+    if (DataUtils.isId(contact)) {
+      columns.add(DataUtils.getColumn(COL_CONTACT, taskColumns));
+      values.add(contact.toString());
+    }
+
+    Long reminder = DataUtils.getLong(rtData, rtRow, COL_RT_REMINDER);
+    if (DataUtils.isId(reminder)) {
+      columns.add(DataUtils.getColumn(COL_REMINDER, taskColumns));
+      values.add(reminder.toString());
+    }
+
+    Integer remindBefore = DataUtils.getInteger(rtData, rtRow, COL_RT_REMIND_BEFORE);
+    Long remindAt = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow,
+        COL_RT_REMIND_AT));
+
+    if (BeeUtils.isPositive(remindBefore) || BeeUtils.isPositive(remindAt)) {
+      long reminderMillis = finishMillis;
+
+      if (BeeUtils.isPositive(remindBefore)) {
+        reminderMillis += remindBefore * TimeUtils.MILLIS_PER_DAY;
+      }
+      if (BeeUtils.isPositive(remindAt)) {
+        reminderMillis -= reminderMillis % TimeUtils.MILLIS_PER_DAY;
+        reminderMillis += remindAt;
+
+        if (reminderMillis >= finishMillis) {
+          reminderMillis -= TimeUtils.MILLIS_PER_DAY;
+        }
+      }
+
+      columns.add(DataUtils.getColumn(COL_REMINDER_TIME, taskColumns));
+      values.add(BeeUtils.toString(reminderMillis));
+    }
+
+    columns.add(DataUtils.getColumn(COL_STATUS, taskColumns));
+    values.add(null);
+
+    columns.add(DataUtils.getColumn(COL_RECURRING_TASK, taskColumns));
+    values.add(rtId.toString());
+
+    BeeRowSet taskData = new BeeRowSet(VIEW_TASKS, columns);
+    BeeRow taskRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+
+    taskRow.setProperty(PROP_EXECUTORS, DataUtils.buildIdList(executors));
+    if (!observers.isEmpty()) {
+      taskRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
+    }
+
+    ResponseObject createResponse = createTasks(taskData, taskRow, owner);
+    if (createResponse.hasErrors() || !createResponse.hasResponse()) {
+      return createResponse;
+    }
+
+    Set<Long> tasks = DataUtils.parseIdSet(createResponse.getResponseAsString());
+    BeeRowSet result = qs.getViewData(VIEW_TASKS, Filter.idIn(tasks));
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
   }
 
   private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,

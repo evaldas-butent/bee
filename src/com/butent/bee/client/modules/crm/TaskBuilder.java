@@ -149,7 +149,10 @@ class TaskBuilder extends AbstractFormInterceptor {
 
         if (response.hasErrors()) {
           event.getCallback().onFailure(response.getErrors());
-
+          
+        } else if (!response.hasResponse()) {
+          event.getCallback().onFailure("No tasks created");
+          
         } else if (response.hasResponse(String.class)) {
           List<Long> tasks = DataUtils.parseIdList((String) response.getResponse());
           if (tasks.isEmpty()) {
@@ -168,8 +171,7 @@ class TaskBuilder extends AbstractFormInterceptor {
 
           event.getCallback().onSuccess(null);
           
-          String message =
-              BeeUtils.joinWords(Localized.getConstants().crmCreatedNewTasks(), ":", tasks.size());
+          String message = Localized.getMessages().crmCreatedNewTasks(tasks.size());
           BeeKeeper.getScreen().notifyInfo(message);
           
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);

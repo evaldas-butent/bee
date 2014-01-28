@@ -486,7 +486,7 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_COMPANIES, columns, row);
-    response = deb.commitRow(rowSet, false);
+    response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -669,7 +669,7 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     BeeRowSet cpRowSet = DataUtils.createRowSetForInsert(VIEW_COMPANY_PERSONS, cpColumns, cpRow);
-    response = deb.commitRow(cpRowSet, false);
+    response = deb.commitRow(cpRowSet);
     if (response.hasErrors()) {
       return response;
     }

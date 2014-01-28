@@ -153,6 +153,9 @@ public final class CrmConstants {
   public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
 
+  public static final String SVC_RT_GET_EXECUTORS = "rt_get_executors";
+  public static final String SVC_RT_SPAWN = "rt_spawn";
+
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
 
@@ -175,6 +178,9 @@ public final class CrmConstants {
 
   public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
 
+  public static final String VAR_RT_ID = Service.RPC_VAR_PREFIX + "rt_id";
+  public static final String VAR_RT_DATE = Service.RPC_VAR_PREFIX + "rt_date";
+  
   public static final String TBL_REQUESTS = "Requests";
   public static final String TBL_REQUEST_FILES = "RequestFiles";
 
@@ -194,6 +200,12 @@ public final class CrmConstants {
   public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String TBL_CRITERIA = "Criteria";
 
+  public static final String TBL_RT_DATES = "RTDates";
+  public static final String TBL_RT_EXECUTORS = "RTExecutors";
+  public static final String TBL_RT_EXECUTOR_GROUPS = "RTExecutorGroups";
+  public static final String TBL_RT_OBSERVERS = "RTObservers";
+  public static final String TBL_RT_OBSERVER_GROUPS = "RTObserverGroups";
+  
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
@@ -313,6 +325,8 @@ public final class CrmConstants {
   public static final String COL_CRITERION_NAME = "Criterion";
   public static final String COL_CRITERION_VALUE = "Value";
 
+  public static final String COL_RECURRING_TASK = "RecurringTask";
+  
   public static final String COL_RT_SCHEDULE_FROM = "ScheduleFrom";
   public static final String COL_RT_SCHEDULE_UNTIL = "ScheduleUntil";
   public static final String COL_RT_SCHEDULE_DAYS = "ScheduleDays";
@@ -337,6 +351,16 @@ public final class CrmConstants {
   public static final String COL_RTF_FILE = "File";
   public static final String COL_RTF_CAPTION = "Caption";
 
+  public static final String COL_RTEX_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTEX_USER = "User";
+  public static final String COL_RTEXGR_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTEXGR_GROUP = "Group";
+
+  public static final String COL_RTOB_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTOB_USER = "User";
+  public static final String COL_RTOBGR_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTOBGR_GROUP = "Group";
+  
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";

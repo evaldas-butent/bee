@@ -484,7 +484,7 @@ public class CalendarModuleBean implements BeeModule {
     String attIds = rowSet.getTableProperty(COL_ATTENDEE);
     String rtIds = rowSet.getTableProperty(COL_REMINDER_TYPE);
 
-    ResponseObject response = deb.commitRow(rowSet, true);
+    ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -1474,7 +1474,7 @@ public class CalendarModuleBean implements BeeModule {
     if (updated == null) {
       response = ResponseObject.response(oldRowSet.getRow(0));
     } else {
-      response = deb.commitRow(updated, true);
+      response = deb.commitRow(updated);
       if (response.hasErrors()) {
         return response;
       }
