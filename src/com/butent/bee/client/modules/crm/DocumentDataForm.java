@@ -443,8 +443,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
           String result = sb.toString();
 
           for (Entry<String, Editor> entry : criteria.entrySet()) {
-            result = result.replace("{" + entry.getKey() + "}",
-                entry.getValue().getNormalizedValue());
+            result = BeeUtils.replace(result.replace("&Scaron;", "Š").replace("&scaron;", "š"),
+                "{" + entry.getKey() + "}", entry.getValue().getNormalizedValue());
           }
           consumer.accept(result);
         }

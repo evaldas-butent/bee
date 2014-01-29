@@ -2007,10 +2007,11 @@ public class TransportModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY,
-            COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
         .addFrom(trade)
+        .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
                 COL_TRADE_WAREHOUSE_FROM))
@@ -2097,6 +2098,7 @@ public class TransportModuleBean implements BeeModule {
       doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
       doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
+      doc.setCurrency(invoice.getValue(COL_CURRENCY));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

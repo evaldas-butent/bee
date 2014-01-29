@@ -6,6 +6,7 @@
   >
   <Fields>
     <Relation name="Data" relation="DocumentData" notNull="true" label="=documentData" cascade="DELETE" />
+    <Numeric name="Sort" precision="2" label="=sort" />
     <String name="Name" precision="30" label="=criteriaGroup" />
   </Fields>
   <Constraints>

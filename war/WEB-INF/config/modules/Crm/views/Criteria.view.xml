@@ -6,10 +6,11 @@
   >
   <Columns>
     <SimpleColumn name="Group" />
+    <SimpleColumn name="Sort" />
     <SimpleColumn name="Criterion" />
     <SimpleColumn name="Value" />
   </Columns>
   <Order>
-    <OrderBy column="Criterion" />
+    <OrderBy column="Sort" />
   </Order>
 </View>

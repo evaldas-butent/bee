@@ -575,7 +575,7 @@ public class EcModuleBean implements BeeModule {
         }
       }
     });
-    
+
     news.registerUsageQueryProvider(Feed.EC_CLIENTS_MY, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
@@ -594,7 +594,7 @@ public class EcModuleBean implements BeeModule {
       protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
       }
-      
+
       @Override
       protected List<Pair<String, IsCondition>> getJoins() {
         return NewsHelper.buildJoins(TBL_ORDERS, news.joinUsage(TBL_ORDERS),

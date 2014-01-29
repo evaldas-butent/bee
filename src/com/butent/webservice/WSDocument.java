@@ -56,6 +56,7 @@ public class WSDocument {
   private String supplier;
   private String customer;
   private String payer;
+  private String currency;
 
   private final List<WSDocumentItem> items = Lists.newArrayList();
 
@@ -91,6 +92,7 @@ public class WSDocument {
           .append(ButentWS.tag("dok_serija", invoicePrefix))
           .append(ButentWS.tag("kitas_dok", invoiceNumber))
           .append(ButentWS.tag("terminas", term))
+          .append(ButentWS.tag("valiuta", currency))
           .append(ButentWS.tag("preke", item.itemId))
           .append(ButentWS.tag("kiekis", item.quantity))
           .append(ButentWS.tag("pastaba", item.note));
@@ -107,6 +109,10 @@ public class WSDocument {
       sb.append("</row>");
     }
     return sb.append("</VFPData>").toString();
+  }
+
+  public void setCurrency(String currency) {
+    this.currency = currency;
   }
 
   public void setCustomer(String customer) {

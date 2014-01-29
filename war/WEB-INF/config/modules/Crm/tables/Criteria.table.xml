@@ -6,6 +6,7 @@
   >
   <Fields>
     <Relation name="Group" relation="CriteriaGroups" notNull="true" label="=criteriaGroup" cascade="DELETE" />
+    <Numeric name="Sort" precision="2" label="=sort" />
     <String name="Criterion" precision="30" notNull="true" label="=criterionName" />
     <String name="Value" precision="50" label="=criterionValue" />
   </Fields>

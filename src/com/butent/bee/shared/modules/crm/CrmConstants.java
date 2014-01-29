@@ -180,7 +180,7 @@ public final class CrmConstants {
 
   public static final String VAR_RT_ID = Service.RPC_VAR_PREFIX + "rt_id";
   public static final String VAR_RT_DAY = Service.RPC_VAR_PREFIX + "rt_day";
-  
+
   public static final String TBL_REQUESTS = "Requests";
   public static final String TBL_REQUEST_FILES = "RequestFiles";
 
@@ -205,7 +205,7 @@ public final class CrmConstants {
   public static final String TBL_RT_EXECUTOR_GROUPS = "RTExecutorGroups";
   public static final String TBL_RT_OBSERVERS = "RTObservers";
   public static final String TBL_RT_OBSERVER_GROUPS = "RTObserverGroups";
-  
+
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
@@ -310,9 +310,10 @@ public final class CrmConstants {
   public static final String COL_CRITERIA_GROUP_NAME = "Name";
   public static final String COL_CRITERION_NAME = "Criterion";
   public static final String COL_CRITERION_VALUE = "Value";
+  public static final String COL_CRITERIA_SORT = "Sort";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
-  
+
   public static final String COL_RT_SCHEDULE_FROM = "ScheduleFrom";
   public static final String COL_RT_SCHEDULE_UNTIL = "ScheduleUntil";
   public static final String COL_RT_SCHEDULE_DAYS = "ScheduleDays";
@@ -359,7 +360,7 @@ public final class CrmConstants {
   public static final String ALS_PERSON_FIRST_NAME = "PersonFirstName";
   public static final String ALS_PERSON_LAST_NAME = "PersonLastName";
   public static final String ALS_PERSON_COMPANY_NAME = "PersonCompanyName";
-  
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";

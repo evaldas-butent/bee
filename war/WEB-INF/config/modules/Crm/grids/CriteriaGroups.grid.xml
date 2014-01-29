@@ -5,6 +5,7 @@
   flexGrow="1" filter="Name" headerMode="grid"
   >
   <g:columns>
+    <DataColumn name="Sort" visible="false" />
     <AutoColumn name="Name" viewName="DistinctCriteriaGroups" viewColumn="Name" visible="true" required="true" />
   </g:columns>
 </g:Grid>

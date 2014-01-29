@@ -4,6 +4,7 @@
   name="Criteria" viewName="Criteria" caption="=criteria"
   >
   <g:columns>
+    <DataColumn name="Sort" visible="false" />
     <AutoColumn name="Criterion" viewName="DistinctCriteria" viewColumn="Criterion" visible="true" />
     <AutoColumn name="Value" viewName="DistinctCriterionValues" viewColumn="Value" visible="true" />
   </g:columns>
