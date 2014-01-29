@@ -73,11 +73,12 @@ class OrderCargoForm extends AbstractFormInterceptor {
           }
         }
       });
-    } else if (widget instanceof InputBoolean && BeeUtils.same(name, "Partial")) {
+    } else if (widget instanceof InputBoolean
+        && (BeeUtils.same(name, "Partial") || (BeeUtils.same(name, "Outsized")))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
-          refreshPartial(BeeUtils.toBoolean(event.getValue()));
+          refreshMetrics(getCheckCount(getFormView()) > 0);
         }
       });
     }
@@ -86,7 +87,8 @@ class OrderCargoForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refresh(row.getLong(form.getDataIndex(ExchangeUtils.COL_CURRENCY)));
-    refreshPartial(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial"))));
+    refreshMetrics(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial")))
+        || BeeUtils.unbox(row.getBoolean(form.getDataIndex("Outsized"))));
   }
 
   @Override
@@ -111,6 +113,27 @@ class OrderCargoForm extends AbstractFormInterceptor {
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     form.getViewPresenter().getHeader().clearCommandPanel();
+  }
+
+  private static int getCheckCount(FormView form) {
+    int checkBoxObserved = 0;
+    
+    InputBoolean ib1 = (InputBoolean) form.getWidgetByName("Partial");
+    InputBoolean ib2 = (InputBoolean) form.getWidgetByName("Outsized");
+    
+    if (ib1 != null) {
+      if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib1.getValue()))) {
+        checkBoxObserved = checkBoxObserved + 1;
+      }
+    }
+
+    if (ib2 != null) {
+      if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib2.getValue()))) {
+        checkBoxObserved = checkBoxObserved + 1;
+      }
+    }
+
+    return checkBoxObserved;
   }
 
   private void refresh(Long currency) {
@@ -143,7 +166,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
     }
   }
 
-  private void refreshPartial(boolean on) {
+  private void refreshMetrics(boolean on) {
     Widget widget = getFormView().getWidgetByName("Metrics");
 
     if (widget != null) {

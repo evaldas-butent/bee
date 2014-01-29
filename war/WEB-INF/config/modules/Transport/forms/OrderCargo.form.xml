@@ -60,7 +60,7 @@
           </row>
           <row><text>&amp;nbsp;</text></row>
           <row>
-            <CheckBox source="Outsized" text="=outsized" />
+            <CheckBox name="Outsized" source="Outsized" text="=outsized" />
           </row>
           <row>
             <CheckBox source="Dangerous" text="=dangerous" />
