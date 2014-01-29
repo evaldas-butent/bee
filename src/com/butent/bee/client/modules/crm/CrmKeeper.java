@@ -33,8 +33,9 @@ public final class CrmKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
-    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY, COL_COMPANY_NAME,
-        COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME, COL_FINISH_TIME, COL_STATUS);
+    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
+        CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
+        COL_FINISH_TIME, COL_STATUS);
 
     private DataInfo taskViewInfo;
 

@@ -149,9 +149,10 @@ final class TaskList {
 
     @Override
     public List<String> getDeleteRowMessage(IsRow row) {
-      String message =
-          BeeUtils.joinWords(Localized.getConstants().crmTaskDelete(), row.getId(), "?");
-      return Lists.newArrayList(message);
+      String m1 = BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId());
+      String m2 = Localized.getConstants().crmTaskDeleteQuestion();
+
+      return Lists.newArrayList(m1, m2);
     }
 
     @Override

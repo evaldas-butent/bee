@@ -327,10 +327,15 @@
 .bee-crm-rt-weekend {
   color: #999;
 }
+.bee-crm-rt-day-has-tasks.bee-crm-rt-weekend,
 .bee-crm-rt-day-scheduled.bee-crm-rt-weekend {
   color: black;
 }
 
+.bee-crm-rt-month-table td.bee-crm-rt-day-has-tasks {
+  background-color: blanchedalmond;
+  cursor: pointer;
+}
 .bee-crm-rt-month-table td.bee-crm-rt-day-scheduled {
   background-color: #bfb;
   cursor: pointer;
@@ -338,6 +343,7 @@
 .bee-crm-rt-month-table td.bee-crm-rt-infertile {
   background-color: #cfc;
 }
+.bee-crm-rt-day-has-tasks:hover,
 .bee-crm-rt-day-scheduled:hover {
   font-weight: bold;
   font-size: larger;
@@ -348,4 +354,34 @@
   display: inline-block;
   padding-right: 1em;
   font-size: smaller;
+}
+
+.bee-crm-rt-offspring-dialog {
+  background-color: whitesmoke;
+}
+.bee-crm-rt-offspring-panel {
+  max-height: 500px;
+  overflow: auto;
+}
+.bee-crm-rt-offspring-table {
+  border-collapse: collapse;
+}
+.bee-crm-rt-offspring-table tr:hover {
+  background-color: blanchedalmond;
+  cursor: pointer;
+}
+.bee-crm-rt-offspring-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-crm-rt-offspring-delete {
+  color: #888;
+  font-size: 20px;
+  padding: 2px;
+  cursor: pointer;
+}
+.bee-crm-rt-offspring-delete:hover {
+  background-color: red;
+  color: white;
 }

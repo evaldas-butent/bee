@@ -902,7 +902,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String sid =
         dialog.addSelector(Localized.getConstants().crmTaskExecutor(), CommonsConstants.VIEW_USERS,
-            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), true, exclusions);
+            Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
+            true, exclusions);
 
     final String cid = dialog.addComment(true);
 
@@ -1439,8 +1440,8 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     String publisher = BeeUtils.joinWords(
-        row.getString(DataUtils.getColumnIndex(COL_PUBLISHER_FIRST_NAME, columns)),
-        row.getString(DataUtils.getColumnIndex(COL_PUBLISHER_LAST_NAME, columns)));
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_FIRST_NAME, columns)),
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_LAST_NAME, columns)));
     if (!BeeUtils.isEmpty(publisher)) {
       col0.add(createEventCell(COL_PUBLISHER, publisher));
     }

@@ -1235,6 +1235,9 @@ public class EcModuleBean implements BeeModule {
     SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_CLIENT_PRIMARY_BRANCH,
         COL_CLIENT_SECONDARY_BRANCH);
     if (clientInfo == null) {
+      result.add(BeeConst.STRING_EMPTY);
+      result.add(BeeConst.STRING_EMPTY);
+
       return ResponseObject.response(result);
     }
 

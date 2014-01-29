@@ -179,7 +179,7 @@ public final class CrmConstants {
   public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
 
   public static final String VAR_RT_ID = Service.RPC_VAR_PREFIX + "rt_id";
-  public static final String VAR_RT_DATE = Service.RPC_VAR_PREFIX + "rt_date";
+  public static final String VAR_RT_DAY = Service.RPC_VAR_PREFIX + "rt_day";
   
   public static final String TBL_REQUESTS = "Requests";
   public static final String TBL_REQUEST_FILES = "RequestFiles";
@@ -226,16 +226,10 @@ public final class CrmConstants {
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
-  public static final String COL_FIRST_NAME = "FirstName";
-  public static final String COL_LAST_NAME = "LastName";
-
   public static final String COL_PRIORITY = "Priority";
 
   public static final String COL_OWNER = "Owner";
-
   public static final String COL_EXECUTOR = "Executor";
-  public static final String COL_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
-  public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
 
   public static final String COL_TASK_ID = "TaskID";
 
@@ -272,10 +266,7 @@ public final class CrmConstants {
   public static final String COL_EXPIRES = "Expires";
 
   public static final String COL_COMPANY = "Company";
-  public static final String COL_COMPANY_NAME = "CompanyName";
   public static final String COL_CONTACT = "Contact";
-  public static final String COL_CONTACT_FIRST_NAME = "ContactFirstName";
-  public static final String COL_CONTACT_LAST_NAME = "ContactLastName";
 
   public static final String COL_REMINDER = "Reminder";
   public static final String COL_REMINDER_TIME = "ReminderTime";
@@ -284,8 +275,6 @@ public final class CrmConstants {
 
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PUBLISHER = "Publisher";
-  public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
-  public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
 
   public static final String COL_COMMENT = "Comment";
 
@@ -306,9 +295,6 @@ public final class CrmConstants {
   public static final String COL_APPROVED = "Approved";
 
   public static final String COL_PERSON = "Person";
-  public static final String COL_PERSON_FIRST_NAME = "PersonFirstName";
-  public static final String COL_PERSON_LAST_NAME = "PersonLastName";
-  public static final String COL_PERSON_COMPANY_NAME = "PersonCompanyName";
 
   public static final String COL_REQUEST = "Request";
   public static final String COL_REQUEST_DATE = "Date";
@@ -360,6 +346,19 @@ public final class CrmConstants {
   public static final String COL_RTOB_USER = "User";
   public static final String COL_RTOBGR_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTOBGR_GROUP = "Group";
+
+  public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
+  public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
+  
+  public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
+  public static final String ALS_EXECUTOR_LAST_NAME = "ExecutorLastName";
+
+  public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
+  public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
+  
+  public static final String ALS_PERSON_FIRST_NAME = "PersonFirstName";
+  public static final String ALS_PERSON_LAST_NAME = "PersonLastName";
+  public static final String ALS_PERSON_COMPANY_NAME = "PersonCompanyName";
   
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";

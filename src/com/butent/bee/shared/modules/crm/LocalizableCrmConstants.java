@@ -67,6 +67,8 @@ public interface LocalizableCrmConstants {
   String crmRequest();
 
   String crmRTActionSchedule();
+  
+  String crmRTSpawnQuestion();
 
   String crmSelectedSameExecutor();
 
@@ -76,6 +78,8 @@ public interface LocalizableCrmConstants {
 
   String crmStartDate();
 
+  String crmTask();
+  
   String crmTaskCancel();
 
   String crmTaskCancellation();
@@ -94,9 +98,9 @@ public interface LocalizableCrmConstants {
 
   String crmTaskConfirmDate();
 
-  String crmTaskDelete();
-
   String crmTaskDeleteCanManager();
+
+  String crmTaskDeleteQuestion();
 
   String crmTaskEventApproved();
 
@@ -251,6 +255,8 @@ public interface LocalizableCrmConstants {
   String taskLabelStarred();
 
   String taskReminder();
+  
+  String tasks();
 
   String taskTemplate();
 

@@ -438,6 +438,14 @@ public final class Format {
     }
     return result;
   }
+  
+  public static String renderDateFull(HasDateValue date) {
+    if (date == null) {
+      return null;
+    } else {
+      return DateTimeFormat.getFormat(PredefinedFormat.DATE_FULL).format(date);
+    }
+  }
 
   public static String renderDayOfWeek(HasDateValue date) {
     return (date == null) ? null : renderDayOfWeek(date.getDow());

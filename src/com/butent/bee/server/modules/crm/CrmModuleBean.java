@@ -113,17 +113,19 @@ public class CrmModuleBean implements BeeModule {
             COL_DOCUMENT_STATUS_NAME), query));
 
     List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, COL_COMPANY_NAME,
-            COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME), query));
+        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
+            CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+            query));
 
     List<SearchResult> taskDurationsSr = qs.getSearchResults(VIEW_TASK_DURATIONS,
         Filter.anyContains(Sets.newHashSet(COL_DURATION_TYPE, COL_COMMENT,
-            COL_COMPANY_NAME, COL_SUMMARY, COL_PUBLISHER_FIRST_NAME, COL_PUBLISHER_LAST_NAME),
-            query));
+            CommonsConstants.ALS_COMPANY_NAME, COL_SUMMARY, ALS_PUBLISHER_FIRST_NAME,
+            ALS_PUBLISHER_LAST_NAME), query));
 
     List<SearchResult> taskTemplatesSr = qs.getSearchResults(VIEW_TASK_TEMPLATES,
         Filter.anyContains(Sets.newHashSet(COL_NAME, COL_SUMMARY, COL_DESCRIPTION,
-            COL_COMPANY_NAME, COL_CONTACT_FIRST_NAME, COL_CONTACT_LAST_NAME), query));
+            CommonsConstants.ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME),
+            query));
 
     result.addAll(docsSr);
     result.addAll(tasksSr);
@@ -336,8 +338,8 @@ public class CrmModuleBean implements BeeModule {
 
         if (feed != Feed.TASKS_ASSIGNED) {
           subtitles.add(BeeUtils.joinWords(
-              DataUtils.getString(rowSet, row, COL_EXECUTOR_FIRST_NAME),
-              DataUtils.getString(rowSet, row, COL_EXECUTOR_LAST_NAME)));
+              DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
+              DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
         }
 
         return Headline.create(row.getId(), caption, subtitles, isNew);
@@ -1446,9 +1448,9 @@ public class CrmModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
     }
 
-    Integer spawnDate = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_RT_DATE));
-    if (!BeeUtils.isPositive(spawnDate)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_DATE);
+    Integer dayNumber = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_RT_DAY));
+    if (!BeeUtils.isPositive(dayNumber)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_DAY);
     }
 
     BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, Filter.compareId(rtId));
@@ -1484,7 +1486,7 @@ public class CrmModuleBean implements BeeModule {
     values.add(DataUtils.getString(rtData, rtRow, COL_PRIORITY));
 
     Long startAt = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow, COL_RT_START_AT));
-    DateTime startTime = TimeUtils.combine(new JustDate(spawnDate), startAt);
+    DateTime startTime = TimeUtils.combine(new JustDate(dayNumber), startAt);
 
     columns.add(DataUtils.getColumn(COL_START_TIME, taskColumns));
     values.add(BeeUtils.toString(startTime.getTime()));
@@ -1541,12 +1543,10 @@ public class CrmModuleBean implements BeeModule {
       long reminderMillis = finishMillis;
 
       if (BeeUtils.isPositive(remindBefore)) {
-        reminderMillis += remindBefore * TimeUtils.MILLIS_PER_DAY;
+        reminderMillis -= remindBefore * TimeUtils.MILLIS_PER_DAY;
       }
       if (BeeUtils.isPositive(remindAt)) {
-        reminderMillis -= reminderMillis % TimeUtils.MILLIS_PER_DAY;
-        reminderMillis += remindAt;
-
+        reminderMillis = TimeUtils.combine(new DateTime(reminderMillis), remindAt).getTime();
         if (reminderMillis >= finishMillis) {
           reminderMillis -= TimeUtils.MILLIS_PER_DAY;
         }
