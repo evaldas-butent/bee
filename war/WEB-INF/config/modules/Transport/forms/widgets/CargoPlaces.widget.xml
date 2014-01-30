@@ -55,7 +55,7 @@
       <InputText source="LoadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
-      <Label text="=terminal" horizontalAlignment="right" />
+      <Label text="=ref" horizontalAlignment="right" />
       <InputArea source="LoadingTerminal" style="wdith: 155px;" />
     </row>
   </Table>
@@ -114,7 +114,7 @@
       <InputText source="UnloadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
-      <Label text="=terminal" horizontalAlignment="right" decorator="caption-top" />
+      <Label text="=ref" horizontalAlignment="right" decorator="caption-top" />
       <InputArea source="UnloadingTerminal" style="wdith: 155px;" />
     </row>
   </Table>
