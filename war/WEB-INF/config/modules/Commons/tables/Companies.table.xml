@@ -34,6 +34,8 @@
     
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <String name="BankAccount" precision="30" label="=bankAccount" />
+    <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
+    <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

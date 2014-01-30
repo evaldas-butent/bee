@@ -72,6 +72,14 @@
             <Label text="=bankAccount" />
             <InputText source="BankAccount" />
           </row>
+          <row>
+            <Label text="=daysAsBuyer" />
+            <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
+          </row>
+          <row>
+            <Label text="=daysAsSupplier" />
+            <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
+          </row>
         </Table>
       </page>
       <page>
