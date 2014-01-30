@@ -136,6 +136,22 @@ public final class BeeUtils {
     return false;
   }
 
+  public static boolean anyNull(Object first, Object second, Object... rest) {
+    if (first == null || second == null) {
+      return true;
+    }
+    if (rest == null) {
+      return false;
+    }
+
+    for (Object obj : rest) {
+      if (obj == null) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.

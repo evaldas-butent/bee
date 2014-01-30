@@ -59,7 +59,6 @@ public final class CrmKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
 
-    FormFactory.registerFormInterceptor(FORM_NEW_RECURRING_TASK, new RecurringTaskHandler());
     FormFactory.registerFormInterceptor(FORM_RECURRING_TASK, new RecurringTaskHandler());
 
     FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
@@ -67,6 +66,7 @@ public final class CrmKeeper {
 
     GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());
 
+    GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid()); 
     GridFactory.registerGridInterceptor(GRID_RT_FILES, 
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
             CommonsConstants.ALS_FILE_NAME));

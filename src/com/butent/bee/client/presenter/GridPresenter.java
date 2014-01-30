@@ -434,6 +434,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  public boolean hasFilter() {
+    return getDataProvider().hasFilter();
+  }
+  
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
@@ -455,10 +459,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             }
           }
         });
-  }
-  
-  public boolean hasFilter() {
-    return getDataProvider().hasFilter();
   }
 
   @Override
@@ -586,6 +586,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }, notify);
   }
 
+  public boolean validateParent() {
+    FormView form = UiHelper.getForm(getWidget().asWidget());
+    if (form == null) {
+      return true;
+    }
+
+    if (!form.validate(form, true)) {
+      return false;
+    }
+
+    if (form.getViewPresenter() instanceof HasGridView) {
+      GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
+      if (rootGrid != null && !rootGrid.validateFormData(form, form, true)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private void addRow(boolean copy) {
     if (getGridView().likeAMotherlessChild() && !validateParent()) {
       return;
@@ -693,24 +712,5 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void showInfo(String... messages) {
     getGridView().notifyInfo(messages);
-  }
-
-  private boolean validateParent() {
-    FormView form = UiHelper.getForm(getWidget().asWidget());
-    if (form == null) {
-      return true;
-    }
-
-    if (!form.validate(form, true)) {
-      return false;
-    }
-
-    if (form.getViewPresenter() instanceof HasGridView) {
-      GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
-      if (rootGrid != null && !rootGrid.validateFormData(form, form, true)) {
-        return false;
-      }
-    }
-    return true;
   }
 }

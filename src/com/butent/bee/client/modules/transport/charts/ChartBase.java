@@ -1552,7 +1552,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected boolean setData(ResponseObject response) {
-    if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class, null)) {
+    if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class)) {
       return false;
     }
 

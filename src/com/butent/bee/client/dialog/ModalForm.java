@@ -16,23 +16,26 @@ import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ModalForm extends Popup {
-  
+
   private static final String STYLE_NAME = "bee-ModalForm";
-  
-  private final boolean requiresUnload; 
-  
+
+  private static final double MAX_WIDTH_FACTOR = 0.95;
+  private static final double MAX_HEIGHT_FACTOR = 0.95;
+
+  private final boolean requiresUnload;
+
   private boolean wasAttached;
   private boolean pendingUnload;
 
   public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload) {
     super(OutsideClick.IGNORE, STYLE_NAME);
     this.requiresUnload = requiresUnload;
-    
+
     setAnimationEnabled(true);
 
     widget.addStyleName(STYLE_NAME + "-content");
     setWidget(widget);
-    
+
     if (dimensions != null) {
       setDimensions(dimensions);
     }
@@ -60,7 +63,7 @@ public class ModalForm extends Popup {
       }
     }
   }
-  
+
   @Override
   protected void doAttachChildren() {
     if (!requiresUnload || !wasAttached) {
@@ -68,7 +71,7 @@ public class ModalForm extends Popup {
       wasAttached = true;
     }
   }
-  
+
   @Override
   protected void doDetachChildren() {
     if (!requiresUnload || pendingUnload) {
@@ -94,7 +97,7 @@ public class ModalForm extends Popup {
       return false;
     }
   }
-  
+
   private void setDimensions(HasDimensions dimensions) {
     double v;
     CssUnit u;
@@ -110,7 +113,11 @@ public class ModalForm extends Popup {
       v = Window.getClientWidth() / 2;
       u = CssUnit.PX;
     }
+
     if (v > 0) {
+      if (u == CssUnit.PX) {
+        v = Math.round(Math.min(v, Window.getClientWidth() * MAX_WIDTH_FACTOR));
+      }
       StyleUtils.setWidth(getElement(), v, u);
     }
 
@@ -125,7 +132,11 @@ public class ModalForm extends Popup {
       v = Window.getClientHeight() / 2;
       u = CssUnit.PX;
     }
+
     if (v > 0) {
+      if (u == CssUnit.PX) {
+        v = Math.round(Math.min(v, Window.getClientHeight() * MAX_HEIGHT_FACTOR));
+      }
       StyleUtils.setHeight(getElement(), v, u);
     }
   }

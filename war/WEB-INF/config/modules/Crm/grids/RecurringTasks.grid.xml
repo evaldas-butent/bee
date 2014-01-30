@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
-  currentUserFilter="Owner" editShowId="true"
+  currentUserFilter="Owner" editShowId="true" enabledActions="copy"
   >
   <g:columns>
     <IdColumn name="Id" caption="=captionId" />

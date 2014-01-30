@@ -18,7 +18,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
@@ -35,7 +34,6 @@ import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -59,6 +57,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
 import com.butent.bee.shared.time.DateRange;
@@ -395,8 +394,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     Global.showModalWidget(null, table, target);
   }
 
-  private FileCollector fileCollector;
-
   private final Multimap<Integer, BeeRow> offspring = ArrayListMultimap.create();
 
   RecurringTaskHandler() {
@@ -416,11 +413,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (widget instanceof FileCollector) {
-      this.fileCollector = (FileCollector) widget;
-      this.fileCollector.bindDnd(getFormView());
-
-    } else if (!BeeUtils.isEmpty(name)) {
+    if (!BeeUtils.isEmpty(name)) {
       switch (name) {
         case "DomValues":
           if (widget instanceof Flow) {
@@ -471,16 +464,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           break;
       }
     }
-  }
-
-  @Override
-  public void afterInsertRow(IsRow result, boolean forced) {
-    if (getFileCollector() != null && !getFileCollector().isEmpty()) {
-      FileUtils.commitFiles(getFileCollector().getFiles(), VIEW_RT_FILES,
-          COL_RTF_RECURRING_TASK, result.getId(), COL_RTF_FILE, COL_RTF_CAPTION);
-    }
-
-    super.afterInsertRow(result, forced);
   }
 
   @Override
@@ -537,15 +520,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   }
 
   @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    if (getFileCollector() != null) {
-      getFileCollector().clear();
-    }
-
-    super.onStartNewRow(form, oldRow, newRow);
-  }
-
-  @Override
   public Boolean validateCell(CellValidateEvent event) {
     if (event.isCellValidation() && event.isPreValidation()) {
       String source = event.getColumnId();
@@ -574,10 +548,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     if (!offspring.isEmpty()) {
       offspring.clear();
     }
-  }
-
-  private FileCollector getFileCollector() {
-    return fileCollector;
   }
 
   private void getOffspring(Long rtId, final Runnable callback) {

@@ -155,6 +155,7 @@ public final class CrmConstants {
 
   public static final String SVC_RT_GET_EXECUTORS = "rt_get_executors";
   public static final String SVC_RT_SPAWN = "rt_spawn";
+  public static final String SVC_RT_COPY = "rt_copy";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
@@ -201,6 +202,7 @@ public final class CrmConstants {
   public static final String TBL_CRITERIA = "Criteria";
 
   public static final String TBL_RT_DATES = "RTDates";
+  public static final String TBL_RT_FILES = "RTFiles";
   public static final String TBL_RT_EXECUTORS = "RTExecutors";
   public static final String TBL_RT_EXECUTOR_GROUPS = "RTExecutorGroups";
   public static final String TBL_RT_OBSERVERS = "RTObservers";
@@ -386,15 +388,15 @@ public final class CrmConstants {
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
+  public static final String GRID_RECURRING_TASKS = "RecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
 
   public static final String GRID_REQUESTS = "Requests";
 
-  public static final String FORM_NEW_RECURRING_TASK = "NewRecurringTask";
-  public static final String FORM_RECURRING_TASK = "RecurringTask";
-
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+
+  public static final String FORM_RECURRING_TASK = "RecurringTask";
 
   public static final String FORM_TASKS_REPORT = "TasksReport";
 

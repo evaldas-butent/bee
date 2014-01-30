@@ -1128,6 +1128,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public int getFieldCount() {
     return fields.size();
   }
+  
+  public Collection<String> getFieldNames() {
+    List<String> names = Lists.newArrayList();
+    for (BeeField field : fields.values()) {
+      names.add(field.getName());
+    }
+    return names;
+  }
 
   public Collection<BeeField> getFields() {
     return ImmutableList.copyOf(fields.values());

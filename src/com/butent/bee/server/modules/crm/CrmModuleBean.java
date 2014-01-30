@@ -173,6 +173,9 @@ public class CrmModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_RT_SPAWN)) {
       response = spawnTasks(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_RT_COPY)) {
+      response = copyRecurringTask(reqInfo);
+      
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -422,7 +425,7 @@ public class CrmModuleBean implements BeeModule {
       }
     }
 
-    Multimap<String, Long> taskRelations = getTaskRelations(taskId);
+    Multimap<String, Long> taskRelations = getRelations(COL_TASK, taskId);
     for (String property : taskRelations.keySet()) {
       row.setProperty(property, DataUtils.buildIdList(taskRelations.get(property)));
     }
@@ -537,12 +540,52 @@ public class CrmModuleBean implements BeeModule {
     }
     return ResponseObject.response(dataId);
   }
+  
+  private ResponseObject copyRecurringTask(RequestInfo reqInfo) {
+    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
+    if (!DataUtils.isId(rtId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
+    }
+    
+    BeeRowSet rowSet = qs.getViewData(VIEW_RECURRING_TASKS, Filter.compareId(rtId));
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_RECURRING_TASKS, rtId,
+          "not available");
+    }
+
+    BeeRow row = rowSet.getRow(0);
+    
+    DataUtils.setValue(rowSet, row, COL_RT_SCHEDULE_FROM,
+        Integer.toString(TimeUtils.today().getDays() + 1));
+    DataUtils.setValue(rowSet, row, COL_RT_SCHEDULE_UNTIL, null);
+    
+    BeeRowSet insert = DataUtils.createRowSetForInsert(rowSet.getViewName(), rowSet.getColumns(),
+        row);
+    ResponseObject response = deb.commitRow(insert);
+
+    if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
+      long newId = ((BeeRow) response.getResponse()).getId();
+      
+      qs.copyData(TBL_RT_EXECUTORS, COL_RTEX_RECURRING_TASK, rtId, newId);
+      qs.copyData(TBL_RT_EXECUTOR_GROUPS, COL_RTEXGR_RECURRING_TASK, rtId, newId);
+      qs.copyData(TBL_RT_OBSERVERS, COL_RTOB_RECURRING_TASK, rtId, newId);
+      qs.copyData(TBL_RT_OBSERVER_GROUPS, COL_RTOBGR_RECURRING_TASK, rtId, newId);
+
+      qs.copyData(TBL_RT_DATES, COL_RTD_RECURRING_TASK, rtId, newId);
+      qs.copyData(TBL_RT_FILES, COL_RTD_RECURRING_TASK, rtId, newId);
+
+      qs.copyData(CommonsConstants.TBL_RELATIONS, COL_RECURRING_TASK, rtId, newId);
+    }
+    
+    return response;
+  }
 
   private ResponseObject createTaskRelations(long taskId, Map<String, String> properties) {
     int count = 0;
     if (BeeUtils.isEmpty(properties)) {
       return ResponseObject.response(count);
     }
+
     ResponseObject response = new ResponseObject();
     List<RowChildren> children = Lists.newArrayList();
 
@@ -554,9 +597,11 @@ public class CrmModuleBean implements BeeModule {
             relation, entry.getValue()));
       }
     }
+
     if (!BeeUtils.isEmpty(children)) {
       count = deb.commitChildren(taskId, children, response);
     }
+
     return response.setResponse(count);
   }
 
@@ -1081,14 +1126,14 @@ public class CrmModuleBean implements BeeModule {
     return result;
   }
 
-  private Multimap<String, Long> getTaskRelations(long taskId) {
+  private Multimap<String, Long> getRelations(String filterColumn, long filterValue) {
     Multimap<String, Long> res = HashMultimap.create();
 
     for (String relation : CrmUtils.getRelations()) {
-      Long[] ids =
-          qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, COL_TASK, taskId, relation);
+      Long[] ids = qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, filterColumn, filterValue,
+          relation);
 
-      if (ids != null) {
+      if (ids != null && ids.length > 0) {
         String property = CrmUtils.translateRelationToTaskProperty(relation);
 
         for (Long id : ids) {
@@ -1573,6 +1618,11 @@ public class CrmModuleBean implements BeeModule {
       taskRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
     }
 
+    Multimap<String, Long> relations = getRelations(COL_RECURRING_TASK, rtId);
+    for (String property : relations.keySet()) {
+      taskRow.setProperty(property, DataUtils.buildIdList(relations.get(property)));
+    }
+
     ResponseObject createResponse = createTasks(taskData, taskRow, owner);
     if (createResponse.hasErrors() || !createResponse.hasResponse()) {
       return createResponse;
@@ -1583,9 +1633,27 @@ public class CrmModuleBean implements BeeModule {
 
     if (DataUtils.isEmpty(result)) {
       return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.response(result);
     }
+
+    SimpleRowSet fileData = qs.getData(new SqlSelect()
+        .addFields(TBL_RT_FILES, COL_RTF_FILE, COL_RTF_CAPTION)
+        .addFrom(TBL_RT_FILES)
+        .setWhere(SqlUtils.equals(TBL_RT_FILES, COL_RTF_RECURRING_TASK, rtId)));
+
+    if (!DataUtils.isEmpty(fileData)) {
+      for (SimpleRow fileRow : fileData) {
+        for (Long taskId : tasks) {
+          SqlInsert si = new SqlInsert(TBL_TASK_FILES)
+              .addConstant(COL_TASK, taskId)
+              .addConstant(COL_FILE, fileRow.getLong(COL_RTF_FILE))
+              .addConstant(COL_CAPTION, fileRow.getLong(COL_RTF_CAPTION));
+
+          qs.insertData(si);
+        }
+      }
+    }
+
+    return ResponseObject.response(result);
   }
 
   private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,

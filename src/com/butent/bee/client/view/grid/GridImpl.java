@@ -138,8 +138,8 @@ import java.util.Set;
  * Creates cell grid elements, connecting view and presenter elements of them.
  */
 
-public class GridImpl extends Absolute implements GridView, EditStartEvent.Handler,
-    EditEndEvent.Handler, SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
+public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler,
+    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override

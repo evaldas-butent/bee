@@ -89,6 +89,15 @@ public final class Queries {
   }
 
   public static boolean checkResponse(String service, String viewName, ResponseObject response,
+      Class<?> clazz) {
+    return checkResponse(service, viewName, response, clazz, new Callback<Object>() {
+      @Override
+      public void onSuccess(Object result) {
+      }
+    });
+  }
+  
+  public static boolean checkResponse(String service, String viewName, ResponseObject response,
       Class<?> clazz, Callback<?> callback) {
 
     if (response == null) {
