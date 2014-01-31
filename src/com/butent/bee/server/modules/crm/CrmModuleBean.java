@@ -167,8 +167,8 @@ public class CrmModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
 
-    } else if (BeeUtils.same(svc, SVC_RT_GET_EXECUTORS)) {
-      response = getRecurringTaskExecutors(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_RT_GET_SCHEDULING_DATA)) {
+      response = getSchedulingData(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_RT_SPAWN)) {
       response = spawnTasks(reqInfo);
@@ -996,21 +996,6 @@ public class CrmModuleBean implements BeeModule {
     return result;
   }
 
-  private ResponseObject getRecurringTaskExecutors(RequestInfo reqInfo) {
-    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
-    if (!DataUtils.isId(rtId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
-    }
-
-    Set<Long> executors = getRecurringTaskExecutors(rtId);
-
-    if (executors.isEmpty()) {
-      return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.response(DataUtils.buildIdList(executors));
-    }
-  }
-
   private Set<Long> getRecurringTaskObservers(long rtId) {
     Set<Long> result = Sets.newHashSet();
 
@@ -1043,6 +1028,24 @@ public class CrmModuleBean implements BeeModule {
     return result;
   }
 
+  private Multimap<String, Long> getRelations(String filterColumn, long filterValue) {
+    Multimap<String, Long> res = HashMultimap.create();
+
+    for (String relation : CrmUtils.getRelations()) {
+      Long[] ids = qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, filterColumn, filterValue,
+          relation);
+
+      if (ids != null && ids.length > 0) {
+        String property = CrmUtils.translateRelationToTaskProperty(relation);
+
+        for (Long id : ids) {
+          res.put(property, id);
+        }
+      }
+    }
+    return res;
+  }
+
   private ResponseObject getRequestFiles(Long requestId) {
     Assert.state(DataUtils.isId(requestId));
 
@@ -1069,6 +1072,41 @@ public class CrmModuleBean implements BeeModule {
       files.add(sf);
     }
     return ResponseObject.response(files);
+  }
+
+  private ResponseObject getSchedulingData(RequestInfo reqInfo) {
+    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
+    if (!DataUtils.isId(rtId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
+    }
+    
+    Map<String, String> data = Maps.newHashMap(); 
+    
+    Set<Long> executors = getRecurringTaskExecutors(rtId);
+    if (!executors.isEmpty()) {
+      BeeRowSet users = qs.getViewData(CommonsConstants.VIEW_USERS, Filter.idIn(executors));
+      if (!DataUtils.isEmpty(users)) {
+        data.put(users.getViewName(), users.serialize());
+      }
+    }
+    
+    BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES,
+        Filter.isEqual(COL_RTD_RECURRING_TASK, new LongValue(rtId)));
+    if (!DataUtils.isEmpty(rtDates)) {
+      data.put(rtDates.getViewName(), rtDates.serialize());
+    }
+
+    BeeRowSet tasks = qs.getViewData(VIEW_TASKS,
+        Filter.isEqual(COL_RECURRING_TASK, new LongValue(rtId)));
+    if (!DataUtils.isEmpty(tasks)) {
+      data.put(tasks.getViewName(), tasks.serialize());
+    }
+
+    if (data.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(data);
+    }
   }
 
   private ResponseObject getTaskData(long taskId, Long eventId) {
@@ -1124,24 +1162,6 @@ public class CrmModuleBean implements BeeModule {
     }
 
     return result;
-  }
-
-  private Multimap<String, Long> getRelations(String filterColumn, long filterValue) {
-    Multimap<String, Long> res = HashMultimap.create();
-
-    for (String relation : CrmUtils.getRelations()) {
-      Long[] ids = qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, filterColumn, filterValue,
-          relation);
-
-      if (ids != null && ids.length > 0) {
-        String property = CrmUtils.translateRelationToTaskProperty(relation);
-
-        for (Long id : ids) {
-          res.put(property, id);
-        }
-      }
-    }
-    return res;
   }
 
   private List<Long> getTaskUsers(long taskId) {

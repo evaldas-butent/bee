@@ -20,6 +20,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
@@ -52,11 +53,11 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
@@ -67,10 +68,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -288,69 +289,37 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   private static final String STYLE_OFFSPRING_STATUS = STYLE_OFFSPRING_PREFIX + "status";
   private static final String STYLE_OFFSPRING_DELETE = STYLE_OFFSPRING_PREFIX + "delete";
 
-  private static void getDateModes(Long rtId, final Consumer<List<DateMode>> consumer) {
-    if (DataUtils.isId(rtId)) {
-      Queries.getRowSet(VIEW_RT_DATES,
-          Lists.newArrayList(COL_RTD_FROM, COL_RTD_UNTIL, COL_RTD_MODE),
-          Filter.isEqual(COL_RTD_RECURRING_TASK, new LongValue(rtId)),
-          new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              List<DateMode> dateModes = Lists.newArrayList();
+  private static List<DateMode> getDateModes(BeeRowSet rowSet) {
+    List<DateMode> dateModes = Lists.newArrayList();
 
-              if (!DataUtils.isEmpty(result)) {
-                for (BeeRow row : result.getRows()) {
-                  JustDate from = row.getDate(0);
-                  JustDate until = row.getDate(1);
+    int fromIndex = rowSet.getColumnIndex(COL_RTD_FROM);
+    int untilIndex = rowSet.getColumnIndex(COL_RTD_UNTIL);
+    int modeIndex = rowSet.getColumnIndex(COL_RTD_MODE);
 
-                  ScheduleDateMode mode =
-                      EnumUtils.getEnumByIndex(ScheduleDateMode.class, row.getInteger(2));
+    for (BeeRow row : rowSet.getRows()) {
+      JustDate from = row.getDate(fromIndex);
+      JustDate until = row.getDate(untilIndex);
 
-                  if (from != null && mode != null) {
-                    DateRange range;
-                    if (until == null || from.equals(until)) {
-                      range = DateRange.day(from);
-                    } else if (TimeUtils.isLess(from, until)) {
-                      range = DateRange.closed(from, until);
-                    } else {
-                      range = null;
-                    }
+      ScheduleDateMode mode =
+          EnumUtils.getEnumByIndex(ScheduleDateMode.class, row.getInteger(modeIndex));
 
-                    if (range != null) {
-                      dateModes.add(new DateMode(range, mode));
-                    }
-                  }
-                }
-              }
-
-              consumer.accept(dateModes);
-            }
-          });
-
-    } else {
-      consumer.accept(new ArrayList<DateMode>());
-    }
-  }
-
-  private static void getFertility(Long rtId, final Consumer<Boolean> consumer) {
-    if (DataUtils.isId(rtId)) {
-      ParameterList params = CrmKeeper.createArgs(SVC_RT_GET_EXECUTORS);
-      params.addQueryItem(VAR_RT_ID, rtId);
-
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasResponse(String.class)) {
-            consumer.accept(!BeeUtils.isEmpty(response.getResponseAsString()));
-          } else {
-            consumer.accept(false);
-          }
+      if (from != null && mode != null) {
+        DateRange range;
+        if (until == null || from.equals(until)) {
+          range = DateRange.day(from);
+        } else if (TimeUtils.isLess(from, until)) {
+          range = DateRange.closed(from, until);
+        } else {
+          range = null;
         }
-      });
 
-    } else {
-      consumer.accept(false);
+        if (range != null) {
+          dateModes.add(new DateMode(range, mode));
+        }
+      }
     }
+
+    return dateModes;
   }
 
   private static void initDayOfMonthHelp(HasClickHandlers widget, final Element target) {
@@ -395,6 +364,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   }
 
   private final Multimap<Integer, BeeRow> offspring = ArrayListMultimap.create();
+
+  private BeeRowSet executors;
 
   RecurringTaskHandler() {
   }
@@ -479,29 +450,31 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         @Override
         public void onClick(ClickEvent event) {
           IsRow activeRow = getActiveRow();
-          if (validateBounds(activeRow)) {
-            final long id = activeRow.getId();
+          if (!validateBounds(activeRow)) {
+            return;
+          }
 
-            getDateModes(id, new Consumer<List<DateMode>>() {
-              @Override
-              public void accept(final List<DateMode> dateModes) {
+          clearOffspring();
+          setExecutors(null);
 
-                getOffspring(id, new Runnable() {
+          if (DataUtils.hasId(activeRow)) {
+            int updateSize = Queries.update(getViewName(), getFormView().getDataColumns(),
+                getFormView().getOldRow(), activeRow, getFormView().getChildrenForUpdate(),
+                new RowCallback() {
                   @Override
-                  public void run() {
-
-                    getFertility(id, new Consumer<Boolean>() {
-                      @Override
-                      public void accept(Boolean fertile) {
-                        if (getActiveRowId() == id) {
-                          timeCube(dateModes, BeeUtils.isTrue(fertile));
-                        }
-                      }
-                    });
+                  public void onSuccess(BeeRow result) {
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                    showSchedule(result.getId());
                   }
                 });
-              }
-            });
+
+            if (updateSize == 0) {
+              showSchedule(activeRow.getId());
+            }
+
+          } else {
+            List<DateMode> dateModes = Lists.newArrayList();
+            timeCube(dateModes, false);
           }
         }
       });
@@ -544,39 +517,25 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     return true;
   }
 
+  private void addOffspring(BeeRowSet rowSet) {
+    int dateIndex = rowSet.getColumnIndex(COL_START_TIME);
+
+    for (BeeRow row : rowSet.getRows()) {
+      JustDate start = JustDate.get(row.getDateTime(dateIndex));
+      if (start != null) {
+        offspring.put(start.getDays(), row);
+      }
+    }
+  }
+
   private void clearOffspring() {
     if (!offspring.isEmpty()) {
       offspring.clear();
     }
   }
 
-  private void getOffspring(Long rtId, final Runnable callback) {
-    if (DataUtils.isId(rtId)) {
-      Queries.getRowSet(VIEW_TASKS, null, Filter.isEqual(COL_RECURRING_TASK, new LongValue(rtId)),
-          new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              clearOffspring();
-
-              if (!DataUtils.isEmpty(result)) {
-                int dateIndex = result.getColumnIndex(COL_START_TIME);
-
-                for (BeeRow row : result.getRows()) {
-                  JustDate start = JustDate.get(row.getDateTime(dateIndex));
-                  if (start != null) {
-                    offspring.put(start.getDays(), row);
-                  }
-                }
-              }
-
-              callback.run();
-            }
-          });
-
-    } else {
-      clearOffspring();
-      callback.run();
-    }
+  private BeeRowSet getExecutors() {
+    return executors;
   }
 
   private BeeRow getOffspringById(int dayNumber, Long taskId) {
@@ -608,11 +567,39 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     if (offspring.containsKey(dayNumber)) {
       showOffspring(target, dayNumber);
 
-    } else {
+    } else if (!DataUtils.isEmpty(getExecutors())) {
 
       String caption = Format.renderDateFull(new JustDate(dayNumber));
-      Global.confirm(caption, Icon.QUESTION,
-          Lists.newArrayList(Localized.getConstants().crmRTSpawnQuestion()),
+
+      List<String> messages = Lists.newArrayList();
+
+      List<Integer> indexes = Lists.newArrayList(
+          getExecutors().getColumnIndex(CommonsConstants.COL_FIRST_NAME),
+          getExecutors().getColumnIndex(CommonsConstants.COL_LAST_NAME));
+
+      int size = getExecutors().getNumberOfRows();
+      int maxCount = (size > 15) ? 10 : (size + 1);
+
+      int count = 0;
+      for (BeeRow row : getExecutors().getRows()) {
+        String userName = DataUtils.join(getExecutors().getColumns(), row, indexes,
+            BeeConst.STRING_SPACE);
+        messages.add(userName);
+
+        count++;
+        if (count >= maxCount) {
+          messages.add(BeeConst.ELLIPSIS + BeeUtils.bracket(size));
+          break;
+        }
+      }
+
+      if (size > 1) {
+        messages.add(Localized.getConstants().crmRTSpawnTasksQuestion());
+      } else {
+        messages.add(Localized.getConstants().crmRTSpawnTaskQuestion());
+      }
+
+      Global.confirm(caption, Icon.QUESTION, messages,
           Localized.getConstants().actionCreate(), Localized.getConstants().actionCancel(),
           new ConfirmationCallback() {
             @Override
@@ -729,6 +716,10 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     return panel;
   }
 
+  private void setExecutors(BeeRowSet executors) {
+    this.executors = executors;
+  }
+
   private void showOffspring(Element target, final int dayNumber) {
     Collection<BeeRow> data = offspring.get(dayNumber);
     if (BeeUtils.isEmpty(data)) {
@@ -821,6 +812,58 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     dialog.showRelativeTo(target);
   }
 
+  private void showSchedule(final long rtId) {
+    ParameterList params = CrmKeeper.createArgs(SVC_RT_GET_SCHEDULING_DATA);
+    params.addQueryItem(VAR_RT_ID, rtId);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (getFormView() == null || !getFormView().asWidget().isAttached()
+            || !DomUtils.isVisible(getFormView().getElement())) {
+          return;
+        }
+        if (!DataUtils.idEquals(getActiveRow(), rtId)) {
+          return;
+        }
+
+        if (response.hasErrors()) {
+          response.notify(getFormView());
+          return;
+        }
+
+        clearOffspring();
+        setExecutors(null);
+
+        List<DateMode> dateModes = Lists.newArrayList();
+
+        if (response.hasResponse()) {
+          Map<String, String> data = Codec.beeDeserializeMap(response.getResponseAsString());
+
+          if (data.containsKey(CommonsConstants.VIEW_USERS)) {
+            setExecutors(BeeRowSet.restore(data.get(CommonsConstants.VIEW_USERS)));
+          }
+
+          if (data.containsKey(VIEW_TASKS)) {
+            BeeRowSet tasks = BeeRowSet.restore(data.get(VIEW_TASKS));
+            if (!DataUtils.isEmpty(tasks)) {
+              addOffspring(tasks);
+            }
+          }
+
+          if (data.containsKey(VIEW_RT_DATES)) {
+            BeeRowSet rtDates = BeeRowSet.restore(data.get(VIEW_RT_DATES));
+            if (!DataUtils.isEmpty(rtDates)) {
+              dateModes.addAll(getDateModes(rtDates));
+            }
+          }
+        }
+
+        timeCube(dateModes, getExecutors() != null);
+      }
+    });
+  }
+
   private void timeCube(List<DateMode> dateModes, boolean fertile) {
     JustDate from = getDateValue(COL_RT_SCHEDULE_FROM);
     JustDate until = getDateValue(COL_RT_SCHEDULE_UNTIL);
@@ -899,18 +942,20 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     container.add(calendarPanel);
 
-    Flow infoPanel = new Flow(STYLE_INFO_PANEL);
+    if (Global.isDebug()) {
+      Flow infoPanel = new Flow(STYLE_INFO_PANEL);
 
-    List<Property> info = cron.getInfo();
-    for (Property p : info) {
-      Label infoLabel = new Label(p.getValue());
-      infoLabel.addStyleName(STYLE_INFO_LABEL);
-      infoLabel.setTitle(p.getName());
+      List<Property> info = cron.getInfo();
+      for (Property p : info) {
+        Label infoLabel = new Label(p.getValue());
+        infoLabel.addStyleName(STYLE_INFO_LABEL);
+        infoLabel.setTitle(p.getName());
 
-      infoPanel.add(infoLabel);
+        infoPanel.add(infoLabel);
+      }
+
+      container.add(infoPanel);
     }
-
-    container.add(infoPanel);
 
     StyleUtils.setMaxWidth(container, BeeKeeper.getScreen().getWidth() * 8 / 10);
     StyleUtils.setMaxHeight(container, BeeKeeper.getScreen().getHeight() * 8 / 10);

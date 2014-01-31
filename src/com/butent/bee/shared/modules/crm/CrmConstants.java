@@ -153,7 +153,7 @@ public final class CrmConstants {
   public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
 
-  public static final String SVC_RT_GET_EXECUTORS = "rt_get_executors";
+  public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
   public static final String SVC_RT_SPAWN = "rt_spawn";
   public static final String SVC_RT_COPY = "rt_copy";
 

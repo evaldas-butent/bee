@@ -2,6 +2,7 @@ package com.butent.bee.client.event;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.DOM;
@@ -111,8 +112,22 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     Assert.notNull(handler);
     INSTANCE.mouseDownPriorHandlers.remove(handler);
   }
+  
+  private static boolean isExternalElement(Element element) {
+    if (element == null) {
+      return false;
+    }
+    if (element.getId() != null && element.getId().startsWith("mce_")) {
+      return true;
+    }
+    if (element.getClassName() != null && element.getClassName().startsWith("mce-")) {
+      return true;
+    }
+    return false;
+  }
 
   private final List<PreviewHandler> handlers = Lists.newArrayList();
+
   private final List<PreviewHandler> mouseDownPriorHandlers = Lists.newArrayList();
 
   private int modalCount;
@@ -142,6 +157,10 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
   @Override
   public void onPreviewNativeEvent(NativePreviewEvent event) {
+    if (isExternalEvent(event)) {
+      return;
+    }
+
     if (modalCount == 0) {
       String type = event.getNativeEvent().getType();
 
@@ -197,7 +216,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       return (eventTarget == null) ? null : EventUtils.getTargetNode(eventTarget);
     }
   }
-
+  
   private int indexOf(PreviewHandler handler) {
     for (int i = 0; i < handlers.size(); i++) {
       if (BeeUtils.same(handler.getId(), handlers.get(i).getId())) {
@@ -207,6 +226,18 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     return BeeConst.UNDEF;
   }
 
+  private boolean isExternalEvent(NativePreviewEvent event) {
+    Node node = getTargetNode(event);
+    if (node == null) {
+      return false;
+    }
+    
+    if (Element.is(node) && isExternalElement(Element.as(node))) {
+      return true;
+    }
+    return isExternalElement(node.getParentElement());
+  }
+  
   private void maybeSortHandlers() {
     if (handlers.size() < 2) {
       return;

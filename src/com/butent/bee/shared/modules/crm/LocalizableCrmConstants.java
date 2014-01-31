@@ -70,7 +70,9 @@ public interface LocalizableCrmConstants {
   
   String crmRTCopyQuestion();
   
-  String crmRTSpawnQuestion();
+  String crmRTSpawnTaskQuestion();
+
+  String crmRTSpawnTasksQuestion();
 
   String crmSelectedSameExecutor();
 

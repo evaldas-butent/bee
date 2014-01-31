@@ -37,11 +37,6 @@
         <ChildSelector childTable="UserRoles" viewName="Roles" style="width: 400px;" 
           required="true" />
       </row>
-
-      <row>
-        <Label text="=groups" />
-        <ChildSelector childTable="UserGroups" viewName="UserGroupSettings" style="width: 400px;" />
-      </row>
     </Table>
       
     <br/>
