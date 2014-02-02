@@ -2309,7 +2309,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_MAIL_ORDER, VAR_ORDER);
     }
 
-    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, ComparisonFilter.compareId(orderId));
+    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, Filter.compareId(orderId));
     if (DataUtils.isEmpty(orderData)) {
       String msg = BeeUtils.joinWords(SVC_MAIL_ORDER, "order not found:", orderId);
       logger.severe(msg);

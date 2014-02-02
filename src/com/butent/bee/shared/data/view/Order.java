@@ -127,6 +127,13 @@ public class Order implements BeeSerializable {
     return order;
   }
 
+  public static Order ascending(String first, String second, String third) {
+    Order order = ascending(first, second);
+    order.add(third, true);
+
+    return order;
+  }
+
   private static final Splitter ITEM_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 

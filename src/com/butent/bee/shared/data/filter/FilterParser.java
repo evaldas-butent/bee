@@ -184,10 +184,10 @@ public final class FilterParser {
         IsColumn column2 = isColumn(value, columns);
 
         if (BeeUtils.same(colName, idColumnName)) {
-          flt = ComparisonFilter.compareId(operator, value);
+          flt = Filter.compareId(operator, value);
 
         } else if (BeeUtils.same(colName, versionColumnName)) {
-          flt = ComparisonFilter.compareVersion(operator, value);
+          flt = Filter.compareVersion(operator, value);
 
         } else if (column2 != null) {
           flt = ComparisonFilter.compareWithColumn(column, operator, column2);

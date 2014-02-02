@@ -24,7 +24,6 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -65,7 +64,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       CompoundFilter filter = Filter.and();
 
       for (IsRow row : grd.getRowData()) {
-        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(cargoIndex)));
+        filter.add(Filter.compareId(Operator.NE, row.getLong(cargoIndex)));
       }
       relation.setFilter(filter);
       relation.setCaching(Relation.Caching.QUERY);

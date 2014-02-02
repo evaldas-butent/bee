@@ -1021,7 +1021,7 @@ public class CalendarModuleBean implements BeeModule {
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
 
     if (BeeUtils.isLong(appId)) {
-      filter.add(ComparisonFilter.compareId(Operator.NE, BeeUtils.toLong(appId)));
+      filter.add(Filter.compareId(Operator.NE, BeeUtils.toLong(appId)));
     }
 
     filter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
@@ -1172,7 +1172,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(ucRowSet);
     }
 
-    BeeRowSet calRowSet = qs.getViewData(VIEW_CALENDARS, ComparisonFilter.compareId(calendarId));
+    BeeRowSet calRowSet = qs.getViewData(VIEW_CALENDARS, Filter.compareId(calendarId));
     if (calRowSet.isEmpty()) {
       return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
           "calendar not found");
@@ -1462,7 +1462,7 @@ public class CalendarModuleBean implements BeeModule {
     String rtIds = newRowSet.getTableProperty(COL_REMINDER_TYPE);
 
     String viewName = VIEW_APPOINTMENTS;
-    BeeRowSet oldRowSet = qs.getViewData(viewName, ComparisonFilter.compareId(appId));
+    BeeRowSet oldRowSet = qs.getViewData(viewName, Filter.compareId(appId));
     if (oldRowSet == null || oldRowSet.isEmpty()) {
       return ResponseObject.error(reqInfo.getService(), ": old row not found", appId);
     }

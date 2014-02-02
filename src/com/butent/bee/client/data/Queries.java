@@ -19,7 +19,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -143,7 +142,7 @@ public final class Queries {
   }
 
   public static void deleteRow(String viewName, long rowId) {
-    delete(viewName, ComparisonFilter.compareId(rowId), null);
+    delete(viewName, Filter.compareId(rowId), null);
   }
 
   public static void deleteRow(String viewName, long rowId, long version) {
@@ -544,7 +543,7 @@ public final class Queries {
   }
 
   public static void update(String viewName, long rowId, String column, Value value) {
-    update(viewName, ComparisonFilter.compareId(rowId), column, value, null);
+    update(viewName, Filter.compareId(rowId), column, value, null);
   }
 
   public static void update(final String viewName, Filter filter, String column, Value value,

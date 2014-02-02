@@ -2,7 +2,6 @@ package com.butent.bee.client.view.search;
 
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.time.DateTime;
@@ -23,12 +22,12 @@ public class VersionFilterSupplier extends DateTimeFilterSupplier {
     if (start == null && end == null) {
       return null;
     } else if (end == null) {
-      return ComparisonFilter.compareVersion(Operator.GE, start.getTime());
+      return Filter.compareVersion(Operator.GE, start.getTime());
     } else if (start == null) {
-      return ComparisonFilter.compareVersion(Operator.LT, end.getTime());
+      return Filter.compareVersion(Operator.LT, end.getTime());
     } else {
-      return Filter.and(ComparisonFilter.compareVersion(Operator.GE, start.getTime()),
-          ComparisonFilter.compareVersion(Operator.LT, end.getTime()));
+      return Filter.and(Filter.compareVersion(Operator.GE, start.getTime()),
+          Filter.compareVersion(Operator.LT, end.getTime()));
     }
   }
   
@@ -37,9 +36,9 @@ public class VersionFilterSupplier extends DateTimeFilterSupplier {
     if (emptiness == null) {
       return null;
     } else if (emptiness) {
-      return ComparisonFilter.compareVersion(Operator.LE, 0);
+      return Filter.compareVersion(Operator.LE, 0);
     } else {
-      return ComparisonFilter.compareVersion(Operator.GT, 0);
+      return Filter.compareVersion(Operator.GT, 0);
     }
   }
 }

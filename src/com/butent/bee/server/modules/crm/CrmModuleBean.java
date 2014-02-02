@@ -42,7 +42,10 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.io.StoredFile;
@@ -56,9 +59,13 @@ import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.time.CronExpression;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.ScheduleDateRange;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -73,6 +80,7 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 
 @Stateless
@@ -175,7 +183,10 @@ public class CrmModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_RT_COPY)) {
       response = copyRecurringTask(reqInfo);
-      
+
+    } else if (BeeUtils.same(svc, SVC_RT_SCHEDULE)) {
+      response = scheduleTasks(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -446,6 +457,14 @@ public class CrmModuleBean implements BeeModule {
     }
   }
 
+  @Schedule(hour = "4", persistent = false)
+  private void checkTaskStatus() {
+    logger.info("check task status timeout");
+
+    int count = maybeUpdateTaskStatus();
+    logger.info("check task status updated", count, "tasks");
+  }
+
   private ResponseObject commitTaskData(BeeRowSet data, Collection<Long> oldUsers,
       boolean checkUsers, Set<String> updatedRelations, Long eventId) {
 
@@ -540,13 +559,13 @@ public class CrmModuleBean implements BeeModule {
     }
     return ResponseObject.response(dataId);
   }
-  
+
   private ResponseObject copyRecurringTask(RequestInfo reqInfo) {
     Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
     if (!DataUtils.isId(rtId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
     }
-    
+
     BeeRowSet rowSet = qs.getViewData(VIEW_RECURRING_TASKS, Filter.compareId(rtId));
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.error(reqInfo.getService(), VIEW_RECURRING_TASKS, rtId,
@@ -554,18 +573,18 @@ public class CrmModuleBean implements BeeModule {
     }
 
     BeeRow row = rowSet.getRow(0);
-    
+
     DataUtils.setValue(rowSet, row, COL_RT_SCHEDULE_FROM,
         Integer.toString(TimeUtils.today().getDays() + 1));
     DataUtils.setValue(rowSet, row, COL_RT_SCHEDULE_UNTIL, null);
-    
+
     BeeRowSet insert = DataUtils.createRowSetForInsert(rowSet.getViewName(), rowSet.getColumns(),
         row);
     ResponseObject response = deb.commitRow(insert);
 
     if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
       long newId = ((BeeRow) response.getResponse()).getId();
-      
+
       qs.copyData(TBL_RT_EXECUTORS, COL_RTEX_RECURRING_TASK, rtId, newId);
       qs.copyData(TBL_RT_EXECUTOR_GROUPS, COL_RTEXGR_RECURRING_TASK, rtId, newId);
       qs.copyData(TBL_RT_OBSERVERS, COL_RTOB_RECURRING_TASK, rtId, newId);
@@ -576,7 +595,7 @@ public class CrmModuleBean implements BeeModule {
 
       qs.copyData(CommonsConstants.TBL_RELATIONS, COL_RECURRING_TASK, rtId, newId);
     }
-    
+
     return response;
   }
 
@@ -996,6 +1015,13 @@ public class CrmModuleBean implements BeeModule {
     return result;
   }
 
+  private SimpleRowSet getRecurringTaskFileData(long rtId) {
+    return qs.getData(new SqlSelect()
+        .addFields(TBL_RT_FILES, COL_RTF_FILE, COL_RTF_CAPTION)
+        .addFrom(TBL_RT_FILES)
+        .setWhere(SqlUtils.equals(TBL_RT_FILES, COL_RTF_RECURRING_TASK, rtId)));
+  }
+
   private Set<Long> getRecurringTaskObservers(long rtId) {
     Set<Long> result = Sets.newHashSet();
 
@@ -1079,9 +1105,9 @@ public class CrmModuleBean implements BeeModule {
     if (!DataUtils.isId(rtId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
     }
-    
-    Map<String, String> data = Maps.newHashMap(); 
-    
+
+    Map<String, String> data = Maps.newHashMap();
+
     Set<Long> executors = getRecurringTaskExecutors(rtId);
     if (!executors.isEmpty()) {
       BeeRowSet users = qs.getViewData(CommonsConstants.VIEW_USERS, Filter.idIn(executors));
@@ -1089,7 +1115,7 @@ public class CrmModuleBean implements BeeModule {
         data.put(users.getViewName(), users.serialize());
       }
     }
-    
+
     BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES,
         Filter.isEqual(COL_RTD_RECURRING_TASK, new LongValue(rtId)));
     if (!DataUtils.isEmpty(rtDates)) {
@@ -1097,7 +1123,8 @@ public class CrmModuleBean implements BeeModule {
     }
 
     BeeRowSet tasks = qs.getViewData(VIEW_TASKS,
-        Filter.isEqual(COL_RECURRING_TASK, new LongValue(rtId)));
+        Filter.isEqual(COL_RECURRING_TASK, new LongValue(rtId)),
+        Order.ascending(ALS_EXECUTOR_LAST_NAME, ALS_EXECUTOR_FIRST_NAME));
     if (!DataUtils.isEmpty(tasks)) {
       data.put(tasks.getViewName(), tasks.serialize());
     }
@@ -1109,8 +1136,34 @@ public class CrmModuleBean implements BeeModule {
     }
   }
 
+  private Set<JustDate> getSpawnedDates(long rtId, DateRange range) {
+    Set<JustDate> dates = Sets.newHashSet();
+
+    DateTime[] startTimes = qs.getDateTimeColumn(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TASKS, COL_START_TIME)
+        .addFrom(TBL_TASKS)
+        .setWhere(SqlUtils.equals(TBL_TASKS, COL_RECURRING_TASK, rtId)));
+
+    if (startTimes != null && startTimes.length > 0) {
+      for (DateTime startTime : startTimes) {
+        JustDate date = JustDate.get(startTime);
+        if (date == null) {
+          continue;
+        }
+
+        if (range != null && !range.contains(date)) {
+          continue;
+        }
+
+        dates.add(date);
+      }
+    }
+
+    return dates;
+  }
+
   private ResponseObject getTaskData(long taskId, Long eventId) {
-    BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, ComparisonFilter.compareId(taskId));
+    BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.error(SVC_GET_TASK_DATA, "task id: " + taskId + " not found");
     }
@@ -1435,6 +1488,44 @@ public class CrmModuleBean implements BeeModule {
     return resp;
   }
 
+  private int maybeUpdateTaskStatus() {
+    int updated = 0;
+
+    IsCondition where = SqlUtils.and(
+        SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskStatus.SCHEDULED.ordinal()),
+        SqlUtils.less(TBL_TASKS, COL_START_TIME, TimeUtils.startOfDay(1)));
+
+    SqlUpdate activate = new SqlUpdate(TBL_TASKS)
+        .addConstant(COL_STATUS, TaskStatus.ACTIVE.ordinal())
+        .setWhere(SqlUtils.and(where, SqlUtils.equals(TBL_TASKS, COL_EXECUTOR,
+            SqlUtils.field(TBL_TASKS, COL_OWNER))));
+
+    int activated = qs.updateData(activate);
+    if (activated > 0) {
+      updated += activated;
+    }
+
+    SqlUpdate pending = new SqlUpdate(TBL_TASKS)
+        .addConstant(COL_STATUS, TaskStatus.NOT_VISITED.ordinal())
+        .setWhere(SqlUtils.and(where, SqlUtils.notEqual(TBL_TASKS, COL_EXECUTOR,
+            SqlUtils.field(TBL_TASKS, COL_OWNER))));
+
+    int notVisited = qs.updateData(pending);
+    if (notVisited > 0) {
+      updated += notVisited;
+    }
+
+    return updated;
+  }
+
+  @Schedule(hour = "4", persistent = false)
+  private void recurringTaskSchedulingTimeout() {
+    logger.info("recurring task scheduling timeout ");
+
+    int count = scheduleRecurringTasks(DateRange.day(TimeUtils.today()));
+    logger.info("recurring task scheduler created", count, "tasks");
+  }
+
   private ResponseObject registerTaskDuration(long durationType, RequestInfo reqInfo) {
     Long date = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_DURATION_DATE));
     if (date == null) {
@@ -1510,57 +1601,185 @@ public class CrmModuleBean implements BeeModule {
         .setWhere(where));
   }
 
-  private ResponseObject spawnTasks(RequestInfo reqInfo) {
-    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
-    if (!DataUtils.isId(rtId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
-    }
+  private int scheduleRecurringTasks(DateRange defRange) {
+    int count = 0;
+    
+    String label = "scheduling tasks";
 
-    Integer dayNumber = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_RT_DAY));
-    if (!BeeUtils.isPositive(dayNumber)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_DAY);
-    }
+    JustDate defStart = defRange.getMinDate();
+    JustDate defEnd = defRange.getMaxDate();
 
-    BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, Filter.compareId(rtId));
+    Filter filter = Filter.and(
+        Filter.or(Filter.isNull(COL_RT_SCHEDULE_DAYS),
+            ComparisonFilter.isMoreEqual(COL_RT_SCHEDULE_DAYS, new IntegerValue(0))),
+        Filter.or(Filter.isNull(COL_RT_SCHEDULE_UNTIL),
+            ComparisonFilter.isMoreEqual(COL_RT_SCHEDULE_UNTIL, new DateValue(defStart))));
+
+    BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, filter);
     if (DataUtils.isEmpty(rtData)) {
-      return ResponseObject.error(reqInfo.getService(), VIEW_RECURRING_TASKS, rtId,
-          "not available");
+      logger.info(label, defRange, "no active recurring tasks found");
+      return count;
     }
-
-    BeeRow rtRow = rtData.getRow(0);
-
-    Set<Long> executors = getRecurringTaskExecutors(rtId);
-    if (executors.isEmpty()) {
-      return ResponseObject.error(reqInfo.getService(), rtId, "executors not available");
-    }
-
-    Set<Long> observers = getRecurringTaskObservers(rtId);
 
     List<BeeColumn> taskColumns = sys.getView(VIEW_TASKS).getRowSetColumns();
+    if (BeeUtils.isEmpty(taskColumns)) {
+      logger.severe(label, defRange, "task columns not available");
+      return count;
+    }
+
+    for (BeeRow rtRow : rtData.getRows()) {
+      long rtId = rtRow.getId();
+
+      Set<Long> executors = getRecurringTaskExecutors(rtId);
+      if (executors.isEmpty()) {
+        logger.debug(label, rtId, "has no executors");
+        continue;
+      }
+
+      JustDate from = DataUtils.getDate(rtData, rtRow, COL_RT_SCHEDULE_FROM);
+      if (from == null) {
+        logger.warning(label, rtId, COL_RT_SCHEDULE_FROM, "is null");
+        continue;
+      }
+
+      JustDate until = DataUtils.getDate(rtData, rtRow, COL_RT_SCHEDULE_UNTIL);
+      if (until != null && TimeUtils.isLess(until, from)) {
+        logger.warning(label, rtId, "invalid range", COL_RT_SCHEDULE_FROM, from,
+            COL_RT_SCHEDULE_UNTIL, until);
+        continue;
+      }
+
+      Integer days = DataUtils.getInteger(rtData, rtRow, COL_RT_SCHEDULE_DAYS);
+      if (BeeUtils.isNegative(days)) {
+        logger.debug(label, rtId, COL_RT_SCHEDULE_DAYS, days, "not scheduled");
+        continue;
+      }
+
+      JustDate min = TimeUtils.max(defStart, from);
+      JustDate max;
+
+      if (until == null) {
+        max = BeeUtils.isPositive(days) ? TimeUtils.nextDay(defEnd, days) : defEnd;
+      } else if (BeeUtils.isPositive(days)) {
+        max = TimeUtils.min(TimeUtils.nextDay(defEnd, days), until);
+      } else {
+        max = TimeUtils.min(defEnd, until);
+      }
+
+      if (TimeUtils.isLess(max, min)) {
+        logger.debug(label, rtId, "min", min, "max", max, "out of range", defRange);
+        continue;
+      }
+
+      CronExpression.Builder builder = new CronExpression.Builder(from, until)
+          .dayOfMonth(DataUtils.getString(rtData, rtRow, COL_RT_DAY_OF_MONTH))
+          .month(DataUtils.getString(rtData, rtRow, COL_RT_MONTH))
+          .dayOfWeek(DataUtils.getString(rtData, rtRow, COL_RT_DAY_OF_WEEK))
+          .year(DataUtils.getString(rtData, rtRow, COL_RT_YEAR))
+          .workdayTransition(EnumUtils.getEnumByIndex(WorkdayTransition.class,
+              DataUtils.getInteger(rtData, rtRow, COL_RT_WORKDAY_TRANSITION)));
+
+      BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES,
+          Filter.isEqual(COL_RTD_RECURRING_TASK, new LongValue(rtId)));
+
+      if (!DataUtils.isEmpty(rtDates)) {
+        List<ScheduleDateRange> scheduleDateRanges = CrmUtils.getScheduleDateRanges(rtDates);
+
+        for (ScheduleDateRange sdr : scheduleDateRanges) {
+          builder.rangeMode(sdr.getRange(), sdr.getMode());
+        }
+      }
+
+      CronExpression cron = builder.build();
+
+      List<JustDate> cronDates = cron.getDates(min, max);
+      if (cronDates.isEmpty()) {
+        logger.debug(label, rtId, "no cron dates in", min, max);
+        continue;
+      }
+
+      Set<JustDate> spawnedDates = getSpawnedDates(rtId, DateRange.closed(min, max));
+      if (!spawnedDates.isEmpty()) {
+        cronDates.removeAll(spawnedDates);
+        if (cronDates.isEmpty()) {
+          logger.debug(label, rtId, "all dates already spawned", spawnedDates);
+          continue;
+        }
+      }
+
+      Set<Long> observers = getRecurringTaskObservers(rtId);
+
+      Multimap<String, Long> relations = getRelations(COL_RECURRING_TASK, rtId);
+      SimpleRowSet fileData = getRecurringTaskFileData(rtId);
+
+      for (JustDate date : cronDates) {
+        Set<Long> tasks = spawnTasks(rtData.getColumns(), rtRow, date,
+            executors, observers, relations, fileData, taskColumns);
+
+        if (BeeUtils.isEmpty(tasks)) {
+          logger.severe(label, rtId, date, "no tasks created");
+          return count;
+        }
+
+        count += tasks.size();
+        logger.info("recurring task", rtId, "scheduled", date, tasks);
+      }
+    }
+
+    return count;
+  }
+
+  private ResponseObject scheduleTasks(RequestInfo reqInfo) {
+    Integer from = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_RT_SCHEDULE_FROM));
+    if (!BeeUtils.isPositive(from)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_RT_SCHEDULE_FROM);
+    }
+
+    Integer until = BeeUtils.toIntOrNull(reqInfo.getParameter(COL_RT_SCHEDULE_UNTIL));
+    if (BeeUtils.isPositive(until) && from > until) {
+      return ResponseObject.error(reqInfo.getService(), "invalid range", from, until);
+    }
+
+    DateRange range;
+    if (until == null) {
+      range = DateRange.day(new JustDate(from));
+    } else {
+      range = DateRange.closed(new JustDate(from), new JustDate(until));
+    }
+
+    int count = scheduleRecurringTasks(range);
+    return ResponseObject.response(count);
+  }
+
+  private Set<Long> spawnTasks(List<BeeColumn> rtColumns, BeeRow rtRow, JustDate date,
+      Set<Long> executors, Set<Long> observers, Multimap<String, Long> relations,
+      SimpleRowSet fileData, List<BeeColumn> taskColumns) {
+
+    long rtId = rtRow.getId();
 
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> values = Lists.newArrayList();
 
     columns.add(DataUtils.getColumn(COL_SUMMARY, taskColumns));
-    values.add(DataUtils.getString(rtData, rtRow, COL_SUMMARY));
+    values.add(DataUtils.getString(rtColumns, rtRow, COL_SUMMARY));
 
-    String description = DataUtils.getString(rtData, rtRow, COL_DESCRIPTION);
+    String description = DataUtils.getString(rtColumns, rtRow, COL_DESCRIPTION);
     if (!BeeUtils.isEmpty(description)) {
       columns.add(DataUtils.getColumn(COL_DESCRIPTION, taskColumns));
       values.add(description.trim());
     }
 
     columns.add(DataUtils.getColumn(COL_PRIORITY, taskColumns));
-    values.add(DataUtils.getString(rtData, rtRow, COL_PRIORITY));
+    values.add(DataUtils.getString(rtColumns, rtRow, COL_PRIORITY));
 
-    Long startAt = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow, COL_RT_START_AT));
-    DateTime startTime = TimeUtils.combine(new JustDate(dayNumber), startAt);
+    Long startAt = TimeUtils.parseTime(DataUtils.getString(rtColumns, rtRow, COL_RT_START_AT));
+    DateTime startTime = TimeUtils.combine(date, startAt);
 
     columns.add(DataUtils.getColumn(COL_START_TIME, taskColumns));
     values.add(BeeUtils.toString(startTime.getTime()));
 
-    Integer durationDays = DataUtils.getInteger(rtData, rtRow, COL_RT_DURATION_DAYS);
-    Long durationMillis = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow,
+    Integer durationDays = DataUtils.getInteger(rtColumns, rtRow, COL_RT_DURATION_DAYS);
+    Long durationMillis = TimeUtils.parseTime(DataUtils.getString(rtColumns, rtRow,
         COL_RT_DURATION_TIME));
 
     if (!BeeUtils.isPositive(durationDays) && !BeeUtils.isPositive(durationMillis)) {
@@ -1578,33 +1797,33 @@ public class CrmModuleBean implements BeeModule {
     columns.add(DataUtils.getColumn(COL_FINISH_TIME, taskColumns));
     values.add(BeeUtils.toString(finishMillis));
 
-    Long owner = DataUtils.getLong(rtData, rtRow, COL_OWNER);
+    Long owner = DataUtils.getLong(rtColumns, rtRow, COL_OWNER);
     columns.add(DataUtils.getColumn(COL_OWNER, taskColumns));
     values.add(owner.toString());
 
     columns.add(DataUtils.getColumn(COL_EXECUTOR, taskColumns));
     values.add(null);
 
-    Long company = DataUtils.getLong(rtData, rtRow, COL_COMPANY);
+    Long company = DataUtils.getLong(rtColumns, rtRow, COL_COMPANY);
     if (DataUtils.isId(company)) {
       columns.add(DataUtils.getColumn(COL_COMPANY, taskColumns));
       values.add(company.toString());
     }
 
-    Long contact = DataUtils.getLong(rtData, rtRow, COL_CONTACT);
+    Long contact = DataUtils.getLong(rtColumns, rtRow, COL_CONTACT);
     if (DataUtils.isId(contact)) {
       columns.add(DataUtils.getColumn(COL_CONTACT, taskColumns));
       values.add(contact.toString());
     }
 
-    Long reminder = DataUtils.getLong(rtData, rtRow, COL_RT_REMINDER);
+    Long reminder = DataUtils.getLong(rtColumns, rtRow, COL_RT_REMINDER);
     if (DataUtils.isId(reminder)) {
       columns.add(DataUtils.getColumn(COL_REMINDER, taskColumns));
       values.add(reminder.toString());
     }
 
-    Integer remindBefore = DataUtils.getInteger(rtData, rtRow, COL_RT_REMIND_BEFORE);
-    Long remindAt = TimeUtils.parseTime(DataUtils.getString(rtData, rtRow,
+    Integer remindBefore = DataUtils.getInteger(rtColumns, rtRow, COL_RT_REMIND_BEFORE);
+    Long remindAt = TimeUtils.parseTime(DataUtils.getString(rtColumns, rtRow,
         COL_RT_REMIND_AT));
 
     if (BeeUtils.isPositive(remindBefore) || BeeUtils.isPositive(remindAt)) {
@@ -1628,7 +1847,7 @@ public class CrmModuleBean implements BeeModule {
     values.add(null);
 
     columns.add(DataUtils.getColumn(COL_RECURRING_TASK, taskColumns));
-    values.add(rtId.toString());
+    values.add(BeeUtils.toString(rtId));
 
     BeeRowSet taskData = new BeeRowSet(VIEW_TASKS, columns);
     BeeRow taskRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
@@ -1638,27 +1857,21 @@ public class CrmModuleBean implements BeeModule {
       taskRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
     }
 
-    Multimap<String, Long> relations = getRelations(COL_RECURRING_TASK, rtId);
-    for (String property : relations.keySet()) {
-      taskRow.setProperty(property, DataUtils.buildIdList(relations.get(property)));
+    if (!relations.isEmpty()) {
+      for (String property : relations.keySet()) {
+        taskRow.setProperty(property, DataUtils.buildIdList(relations.get(property)));
+      }
     }
 
-    ResponseObject createResponse = createTasks(taskData, taskRow, owner);
-    if (createResponse.hasErrors() || !createResponse.hasResponse()) {
-      return createResponse;
+    ResponseObject response = createTasks(taskData, taskRow, owner);
+    if (response.hasErrors() || !response.hasResponse()) {
+      response.log(logger);
+
+      Set<Long> result = Sets.newHashSet();
+      return result;
     }
 
-    Set<Long> tasks = DataUtils.parseIdSet(createResponse.getResponseAsString());
-    BeeRowSet result = qs.getViewData(VIEW_TASKS, Filter.idIn(tasks));
-
-    if (DataUtils.isEmpty(result)) {
-      return ResponseObject.emptyResponse();
-    }
-
-    SimpleRowSet fileData = qs.getData(new SqlSelect()
-        .addFields(TBL_RT_FILES, COL_RTF_FILE, COL_RTF_CAPTION)
-        .addFrom(TBL_RT_FILES)
-        .setWhere(SqlUtils.equals(TBL_RT_FILES, COL_RTF_RECURRING_TASK, rtId)));
+    Set<Long> tasks = DataUtils.parseIdSet(response.getResponseAsString());
 
     if (!DataUtils.isEmpty(fileData)) {
       for (SimpleRow fileRow : fileData) {
@@ -1673,8 +1886,59 @@ public class CrmModuleBean implements BeeModule {
       }
     }
 
+    return tasks;
+  }
+
+  private ResponseObject spawnTasks(RequestInfo reqInfo) {
+    Long rtId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_RT_ID));
+    if (!DataUtils.isId(rtId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_ID);
+    }
+
+    Integer dayNumber = BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_RT_DAY));
+    if (!BeeUtils.isPositive(dayNumber)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_RT_DAY);
+    }
+
+    Long executor = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_EXECUTOR));
+
+    BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, Filter.compareId(rtId));
+    if (DataUtils.isEmpty(rtData)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_RECURRING_TASKS, rtId,
+          "not available");
+    }
+
+    Set<Long> executors;
+    if (DataUtils.isId(executor)) {
+      executors = Sets.newHashSet(executor);
+    } else {
+      executors = getRecurringTaskExecutors(rtId);
+      if (executors.isEmpty()) {
+        return ResponseObject.error(reqInfo.getService(), rtId, "executors not available");
+      }
+    }
+
+    Set<Long> observers = getRecurringTaskObservers(rtId);
+
+    Multimap<String, Long> relations = getRelations(COL_RECURRING_TASK, rtId);
+    SimpleRowSet fileData = getRecurringTaskFileData(rtId);
+
+    List<BeeColumn> taskColumns = sys.getView(VIEW_TASKS).getRowSetColumns();
+
+    Set<Long> tasks = spawnTasks(rtData.getColumns(), rtData.getRow(0), new JustDate(dayNumber),
+        executors, observers, relations, fileData, taskColumns);
+    if (tasks.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeRowSet result = qs.getViewData(VIEW_TASKS, Filter.idIn(tasks));
     return ResponseObject.response(result);
   }
+
+//  @Schedule(hour = "*", persistent = false)
+//  private void taskReminderTimeout() {
+//    logger.info("reminder timeout");
+//  }
 
   private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,
       BeeRow row) {

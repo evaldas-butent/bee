@@ -7,12 +7,19 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.ScheduleDateMode;
+import com.butent.bee.shared.time.ScheduleDateRange;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +32,42 @@ public final class CrmUtils {
     return ensureTaskPropertyToRelation().inverse().keySet();
   }
 
+  public static List<ScheduleDateRange> getScheduleDateRanges(BeeRowSet rowSet) {
+    List<ScheduleDateRange> result = Lists.newArrayList();
+    if (DataUtils.isEmpty(rowSet)) {
+      return result;
+    }
+
+    int fromIndex = rowSet.getColumnIndex(COL_RTD_FROM);
+    int untilIndex = rowSet.getColumnIndex(COL_RTD_UNTIL);
+    int modeIndex = rowSet.getColumnIndex(COL_RTD_MODE);
+
+    for (BeeRow row : rowSet.getRows()) {
+      JustDate from = row.getDate(fromIndex);
+      JustDate until = row.getDate(untilIndex);
+
+      ScheduleDateMode mode =
+          EnumUtils.getEnumByIndex(ScheduleDateMode.class, row.getInteger(modeIndex));
+
+      if (from != null && mode != null) {
+        DateRange range;
+        if (until == null || from.equals(until)) {
+          range = DateRange.day(from);
+        } else if (TimeUtils.isLess(from, until)) {
+          range = DateRange.closed(from, until);
+        } else {
+          range = null;
+        }
+
+        if (range != null) {
+          result.add(new ScheduleDateRange(range, mode));
+        }
+      }
+    }
+
+    return result;
+  }
+  
   public static List<Long> getTaskUsers(IsRow row, List<BeeColumn> columns) {
     List<Long> users = Lists.newArrayList();
 

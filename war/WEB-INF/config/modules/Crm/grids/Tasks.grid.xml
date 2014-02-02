@@ -3,7 +3,7 @@
   
   name="Tasks" viewName="Tasks" caption="=tasks"
   cacheData="false" asyncThreshold="-1" favorite="Summary"
-  order="TaskID desc"
+  order="Status, FinishTime, TaskID desc"
   >
   <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
@@ -15,6 +15,7 @@
     </PropColumn>
 
     <IdColumn name="Id" caption="=captionId" />
+    <DataColumn name="RecurringTask" readOnly="true" />
 
     <DataColumn name="Priority" />
     <DataColumn name="Summary" maxWidth="200" visible="true" />
@@ -29,7 +30,7 @@
     <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
       sortBy="ExecutorLastName ExecutorFirstName" />
 
-    <DataColumn name="StartTime" visible="true" />
+    <DataColumn name="StartTime" visible="true" readOnly="true" />
     <DataColumn name="FinishTime" />
   </g:columns>
   

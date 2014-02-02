@@ -750,7 +750,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private ResponseObject getDiscussionData(long discussionId, Long commentId) {
-    BeeRowSet rowSet = qs.getViewData(VIEW_DISCUSSIONS, ComparisonFilter.compareId(discussionId));
+    BeeRowSet rowSet = qs.getViewData(VIEW_DISCUSSIONS, Filter.compareId(discussionId));
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.emptyResponse();
     }

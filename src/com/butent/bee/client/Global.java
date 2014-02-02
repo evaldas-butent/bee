@@ -146,14 +146,25 @@ public class Global implements Module {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null);
+    confirm(caption, icon, messages, optionYes, optionNo, callback, null);
+  }
+
+  public static void confirm(String caption, Icon icon, List<String> messages,
+      String optionYes, String optionNo, ConfirmationCallback callback, Element target) {
+    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null,
+        target);
   }
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
+    confirmDelete(caption, icon, messages, callback, null);
+  }
+
+  public static void confirmDelete(String caption, Icon icon, List<String> messages,
+      ConfirmationCallback callback, Element target) {
     msgBoxen.confirm(caption, icon, messages, Localized.getConstants().delete(),
         Localized.getConstants().cancel(), callback, null,
-        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM));
+        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
   public static void debug(String s) {
@@ -162,7 +173,7 @@ public class Global implements Module {
 
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
-    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null);
+    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null, null);
   }
 
   public static CacheManager getCache() {
@@ -517,7 +528,7 @@ public class Global implements Module {
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
-        null, null, null, null);
+        null, null, null, null, null);
   }
 
   public static boolean nativeConfirm(String... lines) {

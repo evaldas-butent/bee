@@ -239,7 +239,7 @@ class SelectorHandler implements SelectorEvent.Handler {
             and.add(provider.getImmutableFilter());
 
             for (Long value : used) {
-              and.add(ComparisonFilter.compareId(Operator.NE, value));
+              and.add(Filter.compareId(Operator.NE, value));
             }
             filter = and;
           }

@@ -275,7 +275,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               }
             }
           }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.XX_LARGE),
-          StyleUtils.className(FontSize.MEDIUM), null);
+          StyleUtils.className(FontSize.MEDIUM), null, null);
     }
   }
 

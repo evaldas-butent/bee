@@ -69,6 +69,10 @@ public final class DateRange implements HasDateRange {
 
     return values;
   }
+  
+  public int size() {
+    return getMaxDays() - getMinDays() + 1;
+  }
 
   @Override
   public String toString() {

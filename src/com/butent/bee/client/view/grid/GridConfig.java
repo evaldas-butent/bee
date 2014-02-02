@@ -11,7 +11,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -387,7 +387,7 @@ class GridConfig {
       columnConfig.row.setValue(index, newValue);
 
       Queries.update(ColumnDescription.VIEW_COLUMN_SETTINGS,
-          ComparisonFilter.compareId(columnConfig.row.getId()), dataColumn.getId(),
+          Filter.compareId(columnConfig.row.getId()), dataColumn.getId(),
           new TextValue(newValue), new Queries.IntCallback() {
             @Override
             public void onSuccess(Integer result) {

@@ -20,9 +20,9 @@
 
     <row>
       <Label text="=crmRTScheduleFrom" class="bee-required" />
-      <InputDate source="ScheduleFrom" />
+      <InputDate source="ScheduleFrom" style="width: 100px;" />
       <Label text="=crmRTScheduleUntil" />
-      <InputDate source="ScheduleUntil" />
+      <InputDate source="ScheduleUntil" style="width: 100px;" />
     </row>
 
     <row>

@@ -226,7 +226,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   
     CompoundFilter filter = or();
     for (Long value : values) {
-      filter.add(ComparisonFilter.compareId(value));
+      filter.add(compareId(value));
     }
     return filter;
   }
@@ -239,7 +239,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   
     CompoundFilter filter = and();
     for (Long value : values) {
-      filter.add(ComparisonFilter.compareId(Operator.NE, value));
+      filter.add(compareId(Operator.NE, value));
     }
     return filter;
   }

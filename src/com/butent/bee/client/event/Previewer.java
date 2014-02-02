@@ -112,7 +112,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     Assert.notNull(handler);
     INSTANCE.mouseDownPriorHandlers.remove(handler);
   }
-  
+
   private static boolean isExternalElement(Element element) {
     if (element == null) {
       return false;
@@ -157,10 +157,6 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
   @Override
   public void onPreviewNativeEvent(NativePreviewEvent event) {
-    if (isExternalEvent(event)) {
-      return;
-    }
-
     if (modalCount == 0) {
       String type = event.getNativeEvent().getType();
 
@@ -174,19 +170,19 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       }
     }
 
-    if (handlers.isEmpty()) {
-      return;
-
-    } else if (handlers.size() == 1) {
-      handlers.get(0).onEventPreview(event, getTargetNode(event));
-
-    } else {
+    if (!handlers.isEmpty() && !isExternalEvent(event)) {
       int size = handlers.size();
-      for (int i = size - 1; i >= 0; i--) {
-        if (i < handlers.size()) {
-          handlers.get(i).onEventPreview(event, getTargetNode(event));
-          if (event.isCanceled() || event.isConsumed()) {
-            break;
+
+      if (size == 1) {
+        handlers.get(0).onEventPreview(event, getTargetNode(event));
+
+      } else {
+        for (int i = size - 1; i >= 0; i--) {
+          if (i < handlers.size()) {
+            handlers.get(i).onEventPreview(event, getTargetNode(event));
+            if (event.isCanceled() || event.isConsumed()) {
+              break;
+            }
           }
         }
       }
@@ -216,7 +212,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       return (eventTarget == null) ? null : EventUtils.getTargetNode(eventTarget);
     }
   }
-  
+
   private int indexOf(PreviewHandler handler) {
     for (int i = 0; i < handlers.size(); i++) {
       if (BeeUtils.same(handler.getId(), handlers.get(i).getId())) {
@@ -231,13 +227,13 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     if (node == null) {
       return false;
     }
-    
+
     if (Element.is(node) && isExternalElement(Element.as(node))) {
       return true;
     }
     return isExternalElement(node.getParentElement());
   }
-  
+
   private void maybeSortHandlers() {
     if (handlers.size() < 2) {
       return;

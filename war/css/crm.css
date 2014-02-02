@@ -368,18 +368,27 @@
 }
 .bee-crm-rt-offspring-table tr:hover {
   background-color: blanchedalmond;
-  cursor: pointer;
 }
 .bee-crm-rt-offspring-table td {
   padding: 5px 10px;
   border-bottom: 1px solid #ccc;
 }
 
+.bee-crm-rt-offspring-open,
+.bee-crm-rt-offspring-create,
 .bee-crm-rt-offspring-delete {
   color: #888;
   font-size: 20px;
   padding: 2px;
   cursor: pointer;
+}
+.bee-crm-rt-offspring-open:hover {
+  background-color: gray;
+  color: white;
+}
+.bee-crm-rt-offspring-create:hover {
+  background-color: #080;
+  color: white;
 }
 .bee-crm-rt-offspring-delete:hover {
   background-color: red;

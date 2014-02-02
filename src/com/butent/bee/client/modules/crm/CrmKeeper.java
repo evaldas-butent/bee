@@ -8,19 +8,24 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -118,6 +123,30 @@ public final class CrmKeeper {
         params.addQueryItem(VAR_TASK_ID, input);
         
         BeeKeeper.getRpc().makeRequest(params);
+      }
+    });
+  }
+  
+  public static void scheduleTasks(final DateRange range) {
+    Assert.notNull(range);
+    
+    ParameterList params = createArgs(SVC_RT_SCHEDULE);
+    params.addQueryItem(COL_RT_SCHEDULE_FROM, range.getMinDays());
+    if (range.size() > 1) {
+      params.addQueryItem(COL_RT_SCHEDULE_UNTIL, range.getMaxDays());
+    }
+    
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse() && BeeUtils.isPositiveInt(response.getResponseAsString())) {
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+          BeeKeeper.getScreen().notifyInfo(BeeUtils.joinWords(range, "sheduled",
+              response.getResponseAsString(), "tasks"));
+
+        } else {
+          BeeKeeper.getScreen().notifyWarning(range.toString(), "no tasks sheduled");
+        }
       }
     });
   }

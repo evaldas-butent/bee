@@ -626,27 +626,6 @@ class TaskEditor extends AbstractFormInterceptor {
     return createParams(event, getNewRow(), comment);
   }
 
-  private void doActivate() {
-    final TaskDialog dialog =
-        new TaskDialog(Localized.getConstants().crmTaskForwardingForExecution());
-
-    final String cid = dialog.addComment(false);
-
-    dialog.addAction(Localized.getConstants().crmTaskForwardForExecution(), new ScheduledCommand() {
-      @Override
-      public void execute() {
-
-        ParameterList params = createParams(TaskEvent.ACTIVATE, getNewRow(TaskStatus.ACTIVE),
-            dialog.getComment(cid));
-
-        sendRequest(params, TaskEvent.ACTIVATE);
-        dialog.close();
-      }
-    });
-
-    dialog.display();
-  }
-
   private void doApprove() {
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskConfirmation());
 
@@ -814,9 +793,6 @@ class TaskEditor extends AbstractFormInterceptor {
         break;
 
       case ACTIVATE:
-        doActivate();
-        break;
-
       case CREATE:
       case VISIT:
       case EDIT:
@@ -1166,8 +1142,6 @@ class TaskEditor extends AbstractFormInterceptor {
         return TaskStatus.in(status, TaskStatus.COMPLETED) && userId != executor;
 
       case ACTIVATE:
-        return TaskStatus.in(status, TaskStatus.SCHEDULED);
-
       case CREATE:
       case EDIT:
       case VISIT:

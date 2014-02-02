@@ -286,7 +286,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     @Override
     protected Filter getFilter() {
       if (isPrimaryRequest(currentRow)) {
-        return ComparisonFilter.compareId(Operator.NE, currentRow.getId());
+        return Filter.compareId(Operator.NE, currentRow.getId());
       } else {
         return super.getFilter();
       }
@@ -318,7 +318,7 @@ public class AssessmentForm extends PrintFormInterceptor {
       if (isPrimaryRequest(currentRow) && !BeeUtils.isEmpty(preconditionError)) {
         Queries.getRowCount(TBL_CARGO_ASSESSORS, Filter.and(ComparisonFilter.isEqual(COL_CARGO,
             new LongValue(currentRow.getLong(getFormView().getDataIndex(COL_CARGO)))),
-            ComparisonFilter.compareId(Operator.NE, currentRow.getId()),
+            Filter.compareId(Operator.NE, currentRow.getId()),
             ComparisonFilter.isNotEqual(COL_STATUS, new IntegerValue(status.ordinal()))),
             new IntCallback() {
               @Override
@@ -361,7 +361,7 @@ public class AssessmentForm extends PrintFormInterceptor {
                     Queries.update(TBL_CARGO_ASSESSORS,
                         Filter.and(ComparisonFilter.isEqual(COL_CARGO,
                             new LongValue(result.getLong(formView.getDataIndex(COL_CARGO)))),
-                            ComparisonFilter.compareId(Operator.NE, result.getId())),
+                            Filter.compareId(Operator.NE, result.getId())),
                         COL_STATUS, new IntegerValue(status.ordinal()), new IntCallback() {
                           @Override
                           public void onSuccess(Integer res) {

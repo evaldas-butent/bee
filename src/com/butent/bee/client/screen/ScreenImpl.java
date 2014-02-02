@@ -524,7 +524,7 @@ public class ScreenImpl implements Screen {
               public void onConfirm() {
                 Bee.exit();
               }
-            }, null, StyleUtils.className(FontSize.MEDIUM), null);
+            }, null, StyleUtils.className(FontSize.MEDIUM), null, null);
       }
     });
 

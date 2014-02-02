@@ -155,6 +155,7 @@ public final class CrmConstants {
 
   public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
   public static final String SVC_RT_SPAWN = "rt_spawn";
+  public static final String SVC_RT_SCHEDULE = "rt_schedule";
   public static final String SVC_RT_COPY = "rt_copy";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
