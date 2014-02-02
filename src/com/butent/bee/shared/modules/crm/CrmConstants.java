@@ -273,6 +273,7 @@ public final class CrmConstants {
 
   public static final String COL_REMINDER = "Reminder";
   public static final String COL_REMINDER_TIME = "ReminderTime";
+  public static final String COL_REMINDER_SENT = "ReminderSent";
   public static final String COL_STATUS = "Status";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
 

@@ -8,6 +8,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -19,8 +20,10 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -31,6 +34,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -47,6 +51,10 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -56,6 +64,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -82,6 +91,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.ejb.Timer;
 
 @Stateless
 @LocalBean
@@ -101,6 +111,10 @@ public class CrmModuleBean implements BeeModule {
   NewsBean news;
   @EJB
   FileStorageBean fs;
+  @EJB
+  ParamHolderBean prm;
+  @EJB
+  MailModuleBean mail;
 
   @Resource
   EJBContext ctx;
@@ -1603,7 +1617,7 @@ public class CrmModuleBean implements BeeModule {
 
   private int scheduleRecurringTasks(DateRange defRange) {
     int count = 0;
-    
+
     String label = "scheduling tasks";
 
     JustDate defStart = defRange.getMinDate();
@@ -1749,6 +1763,137 @@ public class CrmModuleBean implements BeeModule {
 
     int count = scheduleRecurringTasks(range);
     return ResponseObject.response(count);
+  }
+
+  private int sendTaskReminders(long timeRemaining) {
+    int count = 0;
+    String label = "task reminders:";
+
+    Long senderAccount = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+    if (!DataUtils.isId(senderAccount)) {
+      logger.warning(label, "sender account not specified",
+          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
+      return count;
+    }
+
+    Long senderEmailId = qs.getLong(new SqlSelect()
+        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
+        .addFrom(MailConstants.TBL_ACCOUNTS)
+        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, senderAccount)));
+    if (!DataUtils.isId(senderEmailId)) {
+      logger.severe(label, "sender email id not available, account", senderAccount);
+      return count;
+    }
+
+    Set<Integer> statusValues = Sets.newHashSet(TaskStatus.NOT_VISITED.ordinal(),
+        TaskStatus.ACTIVE.ordinal(), TaskStatus.SCHEDULED.ordinal(),
+        TaskStatus.SUSPENDED.ordinal());
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
+            COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME, COL_REMINDER_TIME, COL_REMINDER_SENT)
+        .addFields(CommonsConstants.TBL_REMINDER_TYPES, CommonsConstants.COL_REMINDER_HOURS,
+            CommonsConstants.COL_REMINDER_MINUTES)
+        .addFrom(TBL_TASKS)
+        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
+            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_TASKS, COL_REMINDER))
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(TBL_TASKS, COL_STATUS, statusValues),
+            SqlUtils.more(TBL_TASKS, COL_FINISH_TIME, System.currentTimeMillis()),
+            SqlUtils.equals(CommonsConstants.TBL_REMINDER_TYPES,
+                CommonsConstants.COL_REMINDER_METHOD,
+                CommonsConstants.ReminderMethod.EMAIL.ordinal())))
+        .addOrder(TBL_TASKS, COL_TASK_ID);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return count;
+    }
+
+    for (SimpleRow row : data) {
+      long reminderMillis;
+
+      DateTime reminderTime = row.getDateTime(COL_REMINDER_TIME);
+      if (reminderTime == null) {
+        reminderMillis = row.getLong(COL_FINISH_TIME);
+
+        Integer hours = row.getInt(CommonsConstants.COL_REMINDER_HOURS);
+        Integer minutes = row.getInt(CommonsConstants.COL_REMINDER_MINUTES);
+
+        if (BeeUtils.isPositive(hours) || BeeUtils.isPositive(minutes)) {
+          if (BeeUtils.isPositive(hours)) {
+            reminderMillis -= hours * TimeUtils.MILLIS_PER_HOUR;
+          }
+          if (BeeUtils.isPositive(minutes)) {
+            reminderMillis -= minutes * TimeUtils.MILLIS_PER_MINUTE;
+          }
+        } else {
+          reminderMillis -= TimeUtils.MILLIS_PER_DAY;
+        }
+
+      } else {
+        reminderMillis = reminderTime.getTime();
+      }
+
+      boolean ok = System.currentTimeMillis() + timeRemaining / 2 > reminderMillis;
+      if (ok) {
+        Long sent = row.getLong(COL_REMINDER_SENT);
+        if (sent != null) {
+          ok = reminderMillis + TimeUtils.MILLIS_PER_MINUTE > sent;
+        }
+      }
+      if (!ok) {
+        continue;
+      }
+
+      Long taskId = row.getLong(COL_TASK_ID);
+      Long executor = row.getLong(COL_EXECUTOR);
+      if (!DataUtils.isId(taskId) || !DataUtils.isId(executor)) {
+        continue;
+      }
+
+      Long recipientEmailId = usr.getEmailId(executor, false);
+      if (recipientEmailId == null) {
+        logger.warning(label, "task", taskId, "executor", executor, "email not available");
+        continue;
+      }
+
+      LocalizableConstants constants = usr.getLocalizableConstants(executor);
+      if (constants == null) {
+        logger.warning(label, "task", taskId, "executor", executor, "localization not available");
+        continue;
+      }
+
+      Document document = taskToHtml(taskId, row.getDateTime(COL_START_TIME),
+          row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
+          row.getValue(COL_DESCRIPTION), row.getLong(COL_OWNER), executor, constants);
+      String content = document.buildLines();
+
+      logger.info(label, taskId, "mail to", executor, recipientEmailId);
+
+      ResponseObject mailResponse = mail.sendMail(senderEmailId, recipientEmailId,
+          constants.crmReminderMailSubject(), content);
+
+      if (mailResponse.hasErrors()) {
+        mailResponse.log(logger);
+        logger.severe(label, "mail error - canceled");
+        break;
+      }
+
+      count++;
+
+      ResponseObject updateResponse = qs.updateDataWithResponse(new SqlUpdate(TBL_TASKS)
+          .addConstant(COL_REMINDER_SENT, System.currentTimeMillis())
+          .setWhere(SqlUtils.equals(TBL_TASKS, COL_TASK_ID, taskId)));
+
+      if (updateResponse.hasErrors()) {
+        updateResponse.log(logger);
+        logger.severe(label, "update error - canceled");
+        break;
+      }
+    }
+
+    return count;
   }
 
   private Set<Long> spawnTasks(List<BeeColumn> rtColumns, BeeRow rtRow, JustDate date,
@@ -1935,10 +2080,71 @@ public class CrmModuleBean implements BeeModule {
     return ResponseObject.response(result);
   }
 
-//  @Schedule(hour = "*", persistent = false)
-//  private void taskReminderTimeout() {
-//    logger.info("reminder timeout");
-//  }
+  @Schedule(minute = "0,30", hour = "*", persistent = false)
+  private void taskReminderTimeout(Timer timer) {
+    long timeRemaining = timer.getTimeRemaining();
+    logger.info("task reminder timeout, time remainining", timeRemaining);
+
+    int count = sendTaskReminders(timeRemaining);
+    logger.info("sent", count, "task reminders");
+  }
+
+  private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,
+      String summary, String description, Long owner, Long executor,
+      LocalizableConstants constants) {
+
+    String caption = BeeUtils.joinWords(constants.crmTask(), taskId);
+
+    Document doc = new Document();
+
+    doc.getHead().append(
+        meta().encodingDeclarationUtf8(),
+        title().text(caption));
+
+    Div panel = div().backgroundColor(Colors.WHITESMOKE);
+    doc.getBody().append(panel);
+
+    panel.append(h3().text(caption));
+
+    Tbody fields = tbody().append(
+        tr().append(
+            td().text(constants.crmStartDate()), td().text(TimeUtils.renderCompact(startTime))),
+        tr().append(
+            td().text(constants.crmFinishDate()), td().text(TimeUtils.renderCompact(finishTime))),
+        tr().append(
+            td().text(constants.crmTaskSubject()), td().text(BeeUtils.trim(summary))));
+
+    if (!BeeUtils.isEmpty(description)) {
+      fields.append(tr().append(
+          td().text(constants.crmTaskDescription()),
+          td().text(BeeUtils.trim(description))));
+    }
+
+    if (owner != null) {
+      fields.append(tr().append(
+          td().text(constants.crmTaskManager()),
+          td().text(usr.getUserSign(owner))));
+    }
+
+    List<Long> taskUsers = getTaskUsers(taskId);
+    taskUsers.remove(owner);
+    taskUsers.remove(executor);
+
+    if (!taskUsers.isEmpty()) {
+      for (int i = 0; i < taskUsers.size(); i++) {
+        Td td = td();
+        if (i == 0) {
+          td.text(constants.crmTaskObservers());
+        }
+
+        fields.append(tr().append(td, td().text(usr.getUserSign(taskUsers.get(i)))));
+      }
+    }
+
+    panel.append(table().append(fields));
+
+    return doc;
+  }
 
   private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,
       BeeRow row) {

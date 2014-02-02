@@ -24,6 +24,7 @@
 
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
     <DateTime name="ReminderTime" label="=crmReminderDate" />
+    <DateTime name="ReminderSent" label="=crmReminderSent" />
 
     <Enum name="Status" key="TaskStatus" notNull="true" defValue="0" label="=crmTaskStatus" />
     

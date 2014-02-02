@@ -60,6 +60,8 @@ public interface LocalizableCrmConstants {
 
   String crmNewTask();
 
+  String crmReminderMailSubject();
+
   String crmReminderTimeMustBeGreaterThan();
 
   String crmReminderTimeMustBeLessThan();
@@ -102,6 +104,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskConfirmDate();
 
+  String crmTaskDescription();
+
   String crmTaskDeleteCanManager();
 
   String crmTaskDeleteQuestion();
@@ -138,6 +142,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskForwardingForExecution();
 
+  String crmTaskManager();
+  
   String crmTaskObservers();
 
   String crmTaskPriorityHigh();
@@ -171,6 +177,8 @@ public interface LocalizableCrmConstants {
   String crmTaskStatusScheduled();
 
   String crmTaskStatusSuspended();
+
+  String crmTaskSubject();
 
   String crmTaskSuspension();
 

@@ -1294,7 +1294,7 @@ public class CalendarModuleBean implements BeeModule {
             data.getInt(CommonsConstants.COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
-          Long sender = prm.getLong("DefaultAccount");
+          Long sender = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
           Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
               data.getValue(CommonsConstants.COL_EMAIL)));
 

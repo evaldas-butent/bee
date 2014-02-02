@@ -752,7 +752,7 @@ public class EcModuleBean implements BeeModule {
       Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
       if (!DataUtils.isId(recipient)) {
         Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
-        recipient = usr.getEmailId(userId);
+        recipient = usr.getEmailId(userId, true);
       }
 
       String login = DataUtils.getString(columns, row, COL_LOGIN);
@@ -2334,7 +2334,7 @@ public class EcModuleBean implements BeeModule {
     Long clientEmailId = null;
     if (!isClient
         || BeeUtils.isTrue(DataUtils.getBoolean(orderData, orderRow, COL_ORDER_COPY_BY_MAIL))) {
-      clientEmailId = usr.getEmailId(clientUser);
+      clientEmailId = usr.getEmailId(clientUser, true);
 
       if (DataUtils.isId(clientEmailId)) {
         recipients.add(clientEmailId);

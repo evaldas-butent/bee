@@ -334,6 +334,8 @@ public final class CommonsConstants {
   public static final String COL_COUNTRY_CODE = "Code";
 
   public static final String COL_REMINDER_METHOD = "Method";
+  public static final String COL_REMINDER_HOURS = "Hours";
+  public static final String COL_REMINDER_MINUTES = "Minutes";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
   public static final String COL_REMINDER_TEMPLATE = "Template";
 

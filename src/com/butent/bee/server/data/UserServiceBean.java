@@ -276,7 +276,7 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
-  public Long getEmailId(Long userId) {
+  public Long getEmailId(Long userId, boolean checkCompany) {
     if (userId == null) {
       return null;
     }
@@ -310,7 +310,7 @@ public class UserServiceBean {
       }
     }
 
-    if (DataUtils.isId(userInfo.getCompany())) {
+    if (checkCompany && DataUtils.isId(userInfo.getCompany())) {
       Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
           .addFrom(TBL_CONTACTS)
           .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))

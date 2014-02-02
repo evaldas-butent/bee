@@ -1448,7 +1448,8 @@ public final class CronExpression implements HasInfo {
     }
 
     if (!nearestWorkdays.isEmpty()) {
-      if (nearestWorkdays.contains(date.getDom())) {
+      if (nearestWorkdays.contains(date.getDom())
+          || nearestWorkdays.contains(date.getDom() - TimeUtils.monthLength(date))) {
         return nearestWorkday(date);
       } else if (!BeeUtils.isTrue(ok)) {
         return null; 

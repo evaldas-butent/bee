@@ -349,7 +349,8 @@ public class MailModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createNumber(MAIL_MODULE, "DefaultAccount", false, null),
+        BeeParameter.createRelation(MAIL_MODULE, PRM_DEFAULT_ACCOUNT, false,
+            TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION),
         BeeParameter.createText(MAIL_MODULE, "POP3Server", false, null),
         BeeParameter.createNumber(MAIL_MODULE, "POP3ServerPort", false, null),
         BeeParameter.createNumber(MAIL_MODULE, "POP3BindPort", false, null),

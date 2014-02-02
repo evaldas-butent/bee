@@ -82,6 +82,10 @@
           style="&inp4;" disablable="true" />
       </FlowPanel>
 
+      <FlowPanel style="&section;">
+        <DateTimeLabel source="ReminderSent" style="margin-left: 100px; font-size: 12px;" />
+      </FlowPanel>
+
       &separator;
       <FlowPanel style="&section;">
         <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;" />
