@@ -29,10 +29,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.grid.ChildGrid;
@@ -53,7 +50,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
@@ -115,6 +111,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
           + "| bold italic underline | alignleft aligncenter alignright alignjustify "
           + "| forecolor backcolor | bullist numlist outdent indent | fontselect fontsizeselect");
       JsUtils.setProperty(jso, "image_advtab", true);
+      JsUtils.setProperty(jso, "paste_data_images", true);
       JsUtils.setProperty(jso, "pagebreak_separator",
           "<div style=\"page-break-before:always;\"></div>");
 
@@ -238,14 +235,6 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   private final TinyEditor tinyEditor = new TinyEditor();
 
-  private final Button newDocumentButton = new Button(Localized.getConstants().documentNew(),
-      new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          createDocument();
-        }
-      });
-
   private final GridInterceptor childInterceptor = new AbstractGridInterceptor() {
     @Override
     public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -318,18 +307,6 @@ public class DocumentDataForm extends AbstractFormInterceptor
       return false;
     }
     return true;
-  }
-
-  @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-    if (getHeaderView() == null) {
-      return;
-    }
-    getHeaderView().clearCommandPanel();
-
-    if (!DataUtils.isNewRow(row)) {
-      getHeaderView().addCommandItem(newDocumentButton);
-    }
   }
 
   @Override
@@ -467,35 +444,6 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     input.addAutocompleteHandler(new AutocompleteFilter(null, value));
     return input;
-  }
-
-  private void createDocument() {
-    LocalizableConstants loc = Localized.getConstants();
-
-    Global.inputString(loc.documentNew(), loc.documentName(),
-        new StringCallback() {
-          @Override
-          public void onSuccess(final String value) {
-            DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
-                new IdCallback() {
-                  @Override
-                  public void onSuccess(Long dataId) {
-                    Queries.insert(TBL_DOCUMENTS,
-                        Data.getColumns(TBL_DOCUMENTS, Lists.newArrayList(COL_DOCUMENT_CATEGORY,
-                            COL_DOCUMENT_NAME, COL_DOCUMENT_DATA)),
-                        Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
-                            DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
-                        null, new RowInsertCallback(TBL_DOCUMENTS, null) {
-                          @Override
-                          public void onSuccess(BeeRow result) {
-                            super.onSuccess(result);
-                            RowEditor.openRow(TBL_DOCUMENTS, result, true);
-                          }
-                        });
-                  }
-                });
-          }
-        });
   }
 
   private void ensureDataId(IsRow row, final IdCallback callback) {

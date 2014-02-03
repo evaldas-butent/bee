@@ -21,7 +21,7 @@
       <page>
         <text>=content</text>
         <SimplePanel name="Content">
-          <div class="occupy-1" />
+          <div class="occupy" style="bottom:141px" />
         </SimplePanel>
       </page>
     </TabbedPages>

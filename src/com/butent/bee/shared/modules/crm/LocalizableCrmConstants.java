@@ -69,9 +69,9 @@ public interface LocalizableCrmConstants {
   String crmRequest();
 
   String crmRTActionSchedule();
-  
+
   String crmRTCopyQuestion();
-  
+
   String crmRTSpawnTaskQuestion();
 
   String crmRTSpawnTasksQuestion();
@@ -85,7 +85,7 @@ public interface LocalizableCrmConstants {
   String crmStartDate();
 
   String crmTask();
-  
+
   String crmTaskCancel();
 
   String crmTaskCancellation();
@@ -238,6 +238,8 @@ public interface LocalizableCrmConstants {
 
   String result();
 
+  String selectDocumentTemplate();
+
   String specifyResult();
 
   String startingDate();
@@ -267,7 +269,7 @@ public interface LocalizableCrmConstants {
   String taskLabelStarred();
 
   String taskReminder();
-  
+
   String tasks();
 
   String taskTemplate();

@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -21,6 +22,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -417,10 +419,13 @@ public final class DocumentHandler {
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
 
-    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentDataForm());
+    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentTemplateForm());
     FormFactory.registerFormInterceptor("Document", new DocumentForm());
+    FormFactory.registerFormInterceptor("DocumentItem", new DocumentDataForm());
 
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
+
+    TradeUtils.registerTotalRenderer(TBL_DOCUMENT_ITEMS, VAR_TOTAL);
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {

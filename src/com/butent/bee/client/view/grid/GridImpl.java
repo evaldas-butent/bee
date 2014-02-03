@@ -376,28 +376,30 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         dataIndex = DataUtils.getColumnIndex(source, dataColumns);
       }
     }
+    String label = Localized.maybeTranslate(cd.getLabel());
 
-    String caption = Localized.maybeTranslate(cd.getCaption());
-    if (BeeUtils.isEmpty(caption)) {
+    if (BeeUtils.isEmpty(label)) {
       int index;
       if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
         index = DataUtils.getColumnIndex(originalSource, dataColumns);
       } else {
         index = dataIndex;
       }
-
       if (!BeeConst.isUndef(index)) {
-        caption = Localized.getLabel(dataColumns.get(index));
+        label = Localized.getLabel(dataColumns.get(index));
       }
     }
+    String caption = Localized.maybeTranslate(cd.getCaption());
 
-    String label;
-    if (Captions.isCaption(caption)) {
-      label = caption;
-    } else {
-      label = BeeUtils.notEmpty(Localized.maybeTranslate(cd.getLabel()), columnId);
+    if (BeeUtils.isEmpty(caption)) {
+      caption = label;
+    } else if (BeeUtils.isEmpty(label)) {
+      if (Captions.isCaption(caption)) {
+        label = caption;
+      } else {
+        label = columnId;
+      }
     }
-
     String enumKey = cd.getEnumKey();
 
     CellSource cellSource;
