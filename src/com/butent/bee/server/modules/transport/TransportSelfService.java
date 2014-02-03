@@ -445,7 +445,7 @@ public class TransportSelfService extends LoginServlet {
           .append(button().typeSubmit().addClass(REG_STYLE_PREFIX + "submit")
               .text(constants.ok()))
           .action(
-              req.getServletContext().getContextPath());
+              req.getServletContext().getContextPath() + req.getServletPath());
 
       fields.append(tr().append(td(), td().append(redirectForm)));
 
