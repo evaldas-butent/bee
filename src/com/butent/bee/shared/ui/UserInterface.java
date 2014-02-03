@@ -224,7 +224,7 @@ public enum UserInterface implements HasCaption {
 
   public static final String MAIN_STYLE_SHEET = "bee";
 
-  public static final String TITLE = "B-novo";
+  public static final String TITLE = "B-NOVO";
 
   public static UserInterface getByShortName(String input) {
     for (UserInterface ui : values()) {

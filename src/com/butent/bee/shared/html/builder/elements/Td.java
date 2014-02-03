@@ -5,6 +5,7 @@ import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.FertileElement;
 import com.butent.bee.shared.html.builder.Node;
@@ -128,6 +129,11 @@ public class Td extends FertileElement {
 
   public Td verticalAlign(VerticalAlign verticalAlign) {
     setVerticalAlign(verticalAlign);
+    return this;
+  }
+  
+  public Td whiteSpace(WhiteSpace whiteSpace) {
+    setWhiteSpace(whiteSpace);
     return this;
   }
 }

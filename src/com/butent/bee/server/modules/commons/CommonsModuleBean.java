@@ -212,7 +212,7 @@ public class CommonsModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(COMMONS_MODULE, "ProgramTitle", false, "B-NOVO"),
+        BeeParameter.createText(COMMONS_MODULE, "ProgramTitle", false, UserInterface.TITLE),
         BeeParameter.createRelation(COMMONS_MODULE, PRM_COMPANY_NAME, false,
             TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createNumber(COMMONS_MODULE, PRM_VAT_PERCENT, false, 21),

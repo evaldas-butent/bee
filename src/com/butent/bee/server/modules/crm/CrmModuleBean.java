@@ -34,7 +34,10 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -51,7 +54,9 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
@@ -1839,7 +1844,7 @@ public class CrmModuleBean implements BeeModule {
       if (ok) {
         Long sent = row.getLong(COL_REMINDER_SENT);
         if (sent != null) {
-          ok = reminderMillis + TimeUtils.MILLIS_PER_MINUTE > sent;
+          ok = reminderMillis > sent + timeRemaining;
         }
       }
       if (!ok) {
@@ -2101,7 +2106,7 @@ public class CrmModuleBean implements BeeModule {
         meta().encodingDeclarationUtf8(),
         title().text(caption));
 
-    Div panel = div().backgroundColor(Colors.WHITESMOKE);
+    Div panel = div();
     doc.getBody().append(panel);
 
     panel.append(h3().text(caption));
@@ -2116,8 +2121,8 @@ public class CrmModuleBean implements BeeModule {
 
     if (!BeeUtils.isEmpty(description)) {
       fields.append(tr().append(
-          td().text(constants.crmTaskDescription()),
-          td().text(BeeUtils.trim(description))));
+          td().verticalAlign(VerticalAlign.TOP).text(constants.crmTaskDescription()),
+          td().whiteSpace(WhiteSpace.PRE_LINE).text(BeeUtils.trim(description))));
     }
 
     if (owner != null) {
@@ -2138,6 +2143,14 @@ public class CrmModuleBean implements BeeModule {
         }
 
         fields.append(tr().append(td, td().text(usr.getUserSign(taskUsers.get(i)))));
+      }
+    }
+    
+    List<Element> cells = fields.queryTag(Tags.TD);
+    for (Element cell : cells) {
+      if (cell.index() == 0) {
+        cell.setPaddingRight(1, CssUnit.EM);
+        cell.setFontWeight(FontWeight.BOLDER);
       }
     }
 

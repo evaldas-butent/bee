@@ -1,5 +1,5 @@
 var BeeSettings = {
-  appName: "B-novo",
+  appName: "B-NOVO",
   version: "1.01",
   logoImage: "images/logo.png",
   logoOpen: "http://www.butent.com",
