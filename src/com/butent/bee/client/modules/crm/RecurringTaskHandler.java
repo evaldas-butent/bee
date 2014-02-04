@@ -85,6 +85,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,9 +126,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     private final String source;
     private final int shift;
 
-    private Flow toggleContainer;
-    private HasHtml errorLabel;
-
     private Cron(Field field, String source, int shift) {
       this.field = field;
       this.source = source;
@@ -135,104 +133,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
 
     abstract String getLabel(int value);
-
-    private void clearErrors() {
-      if (errorLabel != null) {
-        errorLabel.setText(BeeConst.STRING_EMPTY);
-      }
-    }
-
-    private void clearValues() {
-      if (toggleContainer != null) {
-        for (int i = 0; i < toggleContainer.getWidgetCount(); i++) {
-          setValue(i, false);
-        }
-      }
-    }
-
-    private Consumer<Map<Integer, String>> getFailureHandler(final String input) {
-      if (errorLabel == null) {
-        return null;
-      }
-      clearErrors();
-
-      return new Consumer<Map<Integer, String>>() {
-        @Override
-        public void accept(Map<Integer, String> failures) {
-          StringBuilder sb = new StringBuilder();
-
-          int index = 0;
-          while (index < input.length()) {
-            if (failures.containsKey(index)) {
-              String failure = failures.get(index);
-              Span span = new Span().addClass(STYLE_FAILURE).text(failure);
-
-              sb.append(span.build());
-              index += failure.length();
-
-            } else {
-              sb.append(input.charAt(index));
-              index++;
-            }
-          }
-
-          errorLabel.setHtml(sb.toString());
-        }
-      };
-    }
-
-    private void initToggle(final Toggle toggle, final int value,
-        final RecurringTaskHandler handler) {
-      toggle.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          String updated = handler.updateCronValue(source, value, toggle.isDown());
-          refreshErrors(updated);
-        }
-      });
-    }
-
-    private void initValueContainer(Flow widget, RecurringTaskHandler handler) {
-      this.toggleContainer = widget;
-
-      for (int i = field.getMin(); i <= field.getMax(); i++) {
-        String text = getLabel(i);
-        Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
-
-        initToggle(toggle, i, handler);
-        toggleContainer.add(toggle);
-      }
-    }
-
-    private void refreshErrors(String input) {
-      if (BeeUtils.isEmpty(input)) {
-        clearErrors();
-      } else {
-        CronExpression.parseSimpleValues(field, input, getFailureHandler(input));
-      }
-    }
-
-    private void refreshValues(String input) {
-      Set<Integer> values = CronExpression.parseSimpleValues(field, input,
-          getFailureHandler(input));
-      setValues(values);
-    }
-
-    private void setValue(int index, boolean selected) {
-      Widget widget = toggleContainer.getWidget(index);
-      if (widget instanceof Toggle) {
-        ((Toggle) widget).setDown(selected);
-
-      }
-    }
-
-    private void setValues(Set<Integer> values) {
-      if (toggleContainer != null) {
-        for (int i = 0; i < toggleContainer.getWidgetCount(); i++) {
-          setValue(i, values.contains(i + shift));
-        }
-      }
-    }
   }
 
   private static final class DayOfMonth {
@@ -356,6 +256,9 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   private BeeRowSet executors;
   private final Map<Integer, String> dayElementIds = Maps.newHashMap();
 
+  private final EnumMap<Cron, Flow> toggleContainers = Maps.newEnumMap(Cron.class);
+  private final EnumMap<Cron, HasHtml> errorLabels = Maps.newEnumMap(Cron.class);
+
   RecurringTaskHandler() {
   }
 
@@ -377,17 +280,17 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       switch (name) {
         case "DomValues":
           if (widget instanceof Flow) {
-            Cron.DAY_OF_MONTH.initValueContainer((Flow) widget, this);
+            initValueContainer(Cron.DAY_OF_MONTH, (Flow) widget);
           }
           break;
         case "MonthValues":
           if (widget instanceof Flow) {
-            Cron.MONTH.initValueContainer((Flow) widget, this);
+            initValueContainer(Cron.MONTH, (Flow) widget);
           }
           break;
         case "DowValues":
           if (widget instanceof Flow) {
-            Cron.DAY_OF_WEEK.initValueContainer((Flow) widget, this);
+            initValueContainer(Cron.DAY_OF_WEEK, (Flow) widget);
           }
           break;
 
@@ -409,17 +312,17 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
         case "DomError":
           if (widget instanceof HasHtml) {
-            Cron.DAY_OF_MONTH.errorLabel = (HasHtml) widget;
+            errorLabels.put(Cron.DAY_OF_MONTH, (HasHtml) widget);
           }
           break;
         case "MonthError":
           if (widget instanceof HasHtml) {
-            Cron.MONTH.errorLabel = (HasHtml) widget;
+            errorLabels.put(Cron.MONTH, (HasHtml) widget);
           }
           break;
         case "DowError":
           if (widget instanceof HasHtml) {
-            Cron.DAY_OF_WEEK.errorLabel = (HasHtml) widget;
+            errorLabels.put(Cron.DAY_OF_WEEK, (HasHtml) widget);
           }
           break;
       }
@@ -472,7 +375,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
 
     for (Cron cron : Cron.values()) {
-      cron.refreshValues(getStringValue(cron.source));
+      refreshValues(cron, row.getString(form.getDataIndex(cron.source)));
     }
   }
 
@@ -495,11 +398,11 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       }
 
       if (BeeUtils.isEmpty(event.getNewValue())) {
-        cron.clearValues();
-        cron.clearErrors();
+        clearValues(cron);
+        clearErrors(cron);
 
       } else {
-        cron.refreshValues(event.getNewValue());
+        refreshValues(cron, event.getNewValue());
       }
     }
 
@@ -517,9 +420,25 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
+  private void clearErrors(Cron cron) {
+    HasHtml errorLabel = errorLabels.get(cron);
+    if (errorLabel != null) {
+      errorLabel.setText(BeeConst.STRING_EMPTY);
+    }
+  }
+
   private void clearOffspring() {
     if (!offspring.isEmpty()) {
       offspring.clear();
+    }
+  }
+
+  private void clearValues(Cron cron) {
+    Flow toggleContainer = toggleContainers.get(cron);
+    if (toggleContainer != null) {
+      for (int i = 0; i < toggleContainer.getWidgetCount(); i++) {
+        setValue(cron, i, false);
+      }
     }
   }
 
@@ -603,6 +522,37 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     return executors;
   }
 
+  private Consumer<Map<Integer, String>> getFailureHandler(final Cron cron, final String input) {
+    if (!errorLabels.containsKey(cron)) {
+      return null;
+    }
+    clearErrors(cron);
+
+    return new Consumer<Map<Integer, String>>() {
+      @Override
+      public void accept(Map<Integer, String> failures) {
+        StringBuilder sb = new StringBuilder();
+
+        int index = 0;
+        while (index < input.length()) {
+          if (failures.containsKey(index)) {
+            String failure = failures.get(index);
+            Span span = new Span().addClass(STYLE_FAILURE).text(failure);
+
+            sb.append(span.build());
+            index += failure.length();
+
+          } else {
+            sb.append(input.charAt(index));
+            index++;
+          }
+        }
+
+        errorLabels.get(cron).setHtml(sb.toString());
+      }
+    };
+  }
+
   private BeeRow getOffspring(Long id) {
     if (DataUtils.isId(id)) {
       for (BeeRow row : offspring.values()) {
@@ -679,6 +629,28 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
       default:
         Assert.untouchable();
+    }
+  }
+
+  private void initToggle(final Cron cron, final Toggle toggle, final int value) {
+    toggle.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        String updated = updateCronValue(cron.source, value, toggle.isDown());
+        refreshErrors(cron, updated);
+      }
+    });
+  }
+
+  private void initValueContainer(Cron cron, Flow widget) {
+    toggleContainers.put(cron, widget);
+
+    for (int i = cron.field.getMin(); i <= cron.field.getMax(); i++) {
+      String text = cron.getLabel(i);
+      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+
+      initToggle(cron, toggle, i);
+      widget.add(toggle);
     }
   }
 
@@ -785,11 +757,25 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
+  private void refreshErrors(Cron cron, String input) {
+    if (BeeUtils.isEmpty(input)) {
+      clearErrors(cron);
+    } else {
+      CronExpression.parseSimpleValues(cron.field, input, getFailureHandler(cron, input));
+    }
+  }
+
   private void refreshOffspring(Widget source, int dayNumber) {
     HtmlTable table = UiHelper.getParentTable(source);
     if (table != null) {
       renderOffspring(table, dayNumber);
     }
+  }
+
+  private void refreshValues(Cron cron, String input) {
+    Set<Integer> values = CronExpression.parseSimpleValues(cron.field, input,
+        getFailureHandler(cron, input));
+    setValues(cron, values);
   }
 
   private Widget renderMonth(YearMonth ym, List<DayOfMonth> days, boolean fertile) {
@@ -980,6 +966,22 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
   private void setExecutors(BeeRowSet executors) {
     this.executors = executors;
+  }
+
+  private void setValue(Cron cron, int index, boolean selected) {
+    Widget widget = toggleContainers.get(cron).getWidget(index);
+    if (widget instanceof Toggle) {
+      ((Toggle) widget).setDown(selected);
+
+    }
+  }
+
+  private void setValues(Cron cron, Set<Integer> values) {
+    if (toggleContainers.containsKey(cron)) {
+      for (int i = 0; i < toggleContainers.get(cron).getWidgetCount(); i++) {
+        setValue(cron, i, values.contains(i + cron.shift));
+      }
+    }
   }
 
   private void showSchedule(final long rtId) {

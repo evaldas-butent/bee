@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -134,6 +135,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
 
   void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
+  
+  boolean onRowInsert(RowInsertEvent event);
 
   void onSaveChanges(GridView gridView, SaveChangesEvent event);
 
