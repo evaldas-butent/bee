@@ -14,7 +14,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -24,6 +23,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class CommonsKeeper {
@@ -67,10 +67,10 @@ public final class CommonsKeeper {
     public FormInterceptor getInstance() {
       return this;
     }
-    
+
     @Override
     public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-      if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
+      if (BeeUtils.isEmpty(getStringValue(COL_PASSWORD))) {
         event.consume();
         changePassword();
       }
@@ -101,12 +101,14 @@ public final class CommonsKeeper {
         CommonsUtils.updateExchangeRates();
       }
     });
-    
+
     FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
     FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
+    FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
-    FormFactory.registerFormInterceptor("Parameter", new ParameterFormHandler());
+    GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
+    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UserGroupMembersInterceptor());
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

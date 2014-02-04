@@ -21,6 +21,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.mail.Flags;
@@ -46,6 +47,7 @@ public class MailAccount {
   private final String storeLogin;
   private final String storePassword;
   private final boolean storeSSL;
+  private final Map<String, String> storeProperties;
 
   private final Protocol transportProtocol = Protocol.SMTP;
   private final String transportHost;
@@ -53,6 +55,7 @@ public class MailAccount {
   private final String transportLogin;
   private final String transportPassword;
   private final boolean transportSSL;
+  private final Map<String, String> transportProperties;
 
   private final Long accountId;
   private final Long addressId;
@@ -70,32 +73,36 @@ public class MailAccount {
       storeLogin = null;
       storePassword = null;
       storeSSL = false;
+      storeProperties = null;
 
       transportHost = null;
       transportPort = null;
       transportLogin = null;
       transportPassword = null;
       transportSSL = false;
+      transportProperties = null;
 
       accountId = null;
       addressId = null;
     } else {
-      storeProtocol = EnumUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_STYPE));
+      storeProtocol = EnumUtils.getEnumByName(Protocol.class, data.getValue(COL_STORE_TYPE));
       storeHost = data.getValue(COL_STORE_SERVER);
       storePort = data.getInt(COL_STORE_SPORT);
       storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),
           data.getValue(CommonsConstants.COL_EMAIL));
-      storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD)) 
+      storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD))
           ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
       storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
+      storeProperties = Codec.beeDeserializeMap(data.getValue(COL_STORE_PROPERTIES));
 
       transportHost = data.getValue(COL_TRANSPORT_SERVER);
       transportPort = data.getInt(COL_TRANSPORT_PORT);
       transportLogin = BeeUtils.notEmpty(data.getValue(COL_TRANSPORT_LOGIN),
           data.getValue(CommonsConstants.COL_EMAIL));
-      transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD)) 
+      transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD))
           ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
       transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
+      transportProperties = Codec.beeDeserializeMap(data.getValue(COL_TRANSPORT_PROPERTIES));
 
       accountId = data.getLong(COL_ACCOUNT);
       addressId = data.getLong(CommonsConstants.COL_ADDRESS);
@@ -147,6 +154,10 @@ public class MailAccount {
     return BeeUtils.isPositive(storePort) ? storePort : -1;
   }
 
+  public Map<String, String> getStoreProperties() {
+    return storeProperties;
+  }
+
   public Protocol getStoreProtocol() {
     return storeProtocol;
   }
@@ -183,6 +194,10 @@ public class MailAccount {
 
   public Integer getTransportPort() {
     return BeeUtils.isPositive(transportPort) ? transportPort : -1;
+  }
+
+  public Map<String, String> getTransportProperties() {
+    return transportProperties;
   }
 
   public Protocol getTransportProtocol() {
@@ -240,13 +255,16 @@ public class MailAccount {
 
     String protocol = getStoreProtocol().name().toLowerCase();
     Properties props = new Properties();
+    String pfx = "mail." + protocol + ".";
 
     if (isStoreSSL()) {
-      props.put("mail." + protocol + ".ssl.enable", "true");
+      props.put(pfx + "ssl.enable", "true");
+    }
+    for (Entry<String, String> prop : getStoreProperties().entrySet()) {
+      String key = prop.getKey();
+      props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
     }
     Session session = Session.getInstance(props, null);
-    session.setDebug(logger.isDebugEnabled());
-
     Store store = session.getStore(protocol);
     store.connect(getStoreHost(), getStorePort(), getStoreLogin(), getStorePassword());
     return store;
@@ -260,19 +278,22 @@ public class MailAccount {
 
     String protocol = getTransportProtocol().name().toLowerCase();
     Properties props = new Properties();
+    String pfx = "mail." + protocol + ".";
 
     if (!BeeUtils.isEmpty(getTransportPassword())) {
-      props.put("mail." + protocol + ".auth", "true");
+      props.put(pfx + "auth", "true");
 
       if (isTransportSSL()) {
-        props.put("mail." + protocol + ".ssl.enable", "true");
+        props.put(pfx + "ssl.enable", "true");
       } else {
-        props.put("mail." + protocol + ".starttls.enable", "true");
+        props.put(pfx + "starttls.enable", "true");
       }
     }
+    for (Entry<String, String> prop : getTransportProperties().entrySet()) {
+      String key = prop.getKey();
+      props.put(BeeUtils.isPrefix(key, "mail.") ? key : pfx + key, prop.getValue());
+    }
     Session session = Session.getInstance(props, null);
-    session.setDebug(logger.isDebugEnabled());
-
     Transport transport = session.getTransport(protocol);
     transport.connect(getTransportHost(), getTransportPort(), getTransportLogin(),
         getTransportPassword());

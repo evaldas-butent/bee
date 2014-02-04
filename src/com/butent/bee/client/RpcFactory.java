@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -20,6 +21,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -62,12 +64,12 @@ public class RpcFactory implements Module {
 
     return ok;
   }
-
+  
   public ParameterList createParameters(String svc) {
     Assert.notEmpty(svc);
     return new ParameterList(svc);
   }
-  
+
   @Override
   public String getName() {
     return getClass().getName();
@@ -79,6 +81,17 @@ public class RpcFactory implements Module {
     } else {
       return BeeConst.STRING_EMPTY;
     }
+  }
+  
+  public List<RpcInfo> getPendingRequests() {
+    List<RpcInfo> result = Lists.newArrayList();
+    
+    for (RpcInfo info : rpcList.values()) {
+      if (info != null && info.isPending()) {
+        result.add(info);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -115,6 +128,15 @@ public class RpcFactory implements Module {
     } else {
       return info.getUserData();
     }
+  }
+
+  public boolean hasPendingRequests() {
+    for (RpcInfo info : rpcList.values()) {
+      if (info != null && info.isPending()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

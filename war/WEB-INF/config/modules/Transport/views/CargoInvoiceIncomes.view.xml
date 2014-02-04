@@ -41,18 +41,18 @@
       
       
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
-        <AggregateJoin name="Trip" joinType="LEFT">
-          <AggregateJoin name="Vehicle" joinType="LEFT">
+        <SimpleJoin name="Trip" joinType="LEFT">
+          <SimpleJoin name="Vehicle" joinType="LEFT">
             <AggregateColumn name="Number" alias="Vehicle" aggregate="MAX" />
-          </AggregateJoin>
-          <AggregateJoin name="Trailer" joinType="LEFT">
+          </SimpleJoin>
+          <SimpleJoin name="Trailer" joinType="LEFT">
             <AggregateColumn name="Number" alias="Trailer" aggregate="MAX" />
-          </AggregateJoin>
+          </SimpleJoin>
         
           <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
-            <AggregateJoin name="Driver" joinType="LEFT">
-              <AggregateJoin name="CompanyPerson" joinType="LEFT">
-                <AggregateJoin name="Person" joinType="LEFT">
+            <SimpleJoin name="Driver" joinType="LEFT">
+              <SimpleJoin name="CompanyPerson" joinType="LEFT">
+                <SimpleJoin name="Person" joinType="LEFT">
                   <HiddenColumn name="FirstName" />
                   <HiddenColumn name="LastName" />
                   <AggregateColumn name="Driver" aggregate="MAX">
@@ -65,11 +65,11 @@
                       </x:nvl>
                     </x:concat>
                   </AggregateColumn>
-                </AggregateJoin>
-              </AggregateJoin>
-            </AggregateJoin>
+                </SimpleJoin>
+              </SimpleJoin>
+            </SimpleJoin>
           </ExternalJoin>
-        </AggregateJoin>
+        </SimpleJoin>
         
       </ExternalJoin>
     </SimpleJoin>

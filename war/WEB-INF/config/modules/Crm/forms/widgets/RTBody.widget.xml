@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FlowPanel [
+  <!ENTITY tbl "border-collapse: collapse;">
+  <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
+  <!ENTITY col1 "text-align: right; padding-right: 8px;">
+  <!ENTITY clbl "text-align: right; padding-left: 8px; padding-right: 8px;">
+
+  <!ENTITY inp2x "width: 500px;">
+  <!ENTITY inp2y "width: 400px;">
+  
+  <!ENTITY spinner "width: 40px;">
+  
+  <!ENTITY tod "width: 50px;">
+  <!ENTITY timeStep "30">
+]>
+<FlowPanel xmlns="http://www.butent.com/widget">
+  <Table style="&tbl;" cellStyle="padding-bottom: 5px;">
+    <col index="0" cellStyle="&col1;" />
+    <col index="2" cellStyle="&clbl;" />
+
+    <row>
+      <Label text="=crmRTScheduleFrom" class="bee-required" />
+      <InputDate source="ScheduleFrom" style="width: 100px;" />
+      <Label text="=crmRTScheduleUntil" />
+      <InputDate source="ScheduleUntil" style="width: 100px;" />
+    </row>
+
+    <row>
+      <Label text="=crmRTScheduleDays" />
+      <InputSpinner source="ScheduleDays" minValue="-1" maxValue="999" style="width: 60px;" />
+      <Label text="=priority" />
+      <Radio source="Priority" />
+    </row>
+
+    <row>
+      <Label text="=company" />
+      <DataSelector source="Company" editPopup="true" newRowEnabled="false" />
+      <Label text="=personContact" />
+      <DataSelector source="Contact" editPopup="true" newRowEnabled="false"
+        renderColumns="ContactFirstName ContactLastName"
+        choiceColumns="FirstName LastName CompanyName" options="Company" />
+    </row>
+  </Table>
+  
+  <br/>
+  <Table style="&tbl;" cellStyle="&cell;">
+    <col index="0" cellStyle="&col1;" />
+
+    <row>
+      <Label text="=taskTheme" class="bee-required" />
+      <InputText source="Summary" style="&inp2x; margin-bottom: 1ex;" autocomplete="true" />
+    </row>
+
+    <row>
+      <Label text="=crmTaskExecutors" />
+      <ChildSelector childTable="RTExecutors" viewName="Users" renderColumns="FirstName LastName"
+        editPopup="true" newRowEnabled="false" style="&inp2x;" label="=crmTaskExecutors" />
+    </row>
+
+    <row>
+      <Label text="=crmTaskExecutorGroups" />
+      <ChildSelector childTable="RTExecutorGroups" viewName="UserGroupSettings"
+        renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;"
+        label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1" />
+    </row>
+
+    <row>
+      <Label text="=crmTaskObservers" />
+      <ChildSelector childTable="RTObservers" viewName="Users" renderColumns="FirstName LastName"
+        editPopup="true" newRowEnabled="false" style="&inp2x;" label="=crmTaskObservers" />
+    </row>
+
+    <row>
+      <Label text="=crmTaskObserverGroups" />
+      <ChildSelector childTable="RTObserverGroups" viewName="UserGroupSettings"
+        renderColumns="Name" editPopup="true" newRowEnabled="false"
+        style="&inp2y;" label="=crmTaskObserverGroups" filter="Owner {u} or Visibility 1" />
+    </row>
+  </Table>
+  
+  <br/>
+  <Table style="&tbl;" cellStyle="&cell;">
+    <col index="0" cellStyle="&col1;" />
+    <col index="2" cellStyle="&clbl;" />
+    <col index="4" cellStyle="&clbl;" />
+
+    <row>
+      <Label text="=crmRTStartAt" />
+      <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />
+      <Label text="=crmRTDurationDays" />
+      <InputSpinner source="DurationDays" minValue="0" maxValue="31" style="&spinner;" />
+      <Label text="=crmRTDurationTime" />
+      <InputTimeOfDay source="DurationTime" step="&timeStep;" style="&tod;" />
+    </row>
+
+    <row>
+      <Label text="=taskReminder" />
+      <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" 
+        style="width: 100px;" />
+      <Label text="=crmRTRemindBefore" />
+      <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="&spinner;" />
+      <Label text="=crmRTRemindAt" />
+      <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
+    </row>
+  </Table>
+</FlowPanel>

@@ -33,6 +33,8 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 /**
  * Handles mobile phone size screen implementation.
  */
@@ -90,8 +92,21 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
+  public List<IdentifiableWidget> getOpenWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+    if (getActiveWidget() != null) {
+      result.add(getActiveWidget());
+    }
+    return result;
+  }
+  
+  @Override
   public UserInterface getUserInterface() {
     return UserInterface.MOBILE;
+  }
+
+  @Override
+  public void onWidgetChange(IdentifiableWidget widget) {
   }
   
   @Override
@@ -178,7 +193,7 @@ public class Mobile extends ScreenImpl {
     Image play = new Image(Global.getImages().play(), new Command() {
       @Override
       public void execute() {
-        CliWorker.execute(cli.getValue());
+        CliWorker.execute(cli.getValue(), false);
       }
     });
     p.addLeftTop(play, pct + 4, CssUnit.PCT, 2, CssUnit.PX);

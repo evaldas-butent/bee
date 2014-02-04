@@ -9,19 +9,31 @@
     <Text name="Description" label="=crmTaskDescription" />
     <Enum name="Priority" key="TaskPriority" notNull="true" defValue="1" label="=crmTaskPriority" />
 
-    <DateTime name="Created" defExpr="CURRENT_TIME" label="=crmTaskCreated" />
-    <DateTime name="StartTime" label="=crmStartDate" />
-    <DateTime name="FinishTime" label="=crmFinishDate" />
-    <String name="ExpectedDuration" precision="10" label="=crmTaskExpectedDuration" />
-
-    <Text name="Recurrence" label="=crmRecurrence" />
-
-    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="=crmTaskManager" />
-    <Relation name="Executor" notNull="true" relation="Users" label="=crmTaskExecutor" />
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER"
+      label="=crmTaskManager" />
 
     <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
 
+    <Date name="ScheduleFrom" notNull="true" label="=crmRTScheduleFrom" />
+    <Date name="ScheduleUntil" label="=crmRTScheduleUntil" />
+
+    <Numeric name="ScheduleDays" precision="3" label="=crmRTScheduleDays" />
+
+    <Enum name="WorkdayTransition" key="WorkdayTransition" notNull="true" defValue="1" 
+      label="=crmRTWorkdayTransition" />
+
+    <String name="DayOfMonth" precision="100" label="=crmRTDayOfMonth" />
+    <String name="Month" precision="100" label="=crmRTMonth" />
+    <String name="DayOfWeek" precision="100" label="=crmRTDayOfWeek" />
+    <String name="Year" precision="100" label="=crmRTYear" />
+
+    <String name="StartAt" precision="10" label="=crmRTStartAt" />
+    <Numeric name="DurationDays" precision="2" defValue="1" label="=crmRTDurationDays" />
+    <String name="DurationTime" precision="10" label="=crmRTDurationTime" />
+
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
+    <Numeric name="RemindBefore" precision="2" defValue="1" label="=crmRTRemindBefore" />
+    <String name="RemindAt" precision="10" label="=crmRTRemindAt" />
   </Fields>
 </Table>

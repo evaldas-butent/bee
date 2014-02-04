@@ -30,13 +30,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Set;
 
 public class RowPresenter extends AbstractPresenter implements Printable, SaveChangesEvent.Handler {
-  
+
   private static final class Container extends Complex implements HasCaption, HasWidgetSupplier {
 
     private final DataInfo dataInfo;
     private final long rowId;
     private final String initialCaption;
-    
+
     private Container(DataInfo dataInfo, long rowId, String initialCaption) {
       super();
       this.dataInfo = dataInfo;
@@ -63,7 +63,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     public String getSupplierKey() {
       return RowEditor.getSupplierKey(dataInfo.getViewName(), rowId);
     }
-    
+
     private FormView getForm() {
       for (Widget child : getChildren()) {
         if (child instanceof FormView) {
@@ -82,11 +82,11 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
       return null;
     }
   }
-  
+
   public static final String STYLE_CONTAINER = "bee-RowContainer";
   public static final String STYLE_HEADER = "bee-RowHeader";
   public static final String STYLE_CAPTION = "bee-RowCaption";
-  
+
   private static HeaderView createHeader(String caption, Set<Action> enabledActions,
       Set<Action> disabledActions) {
 
@@ -96,17 +96,17 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     formHeader.create(caption, false, false, null, enabledActions, disabledActions,
         Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
-    
-    return formHeader; 
+
+    return formHeader;
   }
 
   private final DataInfo dataInfo;
   private final FormView formView;
-  
+
   private final Container container;
-  
+
   private HandlesActions actionDelegate;
-  
+
   public RowPresenter(FormView formView, DataInfo dataInfo, long rowId, String initialCaption,
       Set<Action> enabledActions, Set<Action> disabledActions) {
 
@@ -120,13 +120,13 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
     container.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     container.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
-    
+
     headerView.setViewPresenter(this);
     formView.setViewPresenter(this);
-    
+
     formView.addSaveChangesHandler(this);
   }
-  
+
   @Override
   public String getCaption() {
     return container.getCaption();
@@ -136,7 +136,7 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
   public HeaderView getHeader() {
     return container.getHeader();
   }
-  
+
   @Override
   public View getMainView() {
     return container.getForm();
@@ -151,14 +151,14 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
   public IdentifiableWidget getWidget() {
     return container;
   }
-  
+
   @Override
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);
     }
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     boolean ok;
@@ -193,7 +193,12 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
 
       @Override
       public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
+        RowUpdateEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result);
+
+        if (formView.getFormInterceptor() != null) {
+          formView.getFormInterceptor().afterUpdateRow(result);
+        }
+
         if (event.getCallback() != null) {
           event.getCallback().onSuccess(result);
         }
@@ -201,7 +206,8 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
     };
 
     if (DataUtils.isEmpty(updated)) {
-      Queries.updateChildren(dataInfo.getViewName(), event.getOldRow().getId(), event.getChildren(),
+      Queries.updateChildren(dataInfo.getViewName(), event.getOldRow().getId(),
+          event.getChildren(),
           updateCallback);
     } else {
       Queries.updateRow(updated, updateCallback);

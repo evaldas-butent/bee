@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -69,7 +70,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   }
 
   private void onBlock() {
-    String host = getDataValue(COL_QUERY_HOST);
+    String host = getStringValue(COL_QUERY_HOST);
     if (BeeUtils.isEmpty(host)) {
       return;
     }
@@ -90,7 +91,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     Global.confirm(Localized.getConstants().trConfirmCreateNewOrder(), new ConfirmationCallback() {
       @Override
       public void onConfirm() {
-        String companyName = getDataValue(COL_QUERY_CUSTOMER_NAME);
+        String companyName = getStringValue(COL_QUERY_CUSTOMER_NAME);
         if (BeeUtils.isEmpty(companyName)) {
           return;
         }
@@ -113,7 +114,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
             List<String> colNames = Lists.newArrayList(COL_CUSTOMER);
             List<String> values = Queries.asList(company);
 
-            String manager = getDataValue(COL_QUERY_MANAGER);
+            String manager = getStringValue(COL_QUERY_MANAGER);
             if (!BeeUtils.isEmpty(manager)) {
               colNames.add(COL_ORDER_MANAGER);
               values.add(manager);
@@ -130,7 +131,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
                 updateStatus(status);
                 refreshCommands(status);
 
-                DataChangeEvent.fireRefresh(VIEW_ORDERS);
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDERS);
               }
             });
           }
@@ -140,7 +141,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
   }
 
   private void putField(Map<String, String> parameters, String source, String destination) {
-    String value = getDataValue(source);
+    String value = getStringValue(source);
     if (!BeeUtils.isEmpty(value)) {
       parameters.put(destination, value.trim());
     }
@@ -170,7 +171,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         header.addCommandItem(this.activateCommand);
       }
 
-      if (!BeeUtils.isEmpty(getDataValue(COL_QUERY_HOST)) 
+      if (!BeeUtils.isEmpty(getStringValue(COL_QUERY_HOST)) 
           && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =

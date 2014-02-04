@@ -42,7 +42,8 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   private enum Serial {
-    ATTRIBUTES, SELECTOR_COLUMNS, ROW_RENDERER_DESCR, ROW_RENDER, ROW_RENDER_TOKENS
+    ATTRIBUTES, SELECTOR_COLUMNS, ROW_RENDERER_DESCR, ROW_RENDER, ROW_RENDER_TOKENS,
+    VIEW_NAME, CHOICE_COLUMNS, SEARCHABLE_COLUMNS
   }
 
   public static final String TAG_ROW_RENDERER = "rowRenderer";
@@ -308,6 +309,18 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
         case ROW_RENDER_TOKENS:
           setRowRenderTokens(RenderableToken.restoreList(value));
           break;
+
+        case CHOICE_COLUMNS:
+          setChoiceColumns(Lists.newArrayList(Codec.beeDeserializeCollection(value)));
+          break;
+
+        case SEARCHABLE_COLUMNS:
+          setSearchableColumns(Lists.newArrayList(Codec.beeDeserializeCollection(value)));
+          break;
+
+        case VIEW_NAME:
+          setViewName(value);
+          break;
       }
     }
   }
@@ -489,7 +502,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   }
 
   public void initialize(DataInfo.Provider provider, String targetView, Holder<String> target,
-      Holder<List<String>> renderColumns, RenderMode mode) {
+      Holder<List<String>> renderColumns, RenderMode mode, Long userId) {
 
     setTargetViewName(targetView);
 
@@ -567,7 +580,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
     if (sourceInfo != null) {
       if (!BeeUtils.isEmpty(flt)) {
-        setFilter(sourceInfo.parseFilter(flt));
+        setFilter(sourceInfo.parseFilter(flt, userId));
       }
       if (!BeeUtils.isEmpty(cuf)) {
         setCurrentUserFilter(cuf);
@@ -724,6 +737,15 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
           break;
         case ROW_RENDER_TOKENS:
           arr[i++] = getRowRenderTokens();
+          break;
+        case CHOICE_COLUMNS:
+          arr[i++] = getChoiceColumns();
+          break;
+        case SEARCHABLE_COLUMNS:
+          arr[i++] = getSearchableColumns();
+          break;
+        case VIEW_NAME:
+          arr[i++] = getViewName();
           break;
       }
     }

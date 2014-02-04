@@ -94,6 +94,9 @@ public final class Images {
     @Source("closeSmallRed.png")
     ImageResource closeSmallRed();
 
+    @Source("comments.png")
+    ImageResource comments();
+
     @Source("configure.png")
     ImageResource configure();
 
@@ -124,6 +127,9 @@ public final class Images {
     @Source("error.png")
     ImageResource error();
 
+    @Source("feed.png")
+    ImageResource feed();
+
     @Source("filter_delete.png")
     ImageResource filterDelete();
 
@@ -150,6 +156,9 @@ public final class Images {
 
     @Source("last.png")
     ImageResource last();
+
+    @Source("link.gif")
+    ImageResource link();
 
     @Source("loading.gif")
     ImageResource loading();
@@ -216,6 +225,9 @@ public final class Images {
 
     @Source("silver/plus_gray_17x18.png")
     ImageResource silverAdd();
+    
+    @Source("silver/bar_chart_24x24.png")
+    ImageResource silverBarChart();
 
     @Source("silver/bookmark_add_21x19.png")
     ImageResource silverBookmarkAdd();
@@ -232,6 +244,15 @@ public final class Images {
     @Source("silver/delete_17x18.png")
     ImageResource silverDelete();
 
+    @Source("silver/discuss_activate_17x18.png")
+    ImageResource silverDiscussActivate();
+
+    @Source("silver/discuss_close_17x18.png")
+    ImageResource silverDiscussClose();
+
+    @Source("silver/comment_17x18.png")
+    ImageResource silverDiscussComment();
+
     @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
 
@@ -241,6 +262,12 @@ public final class Images {
     @Source("silver/filter_remove_25x14.png")
     ImageResource silverFilterRemove();
     
+    @Source("silver/invoice_17x18.png")
+    ImageResource silverInvoive();
+
+    @Source("silver/mail_17x18.png")
+    ImageResource silverMail();
+
     @Source("silver/minus_button_17x18.png")
     ImageResource silverMinus();
     
@@ -250,11 +277,20 @@ public final class Images {
     @Source("silver/print_17x18.png")
     ImageResource silverPrint();
 
+    @Source("silver/profit_17x18.png")
+    ImageResource silverProfit();
+
     @Source("silver/reload_17x18.png")
     ImageResource silverReload();
 
+    @Source("silver/sad_24x24.png")
+    ImageResource silverSad();
+
     @Source("silver/save_17x18.png")
     ImageResource silverSave();
+
+    @Source("silver/smile_24x24.png")
+    ImageResource silverSmile();
 
     @Source("silver/tringle_down_11x9.png")
     ImageResource silverTringleDown();
@@ -262,6 +298,9 @@ public final class Images {
     @Source("silver/tringle_up_11x9.png")
     ImageResource silverTringleUp();
     
+    @Source("silver/truck_17x18.png")
+    ImageResource silverTruck();
+
     @Source("slider.gif")
     ImageResource slider();
 
@@ -273,6 +312,9 @@ public final class Images {
 
     @Source("undo.png")
     ImageResource undo();
+
+    @Source("user.png")
+    ImageResource user();
 
     @Source("warning.png")
     ImageResource warning();
@@ -355,6 +397,8 @@ public final class Images {
     map.put(key("closeSmall"), resources.closeSmall());
     map.put(key("closeSmallRed"), resources.closeSmallRed());
 
+    map.put(key("comments"), resources.comments());
+
     map.put(key("configure"), resources.configure());
 
     map.put(key("delete"), resources.delete());
@@ -373,6 +417,8 @@ public final class Images {
 
     map.put(key("error"), resources.error());
 
+    map.put(key("feed"), resources.feed());
+
     map.put(key("filterDelete"), resources.filterDelete());
 
     map.put(key("first"), resources.first());
@@ -389,6 +435,8 @@ public final class Images {
     map.put(key("information"), resources.information());
 
     map.put(key("last"), resources.last());
+
+    map.put(key("link"), resources.link());
 
     map.put(key("loading"), resources.loading());
 
@@ -433,6 +481,8 @@ public final class Images {
 
     map.put(key("undo"), resources.undo());
 
+    map.put(key("user"), resources.user());
+
     map.put(key("warning"), resources.warning());
 
     map.put(key("yellow"), resources.yellow());
@@ -440,20 +490,30 @@ public final class Images {
 
     map.put(key("silverAdd"), resources.silverAdd());
     map.put(key("silverBookmarkAdd"), resources.silverBookmarkAdd());
+    map.put(key("silverBarChart"), resources.silverBarChart());
     map.put(key("silverChatIcon"), resources.silverChatIcon());
     map.put(key("silverClose"), resources.silverClose());
     map.put(key("silverConfigure"), resources.silverConfigure());
     map.put(key("silverDelete"), resources.silverDelete());
+    map.put(key("silverDiscussActivate"), resources.silverDiscussActivate());
+    map.put(key("silverDiscussClose"), resources.silverDiscussClose());
+    map.put(key("silverDiscussComment"), resources.silverDiscussComment());
     map.put(key("silverEdit"), resources.silverEdit());
     map.put(key("silverFilter"), resources.silverFilter());
     map.put(key("silverFilterRemove"), resources.silverFilterRemove());
+    map.put(key("silverInvoice"), resources.silverInvoive());
+    map.put(key("silverMail"), resources.silverMail());
     map.put(key("silverMinus"), resources.silverMinus());
     map.put(key("silverPlus"), resources.silverPlus());
     map.put(key("silverPrint"), resources.silverPrint());
+    map.put(key("silverProfit"), resources.silverProfit());
     map.put(key("silverReload"), resources.silverReload());
     map.put(key("silverSave"), resources.silverSave());
+    map.put(key("silverSmile"), resources.silverSmile());
+    map.put(key("silverSad"), resources.silverSad());
     map.put(key("silverTringleDown"), resources.silverTringleDown());
     map.put(key("silverTringleUp"), resources.silverTringleUp());
+    map.put(key("silverTruck"), resources.silverTruck());
   }
   
   public static List<NewFileInfo> sanitizeInput(Collection<NewFileInfo> input,

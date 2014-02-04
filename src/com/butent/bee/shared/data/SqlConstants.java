@@ -14,7 +14,7 @@ public final class SqlConstants {
    */
 
   public enum SqlDataType {
-    BOOLEAN, INTEGER, LONG, DOUBLE, DECIMAL, CHAR, STRING, TEXT, DATE, DATETIME;
+    BOOLEAN, INTEGER, LONG, DOUBLE, DECIMAL, CHAR, STRING, TEXT, BLOB, DATE, DATETIME;
 
     public Object getEmptyValue() {
       Object value = null;
@@ -32,6 +32,7 @@ public final class SqlConstants {
         case CHAR:
         case STRING:
         case TEXT:
+        case BLOB:
           value = "";
           break;
       }
@@ -61,6 +62,7 @@ public final class SqlConstants {
         case CHAR:
         case STRING:
         case TEXT:
+        case BLOB:
           return s;
       }
       return null;
@@ -85,6 +87,7 @@ public final class SqlConstants {
         case CHAR:
         case STRING:
         case TEXT:
+        case BLOB:
           return ValueType.TEXT;
       }
       return null;

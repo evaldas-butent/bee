@@ -598,7 +598,7 @@ public final class EventUtils {
   }
 
   public static void clearRegistry(Collection<? extends HandlerRegistration> registry) {
-    if (BeeUtils.isEmpty(registry)) {
+    if (!BeeUtils.isEmpty(registry)) {
       for (HandlerRegistration hr : registry) {
         hr.removeHandler();
       }

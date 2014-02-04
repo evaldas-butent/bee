@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -25,6 +26,7 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Image;
@@ -39,10 +41,9 @@ import java.util.List;
 /**
  * Contains presentation and logic of a slider bar user interface component.
  */
-public class SliderBar extends Focus implements RequiresResize, Editor {
-  /**
-   * Requires that classes implementing this interface have formatLabel method.
-   */
+public class SliderBar extends Focus implements RequiresResize, Editor,
+    HasValueChangeHandlers<String> {
+
   public interface LabelFormatter {
     String formatLabel(double value);
   }
@@ -148,6 +149,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     knobElement.getStyle().setPosition(Position.ABSOLUTE);
 
     sinkEvents(Event.MOUSEEVENTS | Event.ONMOUSEWHEEL | Event.KEYEVENTS | Event.FOCUSEVENTS);
+  }
+
+  @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addValueChangeHandler(handler);
   }
 
   @Override
@@ -413,7 +419,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor {
     }
 
     drawKnob(false);
-    
+
     if (fireEvents) {
       ValueChangeEvent.fire(this, BeeUtils.toString(this.curValue));
     }

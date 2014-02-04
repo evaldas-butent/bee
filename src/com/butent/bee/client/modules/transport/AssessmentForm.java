@@ -46,8 +46,8 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.WhiteSpace;
@@ -148,8 +148,8 @@ public class AssessmentForm extends PrintFormInterceptor {
       Queries.deleteRow(expeditionTrips, tripId, 0, new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
-          BeeKeeper.getBus().fireEvent(new RowDeleteEvent(expeditionTrips, tripId));
-          BeeKeeper.getBus().fireEvent(new RowDeleteEvent(presenter.getViewName(), row.getId()));
+          RowDeleteEvent.fire(BeeKeeper.getBus(), expeditionTrips, tripId);
+          RowDeleteEvent.fire(BeeKeeper.getBus(), presenter.getViewName(), row.getId());
           refresh();
         }
       });
@@ -207,7 +207,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     }
 
     private void refresh() {
-      DataChangeEvent.fireRefresh(TBL_CARGO_EXPENSES);
+      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_EXPENSES);
       refreshTotals();
     }
   }
@@ -216,7 +216,7 @@ public class AssessmentForm extends PrintFormInterceptor {
 
     @Override
     public void afterDeleteRow(long rowId) {
-      DataChangeEvent.fireRefresh(VIEW_ASSESSMENT_FORWARDERS);
+      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ASSESSMENT_FORWARDERS);
       refreshTotals();
     }
 
@@ -229,7 +229,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
           COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-        DataChangeEvent.fireRefresh(VIEW_ASSESSMENT_FORWARDERS);
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ASSESSMENT_FORWARDERS);
         refreshTotals();
       }
     }
@@ -286,7 +286,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     @Override
     protected Filter getFilter() {
       if (isPrimaryRequest(currentRow)) {
-        return ComparisonFilter.compareId(Operator.NE, currentRow.getId());
+        return Filter.compareId(Operator.NE, currentRow.getId());
       } else {
         return super.getFilter();
       }
@@ -318,7 +318,7 @@ public class AssessmentForm extends PrintFormInterceptor {
       if (isPrimaryRequest(currentRow) && !BeeUtils.isEmpty(preconditionError)) {
         Queries.getRowCount(TBL_CARGO_ASSESSORS, Filter.and(ComparisonFilter.isEqual(COL_CARGO,
             new LongValue(currentRow.getLong(getFormView().getDataIndex(COL_CARGO)))),
-            ComparisonFilter.compareId(Operator.NE, currentRow.getId()),
+            Filter.compareId(Operator.NE, currentRow.getId()),
             ComparisonFilter.isNotEqual(COL_STATUS, new IntegerValue(status.ordinal()))),
             new IntCallback() {
               @Override
@@ -361,15 +361,15 @@ public class AssessmentForm extends PrintFormInterceptor {
                     Queries.update(TBL_CARGO_ASSESSORS,
                         Filter.and(ComparisonFilter.isEqual(COL_CARGO,
                             new LongValue(result.getLong(formView.getDataIndex(COL_CARGO)))),
-                            ComparisonFilter.compareId(Operator.NE, result.getId())),
+                            Filter.compareId(Operator.NE, result.getId())),
                         COL_STATUS, new IntegerValue(status.ordinal()), new IntCallback() {
                           @Override
                           public void onSuccess(Integer res) {
                             if (status.isClosable()) {
-                              DataChangeEvent.fire(formView.getViewName(),
+                              DataChangeEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
                                   DataChangeEvent.CANCEL_RESET_REFRESH);
                             } else {
-                              DataChangeEvent.fireRefresh(TBL_CARGO_ASSESSORS);
+                              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_ASSESSORS);
                             }
                           }
                         });
@@ -533,8 +533,8 @@ public class AssessmentForm extends PrintFormInterceptor {
                   new RowCallback() {
                     @Override
                     public void onSuccess(BeeRow row) {
-                      BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, row));
-                      DataChangeEvent.fireRefresh(TBL_CARGO_ASSESSORS);
+                      RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, row);
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_ASSESSORS);
                     }
                   });
             }

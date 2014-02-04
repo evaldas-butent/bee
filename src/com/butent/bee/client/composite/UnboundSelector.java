@@ -70,6 +70,10 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
     return "unbound";
   }
 
+  public String getRenderedValue() {
+    return renderedValue;
+  }
+
   @Override
   public AbstractCellRenderer getRenderer() {
     return renderer;
@@ -167,10 +171,6 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
         }
       }
     });
-  }
-  
-  private String getRenderedValue() {
-    return renderedValue;
   }
 
   private boolean isHandledByForm() {

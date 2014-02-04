@@ -1,8 +1,10 @@
 package com.butent.bee.shared.modules.crm;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class CrmConstants {
@@ -63,14 +65,49 @@ public final class CrmConstants {
     }
   }
 
-  public enum TaskStatus implements HasCaption {
-    NOT_VISITED(Localized.getConstants().crmTaskStatusNotVisited()),
-    ACTIVE(Localized.getConstants().crmTaskStatusActive()),
-    SCHEDULED(Localized.getConstants().crmTaskStatusScheduled()),
-    SUSPENDED(Localized.getConstants().crmTaskStatusSuspended()),
-    COMPLETED(Localized.getConstants().crmTaskStatusCompleted()),
-    APPROVED(Localized.getConstants().crmTaskStatusApproved()),
-    CANCELED(Localized.getConstants().crmTaskStatusCanceled());
+  public enum TaskStatus implements HasLocalizedCaption {
+    NOT_VISITED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusNotVisited();
+      }
+    },
+    ACTIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusActive();
+      }
+    },
+    SCHEDULED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusScheduled();
+      }
+    },
+    SUSPENDED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusSuspended();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusCompleted();
+      }
+    },
+    APPROVED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusApproved();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.crmTaskStatusCanceled();
+      }
+    };
 
     public static boolean in(int status, TaskStatus... statuses) {
       for (TaskStatus ts : statuses) {
@@ -81,15 +118,9 @@ public final class CrmConstants {
       return false;
     }
 
-    private final String caption;
-
-    private TaskStatus(String caption) {
-      this.caption = caption;
-    }
-
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
 
     public boolean is(Integer status) {
@@ -110,6 +141,8 @@ public final class CrmConstants {
 
   public static final String SVC_GET_TASK_DATA = "get_task_data";
   public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
+  public static final String SVC_ACCESS_TASK = "access_task";
+
   public static final String SVC_TASKS_REPORTS_PREFIX = "get_tasks_reports_";
   public static final String SVC_TASKS_REPORTS_COMPANY_TIMES = SVC_TASKS_REPORTS_PREFIX
       + "company_times";
@@ -117,7 +150,13 @@ public final class CrmConstants {
   public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
       + "users_hours";
 
+  public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
+
+  public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
+  public static final String SVC_RT_SPAWN = "rt_spawn";
+  public static final String SVC_RT_SCHEDULE = "rt_schedule";
+  public static final String SVC_RT_COPY = "rt_copy";
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
@@ -139,6 +178,11 @@ public final class CrmConstants {
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
 
+  public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
+
+  public static final String VAR_RT_ID = Service.RPC_VAR_PREFIX + "rt_id";
+  public static final String VAR_RT_DAY = Service.RPC_VAR_PREFIX + "rt_day";
+
   public static final String TBL_REQUESTS = "Requests";
   public static final String TBL_REQUEST_FILES = "RequestFiles";
 
@@ -150,6 +194,22 @@ public final class CrmConstants {
 
   public static final String TBL_EVENT_DURATIONS = "EventDurations";
 
+  public static final String TBL_DOCUMENT_CATEGORIES = "DocumentTree";
+  public static final String TBL_DOCUMENTS = "Documents";
+  public static final String TBL_DOCUMENT_FILES = "DocumentFiles";
+  public static final String TBL_DOCUMENT_ITEMS = "DocumentItems";
+  public static final String TBL_DOCUMENT_TEMPLATES = "DocumentTemplates";
+  public static final String TBL_DOCUMENT_DATA = "DocumentData";
+  public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
+  public static final String TBL_CRITERIA = "Criteria";
+
+  public static final String TBL_RT_DATES = "RTDates";
+  public static final String TBL_RT_FILES = "RTFiles";
+  public static final String TBL_RT_EXECUTORS = "RTExecutors";
+  public static final String TBL_RT_EXECUTOR_GROUPS = "RTExecutorGroups";
+  public static final String TBL_RT_OBSERVERS = "RTObservers";
+  public static final String TBL_RT_OBSERVER_GROUPS = "RTObserverGroups";
+
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_FILES = "TaskFiles";
@@ -160,23 +220,22 @@ public final class CrmConstants {
   public static final String VIEW_DURATION_TYPES = "DurationTypes";
 
   public static final String VIEW_RECURRING_TASKS = "RecurringTasks";
+  public static final String VIEW_RT_DATES = "RTDates";
+  public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_DOCUMENTS = "Documents";
-  public static final String VIEW_DOCUMENT_FILES = "DocumentFiles";
+
+  public static final String VIEW_MAIN_CRITERIA = "MainCriteria";
 
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
-  public static final String COL_FIRST_NAME = "FirstName";
-  public static final String COL_LAST_NAME = "LastName";
-
   public static final String COL_PRIORITY = "Priority";
 
   public static final String COL_OWNER = "Owner";
-
   public static final String COL_EXECUTOR = "Executor";
-  public static final String COL_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
-  public static final String COL_EXECUTOR_LAST_NAME = "ExecutorLastName";
+
+  public static final String COL_TASK_ID = "TaskID";
 
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
@@ -190,6 +249,7 @@ public final class CrmConstants {
   public static final String COL_ORDER = "Order";
 
   public static final String COL_DOCUMENT = "Document";
+  public static final String COL_DOCUMENT_NAME = "Name";
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
   public static final String COL_DOCUMENT_CATEGORY = "Category";
@@ -202,9 +262,6 @@ public final class CrmConstants {
   public static final String COL_DOCUMENT_STATUS_NAME = "StatusName";
 
   public static final String COL_FILE = "File";
-  public static final String COL_FILE_NAME = "FileName";
-  public static final String COL_FILE_SIZE = "FileSize";
-  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
@@ -213,19 +270,16 @@ public final class CrmConstants {
   public static final String COL_EXPIRES = "Expires";
 
   public static final String COL_COMPANY = "Company";
-  public static final String COL_COMPANY_NAME = "CompanyName";
   public static final String COL_CONTACT = "Contact";
-  public static final String COL_CONTACT_FIRST_NAME = "ContactFirstName";
-  public static final String COL_CONTACT_LAST_NAME = "ContactLastName";
 
   public static final String COL_REMINDER = "Reminder";
+  public static final String COL_REMINDER_TIME = "ReminderTime";
+  public static final String COL_REMINDER_SENT = "ReminderSent";
   public static final String COL_STATUS = "Status";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
 
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PUBLISHER = "Publisher";
-  public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
-  public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
 
   public static final String COL_COMMENT = "Comment";
 
@@ -246,9 +300,6 @@ public final class CrmConstants {
   public static final String COL_APPROVED = "Approved";
 
   public static final String COL_PERSON = "Person";
-  public static final String COL_PERSON_FIRST_NAME = "PersonFirstName";
-  public static final String COL_PERSON_LAST_NAME = "PersonLastName";
-  public static final String COL_PERSON_COMPANY_NAME = "PersonCompanyName";
 
   public static final String COL_REQUEST = "Request";
   public static final String COL_REQUEST_DATE = "Date";
@@ -256,12 +307,75 @@ public final class CrmConstants {
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_FINISHED = "Finished";
 
+  public static final String COL_DOCUMENT_TEMPLATE = "Template";
+  public static final String COL_DOCUMENT_TEMPLATE_NAME = "Name";
+  public static final String COL_DOCUMENT_DATA = "Data";
+  public static final String COL_DOCUMENT_CONTENT = "Content";
+  public static final String COL_CRITERIA_GROUP = "Group";
+  public static final String COL_CRITERIA_GROUP_NAME = "Name";
+  public static final String COL_CRITERION_NAME = "Criterion";
+  public static final String COL_CRITERION_VALUE = "Value";
+  public static final String COL_CRITERIA_SORT = "Sort";
+
+  public static final String COL_RECURRING_TASK = "RecurringTask";
+
+  public static final String COL_RT_SCHEDULE_FROM = "ScheduleFrom";
+  public static final String COL_RT_SCHEDULE_UNTIL = "ScheduleUntil";
+  public static final String COL_RT_SCHEDULE_DAYS = "ScheduleDays";
+  public static final String COL_RT_WORKDAY_TRANSITION = "WorkdayTransition";
+  public static final String COL_RT_DAY_OF_MONTH = "DayOfMonth";
+  public static final String COL_RT_MONTH = "Month";
+  public static final String COL_RT_DAY_OF_WEEK = "DayOfWeek";
+  public static final String COL_RT_YEAR = "Year";
+  public static final String COL_RT_START_AT = "StartAt";
+  public static final String COL_RT_DURATION_DAYS = "DurationDays";
+  public static final String COL_RT_DURATION_TIME = "DurationTime";
+  public static final String COL_RT_REMINDER = "Reminder";
+  public static final String COL_RT_REMIND_BEFORE = "RemindBefore";
+  public static final String COL_RT_REMIND_AT = "RemindAt";
+
+  public static final String COL_RTD_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTD_FROM = "DateFrom";
+  public static final String COL_RTD_UNTIL = "DateUntil";
+  public static final String COL_RTD_MODE = "Mode";
+
+  public static final String COL_RTF_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTF_FILE = "File";
+  public static final String COL_RTF_CAPTION = "Caption";
+
+  public static final String COL_RTEX_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTEX_USER = "User";
+  public static final String COL_RTEXGR_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTEXGR_GROUP = "Group";
+
+  public static final String COL_RTOB_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTOB_USER = "User";
+  public static final String COL_RTOBGR_RECURRING_TASK = "RecurringTask";
+  public static final String COL_RTOBGR_GROUP = "Group";
+
+  public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
+  public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
+
+  public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
+  public static final String ALS_EXECUTOR_LAST_NAME = "ExecutorLastName";
+
+  public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
+  public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
+
+  public static final String ALS_PERSON_FIRST_NAME = "PersonFirstName";
+  public static final String ALS_PERSON_LAST_NAME = "PersonLastName";
+  public static final String ALS_PERSON_COMPANY_NAME = "PersonCompanyName";
+
   public static final String PROP_EXECUTORS = "Executors";
+  public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";
+  public static final String PROP_OBSERVER_GROUPS = "ObserverGroups";
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";
+  public static final String PROP_DOCUMENTS = "Documents";
   public static final String PROP_APPOINTMENTS = "Appointments";
+  public static final String PROP_DISCUSSIONS = "Discussions";
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";
@@ -277,10 +391,16 @@ public final class CrmConstants {
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
+  public static final String GRID_RECURRING_TASKS = "RecurringTasks";
+  public static final String GRID_RT_FILES = "RTFiles";
+
   public static final String GRID_REQUESTS = "Requests";
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
+
+  public static final String FORM_RECURRING_TASK = "RecurringTask";
+
   public static final String FORM_TASKS_REPORT = "TasksReport";
 
   public static final String FORM_NEW_REQUEST = "NewRequest";
@@ -290,9 +410,10 @@ public final class CrmConstants {
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 
-  public static final String LABEL_OBSERVERS = Localized.getConstants().crmTaskObservers();
-
   public static final String STYLE_SHEET = "crm";
+
+  public static final String FILTER_TASKS_NEW = "tasks_new";
+  public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
   private CrmConstants() {
   }

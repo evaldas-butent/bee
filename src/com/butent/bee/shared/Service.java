@@ -61,12 +61,13 @@ public final class Service {
   public static final String GET_TABLE_INFO = DATA_SERVICE_PREFIX + "table_info";
   public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";
   public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
-  public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";
   public static final String DELETE = DATA_SERVICE_PREFIX + "delete";
+  public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
   public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
+  public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
@@ -80,6 +81,13 @@ public final class Service {
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
 
+  public static final String GET_AUTOCOMPLETE = DATA_SERVICE_PREFIX + "get_autocomplete";
+  public static final String UPDATE_AUTOCOMPLETE = DATA_SERVICE_PREFIX + "update_autocomplete";
+
+  public static final String GET_NEWS = DATA_SERVICE_PREFIX + "get_news";
+  public static final String SUBSCRIBE_TO_FEEDS = DATA_SERVICE_PREFIX + "subscribe_to_feeds";
+  public static final String ACCESS = DATA_SERVICE_PREFIX + "access";
+  
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -145,6 +153,7 @@ public final class Service {
   public static final String VAR_TABLE = RPC_VAR_PREFIX + "table";
   public static final String VAR_COLUMN = RPC_VAR_PREFIX + "column";
   public static final String VAR_VALUE = RPC_VAR_PREFIX + "value";
+  public static final String VAR_ID = RPC_VAR_PREFIX + "id";
 
   public static final String VAR_FILTER_COLUMN = RPC_VAR_PREFIX + "filter_column";
   public static final String VAR_VALUE_COLUMN = RPC_VAR_PREFIX + "value_column";
@@ -170,6 +179,9 @@ public final class Service {
 
   public static final String VAR_DSN = RPC_VAR_PREFIX + "dsn";
   public static final String VAR_UI = RPC_VAR_PREFIX + "ui";
+
+  public static final String VAR_PROGRESS = RPC_VAR_PREFIX + "progress";
+  public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

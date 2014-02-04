@@ -26,6 +26,9 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -41,6 +44,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -55,7 +59,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
@@ -64,6 +67,10 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -94,7 +101,7 @@ import javax.ejb.TimerService;
 @Lock(LockType.READ)
 public class CalendarModuleBean implements BeeModule {
 
-  private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notEmpty(COL_START_DATE_TIME),
+  private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notNull(COL_START_DATE_TIME),
       ComparisonFilter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
 
   private static BeeLogger logger = LogUtils.getLogger(CalendarModuleBean.class);
@@ -111,6 +118,9 @@ public class CalendarModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  NewsBean news;
+
   @Resource
   TimerService timerService;
 
@@ -202,8 +212,8 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (start != null) {
         DateTime time = TimeUtils.toDateTimeOrNull(start);
-        long from = BeeUtils.unbox(prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM));
-        long until = BeeUtils.unbox(prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL));
+        long from = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_FROM));
+        long until = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_UNTIL));
 
         if (from < until) {
           int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
@@ -238,7 +248,7 @@ public class CalendarModuleBean implements BeeModule {
             COL_ORGANIZER_FIRST_NAME, COL_ORGANIZER_LAST_NAME,
             COL_COMPANY_NAME, COL_COMPANY_EMAIL,
             COL_VEHICLE_NUMBER, COL_VEHICLE_PARENT_MODEL, COL_VEHICLE_MODEL), query),
-        DataUtils.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
+        Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
     BeeRowSet appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
     if (appointments != null) {
@@ -282,10 +292,10 @@ public class CalendarModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, ParameterType.TIME,
-            usr.getLocalizableConstants().calRemindersEarliestTime(), false, "8:00"),
-        new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, ParameterType.TIME,
-            usr.getLocalizableConstants().calRemindersLatestTime(), false, "18:00"));
+        BeeParameter.createTimeOfDay(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, false,
+            TimeUtils.parseTime("8:00")),
+        BeeParameter.createTimeOfDay(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, false,
+            TimeUtils.parseTime("18:00")));
   }
 
   @Override
@@ -351,6 +361,113 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
     });
+
+    news.registerUsageQueryProvider(Feed.APPOINTMENTS_MY, new UsageQueryProvider() {
+      @Override
+      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+
+        Long companyPerson = usr.getCompanyPerson(userId);
+        if (companyPerson == null) {
+          return null;
+        }
+
+        String idColumn = sys.getIdName(TBL_APPOINTMENTS);
+        String usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENTS);
+
+        return new SqlSelect()
+            .addFields(TBL_APPOINTMENTS, idColumn)
+            .addMax(usageTable, NewsConstants.COL_USAGE_ACCESS)
+            .addFrom(TBL_APPOINTMENTS)
+            .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENTS))
+            .addFromLeft(TBL_APPOINTMENT_ATTENDEES,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
+            .addFromLeft(TBL_ATTENDEES,
+                sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+            .setWhere(
+                SqlUtils.and(SqlUtils.equals(usageTable, NewsConstants.COL_USAGE_USER, userId),
+                    SqlUtils.or(SqlUtils.equals(TBL_APPOINTMENTS, COL_ORGANIZER, companyPerson),
+                        SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))))
+            .addGroup(TBL_APPOINTMENTS, idColumn);
+      }
+
+      @Override
+      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        Long companyPerson = usr.getCompanyPerson(userId);
+        if (companyPerson == null) {
+          return null;
+        }
+
+        String idColumn = sys.getIdName(TBL_APPOINTMENTS);
+        String usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENTS);
+
+        SqlSelect subquery = new SqlSelect()
+            .addFields(TBL_APPOINTMENTS, idColumn)
+            .addFields(usageTable, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(TBL_APPOINTMENTS)
+            .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENTS))
+            .addFromLeft(TBL_APPOINTMENT_ATTENDEES,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
+            .addFromLeft(TBL_ATTENDEES,
+                sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+            .setWhere(SqlUtils.and(NewsHelper.getUpdatesCondition(usageTable, userId, startDate),
+                SqlUtils.or(SqlUtils.equals(TBL_APPOINTMENTS, COL_ORGANIZER, companyPerson),
+                    SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))));
+
+        usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENT_ATTENDEES);
+
+        subquery.addUnion(new SqlSelect()
+            .addFields(TBL_APPOINTMENTS, idColumn)
+            .addFields(usageTable, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(TBL_APPOINTMENTS)
+            .addFromInner(TBL_APPOINTMENT_ATTENDEES,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
+            .addFromInner(TBL_ATTENDEES,
+                sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+            .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENT_ATTENDEES))
+            .setWhere(SqlUtils.and(NewsHelper.getUpdatesCondition(usageTable, userId, startDate),
+                SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))));
+
+        String alias = SqlUtils.uniqueName();
+
+        return new SqlSelect()
+            .addFields(alias, idColumn)
+            .addMax(alias, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(subquery, alias)
+            .addGroup(alias, idColumn);
+      }
+    });
+
+    HeadlineProducer headlineProducer = new HeadlineProducer() {
+      @Override
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+        String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
+        if (BeeUtils.isEmpty(caption)) {
+          caption = BeeUtils.bracket(row.getId());
+        }
+
+        List<String> subtitles = Lists.newArrayList();
+
+        String period = TimeUtils.renderPeriod(
+            DataUtils.getDateTime(rowSet, row, COL_START_DATE_TIME),
+            DataUtils.getDateTime(rowSet, row, COL_END_DATE_TIME));
+        if (!BeeUtils.isEmpty(period)) {
+          subtitles.add(period);
+        }
+
+        AppointmentStatus status = EnumUtils.getEnumByIndex(AppointmentStatus.class,
+            DataUtils.getInteger(rowSet, row, COL_STATUS));
+        if (status != null) {
+          subtitles.add(status.getCaption(usr.getLocalizableConstants(userId)));
+        }
+
+        return Headline.create(row.getId(), caption, subtitles, isNew);
+      }
+    };
+
+    news.registerHeadlineProducer(Feed.APPOINTMENTS_MY, headlineProducer);
+    news.registerHeadlineProducer(Feed.APPOINTMENTS_ALL, headlineProducer);
   }
 
   private boolean checkTable(String name) {
@@ -367,7 +484,7 @@ public class CalendarModuleBean implements BeeModule {
     String attIds = rowSet.getTableProperty(COL_ATTENDEE);
     String rtIds = rowSet.getTableProperty(COL_REMINDER_TYPE);
 
-    ResponseObject response = deb.commitRow(rowSet, true);
+    ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -487,13 +604,15 @@ public class CalendarModuleBean implements BeeModule {
 
     Filter visible = Filter.or().add(
         ComparisonFilter.isEqual(COL_CREATOR, new LongValue(userId)),
-        Filter.isEmpty(COL_CREATOR),
-        Filter.isEmpty(COL_VISIBILITY),
+        Filter.isNull(COL_CREATOR),
+        Filter.isNull(COL_VISIBILITY),
         ComparisonFilter.isNotEqual(COL_VISIBILITY,
             new IntegerValue(Visibility.PRIVATE.ordinal())));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
     if (appointments == null || appointments.isEmpty()) {
+      logger.debug("no appointments found where", filter);
+      logger.debug("visible where", visible);
       return appointments;
     }
 
@@ -902,7 +1021,7 @@ public class CalendarModuleBean implements BeeModule {
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
 
     if (BeeUtils.isLong(appId)) {
-      filter.add(ComparisonFilter.compareId(Operator.NE, BeeUtils.toLong(appId)));
+      filter.add(Filter.compareId(Operator.NE, BeeUtils.toLong(appId)));
     }
 
     filter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
@@ -1053,7 +1172,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(ucRowSet);
     }
 
-    BeeRowSet calRowSet = qs.getViewData(VIEW_CALENDARS, ComparisonFilter.compareId(calendarId));
+    BeeRowSet calRowSet = qs.getViewData(VIEW_CALENDARS, Filter.compareId(calendarId));
     if (calRowSet.isEmpty()) {
       return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
           "calendar not found");
@@ -1175,7 +1294,7 @@ public class CalendarModuleBean implements BeeModule {
             data.getInt(CommonsConstants.COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
-          Long sender = prm.getLong(MailConstants.MAIL_MODULE, "DefaultAccount");
+          Long sender = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
           Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
               data.getValue(CommonsConstants.COL_EMAIL)));
 
@@ -1330,12 +1449,12 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {
-      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": rowSet is empty");
+      return ResponseObject.error(reqInfo.getService(), ": rowSet is empty");
     }
 
     long appId = newRowSet.getRow(0).getId();
     if (!DataUtils.isId(appId)) {
-      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": invalid row id", appId);
+      return ResponseObject.error(reqInfo.getService(), ": invalid row id", appId);
     }
 
     String propIds = newRowSet.getTableProperty(COL_PROPERTY);
@@ -1343,19 +1462,19 @@ public class CalendarModuleBean implements BeeModule {
     String rtIds = newRowSet.getTableProperty(COL_REMINDER_TYPE);
 
     String viewName = VIEW_APPOINTMENTS;
-    BeeRowSet oldRowSet = qs.getViewData(viewName, ComparisonFilter.compareId(appId));
+    BeeRowSet oldRowSet = qs.getViewData(viewName, Filter.compareId(appId));
     if (oldRowSet == null || oldRowSet.isEmpty()) {
-      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": old row not found", appId);
+      return ResponseObject.error(reqInfo.getService(), ": old row not found", appId);
     }
 
     BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRowSet.getRow(0),
         newRowSet.getRow(0), null);
-
+    
     ResponseObject response;
     if (updated == null) {
       response = ResponseObject.response(oldRowSet.getRow(0));
     } else {
-      response = deb.commitRow(updated, true);
+      response = deb.commitRow(updated);
       if (response.hasErrors()) {
         return response;
       }
@@ -1375,35 +1494,48 @@ public class CalendarModuleBean implements BeeModule {
     List<Long> newAttendees = DataUtils.parseIdList(attIds);
     List<Long> newReminders = DataUtils.parseIdList(rtIds);
 
-    updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
+    boolean childrenChanged = updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
         COL_PROPERTY, oldProperties, newProperties);
-    updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
+    childrenChanged |= updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
         COL_ATTENDEE, oldAttendees, newAttendees);
 
     if (!oldReminders.isEmpty() || !newReminders.isEmpty()) {
-      updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
+      childrenChanged |= updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
           COL_REMINDER_TYPE, oldReminders, newReminders);
 
       createNotificationTimers(Pair.of(TBL_APPOINTMENTS, appId));
     }
+    
+    if (childrenChanged) {
+      news.maybeRecordUpdate(VIEW_APPOINTMENTS, appId);
+    }
+    
     return response;
   }
 
-  private void updateChildren(String tblName, String parentRelation, long parentId,
+  private boolean updateChildren(String tblName, String parentRelation, long parentId,
       String columnId, List<Long> oldValues, List<Long> newValues) {
+
     List<Long> insert = Lists.newArrayList(newValues);
     insert.removeAll(oldValues);
 
     List<Long> delete = Lists.newArrayList(oldValues);
     delete.removeAll(newValues);
 
-    for (Long value : insert) {
-      qs.insertData(new SqlInsert(tblName).addConstant(parentRelation, parentId)
-          .addConstant(columnId, value));
-    }
-    for (Long value : delete) {
-      IsCondition condition = SqlUtils.equals(tblName, parentRelation, parentId, columnId, value);
-      qs.updateData(new SqlDelete(tblName).setWhere(condition));
+    if (insert.isEmpty() && delete.isEmpty()) {
+      return false;
+    
+    } else {
+      for (Long value : insert) {
+        qs.insertData(new SqlInsert(tblName).addConstant(parentRelation, parentId)
+            .addConstant(columnId, value));
+      }
+      for (Long value : delete) {
+        IsCondition condition = SqlUtils.equals(tblName, parentRelation, parentId, columnId, value);
+        qs.updateData(new SqlDelete(tblName).setWhere(condition));
+      }
+
+      return true;
     }
   }
 }

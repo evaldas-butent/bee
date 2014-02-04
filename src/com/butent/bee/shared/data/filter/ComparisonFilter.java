@@ -2,14 +2,7 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -18,7 +11,6 @@ import java.util.StringTokenizer;
 /**
  * Is an abstract class, extends {@code Filter) class, determines implementation of comparison
  * filters.
-
  */
 public abstract class ComparisonFilter extends Filter {
 
@@ -27,113 +19,6 @@ public abstract class ComparisonFilter extends Filter {
    */
   private enum Serial {
     COLUMN, OPERATOR, VALUE
-  }
-
-  private static BeeLogger logger = LogUtils.getLogger(ComparisonFilter.class);
-
-  public static Filter compareId(long value) {
-    return compareId(Operator.EQ, value);
-  }
-
-  public static Filter compareId(Operator op, long value) {
-    Assert.notNull(op);
-    return new IdFilter(op, value);
-  }
-
-  public static Filter compareId(Operator op, String value) {
-    if (!BeeUtils.isLong(value)) {
-      logger.warning("Not an ID value:", value);
-      return null;
-    }
-    return compareId(op, BeeUtils.toLong(value));
-  }
-
-  public static Filter compareVersion(long value) {
-    return compareVersion(Operator.EQ, value);
-  }
-
-  public static Filter compareVersion(Operator op, long value) {
-    Assert.notNull(op);
-    return new VersionFilter(op, value);
-  }
-
-  public static Filter compareVersion(Operator op, String value) {
-    Assert.notNull(op);
-    DateTime time = TimeUtils.parseDateTime(value);
-
-    if (time == null) {
-      logger.warning("Not a DATETIME value:", value);
-      return null;
-    }
-    return compareVersion(op, time.getTime());
-  }
-
-  public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {
-    Assert.notEmpty(leftColumn);
-    Assert.notNull(op);
-    Assert.notEmpty(rightColumn);
-    return new ColumnColumnFilter(leftColumn, op, rightColumn);
-  }
-
-  public static Filter compareWithColumn(IsColumn left, Operator op, IsColumn right) {
-    Assert.noNulls(left, op, right);
-    String leftColumn = left.getId();
-    ValueType leftType = left.getType();
-    String rightColumn = right.getId();
-    ValueType rightType = right.getType();
-
-    if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
-      logger.warning("Incompatible column types:", leftColumn, BeeUtils.parenthesize(leftType),
-          "AND", rightColumn, BeeUtils.parenthesize(rightType));
-      return null;
-    }
-    return compareWithColumn(leftColumn, op, rightColumn);
-  }
-
-  public static Filter compareWithValue(String column, Operator op, Value value) {
-    Assert.notEmpty(column);
-    Assert.noNulls(op, value);
-    return new ColumnValueFilter(column, op, value);
-  }
-
-  public static Filter compareWithValue(IsColumn column, Operator op, String value) {
-    Assert.noNulls(column, op);
-    Assert.notEmpty(value);
-
-    if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
-      logger.warning("Not a numeric value:", value);
-      return null;
-    }
-    return compareWithValue(column.getId(), op, Value.parseValue(column.getType(), value, true));
-  }
-
-  public static Filter contains(String column, String value) {
-    Assert.notEmpty(value);
-    return new ColumnValueFilter(column, Operator.CONTAINS, new TextValue(value));
-  }
-
-  public static Filter isEqual(String column, Value value) {
-    return compareWithValue(column, Operator.EQ, value);
-  }
-
-  public static Filter isLess(String column, Value value) {
-    return compareWithValue(column, Operator.LT, value);
-  }
-
-  public static Filter isLessEqual(String column, Value value) {
-    return compareWithValue(column, Operator.LE, value);
-  }
-
-  public static Filter isMore(String column, Value value) {
-    return compareWithValue(column, Operator.GT, value);
-  }
-
-  public static Filter isMoreEqual(String column, Value value) {
-    return compareWithValue(column, Operator.GE, value);
-  }
-
-  public static Filter isNotEqual(String column, Value value) {
-    return compareWithValue(column, Operator.NE, value);
   }
 
   private String column;

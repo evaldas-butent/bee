@@ -5,6 +5,15 @@
   font-style: normal;
 }
 
+@keyframes rotate {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+@-webkit-keyframes rotate {
+  from {-webkit-transform: rotate(0deg);}
+  to {-webkit-transform: rotate(360deg);}
+}
+
 .bee-Body {
   font-family: Arial, sans-serif;
   font-size: small;
@@ -67,7 +76,7 @@
   flex-direction: row;
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
-  justify-content: space-between;  
+  justify-content: space-between;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
 }
@@ -450,8 +459,9 @@
 
 .bee-Header-commandPanel {
   margin-left: auto;
-  margin-right: 3em;
+  margin-right: 1ex;
   border-collapse: collapse;
+  margin-top: 2px
 }
 .bee-Header-commandPanel .bee-Button {
   padding: 2px 6px;
@@ -464,6 +474,11 @@
   background-color: white;
   color: black;
   border-color: #5897fb;
+}
+
+.bee-Header-commandPanel .bee-Image {
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .bee-Header-control {
@@ -559,6 +574,7 @@
 .bee-CellGridEvenRow {
   background-color: #f5f5f5;
 }
+
 .bee-CellGridOddRow {
   background-color: #fbfbfb;
 }
@@ -571,6 +587,7 @@
 .bee-CellGridActiveRow {
   background-color: #cfc !important;
 }
+
 .bee-CellGridActiveCell {
   background-color: #c7e3f9 !important;
   outline: #c7e3f9 solid 2px !important;
@@ -711,6 +728,7 @@
 .bee-Notification-error {
   background-color: #ffcccc;
 }
+
 .bee-Notification-warning {
   background-color: yellow;
 }
@@ -1132,6 +1150,9 @@
 .bee-StackContainer {
   position: relative;
 }
+.bee-StackContent {
+  overflow: auto;
+}
 
 .bee-StackHeader {
   cursor: pointer;
@@ -1252,18 +1273,6 @@
 }
 .flexible > .bee-GridContainer {
   height: 100%;
-}
-
-.bee-ReportsItem {
-  margin-left: 1em;
-  margin-top: 1.5ex;
-}
-.bee-ReportsItem:first-child {
-  margin-top: 3ex;
-}
-.bee-ReportsItem:hover {
-  text-decoration: underline;
-  cursor: pointer;
 }
 
 .bee-Workspace-tabPanel {
@@ -1490,16 +1499,21 @@
   margin-right: 1em;
 }
 
-.bee-ProgressItem {
+.bee-Thermometer-container {
   display: inline-block;
   margin-left: 2em;
   margin-top: 2px;
 }
-.bee-ProgressItem .bee-Progress {
+.bee-Thermometer-progress {
   margin: 0 3px 1px 5px;
 }
-.bee-ProgressClose {
+.bee-Thermometer-cancel {
+  font-size: 18px;
   margin-right: 5px;
+  cursor: pointer;
+}
+.bee-Thermometer-cancel:hover {
+  color: red;
 }
 
 .bee-FileCollector-panel, .bee-FileGroup-panel {
@@ -1567,7 +1581,7 @@
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
   border-left: 5px solid #fd6268;
-  color: #222;
+  background-color: WhiteSmoke;
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
@@ -1598,12 +1612,6 @@
 .bee-Appliance-close:hover {
   color: red;
   cursor: pointer;
-}
-
-.bee-ApplianceAdmin {
-}
-
-.bee-ApplianceReport {
 }
 
 .bee-Shell {
@@ -2192,9 +2200,6 @@
 }
 
 .bee-SlideDeck-progress {
-/*   -webkit-appearance: none; */
-/*   color: #bada55; */
-/*   border: none; */
   flex: 1;
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -2267,4 +2272,544 @@
   top: 2px;
   right: 2px;
   cursor: pointer;
+}
+
+.bee-News-size,
+.bee-Online-size,
+.bee-Rooms-size {
+  position: absolute;
+  top: 3px;
+  right: 10px;
+  display: inline-block;
+  font-weight: bold;
+  color: white;
+  background-color: #aaa;
+}
+
+.bee-Online-item,
+.bee-Room-headerPanel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Online-item:hover {
+  background-color: #f2f2f2;
+}
+.bee-Online-item:hover .bee-Online-tweet,
+.bee-Online-item:hover .bee-Online-home {
+  visibility: visible;
+}
+
+.bee-Online-item {
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-Online-name {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  color: #555;
+  margin: 5px 1em;
+  cursor: pointer;
+}
+.bee-Online-name:hover {
+  text-decoration: underline;
+  color: black;
+}
+
+.bee-Online-tweet,
+.bee-Online-home {
+  font-size: 18px;
+  padding: 3px;
+  cursor: pointer;
+  color: #555;
+  visibility: hidden;
+}
+.bee-Online-tweet:hover,
+.bee-Online-home:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-Room-container {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+  transition: background-color 1s;  
+}
+
+.bee-Room-headerPanel {
+  margin-bottom: 5px;
+}  
+
+.bee-Room-nameLabel {
+  font-weight: bold;
+  color: #888;
+  text-decoration: underline;
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  margin-left: 1em;
+  margin-right: 1em;
+  cursor: pointer;
+}
+.bee-Room-container:hover .bee-Room-nameLabel {
+  color: #00e;
+}
+
+.bee-Room-infoCommand,
+.bee-Room-settingsCommand,
+.bee-Room-deleteCommand {
+  font-size: 18px;
+  padding: 3px;
+  cursor: pointer;
+  color: #888;
+}
+
+.bee-Room-guest {
+  display: none;
+}
+
+.bee-Room-infoPanel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+
+.bee-Room-usersBadge {
+  margin-left: 2px;
+  color: white;
+  background-color: #aaa;
+}
+.bee-Room-usersPanel {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  max-height: 100px;
+  overflow: auto;
+}
+.bee-Room-user {
+  display: inline-block;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 5px;
+}
+.bee-Room-maxTime {
+  margin-left: 5px;
+  margin-right: 2px;
+  color: #777;
+}
+
+.bee-Room-updated {
+  background-color: #ffa;
+}
+
+.bee-Rooms-plus {
+  display: inline-block;
+  font-size: x-large;
+  margin-left: 1em;
+  margin-top: 5px;
+  padding: 1px 3px;
+  cursor: pointer;
+}
+.bee-Room-infoCommand:hover,
+.bee-Room-settingsCommand:hover,
+.bee-Rooms-plus:hover:hover {
+  color: white;
+  background-color: #080;
+}
+.bee-Room-deleteCommand:hover {
+  color: white;
+  background-color: red;
+}
+
+.bee-Room-details {
+  border-collapse: collapse;
+}
+.bee-Room-details td {
+  padding: 8px;
+  max-width: 400px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-Room-editor-table {
+  border-collapse: collapse;
+}
+.bee-Room-editor-table td {
+  padding: 8px;
+}
+.bee-Room-editor-commands-cell {
+  text-align: right;
+}
+.bee-Room-editor-cancel {
+  margin-left: 2em;
+}
+
+.bee-Chat-autoScroll-label {
+  padding-right: 1em;
+}
+
+.bee-Chat-messages {
+  position: absolute;
+  top: 30px;
+  bottom: 16%;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+.bee-Chat-footer {
+  position: absolute;
+  height: 15%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: WhiteSmoke;
+}
+
+.bee-Chat-message {
+  min-height: 60px;
+  position: relative;
+  border-bottom: 1px solid #ccc;
+}
+.bee-Chat-message:hover {
+  background-color: #f2f2f2;
+}
+
+.bee-Chat-message-photo {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  max-width: 48px;
+  max-height: 48px;
+  border-radius: 5px;
+  cursor: default;
+}
+.bee-Chat-message-signature {
+  margin-left: 60px;
+  padding-top: 5px;
+  padding-bottom: 3px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #555;
+}
+.bee-Chat-message-body {
+  margin-left: 60px;
+  white-space: pre-line;
+  font-size: 14px;
+  color: #333;
+}
+.bee-Chat-message-time {
+  position: absolute;
+  top: 5px;
+  right: 1em;
+  color: #777;
+}
+
+.bee-Chat-input {
+  position: absolute;
+  top: 5%;
+  left: 1%;
+  width: 90%;
+  height: 60%;
+}
+.bee-Chat-submit {
+  position: absolute;
+  top: 10%;
+  left: 93%;
+  font-size: medium;
+  color: #777;
+  padding: 3px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.bee-Chat-submit:hover {
+  background-color: #0a0;
+  color: white;
+}
+
+.bee-Chat-online {
+  position: absolute;
+  top: 70%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.bee-Chat-user {
+  display: inline-block;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 5px;
+}
+
+.bee-Conversation-wrapper {
+  max-height: 400px;
+  overflow: auto;
+}
+.bee-Conversation-messages {
+  border-collapse: collapse;
+}
+.bee-Conversation-messages td {
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-Conversation-message-photo {
+  max-width: 48px;
+  max-height: 48px;
+  border-radius: 5px;
+  cursor: default;
+}
+.bee-Conversation-message-header {
+  font-weight: bold;
+  color: #222;
+}
+.bee-Conversation-message-body {
+  font-size: medium;
+}
+
+.bee-Conversation-input {
+  margin-top: 2em;
+  margin-left: 2em;
+  width: 256px;
+}
+
+.bee-Conversation-commands {
+  margin-top: 1ex;
+  text-align: right;
+}
+
+.bee-Conversation-reply,
+.bee-Conversation-cancel {
+  display: inline-block;
+  font-size: large;
+  color: #777;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.bee-Conversation-reply:hover {
+  background-color: #0a0;
+  color: white;
+  border-radius: 10px;
+}
+.bee-Conversation-cancel:hover {
+  background-color: red;
+  color: white;
+  border-radius: 10px;
+}
+
+.bee-Badge {
+  padding: 1px 5px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+.bee-Badge-empty {
+  visibility: hidden;
+}
+.bee-Badge-updated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+.bee-MapContainer .bee-Map {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.bee-News-header {
+  position: relative;
+  height: 30px;
+  background-color: #f0eeef;  
+}
+
+.bee-News-disclosure,
+.bee-News-refresh,
+.bee-News-settings {
+  position: absolute;
+  top: 5px;
+  color: #888;
+  font-size: 18px;
+  padding: 1px 3px;
+  cursor: pointer;
+}
+.bee-News-disclosure:hover,
+.bee-News-refresh:hover,
+.bee-News-settings:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-News-disclosure {
+  left: 3px;
+}
+.bee-News-refresh {
+  right: 40px;
+}
+.bee-News-settings {
+  right: 10px;
+}
+
+.bee-News-nothing-happens .bee-News-disclosure {
+  display: none;
+}
+.bee-News-apathy .bee-News-refresh {
+  display: none;
+}
+
+.bee-News-loading {
+  position: absolute;
+  top: 5px;
+  left: 45%;
+  font-size: 20px;
+  animation: rotate 1s linear infinite;
+  -webkit-animation: rotate 1s linear infinite;
+}
+.bee-News-not-loading {
+  display: none;
+}
+
+.bee-News-content {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+
+.bee-News-subscription-panel {
+  padding-top: 3px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-News-subscription-header {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+.bee-News-subscription-header:hover {
+  background-color: #f2f2f2;
+}
+.bee-News-subscription-label {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  max-height: 60px;
+  overflow: auto;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.bee-News-subscription-disclosure,
+.bee-News-subscription-filter {
+  display: inline-block;
+  color: #888;
+  padding: 1px 3px;
+  cursor: pointer;
+}
+.bee-News-subscription-disclosure:hover,
+.bee-News-subscription-filter:hover {
+  color: white;
+  background-color: #080;
+}
+
+.bee-News-subscription-disclosure {
+  font-size: 15px;
+  margin-left: 1px;
+  margin-right: 2px;
+}
+.bee-News-subscription-filter {
+  font-size: 18px;
+  margin-left: 4px;
+  margin-right: 2px;
+}
+
+.bee-News-subscription-new-size,
+.bee-News-subscription-upd-size {
+  margin-left: 2px;
+  border: 1px solid silver;
+  color: #888;
+}
+.bee-News-subscription-new-size {
+  background-color: lightgreen;
+}
+.bee-News-subscription-upd-size {
+  background-color: yellow;
+}
+.bee-News-subscription-new-size.bee-Badge-empty,
+.bee-News-subscription-upd-size.bee-Badge-empty {
+  display: none;
+}
+
+.bee-News-subscription-closed .bee-News-subscription-content {
+  display: none;
+}
+
+.bee-News-headline-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-News-headline-panel:hover {
+  background-color: #f2f2f2;
+}
+.bee-News-headline-panel:hover .bee-News-headline-dismiss {
+  visibility: visible;
+}
+
+.bee-News-headline-new,
+.bee-News-headline-upd {
+  width: 10px;
+  height: 10px;
+  border: 1px solid silver;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 1em;
+  margin-right: 4px;
+}
+.bee-News-headline-new {
+  background-color: lightgreen;
+}
+.bee-News-headline-upd {
+  background-color: yellow;
+}
+
+.bee-News-headline-caption {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  max-height: 60px;
+  overflow: auto;
+  cursor: pointer;
+}
+.bee-News-headline-caption:hover {
+  text-decoration: underline;
+}
+
+.bee-News-headline-dismiss {
+  font-size: 17px;
+  margin-left: 2px;
+  margin-right: 2px;
+  cursor: pointer;
+  visibility: hidden;
+}
+.bee-News-headline-dismiss:hover {
+  color: red;
 }

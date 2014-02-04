@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="RTDates" source="RTDates"
+  caption="=crmRTDateExceptions" newRowCaption="=crmRTDateExceptionNew"
+  >
+  <Columns>
+    <SimpleColumn name="RecurringTask" />
+
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateUntil" />
+    
+    <SimpleColumn name="Mode" />
+  </Columns>
+  <Order>
+    <OrderBy column="DateFrom" />
+  </Order>
+</View>
+ 

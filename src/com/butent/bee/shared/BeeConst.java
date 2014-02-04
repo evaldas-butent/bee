@@ -2,6 +2,10 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Stores all default values (databases, boolean, separators etc.).
  */
@@ -75,6 +79,8 @@ public final class BeeConst {
   public static final String STRING_PERCENT = "%";
   public static final String STRING_NBSP = "\u00a0";
   public static final String STRING_SLASH = "/";
+  public static final String STRING_QUESTION = "?";
+  public static final String STRING_EXCLAMATION = "!";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);
@@ -117,6 +123,7 @@ public final class BeeConst {
   public static final char CHAR_TIMES = '\u00d7';
   public static final char CHAR_QUESTION = '?';
   public static final char CHAR_AT = '@';
+  public static final char CHAR_PLUS_MINUS = '\u00b1';
 
   public static final char CHECK_MARK = '\u2713';
   public static final char HEAVY_CHECK_MARK = '\u2714';
@@ -155,6 +162,9 @@ public final class BeeConst {
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;
 
+  public static final Set<String> EMPTY_IMMUTABLE_STRING_SET = Collections.emptySet();
+  public static final List<String> EMPTY_IMMUTABLE_STRING_LIST = Collections.emptyList();
+  
   private static String home = SERVER;
 
   /**
@@ -211,6 +221,15 @@ public final class BeeConst {
     }
   }
 
+  public static boolean isOff(String s) {
+    if (s == null) {
+      return false;
+    } else {
+      return STRING_MINUS.equals(s.trim()) 
+          || s.trim().toLowerCase().equals(STRING_FALSE.toLowerCase());
+    }
+  }
+  
   /**
    * Returns the state of server.
    * 

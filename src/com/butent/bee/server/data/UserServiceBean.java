@@ -3,6 +3,7 @@ package com.butent.bee.server.data;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -241,7 +243,20 @@ public class UserServiceBean {
     UserInfo info = getUserInfo(getUserId(user));
     return info != null && Objects.equals(password, info.getPassword());
   }
+  
+  public List<UserData> getAllUserData() {
+    List<UserData> data = Lists.newArrayList();
+    for (UserInfo userInfo : infoCache.values()) {
+      data.add(userInfo.getUserData());
+    }
+    return data;
+  }
 
+  public Long getCompanyPerson(Long userId) {
+    UserInfo userInfo = getUserInfo(userId);
+    return (userInfo == null) ? null : userInfo.getCompanyPerson();
+  }
+  
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notNull(p);
@@ -261,7 +276,7 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
-  public Long getEmailId(Long userId) {
+  public Long getEmailId(Long userId, boolean checkCompany) {
     if (userId == null) {
       return null;
     }
@@ -295,7 +310,7 @@ public class UserServiceBean {
       }
     }
 
-    if (DataUtils.isId(userInfo.getCompany())) {
+    if (checkCompany && DataUtils.isId(userInfo.getCompany())) {
       Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
           .addFrom(TBL_CONTACTS)
           .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))

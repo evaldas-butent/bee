@@ -34,13 +34,13 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridFilterManager;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -111,8 +111,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         long version = activeRow.getVersion();
 
         if (BeeUtils.isEmpty(getViewName())) {
-          getDataProvider().onRowDelete(new RowDeleteEvent(getViewName(), rowId));
+          RowDeleteEvent.forward(getDataProvider(), getViewName(), rowId);
           afterDelete(rowId);
+
         } else {
           Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
             @Override
@@ -122,11 +123,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
             @Override
             public void onSuccess(Integer result) {
-              BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
+              RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rowId);
               afterDelete(rowId);
             }
           });
         }
+
       } else {
         final long[] rowIds = new long[count];
         int i = 0;
@@ -134,9 +136,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           rowIds[i] = rowInfo.getId();
           i++;
         }
+      
         if (BeeUtils.isEmpty(getViewName())) {
-          getDataProvider().onMultiDelete(new MultiDeleteEvent(getViewName(), rows));
+          MultiDeleteEvent.forward(getDataProvider(), getViewName(), rows);
           afterMulti(rowIds);
+        
         } else {
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
@@ -146,7 +150,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
             @Override
             public void onSuccess(Integer result) {
-              BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
+              MultiDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), rows);
               afterMulti(rowIds);
               showInfo(Localized.getMessages().deletedRows(result));
             }
@@ -271,7 +275,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               }
             }
           }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.XX_LARGE),
-          StyleUtils.className(FontSize.MEDIUM), null);
+          StyleUtils.className(FontSize.MEDIUM), null, null);
     }
   }
 
@@ -430,6 +434,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  public boolean hasFilter() {
+    return getDataProvider().hasFilter();
+  }
+  
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
@@ -445,7 +453,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow result) {
-            BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(result);
             }
@@ -464,8 +472,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         getDataProvider().getColumnIndex(columnId));
 
     if (BeeUtils.isEmpty(getViewName())) {
-      getDataProvider().onCellUpdate(new CellUpdateEvent(getViewName(), rowId, version,
-          source, newValue));
+      CellUpdateEvent.forward(getDataProvider(), getViewName(), rowId, version, source, newValue);
       return true;
     }
 
@@ -489,11 +496,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
 
         if (rowMode) {
-          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
+          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
         } else {
           String value = row.getString(0);
-          BeeKeeper.getBus().fireEvent(new CellUpdateEvent(getViewName(), rowId, row.getVersion(),
-              source, value));
+          CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowId, row.getVersion(),
+              source, value);
         }
       }
     };
@@ -521,7 +528,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow row) {
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
+            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(row);
             }
@@ -577,6 +584,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
     }, notify);
+  }
+
+  public boolean validateParent() {
+    FormView form = UiHelper.getForm(getWidget().asWidget());
+    if (form == null) {
+      return true;
+    }
+
+    if (!form.validate(form, true)) {
+      return false;
+    }
+
+    if (form.getViewPresenter() instanceof HasGridView) {
+      GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
+      if (rootGrid != null && !rootGrid.validateFormData(form, form, true)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void addRow(boolean copy) {
@@ -686,24 +712,5 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void showInfo(String... messages) {
     getGridView().notifyInfo(messages);
-  }
-
-  private boolean validateParent() {
-    FormView form = UiHelper.getForm(getWidget().asWidget());
-    if (form == null) {
-      return true;
-    }
-
-    if (!form.validate(form, true)) {
-      return false;
-    }
-
-    if (form.getViewPresenter() instanceof HasGridView) {
-      GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
-      if (rootGrid != null && !rootGrid.validateFormData(form, form, true)) {
-        return false;
-      }
-    }
-    return true;
   }
 }

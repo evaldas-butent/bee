@@ -42,6 +42,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -95,6 +96,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -431,7 +434,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
@@ -482,7 +485,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       getNotification().clear();
     }
   }
-  
+
   @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormInterceptor interceptor) {
@@ -560,6 +563,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (focusCommand != null) {
         focusCommand.execute();
       }
+    }
+
+    if (hasData() && DataUtils.hasId(row)) {
+      Global.getNewsAggregator().onAccess(getViewName(), row.getId());
     }
   }
 
@@ -653,30 +660,20 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public Integer getDataInt(String source) {
+  public DateTime getDateTimeValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {
-      return getActiveRow().getInteger(index);
+      return getActiveRow().getDateTime(index);
     } else {
       return null;
     }
   }
   
   @Override
-  public Long getDataLong(String source) {
+  public JustDate getDateValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {
-      return getActiveRow().getLong(index);
-    } else {
-      return null;
-    }
-  }
-
-  @Override
-  public String getDataValue(String source) {
-    int index = getDataIndex(source);
-    if (getActiveRow() != null && index >= 0) {
-      return getActiveRow().getString(index);
+      return getActiveRow().getDate(index);
     } else {
       return null;
     }
@@ -685,6 +682,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public HasDataTable getDisplay() {
     return this;
+  }
+
+  @Override
+  public List<EditableWidget> getEditableWidgets() {
+    return editableWidgets;
   }
 
   @Override
@@ -705,6 +707,26 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public Double getHeightValue() {
     return (getDimensions() == null) ? null : getDimensions().getHeightValue();
+  }
+
+  @Override
+  public Integer getIntegerValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getInteger(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Long getLongValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getLong(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -733,13 +755,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public String getProperty(String key) {
-    return properties.get(key);
+  public Map<String, String> getProperties() {
+    return properties;
   }
 
   @Override
-  public Map<String, String> getProperties() {
-    return properties;
+  public String getProperty(String key) {
+    return properties.get(key);
   }
 
   @Override
@@ -783,6 +805,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public State getState() {
     return state;
+  }
+
+  @Override
+  public String getStringValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getString(index);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -859,7 +891,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public boolean isFlushable() {
     return isAdding() || isEditing();
   }
-  
+
   @Override
   public boolean isInteractive() {
     return isAttached() && !isClosed() && DomUtils.isVisible(getElement());
@@ -1169,7 +1201,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
       setActiveRow(newRow);
-      refreshData(false, false);
+      refreshData(true, false);
     }
   }
 
@@ -1200,6 +1232,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
+    AutocompleteProvider.retainValues(this);
+
     RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
@@ -1210,14 +1244,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       @Override
       public void onSuccess(BeeRow result) {
         if (getFormInterceptor() != null) {
-          getFormInterceptor().afterInsertRow(result);
+          getFormInterceptor().afterInsertRow(result, false);
         }
         finishNewRow(result);
       }
     };
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values, getChildrenForInsert(),
-        callback);
+        callback, getId());
     if (getFormInterceptor() != null) {
       getFormInterceptor().onReadyForInsert(this, event);
       if (event.isConsumed()) {
@@ -1469,7 +1503,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       row = DataUtils.createEmptyRow(getDataColumns().size());
     }
     IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
-    
+
     if (getActiveRow() != null && copy) {
       for (int i = 0; i < getDataColumns().size(); i++) {
         if (!row.isNull(i)) {
@@ -1560,7 +1594,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   protected void onLoad() {
     super.onLoad();
     Previewer.ensureRegistered(this);
-    
+
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
@@ -1704,10 +1738,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       logger.warning("editable widget not found:", source);
     }
     return null;
-  }
-
-  private List<EditableWidget> getEditableWidgets() {
-    return editableWidgets;
   }
 
   private Notification getNotification() {

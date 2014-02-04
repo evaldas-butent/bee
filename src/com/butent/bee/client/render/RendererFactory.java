@@ -34,18 +34,20 @@ public final class RendererFactory {
 
   private static final Table<String, String, ProvidesGridColumnRenderer> gcrProviders =
       HashBasedTable.create();
-  
+
   public static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns) {
     return createRenderer(viewName, renderColumns, null);
   }
-  
+
   public static AbstractCellRenderer getGridColumnRenderer(String gridName, String columnName,
-      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+      List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+      CellSource cellSource) {
+
     ProvidesGridColumnRenderer provider = gcrProviders.get(gridName, columnName);
     if (provider == null) {
       return null;
     } else {
-      return provider.getRenderer(columnName, dataColumns, columnDescription);
+      return provider.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
   }
 
@@ -68,7 +70,13 @@ public final class RendererFactory {
     } else if (!BeeUtils.isEmpty(renderColumns)) {
       if (renderColumns.size() == 1) {
         int index = DataUtils.getColumnIndex(renderColumns.get(0), dataColumns);
-        return new SimpleRenderer(CellSource.forColumn(dataColumns.get(index), index));
+        if (BeeConst.isUndef(index)) {
+          logger.severe("render column not found", renderColumns);
+          return null;
+        } else {
+          return new SimpleRenderer(CellSource.forColumn(dataColumns.get(index), index));
+        }
+
       } else {
         return new JoinRenderer(dataColumns, null, renderColumns);
       }
@@ -102,7 +110,7 @@ public final class RendererFactory {
     Assert.notEmpty(gridName);
     Assert.notEmpty(columnName);
     Assert.notNull(provider);
-    
+
     gcrProviders.put(gridName, columnName, provider);
   }
 
@@ -213,6 +221,14 @@ public final class RendererFactory {
         renderer = new StarRenderer(source);
         break;
 
+      case ATTACHMENT:
+        renderer = new AttachmentRenderer(source);
+        break;
+
+      case IMAGE:
+        renderer = new ImageRenderer(source);
+        break;
+
       case FILE_ICON:
         renderer = new FileIconRenderer(source);
         break;
@@ -224,15 +240,15 @@ public final class RendererFactory {
       case PHOTO:
         renderer = new PhotoRenderer(source);
         break;
-        
+
       case MAIL:
         renderer = new MailAddressRenderer(dataColumns, renderColumns);
         break;
-        
+
       case URL:
         renderer = new UrlRenderer(source);
         break;
-        
+
       case TOKEN:
         logger.severe("renderer", type.name(), "not supported");
         break;

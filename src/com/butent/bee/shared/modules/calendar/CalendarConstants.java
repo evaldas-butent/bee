@@ -1,31 +1,57 @@
 package com.butent.bee.shared.modules.calendar;
 
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class CalendarConstants {
 
-  public enum AppointmentStatus implements HasCaption {
-    TENTATIVE(Localized.getConstants().calAppointmentStatusTentative()),
-    CONFIRMED(Localized.getConstants().calAppointmentStatusConfirmed()),
-    DELAYED(Localized.getConstants().calAppointmentStatusDelayed()),
-    CANCELED(Localized.getConstants().calAppointmentStatusCanceled()),
-    RUNNING(Localized.getConstants().calAppointmentStatusRunning()),
-    COMPLETED(Localized.getConstants().calAppointmentStatusCompleted());
-
-    private final String caption;
-
-    private AppointmentStatus(String caption) {
-      this.caption = caption;
-    }
+  public enum AppointmentStatus implements HasLocalizedCaption {
+    TENTATIVE {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.calAppointmentStatusTentative();
+      }
+    },
+    CONFIRMED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.calAppointmentStatusConfirmed();
+      }
+    },
+    DELAYED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.calAppointmentStatusDelayed();
+      }
+    },
+    CANCELED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.calAppointmentStatusCanceled();
+      }
+    },
+    RUNNING {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.calAppointmentStatusRunning();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.calAppointmentStatusCompleted();
+      }
+    };
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
   }
 
@@ -57,8 +83,8 @@ public final class CalendarConstants {
   }
 
   public enum Transparency implements HasCaption {
-    OPAQUE(Localized.getConstants().calOpaque()), TRANSPARENT(Localized.getConstants()
-        .calTransparent());
+    OPAQUE(Localized.getConstants().calOpaque()),
+    TRANSPARENT(Localized.getConstants().calTransparent());
 
     public static boolean isOpaque(Integer value) {
       return (value == null) ? false : value == OPAQUE.ordinal();

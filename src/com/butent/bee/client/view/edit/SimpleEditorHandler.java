@@ -2,7 +2,7 @@ package com.butent.bee.client.view.edit;
 
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -16,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.Handler,
+public final class SimpleEditorHandler implements EditChangeHandler, EditStopEvent.Handler,
     HasCaption {
 
   public static void observe(String caption, Editor editor) {
@@ -32,11 +32,11 @@ public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.
     Assert.notNull(editor);
     SimpleEditorHandler handler = new SimpleEditorHandler(caption, editor, focusParent,
         notificationListener);
-
-    editor.addKeyDownHandler(handler);
-    editor.setHandlesTabulation(true);
-
+    
+    editor.addEditChangeHandler(handler);
     editor.addEditStopHandler(handler);
+
+    editor.setHandlesTabulation(true);
   }
 
   private final String caption;
@@ -88,14 +88,6 @@ public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.
         forward = !EventUtils.hasModifierKey(event.getNativeEvent());
         break;
 
-      case KeyCodes.KEY_UP:
-        forward = false;
-        break;
-
-      case KeyCodes.KEY_DOWN:
-        forward = true;
-        break;
-
       default:
         forward = null;
     }
@@ -106,6 +98,11 @@ public final class SimpleEditorHandler implements KeyDownHandler, EditStopEvent.
     }
   }
 
+  @Override
+  public void onValueChange(ValueChangeEvent<String> event) {
+    end(true);
+  }
+  
   private void end(boolean forward) {
     if (validate()) {
       normalize();

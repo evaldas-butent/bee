@@ -28,6 +28,10 @@ public class CellValidateEvent {
   public CellValidation getCellValidation() {
     return cellValidation;
   }
+  
+  public String getColumnId() {
+    return (cellValidation.getColumn() == null) ? null : cellValidation.getColumn().getId();
+  }
 
   public String getNewValue() {
     return cellValidation.getNewValue();    

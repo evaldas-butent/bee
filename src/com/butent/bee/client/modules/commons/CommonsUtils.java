@@ -71,7 +71,7 @@ public final class CommonsUtils {
               @Override
               public void onResponse(ResponseObject response) {
                 if (response.hasResponse()) {
-                  DataChangeEvent.fireRefresh(VIEW_IP_FILTERS);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_IP_FILTERS);
                 }
 
                 if (notificationListener != null) {
@@ -112,7 +112,7 @@ public final class CommonsUtils {
         }
 
         if (response.hasResponse(Long.class)) {
-          DataChangeEvent.fireRefresh(VIEW_COMPANIES);
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_COMPANIES);
           if (callback != null) {
             callback.onSuccess(response.getResponseAsLong());
           }
@@ -166,7 +166,7 @@ public final class CommonsUtils {
                 }
 
                 if (response.hasResponse(Long.class)) {
-                  DataChangeEvent.fireRefresh(VIEW_USERS);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_USERS);
 
                   if (notificationListener != null) {
                     notificationListener.notifyInfo(Localized.getConstants().newUser(), msgLogin,
@@ -368,7 +368,7 @@ public final class CommonsUtils {
               }
             }
 
-            DataChangeEvent.fireRefresh(VIEW_CURRENCY_RATES);
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CURRENCY_RATES);
 
             submit.setEnabled(true);
           }

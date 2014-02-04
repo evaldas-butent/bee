@@ -125,7 +125,7 @@ final class TripSelector implements Handler, ClickHandler {
         dataInfo, RowFactory.createEmptyRow(dataInfo, true), new RowCallback() {
           @Override
           public void onSuccess(BeeRow row) {
-            BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, row));
+            RowInsertEvent.fire(BeeKeeper.getBus(), viewName, row, null);
             addTrip(row.getId());
           }
         });

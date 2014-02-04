@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Folder" relation="Folders" notNull="true" cascade="DELETE" />
-    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
+    <Relation name="Message" relation="Messages" notNull="true" editable="true" />
     <Integer name="Flags" />
     <Long name="MessageUID" />
   </Fields>
@@ -14,28 +14,4 @@
   <Indexes>
     <Index fields="MessageUID" />
   </Indexes>
-
-  <Triggers>
-    <Trigger events="DELETE" scope="ROW" timing="AFTER">
-      <PostgreSql>
-        <![CDATA[
-DECLARE _id BIGINT;
-        _tmp BIGINT;
-BEGIN
-  _id:=OLD."Message";
-
-  SELECT "Message" INTO _tmp FROM "Places" WHERE "Message"=_id LIMIT 1;
-
-  IF NOT FOUND THEN
-    DELETE FROM "Messages" WHERE "MessageID"=_id;
-  END IF;
-
-  RETURN NULL;
-END;
-        ]]>
-      </PostgreSql>
-      <MsSql />
-      <Oracle />
-    </Trigger>
-  </Triggers>
 </Table>

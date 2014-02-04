@@ -558,10 +558,10 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       return BeeConst.STRING_EMPTY;
     }
 
-    StringBuilder sb = new StringBuilder(TimeUtils.padTwo(getHour()));
-    if (getMinute() != 0 || getSecond() != 0) {
-      sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
-    }
+    StringBuilder sb = new StringBuilder();
+    sb.append(TimeUtils.padTwo(getHour()));
+    sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
+    
     if (getSecond() != 0) {
       sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getSecond()));
     }

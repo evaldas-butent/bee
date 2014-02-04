@@ -10,6 +10,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;

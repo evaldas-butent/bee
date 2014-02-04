@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="NewAccount" viewName="Accounts" caption="=mailNewAccount" height="250"
+  name="NewAccount" viewName="Accounts" caption="=mailNewAccount" width="620" height="260"
   >
   <FlowPanel>
     <FlowPanel class="flexBox-vertical-center">
@@ -36,27 +36,30 @@
             </cell>
           </row>
           <row>
-            <Label text="=mailType" horizontalAlignment="right" class="bee-required" />
+            <Label text="=mailServerType" horizontalAlignment="right" class="bee-required" />
             <ListBox source="StoreType">
               <item>POP3</item>
               <item>IMAP</item>
             </ListBox>
           </row>
           <row>
-            <Label text="=mailAddress" horizontalAlignment="right" />
+            <Label text="=mailServerAddress" horizontalAlignment="right" />
             <InputText source="StoreServer" />
           </row>
           <row>
-            <Label text="=mailPort" horizontalAlignment="right" />
-            <InputInteger source="StorePort" style="width:50px;" />
+            <Label text="=mailServerPort" horizontalAlignment="right" />
+            <FlowPanel>
+              <InputInteger source="StorePort" style="width:50px;" />
+              <Button text="=mailServerProperties" name="StoreProperties" style="float:right" />
+            </FlowPanel>
           </row>
           <row>
-            <Label text="=mailAccountLogin" horizontalAlignment="right" />
+            <Label text="=mailServerLogin" horizontalAlignment="right" />
             <InputText source="StoreLogin" />
           </row>
           <row>
-            <CheckBox source="StoreSSL" text="=mailSSL" style="float:right" />
-            <Button text="=mailAccountPassword" name="StorePassword" style="float:right" />
+            <CheckBox source="StoreSSL" text="=mailServerSSL" style="float:right" />
+            <Button text="=mailServerPassword" name="StorePassword" style="float:right" />
           </row>
         </Table>
       </FlowPanel>
@@ -69,20 +72,23 @@
             </cell>
           </row>
           <row>
-            <Label text="=mailAddress" horizontalAlignment="right" />
+            <Label text="=mailServerAddress" horizontalAlignment="right" />
             <InputText source="TransportServer" />
           </row>
           <row>
-            <Label text="=mailPort" horizontalAlignment="right" />
-            <InputInteger source="TransportPort" style="width:50px;" />
+            <Label text="=mailServerPort" horizontalAlignment="right" />
+            <FlowPanel>
+              <InputInteger source="TransportPort" style="width:50px;" />
+              <Button text="=mailServerProperties" name="TransportProperties" style="float:right" />
+            </FlowPanel>
           </row>
           <row>
-            <Label text="=mailAccountLogin" horizontalAlignment="right" />
+            <Label text="=mailServerLogin" horizontalAlignment="right" />
             <InputText source="TransportLogin" />
           </row>
           <row>
-            <CheckBox source="TransportSSL" text="=mailSSL" style="float:right" />
-            <Button text="=mailAccountPassword" name="TransportPassword" style="float:right" />
+            <CheckBox source="TransportSSL" text="=mailServerSSL" style="float:right" />
+            <Button text="=mailServerPassword" name="TransportPassword" style="float:right" />
           </row>
         </Table>
       </FlowPanel>

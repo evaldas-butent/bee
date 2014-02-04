@@ -2,6 +2,7 @@ package com.butent.bee.client.logging;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasVisibility;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -22,18 +23,20 @@ import java.util.logging.LogRecord;
  * Manages content of log information showing user interface component.
  */
 
-public class PanelHandler extends Handler implements HasVisibility {
+public class PanelHandler extends Handler implements HasVisibility, HasEnabled {
 
   private static final String STYLENAME_DEFAULT = "bee-LogRecord";
   private static final String STYLENAME_SEPARATOR = "bee-LogSeparator";
 
   private static final String STORAGE_KEY = "logSize";
-  
+
   private final Flow panel;
 
   private final int capacity;
 
   private int hiddenSize = BeeConst.UNDEF;
+
+  private boolean enabled = true;
 
   public PanelHandler(Flow panel, Formatter formatter, Level level) {
     this.panel = panel;
@@ -55,12 +58,13 @@ public class PanelHandler extends Handler implements HasVisibility {
 
   @Override
   public void close() {
+    setEnabled(false);
   }
 
   @Override
   public void flush() {
   }
-  
+
   public int getInitialSize() {
     return BeeKeeper.getStorage().getInt(STORAGE_KEY);
   }
@@ -74,13 +78,18 @@ public class PanelHandler extends Handler implements HasVisibility {
   }
 
   @Override
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  @Override
   public boolean isVisible() {
     return getSize() > 0;
   }
 
   @Override
   public void publish(LogRecord record) {
-    if (!isLoggable(record)) {
+    if (!isEnabled() || !isLoggable(record)) {
       return;
     }
 
@@ -97,7 +106,10 @@ public class PanelHandler extends Handler implements HasVisibility {
       Element elem = Document.get().createDivElement().cast();
       panel.add(new CustomWidget(elem));
       elem.setClassName(STYLENAME_SEPARATOR);
-      elem.scrollIntoView();
+
+      if (isVisible()) {
+        elem.scrollIntoView();
+      }
 
       return;
     }
@@ -125,6 +137,11 @@ public class PanelHandler extends Handler implements HasVisibility {
       ((Split) parent).setWidgetSize(getPanel(), size);
       BeeKeeper.getStorage().set(STORAGE_KEY, size);
     }
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   @Override

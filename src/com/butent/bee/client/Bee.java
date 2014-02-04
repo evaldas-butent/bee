@@ -4,18 +4,22 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -42,8 +46,34 @@ public class Bee implements EntryPoint {
 
   public static void exit() {
     Bee.keeper.exit();
-    BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
+
+    ClientLogManager.close();
     BodyPanel.get().clear();
+
+    Endpoint.close();
+
+    if (BeeKeeper.getRpc().hasPendingRequests()) {
+      Timer timer = new Timer() {
+        @Override
+        public void run() {
+          List<RpcInfo> pendingRequests = BeeKeeper.getRpc().getPendingRequests();
+          for (RpcInfo info : pendingRequests) {
+            info.cancel();
+          }
+          
+          logout();
+        }
+      };
+
+      timer.schedule(1000);
+
+    } else {
+      logout();
+    }
+  }
+
+  private static void logout() {
+    BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
   }
 
   @Override
@@ -58,7 +88,7 @@ public class Bee implements EntryPoint {
     if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
       DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
     }
-    
+
     List<String> extStyleSheets = Settings.getStyleSheets();
     if (!BeeUtils.isEmpty(extStyleSheets)) {
       for (String styleSheet : extStyleSheets) {
@@ -93,6 +123,13 @@ public class Bee implements EntryPoint {
         start();
       }
     });
+
+    List<String> extScripts = Settings.getScripts();
+    if (!BeeUtils.isEmpty(extScripts)) {
+      for (String script : extScripts) {
+        DomUtils.injectExternalScript(script);
+      }
+    }
   }
 
   private static void load(Map<String, String> data) {
@@ -105,6 +142,10 @@ public class Bee implements EntryPoint {
 
       if (!BeeUtils.isEmpty(serialized)) {
         switch (component) {
+          case AUTOCOMPLETE:
+            AutocompleteProvider.load(serialized);
+            break;
+
           case DATA_INFO:
             Data.getDataInfoProvider().restore(serialized);
             break;
@@ -133,6 +174,14 @@ public class Bee implements EntryPoint {
           case MENU:
             BeeKeeper.getMenu().restore(serialized);
             break;
+
+          case NEWS:
+            Global.getNewsAggregator().loadSubscriptions(serialized);
+            break;
+
+          case USERS:
+            Global.getUsers().loadUserData(serialized);
+            break;
         }
       }
     }
@@ -146,6 +195,8 @@ public class Bee implements EntryPoint {
     Data.init();
 
     Historian.start();
+
+    Endpoint.open(BeeKeeper.getUser().getUserId());
 
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
   }

@@ -1,26 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
   
   name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
-  editShowId="true"
+  currentUserFilter="Owner" editShowId="true" enabledActions="copy"
   >
   <g:columns>
-    <IdColumn name="Id" caption="ID" />
+    <IdColumn name="Id" caption="=captionId" />
 
     <DataColumn name="Priority" />
-    <DataColumn name="Summary" />
-    <DataColumn name="Description" />
+    <DataColumn name="Summary" visible="true" />
+    <DataColumn name="Description" visible="false" />
 
     <RelColumn name="Company" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+      sortBy="ContactLastName ContactFirstName" visible="false" />
 
-    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
-    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+      sortBy="OwnerLastName OwnerFirstName" visible="false" />
 
-    <DataColumn name="StartTime" />
-    <DataColumn name="FinishTime" />
+    <DataColumn name="ScheduleFrom" />
+    <DataColumn name="ScheduleUntil" />
 
-    <DataColumn name="Recurrence" />
+    <DataColumn name="ScheduleDays" />
+
+    <DataColumn name="WorkdayTransition" visible="false" />
+
+    <DataColumn name="DayOfMonth" />
+    <DataColumn name="Month" />
+    <DataColumn name="DayOfWeek" />
+    <DataColumn name="Year" visible="false" />
+
+    <DataColumn name="StartAt" visible="false" />
+    <DataColumn name="DurationDays" visible="false" />
+    <DataColumn name="DurationTime" visible="false" />
+    
+    <RelColumn name="Reminder" />
+    <DataColumn name="RemindBefore" visible="false" />
+    <DataColumn name="RemindAt" visible="false" />
   </g:columns>
 </g:Grid>

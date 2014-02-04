@@ -57,15 +57,20 @@ public class Link extends FocusWidget implements IdentifiableWidget, HasHtml {
     return getAnchorElement().getTarget();
   }
   
+  @Override
+  public String getText() {
+    return getElement().getInnerText();
+  }
+
   public void setHref(String href) {
     getAnchorElement().setHref(href);
   }
-
+  
   @Override
   public void setHtml(String html) {
     getElement().setInnerHTML(html);
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
@@ -73,6 +78,11 @@ public class Link extends FocusWidget implements IdentifiableWidget, HasHtml {
   
   public void setTarget(String target) {
     getAnchorElement().setTarget(target);
+  }
+  
+  @Override
+  public void setText(String text) {
+    getElement().setInnerText(text);
   }
   
   public void update(String value) {

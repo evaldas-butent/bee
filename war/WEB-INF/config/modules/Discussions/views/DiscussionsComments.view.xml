@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DiscussionsComments"
+  source="DiscussionsComments"
+  >
+  <Columns>
+    <SimpleColumn name="Discussion" />
+    <SimpleColumn name="Parent" />
+    <SimpleColumn name="Publisher" />
+    <SimpleJoin name="Publisher" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PublisherFirstName" name="FirstName" />
+          <SimpleColumn alias="PublisherLastName" name="LastName" />
+          <SimpleColumn name="Photo" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="PublishTime" />
+    <SimpleColumn name="CommentText" />
+    <SimpleColumn name="Reason" />
+    <SimpleColumn name="Deleted" />
+  </Columns>
+  <Order>
+   <OrderBy column="PublishTime" />
+  </Order>
+</View>
+ 

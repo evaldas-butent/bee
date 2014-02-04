@@ -1,8 +1,6 @@
 package com.butent.bee.client.view.edit;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.TextBoxBase;
-import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -17,6 +15,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public final class EditorAssistant {
@@ -52,8 +51,8 @@ public final class EditorAssistant {
     }
     widget.setValue(BeeUtils.trimRight(v));
 
-    if (widget instanceof ValueBoxBase && !BeeUtils.isEmpty(value) && action != null) {
-      ValueBoxBase<?> box = (ValueBoxBase<?>) widget;
+    if (widget instanceof TextBox && !BeeUtils.isEmpty(value) && action != null) {
+      TextBox box = (TextBox) widget;
       int p = BeeConst.UNDEF;
       int len = box.getText().length();
 
@@ -143,14 +142,18 @@ public final class EditorAssistant {
 
         @Override
         public void onSuccess(int value) {
-          if (oldValue == null || value != oldValue) {
-            source.set(row, value);
+          if (oldValue == null || (value - 1) != oldValue) {
+            source.set(row, value == 0 ? null : value - 1);
             if (element != null) {
-              element.setInnerHTML(Stars.getHtml(value));
+              if (value == 0) {
+                element.setInnerHTML(BeeConst.STRING_EMPTY);
+              } else {
+                element.setInnerHTML(Stars.getHtml(value - 1));
+              }
             }
 
             if (updater != null) {
-              updater.accept(value);
+              updater.accept(value == 0 ? null : value - 1);
             }
           }
 
@@ -208,8 +211,8 @@ public final class EditorAssistant {
   public static String getValue(Widget widget) {
     if (widget instanceof Editor) {
       return ((Editor) widget).getValue();
-    } else if (widget instanceof TextBoxBase) {
-      return ((TextBoxBase) widget).getValue();
+    } else if (widget instanceof HasStringValue) {
+      return ((HasStringValue) widget).getValue();
     } else {
       return null;
     }

@@ -2,6 +2,7 @@ package com.butent.bee.client.event;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.DOM;
@@ -21,10 +22,10 @@ import java.util.Collections;
 import java.util.List;
 
 public final class Previewer implements NativePreviewHandler, HasInfo {
-  
+
   public interface PreviewConsumer extends Consumer<NativePreviewEvent> {
   }
-  
+
   private static final class ComparableHandler implements Comparable<ComparableHandler> {
     private final int index;
     private final PreviewHandler handler;
@@ -55,8 +56,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       return Ints.compare(index, o.index);
     }
   }
-  
-  private static final Previewer INSTANCE = new Previewer(); 
+
+  private static final Previewer INSTANCE = new Previewer();
 
   public static void ensureRegistered(PreviewHandler handler) {
     Assert.notNull(handler);
@@ -76,14 +77,14 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   public static Previewer getInstance() {
     return INSTANCE;
   }
-  
+
   public static boolean preview(Event event, Node target) {
     Assert.notNull(event);
 
     INSTANCE.setTargetNode(target);
     boolean result = DOM.previewEvent(event);
     INSTANCE.setTargetNode(null);
-    
+
     return result;
   }
 
@@ -99,7 +100,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     Assert.notNull(handler);
     INSTANCE.mouseDownPriorHandlers.add(handler);
   }
-  
+
   public static void unregister(PreviewHandler handler) {
     Assert.notNull(handler);
     Assert.state(INSTANCE.contains(handler));
@@ -111,18 +112,32 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     Assert.notNull(handler);
     INSTANCE.mouseDownPriorHandlers.remove(handler);
   }
-  
+
+  private static boolean isExternalElement(Element element) {
+    if (element == null) {
+      return false;
+    }
+    if (element.getId() != null && element.getId().startsWith("mce_")) {
+      return true;
+    }
+    if (element.getClassName() != null && element.getClassName().startsWith("mce-")) {
+      return true;
+    }
+    return false;
+  }
+
   private final List<PreviewHandler> handlers = Lists.newArrayList();
+
   private final List<PreviewHandler> mouseDownPriorHandlers = Lists.newArrayList();
 
   private int modalCount;
-  
+
   private Node targetNode;
 
   private Previewer() {
     Event.addNativePreviewHandler(this);
   }
-  
+
   @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
@@ -139,7 +154,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     }
     return info;
   }
-  
+
   @Override
   public void onPreviewNativeEvent(NativePreviewEvent event) {
     if (modalCount == 0) {
@@ -154,18 +169,21 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
         }
       }
     }
-    
-    if (handlers.isEmpty()) {
-      return;
 
-    } else if (handlers.size() == 1) {
-      handlers.get(0).onEventPreview(event, getTargetNode(event));
+    if (!handlers.isEmpty() && !isExternalEvent(event)) {
+      int size = handlers.size();
 
-    } else {
-      for (int i = handlers.size() - 1; i >= 0; i--) {
-        handlers.get(i).onEventPreview(event, getTargetNode(event));
-        if (event.isCanceled() || event.isConsumed()) {
-          break;
+      if (size == 1) {
+        handlers.get(0).onEventPreview(event, getTargetNode(event));
+
+      } else {
+        for (int i = size - 1; i >= 0; i--) {
+          if (i < handlers.size()) {
+            handlers.get(i).onEventPreview(event, getTargetNode(event));
+            if (event.isCanceled() || event.isConsumed()) {
+              break;
+            }
+          }
         }
       }
     }
@@ -177,7 +195,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       modalCount++;
     }
   }
-  
+
   private boolean contains(PreviewHandler handler) {
     return !BeeConst.isUndef(indexOf(handler));
   }
@@ -185,7 +203,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   private Node getTargetNode() {
     return targetNode;
   }
-  
+
   private Node getTargetNode(NativePreviewEvent event) {
     if (getTargetNode() != null || event == null) {
       return getTargetNode();
@@ -194,7 +212,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       return (eventTarget == null) ? null : EventUtils.getTargetNode(eventTarget);
     }
   }
-  
+
   private int indexOf(PreviewHandler handler) {
     for (int i = 0; i < handlers.size(); i++) {
       if (BeeUtils.same(handler.getId(), handlers.get(i).getId())) {
@@ -204,16 +222,28 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     return BeeConst.UNDEF;
   }
 
+  private boolean isExternalEvent(NativePreviewEvent event) {
+    Node node = getTargetNode(event);
+    if (node == null) {
+      return false;
+    }
+
+    if (Element.is(node) && isExternalElement(Element.as(node))) {
+      return true;
+    }
+    return isExternalElement(node.getParentElement());
+  }
+
   private void maybeSortHandlers() {
     if (handlers.size() < 2) {
       return;
     }
-    
+
     List<ComparableHandler> comparableHandlers = Lists.newArrayList();
     for (int i = 0; i < handlers.size(); i++) {
       comparableHandlers.add(new ComparableHandler(i, handlers.get(i)));
     }
-    
+
     Collections.sort(comparableHandlers);
     handlers.clear();
     for (ComparableHandler ch : comparableHandlers) {

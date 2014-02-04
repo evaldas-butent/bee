@@ -24,14 +24,14 @@
     <ExternalJoin name="Trip" source="CargoTrips" joinType="INNER">
       <HiddenColumn name="Assessor" />
       
-      <AggregateJoin name="Cargo" joinType="INNER">
-        <AggregateJoin name="Order" joinType="INNER">
+      <SimpleJoin name="Cargo" joinType="INNER">
+        <SimpleJoin name="Order" joinType="INNER">
           <HiddenColumn name="OrderNo" />
           <AggregateColumn name="OrderNo" alias="MinOrder" aggregate="MIN" />
           <AggregateColumn name="OrderNo" alias="MaxOrder" aggregate="MAX" />
           <AggregateColumn name="OrderNo" alias="CntOrder" aggregate="COUNT_DISTINCT" />
-        </AggregateJoin>
-      </AggregateJoin>
+        </SimpleJoin>
+      </SimpleJoin>
     </ExternalJoin>
   </Columns>
   <Order>

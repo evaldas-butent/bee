@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.HasCssName;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
@@ -22,8 +21,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.css.CssAngle;
-import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.HasCssName;
 import com.butent.bee.shared.css.values.BorderCollapse;
 import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.css.values.Display;
@@ -2292,7 +2292,7 @@ public final class StyleUtils {
   }
 
   public static String toCssLength(double value, CssUnit unit) {
-    return BeeUtils.toString(value) + normalizeUnit(unit).getCaption();
+    return BeeUtils.toString(value, 5) + normalizeUnit(unit).getCaption();
   }
 
   public static SafeStyles toSafeStyles(String s) {

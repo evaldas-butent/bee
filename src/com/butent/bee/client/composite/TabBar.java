@@ -1,6 +1,8 @@
 package com.butent.bee.client.composite;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
@@ -158,6 +160,11 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     return addHandler(handler, BeforeSelectionEvent.getType());
   }
 
+  @Override
+  public HandlerRegistration addClickHandler(ClickHandler handler) {
+    return addDomHandler(handler, ClickEvent.getType());
+  }
+  
   @Override
   public void addItem(String text) {
     addItem(text, null);

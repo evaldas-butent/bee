@@ -15,6 +15,8 @@ public class LogFormatter extends Formatter {
 
   public static final Level LOG_SEPARATOR_LEVEL = Level.INFO;
   public static final String LOG_SEPARATOR_TAG = "-";
+  
+  private static final int MAX_MESSAGE_LENGTH = 1024;
 
   @Override
   public String format(LogRecord record) {
@@ -24,7 +26,7 @@ public class LogFormatter extends Formatter {
       return LOG_SEPARATOR_TAG;
     } else {
       return BeeUtils.joinWords(JsUtils.toTime(record.getMillis()),
-          BeeUtils.clip(record.getMessage(), 256), record.getThrown());
+          BeeUtils.clip(record.getMessage(), MAX_MESSAGE_LENGTH), record.getThrown());
     }
   }
 

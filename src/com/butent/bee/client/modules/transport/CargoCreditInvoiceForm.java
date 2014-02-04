@@ -14,7 +14,7 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -63,7 +63,7 @@ public class CargoCreditInvoiceForm extends PrintFormInterceptor {
           Queries.getRow(form.getViewName(), form.getActiveRow().getId(), new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(form.getViewName(), result));
+              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
             }
           });
         }

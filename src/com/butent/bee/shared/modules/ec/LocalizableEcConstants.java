@@ -36,6 +36,8 @@ public interface LocalizableEcConstants {
 
   String ecClientPrice();
 
+  String ecClients();
+
   String ecClientType();
 
   String ecClientTypeCompany();
@@ -174,6 +176,8 @@ public interface LocalizableEcConstants {
 
   String ecMaxedOut();
 
+  String ecMenu();
+
   String ecMoreItems();
 
   String ecNothingToOrder();
@@ -211,6 +215,8 @@ public interface LocalizableEcConstants {
   String ecOrderRejectCaption();
 
   String ecOrderRejectConfirm();
+
+  String ecOrders();
 
   String ecOrderSendToERPConfirm();
 
@@ -251,6 +257,8 @@ public interface LocalizableEcConstants {
   String ecRegistrationNew();
 
   String ecRegistrationReceived();
+
+  String ecRegistrations();
 
   String ecSearchBy();
 

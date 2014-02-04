@@ -32,7 +32,7 @@ public final class CssEnums {
   private static void generateType(String type, List<String> values) {
     List<String> lines = Lists.newArrayList();
     lines.add("package com.butent.bee.shared.css.values;");
-    lines.add("import com.google.gwt.dom.client.Style.HasCssName;");
+    lines.add("import com.butent.bee.shared.css.HasCssName;");
     lines.add("public enum " + type + " implements HasCssName {");
 
     for (int i = 0; i < values.size(); i++) {

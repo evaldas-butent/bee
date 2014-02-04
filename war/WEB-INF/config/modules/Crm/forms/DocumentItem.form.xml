@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="DocumentItem" caption="=documentItem"
+  >
+  <TabbedPages>
+    <page>
+      <text>=criteria</text>
+      <xi:include href="widgets/Criteria.widget.xml" />
+    </page>
+    <page>
+      <text>=content</text>
+      <SimplePanel name="Content">
+        <div class="occupy" style="bottom:141px" />
+      </SimplePanel>
+    </page>
+  </TabbedPages>
+</f:Form>  

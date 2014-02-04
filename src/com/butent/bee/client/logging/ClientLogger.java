@@ -39,6 +39,25 @@ public class ClientLogger implements BeeLogger {
     }
   }
 
+  @Override
+  public LogLevel getLevel() {
+    LogLevel level = LogLevel.of(logger.getLevel());
+    
+    if (level != null) {
+      return level;
+    } else if (isDebugEnabled()) {
+      return LogLevel.DEBUG;
+    } else if (isInfoEnabled()) {
+      return LogLevel.INFO;
+    } else if (isWarningEnabled()) {
+      return LogLevel.WARNING;
+    } else if (isErrorEnabled()) {
+      return LogLevel.ERROR;
+    } else {
+      return null;
+    }
+  }
+
   public PanelHandler getPanelHandler() {
     for (Handler handler : logger.getHandlers()) {
       if (handler instanceof PanelHandler) {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DocumentItemData" source="DocumentItems"
+  caption="=DocumentItemData" editForm="DocumentItemData"
+  >
+  <Columns>
+     <SimpleColumn name="Data" />
+    <SimpleJoin joinType="LEFT" name="Data">
+      <SimpleColumn name="Content" />
+    </SimpleJoin>
+  </Columns>
+</View>
+ 

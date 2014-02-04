@@ -17,14 +17,14 @@
         <InputDateTime source="Date" style="width:110px;" />
         <Label text="=trTruck" class="bee-required" horizontalAlignment="right" />
         <DataSelector source="Vehicle" renderColumns="VehicleNumber" filter="IsTruck" required="true" />
-        <Label text="=trTripNo" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
-        <InputText source="TripNo" />
+        <Label text="=trailer" horizontalAlignment="right" />
+        <DataSelector source="Trailer" filter="IsTrailer" />
       </row>
       <row>
         <Label text="=scheduledEndingDate" />
         <InputDate source="PlannedEndDate" style="width:80px;" />
-        <Label text="=trailer" horizontalAlignment="right" />
-        <DataSelector source="Trailer" filter="IsTrailer" />
+        <Label text="=trTripNo" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
+        <InputText source="TripNo" />
         <Label text="=status" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
         <ListBox source="Status" />
       </row>

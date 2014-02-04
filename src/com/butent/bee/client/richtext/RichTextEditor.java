@@ -8,10 +8,9 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 
@@ -24,6 +23,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.AdjustmentListener;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -42,7 +42,8 @@ import elemental.js.dom.JsElement;
  * Enables usage of formatted text editor user interface component.
  */
 
-public class RichTextEditor extends Flow implements Editor, AdjustmentListener, PreviewHandler {
+public class RichTextEditor extends Flow implements Editor, AdjustmentListener, PreviewHandler,
+    HasKeyDownHandlers {
 
   private static final String STYLE_CONTAINER = "bee-RichTextEditor";
   private static final String STYLE_CONTAINER_EMBEDDED = "bee-RichTextEditor-embedded";
@@ -62,7 +63,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public RichTextEditor(boolean embedded) {
     super();
 
@@ -95,6 +96,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
       return addDomHandler(handler, BlurEvent.getType());
     }
   }
+
+  @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addKeyDownHandler(handler);
+  }
   
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
@@ -113,11 +119,6 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
-  }
-
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
   }
 
   @Override
@@ -156,7 +157,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   public String getOptions() {
     return options;
   }
-  
+
   @Override
   public int getTabIndex() {
     return getArea().getTabIndex();
@@ -222,7 +223,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
 
   @Override
   public void setAccessKey(char key) {
-    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key)); 
+    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }
 
   @Override
@@ -296,7 +297,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   public List<String> validate(boolean checkForNull) {
     return Collections.emptyList();
   }
-  
+
   @Override
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();

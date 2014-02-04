@@ -17,7 +17,7 @@
       <carry><ui:expression>row.SpeedometerTo</ui:expression></carry>
     </DataColumn>
     <DataColumn name="SpeedometerTo" caption="=trSpeedometerToShort" format="#.0" minValue="0" updateMode="row" />
-    <DataColumn name="Kilometers" caption="Km" format="#.0" minValue="0" updateMode="row">
+    <DataColumn name="Kilometers" caption="=kilometersShort" format="#.0" minValue="0" updateMode="row">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>

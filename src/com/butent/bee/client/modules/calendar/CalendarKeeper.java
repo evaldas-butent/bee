@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -42,6 +43,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -50,6 +52,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -185,10 +188,15 @@ public final class CalendarKeeper {
 
     SelectorEvent.register(SELECTOR_HANDLER);
 
-    REPORT_MANAGER.register();
-
     RowEditor.registerHasDelegate(VIEW_CALENDARS);
     RowEditor.registerHasDelegate(VIEW_APPOINTMENTS);
+    
+    BeeKeeper.getMenu().registerMenuCallback("calendar_reports", new MenuManager.MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        REPORT_MANAGER.onSelectReport(EnumUtils.getEnumByIndex(Report.class, parameters));
+      }
+    });
   }
 
   public static void setDataLoaded(boolean dataLoaded) {
@@ -471,6 +479,8 @@ public final class CalendarKeeper {
 
               Global.inputWidget(result.getCaption(), result, builder.getModalCallback(),
                   RowEditor.DIALOG_STYLE, null, enabledActions);
+              
+              Global.getNewsAggregator().onAccess(VIEW_APPOINTMENTS, appointment.getId());
             }
           }
         });
@@ -542,11 +552,7 @@ public final class CalendarKeeper {
       params.addQueryItem(PARAM_USER_CALENDAR_ID, settings.getId());
       params.addQueryItem(PARAM_ACTIVE_VIEW, settings.getActiveView().ordinal());
 
-      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-        }
-      });
+      BeeKeeper.getRpc().makeRequest(params);
     }
   }
 

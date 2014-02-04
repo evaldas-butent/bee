@@ -64,6 +64,11 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
   }
 
   @Override
+  public String getText() {
+    return isReady ? getBody().getInnerText() : textOrHtml;
+  }
+  
+  @Override
   public void insertHorizontalRule() {
     execCommand("InsertHorizontalRule");
   }
@@ -185,11 +190,20 @@ class RichTextAreaImpl implements RichTextArea.Formatter, HasHtml {
       textOrHtml = html;
     }
   }
-
+  
   @Override
   public void setJustification(Justification justification) {
     if (justification != null) {
       execCommand(justification.getCmd());
+    }
+  }
+
+  @Override
+  public void setText(String text) {
+    if (isReady) {
+      setTextImpl(text);
+    } else {
+      textOrHtml = text;
     }
   }
 

@@ -68,6 +68,8 @@ public final class TimeUtils {
   public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
   public static final RangeOptions CLOSED_NOT_REQUIRED = new RangeOptions(false, false, false);
 
+  public static final String PERIOD_SEPARATOR = "--";
+  
   private static final String[] FIELD_NAME = {
       "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
       "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
@@ -370,15 +372,19 @@ public final class TimeUtils {
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
+ 
     if (dt == null) {
-      return true;
+      return !options.isLowerRequired() && min == null;
+    
     } else if (min == null && max == null) {
       return !options.isLowerRequired() && !options.isUpperRequired();
 
     } else if (dt instanceof DateTime || min instanceof DateTime || max instanceof DateTime) {
       return options.contains(DateTime.get(min), DateTime.get(max), DateTime.get(dt));
+
     } else if (dt instanceof JustDate || min instanceof JustDate || max instanceof JustDate) {
       return options.contains(JustDate.get(min), JustDate.get(max), JustDate.get(dt));
+    
     } else {
       return false;
     }
@@ -414,6 +420,10 @@ public final class TimeUtils {
     return x instanceof HasDateValue || x instanceof Date;
   }
 
+  public static boolean isDow(int dow) {
+    return dow >= 1 && dow <= DAYS_PER_WEEK;
+  }
+  
   public static boolean isLeq(HasYearMonth d1, HasYearMonth d2) {
     return compare(d1, d2) <= 0;
   }
@@ -459,8 +469,8 @@ public final class TimeUtils {
    * @return the String representation of milliseconds.
    */
   public static String millisToString(int millis) {
-    if (millis >= 0 && millis < 1000) {
-      return Integer.toString(millis + 1000).substring(1);
+    if (millis >= 0 && millis < MILLIS_PER_SECOND) {
+      return Integer.toString(millis + MILLIS_PER_SECOND).substring(1);
     } else {
       return Integer.toString(millis);
     }
@@ -487,6 +497,18 @@ public final class TimeUtils {
     return today().getMonth();
   }
 
+  public static int monthDiff(HasYearMonth start, HasYearMonth end) {
+    Assert.notNull(start);
+    Assert.notNull(end);
+
+    return end.getYear() * 12 + end.getMonth() - start.getYear() * 12 - start.getMonth();
+  }
+  
+  public static int monthLength(HasYearMonth ym) {
+    Assert.notNull(ym);
+    return Grego.monthLength(ym.getYear(), ym.getMonth());
+  }
+  
   public static String monthToString(int month) {
     return padTwo(month);
   }
@@ -747,12 +769,39 @@ public final class TimeUtils {
     }
   }
 
+  public static String renderDateTime(long time) {
+    return renderDateTime(time, false);
+  }
+
+  public static String renderDateTime(long time, boolean showMillis) {
+    return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
+  }
+  
   public static String renderMinutes(int minutes, boolean leadingZero) {
     int hours = minutes / MINUTES_PER_HOUR;
     return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + DateTime.TIME_FIELD_SEPARATOR
         + padTwo(minutes % MINUTES_PER_HOUR);
   }
 
+  public static String renderPeriod(DateTime start, DateTime end) {
+    if (start == null) {
+      if (end == null) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + renderCompact(end);
+      }
+
+    } else if (end == null) {
+      return renderCompact(start) + PERIOD_SEPARATOR;
+
+    } else if (sameDate(start, end)) {
+      return renderCompact(start) + PERIOD_SEPARATOR + end.toCompactTimeString();
+
+    } else {
+      return renderCompact(start) + PERIOD_SEPARATOR + renderCompact(end);
+    }
+  }
+  
   public static String renderTime(int hour, int minute, int second, int millis,
       boolean leadingZero) {
     StringBuilder sb = new StringBuilder();
@@ -903,7 +952,11 @@ public final class TimeUtils {
   }
 
   public static JustDate startOfYear() {
-    return startOfYear(today());
+    return startOfYear(year());
+  }
+
+  public static JustDate startOfYear(int year) {
+    return new JustDate(year, 1, 1);
   }
   
   public static JustDate startOfYear(HasYearMonth ref) {
@@ -1038,8 +1091,8 @@ public final class TimeUtils {
    * @return seconds.
    */
   public static String toSeconds(long millis) {
-    return Long.toString(millis / 1000) + BeeConst.STRING_POINT
-        + BeeUtils.toLeadingZeroes((int) (millis % 1000), 3);
+    return Long.toString(millis / MILLIS_PER_SECOND) + BeeConst.STRING_POINT
+        + BeeUtils.toLeadingZeroes((int) (millis % MILLIS_PER_SECOND), 3);
   }
 
   public static String toTimeString(long millis) {

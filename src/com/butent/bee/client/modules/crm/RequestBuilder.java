@@ -59,7 +59,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
     String viewName = getFormView().getViewName();
 
     Queries.insert(viewName, event.getColumns(), event.getValues(), event.getChildren(),
-        new RowInsertCallback(viewName) {
+        new RowInsertCallback(viewName, event.getSourceId()) {
           @Override
           public void onSuccess(BeeRow result) {
             super.onSuccess(result);

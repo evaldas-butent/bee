@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="RTDates"
+  idName="RTDateID"
+  >
+  <Fields>
+    <Relation name="RecurringTask" notNull="true" relation="RecurringTasks" cascade="DELETE"
+      label="=crmRecurringTask" />
+      
+    <Date name="DateFrom" notNull="true" label="=crmRTDateExceptionFrom" />
+    <Date name="DateUntil" label="=crmRTDateExceptionUntil" />
+    
+    <Enum name="Mode" key="ScheduleDateMode" notNull="true" label="=crmRTDateExceptionMode" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="RecurringTask DateFrom" />
+  </Constraints>
+</Table>

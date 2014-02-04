@@ -9,6 +9,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
@@ -56,6 +57,8 @@ public class DispatcherBean {
   UserServiceBean userService;
   @EJB
   SystemBean system;
+  @EJB
+  NewsBean news;
 
   public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
@@ -79,10 +82,33 @@ public class DispatcherBean {
     }
 
     Collection<Component> components = UserInterface.normalize(userInterface).getComponents();
+    
+    Collection<Component> requiredComponents = UserInterface.getRequiredComponents();
+    if (!BeeUtils.isEmpty(requiredComponents)) {
+      if (components == null) {
+        components = requiredComponents;
+      } else {
+        for (Component component : requiredComponents) {
+          if (!components.contains(component)) {
+            components.add(component);
+          }
+        }
+      }
+    }
 
     if (!BeeUtils.isEmpty(components)) {
       for (Component component : components) {
         switch (component) {
+          case AUTOCOMPLETE:
+            ResponseObject acData = uiService.getAutocomplete();
+            if (acData != null) {
+              response.addMessagesFrom(acData);
+              if (!acData.hasErrors() && acData.hasResponse()) {
+                data.put(component.key(), acData.getResponse());
+              }
+            }
+            break;
+            
           case DATA_INFO:
             data.put(component.key(), system.getDataInfo());
             break;
@@ -131,6 +157,20 @@ public class DispatcherBean {
                 data.put(component.key(), menuData.getResponse());
               }
             }
+            break;
+            
+          case NEWS:
+            ResponseObject newsData = news.getNews();
+            if (newsData != null) {
+              response.addMessagesFrom(newsData);
+              if (!newsData.hasErrors() && newsData.hasResponse()) {
+                data.put(component.key(), newsData.getResponse());
+              }
+            }
+            break;
+
+          case USERS:
+            data.put(component.key(), userService.getAllUserData());
             break;
         }
       }

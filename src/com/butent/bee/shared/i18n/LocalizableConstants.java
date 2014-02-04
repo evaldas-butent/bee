@@ -160,6 +160,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String contacts();
 
+  String content();
+
   String continueQuestion();
 
   String country();
@@ -200,6 +202,12 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String doFilter();
 
+  String domainNews();
+
+  String domainOnline();
+
+  String domainRooms();
+
   String email();
 
   String enterColor();
@@ -218,6 +226,70 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String fax();
 
+  String feed();
+
+  String feedAppointmentsAll();
+
+  String feedAppointmentsMy();
+
+  String feedCompaniesAll();
+
+  String feedCompaniesMy();
+
+  String feedDocuments();
+
+  String feedEcClientsAll();
+
+  String feedEcClientsMy();
+
+  String feedEcOrdersAll();
+
+  String feedEcOrdersMy();
+
+  String feedEcRegistrations();
+
+  String feedGoods();
+
+  String feedNew();
+
+  String feedPersons();
+
+  String feeds();
+
+  String feedSubscriptionDate();
+
+  String feedTasksAll();
+
+  String feedTasksAssigned();
+
+  String feedTasksDelegated();
+
+  String feedTasksObserved();
+
+  String feedTrCargo();
+
+  String feedTrDrivers();
+
+  String feedTrOrdersAll();
+
+  String feedTrOrdersMy();
+
+  String feedTrRegistrations();
+
+  String feedTrRequestsAll();
+
+  String feedTrRequestsMy();
+
+  String feedTrRequestsUnregisteredAll();
+
+  String feedTrRequestsUnregisteredMy();
+
+  String feedTrTrips();
+
+  String feedTrVehicles();
+
+  String file();
+
   String fileDataCorrection();
 
   String fileDescription();
@@ -225,6 +297,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String fileName();
 
   String fileOriginalName();
+
+  String files();
 
   String fileSize();
 
@@ -265,7 +339,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String invalidRange();
 
   String invalidTime();
-  
+
   String ipBlockCommand();
 
   String ipBlocked();
@@ -312,6 +386,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String newPasswordsDoesNotMatch();
 
+  String newProperty();
+
   String newService();
 
   String newTab();
@@ -321,6 +397,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String newValues();
 
   String no();
+
+  String noChanges();
 
   String noData();
 
@@ -360,6 +438,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String pallets();
 
+  String parameter();
+
   String partial();
 
   String password();
@@ -383,6 +463,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String priority();
 
   String profit();
+
+  String properties();
+
+  String property();
 
   String quantity();
 
@@ -410,23 +494,45 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String rightStateVisible();
 
+  String roomDeleteQuestion();
+
+  String roomDwellers();
+
+  String roomName();
+
+  String roomNew();
+
+  String roomOwners();
+
+  String roomSettings();
+
+  String roomTypePrivate();
+
+  String roomTypePublic();
+
+  String roomUpdateTime();
+
+  String roomUsers();
+
   String rowIsReadOnly();
 
   String saveChanges();
 
   String saveFilter();
 
-  String scheduledEndingDate();
+  String scheduleDateExclude();
 
-  String scheduledEndingTime();
+  String scheduleDateInclude();
 
-  String scheduledStartingDate();
+  String scheduleDateNonWork();
 
-  String scheduledStartingTime();
+  String scheduleDateWork();
 
   String selectAll();
 
   String selectAtLeastOneRow();
+
+  String service();
 
   String services();
 
@@ -484,7 +590,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String userFullName();
 
+  String userGroupAddMembers();
+
+  String userGroupPrivate();
+
+  String userGroupPublic();
+
   String userLogin();
+
+  String users();
 
   String value();
 
@@ -505,6 +619,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String width();
 
   String winter();
+
+  String workdayTransitionBackward();
+
+  String workdayTransitionForward();
+
+  String workdayTransitionNearest();
+
+  String workdayTransitionNone();
 
   String yes();
 }

@@ -11,11 +11,13 @@ public enum RendererType {
   TOKEN("token", false),
   FLAG("flag", true),
   STAR("star", true),
+  ATTACHMENT("attachment", true),
   FILE_ICON("fileIcon", true),
   FILE_SIZE("fileSize", true),
   PHOTO("photo", true),
   MAIL("mail", false),
-  URL("url", true);
+  URL("url", true),
+  IMAGE("image", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

@@ -330,6 +330,11 @@ public final class DomUtils {
     return obj.getElement().getAttribute(name);
   }
 
+  public static String getAutocomplete(Element elem) {
+    Assert.notNull(elem);
+    return elem.getPropertyString(Attributes.AUTOCOMPLETE);
+  }
+  
   public static int getCheckBoxClientHeight() {
     if (checkBoxClientHeight <= 0) {
       calculateCheckBoxSize();
@@ -524,8 +529,9 @@ public final class DomUtils {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toLong(value);
   }
+
   public static String getDataProperty(Element elem, String key) {
-    return (elem == null || BeeUtils.isEmpty(key)) ? null 
+    return (elem == null || BeeUtils.isEmpty(key)) ? null
         : elem.getAttribute(Attributes.DATA_PREFIX + key.trim());
   }
 
@@ -675,7 +681,7 @@ public final class DomUtils {
 
     return image;
   }
-  
+
   public static List<ExtendedProperty> getInfo(Object obj, String prefix, int depth) {
     Assert.notNull(obj);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
@@ -755,6 +761,11 @@ public final class DomUtils {
     return ret;
   }
 
+  public static String getName(Element elem) {
+    Assert.notNull(elem);
+    return elem.getPropertyString(Attributes.NAME);
+  }
+
   public static native String getNamespaceUri(Node nd) /*-{
     return nd.namespaceURI;
   }-*/;
@@ -797,7 +808,7 @@ public final class DomUtils {
     if (elem.innerHTML) {
       var attributes = elem.attributes;
       var attrs = "";
-      for ( var i = 0; i < attributes.length; i++) {
+      for (var i = 0; i < attributes.length; i++) {
         attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
       }
       return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
@@ -914,7 +925,7 @@ public final class DomUtils {
       return null;
     }
   }
-  
+
   public static Widget getPhysicalChild(Widget root, String id) {
     Assert.notNull(root);
     return getChildByElement(root, getElement(id));
@@ -1196,7 +1207,6 @@ public final class DomUtils {
     Assert.notEmpty(src);
     Document doc = Document.get();
     ScriptElement script = doc.createScriptElement();
-    script.setType("text/javascript");
     script.setSrc(src);
     doc.getBody().appendChild(script);
   }
@@ -1268,24 +1278,24 @@ public final class DomUtils {
       return false;
     }
   }
-  
+
   public static boolean isInView(Element el) {
     if (el == null || !UIObject.isVisible(el)) {
       return false;
     }
-    
+
     ClientRect rect = ClientRect.createBounding(el);
 
     for (Element p = el.getParentElement(); p != null; p = p.getParentElement()) {
       if (!UIObject.isVisible(p)) {
         return false;
       }
-      
+
       ClientRect parentRect = ClientRect.createBounding(p);
       if (rect != null && parentRect != null && !parentRect.contains(rect)) {
         return false;
       }
-      
+
       if (BeeKeeper.getScreen().getScreenPanel().getId().equals(p.getId())) {
         return true;
       }
@@ -1297,7 +1307,7 @@ public final class DomUtils {
   public static boolean isInView(UIObject obj) {
     return obj != null && isInView(obj.getElement());
   }
-  
+
   public static boolean isInputElement(Element el) {
     return (el != null) && el.getTagName().equalsIgnoreCase(Tags.INPUT);
   }
@@ -1588,6 +1598,16 @@ public final class DomUtils {
     Assert.notNull(obj);
     resizeVerticalBy(obj.getElement(), dh);
   }
+  
+  public static void scrollToBottom(Element elem) {
+    Assert.notNull(elem);
+    elem.setScrollTop(elem.getScrollHeight());
+  }
+
+  public static void scrollToBottom(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToBottom(obj.getElement());
+  }
 
   public static void setAttribute(UIObject obj, String name, int value) {
     setAttribute(obj, name, Integer.toString(value));
@@ -1601,6 +1621,11 @@ public final class DomUtils {
     obj.getElement().setAttribute(name.trim().toLowerCase(), value.trim());
   }
 
+  public static void setAutocomplete(Element elem, String ac) {
+    Assert.notNull(elem);
+    elem.setPropertyString(Attributes.AUTOCOMPLETE, ac);
+  }
+  
   public static void setCheckValue(Element elem, boolean value) {
     Assert.notNull(elem);
     InputElement input = getInputElement(elem);
@@ -1626,7 +1651,7 @@ public final class DomUtils {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Integer.toString(idx));
   }
-  
+
   public static void setDataIndex(Element elem, long idx) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Long.toString(idx));
@@ -1639,7 +1664,7 @@ public final class DomUtils {
   public static void setDataProperty(Element elem, String key, String value) {
     Assert.notNull(elem);
     Assert.notEmpty(key);
-    
+
     if (value == null) {
       elem.removeAttribute(Attributes.DATA_PREFIX + key.trim());
     } else {
@@ -1720,6 +1745,12 @@ public final class DomUtils {
     setAttribute(obj, Attributes.MIN, min);
   }
 
+  public static void setName(Element elem, String name) {
+    Assert.notNull(elem);
+    Assert.notEmpty(name);
+    elem.setPropertyString(Attributes.NAME, name);
+  }
+
   public static boolean setPlaceholder(Element elem, String value) {
     if ((isInputElement(elem) || isTextAreaElement(elem))
         && Features.supportsAttributePlaceholder()) {
@@ -1770,6 +1801,11 @@ public final class DomUtils {
   public static void setText(String id, String text) {
     Element elem = getElement(id);
     elem.setInnerText(text);
+  }
+
+  public static void setValue(Element elem, String value) {
+    Assert.notNull(elem);
+    elem.setPropertyString(Attributes.VALUE, value);
   }
 
   public static String transformClass(Object obj) {

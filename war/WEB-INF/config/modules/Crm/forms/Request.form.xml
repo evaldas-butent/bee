@@ -62,7 +62,7 @@
 
     &separator;
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=documentFiles" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
+      <Label text="=files" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
       <FileGroup name="Files" style="&inline;" />
     </FlowPanel>
   </FlowPanel>

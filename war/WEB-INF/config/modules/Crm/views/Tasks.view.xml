@@ -63,6 +63,9 @@
     <SimpleJoin name="Reminder" joinType="LEFT">
       <SimpleColumn alias="ReminderName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="ReminderTime" />
+    <SimpleColumn name="ReminderSent" />
   </Columns>
   
   <Order>

@@ -66,6 +66,11 @@ public class Button extends FocusWidget implements IdentifiableWidget, HasComman
   }
   
   @Override
+  public String getText() {
+    return getElement().getInnerText();
+  }
+
+  @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isClick(event)) {
       if (getCommand() != null) {
@@ -83,15 +88,20 @@ public class Button extends FocusWidget implements IdentifiableWidget, HasComman
       initEvents();
     }
   }
-
+  
   @Override
   public void setHtml(String html) {
     getElement().setInnerHTML(html);
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setText(String text) {
+    getElement().setInnerText(text);
   }
   
   private void init() {

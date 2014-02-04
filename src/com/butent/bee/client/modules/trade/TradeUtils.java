@@ -13,7 +13,7 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.XMLParser;
 import com.google.gwt.xml.client.impl.DOMParseException;
 
-import static com.butent.bee.server.modules.commons.ExchangeUtils.*;
+import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_RATES_RATE;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -87,7 +87,7 @@ public final class TradeUtils {
           cols.put(COL_UNIT, Localized.getConstants().unit());
           cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
           cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
-          cols.put(COL_TRADE_VAT, Localized.getConstants().trdVat());
+          cols.put(COL_TRADE_VAT, Localized.getConstants().vat());
 
           if (rateExists) {
             cols.put(COL_RATE_AMOUNT,
@@ -114,7 +114,7 @@ public final class TradeUtils {
 
           for (Entry<String, String> row : ImmutableMap.of(
               COL_TRADE_AMOUNT + COL_TOTAL, Localized.getConstants().trdAmount(),
-              COL_TRADE_VAT + COL_TOTAL, Localized.getConstants().trdVat(),
+              COL_TRADE_VAT + COL_TOTAL, Localized.getConstants().vat(),
               COL_TOTAL, Localized.getConstants().trdTotal()).entrySet()) {
 
             cell = new CustomDiv(STYLE_ITEMS + row.getKey() + "-caption");

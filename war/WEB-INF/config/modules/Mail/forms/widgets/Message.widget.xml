@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlowPanel xmlns="http://www.butent.com/widget" class="flexBox-vertical flexible" >
-  <Image name="Waiting" class="bee-mail-WaitingForContent" resource="loading" />
+  <SimplePanel name="Waiting" class="bee-mail-WaitingForContent">
+    <Image resource="loading" />
+  </SimplePanel>
 
   <FlowPanel name="Container" class="flexBox-vertical flexible" >
     <FlowPanel class="bee-mail-Envelope">

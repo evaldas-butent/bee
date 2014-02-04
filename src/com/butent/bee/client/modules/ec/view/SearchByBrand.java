@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.widget.IndexSelector;
@@ -22,6 +23,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcBrand;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -32,6 +34,8 @@ class SearchByBrand extends EcView {
   private static final String STYLE_PREFIX = EcStyles.name("searchByBrand-");
   private static final String STYLE_BRAND = STYLE_PREFIX + "brand-";
 
+  private static final Edges selectorMargins = new Edges(0, 0, 3, 0);
+  
   private final Button brandWidget;
   private final IndexSelector brandSelector;
 
@@ -47,6 +51,7 @@ class SearchByBrand extends EcView {
     brandWidget.addStyleName(STYLE_BRAND + "widget");
 
     this.brandSelector = new IndexSelector(STYLE_BRAND + "selector");
+    brandSelector.enableAutocomplete(EcConstants.NAME_PREFIX + "brand-selector");
 
     this.itemPanel = new ItemPanel();
   }
@@ -96,9 +101,11 @@ class SearchByBrand extends EcView {
 
       EcBrand brand = brands.get(index);
       String name = brand.getName();
-
+      
       brandWidget.setHtml(name);
       brandWidget.addStyleName(STYLE_BRAND + "selected");
+      
+      brandSelector.retainValue(name);
 
       itemPanel.clear();
 
@@ -140,7 +147,7 @@ class SearchByBrand extends EcView {
         popup.setWidget(brandSelector);
 
         popup.setHideOnEscape(true);
-        popup.showRelativeTo(brandWidget.getElement());
+        popup.showRelativeTo(brandWidget.getElement(), selectorMargins);
 
         brandSelector.focus();
       }

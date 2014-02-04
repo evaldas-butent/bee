@@ -4,7 +4,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;

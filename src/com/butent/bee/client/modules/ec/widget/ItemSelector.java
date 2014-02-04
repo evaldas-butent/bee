@@ -12,7 +12,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
@@ -21,13 +21,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.events.KeyboardEvent.KeyCode;
 
-public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
+public class ItemSelector extends Flow implements HasSelectionHandlers<InputText> {
 
   private static final String STYLE_PRIMARY = "ItemSelector";
 
-  private final Editor editor;
+  private final InputText editor;
 
-  public ItemSelector(String caption) {
+  public ItemSelector(String caption, String acKey) {
     super(EcStyles.name(STYLE_PRIMARY));
 
     if (!BeeUtils.isEmpty(caption)) {
@@ -36,7 +36,7 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
       add(label);
     }
 
-    this.editor = createEditor();
+    this.editor = createEditor(acKey);
     add(editor);
 
     Button button = new Button(Localized.getConstants().ecDoSearch());
@@ -53,14 +53,18 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
   }
 
   @Override
-  public HandlerRegistration addSelectionHandler(SelectionHandler<String> handler) {
+  public HandlerRegistration addSelectionHandler(SelectionHandler<InputText> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  private Editor createEditor() {
+  private InputText createEditor(String acKey) {
     InputText input = new InputText();
     DomUtils.setSearch(input);
     EcStyles.add(input, STYLE_PRIMARY, "input");
+    
+    if (!BeeUtils.isEmpty(acKey)) {
+      AutocompleteProvider.enableAutocomplete(input, acKey);
+    }
     
     input.addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -74,9 +78,8 @@ public class ItemSelector extends Flow implements HasSelectionHandlers<String> {
   }
   
   private void maybeFire() {
-    String value = BeeUtils.trim(editor.getValue());
-    if (!value.isEmpty()) {
-      SelectionEvent.fire(this, value);
+    if (!BeeUtils.isEmpty(editor.getValue())) {
+      SelectionEvent.fire(this, editor);
     }
   }
 }

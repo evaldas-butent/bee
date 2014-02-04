@@ -17,7 +17,7 @@ public final class FilterSupplierFactory {
       String enumKey, Relation relation, String options) {
 
     BeeColumn sourceColumn = BeeUtils.getQuietly(dataColumns, sourceIndex);
-    BeeColumn filterColumn = BeeUtils.isEmpty(searchColumns) 
+    BeeColumn filterColumn = BeeUtils.isEmpty(searchColumns)
         ? sourceColumn : DataUtils.getColumn(searchColumns.get(0), dataColumns);
 
     AbstractFilterSupplier supplier = null;
@@ -25,10 +25,11 @@ public final class FilterSupplierFactory {
     if (type != null) {
       switch (type) {
         case VALUE:
-          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
-              filterColumn, label, searchColumns, options);
+          supplier =
+              new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
+                  filterColumn, label, searchColumns, options);
           break;
-         
+
         case RANGE:
           supplier = new RangeFilterSupplier(viewName, filterColumn, label, options);
           break;
@@ -48,8 +49,9 @@ public final class FilterSupplierFactory {
           break;
 
         case VERSION:
-          supplier = new VersionFilterSupplier(viewName, BeeColumn.forRowVersion(versionColumnName),
-              label, options);
+          supplier =
+              new VersionFilterSupplier(viewName, BeeColumn.forRowVersion(versionColumnName),
+                  label, options);
           break;
       }
     }
@@ -57,7 +59,8 @@ public final class FilterSupplierFactory {
     if (supplier == null) {
       if (!BeeUtils.isEmpty(enumKey)) {
         supplier = new EnumFilterSupplier(viewName, filterColumn, options, label, enumKey);
-      } else if (relation != null) {
+      } else if (relation != null
+          && !BeeUtils.containsKey(relation.getAttributes(), "viewColumn")) {
         supplier = new ListFilterSupplier(viewName, sourceColumn, filterColumn, label,
             renderColumns, orderColumns, relation, options);
       }
@@ -85,9 +88,11 @@ public final class FilterSupplierFactory {
           break;
 
         case TEXT:
+        case BLOB:
         case TIME_OF_DAY:
-          supplier = new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
-              filterColumn, label, searchColumns, options);
+          supplier =
+              new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
+                  filterColumn, label, searchColumns, options);
           break;
       }
     }

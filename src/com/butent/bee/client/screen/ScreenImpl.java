@@ -5,6 +5,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -18,7 +19,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Previewer;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -29,14 +29,12 @@ import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.BrowsingContext;
-import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
@@ -50,6 +48,8 @@ import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.List;
 
 /**
  * Handles default (desktop) screen implementation.
@@ -80,12 +80,16 @@ public class ScreenImpl implements Screen {
 
   @Override
   public boolean activateDomainEntry(Domain domain, Long key) {
-    return getCentralScrutinizer().activate(domain, key);
+    if (getCentralScrutinizer() == null) {
+      return false;
+    } else {
+      return getCentralScrutinizer().activate(domain, key);
+    }
   }
 
   @Override
   public void activateWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "activateWidget: view widget is null");
+    Assert.notNull(widget, "activateWidget: widget is null");
     getWorkspace().activateWidget(widget);
   }
 
@@ -102,7 +106,25 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
-    getCentralScrutinizer().add(domain, widget, key, caption);
+    if (getCentralScrutinizer() == null) {
+      logger.severe("cannot add domain", domain);
+    } else {
+      getCentralScrutinizer().add(domain, widget, key, caption);
+    }
+  }
+
+  @Override
+  public String addProgress(HasProgress widget) {
+    if (getProgressPanel() != null && widget != null) {
+      if (!getProgressPanel().iterator().hasNext()) {
+        showProgressPanel();
+      }
+
+      getProgressPanel().add(widget);
+      return widget.getId();
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -111,64 +133,19 @@ public class ScreenImpl implements Screen {
       getNotification().clear();
     }
   }
-  
-  @Override
-  public void closeProgress(String id) {
-    if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
-      Widget item = DomUtils.getChildById(getProgressPanel(), id);
-
-      if (item != null) {
-        getProgressPanel().remove(item);
-        if (!getProgressPanel().iterator().hasNext()) {
-          hideProgressPanel();
-        }
-      }
-    }
-  }
 
   @Override
   public void closeWidget(IdentifiableWidget widget) {
-    Assert.notNull(widget, "closeWidget: view widget is null");
+    Assert.notNull(widget, "closeWidget: widget is null");
     getWorkspace().closeWidget(widget);
   }
 
   @Override
   public boolean containsDomainEntry(Domain domain, Long key) {
-    return getCentralScrutinizer().contains(domain, key);
-  }
-
-  @Override
-  public String createProgress(String caption, Double max, IdentifiableWidget closeBox) {
-    if (getProgressPanel() != null) {
-      if (!getProgressPanel().iterator().hasNext()) {
-        showProgressPanel();
-      }
-
-      Flow item = new Flow();
-      item.addStyleName("bee-ProgressItem");
-
-      if (!BeeUtils.isEmpty(caption)) {
-        InlineLabel label = new InlineLabel(caption.trim());
-        item.addStyleName("bee-ProgressCaption");
-        item.add(label);
-      }
-
-      Progress progress = (max == null) ? new Progress() : new Progress(max);
-      item.add(progress);
-
-      if (closeBox != null) {
-        closeBox.addStyleName("bee-ProgressClose");
-        item.add(closeBox);
-      }
-
-      DoubleLabel percent = new DoubleLabel(Format.getDefaultPercentFormat(), true);
-      item.addStyleName("bee-ProgressPercent");
-      item.add(percent);
-
-      getProgressPanel().add(item);
-      return item.getId();
+    if (getCentralScrutinizer() == null) {
+      return false;
     } else {
-      return null;
+      return getCentralScrutinizer().contains(domain, key);
     }
   }
 
@@ -195,6 +172,15 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public Flow getDomainHeader(Domain domain, Long key) {
+    if (getCentralScrutinizer() == null) {
+      return null;
+    } else {
+      return getCentralScrutinizer().getDomainHeader(domain, key);
+    }
+  }
+
+  @Override
   public int getHeight() {
     return getScreenPanel().getOffsetHeight();
   }
@@ -204,6 +190,11 @@ public class ScreenImpl implements Screen {
     return NameUtils.getClassName(getClass());
   }
 
+  @Override
+  public List<IdentifiableWidget> getOpenWidgets() {
+    return getWorkspace().getOpenWidgets();
+  }
+  
   @Override
   public int getPriority(int p) {
     switch (p) {
@@ -275,11 +266,39 @@ public class ScreenImpl implements Screen {
   @Override
   public void onLoad() {
     Global.getSearch().focus();
+    
+    if (Global.getNewsAggregator().hasNews()) {
+      activateDomainEntry(Domain.NEWS, null);
+    }
   }
 
   @Override
+  public void onWidgetChange(IdentifiableWidget widget) {
+    Assert.notNull(widget, "onWidgetChange: widget is null");
+    getWorkspace().onWidgetChange(widget);
+  }
+  
+  @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
-    return getCentralScrutinizer().remove(domain, key);
+    if (getCentralScrutinizer() == null) {
+      return false;
+    } else {
+      return getCentralScrutinizer().remove(domain, key);
+    }
+  }
+
+  @Override
+  public void removeProgress(String id) {
+    if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
+      Widget item = DomUtils.getChildById(getProgressPanel(), id);
+
+      if (item != null) {
+        getProgressPanel().remove(item);
+        if (!getProgressPanel().iterator().hasNext()) {
+          hideProgressPanel();
+        }
+      }
+    }
   }
 
   @Override
@@ -329,23 +348,8 @@ public class ScreenImpl implements Screen {
     if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
       Widget item = DomUtils.getChildById(getProgressPanel(), id);
 
-      if (item instanceof HasWidgets) {
-        Double max = null;
-
-        for (Widget child : (HasWidgets) item) {
-          if (child instanceof Progress) {
-            ((Progress) child).setValue(value);
-            max = ((Progress) child).getMax();
-          }
-        }
-
-        if (max != null) {
-          for (Widget child : (HasWidgets) item) {
-            if (child instanceof DoubleLabel) {
-              ((DoubleLabel) child).setValue(value / max);
-            }
-          }
-        }
+      if (item instanceof HasProgress) {
+        ((HasProgress) item).update(value);
       }
     }
   }
@@ -367,7 +371,7 @@ public class ScreenImpl implements Screen {
       }
 
       if (getUserSignature() != null) {
-        getUserSignature().setHtml(BeeUtils.trim(userData.getUserSign()));
+        getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
       }
     }
   }
@@ -504,11 +508,11 @@ public class ScreenImpl implements Screen {
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
-    
+
     FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
     exit.addStyleName("bee-UserExit");
     exit.setTitle(Localized.getConstants().signOut());
-    
+
     exit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -516,11 +520,11 @@ public class ScreenImpl implements Screen {
             Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
             Localized.getConstants().yes(), Localized.getConstants().no(),
             new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            Bee.exit();
-          }
-        }, null, StyleUtils.className(FontSize.MEDIUM), null);
+              @Override
+              public void onConfirm() {
+                Bee.exit();
+              }
+            }, null, StyleUtils.className(FontSize.MEDIUM), null, null);
       }
     });
 
@@ -610,8 +614,9 @@ public class ScreenImpl implements Screen {
     Flow panel = new Flow();
     panel.add(getCentralScrutinizer());
     panel.add(createCopyright("bee-"));
-
-    return Pair.of(panel, 240);
+    
+    int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
+    return Pair.of(panel, width);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

@@ -12,11 +12,11 @@
     <DataColumn name="Quantity" />
     <DataColumn name="UnitName" flexGrow="0" />
     <DataColumn name="Price" />
-    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center">
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
     </DataColumn>
     <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
     <CalcColumn name="Total" type="decimal" caption="=trdAmount" format="0.00">

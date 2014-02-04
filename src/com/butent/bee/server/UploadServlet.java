@@ -172,8 +172,10 @@ public class UploadServlet extends LoginServlet {
       }
       try {
         Long fileId = fs.storeFile(req.getInputStream(), fileName, mimeType);
+
         if (DataUtils.isId(fileId)) {
           response = ResponseObject.response(fileId);
+
           logger.info(prefix, TimeUtils.elapsedSeconds(start), "stored", fileName,
               "type", mimeType, "size", fileSize, "id", fileId);
         } else {

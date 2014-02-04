@@ -38,7 +38,6 @@ public final class Config {
   public static final File CONFIG_DIR;
   public static final File LOCAL_DIR;
   public static final File LOG_DIR;
-  public static final File REPOSITORY_DIR;
 
   public static final File IMAGE_DIR;
 
@@ -69,7 +68,6 @@ public final class Config {
     LOCAL_DIR = new File(dir, "local");
 
     LOG_DIR = new File(LOCAL_DIR, "logs");
-    REPOSITORY_DIR = new File(LOCAL_DIR, "repository");
 
     IMAGE_DIR = new File(WAR_DIR, Paths.IMAGE_DIR);
   }
@@ -139,8 +137,7 @@ public final class Config {
         "Source dir", SOURCE_DIR.isDirectory(), SOURCE_DIR.getAbsolutePath(),
         "Config dir", CONFIG_DIR.isDirectory(), CONFIG_DIR.getAbsolutePath(),
         "Local dir", LOCAL_DIR.isDirectory(), LOCAL_DIR.getAbsolutePath(),
-        "Log dir", LOG_DIR.isDirectory(), LOG_DIR.getAbsolutePath(),
-        "Repository dir", REPOSITORY_DIR.isDirectory(), REPOSITORY_DIR.getAbsolutePath());
+        "Log dir", LOG_DIR.isDirectory(), LOG_DIR.getAbsolutePath());
 
     if (fileBlacklist == null) {
       PropertyUtils.addExtended(lst, "File Blacklist", "not initialized");

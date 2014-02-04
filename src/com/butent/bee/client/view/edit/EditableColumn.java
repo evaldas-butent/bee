@@ -6,10 +6,11 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
+import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.Stacking;
@@ -30,8 +31,8 @@ import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
@@ -61,10 +62,10 @@ import java.util.List;
  * etc.
  */
 
-public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler,
+public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopEvent.Handler,
     HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler, HasCaption {
 
-  private static final String STYLE_EDITOR = "bee-CellGridEditor";
+  public static final String STYLE_EDITOR = "bee-CellGridEditor";
 
   private final String viewName;
 
@@ -141,7 +142,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return cellValidationBus.addCellValidationHandler(handler);
   }
 
-  public Editor createEditor(boolean embedded) {
+  public Editor createEditor(boolean embedded, EditorConsumer consumer) {
     Editor result;
 
     String format = null;
@@ -151,8 +152,11 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       format = getEditorDescription().getFormat();
 
     } else if (getRelation() != null) {
-      result = new DataSelector(getRelation(), embedded);
-
+      if (BeeUtils.containsKey(getRelation().getAttributes(), "viewColumn")) {
+        result = Autocomplete.create(getRelation(), embedded);
+      } else {
+        result = new DataSelector(getRelation(), embedded);
+      }
     } else if (!BeeUtils.isEmpty(getEnumKey())) {
       result = new ListBox();
       ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
@@ -183,6 +187,11 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     if (result instanceof HasBounds) {
       UiHelper.setBounds((HasBounds) result, getMinValue(), getMaxValue());
     }
+    
+    if (consumer != null) {
+      consumer.afterCreateEditor(getColumnId(), result, embedded);
+    }
+    
     return result;
   }
 
@@ -246,6 +255,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         return BeeUtils.isDouble(value) ? value.trim() : null;
 
       case TEXT:
+      case BLOB:
       case TIME_OF_DAY:
         return BeeUtils.trimRight(value);
     }
@@ -419,15 +429,21 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
   }
 
-  public void openEditor(HasWidgets editorContainer, Element sourceElement,
-      Element adjustElement, int zIndex, IsRow row, char charCode, EditEndEvent.Handler handler) {
+  @Override
+  public void onValueChange(ValueChangeEvent<String> event) {
+    endEdit(null, false);
+  }
+
+  public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer, 
+      Element sourceElement, Element adjustElement, int zIndex, IsRow row, char charCode,
+      EditEndEvent.Handler handler) {
     Assert.notNull(handler);
 
     setCloseHandler(handler);
     setRowValue(row);
     setState(State.OPEN);
 
-    ensureEditor(editorContainer);
+    ensureEditor(editorContainer, editorConsumer);
     Element editorElement = getEditor().asWidget().getElement();
 
     if (sourceElement != null) {
@@ -497,7 +513,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         if (defaultDimensions.hasHeight() && defaultDimensions.getIntHeight() > height) {
           height = defaultDimensions.getIntHeight();
           StyleUtils.setHeight(editorElement, height);
-        } else if (defaultDimensions.hasMinHeight() 
+        } else if (defaultDimensions.hasMinHeight()
             && defaultDimensions.getIntMinHeight() > height) {
           height = defaultDimensions.getIntMinHeight();
           StyleUtils.setHeight(editorElement, height);
@@ -569,8 +585,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     if (getEditor() == null) {
       return;
     }
-    getEditor().addKeyDownHandler(this);
+
     getEditor().addBlurHandler(this);
+
+    getEditor().addEditChangeHandler(this);
     getEditor().addEditStopHandler(this);
   }
 
@@ -616,11 +634,11 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return false;
   }
 
-  private void ensureEditor(HasWidgets editorContainer) {
+  private void ensureEditor(HasWidgets editorContainer, EditorConsumer editorConsumer) {
     if (getEditor() != null) {
       return;
     }
-    setEditor(createEditor(false));
+    setEditor(createEditor(false, editorConsumer));
 
     getEditor().asWidget().addStyleName(STYLE_EDITOR);
     bindEditor();

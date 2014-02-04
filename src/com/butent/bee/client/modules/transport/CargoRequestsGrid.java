@@ -1,8 +1,8 @@
 package com.butent.bee.client.modules.transport;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;

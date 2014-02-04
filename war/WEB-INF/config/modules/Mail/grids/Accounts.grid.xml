@@ -8,11 +8,11 @@
   >
 
   <g:columns>
-    <DataColumn name="Description" caption="=mailName" />
+    <DataColumn name="Description" />
     <DataColumn name="Main" caption="=mailDefaultShort" />
     <RelColumn name="Address" caption="=email" renderColumns="Label Email">
       <renderer type="mail" />
     </RelColumn>
-    <DataColumn name="StoreType" caption="=mailType" />
+    <DataColumn name="StoreType" />
   </g:columns>
 </g:Grid>

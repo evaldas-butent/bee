@@ -19,4 +19,4 @@
 
     <xi:include href="widgets/ContactInfoOpen.widget.xml" />
   </FlowPanel>
-</f:Form>  
+</f:Form>

@@ -13,7 +13,7 @@ public final class MailConstants {
       this.name = name;
     }
 
-    public String getFullName() {
+    public String getFolderName() {
       return name;
     }
   }
@@ -66,7 +66,6 @@ public final class MailConstants {
   public static final String TBL_FOLDERS = "Folders";
 
   public static final String TBL_MESSAGES = "Messages";
-  public static final String TBL_RAW_CONTENTS = "RawContents";
   public static final String TBL_PARTS = "Parts";
   public static final String TBL_ATTACHMENTS = "Attachments";
 
@@ -90,17 +89,20 @@ public final class MailConstants {
 
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
-  public static final String COL_STORE_STYPE = "StoreType";
+  public static final String COL_STORE_TYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";
   public static final String COL_STORE_LOGIN = "StoreLogin";
   public static final String COL_STORE_PASSWORD = "StorePassword";
   public static final String COL_STORE_SSL = "StoreSSL";
+  public static final String COL_STORE_PROPERTIES = "StoreProperties";
+
   public static final String COL_TRANSPORT_SERVER = "TransportServer";
   public static final String COL_TRANSPORT_PORT = "TransportPort";
-  public static final String COL_TRANSPORT_SSL = "TransportSSL";
   public static final String COL_TRANSPORT_LOGIN = "TransportLogin";
   public static final String COL_TRANSPORT_PASSWORD = "TransportPassword";
+  public static final String COL_TRANSPORT_SSL = "TransportSSL";
+  public static final String COL_TRANSPORT_PROPERTIES = "TransportProperties";
 
   public static final String COL_ACCOUNT = "Account";
   public static final String COL_FOLDER_PARENT = "Parent";
@@ -119,8 +121,10 @@ public final class MailConstants {
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 
+  public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
+
   public static final String STYLE_SHEET = "mail";
-  
+
   private MailConstants() {
   }
 }

@@ -47,7 +47,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
     if (input != null && BeeUtils.isFalse(input.getEmptyValues())) {
       return Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION, 
           Filter.and(BeeKeeper.getUser().getFilter(CommonsConstants.COL_USER), Filter
-              .notEmpty(COL_STAR)));
+              .notNull(COL_STAR)));
     } else {
       return null;
     }

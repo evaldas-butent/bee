@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+    
+  <!ENTITY lblRight "&inline; width: 90px; vertical-align: top; text-align: right; margin: 3px 4px 3px 4px;" >
+  <!ENTITY lblLeft "&inline; width: 90px; vertical-align: top; text-align: left; margin: 3px 4px 3px 4px;" >
+  <!ENTITY inpLeft "&inline; text-align: left; margin: 3px 7px 3px 4px;" >
+  <!ENTITY inpRight "&inline; text-align: rght; margin: 3px 7px 3px 4px;" >
+  <!ENTITY discussDataPanel "min-width: 550px;" >
+  <!ENTITY relDataPanel "overflow: auto;" >
+  <!ENTITY commentsPanel "overflow: auto;" >
+  <!ENTITY discussionHeadPanel "max-height:150px">
+ 
+  <!ENTITY subjectLbl "&lblRight;">
+  <!ENTITY subjectInp "&inpLeft;  min-width: 400px;">
+  
+  <!ENTITY ownerLbl "&lblRight;">
+  <!ENTITY ownerInp "&inpLeft; width: 180px;">
+  
+  <!ENTITY createdLbl "&lblRight;">
+  <!ENTITY createdInp "&inpLeft; width: 110px;"> 
+  
+  <!ENTITY statusLbl "&lblRight;">
+  <!ENTITY statusInp "&inpLeft; width: 140px;">
+    
+  <!ENTITY membersLbl "&lblRight;">
+  <!ENTITY membersInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY descriptionLbl "&lblRight;">
+  <!ENTITY descriptionInp "&inpLeft; width: calc(100&#37; - 10em); min-height: 1.5em;
+  max-height: 9em; overflow: auto;">
+  
+  <!ENTITY FilesInp "&inpLeft;">
+  
+  <!-- relations --> 
+  <!ENTITY relCompaniesLbl "&lblRight;">
+  <!ENTITY relCompaniesInp "&inpLeft;  width: 400px;">
+  
+  <!ENTITY relPersonsLbl "&lblRight;">
+  <!ENTITY relPersonsInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY relAppoitmentsLbl "&lblRight;">
+  <!ENTITY relAppoitmentsInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY relTasksLbl "&lblRight;">
+  <!ENTITY relTasksInp "&inpLeft; width: 400px;">
+  
+  <!ENTITY relDocumentsLbl "&lblRight;">
+  <!ENTITY relDocumentsInp "&inpLeft; width: 400px;">
+  
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
+  caption="=discussion" >
+
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel>
+        <Label text="=discussSubject" class="bee-required" style="&subjectLbl;" />
+        <InputText source="Subject" style="&subjectInp;"
+          readOnly="true" />
+        <Label text="=discussCreated" style="&createdLbl;" />
+        <InputDateTime source="Created" style="&createdInp;"
+          readOnly="true" />
+        <Label text="=discussStatus" style="&statusLbl;" />
+        <ListBox source="Status" style="&statusInp; margin-right: 14px"
+          readOnly="true" />
+      </FlowPanel>
+    </FlowPanel>
+    
+    <FlowPanel name ="DiscussMarkTypes" class="flexBox-horizontal bee-discuss-markTypes-container" />
+
+    <Disclosure xmlns="http://www.butent.com/widget"
+      xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
+      <Label text="=discussDetailInfo" style="text-transform: uppercase; " />
+
+      <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
+        <FlowPanel>
+          <Label text="=discussOwner" style="&ownerLbl;" />
+          <DataSelector source="Owner" editSource="OwnerPerson"
+            style="&ownerInp;" readOnly="true" />
+          <CheckBox name="Accessibility" source="Accessibility"
+            text="=discussPublic" disablable="false" />
+        </FlowPanel>
+        <FlowPanel>
+          <Label name="membersLabel" text="=discussMembers" style="&membersLbl;" />
+          <MultiSelector viewName="Users" property="Members"
+            renderColumns="FirstName LastName" editSource="CompanyPerson"
+            style="&membersInp;" label="=discussMembers" disablable="false" />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=companies" style="&relCompaniesLbl;" />
+          <MultiSelector viewName="Companies" property="Companies"
+            renderColumns="Name" style="&relCompaniesInp;"  />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=persons" style="&relPersonsLbl;" />
+          <MultiSelector viewName="Persons" property="Persons"
+            renderColumns="FirstName LastName" style="&relPersonsInp;"
+             />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=appointments" style="&relAppoitmentsLbl;" />
+          <MultiSelector viewName="Appointments" property="Appointments"
+            renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+            newRowEnabled="false" style="&relAppoitmentsInp;"
+            />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=tasks" style="&relTasksLbl;" />
+          <MultiSelector viewName="Tasks" property="Tasks"
+            renderColumns="Summary 
+        ExecutorFirstName ExecutorLastName"
+            choiceColumns="Summary ExecutorFirstName 
+        ExecutorLastName StartTime FinishTime"
+            newRowEnabled="false" style="&relTasksInp;" />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=documents" style="&relDocumentsLbl;" />
+          <MultiSelector viewName="Documents" property="Documents"
+            renderColumns="Name DocumentDate Number" choiceColumns="Name DocumentDate Number"
+            newRowEnabled="false" style="&relDocumentsInp;" />
+        </FlowPanel>
+
+        <FlowPanel>
+          <Label text="=discussDescription" style="&descriptionLbl;" />
+          <Label class="bee-InputArea" name="Description" style="&descriptionInp; " />
+        </FlowPanel>
+
+        <FileGroup name="Files" />
+      </FlowPanel>
+    </Disclosure>
+
+    <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container"
+      style="&commentsPanel;" />
+  </FlowPanel>
+</f:Form>

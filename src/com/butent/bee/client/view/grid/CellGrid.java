@@ -80,6 +80,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridComponentDescription;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -95,7 +96,7 @@ import java.util.Set;
  * Manages the structure and behavior of a cell grid user interface component.
  */
 
-public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable,
+public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable, HasCaption,
     HasEditStartHandlers, HasEnabled, HasActiveRow, RequiresResize, VisibilityChangeEvent.Handler,
     SettingsChangeEvent.HasSettingsChangeHandlers, RenderingEvent.HasRenderingHandlers {
 
@@ -922,6 +923,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private Predicate<IsRow> rowEditable;
 
+  private String caption;
+
   public CellGrid() {
     setElement(Document.get().createDivElement());
 
@@ -1045,6 +1048,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (isColumnWithinBounds(col)) {
       autoFitColumn(col);
     }
+  }
+  
+  public boolean containsRow(long rowId) {
+    for (IsRow row : getRowData()) {
+      if (row.getId() == rowId) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void deactivate() {
@@ -1192,6 +1204,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       width += w + incr;
     }
     return width;
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
   }
 
   public int getChildrenHeight() {
@@ -1784,6 +1801,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (newRow.getProperties() != null) {
       rowValue.setProperties(newRow.getProperties().copy());
+    } else {
+      rowValue.setProperties(null);
     }
 
     refreshRow(row);
@@ -1939,6 +1958,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public void setBodyFont(String fontDeclaration) {
     getBodyComponent().setFont(fontDeclaration);
+  }
+
+  public void setCaption(String caption) {
+    this.caption = caption;
   }
 
   public void setColumnBodyFont(String columnId, String fontDeclaration) {

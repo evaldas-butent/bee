@@ -97,6 +97,17 @@
   </xs:complexType>
 
   <xs:element name="RelColumn" type="relatedColumn" substitutionGroup="column" />
+
+  <xs:complexType name="autocompleteColumn">
+    <xs:complexContent>
+      <xs:extension base="baseColumn">
+        <xs:attribute name="viewName" type="type:nameType" use="required" />
+        <xs:attribute name="viewColumn" type="type:fieldNameType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="AutoColumn" type="autocompleteColumn" substitutionGroup="column" />
    
   <xs:complexType name="calculatedColumn">
     <xs:complexContent>

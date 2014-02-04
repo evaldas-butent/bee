@@ -1,7 +1,5 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.BeeConst;
@@ -88,14 +86,8 @@ public class InputDateTime extends InputDate {
   }
 
   @Override
-  public void setValue(String value, boolean fireEvents) {
-    DateTime oldValue = getDateTime();
-    DateTime newValue = TimeUtils.toDateTimeOrNull(value);
-    setDateTime(newValue);
-
-    if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
-      ValueChangeEvent.fire(this, value);
-    }
+  public void setValue(String value) {
+    setDateTime(TimeUtils.toDateTimeOrNull(value));
   }
 
   @Override

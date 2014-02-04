@@ -209,7 +209,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       headerView.addCommandItem(filterLabel);
 
       this.removeFilter = new CustomDiv(STYLE_ACTION_REMOVE_FILTER);
-      removeFilter.setHtml(String.valueOf(BeeConst.CHAR_TIMES));
+      removeFilter.setText(String.valueOf(BeeConst.CHAR_TIMES));
       
       removeFilter.addClickHandler(new ClickHandler() {
         @Override
@@ -1552,7 +1552,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   }
 
   protected boolean setData(ResponseObject response) {
-    if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class, null)) {
+    if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class)) {
       return false;
     }
 
@@ -2032,7 +2032,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {
-      args.addQueryItem(VAR_THEME_ID, theme);
+      args.addQueryItem(VAR_ID, theme);
     }
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

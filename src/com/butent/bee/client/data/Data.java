@@ -25,6 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -167,6 +168,20 @@ public final class Data {
     return BeeUtils.notEmpty(Localized.maybeTranslate(dataInfo.getCaption()), viewName);
   }
 
+  public static String getViewTable(String viewName) {
+    DataInfo dataInfo = getDataInfo(viewName);
+    return (dataInfo == null) ? null : dataInfo.getTableName();
+  }
+
+  public static boolean sameTable(String v1, String v2) {
+    String t1 = getViewTable(v1);
+    if (BeeUtils.isEmpty(t1)) {
+      return false;
+    } else {
+      return v1.equals(v2) || t1.equals(getViewTable(v2));
+    }
+  }
+  
   public static void init() {
     BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
     BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);
@@ -205,14 +220,14 @@ public final class Data {
     }
   }
 
-  public static void onTableChange(String tableName, Collection<DataChangeEvent.Effect> effects) {
+  public static void onTableChange(String tableName, EnumSet<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
     for (String viewName : viewNames) {
-      DataChangeEvent.fire(viewName, effects);
+      DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
     }
   }
 
-  public static void onViewChange(String viewName, Collection<DataChangeEvent.Effect> effects) {
+  public static void onViewChange(String viewName, EnumSet<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 

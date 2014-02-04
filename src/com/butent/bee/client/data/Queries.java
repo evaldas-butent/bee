@@ -19,7 +19,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -89,6 +88,15 @@ public final class Queries {
   }
 
   public static boolean checkResponse(String service, String viewName, ResponseObject response,
+      Class<?> clazz) {
+    return checkResponse(service, viewName, response, clazz, new Callback<Object>() {
+      @Override
+      public void onSuccess(Object result) {
+      }
+    });
+  }
+  
+  public static boolean checkResponse(String service, String viewName, ResponseObject response,
       Class<?> clazz, Callback<?> callback) {
 
     if (response == null) {
@@ -134,7 +142,7 @@ public final class Queries {
   }
 
   public static void deleteRow(String viewName, long rowId) {
-    delete(viewName, ComparisonFilter.compareId(rowId), null);
+    delete(viewName, Filter.compareId(rowId), null);
   }
 
   public static void deleteRow(String viewName, long rowId, long version) {
@@ -501,12 +509,41 @@ public final class Queries {
     doRow(Service.INSERT_ROW, rowSet, callback);
   }
 
+  public static void insertRows(BeeRowSet rowSet) {
+    if (checkRowSet(Service.INSERT_ROWS, rowSet, null)) {
+      insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
+    }
+  }
+  
+  public static void insertRows(BeeRowSet rowSet, final IntCallback callback) {
+    if (!checkRowSet(Service.INSERT_ROWS, rowSet, callback)) {
+      return;
+    }
+
+    final String viewName = rowSet.getViewName();
+
+    BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (checkResponse(Service.INSERT_ROWS, viewName, response, Integer.class, callback)) {
+              int count = BeeUtils.toInt(response.getResponseAsString());
+              logger.info(viewName, "inserted", count, "rows");
+
+              if (callback != null) {
+                callback.onSuccess(count);
+              }
+            }
+          }
+        });
+  }
+
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
   }
 
   public static void update(String viewName, long rowId, String column, Value value) {
-    update(viewName, ComparisonFilter.compareId(rowId), column, value, null);
+    update(viewName, Filter.compareId(rowId), column, value, null);
   }
 
   public static void update(final String viewName, Filter filter, String column, Value value,

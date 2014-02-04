@@ -38,12 +38,12 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
-import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
-import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.GridImpl;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -81,6 +82,10 @@ import java.util.Map;
 public final class GridFactory {
 
   public static final class GridOptions implements HasCaption {
+
+    public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
+      return (BeeUtils.isEmpty(cap) && flt == null) ? null : new GridOptions(cap, null, flt, null);
+    }
 
     public static GridOptions forCurrentUserFilter(String column) {
       return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column);
@@ -111,8 +116,15 @@ public final class GridFactory {
     }
 
     private Filter buildFilter(String viewName) {
-      Filter f1 = BeeUtils.isEmpty(filterDescription) ? null
-          : DataUtils.parseFilter(filterDescription, Data.getDataInfoProvider(), viewName);
+      Filter f1;
+      if (BeeUtils.isEmpty(filterDescription)) {
+        f1 = null;
+      } else {
+        DataInfo dataInfo = Data.getDataInfo(viewName);
+        f1 = (dataInfo == null) ? null : dataInfo.parseFilter(filterDescription,
+            BeeKeeper.getUser().getUserId());
+      }
+
       Filter f2 = BeeUtils.isEmpty(currentUserFilter) ? null
           : BeeKeeper.getUser().getFilter(currentUserFilter);
 
@@ -120,7 +132,7 @@ public final class GridFactory {
     }
 
     private boolean hasFilter() {
-      return filter != null || !BeeUtils.isEmpty(filterDescription) 
+      return filter != null || !BeeUtils.isEmpty(filterDescription)
           || !BeeUtils.isEmpty(currentUserFilter);
     }
   }
@@ -188,6 +200,7 @@ public final class GridFactory {
         return new DoubleColumn(cellSource);
 
       case TEXT:
+      case BLOB:
         if (cellSource.isText()) {
           return new AreaColumn(cellSource);
         } else {
@@ -445,7 +458,8 @@ public final class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          Global.showGrid(new ExtendedPropertiesData(gridDescription.getExtendedInfo(), true));
+          Global.showGrid(BeeUtils.joinWords("Grid", name),
+              new ExtendedPropertiesData(gridDescription.getExtendedInfo(), true));
           return;
         } else {
           logger.warning("grid", name, "description was not found");
@@ -463,10 +477,10 @@ public final class GridFactory {
       info.add(new Property(entry.getKey(), cc));
     }
 
-    Global.showGrid(new PropertiesData(info, "Grid Name", "Column Count"));
+    Global.showGrid("Grids", new PropertiesData(info, "Grid Name", "Column Count"));
   }
 
-  public static CellGrid simpleGrid(IsTable<?, ?> table, int containerWidth) {
+  public static CellGrid simpleGrid(String caption, IsTable<?, ?> table, int containerWidth) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -479,6 +493,7 @@ public final class GridFactory {
     }
 
     CellGrid grid = new CellGrid();
+    grid.setCaption(caption);
 
     DataColumn<?> column;
     for (int i = 0; i < c; i++) {

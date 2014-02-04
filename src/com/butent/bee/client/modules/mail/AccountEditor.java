@@ -19,14 +19,17 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Map;
 import java.util.Set;
 
 public class AccountEditor extends AbstractFormInterceptor implements SelectorEvent.Handler {
@@ -43,38 +46,60 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
 
       ((DataSelector) widget).addSelectorHandler(this);
 
-    } else if (widget instanceof HasClickHandlers
-        && BeeUtils.inListSame(name, "StorePassword", "TransportPassword")) {
-
-      ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Global.inputString(Localized.getConstants().mailNewAccountPassword(), null,
-              new StringCallback(false) {
-            @Override
-            public void onSuccess(String value) {
-              getFormView().getActiveRow().setValue(getFormView().getDataIndex(name),
-                  BeeUtils.isEmpty(value) ? null : Codec.encodeBase64(value));
-            }
-          }, null, BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
-              Localized.getConstants().ok(), Localized.getConstants().cancel(),
-              new WidgetInitializer() {
-                @Override
-                public Widget initialize(Widget inputWidget, String widgetName) {
-                  if (BeeUtils.same(widgetName, DialogConstants.WIDGET_INPUT)) {
-                    inputWidget.getElement().setPropertyString("type", "password");
+    } else if (widget instanceof HasClickHandlers) {
+      if (BeeUtils.inListSame(name, COL_STORE_PASSWORD, COL_TRANSPORT_PASSWORD)) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            Global.inputString(Localized.getConstants().mailNewAccountPassword(), null,
+                new StringCallback(false) {
+                  @Override
+                  public void onSuccess(String value) {
+                    getFormView().getActiveRow().setValue(getFormView().getDataIndex(name),
+                        BeeUtils.isEmpty(value) ? null : Codec.encodeBase64(value));
                   }
-                  return inputWidget;
-                }
-              });
-        }
-      });
+                }, null, BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
+                Localized.getConstants().ok(), Localized.getConstants().cancel(),
+                new WidgetInitializer() {
+                  @Override
+                  public Widget initialize(Widget inputWidget, String widgetName) {
+                    if (BeeUtils.same(widgetName, DialogConstants.WIDGET_INPUT)) {
+                      inputWidget.getElement().setPropertyString("type", "password");
+                    }
+                    return inputWidget;
+                  }
+                });
+          }
+        });
+      } else if (BeeUtils.inListSame(name, COL_STORE_PROPERTIES, COL_TRANSPORT_PROPERTIES)) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            final IsRow row = getActiveRow();
+            final int index = getDataIndex(name);
+            if (index == BeeConst.UNDEF) {
+              return;
+            }
+            Global.inputMap(BeeUtils.joinWords(Localized.getConstants().properties(),
+                BeeUtils.parenthesize(BeeUtils.same(name, COL_TRANSPORT_PROPERTIES)
+                    ? Protocol.SMTP.name() : row.getString(getDataIndex(COL_STORE_TYPE)))),
+                Localized.getConstants().property(), Localized.getConstants().value(),
+                Codec.beeDeserializeMap(row.getString(index)),
+                new Consumer<Map<String, String>>() {
+                  @Override
+                  public void accept(Map<String, String> input) {
+                    row.setValue(index, Codec.beeSerialize(input));
+                  }
+                });
+          }
+        });
+      }
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return this;
+    return new AccountEditor();
   }
 
   @Override

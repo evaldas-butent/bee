@@ -1,28 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
-  
-  name="Discussions" viewName="Discussions" caption="=discussions"
-  cacheData="false" asyncThreshold="-1" favorite="Subject"
-  order="DiscussionID desc"
-  >
-  <g:columns>
-    <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-" label="=discussColumnMode" />
+  xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 
-    <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
+  name="Discussions" viewName="Discussions" caption="=discussions"
+  cacheData="false" asyncThreshold="-1" favorite="Subject" flexGrow="1" order="DiscussionID desc">
+  <g:columns>
+    <CalcColumn name="Mode" type="string" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20" caption="-"
+      label="=discussColumnMode" />
+
+    <PropColumn name="Star" type="integer" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20"
       label="=discussColumnStar">
       <renderer type="star" />
     </PropColumn>
-    
-    <DataColumn name="Subject" maxWidth="200" visible="true" />
-       
+
+    <DataColumn name="Subject" minWidth="450"  visible="true" />
+
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-      sortBy="OwnerLastName OwnerFirstName" />
+      sortBy="OwnerLastName OwnerFirstName" autoFit="true" />
+
+    <DataColumn name="Status" visible="true" minWidth="70"
+      autoFit="true" />
+
+    <DataColumn name="Created" visible="true" minWidth="120"
+      autoFit="true" />
       
-    <DataColumn name="Status" visible="true" />
-       
-    <DataColumn name="Created" visible="true" /> 
+    <PropColumn name="FilesCount" type="integer" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="100" autoFit="true"
+      label="=discussHasFiles">
+      <renderer type="attachment" />
+    </PropColumn>
+    
+    <PropColumn name="RelationsCount" type="string" cellType="html"
+      horizontalAlignment="center" width="20" maxWidth="20"
+      label="=discussHasRelations">
+      <renderer type="image" />
+    </PropColumn>
+    
+    <PropColumn name="LastCommentData" type="string" cellType="html"
+      caption="=discussLastComment" label="=discussLastComment" width="180"
+      sortBy="LastCommentPublishTime">      
+    </PropColumn>
+    
+    <CalcColumn name="CommentCount" type="integer"
+      maxWidth="90" autoFit="true" caption="=discussTotalComments">
+        <render>
+          <ui:expression>row.CommentCount</ui:expression>
+        </render>
+    </CalcColumn>
+    
+    <PropColumn name="MarkCount" type="decimal"  format="#" horizontalAlignment="center"
+      maxWidth="90" autoFit="true" caption="=discussTotalMarks">
+    </PropColumn>      
+    
+  <DataColumn name="Accessibility" caption="=discussPublic" maxWidth="20"  visible="false" />
+    
   </g:columns>
+  
+   <g:rowStyle>
+    <ui:inline>="background-color:#ccc"</ui:inline>
+    <ui:expression>row.Status == 1</ui:expression>
+  </g:rowStyle>
+  
+  <g:predefinedFilter name="discuss_public" label="=discussPublic1">
+    <g:column name="Accessibility" emptyValues="false" />
+  </g:predefinedFilter>
+  <g:predefinedFilter name="discuss_members_only" label="=discussMembersOnly">
+    <g:column name="Accessibility" emptyValues="true" />
+  </g:predefinedFilter>
+  
 </g:Grid>

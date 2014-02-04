@@ -172,8 +172,6 @@ public final class Format {
   private static DateTimeFormat defaultTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
 
-  private static DateTimeFormat weekdayFullFormat = DateTimeFormat.getFormat("EEEE");
-
   private static Character defaultTrueChar = BeeConst.CHECK_MARK;
   private static Character defaultFalseChar;
   private static Character defaultNullChar;
@@ -440,19 +438,44 @@ public final class Format {
     }
     return result;
   }
+  
+  public static String renderDateFull(HasDateValue date) {
+    if (date == null) {
+      return null;
+    } else {
+      return DateTimeFormat.getFormat(PredefinedFormat.DATE_FULL).format(date);
+    }
+  }
 
   public static String renderDayOfWeek(HasDateValue date) {
-    return (date == null) ? null : weekdayFullFormat.format(date);
+    return (date == null) ? null : renderDayOfWeek(date.getDow());
+  }
+
+  public static String renderDayOfWeek(int dow) {
+    if (TimeUtils.isDow(dow)) {
+      int index = (dow == 7) ? 0 : dow;
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysFull()[index];
+    } else {
+      return null;
+    }
   }
 
   public static String renderMonthFull(HasYearMonth date) {
-    return (date == null) 
+    return (date == null)
         ? null : LocaleUtils.monthsFull(LocaleInfo.getCurrentLocale())[date.getMonth() - 1];
   }
 
+  public static String renderMonthFullStandalone(int month) {
+    if (TimeUtils.isMonth(month)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
+          .monthsFullStandalone()[month - 1];
+    } else {
+      return null;
+    }
+  }
+
   public static String renderMonthFullStandalone(HasYearMonth date) {
-    return (date == null) ? null : LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
-        .monthsFullStandalone()[date.getMonth() - 1];
+    return (date == null) ? null : renderMonthFullStandalone(date.getMonth());
   }
 
   public static void setFormat(Object target, ValueType type, String pattern) {

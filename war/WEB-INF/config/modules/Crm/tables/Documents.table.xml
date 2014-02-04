@@ -13,7 +13,7 @@
     <String name="Number" precision="30" label="=documentNumber" />
     <String name="RegistrationNumber" precision="30" label="=documentRegistrationNumber" />
 
-    <Relation name="Category" relation="DocumentTree" label="=documentCategory" />
+    <Relation name="Category" notNull="true" relation="DocumentTree" label="=documentCategory" />
     <Relation name="Type" relation="DocumentTypes" label="=documentType" />
     <Relation name="Place" relation="DocumentPlaces" label="=documentPlace" />
     <Relation name="Status" relation="DocumentStatuses" label="=documentStatus" />
@@ -23,5 +23,7 @@
     <Boolean name="Returned" label="=documentReturned" />
 
     <Text name="Description" label="=documentDescription" />
+
+    <Relation name="Data" relation="DocumentData" unique="true" label="=documentData" editable="true" />
   </Fields>
 </Table>

@@ -29,6 +29,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public enum ColType {
     DATA("DataColumn", false),
     RELATED("RelColumn", false),
+    AUTO("AutoColumn", false),
     CALCULATED("CalcColumn", true),
     ID("IdColumn", true),
     VERSION("VerColumn", true),
@@ -79,7 +80,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   }
 
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
-  
+
   public static ColumnDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -135,7 +136,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Integer scale;
 
   private List<String> renderColumns;
-  
+
   private String sortBy;
   private String searchBy;
 
@@ -153,13 +154,13 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private RefreshType updateMode;
   private String elementType;
-  
+
   private FooterDescription footerDescription;
 
   private String options;
 
   private Boolean dynamic;
-  
+
   private boolean relationInitialized;
 
   public ColumnDescription(ColType colType, String id) {
@@ -169,14 +170,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.colType = colType;
     this.id = id;
   }
-  
+
   private ColumnDescription() {
   }
 
   public ColumnDescription copy() {
     return restore(serialize());
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -539,7 +540,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     if (getFooterDescription() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Footer", getFooterDescription().getInfo());
     }
-    
+
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
   }
@@ -659,22 +660,22 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public boolean isRelationInitialized() {
     return relationInitialized;
   }
-  
+
   public void replaceSource(String oldId, String newId) {
     if (!BeeUtils.isEmpty(oldId) && !BeeUtils.isEmpty(newId)
         && !BeeUtils.equalsTrim(oldId, newId)) {
-      
+
       if (BeeUtils.same(getSource(), oldId)) {
         setSource(newId.trim());
       }
       if (BeeUtils.same(getProperty(), oldId)) {
         setProperty(newId.trim());
       }
-      
+
       if (getRelation() != null) {
         getRelation().replaceTargeColumn(oldId, newId);
       }
-      
+
       if (getValidation() != null) {
         getValidation().replaceColumn(oldId, newId);
       }
@@ -693,24 +694,24 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           token.replaceSource(oldId, newId);
         }
       }
-      
+
       if (BeeUtils.containsSame(getRenderColumns(), oldId)) {
         setRenderColumns(NameUtils.rename(getRenderColumns(), oldId, newId));
       }
-      
+
       if (BeeUtils.containsSame(getSortBy(), oldId)) {
         setSortBy(NameUtils.rename(getSortBy(), oldId, newId));
       }
       if (BeeUtils.containsSame(getSearchBy(), oldId)) {
         setSortBy(NameUtils.rename(getSearchBy(), oldId, newId));
       }
-      
+
       if (!BeeUtils.isEmpty(getDynStyles())) {
         for (ConditionalStyleDeclaration declaration : getDynStyles()) {
           declaration.replaceColumn(oldId, newId);
         }
       }
-      
+
       if (getFooterDescription() != null) {
         getFooterDescription().replaceColumn(oldId, newId);
       }

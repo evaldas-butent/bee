@@ -27,12 +27,15 @@
 
     <String name="ExchangeCode" precision="30" label="=exchangeCode" />
 
-    <Numeric name="CreditLimit1" precision="10" label="=companyCreditLimit1" />
-    <Numeric name="CreditLimit2" precision="10" label="=companyCreditLimit2" />
-    <Relation name="LimitCurrency" relation="Currencies" label="=companyCreditLimitCurrency" />
-    <Integer name="CreditDays" label="=companyCreditLimitDays" />
+    <Integer name="CreditLimit" label="=creditLimit" />
+    <Relation name="LimitCurrency" relation="Currencies" label="=limitCurrency" />
+    <Integer name="CreditTolerance" label="=creditTolerance" />
+    <Numeric name="CreditDays" precision="3" label="=creditDays" />
     
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
+    <String name="BankAccount" precision="30" label="=bankAccount" />
+    <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
+    <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -19,8 +20,8 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -115,7 +116,8 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
                                         holder.set(holder.get() + 1);
 
                                         if (Objects.equal(holder.get(), cargoIds.size())) {
-                                          DataChangeEvent.fire(presenter.getViewName(),
+                                          DataChangeEvent.fire(BeeKeeper.getBus(), 
+                                              presenter.getViewName(),
                                               DataChangeEvent.CANCEL_RESET_REFRESH);
 
                                           RowEditor.openRow(FORM_ASSESSMENT_TRANSPORTATION,

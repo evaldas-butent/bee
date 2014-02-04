@@ -6,25 +6,28 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_CARGO_INVOICE_INCOMES;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class InvoiceCreator extends Button implements ClickHandler {
+class InvoiceCreator extends Image implements ClickHandler {
 
   private final Filter filter;
 
   public InvoiceCreator(Filter filter) {
-    super(Localized.getConstants().createInvoice());
+    super(Global.getImages().silverInvoive());
+    setTitle(Localized.getConstants().createInvoice());
+    setAlt(getTitle());
     addClickHandler(this);
 
     Assert.notNull(filter);
@@ -33,7 +36,7 @@ class InvoiceCreator extends Button implements ClickHandler {
 
   @Override
   public void onClick(ClickEvent event) {
-    final Filter flt = Filter.and(filter, Filter.isEmpty(TradeConstants.COL_SALE));
+    final Filter flt = Filter.and(filter, Filter.isNull(TradeConstants.COL_SALE));
 
     Queries.getRowCount(VIEW_CARGO_INVOICE_INCOMES, flt, new IntCallback() {
       @Override

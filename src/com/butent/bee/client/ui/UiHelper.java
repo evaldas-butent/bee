@@ -10,13 +10,13 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.UIObject;
-import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
@@ -24,14 +24,15 @@ import com.butent.bee.client.style.HasWhiteSpace;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HasGridView;
+import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
@@ -39,17 +40,14 @@ import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Color;
-import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Contains utility user interface creation functions like setting and getting horizontal alignment.
@@ -121,7 +119,7 @@ public final class UiHelper {
     if (parent == null || styleNames == null) {
       return result;
     }
-    
+
     if (StyleUtils.hasAnyClass(parent.getElement(), styleNames)) {
       result.add(parent);
     }
@@ -137,7 +135,7 @@ public final class UiHelper {
 
     return result;
   }
-  
+
   public static DataView getDataView(Widget widget) {
     if (widget == null) {
       return null;
@@ -297,6 +295,7 @@ public final class UiHelper {
 
         case DECIMAL:
         case TEXT:
+        case BLOB:
       }
     }
 
@@ -326,6 +325,23 @@ public final class UiHelper {
     return null;
   }
 
+  public static HtmlTable getParentTable(Widget w) {
+    Assert.notNull(w);
+
+    Widget p = w;
+    for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {
+      if (p instanceof HtmlTable) {
+        return (HtmlTable) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+  
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
     return new Consumer<InputText>() {
       @Override
@@ -395,44 +411,6 @@ public final class UiHelper {
     }
   }
 
-  public static void maybeSetAutocomplete(HasAutocomplete obj, Map<String, String> attributes) {
-    if (obj == null || BeeUtils.isEmpty(attributes)) {
-      return;
-    }
-    
-    String value = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE);
-    if (!BeeUtils.isEmpty(value)) {
-      obj.setAutocomplete(value);
-      return;
-    }
-    
-    String field = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_FIELD);
-    if (BeeUtils.isEmpty(field)) {
-      return;
-    }
-    
-    Autocomplete autocomplete = new Autocomplete(); 
-    
-    String section = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_SECTION);
-    if (!BeeUtils.isEmpty(section)) {
-      autocomplete.section(section);
-    }
-
-    String hint = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_HINT);
-    if (!BeeUtils.isEmpty(hint)) {
-      autocomplete.hint(hint);
-    }
-
-    String contact = attributes.get(HasAutocomplete.ATTR_AUTOCOMPLETE_CONTACT);
-    if (BeeUtils.isEmpty(contact)) {
-      autocomplete.field(field);
-    } else {
-      autocomplete.contact(contact, field);
-    }
-    
-    obj.setAutocomplete(autocomplete);
-  }
-
   public static void maybeSetTitle(Widget widget, String title) {
     if (widget != null && !BeeUtils.isEmpty(title)) {
       widget.setTitle(title);
@@ -485,7 +463,7 @@ public final class UiHelper {
     return true;
   }
 
-  public static void pressKey(ValueBoxBase<?> widget, char key) {
+  public static void pressKey(TextBox widget, char key) {
     Assert.notNull(widget);
 
     String oldText = BeeUtils.nvl(widget.getText(), BeeConst.STRING_EMPTY);
@@ -510,8 +488,8 @@ public final class UiHelper {
     widget.setText(newText);
     widget.setCursorPos(pos + 1);
   }
-  
-  public static void selectDeferred(final ValueBoxBase<?> widget) {
+
+  public static void selectDeferred(final TextBox widget) {
     Assert.notNull(widget);
     final String text = widget.getText();
     if (BeeUtils.isEmpty(text)) {

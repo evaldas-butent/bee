@@ -10,14 +10,17 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditFormHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -32,7 +35,8 @@ import java.util.List;
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets {
+    HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
+    RowInsertEvent.Handler, EditStartEvent.Handler {
 
   public enum SelectedRows {
     ALL, EDITABLE

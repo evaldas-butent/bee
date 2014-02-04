@@ -176,7 +176,7 @@ public class Favorites implements HandlesDeleteEvents {
     }
 
     private void registerDomainEntry(String key) {
-      BeeKeeper.getScreen().addDomainEntry(Domain.FAVORITE, getDisplay(key), getDomainKey(key),
+      BeeKeeper.getScreen().addDomainEntry(Domain.FAVORITES, getDisplay(key), getDomainKey(key),
           getCaption(key));
     }
 
@@ -298,7 +298,7 @@ public class Favorites implements HandlesDeleteEvents {
       @Override
       public void onSuccess(String value) {
         addItem(group, viewName, row.getId(), value);
-        BeeKeeper.getScreen().activateDomainEntry(Domain.FAVORITE, group.getDomainKey(viewName));
+        BeeKeeper.getScreen().activateDomainEntry(Domain.FAVORITES, group.getDomainKey(viewName));
 
         BeeKeeper.getBus().fireEvent(new BookmarkEvent(group, row.getId()));
       }

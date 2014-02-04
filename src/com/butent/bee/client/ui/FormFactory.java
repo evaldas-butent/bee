@@ -46,6 +46,8 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
@@ -71,23 +73,23 @@ public final class FormFactory {
 
     void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
 
-    void afterInsertRow(IsRow result);
+    void afterInsertRow(IsRow result, boolean forced);
 
     void afterRefresh(FormView form, IsRow row);
+
+    void afterUpdateRow(IsRow result);
 
     boolean beforeAction(Action action, Presenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
 
+    boolean focusSource(String source);
+    
     long getActiveRowId();
 
     int getDataIndex(String source);
 
-    Integer getDataInt(String source);
-
-    Long getDataLong(String source);
-    
-    String getDataValue(String source);
+    DateTime getDateTimeValue(String source);
 
     FormView getFormView();
 
@@ -95,12 +97,20 @@ public final class FormFactory {
 
     FormInterceptor getInstance();
 
+    Integer getIntegerValue(String source);
+
+    JustDate getDateValue(String source);
+
+    Long getLongValue(String source);
+
     AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
     BeeRowSet getRowSet();
 
+    String getStringValue(String source);
+
     boolean hasFooter(int rowCount);
-    
+
     void notifyRequired(String message);
 
     void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
@@ -110,7 +120,7 @@ public final class FormFactory {
     void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event);
 
     void onSaveChanges(HasHandlers listener, SaveChangesEvent event);
-    
+
     void onSetActiveRow(IsRow row);
 
     void onShow(Presenter presenter);

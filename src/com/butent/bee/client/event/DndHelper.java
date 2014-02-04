@@ -33,24 +33,17 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.List;
 
-import elemental.js.html.JsFile;
-
-import elemental.js.html.JsFileList;
-
-import elemental.js.dom.JsDataTransferItem;
-
-import elemental.js.dom.JsDataTransferItemList;
-
-import elemental.js.util.JsIndexable;
-
 import elemental.js.dom.JsClipboard;
+import elemental.js.dom.JsDataTransferItemList;
+import elemental.js.html.JsFile;
+import elemental.js.html.JsFileList;
+import elemental.js.util.JsIndexable;
 
 public final class DndHelper {
 
   public static final Predicate<Object> ALWAYS_TARGET = Predicates.alwaysTrue();
-  
+
   private static final String TRANSFER_TYPE_FILES = "Files";
-  private static final String TRANSFER_ITEM_KIND_FILE = "file";
 
   private static String dataType;
 
@@ -108,17 +101,8 @@ public final class DndHelper {
     if (items != null) {
       int length = items.getLength();
       result.add(new Property("Items", BeeUtils.bracket(length)));
-
-      for (int i = 0; i < length; i++) {
-        JsDataTransferItem item = items.item(i);
-        if (item != null) {
-          PropertyUtils.addProperties(result,
-              "item kind " + i, item.getKind(),
-              "item type " + i, item.getType());
-        }
-      }
     }
-    
+
     JsFileList files = clipboard.getFiles();
     if (files != null) {
       int length = files.getLength();
@@ -159,28 +143,17 @@ public final class DndHelper {
     if (types != null) {
       for (int i = 0; i < types.length(); i++) {
         Object type = types.at(i);
-        
+
         if (type != null && BeeUtils.startsSame(type.toString(), TRANSFER_TYPE_FILES)) {
           return true;
         }
       }
     }
 
-    JsDataTransferItemList items = clipboard.getItems();
-    if (items != null) {
-      for (int i = 0; i < items.getLength(); i++) {
-        JsDataTransferItem item = items.item(i);
-
-        if (item != null && BeeUtils.startsSame(item.getKind(), TRANSFER_ITEM_KIND_FILE)) {
-          return true;
-        }
-      }
-    }
-    
     JsFileList files = clipboard.getFiles();
     return files != null && files.getLength() > 0;
   }
-  
+
   public static boolean isDataType(String contentType) {
     return BeeUtils.same(contentType, getDataType());
   }

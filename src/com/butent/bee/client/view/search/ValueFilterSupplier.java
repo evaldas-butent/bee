@@ -11,17 +11,20 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
@@ -70,6 +73,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     this.editor = new InputText();
     editor.addStyleName(STYLE_PREFIX + "editor");
 
+    if (!BeeUtils.isEmpty(viewName)) {
+      AutocompleteProvider.enableAutocomplete(editor,
+          BeeUtils.join(BeeConst.STRING_MINUS, viewName,
+              BeeUtils.join(BeeConst.STRING_MINUS, searchBy), "filter"));
+    }
+
     editor.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
@@ -78,9 +87,14 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
         }
       }
     });
-    
+
     this.errorMessage = new Label();
     errorMessage.addStyleName(STYLE_PREFIX + "error");
+  }
+
+  @Override
+  protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
+    return Lists.newArrayList(editor);
   }
 
   @Override
@@ -116,7 +130,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     panel.add(caption);
 
     panel.add(editor);
-    
+
     errorMessage.clear();
     panel.add(errorMessage);
 
@@ -144,7 +158,7 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
     }
 
     openDialog(target, panel, onChange);
-    
+
     if (!BeeUtils.isEmpty(getOldValue())) {
       editor.selectAll();
     }
@@ -213,12 +227,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   private Filter buildIsEmpty() {
     if (searchBy.size() <= 1) {
-      return Filter.isEmpty(getColumnId());
+      return Filter.isNull(getColumnId());
 
     } else {
       CompoundFilter filter = Filter.and();
       for (String by : searchBy) {
-        filter.add(Filter.isEmpty(by));
+        filter.add(Filter.isNull(by));
       }
       return filter;
     }
@@ -226,12 +240,12 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   private Filter buildNotEmpty() {
     if (searchBy.size() <= 1) {
-      return Filter.notEmpty(getColumnId());
+      return Filter.notNull(getColumnId());
 
     } else {
       CompoundFilter filter = Filter.or();
       for (String by : searchBy) {
-        filter.add(Filter.notEmpty(by));
+        filter.add(Filter.notNull(by));
       }
       return filter;
     }
@@ -298,7 +312,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
       }
 
     } else if (containsColumnName(input)) {
-      return DataUtils.parseCondition(input, columns, idColumnName, versionColumnName);
+      return FilterParser.parse(input, columns, idColumnName, versionColumnName,
+          BeeKeeper.getUser().getUserId());
 
     } else {
       operator = ValueType.isString(getColumnType()) ? Operator.CONTAINS : Operator.EQ;

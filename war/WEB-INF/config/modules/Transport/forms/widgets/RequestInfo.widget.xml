@@ -17,36 +17,36 @@
       &cols;
 
       <row>
-        <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-        <InputText source="LoadingCompany" required="true" />
+        <Label text="=date" class="bee-required" />
+        <InputDateTime source="LoadingDate" required="true" />
         <Label text="=trRequestPlaceContact" class="bee-required" />
         <InputText source="LoadingContact" required="true" />
       </row>
 
       <row>
-        <Label text="=address" class="bee-required" />
-        <InputText source="LoadingAddress" required="true" />
+        <Label text="=trRequestPlaceCompanyName" class="bee-required" />
+        <InputText source="LoadingCompany" required="true" />
         <Label text="=phone" class="bee-required" />
         <InputText source="LoadingPhone" required="true" />
       </row>
 
       <row>
-        <Label text="=city" class="bee-required" />
-        <DataSelector source="LoadingCity" required="true" />
+        <Label text="=address" class="bee-required" />
+        <InputText source="LoadingAddress" required="true" />
         <Label text="=country" />
         <DataSelector source="LoadingCountry" />
       </row>
 
       <row>
-        <Label text="=email" />
-        <DataSelector source="LoadingEmailId" />
+        <Label text="=city" class="bee-required" />
+        <DataSelector source="LoadingCity" required="true" />
         <Label text="=trRequestPlaceFax" />
         <InputText source="LoadingFax" />
       </row>
 
       <row>
-        <Label text="=date" class="bee-required" />
-        <InputDateTime source="LoadingDate" required="true" />
+        <Label text="=email" />
+        <DataSelector source="LoadingEmailId" />        
         <Label text="=trLoadingNumber" />
         <InputText source="LoadingNumber" />
       </row>
@@ -61,36 +61,36 @@
       &cols;
 
       <row>
-        <Label text="=trRequestPlaceCompanyName" class="bee-required" />
-        <InputText source="UnloadingCompany" required="true" />
+        <Label text="=date" />
+        <InputDateTime source="UnloadingDate" />
         <Label text="=trRequestPlaceContact" class="bee-required" />
         <InputText source="UnloadingContact" required="true" />
       </row>
 
       <row>
-        <Label text="=address" class="bee-required" />
-        <InputText source="UnloadingAddress" required="true" />
+        <Label text="=trRequestPlaceCompanyName" class="bee-required" />
+        <InputText source="UnloadingCompany" required="true" />
         <Label text="=phone" class="bee-required" />
         <InputText source="UnloadingPhone" required="true" />
       </row>
 
       <row>
-        <Label text="=city" class="bee-required" />
-        <DataSelector source="UnloadingCity" required="true" />
+        <Label text="=address" class="bee-required" />
+        <InputText source="UnloadingAddress" required="true" />
         <Label text="=country" />
         <DataSelector source="UnloadingCountry" />
       </row>
 
       <row>
-        <Label text="=email" />
-        <DataSelector source="UnloadingEmailId" />
+        <Label text="=city" class="bee-required" />
+        <DataSelector source="UnloadingCity" required="true" />
         <Label text="=trRequestPlaceFax" />
         <InputText source="UnloadingFax" />
       </row>
 
       <row>
-        <Label text="=date" />
-        <InputDateTime source="UnloadingDate" />
+        <Label text="=email" />
+        <DataSelector source="UnloadingEmailId" />
         <Label text="=trUnloadingNumber" />
         <InputText source="UnloadingNumber" />
       </row>

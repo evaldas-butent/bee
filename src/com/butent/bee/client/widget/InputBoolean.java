@@ -8,8 +8,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -17,6 +16,7 @@ import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -31,7 +31,7 @@ import java.util.List;
  * Implements checkbox user interface component.
  */
 
-public class InputBoolean extends Composite implements Editor {
+public class InputBoolean extends Composite implements Editor, HasValueChangeHandlers<String> {
 
   private final BooleanWidget checkBox;
 
@@ -65,6 +65,11 @@ public class InputBoolean extends Composite implements Editor {
   }
 
   @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addValueChangeHandler(handler);
+  }
+
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -72,11 +77,6 @@ public class InputBoolean extends Composite implements Editor {
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
-  }
-
-  @Override
-  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   @Override

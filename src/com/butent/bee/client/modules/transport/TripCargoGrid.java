@@ -15,16 +15,15 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -65,7 +64,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       CompoundFilter filter = Filter.and();
 
       for (IsRow row : grd.getRowData()) {
-        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(cargoIndex)));
+        filter.add(Filter.compareId(Operator.NE, row.getLong(cargoIndex)));
       }
       relation.setFilter(filter);
       relation.setCaching(Relation.Caching.QUERY);
@@ -108,7 +107,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
       Queries.insert(gridView.getViewName(), columns, values, null, new RowCallback() {
         @Override
         public void onSuccess(BeeRow row) {
-          BeeKeeper.getBus().fireEvent(new RowInsertEvent(gridView.getViewName(), row));
+          RowInsertEvent.fire(BeeKeeper.getBus(), gridView.getViewName(), row, gridView.getId());
           gridView.getGrid().insertRow(row, false);
         }
       });

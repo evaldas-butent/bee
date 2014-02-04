@@ -12,18 +12,23 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 
 import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.FiresModificationEvents;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +37,7 @@ import java.util.List;
  * creates handlers for events such as mouse and keyboard actions or server responses.
  */
 
-public class EventManager implements Module {
+public class EventManager implements Module, FiresModificationEvents {
 
   private final EventBus priorBus;
   private final EventBus eventBus;
@@ -73,6 +78,15 @@ public class EventManager implements Module {
 
     priorBus.fireEventFromSource(event, source);
     eventBus.fireEventFromSource(event, source);
+  }
+
+  @Override
+  public void fireModificationEvent(ModificationEvent<?> event, Locality locality) {
+    fireEvent(event);
+
+    if (locality == Locality.ENTANGLED && Endpoint.isOpen()) {
+      Endpoint.send(new ModificationMessage(event));
+    }
   }
 
   @Override
@@ -136,7 +150,7 @@ public class EventManager implements Module {
 
     return registry;
   }
-  
+
   public Collection<HandlerRegistration> registerDeleteHandler(HandlesDeleteEvents handler,
       boolean prior) {
     Assert.notNull(handler);
@@ -165,7 +179,8 @@ public class EventManager implements Module {
     return MultiDeleteEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerParentRowHandler(Object source, ParentRowEvent.Handler handler,
+  public HandlerRegistration registerParentRowHandler(Object source,
+      ParentRowEvent.Handler handler,
       boolean prior) {
     return ParentRowEvent.register(getBus(prior), source, handler);
   }
@@ -189,7 +204,7 @@ public class EventManager implements Module {
       boolean prior) {
     return RowTransformEvent.register(getBus(prior), handler);
   }
-  
+
   public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler,
       boolean prior) {
     return RowUpdateEvent.register(getBus(prior), handler);

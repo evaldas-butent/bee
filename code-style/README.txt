@@ -62,12 +62,13 @@ Set the Location to "code-style/bee-checkstyle.xml".
 
 Project->Properties->Checkstyle...
 Uncheck "Use simple configuration"
+Check "Checkstyle active for this project"
 Activate default File Set
 Click "Edit"
 
 Set the Check Configuration to "bee checks"
 Set the Regular expression patterns to:
-src/.*java
+src/com/.*java
 src/.*properties
 test/.*java
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="Autocomplete" viewName="Autocomplete" caption="=autocompletion"
+  disabledActions="add" currentUserFilter="User" cacheData="false"
+  >
+  <g:columns>
+    <DataColumn name="Key" visible="true" minWidth="100" flexGrow="1" readOnly="true" />
+    <DataColumn name="Value" visible="true" minWidth="100" flexGrow="2" />
+    
+    <VerColumn name="Version" caption="=time" />
+  </g:columns>
+</g:Grid>

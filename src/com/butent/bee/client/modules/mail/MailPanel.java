@@ -53,9 +53,9 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
@@ -68,6 +68,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -303,7 +304,8 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+        CellSource cellSource) {
 
       if (BeeUtils.same(columnName, "Star")) {
         return new StarRenderer(dataColumns);

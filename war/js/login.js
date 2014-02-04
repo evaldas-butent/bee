@@ -87,7 +87,7 @@ function showSupport() {
   
   var html = 
     "<h3>Your browser is not supported</h3>" +
-    "<div>B-novo is currently supported only through the following browsers:</div>" +
+    "<div>B-NOVO is currently supported only through the following browsers:</div>" +
     "<ul>" +
     '<li><a href="http://www.google.com/chrome">Chrome 30+</a></li>' +
     '<li><a href="http://www.mozilla.com/firefox">Firefox 23+</a></li>' +

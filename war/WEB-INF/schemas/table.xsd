@@ -71,6 +71,7 @@
   <xs:element name="Char" type="charType" substitutionGroup="field" />
   <xs:element name="String" type="stringType" substitutionGroup="field" />
   <xs:element name="Text" type="textType" substitutionGroup="field" />
+  <xs:element name="Blob" type="blobType" substitutionGroup="field" />
   <xs:element name="Date" type="dateType" substitutionGroup="field" />
   <xs:element name="DateTime" type="datetimeType" substitutionGroup="field" />
   <xs:element name="Relation" type="relationType" substitutionGroup="field" />
@@ -164,6 +165,14 @@
     <xs:complexContent>
       <xs:extension base="fieldType">
         <xs:attribute name="type" type="type:dataType" fixed="TEXT" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="blobType">
+    <xs:complexContent>
+      <xs:extension base="fieldType">
+        <xs:attribute name="type" type="type:dataType" fixed="BLOB" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

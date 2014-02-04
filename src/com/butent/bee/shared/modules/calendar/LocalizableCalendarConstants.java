@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.calendar;
 
 public interface LocalizableCalendarConstants {
 
+  String appointments();
+
   String calAppointmentEnd();
 
   String calAppointmentStart();
@@ -28,13 +30,15 @@ public interface LocalizableCalendarConstants {
 
   String calDaysView();
 
+  String calendar();
+
   String calEnterAttendees();
 
   String calEnterClient();
 
-  String calEnterDurationOrPlanedEndDate();
+  String calEnterDurationOrPlannedEndDate();
 
-  String calEnterPlanedStartTime();
+  String calEnterPlannedStartTime();
 
   String calEnterRepairType();
 
@@ -52,17 +56,13 @@ public interface LocalizableCalendarConstants {
 
   String calOpaque();
 
-  String calPlanedEndDateMustBeGreater();
+  String calPlannedEndDateMustBeGreater();
 
   String calPrivate();
 
   String calPublic();
 
   String calReminder();
-  
-  String calRemindersEarliestTime();
-
-  String calRemindersLatestTime();
 
   String calRepairType();
 
@@ -103,10 +103,10 @@ public interface LocalizableCalendarConstants {
   String calWorkWeekView();
 
   String createNewAppointment();
-  
+
   String deleteAppointment();
-  
+
   String overlappingAppointments();
-  
+
   String selectAppointment();
 }

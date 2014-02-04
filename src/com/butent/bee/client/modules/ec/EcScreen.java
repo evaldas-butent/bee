@@ -15,7 +15,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -24,6 +23,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ec.EcCommandWidget.Type;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
+import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
@@ -35,6 +35,8 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class EcScreen extends ScreenImpl {
 
@@ -83,6 +85,15 @@ public class EcScreen extends ScreenImpl {
   }
 
   @Override
+  public List<IdentifiableWidget> getOpenWidgets() {
+    List<IdentifiableWidget> result = Lists.newArrayList();
+    if (getActiveWidget() != null) {
+      result.add(getActiveWidget());
+    }
+    return result;
+  }
+  
+  @Override
   public UserInterface getUserInterface() {
     return UserInterface.E_COMMERCE;
   }
@@ -95,6 +106,10 @@ public class EcScreen extends ScreenImpl {
 
     EcKeeper.showPromo(true);
     EcKeeper.restoreShoppingCarts();
+  }
+  
+  @Override
+  public void onWidgetChange(IdentifiableWidget widget) {
   }
 
   @Override
@@ -157,7 +172,7 @@ public class EcScreen extends ScreenImpl {
       EcStyles.add(logo, "Logo");
       panel.add(logo);
     }
-    
+
     if (EcKeeper.showGlobalSearch()) {
       panel.add(createGlobalSearch());
     }
@@ -216,7 +231,7 @@ public class EcScreen extends ScreenImpl {
         Localized.getConstants().ecContacts(), Type.LINK));
 
     container.add(info);
-    
+
     String styleName = "searchBy";
 
     Horizontal searchBy = new Horizontal();
@@ -242,13 +257,13 @@ public class EcScreen extends ScreenImpl {
         Localized.getConstants().ecBikeItemsShort(), Type.LABEL));
 
     container.add(searchBy);
-    
+
     Horizontal carts = new Horizontal();
     EcStyles.add(carts, "carts");
 
     Image image = new Image(EcUtils.imageUrl("cart.png"));
     EcStyles.add(image, "cartPicture");
-    
+
     carts.add(image);
     carts.add(EcKeeper.getCartlist());
 
@@ -262,32 +277,39 @@ public class EcScreen extends ScreenImpl {
 
   private Widget createGlobalSearch() {
     String styleName = "GlobalSearch";
-    
+
     final InputText input = EcKeeper.getSearchBox();
 
     DomUtils.setSearch(input);
     DomUtils.setPlaceholder(input, Localized.getConstants().ecGlobalSearchPlaceholder());
     EcStyles.add(input, styleName, "input");
 
+    AutocompleteProvider.enableAutocomplete(input, EcConstants.NAME_PREFIX + styleName);
+
     input.addKeyDownHandler(new KeyDownHandler() {
       @Override
       public void onKeyDown(KeyDownEvent event) {
         int keyCode = event.getNativeKeyCode();
 
-        if (keyCode == KeyCodes.KEY_ENTER) {
-          String query = BeeUtils.trim(input.getValue());
-          if (!BeeUtils.isEmpty(query)) {
-            EcKeeper.doGlobalSearch(query);
-          }
+        switch (keyCode) {
+          case KeyCodes.KEY_ENTER:
+            String query = BeeUtils.trim(input.getValue());
+            if (!BeeUtils.isEmpty(query)) {
+              EcKeeper.doGlobalSearch(query, input);
+            }
+            break;
 
-        } else if (EventUtils.isArrowKey(keyCode) && input.isEmpty()) {
-          Direction direction = (keyCode == KeyCodes.KEY_LEFT || keyCode == KeyCodes.KEY_UP)
-              ? Direction.WEST : Direction.EAST;
+          case KeyCodes.KEY_LEFT:
+          case KeyCodes.KEY_RIGHT:
+            if (input.isEmpty()) {
+              Direction dir = (keyCode == KeyCodes.KEY_LEFT) ? Direction.WEST : Direction.EAST;
 
-          int oldSize = getScreenPanel().getDirectionSize(direction);
-          int newSize = (oldSize > 0) ? 0 : getActivePanelWidth() / 5;
+              int oldSize = getScreenPanel().getDirectionSize(dir);
+              int newSize = (oldSize > 0) ? 0 : getActivePanelWidth() / 5;
 
-          getScreenPanel().setDirectionSize(direction, newSize, true);
+              getScreenPanel().setDirectionSize(dir, newSize, true);
+            }
+            break;
         }
       }
     });
@@ -300,11 +322,11 @@ public class EcScreen extends ScreenImpl {
       public void onClick(ClickEvent event) {
         String query = BeeUtils.trim(input.getValue());
         if (!BeeUtils.isEmpty(query)) {
-          EcKeeper.doGlobalSearch(query);
+          EcKeeper.doGlobalSearch(query, input);
         }
       }
     });
-    
+
     Horizontal container = new Horizontal();
     EcStyles.add(container, styleName, "container");
 

@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsDate;
-import com.google.gwt.json.client.JSONObject;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.Property;
@@ -272,6 +271,10 @@ public final class JsUtils {
     obj[p] = value;
   }-*/;
 
+  public static native void setProperty(JavaScriptObject obj, String p, JavaScriptObject value) /*-{
+    obj[p] = value;
+  }-*/;
+
   public static native void setPropertyToNull(JavaScriptObject obj, String p) /*-{
     obj[p] = null;
   }-*/;
@@ -298,19 +301,20 @@ public final class JsUtils {
     return from;
   }-*/;
 
-  public static String toJson(JavaScriptObject obj) {
-    if (obj == null) {
-      return null;
-    }
-    return new JSONObject(obj).toString();
-  }
-
   public static native String toSeconds(int millis) /*-{
     if (millis >= 0) {
       var z = millis / 1000;
       return z.toFixed(3);
     }
     return "";
+  }-*/;
+
+  public static native String toString(JavaScriptObject obj) /*-{
+    if (obj) {
+      return JSON.stringify(obj);
+    } else {
+      return null;
+    }
   }-*/;
 
   public static native String toTime(double millis) /*-{

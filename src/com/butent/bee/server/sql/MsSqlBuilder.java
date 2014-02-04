@@ -365,6 +365,8 @@ class MsSqlBuilder extends SqlBuilder {
         return "FLOAT";
       case TEXT:
         return "VARCHAR(MAX)";
+      case BLOB:
+        return "VARBINARY(MAX)";
       default:
         return super.sqlType(type, precision, scale);
     }

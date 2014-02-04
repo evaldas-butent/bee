@@ -4,6 +4,7 @@
 name="Administration" label="=administration" order="1000"
 >
   <Item name="Users" label="=users" service="grid" parameters="Users" />
+  <Item name="UserGroupSettings" label="=userGroups" service="grid" parameters="UserGroupSettings" />
 
   <Item name="Roles" label="=roles" service="form" parameters="Roles" separator="true" />
   <Item name="Objects" label="=objects" service="form" parameters="Objects" />
@@ -15,5 +16,8 @@ name="Administration" label="=administration" order="1000"
     separator="true" />
 
   <Item name="ReminderTypes" label="=reminderTypes" service="grid" parameters="ReminderTypes"
+    separator="true" />
+
+  <Item name="Autocomplete" label="=autocompletion" service="grid" parameters="Autocomplete"
     separator="true" />
 </Entry>

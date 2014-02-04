@@ -1,5 +1,7 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.primitives.Longs;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -48,6 +50,11 @@ public abstract class AbstractRow implements IsRow {
     if (properties != null) {
       properties.remove(key);
     }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return (obj instanceof IsRow) && id == ((IsRow) obj).getId();
   }
 
   @Override
@@ -140,6 +147,7 @@ public abstract class AbstractRow implements IsRow {
       case NUMBER:
         return new NumberValue(getDouble(index));
       case TEXT:
+      case BLOB:
         return new TextValue(getString(index));
       case TIME_OF_DAY:
         return new TimeOfDayValue(getString(index));
@@ -156,6 +164,11 @@ public abstract class AbstractRow implements IsRow {
   @Override
   public long getVersion() {
     return version;
+  }
+
+  @Override
+  public int hashCode() {
+    return Longs.hashCode(id);
   }
 
   @Override
@@ -204,7 +217,7 @@ public abstract class AbstractRow implements IsRow {
   public void setId(long id) {
     this.id = id;
   }
-  
+
   @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
@@ -263,7 +276,7 @@ public abstract class AbstractRow implements IsRow {
   public void setValue(int index, String value) {
     setValue(index, new TextValue(value));
   }
-  
+
   @Override
   public void setValue(int index, Value value) {
     IsCell cell = getCell(index);
@@ -301,9 +314,8 @@ public abstract class AbstractRow implements IsRow {
       target.setProperties(getProperties().copy());
     }
   }
-  
+
   protected void setShadow(Map<Integer, String> shadow) {
     this.shadow = shadow;
   }
-  
 }

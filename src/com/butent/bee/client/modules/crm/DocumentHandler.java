@@ -8,8 +8,12 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
@@ -18,6 +22,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -35,15 +40,17 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -104,7 +111,7 @@ public final class DocumentHandler {
         return;
       }
 
-      Queries.insert(DOCUMENT_VIEW_NAME, event.getColumns(), event.getValues(),
+      Queries.insert(TBL_DOCUMENTS, event.getColumns(), event.getValues(),
           event.getChildren(), new RowCallback() {
             @Override
             public void onFailure(String... reason) {
@@ -249,14 +256,16 @@ public final class DocumentHandler {
 
     @Override
     public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription) {
+        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+        CellSource cellSource) {
 
       if (BeeUtils.same(columnName, COL_FILE)) {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
-            DataUtils.getColumnIndex(COL_CAPTION, dataColumns));
+            DataUtils.getColumnIndex(COL_CAPTION, dataColumns),
+            DataUtils.getColumnIndex(CommonsConstants.ALS_FILE_NAME, dataColumns));
 
       } else {
-        return super.getRenderer(columnName, dataColumns, columnDescription);
+        return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
       }
     }
 
@@ -305,8 +314,8 @@ public final class DocumentHandler {
         return result;
       }
 
-      int nameIndex = gridView.getDataIndex(COL_FILE_NAME);
-      int sizeIndex = gridView.getDataIndex(COL_FILE_SIZE);
+      int nameIndex = gridView.getDataIndex(CommonsConstants.ALS_FILE_NAME);
+      int sizeIndex = gridView.getDataIndex(CommonsConstants.ALS_FILE_SIZE);
       int dateIndex = gridView.getDataIndex(COL_FILE_DATE);
 
       Set<NewFileInfo> oldFiles = Sets.newHashSet();
@@ -402,21 +411,49 @@ public final class DocumentHandler {
     }
   }
 
-  private static final String DOCUMENT_VIEW_NAME = "Documents";
-
   public static void register() {
-    GridFactory.registerGridInterceptor("Documents", new DocumentGridHandler());
-    GridFactory.registerGridInterceptor("DocumentFiles", new FileGridHandler());
+    GridFactory.registerGridInterceptor(TBL_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
+
+    GridFactory.registerGridInterceptor(TBL_DOCUMENTS, new DocumentGridHandler());
+    GridFactory.registerGridInterceptor(TBL_DOCUMENT_FILES, new FileGridHandler());
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
 
+    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentTemplateForm());
+    FormFactory.registerFormInterceptor("Document", new DocumentForm());
+    FormFactory.registerFormInterceptor("DocumentItem", new DocumentDataForm());
+
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
+
+    TradeUtils.registerTotalRenderer(TBL_DOCUMENT_ITEMS, VAR_TOTAL);
+  }
+
+  static void copyDocumentData(Long dataId, final IdCallback callback) {
+    Assert.notNull(callback);
+
+    if (!DataUtils.isId(dataId)) {
+      callback.onSuccess(dataId);
+    } else {
+      ParameterList args = CrmKeeper.createArgs(SVC_COPY_DOCUMENT_DATA);
+      args.addDataItem(COL_DOCUMENT_DATA, dataId);
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(BeeKeeper.getScreen());
+
+          if (!response.hasErrors()) {
+            callback.onSuccess(response.getResponseAsLong());
+          }
+        }
+      });
+    }
   }
 
   private static void sendFiles(final Long docId, Collection<NewFileInfo> files,
       final ScheduledCommand onComplete) {
 
-    final String viewName = VIEW_DOCUMENT_FILES;
+    final String viewName = TBL_DOCUMENT_FILES;
     final List<BeeColumn> columns = Data.getColumns(viewName);
 
     final Holder<Integer> latch = Holder.of(files.size());

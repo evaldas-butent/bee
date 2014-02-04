@@ -29,9 +29,9 @@ import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.Pair;
@@ -40,7 +40,6 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -64,7 +63,7 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
 
   @Override
   public Map<String, Filter> getInitialParentFilters() {
-    return ImmutableMap.of("pyp", Filter.isEmpty(COL_SALE));
+    return ImmutableMap.of("pyp", Filter.isNull(COL_SALE));
   }
 
   @Override
@@ -74,7 +73,7 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
     final Set<Long> ids = Sets.newHashSet();
 
     for (RowInfo row : presenter.getGridView().getSelectedRows(SelectedRows.ALL)) {
-      flt.add(ComparisonFilter.compareId(row.getId()));
+      flt.add(Filter.compareId(row.getId()));
       ids.add(row.getId());
     }
     if (flt.isEmpty()) {

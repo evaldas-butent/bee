@@ -1,35 +1,35 @@
 package com.butent.bee.shared.modules.crm;
 
 public interface LocalizableCrmConstants {
-  
+
   String author();
-  
+
   String createdOn();
-  
+
   String creditDays();
-  
+
   String creditLimit();
-  
+
   String creditTolerance();
 
   String crmActionComment();
 
   String crmActionFinish();
-  
+
   String crmActionForward();
-  
+
   String crmActionSuspend();
 
   String crmAdded();
-
-  String crmCreatedNewTasks();
 
   String crmDeleted();
 
   String crmDurationType();
 
   String crmEnterComment();
-  
+
+  String crmEnterCommentOrDuration();
+
   String crmEnterCompleteDate();
 
   String crmEnterConfirmDate();
@@ -42,25 +42,39 @@ public interface LocalizableCrmConstants {
 
   String crmEnterFinishDate();
 
-  String crmEnterFinishOrStartOrEstimatedTime();
+  String crmEnterFinishDateOrEstimatedTime();
+
+  String crmEnterStartDate();
 
   String crmEnterSubject();
 
-  String crmFiles();
-
   String crmFinishDate();
 
-  String crmFinishDateMustGreaterThan();
+  String crmFinishDateMustBeGreaterThan();
 
-  String crmFinishDateMustGreaterThanStart();
+  String crmFinishDateMustBeGreaterThanStart();
 
-  String crmFinishTimeMustGreaterThanStart();
+  String crmFinishTimeMustBeGreaterThanStart();
 
   String crmNewRequest();
 
   String crmNewTask();
 
+  String crmReminderMailSubject();
+
+  String crmReminderTimeMustBeGreaterThan();
+
+  String crmReminderTimeMustBeLessThan();
+
   String crmRequest();
+
+  String crmRTActionSchedule();
+
+  String crmRTCopyQuestion();
+
+  String crmRTSpawnTaskQuestion();
+
+  String crmRTSpawnTasksQuestion();
 
   String crmSelectedSameExecutor();
 
@@ -69,6 +83,8 @@ public interface LocalizableCrmConstants {
   String crmSpentTime();
 
   String crmStartDate();
+
+  String crmTask();
 
   String crmTaskCancel();
 
@@ -88,9 +104,11 @@ public interface LocalizableCrmConstants {
 
   String crmTaskConfirmDate();
 
-  String crmTaskDelete();
+  String crmTaskDescription();
 
   String crmTaskDeleteCanManager();
+
+  String crmTaskDeleteQuestion();
 
   String crmTaskEventApproved();
 
@@ -124,6 +142,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskForwardingForExecution();
 
+  String crmTaskManager();
+  
   String crmTaskObservers();
 
   String crmTaskPriorityHigh();
@@ -149,7 +169,7 @@ public interface LocalizableCrmConstants {
   String crmTaskStatusApproved();
 
   String crmTaskStatusCanceled();
-  
+
   String crmTaskStatusCompleted();
 
   String crmTaskStatusNotVisited();
@@ -157,6 +177,8 @@ public interface LocalizableCrmConstants {
   String crmTaskStatusScheduled();
 
   String crmTaskStatusSuspended();
+
+  String crmTaskSubject();
 
   String crmTaskSuspension();
 
@@ -166,12 +188,20 @@ public interface LocalizableCrmConstants {
 
   String customer();
 
+  String documentContentIsEmpty();
+
   String documentFileExists();
-  
+
+  String documentName();
+
+  String documentNew();
+
+  String documents();
+
   String endingDate();
 
   String financialInfo();
-  
+
   String financialState();
 
   String hideZeroTimes();
@@ -181,17 +211,21 @@ public interface LocalizableCrmConstants {
   String hoursByTypes();
 
   String hoursByUsers();
-  
+
   String informationSource();
-  
+
   String limitCurrency();
-  
+
+  String mainCriteria();
+
   String manager();
 
+  String newDocumentTemplate();
+
   String rating();
-  
+
   String relationship();
-  
+
   String relationshipInfo();
 
   String requestFinish();
@@ -204,8 +238,10 @@ public interface LocalizableCrmConstants {
 
   String result();
 
+  String selectDocumentTemplate();
+
   String specifyResult();
-  
+
   String startingDate();
 
   String taskFilterAll();
@@ -213,28 +249,32 @@ public interface LocalizableCrmConstants {
   String taskFilterLate();
 
   String taskFilterNew();
-  
+
   String taskFilterNewOrUpdated();
-  
+
   String taskFilterNotVisitedOrActive();
-  
-  String taskFilterNotVisitedOrActiveOrCompleted(); 
-  
+
+  String taskFilterNotVisitedOrActiveOrCompleted();
+
   String taskFilterScheduled();
 
   String taskFilterStarred();
-  
+
   String taskFilterUpdated();
 
   String taskLabelLate();
-  
+
   String taskLabelScheduled();
-  
+
   String taskLabelStarred();
-  
+
   String taskReminder();
 
+  String tasks();
+
   String taskTemplate();
-  
+
   String taskTheme();
+
+  String templateName();
 }

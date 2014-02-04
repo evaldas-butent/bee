@@ -8,8 +8,7 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -20,6 +19,7 @@ import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 
 public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boolean>,
-    HasValueStartIndex, AcceptsCaptions {
+    HasValueStartIndex, AcceptsCaptions, HasValueChangeHandlers<String> {
 
   public static int getValue(String name) {
     int v = BeeConst.UNDEF;
@@ -125,6 +125,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addValueChangeHandler(handler);
+  }
+  
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -132,11 +137,6 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
-  }
-
-  @Override
-  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   public void addOption(String label) {

@@ -30,6 +30,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -102,6 +105,7 @@ import com.butent.bee.shared.modules.ec.EcOrderEvent;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -220,6 +224,8 @@ public class EcModuleBean implements BeeModule {
 
   @EJB
   MailModuleBean mail;
+  @EJB
+  NewsBean news;
 
   @Override
   public Collection<String> dependsOn() {
@@ -404,10 +410,7 @@ public class EcModuleBean implements BeeModule {
     prm.registerParameterEventHandler(new ParameterEventHandler() {
       @Subscribe
       public void initTimers(ParameterEvent event) {
-        if (BeeUtils.same(event.getModule(), EC_MODULE)
-            && BeeUtils.inListSame(event.getParameter(),
-                PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
-
+        if (BeeUtils.inListSame(event.getParameter(), PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
           tcd.initTimers();
         }
       }
@@ -572,6 +575,32 @@ public class EcModuleBean implements BeeModule {
         }
       }
     });
+
+    news.registerUsageQueryProvider(Feed.EC_CLIENTS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_CLIENTS, news.joinUsage(TBL_CLIENTS),
+            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_CLIENTS, COL_CLIENT_MANAGER));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.EC_ORDERS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_ORDERS, news.joinUsage(TBL_ORDERS),
+            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_ORDERS, COL_ORDER_MANAGER));
+      }
+    });
   }
 
   private ResponseObject addToUnsuppliedItems(Long orderId) {
@@ -708,7 +737,7 @@ public class EcModuleBean implements BeeModule {
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_CLIENTS, columns, row);
 
-    ResponseObject response = deb.commitRow(rowSet, true);
+    ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -723,7 +752,7 @@ public class EcModuleBean implements BeeModule {
       Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
       if (!DataUtils.isId(recipient)) {
         Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
-        recipient = usr.getEmailId(userId);
+        recipient = usr.getEmailId(userId, true);
       }
 
       String login = DataUtils.getString(columns, row, COL_LOGIN);
@@ -756,8 +785,17 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
     }
 
-    IsCondition condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
-    String code = null;
+    IsCondition condition;
+    String code;
+
+    if (BeeUtils.isEmpty(BeeUtils.parseDigits(query))) {
+      condition = SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query);
+      code = null;
+    } else {
+      condition = SqlUtils.or(SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, query),
+          SqlUtils.contains(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, query));
+      code = query;
+    }
 
     SqlSelect articleIdQuery = new SqlSelect()
         .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
@@ -900,9 +938,9 @@ public class EcModuleBean implements BeeModule {
     DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
 
     Filter filter = Filter.and(
-        Filter.or(Filter.isEmpty(COL_BANNER_SHOW_AFTER),
+        Filter.or(Filter.isNull(COL_BANNER_SHOW_AFTER),
             ComparisonFilter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
-        Filter.or(Filter.isEmpty(COL_BANNER_SHOW_BEFORE),
+        Filter.or(Filter.isNull(COL_BANNER_SHOW_BEFORE),
             ComparisonFilter.isMore(COL_BANNER_SHOW_BEFORE, now)));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_BANNERS, filter);
@@ -1197,6 +1235,9 @@ public class EcModuleBean implements BeeModule {
     SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_CLIENT_PRIMARY_BRANCH,
         COL_CLIENT_SECONDARY_BRANCH);
     if (clientInfo == null) {
+      result.add(BeeConst.STRING_EMPTY);
+      result.add(BeeConst.STRING_EMPTY);
+
       return ResponseObject.response(result);
     }
 
@@ -1360,9 +1401,9 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.response(finInfo);
     }
 
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     if (!BeeUtils.same(remoteAddress, BeeConst.STRING_MINUS)) {
       SimpleRow companyInfo = qs.getRow(new SqlSelect()
@@ -2268,7 +2309,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_MAIL_ORDER, VAR_ORDER);
     }
 
-    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, ComparisonFilter.compareId(orderId));
+    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, Filter.compareId(orderId));
     if (DataUtils.isEmpty(orderData)) {
       String msg = BeeUtils.joinWords(SVC_MAIL_ORDER, "order not found:", orderId);
       logger.severe(msg);
@@ -2293,7 +2334,7 @@ public class EcModuleBean implements BeeModule {
     Long clientEmailId = null;
     if (!isClient
         || BeeUtils.isTrue(DataUtils.getBoolean(orderData, orderRow, COL_ORDER_COPY_BY_MAIL))) {
-      clientEmailId = usr.getEmailId(clientUser);
+      clientEmailId = usr.getEmailId(clientUser, true);
 
       if (DataUtils.isId(clientEmailId)) {
         recipients.add(clientEmailId);
@@ -2362,8 +2403,8 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject mailRegistration(Long sender, Long recipient, String login,
       String password, SupportedLocale locale) {
 
-    String companyName = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_COMPANY_NAME));
-    String url = BeeUtils.trim(prm.getText(COMMONS_MODULE, PRM_URL));
+    String companyName = BeeUtils.trim(prm.getText(PRM_COMPANY_NAME));
+    String url = BeeUtils.trim(prm.getText(PRM_URL));
 
     LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());
 
@@ -2743,9 +2784,9 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
     }
 
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     ResponseObject response;
 
@@ -2784,10 +2825,10 @@ public class EcModuleBean implements BeeModule {
 
       if (!response.hasErrors()) {
         String warehouse = BeeUtils.notEmpty(order.getValue(COL_WAREHOUSE_SUPPLIER_CODE),
-            prm.getText(COMMONS_MODULE, "ERPWarehouse"));
+            prm.getText("ERPWarehouse"));
 
         WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
-            prm.getText(COMMONS_MODULE, "ERPOperation"), response.getResponseAsString(), warehouse);
+            prm.getText("ERPOperation"), response.getResponseAsString(), warehouse);
 
         SimpleRowSet data = qs.getData(query);
 
@@ -2837,7 +2878,7 @@ public class EcModuleBean implements BeeModule {
                 data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_QUANTITY_SUBMIT));
 
             docItem.setPrice(data.getValueByKey(COL_TCD_ARTICLE, article, COL_ORDER_ITEM_PRICE));
-            docItem.setVat(prm.getValue(COMMONS_MODULE, PRM_VAT_PERCENT), true, false);
+            docItem.setVat(prm.getValue(PRM_VAT_PERCENT), true, false);
           }
         }
         if (!response.hasErrors()) {

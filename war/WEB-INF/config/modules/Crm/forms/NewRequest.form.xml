@@ -41,7 +41,7 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label text="=documentFiles" style="&labelLeft; vertical-align:top;" />
+      <Label text="=files" style="&labelLeft; vertical-align:top;" />
       <FileCollector name="Files" editableColumns="name" style="&inline;">
         <face resource="attachment" />
       </FileCollector>

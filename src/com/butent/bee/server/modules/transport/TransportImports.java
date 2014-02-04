@@ -395,7 +395,7 @@ public class TransportImports {
             .addFields(TBL_TRIPS, COL_TRIP_NO)
             .addFrom(tmp)
             .addFromInner(tt, SqlUtils.joinUsing(tmp, tt, COL_COSTS_EXTERNAL_ID))
-            .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, tt, COL_TRIP))
+            .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, tt, COL_TRIP))
             .setWhere(wh);
 
         wh = SqlUtils.and();

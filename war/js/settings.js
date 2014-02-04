@@ -1,6 +1,6 @@
 var BeeSettings = {
-  appName: "B-novo",
-  version: "0.9.9",
+  appName: "B-NOVO",
+  version: "1.01",
   logoImage: "images/logo.png",
   logoOpen: "http://www.butent.com",
   startMillis: new Date().getTime(),

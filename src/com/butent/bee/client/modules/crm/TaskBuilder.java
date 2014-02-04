@@ -22,7 +22,6 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
@@ -32,13 +31,13 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -50,6 +49,9 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_START_TIME = "Start_Time";
   private static final String NAME_END_DATE = "End_Date";
   private static final String NAME_END_TIME = "End_Time";
+
+  private static final String NAME_REMINDER_DATE = "Reminder_Date";
+  private static final String NAME_REMINDER_TIME = "Reminder_Time";
 
   private static final String NAME_FILES = "Files";
 
@@ -82,16 +84,36 @@ class TaskBuilder extends AbstractFormInterceptor {
     IsRow activeRow = getFormView().getActiveRow();
 
     DateTime start = getStart();
-    DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
-
-    if (end == null) {
-      event.getCallback()
-          .onFailure(Localized.getConstants().crmEnterFinishOrStartOrEstimatedTime());
+    if (start == null) {
+      event.getCallback().onFailure(Localized.getConstants().crmEnterStartDate());
       return;
     }
-    if (start != null && TimeUtils.isLeq(end, start)) {
-      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustGreaterThanStart());
+
+    DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
+    if (end == null) {
+      event.getCallback().onFailure(Localized.getConstants().crmEnterFinishDateOrEstimatedTime());
       return;
+    }
+
+    if (TimeUtils.isLeq(end, start)) {
+      event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustBeGreaterThanStart());
+      return;
+    }
+    
+    DateTime reminderTime = getReminderTime(end);
+    if (reminderTime != null) {
+      DateTime now = TimeUtils.nowMinutes();
+      if (TimeUtils.isLess(reminderTime, now)) {
+        event.getCallback().onFailure(BeeUtils.joinWords(
+            Localized.getConstants().crmReminderTimeMustBeGreaterThan(), now));
+        return;
+      }
+
+      if (TimeUtils.isMeq(reminderTime, end)) {
+        event.getCallback().onFailure(BeeUtils.joinWords(
+            Localized.getConstants().crmReminderTimeMustBeLessThan(), end));
+        return;
+      }
     }
 
     if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
@@ -99,20 +121,23 @@ class TaskBuilder extends AbstractFormInterceptor {
       return;
     }
 
-    if (BeeUtils.isEmpty(activeRow.getProperty(PROP_EXECUTORS))) {
+    if (BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
+        activeRow.getProperty(PROP_EXECUTOR_GROUPS))) {
       event.getCallback().onFailure(Localized.getConstants().crmSelectExecutor());
       return;
     }
 
     BeeRow newRow = DataUtils.cloneRow(activeRow);
 
-    if (start != null) {
-      Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
-    }
+    Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
+    
+    if (reminderTime != null) {
+      Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);
+    }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
-        newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS, COL_START_TIME), true);
+        newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
 
     ParameterList args = CrmKeeper.createTaskRequestParameters(TaskEvent.CREATE);
     args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
@@ -124,7 +149,10 @@ class TaskBuilder extends AbstractFormInterceptor {
 
         if (response.hasErrors()) {
           event.getCallback().onFailure(response.getErrors());
-
+          
+        } else if (!response.hasResponse()) {
+          event.getCallback().onFailure("No tasks created");
+          
         } else if (response.hasResponse(String.class)) {
           List<Long> tasks = DataUtils.parseIdList((String) response.getResponse());
           if (tasks.isEmpty()) {
@@ -136,20 +164,17 @@ class TaskBuilder extends AbstractFormInterceptor {
           clearValue(NAME_START_TIME);
           clearValue(NAME_END_DATE);
           clearValue(NAME_END_TIME);
+          clearValue(NAME_REMINDER_DATE);
+          clearValue(NAME_REMINDER_TIME);
 
           createFiles(tasks);
 
           event.getCallback().onSuccess(null);
           
-          String message =
-              BeeUtils.joinWords(Localized.getConstants().crmCreatedNewTasks(), ":", tasks.size());
-          GridView gridView = getGridView();
-          if (gridView != null) {
-            gridView.notifyInfo(message);
-            gridView.getViewPresenter().handleAction(Action.REFRESH);
-          } else {
-            BeeKeeper.getScreen().notifyInfo(message);
-          }
+          String message = Localized.getMessages().crmCreatedNewTasks(tasks.size());
+          BeeKeeper.getScreen().notifyInfo(message);
+          
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 
         } else {
           event.getCallback().onFailure("Unknown response");
@@ -224,6 +249,19 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
   }
 
+  private DateTime getReminderTime(DateTime end) {
+    HasDateValue datePart = getDate(NAME_REMINDER_DATE);
+    Long timePart = getMillis(NAME_REMINDER_TIME);
+    
+    if (datePart == null && timePart == null) {
+      return null;
+    } else if (datePart == null) {
+      return TimeUtils.combine(end, timePart);
+    } else {
+      return TimeUtils.combine(datePart, timePart);
+    }
+  }
+  
   private DateTime getStart() {
     HasDateValue datePart = getDate(NAME_START_DATE);
     if (datePart == null) {

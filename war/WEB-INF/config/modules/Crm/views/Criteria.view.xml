@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Criteria" source="Criteria"
+  newRowCaption="=newCriterion" caption="=criteria"
+  >
+  <Columns>
+    <SimpleColumn name="Group" />
+    <SimpleColumn name="Sort" />
+    <SimpleColumn name="Criterion" />
+    <SimpleColumn name="Value" />
+  </Columns>
+  <Order>
+    <OrderBy column="Sort" />
+  </Order>
+</View>

@@ -14,11 +14,12 @@
         <xs:element name="Columns" minOccurs="1" maxOccurs="1">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
-              <xs:element ref="common" />
-              <xs:element ref="simple" />
+              <xs:element ref="Column" />
+              <xs:element ref="Join" />
             </xs:choice>
           </xs:complexType>
         </xs:element>
+        <xs:element name="GroupBy" type="group" minOccurs="0" maxOccurs="1" />
         <xs:element name="Order" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
@@ -42,20 +43,18 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="simple" type="column" abstract="true" />
-  <xs:element name="common" type="column" abstract="true" />
-  <xs:element name="aggregate" type="column" abstract="true" />
+  <xs:element name="Column" abstract="true" />
+  <xs:element name="Join" abstract="true" />
 
-  <xs:element name="IdColumn" type="column" substitutionGroup="simple" />
-  <xs:element name="SimpleColumn" type="columnSimple" substitutionGroup="simple" />
-  <xs:element name="HiddenColumn" type="columnSimple" substitutionGroup="common" />
-  <xs:element name="AggregateColumn" type="columnAggregate" substitutionGroup="aggregate" />
+  <xs:element name="IdColumn" type="columnId" substitutionGroup="Column" />
+  <xs:element name="SimpleColumn" type="columnSimple" substitutionGroup="Column" />
+  <xs:element name="HiddenColumn" type="columnSimple" substitutionGroup="Column" />
+  <xs:element name="AggregateColumn" type="columnAggregate" substitutionGroup="Column" />
 
-  <xs:element name="SimpleJoin" type="joinSimple" substitutionGroup="simple" />
-  <xs:element name="ExternalJoin" type="joinExternal" substitutionGroup="common" />
-  <xs:element name="AggregateJoin" type="joinAggregate" substitutionGroup="aggregate" />
+  <xs:element name="SimpleJoin" type="joinSimple" substitutionGroup="Join" />
+  <xs:element name="ExternalJoin" type="joinExternal" substitutionGroup="Join" />
 
-  <xs:complexType name="column">
+  <xs:complexType name="column" abstract="true">
     <xs:attribute name="name" type="type:fieldNameType" use="required" />
   </xs:complexType>
 
@@ -87,43 +86,40 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="join">
+  <xs:complexType name="columnId">
     <xs:complexContent>
       <xs:extension base="column">
-        <xs:attribute name="joinType" type="type:joinType" use="required" />
+        <xs:attribute name="aggregate" type="type:aggregateType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="joinSimple">
     <xs:complexContent>
-      <xs:extension base="join">
+      <xs:extension base="column">
         <xs:choice maxOccurs="unbounded">
-          <xs:element ref="common" />
-          <xs:element ref="simple" />
+          <xs:element ref="Column" />
+          <xs:element ref="Join" />
         </xs:choice>
-        <xs:attribute name="source" type="type:tableNameType" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="joinAggregate">
-    <xs:complexContent>
-      <xs:extension base="join">
-        <xs:choice maxOccurs="unbounded">
-          <xs:element ref="common" />
-          <xs:element ref="aggregate" />
-        </xs:choice>
+        <xs:attribute name="joinType" type="type:joinType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="joinExternal">
     <xs:complexContent>
-      <xs:extension base="joinAggregate">
+      <xs:extension base="joinSimple">
         <xs:attribute name="source" type="type:tableNameType" use="required" />
       </xs:extension>
     </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="group">
+    <xs:attribute name="columns" use="required">
+      <xs:simpleType>
+        <xs:list itemType="type:fieldNameType" />
+      </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="order">

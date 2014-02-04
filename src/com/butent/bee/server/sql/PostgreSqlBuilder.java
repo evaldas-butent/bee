@@ -10,7 +10,6 @@ import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -75,10 +74,11 @@ class PostgreSqlBuilder extends SqlBuilder {
       String relField = entry.get("relField");
       String var = "OLD." + sqlQuote(fldName);
 
-      body.append(BeeUtils.joinWords("IF", var, "IS NOT NULL THEN",
-          new SqlDelete(relTable).setWhere(SqlUtils.equals(relTable, relField, 69))
-              .getQuery().replace("69", var),
-          ";END IF;"));
+      body.append(BeeUtils.joinWords("IF", var, "IS NOT NULL THEN BEGIN",
+          new SqlDelete(relTable)
+              .setWhere(SqlUtils.equals(relTable, relField, SqlUtils.expression(var)))
+              .getQuery(),
+          ";EXCEPTION WHEN foreign_key_violation THEN END;END IF;"));
     }
     return body.append("RETURN NULL;END;").toString();
   }
@@ -242,29 +242,14 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected String sqlTransform(Object x) {
-    Object val;
-
-    if (x instanceof Value) {
-      val = ((Value) x).getObjectValue();
-    } else {
-      val = x;
-    }
-    String s = super.sqlTransform(val);
-
-    if (val instanceof CharSequence) {
-      s = s.replace("\\", "\\\\");
-    }
-    return s;
-  }
-
-  @Override
   protected String sqlType(SqlDataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
       case DOUBLE:
         return "DOUBLE PRECISION";
+      case BLOB:
+        return "BYTEA";
       default:
         return super.sqlType(type, precision, scale);
     }

@@ -32,9 +32,9 @@
     <SimpleColumn name="Notes" />
     
     <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
-      <AggregateJoin name="Driver" joinType="LEFT">
-        <AggregateJoin name="CompanyPerson" joinType="LEFT">
-          <AggregateJoin name="Person" joinType="LEFT">
+      <SimpleJoin name="Driver" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
             <HiddenColumn name="FirstName" />
             <HiddenColumn name="LastName" />
 
@@ -45,9 +45,9 @@
                 <xpr:string>"FirstName"</xpr:string>
               </xpr:concat>
             </AggregateColumn>
-          </AggregateJoin>
-        </AggregateJoin>
-      </AggregateJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
     </ExternalJoin>
   </Columns>
   <Order>

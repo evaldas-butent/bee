@@ -190,14 +190,8 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   }
 
   @Override
-  public void setValue(String value, boolean fireEvents) {
-    JustDate oldValue = getDate();
-    JustDate newValue = TimeUtils.toDateOrNull(value);
-    setDate(newValue);
-
-    if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
-      ValueChangeEvent.fire(this, value);
-    }
+  public void setValue(String value) {
+    setDate(TimeUtils.toDateOrNull(value));
   }
 
   @Override

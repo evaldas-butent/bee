@@ -195,7 +195,7 @@ public class MessageBoxes {
 
   public void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, final ConfirmationCallback callback,
-      String dialogStyle, String messageStyle, String buttonStyle) {
+      String dialogStyle, String messageStyle, String buttonStyle, Element target) {
 
     Assert.notEmpty(messages);
     Assert.notNull(callback);
@@ -224,11 +224,12 @@ public class MessageBoxes {
     };
 
     display(caption, icon, messages, options, 1, choice, BeeConst.UNDEF,
-        dialogStyle, messageStyle, buttonStyle, null);
+        dialogStyle, messageStyle, buttonStyle, target, null);
   }
 
   public void decide(String caption, List<String> messages, final DecisionCallback callback,
-      int defaultValue, String dialogStyle, String messageStyle, String buttonStyle) {
+      int defaultValue, String dialogStyle, String messageStyle, String buttonStyle,
+      Element target) {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
 
@@ -264,12 +265,13 @@ public class MessageBoxes {
     };
 
     display(caption, Icon.QUESTION, messages, options, defaultValue, choice, BeeConst.UNDEF,
-        dialogStyle, messageStyle, buttonStyle, null);
+        dialogStyle, messageStyle, buttonStyle, target, null);
   }
 
   public void display(String caption, Icon icon, List<String> messages, List<String> options,
       final int defaultValue, final ChoiceCallback callback, final int timeout,
-      String dialogStyle, String messageStyle, String buttonStyle, WidgetInitializer initializer) {
+      String dialogStyle, String messageStyle, String buttonStyle,
+      Element target, WidgetInitializer initializer) {
 
     final Popup popup;
     if (BeeUtils.isEmpty(caption)) {
@@ -371,7 +373,12 @@ public class MessageBoxes {
     UiHelper.setWidget(popup, table, initializer, DialogConstants.WIDGET_PANEL);
 
     popup.setAnimationEnabled(true);
-    popup.center();
+    
+    if (target == null) {
+      popup.center();
+    } else {
+      popup.showRelativeTo(target);
+    }
 
     if (defaultValue >= 0 && defaultValue < group.getWidgetCount()) {
       UiHelper.focus(group.getWidget(defaultValue));
@@ -411,6 +418,10 @@ public class MessageBoxes {
 
     TabBar cluster = new TabBar(STYLE_STAR_CLUSTER, Orientation.HORIZONTAL);
 
+    Image delStar = new Image(Stars.getDefaultHeaderResource());
+
+    cluster.addItem(delStar);
+
     for (int i = 0; i < starCount; i++) {
       Image image = new Image(Stars.get(i));
       cluster.addItem(image);
@@ -438,7 +449,7 @@ public class MessageBoxes {
         }
       }
     });
-
+    
     popup.setWidget(cluster);
 
     popup.setAnimationEnabled(true);
@@ -451,9 +462,9 @@ public class MessageBoxes {
 
     int focusIndex;
 
-    if (defaultValue != null && cluster.isIndex(defaultValue)) {
-      cluster.selectTab(defaultValue, false);
-      focusIndex = defaultValue;
+    if (defaultValue != null && cluster.isIndex(defaultValue + 1)) {
+      cluster.selectTab(defaultValue + 1, false);
+      focusIndex = defaultValue + 1;
     } else {
       focusIndex = 0;
     }
@@ -468,7 +479,7 @@ public class MessageBoxes {
         Localized.getConstants().ok()));
 
     display(caption, Icon.ERROR, messages, options, 0, null, BeeConst.UNDEF, dialogStyle, null,
-        null, null);
+        null, null, null);
   }
 
   public void showInfo(String caption, List<String> messages, String dialogStyle,
@@ -478,7 +489,7 @@ public class MessageBoxes {
         Localized.getConstants().ok()));
 
     display(caption, Icon.INFORMATION, messages, options, 0, null, BeeConst.UNDEF, dialogStyle,
-        null, null, null);
+        null, null, null, null);
   }
 
   public void showTable(String caption, IsTable<?, ?> table) {
@@ -547,10 +558,16 @@ public class MessageBoxes {
     close.setFocus(true);
   }
 
-  public void showWidget(Widget widget, Element target) {
+  public void showWidget(String caption, Widget widget, Element target) {
     Assert.notNull(widget);
 
-    Popup popup = new Popup(OutsideClick.CLOSE);
+    Popup popup;
+    if (BeeUtils.isEmpty(caption)) {
+      popup = new Popup(OutsideClick.CLOSE);
+    } else {
+      popup = DialogBox.create(caption);
+    }
+    
     popup.setAnimationEnabled(true);
     popup.setHideOnEscape(true);
 

@@ -10,18 +10,28 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.composite.Thermometer;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +54,54 @@ public final class FileUtils {
   private static final String UPLOAD_URL = "upload";
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
+  
+  public static void commitFiles(Collection<NewFileInfo> files, final String viewName,
+      final String parentColumn, final Long parentId, final String fileColumn,
+      final String captionColumn) {
+
+    Assert.notEmpty(files);
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(parentColumn);
+    Assert.isTrue(DataUtils.isId(parentId));
+    Assert.notEmpty(fileColumn);
+
+    final List<BeeColumn> columns = Data.getColumns(viewName);
+
+    final Holder<Integer> latch = Holder.of(files.size());
+
+    for (final NewFileInfo fileInfo : files) {
+      uploadFile(fileInfo, new Callback<Long>() {
+        @Override
+        public void onSuccess(Long result) {
+          BeeRow row = DataUtils.createEmptyRow(columns.size());
+
+          Data.setValue(viewName, row, parentColumn, parentId);
+          Data.setValue(viewName, row, fileColumn, result);
+
+          if (!BeeUtils.isEmpty(captionColumn)) {
+            String caption = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+
+            Integer precision = Data.getColumnPrecision(viewName, captionColumn);
+            if (BeeUtils.isPositive(precision) && BeeUtils.hasLength(caption, precision)) {
+              caption = BeeUtils.left(caption, precision);
+            }
+
+            Data.setValue(viewName, row, captionColumn, caption);
+          }
+
+          Queries.insert(viewName, columns, row, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow br) {
+              latch.set(latch.get() - 1);
+              if (!BeeUtils.isPositive(latch.get())) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
+              }
+            }
+          });
+        }
+      });
+    }
+  }
 
   public static void deletePhoto(final String photoFileName, final Callback<String> callback) {
     Assert.notEmpty(photoFileName);
@@ -59,7 +117,7 @@ public final class FileUtils {
       @Override
       public void handleEvent(Event evt) {
         if (xhr.getStatus() == Response.SC_OK) {
-          String response = xhr.getResponseText();
+          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
 
           if (BeeUtils.same(response, photoFileName)) {
             logger.info("deleted photo", photoFileName);
@@ -226,11 +284,11 @@ public final class FileUtils {
       @Override
       public void handleEvent(Event evt) {
         if (progressId != null) {
-          BeeKeeper.getScreen().closeProgress(progressId);
+          BeeKeeper.getScreen().removeProgress(progressId);
         }
 
         if (xhr.getStatus() == Response.SC_OK) {
-          String response = xhr.getResponseText();
+          String response = ResponseObject.restore(xhr.getResponseText()).getResponseAsString();
 
           if (BeeUtils.same(response, photoFileName)) {
             logger.info(TimeUtils.elapsedSeconds(start), originalFileName, "size:", fileSize);
@@ -327,8 +385,12 @@ public final class FileUtils {
   }
 
   private static String maybeCreateProgress(String caption, long size) {
-    return (size > MIN_FILE_SIZE_FOR_PROGRESS)
-        ? BeeKeeper.getScreen().createProgress(caption, (double) size, null) : null;
+    if (size < MIN_FILE_SIZE_FOR_PROGRESS) {
+      return null;
+    } else {
+      Thermometer widget = new Thermometer(caption, (double) size);
+      return BeeKeeper.getScreen().addProgress(widget);
+    }
   }
 
   private static void upload(String srv, NewFileInfo fileInfo, final Callback<String> callback) {
@@ -356,7 +418,7 @@ public final class FileUtils {
       @Override
       public void handleEvent(Event evt) {
         if (progressId != null) {
-          BeeKeeper.getScreen().closeProgress(progressId);
+          BeeKeeper.getScreen().removeProgress(progressId);
         }
         String msg = BeeUtils.joinWords("upload", fileName, "response status:");
 

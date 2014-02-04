@@ -76,9 +76,9 @@
 
     <SimpleColumn name="ExchangeCode" />
 
-    <SimpleColumn name="CreditLimit1" />
-    <SimpleColumn name="CreditLimit2" />
+    <SimpleColumn name="CreditLimit" />
     <SimpleColumn name="LimitCurrency" />
+    <SimpleColumn name="CreditTolerance" />
     <SimpleJoin joinType="LEFT" name="LimitCurrency">
       <SimpleColumn name="Name" alias="LimitCurrencyName" />
     </SimpleJoin>
@@ -88,7 +88,10 @@
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
-
+    <SimpleColumn name="BankAccount" />
+    <SimpleColumn name="DaysAsBuyer" />
+    <SimpleColumn name="DaysAsSupplier" />
+    
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>

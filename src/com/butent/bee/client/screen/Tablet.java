@@ -42,7 +42,7 @@ public class Tablet extends Mobile {
         "s" + colorStep.getValue(),
         "o" + BeeUtils.toString(minOpacity.getLong() / 100.0) + "-"
             + BeeUtils.toString(maxOpacity.getLong() / 100.0));
-      CliWorker.execute("svg " + opt);
+      CliWorker.execute("svg " + opt, true);
     }
   }
 
@@ -173,7 +173,7 @@ public class Tablet extends Mobile {
     Button cornify = new Button("Cornify", new Command() {
       @Override
       public void execute() {
-        CliWorker.execute("cornify 5 1000");
+        CliWorker.execute("cornify 5 1000", true);
       }
     });
     grid.setWidget(r, 0, cornify);

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FlowPanel [
+  <!ENTITY inp "width: 500px;">
+]>
+<FlowPanel xmlns="http://www.butent.com/widget">
+  <br/>
+
+  <Table xmlns="http://www.butent.com/widget" style="border-collapse: collapse; margin-top: 2ex;"
+      cellStyle="padding-bottom: 3px;">
+    <col index="0" cellStyle="text-align: right; vertical-align: top; padding-right: 1em;" />
+
+    <row>
+      <Label text="=companies" />
+      <ChildSelector childTable="Relations" viewName="Companies" renderColumns="Name"
+        editPopup="true" newRowEnabled="false" style="&inp;" />
+    </row>
+
+    <row>
+      <Label text="=persons" />
+      <ChildSelector childTable="Relations" viewName="Persons" 
+        renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp;" />
+    </row>
+
+    <row>
+      <Label text="=documents" />
+      <ChildSelector childTable="Relations" viewName="Documents" renderColumns="Name"
+        editPopup="true" newRowEnabled="false" style="&inp;" />
+    </row>
+
+    <row>
+      <Label text="=appointments" />
+      <ChildSelector childTable="Relations" viewName="Appointments"
+        renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+        newRowEnabled="false" editPopup="true" style="&inp;" />
+    </row>
+
+    <row>
+      <Label text="=discussions" />
+      <ChildSelector childTable="Relations" viewName="Discussions"
+        renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp;" />
+    </row>
+
+    <row>
+      <Label text="=tasks" />
+      <ChildSelector childTable="Relations" viewName="Tasks" 
+        renderColumns="Summary ExecutorFirstName ExecutorLastName"
+        choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+        newRowEnabled="false" editPopup="true" style="&inp;" />
+      </row>
+  </Table>
+</FlowPanel>

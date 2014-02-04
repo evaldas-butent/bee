@@ -644,39 +644,47 @@ public final class JdbcUtils {
       case Types.VARCHAR:
         valueType = ValueType.TEXT;
         break;
-      
+
       case Types.INTEGER:
       case Types.SMALLINT:
       case Types.TINYINT:
         valueType = ValueType.INTEGER;
         break;
-      
+
       case Types.BIGINT:
         valueType = ValueType.LONG;
         break;
-      
+
       case Types.DECIMAL:
       case Types.NUMERIC:
         valueType = ValueType.DECIMAL;
         break;
-      
+
       case Types.REAL:
       case Types.DOUBLE:
       case Types.FLOAT:
         valueType = ValueType.NUMBER;
         break;
-      
+
       case Types.DATE:
         valueType = ValueType.DATE;
         break;
-      
+
       case Types.TIME:
         valueType = ValueType.TIME_OF_DAY;
         break;
-      
+
       case Types.TIMESTAMP:
         valueType = ValueType.DATE_TIME;
         break;
+
+      case Types.BLOB:
+      case Types.BINARY:
+      case Types.VARBINARY:
+      case Types.LONGVARBINARY:
+        valueType = ValueType.BLOB;
+        break;
+
       default:
         valueType = ValueType.TEXT;
     }

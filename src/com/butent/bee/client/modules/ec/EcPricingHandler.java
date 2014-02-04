@@ -7,12 +7,13 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.view.grid.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -74,7 +75,7 @@ class EcPricingHandler extends AbstractGridInterceptor {
   
   @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription) {
+      ColumnDescription columnDescription, CellSource cellSource) {
 
     if (BeeUtils.same(columnName, "Name")) {
       int nameIndex = DataUtils.getColumnIndex(EcConstants.COL_TCD_CATEGORY_NAME, dataColumns);
@@ -83,7 +84,7 @@ class EcPricingHandler extends AbstractGridInterceptor {
 
       return new CategoryNameRenderer(nameIndex, fullNameIndex, columnDescription.getOptions());
     } else {
-      return super.getRenderer(columnName, dataColumns, columnDescription);
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
   }
 

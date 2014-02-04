@@ -28,6 +28,9 @@ import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
@@ -36,6 +39,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -50,9 +54,9 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
@@ -102,6 +106,8 @@ public class TransportModuleBean implements BeeModule {
   TransportImports imp;
   @EJB
   TradeModuleBean trd;
+  @EJB
+  NewsBean news;
 
   @Resource
   TimerService timerService;
@@ -165,11 +171,11 @@ public class TransportModuleBean implements BeeModule {
       response = getDtbData();
 
     } else if (BeeUtils.same(svc, SVC_GET_TRUCK_TB_DATA)) {
-      response = getVehicleTbData(svc, Filter.notEmpty(COL_IS_TRUCK), VehicleType.TRUCK,
+      response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRUCK), VehicleType.TRUCK,
           COL_TRUCK_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_TRAILER_TB_DATA)) {
-      response = getVehicleTbData(svc, Filter.notEmpty(COL_IS_TRAILER), VehicleType.TRAILER,
+      response = getVehicleTbData(svc, Filter.notNull(COL_IS_TRAILER), VehicleType.TRAILER,
           COL_TRAILER_THEME);
 
     } else if (BeeUtils.same(svc, SVC_GET_COLORS)) {
@@ -209,7 +215,7 @@ public class TransportModuleBean implements BeeModule {
       response = imp.doImport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CREDIT_INFO)) {
-      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CUSTOMER)));
+      response = getCreditInfo(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_TOTAL)) {
       response = getCargoTotal(BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
@@ -226,10 +232,8 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        new BeeParameter(TRANSPORT_MODULE, "ERPCreditOperation", ParameterType.TEXT,
-            "Credit document operation name in ERP system", false, null),
-        new BeeParameter(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, ParameterType.NUMBER,
-            "Interval of ERP payments renewal in minutes", false, null));
+        BeeParameter.createText(TRANSPORT_MODULE, "ERPCreditOperation", false, null),
+        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null));
   }
 
   @Override
@@ -249,9 +253,7 @@ public class TransportModuleBean implements BeeModule {
     prm.registerParameterEventHandler(new ParameterEventHandler() {
       @Subscribe
       public void initTimers(ParameterEvent event) {
-        if (BeeUtils.same(event.getModule(), TRANSPORT_MODULE)
-            && BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
-
+        if (BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
           initTimer();
         }
       }
@@ -417,18 +419,7 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       public void getFileIcons(ViewQueryEvent event) {
         if (BeeUtils.same(event.getTargetName(), VIEW_CARGO_REQUEST_FILES) && event.isAfter()) {
-          BeeRowSet rowSet = event.getRowset();
-
-          if (!rowSet.isEmpty()) {
-            int fnIndex = rowSet.getColumnIndex(COL_FILE_NAME);
-
-            for (BeeRow row : rowSet.getRows()) {
-              String icon = ExtensionIcons.getIcon(row.getString(fnIndex));
-              if (!BeeUtils.isEmpty(icon)) {
-                row.setProperty(PROP_ICON, icon);
-              }
-            }
-          }
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }
 
@@ -466,6 +457,58 @@ public class TransportModuleBean implements BeeModule {
           event.getQuery().addFromInner(query, "subq",
               SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
         }
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_ORDER_CARGO, COL_ORDER));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_ORDER_CARGO, news.joinUsage(TBL_ORDER_CARGO));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.TRANSPORTATION_ORDERS_MY,
+        new ExtendedUsageQueryProvider() {
+          @Override
+          protected List<IsCondition> getConditions(long userId) {
+            return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER,
+                userId));
+          }
+
+          @Override
+          protected List<Pair<String, IsCondition>> getJoins() {
+            return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
+          }
+        });
+
+    news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_CARGO_REQUESTS,
+            COL_CARGO_REQUEST_MANAGER, userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_CARGO_REQUESTS, news.joinUsage(TBL_CARGO_REQUESTS));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_SHIPMENT_REQUESTS,
+            COL_QUERY_MANAGER, userId));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS, news.joinUsage(TBL_SHIPMENT_REQUESTS));
       }
     });
   }
@@ -948,8 +991,8 @@ public class TransportModuleBean implements BeeModule {
 
   private ResponseObject getColors(RequestInfo reqInfo) {
     Long theme;
-    if (reqInfo.hasParameter(VAR_THEME_ID)) {
-      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_THEME_ID));
+    if (reqInfo.hasParameter(VAR_ID)) {
+      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_ID));
     } else {
       theme = null;
     }
@@ -957,8 +1000,67 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(getThemeColors(theme));
   }
 
-  private ResponseObject getCreditInfo(Long companyId) {
-    return trd.getCreditInfo(companyId);
+  @SuppressWarnings("unchecked")
+  private ResponseObject getCreditInfo(RequestInfo reqInfo) {
+    Long company = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY));
+
+    if (!DataUtils.isId(company)) {
+      Long incomeId = BeeUtils.toLongOrNull(reqInfo.getParameter(TBL_CARGO_INCOMES));
+
+      if (!DataUtils.isId(incomeId)) {
+        return ResponseObject.emptyResponse();
+      }
+      SimpleRow row = qs.getRow(new SqlSelect()
+          .addFields(TBL_ORDERS, COL_CUSTOMER, COL_PAYER)
+          .addFrom(TBL_CARGO_INCOMES)
+          .addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+          .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .setWhere(sys.idEquals(TBL_CARGO_INCOMES, incomeId)));
+
+      if (row != null) {
+        company = BeeUtils.nvl(row.getLong(COL_PAYER), row.getLong(COL_CUSTOMER));
+      }
+    }
+    Map<String, Object> resp = Maps.newHashMap();
+
+    if (DataUtils.isId(company)) {
+      ResponseObject response = trd.getCreditInfo(company);
+
+      if (response.hasErrors()) {
+        return response;
+      }
+      resp.putAll((Map<? extends String, ?>) response.getResponse());
+      Long curr = (Long) resp.get(COL_COMPANY_LIMIT_CURRENCY);
+
+      SqlSelect query = new SqlSelect()
+          .addFrom(TBL_ORDERS)
+          .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .addFromInner(TBL_CARGO_INCOMES,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO))
+          .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_PAYER, company),
+              SqlUtils.and(SqlUtils.isNull(TBL_ORDERS, COL_PAYER),
+                  SqlUtils.equals(TBL_ORDERS, COL_CUSTOMER, company))),
+              SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE)));
+
+      IsExpression cargoIncome;
+      IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
+          SqlUtils.field(TBL_ORDERS, COL_DATE));
+
+      if (DataUtils.isId(curr)) {
+        cargoIncome = ExchangeUtils.exchangeFieldTo(query,
+            TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)),
+            SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr, SqlUtils.constant(curr));
+      } else {
+        cargoIncome = ExchangeUtils.exchangeField(query,
+            TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+                SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)),
+            SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
+      }
+      resp.put(VAR_INCOME, BeeUtils.round(qs.getValue(query.addSum(cargoIncome, VAR_INCOME)), 2));
+    }
+    return ResponseObject.response(resp);
   }
 
   private ResponseObject getDtbData() {
@@ -1841,9 +1943,9 @@ public class TransportModuleBean implements BeeModule {
       }
       ids.append("'").append(row.getValue(COL_SALE)).append("'");
     }
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
         "SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
@@ -1871,7 +1973,7 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private void initTimer() {
-    Integer minutes = prm.getInteger(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL);
+    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
     boolean timerExists = erpTimer != null;
 
     if (timerExists) {
@@ -1905,10 +2007,11 @@ public class TransportModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY,
-            COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
         .addFrom(trade)
+        .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
                 COL_TRADE_WAREHOUSE_FROM))
@@ -1929,9 +2032,9 @@ public class TransportModuleBean implements BeeModule {
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
-    String remoteAddress = prm.getText(COMMONS_MODULE, PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(COMMONS_MODULE, PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(COMMONS_MODULE, PRM_ERP_PASSWORD);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
     SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
@@ -1975,12 +2078,12 @@ public class TransportModuleBean implements BeeModule {
       String client;
 
       if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText(TRANSPORT_MODULE, "ERPCreditOperation");
+        operation = prm.getText("ERPCreditOperation");
         warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
         client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
       } else {
-        operation = prm.getText(COMMONS_MODULE, "ERPOperation");
-        warehouse = prm.getText(COMMONS_MODULE, "ERPWarehouse");
+        operation = prm.getText("ERPOperation");
+        warehouse = prm.getText("ERPWarehouse");
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
       WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
@@ -1995,6 +2098,7 @@ public class TransportModuleBean implements BeeModule {
       doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
       doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
+      doc.setCurrency(invoice.getValue(COL_CURRENCY));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

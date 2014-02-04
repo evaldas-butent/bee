@@ -5,8 +5,12 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.ScheduleDateMode;
+import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -83,14 +87,35 @@ public final class CommonsConstants {
       return this.name().toLowerCase();
     }
   }
+  
+  public enum UserGroupVisibility implements HasCaption {
+    PRIVATE(Localized.getConstants().userGroupPrivate()),
+    PUBLIC(Localized.getConstants().userGroupPublic());
+
+    private final String caption;
+
+    private UserGroupVisibility(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
 
   public static void register() {
-    EnumUtils.register(RightsObjectType.class);
-    EnumUtils.register(RightsState.class);
+    EnumUtils.register(Feed.class);
     EnumUtils.register(ParameterType.class);
     EnumUtils.register(ReminderMethod.class);
+    EnumUtils.register(RightsObjectType.class);
+    EnumUtils.register(RightsState.class);
     EnumUtils.register(SupportedLocale.class);
+    EnumUtils.register(UserGroupVisibility.class);
     EnumUtils.register(UserInterface.class);
+
+    EnumUtils.register(ScheduleDateMode.class);
+    EnumUtils.register(WorkdayTransition.class);
   }
 
   public static final String COMMONS_MODULE = "Commons";
@@ -100,8 +125,7 @@ public final class CommonsConstants {
 
   public static final String SVC_GET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
-  public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
-  public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
+  public static final String SVC_RESET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "set";
 
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
@@ -110,27 +134,17 @@ public final class CommonsConstants {
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
 
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
-  public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
+  public static final String VAR_PARAMETER = Service.RPC_VAR_PREFIX + "parameters";
   public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
 
   public static final String SVC_GET_HISTORY = "get_history";
   public static final String VAR_HISTORY_VIEW = Service.RPC_VAR_PREFIX + "history_view";
   public static final String VAR_HISTORY_IDS = Service.RPC_VAR_PREFIX + "history_ids";
 
-  public static final String COMMONS_ITEM_PREFIX = "item_";
-
-  public static final String VAR_ITEM_ID = Service.RPC_VAR_PREFIX + "item_id";
-  public static final String VAR_ITEM_CATEGORIES = Service.RPC_VAR_PREFIX + "item_categories";
-  public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
-
   public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
   public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
 
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
-
-  public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
-  public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
-  public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
 
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
@@ -160,8 +174,10 @@ public final class CommonsConstants {
   public static final String TBL_OBJECTS = "Objects";
   public static final String TBL_RIGHTS = "Rights";
   public static final String TBL_USER_HISTORY = "UserHistory";
+  public static final String TBL_USER_GROUPS = "UserGroups";
 
   public static final String TBL_FILES = "Files";
+  public static final String TBL_FILE_PARTS = "FileParts";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -195,10 +211,14 @@ public final class CommonsConstants {
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String TBL_AUTOCOMPLETE = "Autocomplete";
+
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
-  public static final String VIEW_USERS = "Users";
   public static final String VIEW_PERSONS = "Persons";
+
+  public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
@@ -219,9 +239,11 @@ public final class CommonsConstants {
 
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
-  public static final String GRID_PERSONS = "Persons";
+  public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
 
+  public static final String GRID_PERSONS = "Persons";
   public static final String GRID_HISTORY = "History";
+  public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String COL_RELATION = "Relation";
 
@@ -246,6 +268,14 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
   public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
+  public static final String COL_COMPANY_CREDIT_LIMIT = "CreditLimit";
+  public static final String COL_COMPANY_LIMIT_CURRENCY = "LimitCurrency";
+  public static final String COL_COMPANY_CREDIT_DAYS = "CreditDays";
+
+  public static final String COL_COMPANY_USER_COMPANY = "Company";
+  public static final String COL_COMPANY_USER_USER = "User";
+  public static final String COL_COMPANY_USER_RESPONSIBILITY = "Responsibility";
+  
   public static final String COL_PERSON = "Person";
 
   public static final String COL_POSITION = "Position";
@@ -261,6 +291,8 @@ public final class CommonsConstants {
   public static final String COL_FILE_REPO = "Repository";
   public static final String COL_FILE_SIZE = "Size";
   public static final String COL_FILE_TYPE = "Type";
+  public static final String COL_FILE_FILE = "File";
+  public static final String COL_FILE_PART = "Part";
 
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_EMAIL_LABEL = "Label";
@@ -278,6 +310,8 @@ public final class CommonsConstants {
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
+  public static final String COL_ITEM_PRICE = "Price";
+  public static final String COL_ITEM_CURRENCY = "Currency";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -300,6 +334,8 @@ public final class CommonsConstants {
   public static final String COL_COUNTRY_CODE = "Code";
 
   public static final String COL_REMINDER_METHOD = "Method";
+  public static final String COL_REMINDER_HOURS = "Hours";
+  public static final String COL_REMINDER_MINUTES = "Minutes";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
   public static final String COL_REMINDER_TEMPLATE = "Template";
 
@@ -326,6 +362,7 @@ public final class CommonsConstants {
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
 
+  public static final String COL_CURRENCY = "Currency";
   public static final String COL_CURRENCY_NAME = "Name";
   public static final String COL_CURRENCY_UPDATE_TAG = "UpdateTag";
 
@@ -338,6 +375,13 @@ public final class CommonsConstants {
   public static final String COL_IP_FILTER_BLOCK_AFTER = "BlockAfter";
   public static final String COL_IP_FILTER_BLOCK_BEFORE = "BlockBefore";
 
+  public static final String COL_AUTOCOMPLETE_USER = "User";
+  public static final String COL_AUTOCOMPLETE_KEY = "Key";
+  public static final String COL_AUTOCOMPLETE_VALUE = "Value";
+
+  public static final String COL_UG_GROUP = "Group";
+  public static final String COL_UG_USER = "User";
+  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
@@ -347,7 +391,13 @@ public final class CommonsConstants {
 
   public static final String ALS_EMAIL_ID = "EmailId";
 
-  public static final String FORM_NEW_COMPANY = "Company";
+  public static final String ALS_POSITION_NAME = "PositionName";
+
+  public static final String ALS_FILE_NAME = "FileName";
+  public static final String ALS_FILE_SIZE = "FileSize";
+  public static final String ALS_FILE_TYPE = "FileType";
+  
+  public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
@@ -363,7 +413,6 @@ public final class CommonsConstants {
   public static final String PRM_COMPANY_NAME = "CompanyName";
   public static final String PRM_URL = "Url";
 
-  public static final String PROP_CATEGORIES = "CategList";
   public static final String PROP_ICON = "Icon";
 
   public static final String STYLE_SHEET = "commons";

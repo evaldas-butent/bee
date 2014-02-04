@@ -1,28 +1,42 @@
 package com.butent.bee.client.widget;
 
+import com.google.common.base.Strings;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.edit.HasTextBox;
+import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasAutocomplete;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -30,12 +44,15 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collections;
 import java.util.List;
 
+import elemental.html.TextAreaElement;
+
 /**
  * Implements a text area that allows multiple lines of text to be entered.
  */
 
-public class InputArea extends TextArea implements Editor, HandlesAfterSave, HasTextDimensions,
-    HasInputHandlers, HasTextBox {
+public class InputArea extends CustomWidget implements Editor, TextBox, HandlesAfterSave,
+    HasTextDimensions, HasInputHandlers, HasTextBox, HasMaxLength, HasAutocomplete,
+    HasKeyDownHandlers {
 
   private Resource resource;
 
@@ -50,40 +67,77 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public InputArea() {
-    super();
-    init();
+    super(Document.get().createTextAreaElement());
   }
 
   public InputArea(Element element) {
     super(element);
-    init();
   }
-  
+
   public InputArea(Resource resource) {
     this();
     this.resource = resource;
 
     setValue(resource.getContent());
     if (resource.isReadOnly()) {
-      setReadOnly(true);
+      getTextAreaElement().setReadOnly(true);
     }
+  }
+
+  @Override
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return addDomHandler(handler, BlurEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addKeyDownHandler(handler);
   }
 
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-  
+
+  @Override
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+
   @Override
   public HandlerRegistration addInputHandler(InputHandler handler) {
     return Binder.addInputHandler(this, handler);
   }
 
   @Override
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return addDomHandler(handler, KeyDownEvent.getType());
+  }
+
+  @Override
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
+  }
+
+  @Override
+  public String getAutocomplete() {
+    if (Features.supportsAutocompleteTextArea()) {
+      return getElement().getPropertyString(Attributes.AUTOCOMPLETE);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public int getCharacterWidth() {
+    return getTextAreaElement().getCols();
+  }
+
+  @Override
+  public int getCursorPos() {
+    return getTextAreaElement().getSelectionStart();
   }
 
   @Override
@@ -104,7 +158,17 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public String getIdPrefix() {
     return "area";
   }
-  
+
+  @Override
+  public int getMaxLength() {
+    return getTextAreaElement().getMaxLength();
+  }
+
+  @Override
+  public String getName() {
+    return getTextAreaElement().getName();
+  }
+
   @Override
   public String getNormalizedValue() {
     String v = getValue();
@@ -125,8 +189,41 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   @Override
-  public TextBoxBase getTextBox() {
+  public String getSelectedText() {
+    int start = getTextAreaElement().getSelectionStart();
+    int end = getTextAreaElement().getSelectionEnd();
+
+    return (start >= 0 && end > start) ? getText().substring(start, end) : BeeConst.STRING_EMPTY;
+  }
+
+  @Override
+  public int getSelectionLength() {
+    return getTextAreaElement().getSelectionEnd() - getTextAreaElement().getSelectionStart();
+  }
+
+  @Override
+  public int getTabIndex() {
+    return getTextAreaElement().getTabIndex();
+  }
+
+  @Override
+  public String getText() {
+    return getTextAreaElement().getValue();
+  }
+
+  @Override
+  public TextBox getTextBox() {
     return this;
+  }
+
+  @Override
+  public String getValue() {
+    return Strings.nullToEmpty(getTextAreaElement().getValue());
+  }
+
+  @Override
+  public int getVisibleLines() {
+    return getTextAreaElement().getRows();
   }
 
   @Override
@@ -147,6 +244,16 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   @Override
   public boolean isEditing() {
     return editing;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return !getTextAreaElement().isDisabled();
+  }
+
+  @Override
+  public boolean isMultiline() {
+    return true;
   }
 
   @Override
@@ -184,7 +291,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
       setDigest(opt);
     }
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     if (isEditing() && UiHelper.isSave(event)) {
@@ -193,6 +300,40 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
       return;
     }
     super.onBrowserEvent(event);
+  }
+
+  @Override
+  public void selectAll() {
+    if (BeeUtils.hasLength(getText(), 1)) {
+      getTextAreaElement().select();
+    }
+  }
+
+  @Override
+  public void setAccessKey(char key) {
+    getTextAreaElement().setAccessKey(String.valueOf(key));
+  }
+
+  @Override
+  public void setAutocomplete(Autocomplete autocomplete) {
+    setAutocomplete((autocomplete == null) ? null : autocomplete.build());
+  }
+
+  @Override
+  public void setAutocomplete(String ac) {
+    if (Features.supportsAutocompleteTextArea()) {
+      getElement().setPropertyString(Attributes.AUTOCOMPLETE, ac);
+    }
+  }
+
+  @Override
+  public void setCharacterWidth(int width) {
+    getTextAreaElement().setCols(width);
+  }
+
+  @Override
+  public void setCursorPos(int pos) {
+    getTextAreaElement().setSelectionRange(pos, pos);
   }
 
   public void setDigest(String digest) {
@@ -205,6 +346,20 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   @Override
+  public void setEnabled(boolean enabled) {
+    getTextAreaElement().setDisabled(!enabled);
+  }
+
+  @Override
+  public void setFocus(boolean focused) {
+    if (focused) {
+      getTextAreaElement().focus();
+    } else {
+      getTextAreaElement().blur();
+    }
+  }
+
+  @Override
   public void setHandlesTabulation(boolean handlesTabulation) {
     this.handlesTabulation = handlesTabulation;
   }
@@ -212,6 +367,16 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setMaxLength(int maxLength) {
+    getTextAreaElement().setMaxLength(maxLength);
+  }
+
+  @Override
+  public void setName(String name) {
+    getTextAreaElement().setName(name);
   }
 
   @Override
@@ -229,9 +394,24 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   }
 
   @Override
+  public void setTabIndex(int index) {
+    getTextAreaElement().setTabIndex(index);
+  }
+
+  @Override
+  public void setText(String text) {
+    getTextAreaElement().setValue(Strings.nullToEmpty(text));
+  }
+
+  @Override
   public void setValue(String value) {
-    super.setValue(value);
+    getTextAreaElement().setValue(Strings.nullToEmpty(value));
     updateDigest(getValue());
+  }
+
+  @Override
+  public void setVisibleLines(int lines) {
+    getTextAreaElement().setRows(lines);
   }
 
   @Override
@@ -268,10 +448,15 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
   }
-  
-  private void init() {
-    DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-InputArea");
+
+  @Override
+  protected void init() {
+    super.init();
+    addStyleName("bee-InputArea");
+  }
+
+  private TextAreaElement getTextAreaElement() {
+    return (TextAreaElement) getElement();
   }
 
   private void initEditor() {

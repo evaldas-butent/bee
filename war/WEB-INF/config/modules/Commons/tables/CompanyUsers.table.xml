@@ -3,12 +3,14 @@
 
   name="CompanyUsers"
   idName="CompanyUserResponsibilityId"
-  x="501" y="339"
   >
   <Fields>
-    <Relation name="Company" relation="Companies" notNull="true" label="=company"/>
-    <Relation name="User" relation="Users" notNull="true" label="=companyResponsibleUser"/>
-    <Relation name="Responsibility" relation="Responsibilities" notNull="false" label="=responsibility"/>
+    <Relation name="Company" relation="Companies" cascade="DELETE" notNull="true" 
+      label="=company" />
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE"
+      label="=companyResponsibleUser"/>
+
+    <Relation name="Responsibility" relation="Responsibilities" label="=responsibility"/>
   </Fields>
 
   <Constraints>

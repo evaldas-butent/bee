@@ -10,9 +10,9 @@
     <String name="Article" precision="30" label="=article" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=trdQuantity" />
     <Numeric name="Price" precision="12" scale="2" label="=trdPrice" />
-    <Boolean name="VatPlus" label="=trdVatPlus" />
-    <Numeric name="Vat" precision="12" scale="2" label="=trdVat" />
-    <Boolean name="VatPercent" label="=trdVatPercent" />
+    <Boolean name="VatPlus" label="=vatPlus" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="=vatPercent" />
     <Text name="Note" label="=trdNote" />
     <Relation name="Parent" relation="PurchaseItems" />
   </Fields>

@@ -13,11 +13,10 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
@@ -25,6 +24,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
@@ -47,7 +47,7 @@ import elemental.js.dom.JsElement;
  */
 
 public class ListBox extends CustomWidget implements Editor, HasItems, HasValueStartIndex,
-    AcceptsCaptions, HasChangeHandlers {
+    AcceptsCaptions, HasChangeHandlers, HasKeyDownHandlers {
 
   private boolean nullable = true;
 
@@ -83,6 +83,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   @Override
   public HandlerRegistration addChangeHandler(ChangeHandler handler) {
     return addDomHandler(handler, ChangeEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addKeyDownHandler(handler);
   }
   
   @Override
@@ -122,11 +127,6 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     return addDomHandler(handler, KeyDownEvent.getType());
   }
 
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
-  }
-  
   public void clear() {
     getSelectElement().clear();
     updateSize();
@@ -295,7 +295,6 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
     if (EventUtils.isChange(type)) {
       setChangePending(true);
-      ValueChangeEvent.fire(this, getValue());
 
     } else if (EventUtils.isMouseDown(type)) {
       setChangePending(false);

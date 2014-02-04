@@ -208,6 +208,7 @@
       <xs:enumeration value="close" />
       <xs:enumeration value="closeSmall" />
       <xs:enumeration value="closeSmallRed" />
+      <xs:enumeration value="comments" />
       <xs:enumeration value="configure" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="descending" />
@@ -218,6 +219,7 @@
       <xs:enumeration value="editAdd" />
       <xs:enumeration value="editDelete" />
       <xs:enumeration value="error" />
+      <xs:enumeration value="feed" />
       <xs:enumeration value="filterDelete" />
       <xs:enumeration value="first" />
       <xs:enumeration value="forward" />
@@ -248,6 +250,7 @@
       <xs:enumeration value="search" />
       <xs:enumeration value="settings" />
       <xs:enumeration value="undo" />
+      <xs:enumeration value="user" />
       <xs:enumeration value="warning" />
       <xs:enumeration value="yellow" />
       <xs:enumeration value="yellowSmall" />
@@ -370,7 +373,9 @@
 
   <xs:simpleType name="rendererType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="attachment" />
       <xs:enumeration value="list" />
+      <xs:enumeration value="image" />
       <xs:enumeration value="map" />
       <xs:enumeration value="range" />
       <xs:enumeration value="enum" />
@@ -908,13 +913,6 @@
     </xs:restriction>
   </xs:simpleType>
   
-  <xs:simpleType name="autocomplete">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="off" />
-      <xs:enumeration value="on" />
-    </xs:restriction>
-  </xs:simpleType>
-
   <xs:simpleType name="autofillHint">
     <xs:restriction base="xs:string">
       <xs:enumeration value="shipping" />
@@ -983,4 +981,14 @@
       <xs:enumeration value="impp" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:attributeGroup name="autocomplete">
+    <xs:attribute name="autocomplete" type="xs:boolean" />
+    <xs:attribute name="autocompleteKey" type="xs:NCName" />
+    <xs:attribute name="autocompleteSection" type="xs:NCName" />
+    <xs:attribute name="autocompleteHint" type="autofillHint" />
+    <xs:attribute name="autocompleteContact" type="autofillContact" />
+    <xs:attribute name="autocompleteField" type="autofillField" />
+  </xs:attributeGroup>
+  
 </xs:schema>

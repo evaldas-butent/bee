@@ -22,8 +22,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.Assert;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -133,7 +133,12 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
           Value.getValue(row.getId()))));
     }
     if (Data.isViewEditable(VIEW_CARGO_TRIPS)) {
-      hdr.addCommandItem(new Button(Localized.getConstants().trAssignTrip(), this));
+      Image button = new Image(Global.getImages().silverTruck());
+      button.setTitle(Localized.getConstants().trAssignTrip());
+      button.setAlt(button.getTitle());
+      button.addClickHandler(this);
+
+      hdr.addCommandItem(button);
     }
     hdr.addCommandItem(new Profit(COL_ORDER, row.getId()));
 
@@ -147,31 +152,36 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
 
   private void checkCreditInfo(final HasHandlers listener, final GwtEvent<?> event, Long customer) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_CREDIT_INFO);
-    args.addDataItem(COL_CUSTOMER, customer);
+    args.addDataItem(CommonsConstants.COL_COMPANY, customer);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        Assert.notNull(response);
+        response.notify(getFormView());
 
         if (response.hasErrors()) {
-          response.notify(getFormView());
           return;
         }
         Map<String, String> result = Codec.beeDeserializeMap(response.getResponseAsString());
 
-        if (BeeUtils.isEmpty(result)) {
-          listener.fireEvent(event);
-        } else {
-          String cap = null;
+        double limit = BeeUtils.toDouble(result.get(CommonsConstants.COL_COMPANY_CREDIT_LIMIT));
+        double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
+        double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
+        double income = BeeUtils.toDouble(result.get(VAR_INCOME));
+
+        if (overdue > 0 || (debt + income) > limit) {
+          String cap = result.get(CommonsConstants.COL_COMPANY_NAME);
           List<String> msgs = Lists.newArrayList();
 
-          for (String key : result.keySet()) {
-            if (BeeUtils.same(key, CommonsConstants.COL_COMPANY_NAME)) {
-              cap = result.get(key);
-              continue;
-            }
-            msgs.add(key + ": " + result.get(key));
+          msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
+              BeeUtils.joinWords(limit, result.get(CommonsConstants.COL_CURRENCY))));
+          msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
+
+          if (overdue > 0) {
+            msgs.add(BeeUtils.join(": ", Localized.getConstants().trdOverdue(), overdue));
+          }
+          if (income > 0) {
+            msgs.add(BeeUtils.join(": ", Localized.getConstants().trOrders(), income));
           }
           Global.confirm(cap, null, msgs, Localized.getConstants().ok(),
               Localized.getConstants().cancel(), new ConfirmationCallback() {
@@ -180,6 +190,8 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
                   listener.fireEvent(event);
                 }
               });
+        } else {
+          listener.fireEvent(event);
         }
       }
     });

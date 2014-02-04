@@ -14,10 +14,10 @@
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading" />
 
-    <DataColumn name="Partial" caption="D" width="15" sortable="false" />
-    <DataColumn name="Outsized" caption="N" width="15" sortable="false" />
-    <DataColumn name="Dangerous" caption="P" width="15" sortable="false" />
-    <CalcColumn name="Expedition" type="boolean" caption="E" width="15" sortable="false">
+    <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
+    <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
+    <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
+    <CalcColumn name="Expedition" type="boolean" caption="=expeditionShort" width="15" sortable="false">
       <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
     </CalcColumn>
 

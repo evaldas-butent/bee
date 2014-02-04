@@ -1,10 +1,17 @@
 package com.butent.bee.client;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Objects;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -22,30 +29,39 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,13 +91,12 @@ public class Global implements Module {
 
   private static final Filters filters = new Filters();
 
-  private static final Reports reports = new Reports();
+  private static final Users users = new Users();
+  private static final Rooms rooms = new Rooms();
+
+  private static final NewsAggregator newsAggregator = new NewsAggregator();
 
   private static boolean debug;
-
-  public static void addReport(String caption, Command command) {
-    reports.addReport(caption, command);
-  }
 
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -131,14 +146,25 @@ public class Global implements Module {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null);
+    confirm(caption, icon, messages, optionYes, optionNo, callback, null);
+  }
+
+  public static void confirm(String caption, Icon icon, List<String> messages,
+      String optionYes, String optionNo, ConfirmationCallback callback, Element target) {
+    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null,
+        target);
   }
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
+    confirmDelete(caption, icon, messages, callback, null);
+  }
+
+  public static void confirmDelete(String caption, Icon icon, List<String> messages,
+      ConfirmationCallback callback, Element target) {
     msgBoxen.confirm(caption, icon, messages, Localized.getConstants().delete(),
         Localized.getConstants().cancel(), callback, null,
-        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM));
+        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
   public static void debug(String s) {
@@ -147,7 +173,7 @@ public class Global implements Module {
 
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
-    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null);
+    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null, null);
   }
 
   public static CacheManager getCache() {
@@ -178,14 +204,16 @@ public class Global implements Module {
     return msgBoxen;
   }
 
+  public static NewsAggregator getNewsAggregator() {
+    return newsAggregator;
+  }
+
   public static void getParameter(String module, String prm, final Consumer<String> prmConsumer) {
     if (prmConsumer == null || BeeUtils.anyEmpty(module, prm)) {
       return;
     }
-    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(COMMONS_METHOD, SVC_GET_PARAMETER);
-    args.addDataItem(VAR_PARAMETERS_MODULE, module);
-    args.addDataItem(VAR_PARAMETERS, prm);
+    ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETER);
+    args.addDataItem(VAR_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -199,8 +227,8 @@ public class Global implements Module {
     });
   }
 
-  public static Reports getReports() {
-    return reports;
+  public static Rooms getRooms() {
+    return rooms;
   }
 
   public static Search getSearch() {
@@ -213,6 +241,229 @@ public class Global implements Module {
 
   public static Map<String, String> getStyleSheets() {
     return styleSheets;
+  }
+
+  public static Users getUsers() {
+    return users;
+  }
+
+  public static void inputCollection(String caption, String valueCaption, final boolean unique,
+      Collection<String> collection, final Consumer<Collection<String>> consumer,
+      final Supplier<Editor> supplier) {
+
+    Assert.notNull(consumer);
+
+    final HtmlTable table = new HtmlTable();
+    final Consumer<String> rowCreator = new Consumer<String>() {
+      @Override
+      public void accept(String value) {
+        Editor input = null;
+
+        if (supplier != null) {
+          input = supplier.get();
+        }
+        if (input == null) {
+          input = new InputText();
+        }
+        int row = table.getRowCount();
+        table.setWidget(row, 0, input.asWidget());
+
+        if (!BeeUtils.isEmpty(value)) {
+          input.setValue(value);
+        }
+        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+        delete.setTitle(Localized.getConstants().delete());
+        delete.getElement().getStyle().setCursor(Cursor.POINTER);
+
+        delete.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            for (int i = 0; i < table.getRowCount(); i++) {
+              if (Objects.equal(delete, table.getWidget(i, 1))) {
+                table.removeRow(i);
+                break;
+              }
+            }
+          }
+        });
+        table.setWidget(row, 1, delete);
+      }
+    };
+    if (!BeeUtils.isEmpty(collection)) {
+      for (String value : collection) {
+        rowCreator.accept(value);
+      }
+    }
+    FlowPanel widget = new FlowPanel();
+    Label cap = new Label(valueCaption);
+    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
+    widget.add(cap);
+
+    widget.add(table);
+
+    FaLabel add = new FaLabel(FontAwesome.PLUS);
+    add.setTitle(Localized.getConstants().actionAdd());
+    add.getElement().getStyle().setCursor(Cursor.POINTER);
+    StyleUtils.setTextAlign(add.getElement(), TextAlign.CENTER);
+
+    add.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        rowCreator.accept(null);
+        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
+      }
+    });
+    widget.add(add);
+
+    inputWidget(caption, widget, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        String error = super.getErrorMessage();
+
+        if (BeeUtils.isEmpty(error)) {
+          Set<String> values = Sets.newHashSet();
+
+          for (int i = 0; i < table.getRowCount(); i++) {
+            Editor input = (Editor) table.getWidget(i, 0);
+            String value = input.getNormalizedValue();
+
+            if (BeeUtils.isEmpty(value)) {
+              error = Localized.getConstants().valueRequired();
+            } else if (unique && values.contains(BeeUtils.normalize(value))) {
+              error = Localized.getMessages().valueExists(value);
+            } else {
+              values.add(BeeUtils.normalize(value));
+              continue;
+            }
+            UiHelper.focus(input.asWidget());
+            break;
+          }
+        }
+        return error;
+      }
+
+      @Override
+      public void onSuccess() {
+        Collection<String> result;
+
+        if (unique) {
+          result = Sets.newLinkedHashSet();
+        } else {
+          result = Lists.newArrayList();
+        }
+        for (int i = 0; i < table.getRowCount(); i++) {
+          result.add(((Editor) table.getWidget(i, 0)).getNormalizedValue());
+        }
+        consumer.accept(result);
+      }
+    });
+  }
+
+  public static void inputMap(String caption, final String keyCaption, final String valueCaption,
+      Map<String, String> map, final Consumer<Map<String, String>> consumer) {
+
+    final HtmlTable table = new HtmlTable();
+    final BiConsumer<String, String> rowCreator = new BiConsumer<String, String>() {
+      @Override
+      public void accept(String key, String value) {
+        int row = table.getRowCount();
+        InputText input = new InputText();
+        table.setWidget(row, 0, input);
+
+        if (!BeeUtils.isEmpty(key)) {
+          input.setValue(key);
+        }
+        input = new InputText();
+        table.setWidget(row, 1, input);
+
+        if (!BeeUtils.isEmpty(value)) {
+          input.setValue(value);
+        }
+        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+        delete.setTitle(Localized.getConstants().delete());
+        delete.getElement().getStyle().setCursor(Cursor.POINTER);
+
+        delete.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            for (int i = 1; i < table.getRowCount(); i++) {
+              if (Objects.equal(delete, table.getWidget(i, 2))) {
+                table.removeRow(i);
+                break;
+              }
+            }
+          }
+        });
+        table.setWidget(row, 2, delete);
+      }
+    };
+    Label cap = new Label(keyCaption);
+    StyleUtils.setMinWidth(cap, 100);
+    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
+    table.setWidget(0, 0, cap);
+
+    cap = new Label(valueCaption);
+    StyleUtils.setMinWidth(cap, 100);
+    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
+    table.setWidget(0, 1, cap);
+
+    for (String key : map.keySet()) {
+      rowCreator.accept(key, map.get(key));
+    }
+    FlowPanel widget = new FlowPanel();
+    widget.add(table);
+
+    FaLabel add = new FaLabel(FontAwesome.PLUS);
+    add.setTitle(Localized.getConstants().actionAdd());
+    add.getElement().getStyle().setCursor(Cursor.POINTER);
+    StyleUtils.setTextAlign(add.getElement(), TextAlign.CENTER);
+
+    add.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        rowCreator.accept(null, null);
+        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
+      }
+    });
+    widget.add(add);
+
+    inputWidget(caption, widget, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        String error = super.getErrorMessage();
+
+        if (BeeUtils.isEmpty(error)) {
+          Set<String> values = Sets.newHashSet();
+
+          for (int i = 1; i < table.getRowCount(); i++) {
+            InputText input = (InputText) table.getWidget(i, 0);
+
+            if (BeeUtils.isEmpty(input.getValue())) {
+              error = Localized.getConstants().valueRequired();
+            } else if (values.contains(BeeUtils.normalize(input.getValue()))) {
+              error = Localized.getMessages().valueExists(input.getValue());
+            } else {
+              values.add(BeeUtils.normalize(input.getValue()));
+              continue;
+            }
+            UiHelper.focus(input);
+            break;
+          }
+        }
+        return error;
+      }
+
+      @Override
+      public void onSuccess() {
+        Map<String, String> result = Maps.newLinkedHashMap();
+
+        for (int i = 1; i < table.getRowCount(); i++) {
+          result.put(((InputText) table.getWidget(i, 0)).getValue(),
+              ((InputText) table.getWidget(i, 1)).getValue());
+        }
+        consumer.accept(result);
+      }
+    });
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback) {
@@ -269,10 +520,15 @@ public class Global implements Module {
     return debug;
   }
 
+  public static void messageBox(String caption, Icon icon, String message) {
+    messageBox(caption, icon, Lists.newArrayList(message),
+        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
+  }
+
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
-        null, null, null, null);
+        null, null, null, null, null);
   }
 
   public static boolean nativeConfirm(String... lines) {
@@ -324,11 +580,12 @@ public class Global implements Module {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
   }
 
-  public static void showGrid(IsTable<?, ?> table) {
+  public static void showGrid(String caption, IsTable<?, ?> table) {
     Assert.notNull(table, "showGrid: table is null");
-    CellGrid grid = GridFactory.simpleGrid(table, BeeKeeper.getScreen().getActivePanelWidth());
+    CellGrid grid = GridFactory.simpleGrid(caption, table,
+        BeeKeeper.getScreen().getActivePanelWidth());
     if (grid != null) {
-      BeeKeeper.getScreen().updateActivePanel(grid);
+      BeeKeeper.getScreen().showWidget(grid, true);
     }
   }
 
@@ -363,11 +620,19 @@ public class Global implements Module {
   }
 
   public static void showModalWidget(Widget widget) {
-    showModalWidget(widget, null);
+    showModalWidget(null, widget, null);
+  }
+
+  public static void showModalWidget(String caption, Widget widget) {
+    showModalWidget(caption, widget, null);
   }
 
   public static void showModalWidget(Widget widget, Element target) {
-    msgBoxen.showWidget(widget, target);
+    showModalWidget(null, widget, target);
+  }
+
+  public static void showModalWidget(String caption, Widget widget, Element target) {
+    msgBoxen.showWidget(caption, widget, target);
   }
 
   Global() {
@@ -397,6 +662,7 @@ public class Global implements Module {
     initCache();
     initImages();
     initFavorites();
+    initNewsAggregator();
 
     exportMethods();
   }
@@ -430,5 +696,9 @@ public class Global implements Module {
 
   private static void initImages() {
     Images.init(getImages());
+  }
+
+  private static void initNewsAggregator() {
+    BeeKeeper.getBus().registerDataHandler(getNewsAggregator(), true);
   }
 }

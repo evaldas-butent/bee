@@ -1,93 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY chlabel "text-align: right;">
-  <!ENTITY chselect "width: 300px;">
+  <!ENTITY row "margin:5px 5px 0 5px;">
+  <!ENTITY chlabel "text-align:right; width:100px; padding-top:2px; margin-right:5px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Document" caption="=document"
-  width="900" height="400"
+  width="700" height="500"
   > 
 
-  <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal-space-between">
-      <xi:include href="widgets/DocumentFields.widget.xml" />
-      
-      <Table name="DocumentRelations" style="margin-top: 5px; margin-right: 5px;">
-        <row>
+  <TabbedPages>
+    <page>
+      <text>=mainInformation</text>
+      <FlowPanel class="flexBox-vertical">
+        <xi:include href="widgets/DocumentFields.widget.xml" />
+        <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible" style="margin-top: 1ex;" />
+      </FlowPanel>
+    </page>
+    <page>
+      <text>=relations</text>
+      <FlowPanel>
+        <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=companies" style="&chlabel;" />
           <ChildSelector viewName="Companies" childTable="Relations" renderColumns="Name"
-            style="&chselect;" />
-        </row>
-
-        <row>
-          <Label text="=persons" style="&chlabel;" />
-          <ChildSelector viewName="Persons" childTable="Relations"
-            renderColumns="FirstName LastName" style="&chselect;" />
-        </row>
-
-        <row>
-          <Label text="=appointments" style="&chlabel;" />
-          <ChildSelector viewName="Appointments" childTable="Relations"
-            renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-            newRowEnabled="false" style="&chselect;" />
-        </row>
-
-        <row>
-          <Label text="=tasks" style="&chlabel;" />
-          <ChildSelector viewName="Tasks" childTable="Relations" 
-            renderColumns="Summary"
-            choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
-            style="&chselect;" />
-        </row>
-
-        <row>
-          <Label text="=trRequestsShort" style="&chlabel;" />
-          <ChildSelector viewName="CargoRequests" childTable="Relations" 
-            renderColumns="CustomerCompanyName LoadingDate"
-            choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName"
-            style="&chselect;" />
-        </row>
+            class="flexible" />
+        </FlowPanel>
         
-        <row>
+        <FlowPanel class="flexBox-horizontal" style="&row;">
+          <Label text="=persons" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="Persons" childTable="Relations"
+              renderColumns="FirstName LastName" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
+          <Label text="=appointments" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="Appointments" childTable="Relations"
+            renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
+            newRowEnabled="false" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
+          <Label text="=tasks" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="Tasks" childTable="Relations" 
+            renderColumns="Summary"
+            choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
+          <Label text="=trRequestsShort" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="CargoRequests" childTable="Relations" 
+            renderColumns="CustomerCompanyName LoadingDate"
+            choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=vehiclesShort" style="&chlabel;" />
-          <ChildSelector viewName="Vehicles" childTable="Relations" 
-            renderColumns="Number" choiceColumns="Number ParentModelName ModelName"
-            style="&chselect;" />
-        </row>
-
-        <row>
+          <ChildSelector class="flexible" viewName="Vehicles" childTable="Relations" 
+            renderColumns="Number" choiceColumns="Number ParentModelName ModelName" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=drivers" style="&chlabel;" />
-          <ChildSelector viewName="Drivers" childTable="Relations" 
-            renderColumns="FirstName LastName" newRowEnabled="false" style="&chselect;" />
-        </row>
-
-        <row>
-          <Label text="=transportationOrders" style="&chlabel;" />
-          <ChildSelector viewName="TransportationOrders" childTable="Relations" 
-            renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" style="&chselect;" />
-        </row>
-
-        <row>
+          <ChildSelector class="flexible" viewName="Drivers" childTable="Relations" 
+            renderColumns="FirstName LastName" newRowEnabled="false" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
+          <Label text="=trOrders" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="TransportationOrders" childTable="Relations" 
+            renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=cargos" style="&chlabel;" />
-          <ChildSelector viewName="OrderCargo" childTable="Relations" 
+          <ChildSelector class="flexible" viewName="OrderCargo" childTable="Relations" 
             renderColumns="Description"
             choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode"
-            newRowEnabled="false" style="&chselect;" />
-        </row>
-
-        <row>
+            newRowEnabled="false" />
+        </FlowPanel>
+  
+        <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=trips" style="&chlabel;" />
-          <ChildSelector viewName="Trips" childTable="Relations" 
-            renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber"
-            style="&chselect;" />
-        </row>
-        
-      </Table>
-    </FlowPanel>
-    
-    <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible" style="margin-top: 1ex;" />
-  </FlowPanel>
+          <ChildSelector class="flexible" viewName="Trips" childTable="Relations" 
+            renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber" />
+        </FlowPanel>
+      </FlowPanel>
+    </page>
+    <page>
+      <text>=content</text>
+      <SimplePanel name="Content">
+        <div class="occupy" style="bottom:141px" />
+      </SimplePanel>
+    </page>
+    <page>
+      <text>=criteria</text>
+      <xi:include href="widgets/Criteria.widget.xml" />
+    </page>
+    <page>
+      <text>=documentItems</text>
+      <ChildGrid name="DocumentItems" relColumn="Document" />
+    </page>
+  </TabbedPages>
 </f:Form>  

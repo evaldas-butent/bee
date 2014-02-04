@@ -25,7 +25,7 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
@@ -406,7 +406,7 @@ public final class GridSettings {
       gridConfig.row.setValue(index, newValue);
 
       Queries.update(GridDescription.VIEW_GRID_SETTINGS,
-          ComparisonFilter.compareId(gridConfig.row.getId()), dataColumn.getId(),
+          Filter.compareId(gridConfig.row.getId()), dataColumn.getId(),
           new TextValue(newValue), new Queries.IntCallback() {
             @Override
             public void onSuccess(Integer result) {

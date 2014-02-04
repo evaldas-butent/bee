@@ -23,6 +23,8 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -174,6 +176,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   public abstract void onRequest(Element target, Scheduler.ScheduledCommand onChange);
 
   public abstract Filter parse(FilterValue input);
+  
+  public boolean retainInput() {
+    return AutocompleteProvider.retainValues(getAutocompletableWidgets());
+  }
 
   public void setEffectiveFilter(Filter effectiveFilter) {
     this.effectiveFilter = effectiveFilter;
@@ -291,6 +297,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected List<SupplierAction> getActions() {
     return Lists.newArrayList();
   }
+  
+  protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
+    return Lists.newArrayList();
+  }
 
   protected BeeColumn getColumn() {
     return column;
@@ -371,9 +381,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     if (emptiness == null) {
       return null;
     } else if (emptiness) {
-      return Filter.isEmpty(columnId);
+      return Filter.isNull(columnId);
     } else {
-      return Filter.notEmpty(columnId);
+      return Filter.notNull(columnId);
     }
   }
 

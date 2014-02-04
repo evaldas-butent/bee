@@ -6,6 +6,7 @@ import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -31,7 +32,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings");
+      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js");
     }
 
     @Override
@@ -43,7 +44,8 @@ public enum UserInterface implements HasCaption {
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
           CommonsConstants.STYLE_SHEET, CrmConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
-          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
+          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET,
+          DiscussionsConstants.STYLE_SHEET);
     }
 
     @Override
@@ -129,7 +131,7 @@ public enum UserInterface implements HasCaption {
   E_COMMERCE {
     @Override
     public Collection<Component> getComponents() {
-      return EnumSet.noneOf(Component.class);
+      return EnumSet.of(Component.AUTOCOMPLETE, Component.USERS);
     }
 
     @Override
@@ -162,7 +164,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public Collection<Component> getComponents() {
       return EnumSet.of(Component.DATA_INFO, Component.DICTIONARY, Component.FILTERS,
-          Component.DECORATORS, Component.GRIDS);
+          Component.DECORATORS, Component.GRIDS, Component.AUTOCOMPLETE, Component.USERS);
     }
 
     @Override
@@ -192,7 +194,26 @@ public enum UserInterface implements HasCaption {
   };
 
   public enum Component {
-    DATA_INFO, DICTIONARY, FAVORITES, FILTERS, DECORATORS, GRIDS, MENU;
+    AUTOCOMPLETE(false),
+    DATA_INFO(false),
+    DECORATORS(false),
+    DICTIONARY(false),
+    FAVORITES(false),
+    FILTERS(false),
+    GRIDS(false),
+    MENU(false),
+    NEWS(false),
+    USERS(true);
+
+    private final boolean required;
+
+    private Component(boolean required) {
+      this.required = required;
+    }
+
+    public boolean isRequired() {
+      return required;
+    }
 
     public String key() {
       return name().toLowerCase();
@@ -203,7 +224,7 @@ public enum UserInterface implements HasCaption {
 
   public static final String MAIN_STYLE_SHEET = "bee";
 
-  public static final String TITLE = "B-novo";
+  public static final String TITLE = "B-NOVO";
 
   public static UserInterface getByShortName(String input) {
     for (UserInterface ui : values()) {
@@ -219,6 +240,18 @@ public enum UserInterface implements HasCaption {
     }
 
     return EnumUtils.getEnumByName(UserInterface.class, input);
+  }
+
+  public static Collection<Component> getRequiredComponents() {
+    EnumSet<Component> components = EnumSet.noneOf(Component.class);
+
+    for (Component component : Component.values()) {
+      if (component.isRequired()) {
+        components.add(component);
+      }
+    }
+
+    return components;
   }
 
   public static UserInterface normalize(UserInterface ui) {

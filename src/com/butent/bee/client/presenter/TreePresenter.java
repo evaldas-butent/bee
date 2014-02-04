@@ -67,10 +67,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         Long parentId =
             result.getLong(DataUtils.getColumnIndex(parentColumnName, getDataColumns()));
         getView().addItem(parentId, text, result, true);
-        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+        RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, treeView.getId());
       } else {
         getView().updateItem(text, result);
-        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), result));
+        RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
       }
     }
   }
@@ -295,7 +295,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           }
         }
         if (BeeUtils.isEmpty(columns)) {
-          return "No changes";
+          return Localized.getConstants().noChanges();
         }
         return null;
       }
@@ -353,7 +353,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
                     @Override
                     public void onSuccess(Integer result) {
                       getView().removeItem(data);
-                      BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), data.getId()));
+                      RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), data.getId());
                     }
                   });
             }

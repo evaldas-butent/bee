@@ -26,7 +26,7 @@ public class ProxyBean {
   DataEditorBean deb;
 
   public ResponseObject commitRow(BeeRowSet rs) {
-    return deb.commitRow(rs, true);
+    return deb.commitRow(rs);
   }
   
   public Datalist getDataList(String tblName, String fldName) {

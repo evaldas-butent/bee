@@ -184,14 +184,6 @@
   cursor: pointer;
 }
 
-@keyframes rotate {
-  from {transform: rotate(0deg);}
-  to {transform: rotate(360deg);}
-}
-@-webkit-keyframes rotate {
-  from {-webkit-transform: rotate(0deg);}
-  to {-webkit-transform: rotate(360deg);}
-}
 .bee-ec-cartList-updated .bee-ec-cartList-info {
   animation: rotate 1s;
   -webkit-animation: rotate 1s;
@@ -342,6 +334,7 @@
   background-image: url(../images/ec/red_background.png);
   height: 32px;
   color: white;
+  margin-left: 2px;
 }
 
 .bee-ec-ItemList-table {

@@ -15,11 +15,11 @@
     <DataColumn name="Quantity" />
     <DataColumn name="Price" format="0.00" />
     <RelColumn name="Currency" />
-    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center">
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
     </DataColumn>
     <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center">
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
     <CalcColumn name="Total" type="decimal" caption="=amount" format="#.00">

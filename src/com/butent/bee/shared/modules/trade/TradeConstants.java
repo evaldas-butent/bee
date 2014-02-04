@@ -44,6 +44,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
   public static final String VAR_TOTAL = "Total";
+  public static final String VAR_DEBT = "Debt";
+  public static final String VAR_OVERDUE = "Overdue";
 
   public static final String STYLE_SHEET = "trade";
 

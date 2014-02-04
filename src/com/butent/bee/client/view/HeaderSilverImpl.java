@@ -311,6 +311,11 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void setMessageTitle(String title) {
+    messageWidget.setTitle(title);
+  }
+  
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }

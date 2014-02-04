@@ -40,7 +40,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -643,8 +643,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   private static void updateCell(long rowId, String columnId, Value value) {
-    Queries.update(VIEW_USER_CAL_ATTENDEES, ComparisonFilter.compareId(rowId), columnId, value,
-        null);
+    Queries.update(VIEW_USER_CAL_ATTENDEES, Filter.compareId(rowId), columnId, value, null);
   }
 
   private void updateColor(Long rowId, String value) {

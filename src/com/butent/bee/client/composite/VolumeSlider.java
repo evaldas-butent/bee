@@ -7,8 +7,7 @@ import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -19,8 +18,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -33,7 +33,7 @@ import java.util.List;
  * Windows).
  */
 
-public class VolumeSlider extends Absolute implements Editor {
+public class VolumeSlider extends Absolute implements Editor, HasValueChangeHandlers<String> {
 
   private final class VolumeSpinner extends SpinnerBase {
     private VolumeSpinner(SpinnerListener spinnerListener, long value, long min, long max,
@@ -136,6 +136,11 @@ public class VolumeSlider extends Absolute implements Editor {
   }
 
   @Override
+  public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
+    return addValueChangeHandler(handler);
+  }
+
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -143,11 +148,6 @@ public class VolumeSlider extends Absolute implements Editor {
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return progressBar.addFocusHandler(handler);
-  }
-
-  @Override
-  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   @Override

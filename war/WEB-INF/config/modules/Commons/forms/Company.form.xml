@@ -24,8 +24,6 @@
         <DataSelector source="CompanyType" style="width: 80px;"  />
         <Label text="=group" style="&lbl1;" />
         <DataSelector source="CompanyGroup" style="width: 80px;"  />
-        <Label text="=priority" style="&lbl1;" />
-        <DataSelector source="CompanyPriority" style="width: 64px;" />
       </row>
       <row>
         <Label text="=companyCode" style="&lbl1;" />
@@ -35,11 +33,55 @@
         <Label text="=code" style="&lbl1;" />
         <InputText source="ExchangeCode" style="width: 140px;" />
       </row>
+      <row>
+        <Label text="=priority" style="&lbl1;" />
+        <DataSelector source="CompanyPriority" style="width: 64px;" />
+      </row>
     </Table> 
     
     <xi:include href="widgets/ContactInfoOpen.widget.xml" />
 
     <TabbedPages class="flexible" style="margin-top: 15px;">
+      <page>
+        <text>=financialInfo</text>
+        <Table>
+          <row>
+            <Label text="=creditLimit" />
+            <FlowPanel>
+              <InputInteger source="CreditLimit" style="width: 60px;" />
+              <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
+                style="width:40px; margin-left:5px; display:inline-block;" />
+            </FlowPanel>
+            <cell rowSpan="5" verticalAlignment="top">
+              <FlowPanel name="CreditInfo" />
+            </cell>
+          </row>
+          <row>
+            <Label text="=creditTolerance" />
+            <InputInteger source="CreditTolerance" style="width: 60px;" />
+          </row>
+          <row>
+            <Label text="=creditDays" />
+            <InputDecimal source="CreditDays" style="width: 40px;" />
+          </row>
+          <row>
+            <Label text="=financialState" />
+            <DataSelector source="FinancialState" />
+          </row>
+          <row>
+            <Label text="=bankAccount" />
+            <InputText source="BankAccount" />
+          </row>
+          <row>
+            <Label text="=daysAsBuyer" />
+            <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
+          </row>
+          <row>
+            <Label text="=daysAsSupplier" />
+            <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
+          </row>
+        </Table>
+      </page>
       <page>
         <text>=personContacts</text>
         <ChildGrid name="CompanyPersons" relColumn="Company" />
@@ -85,22 +127,6 @@
               d:size="53" d:unit="px" />
             </row>
           </Table>
-        </FlowPanel>
-      </page>
-      <page>
-        <text>=financialInfo</text>
-        <FlowPanel>
-          <InputDecimal source="CreditLimit1" caption="=creditLimit" style="width: 100px;"
-            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 20px;" />
-          <InputDecimal source="CreditLimit2" caption="=creditTolerance" style="width: 100px;"
-            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 275px; top: 20px;" />
-          <DataSelector source="LimitCurrency" caption="=limitCurrency" style="width: 40px;"
-            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 45px;"
-            editEnabled="false" />
-          <InputInteger source="CreditDays" caption="=creditDays" style="width: 40px;"
-            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 275px; top: 45px;" />
-          <DataSelector source="FinancialState" caption="=financialState" style="width: 145px;"
-            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 70px;" />
         </FlowPanel>
       </page>
       <page>

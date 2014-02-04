@@ -382,7 +382,7 @@ public final class TransportConstants {
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
 
-  public static final String VAR_THEME_ID = Service.RPC_VAR_PREFIX + "theme_id";
+  public static final String VAR_ID = Service.RPC_VAR_PREFIX + "id";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -843,6 +843,8 @@ public final class TransportConstants {
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
 
+  public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
+  public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
 
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
