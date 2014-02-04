@@ -46,7 +46,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
-import com.butent.bee.shared.news.Feed;
+// import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -317,7 +317,7 @@ public class DiscussionsModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.DISCUSSIONS, new DiscussionsUsageQueryProvider());
+    // news.registerUsageQueryProvider(Feed.DISCUSSIONS, new DiscussionsUsageQueryProvider());
 
   }
 

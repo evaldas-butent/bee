@@ -70,9 +70,9 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.news.Feed;
-import com.butent.bee.shared.news.Headline;
-import com.butent.bee.shared.news.HeadlineProducer;
+// import com.butent.bee.shared.news.Feed;
+// import com.butent.bee.shared.news.Headline;
+// import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
@@ -341,48 +341,48 @@ public class CrmModuleBean implements BeeModule {
       }
     });
 
-    TaskUsageQueryProvider usageQueryProvider = new TaskUsageQueryProvider();
+    // TaskUsageQueryProvider usageQueryProvider = new TaskUsageQueryProvider();
 
-    news.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);
-    news.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
-    news.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
-    news.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
+    // news.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);
+    // news.registerUsageQueryProvider(Feed.TASKS_ASSIGNED, usageQueryProvider);
+    // news.registerUsageQueryProvider(Feed.TASKS_DELEGATED, usageQueryProvider);
+    // news.registerUsageQueryProvider(Feed.TASKS_OBSERVED, usageQueryProvider);
 
-    HeadlineProducer headlineProducer = new HeadlineProducer() {
-      @Override
-      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
-        String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
-        if (BeeUtils.isEmpty(caption)) {
-          caption = BeeUtils.bracket(row.getId());
-        }
+    // HeadlineProducer headlineProducer = new HeadlineProducer() {
+    // @Override
+    // public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+    // String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
+    // if (BeeUtils.isEmpty(caption)) {
+    // caption = BeeUtils.bracket(row.getId());
+    // }
+    //
+    // List<String> subtitles = Lists.newArrayList();
+    //
+    // DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
+    // if (finish != null) {
+    // subtitles.add(finish.toCompactString());
+    // }
+    //
+    // TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
+    // DataUtils.getInteger(rowSet, row, COL_STATUS));
+    // if (status != null) {
+    // subtitles.add(status.getCaption(usr.getLocalizableConstants(userId)));
+    // }
+    //
+    // if (feed != Feed.TASKS_ASSIGNED) {
+    // subtitles.add(BeeUtils.joinWords(
+    // DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
+    // DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
+    // }
+    //
+    // return Headline.create(row.getId(), caption, subtitles, isNew);
+    // }
+    // };
 
-        List<String> subtitles = Lists.newArrayList();
-
-        DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
-        if (finish != null) {
-          subtitles.add(finish.toCompactString());
-        }
-
-        TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
-            DataUtils.getInteger(rowSet, row, COL_STATUS));
-        if (status != null) {
-          subtitles.add(status.getCaption(usr.getLocalizableConstants(userId)));
-        }
-
-        if (feed != Feed.TASKS_ASSIGNED) {
-          subtitles.add(BeeUtils.joinWords(
-              DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
-              DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
-        }
-
-        return Headline.create(row.getId(), caption, subtitles, isNew);
-      }
-    };
-
-    news.registerHeadlineProducer(Feed.TASKS_ALL, headlineProducer);
-    news.registerHeadlineProducer(Feed.TASKS_ASSIGNED, headlineProducer);
-    news.registerHeadlineProducer(Feed.TASKS_DELEGATED, headlineProducer);
-    news.registerHeadlineProducer(Feed.TASKS_OBSERVED, headlineProducer);
+    // news.registerHeadlineProducer(Feed.TASKS_ALL, headlineProducer);
+    // news.registerHeadlineProducer(Feed.TASKS_ASSIGNED, headlineProducer);
+    // news.registerHeadlineProducer(Feed.TASKS_DELEGATED, headlineProducer);
+    // news.registerHeadlineProducer(Feed.TASKS_OBSERVED, headlineProducer);
 
     BeeView.registerConditionProvider(FILTER_TASKS_NEW, new BeeView.ConditionProvider() {
       @Override

@@ -24,7 +24,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
-import com.butent.bee.shared.news.Feed;
+// import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -107,14 +107,14 @@ public final class CrmKeeper {
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
-    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
-    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
-    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
-    Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
+    // Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
+    // TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
+    // Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
+    // TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
+    // Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
+    // TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
+    // Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
+    // TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
     
     Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new Consumer<Long>() {
       @Override

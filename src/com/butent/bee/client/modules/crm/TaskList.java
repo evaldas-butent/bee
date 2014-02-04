@@ -751,14 +751,14 @@ final class TaskList {
   }
 
   private enum Type implements HasCaption {
-    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
+    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks()/* , Feed.TASKS_ASSIGNED */) {
       @Override
       Filter getFilter(LongValue userValue) {
         return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
       }
     },
 
-    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks(), Feed.TASKS_DELEGATED) {
+    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks()/* , Feed.TASKS_DELEGATED */) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
@@ -766,7 +766,7 @@ final class TaskList {
       }
     },
 
-    OBSERVED(Localized.getConstants().crmTasksObservedTasks(), Feed.TASKS_OBSERVED) {
+    OBSERVED(Localized.getConstants().crmTasksObservedTasks()/* , Feed.TASKS_OBSERVED */) {
       @Override
       Filter getFilter(LongValue userValue) {
         return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
@@ -776,28 +776,29 @@ final class TaskList {
       }
     },
 
-    GENERAL(Localized.getConstants().crmTasksList(), Feed.TASKS_ALL) {
+    GENERAL(Localized.getConstants().crmTasksList()/* , Feed.TASKS_ALL */) {
       @Override
       Filter getFilter(LongValue userValue) {
-        return null; 
+        return null;
       }
     };
 
-    private static Type getByFeed(Feed input) {
-      for (Type type : values()) {
-        if (type.feed == input) {
-          return type;
-        }
-      }
+    private static Type getByFeed(@SuppressWarnings("unused") Feed input) {
+      // for (Type type : values()) {
+        // if (type.feed == input) {
+        // return type;
+        // }
+      // }
       return null;
     }
 
     private final String caption;
-    private final Feed feed;
 
-    private Type(String caption, Feed feed) {
+    // private final Feed feed;
+
+    private Type(String caption/* , Feed feed */) {
       this.caption = caption;
-      this.feed = feed;
+      // this.feed = feed;
     }
 
     @Override
