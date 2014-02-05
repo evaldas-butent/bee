@@ -12,6 +12,8 @@ public interface LocalizableCrmConstants {
 
   String creditTolerance();
 
+  String criteriaGroups();
+
   String crmActionComment();
 
   String crmActionFinish();
@@ -147,7 +149,7 @@ public interface LocalizableCrmConstants {
   String crmTaskForwardingForExecution();
 
   String crmTaskManager();
-  
+
   String crmTaskObservers();
 
   String crmTaskPriorityHigh();
@@ -195,6 +197,8 @@ public interface LocalizableCrmConstants {
   String documentContentIsEmpty();
 
   String documentFileExists();
+
+  String documentItems();
 
   String documentName();
 

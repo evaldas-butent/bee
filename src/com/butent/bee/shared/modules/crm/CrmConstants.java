@@ -315,7 +315,7 @@ public final class CrmConstants {
   public static final String COL_CRITERIA_GROUP_NAME = "Name";
   public static final String COL_CRITERION_NAME = "Criterion";
   public static final String COL_CRITERION_VALUE = "Value";
-  public static final String COL_CRITERIA_SORT = "Sort";
+  public static final String COL_CRITERIA_ORDINAL = "Ordinal";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 

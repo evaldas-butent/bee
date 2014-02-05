@@ -7,7 +7,7 @@
   >
   <Columns>
     <SimpleColumn name="Trip"/>
-    <SimpleColumn name="CargoOrder" />
+    <SimpleColumn name="Ordinal" />
     <SimpleColumn name="CargoPercent" />
     
     <SimpleColumn name="Cargo"/>    
@@ -99,7 +99,7 @@
     </SimpleJoin>
   </Columns>
   <Order>
-    <OrderBy column="CargoOrder" />
+    <OrderBy column="Ordinal" />
     <OrderBy column="CargoLoadingDate" />
   </Order>
 </View>
