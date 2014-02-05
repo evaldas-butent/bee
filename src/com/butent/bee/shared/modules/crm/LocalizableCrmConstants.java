@@ -55,6 +55,8 @@ public interface LocalizableCrmConstants {
   String crmFinishDateMustBeGreaterThanStart();
 
   String crmFinishTimeMustBeGreaterThanStart();
+  
+  String crmNewRecurringTask();
 
   String crmNewRequest();
 
@@ -104,6 +106,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskConfirmDate();
 
+  String crmTaskCopyQuestion();
+  
   String crmTaskDescription();
 
   String crmTaskDeleteCanManager();

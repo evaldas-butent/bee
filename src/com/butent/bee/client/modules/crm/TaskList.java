@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,9 +12,14 @@ import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -39,6 +45,8 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -50,10 +58,13 @@ import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.HasCaption;
@@ -61,6 +72,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 final class TaskList {
 
@@ -100,6 +112,75 @@ final class TaskList {
       return true;
     }
 
+    @Override
+    public boolean beforeAction(Action action, final GridPresenter presenter) {
+      if (action == Action.COPY) {
+        if (presenter.getMainView().isEnabled() && presenter.getActiveRow() != null) {
+          String title = presenter.getActiveRow().getString(getDataIndex(COL_SUMMARY));
+          List<String> msg = Lists.newArrayList(Localized.getConstants().crmTaskCopyQuestion());
+
+          List<String> options = Lists.newArrayList(Localized.getConstants().crmNewTask(),
+              Localized.getConstants().crmNewRecurringTask(), Localized.getConstants().cancel());
+          int defValue = options.size() - 1;
+          
+          Global.messageBox(title, Icon.QUESTION, msg, options, defValue, new ChoiceCallback() {
+            @Override
+            public void onSuccess(final int value) {
+              if (value < 0 || value > 1 || presenter.getActiveRow() == null) {
+                return;
+              }
+              
+              ParameterList params = CrmKeeper.createArgs(SVC_GET_TASK_DATA);
+              params.addDataItem(VAR_TASK_ID, presenter.getActiveRow().getId());
+              
+              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  if (Queries.checkResponse(SVC_GET_TASK_DATA, VIEW_TASKS, response,
+                      BeeRow.class)) {
+                    BeeRow original = BeeRow.restore(response.getResponseAsString());
+                    
+                    String targetView = (value == 1) ? VIEW_RECURRING_TASKS : VIEW_TASKS;
+                    DataInfo targetDataInfo = Data.getDataInfo(targetView);
+                    BeeRow newRow = RowFactory.createEmptyRow(targetDataInfo, true);
+
+                    Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY,
+                        COL_DESCRIPTION, COL_COMPANY, COL_CONTACT, COL_REMINDER);
+
+                    for (String colName : colNames) {
+                      String colValue = original.getString(getDataIndex(colName));
+                      if (!BeeUtils.isEmpty(colValue)) {
+                        newRow.setValue(targetDataInfo.getColumnIndex(colName), colValue);
+                      }
+                    }
+                    
+                    Set<String> propNames = Sets.newHashSet();
+                    propNames.add(PROP_EXECUTORS);
+                    propNames.add(PROP_OBSERVERS);
+                    propNames.addAll(CrmUtils.getRelations());
+                    
+                    for (String propName : propNames) {
+                      String propValue = original.getProperty(propName);
+                      if (!BeeUtils.isEmpty(propValue)) {
+                        newRow.setProperty(propName, propValue);
+                      }
+                    }
+                    
+                    RowFactory.createRow(targetDataInfo, newRow);
+                  }
+                }
+              });
+            }
+          });
+        }
+
+        return false;
+
+      } else {
+        return super.beforeAction(action, presenter);
+      }
+    }
+    
     @Override
     public ColumnDescription beforeCreateColumn(GridView gridView,
         ColumnDescription columnDescription) {
