@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.discussions;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -10,11 +11,11 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -45,6 +46,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
@@ -65,7 +68,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -98,8 +100,6 @@ public class DiscussionsModuleBean implements BeeModule {
   EJBContext ctx;
   @Resource
   TimerService timerService;
-
-  private Timer discussTimer;
 
   @Override
   public Collection<String> dependsOn() {
@@ -265,12 +265,12 @@ public class DiscussionsModuleBean implements BeeModule {
               String lastCommentVal = lastCommentData.get(row.getId());
 
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
-              
+
               String filesCountVal = "";
               if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_FILES_COUNT))) {
                 filesCountVal = row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT));
               }
-              
+
               row.setProperty(PROP_FILES_COUNT, filesCountVal);
 
               String relValue = "";
@@ -285,7 +285,7 @@ public class DiscussionsModuleBean implements BeeModule {
               }
 
               row.setProperty(PROP_RELATIONS_COUNT, relValue);
-              
+
               if (BeeUtils.isEmpty(row.getProperty(PROP_USER))) {
                 row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
                 createDiscussionUser(row.getId(), usr.getCurrentUserId(), null, false);
@@ -409,9 +409,9 @@ public class DiscussionsModuleBean implements BeeModule {
       boolean isMember) {
 
     SqlUpdate update = new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(COL_MEMBER, isMember)
-            .setWhere(
-                SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER,
-                    userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId)));
+        .setWhere(
+            SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER,
+                userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId)));
 
     if (time != null) {
       update.addConstant(COL_LAST_ACCESS, time);
@@ -1000,29 +1000,26 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private void initTimer() {
+    Timer discussTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+        discussTimer = timer;
+        break;
+      }
+    }
+    if (discussTimer != null) {
+      discussTimer.cancel();
+    }
     Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
-    boolean timerExists = discussTimer != null;
-
-    if (timerExists) {
-      try {
-        discussTimer.cancel();
-      } catch (NoSuchObjectLocalException er) {
-        logger.error(er);
-      }
-
-      discussTimer = null;
-    }
-
     if (BeeUtils.isPositive(days)) {
-      discussTimer =
-          timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
-              DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(null, false));
+      discussTimer = timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
+          DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false));
 
-      logger.info("Created DISCUSSION refresh timer starting at",
-          discussTimer.getNextTimeout());
+      logger.info("Created DISCUSSION refresh timer starting at", discussTimer.getNextTimeout());
     } else {
-      if (timerExists) {
+      if (discussTimer != null) {
         logger.info("Removed DISCUSSION timer");
       }
     }

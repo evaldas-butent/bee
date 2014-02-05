@@ -75,7 +75,6 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -111,8 +110,6 @@ public class TransportModuleBean implements BeeModule {
 
   @Resource
   TimerService timerService;
-
-  private Timer erpTimer;
 
   @Override
   public Collection<String> dependsOn() {
@@ -1973,25 +1970,27 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private void initTimer() {
-    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
-    boolean timerExists = erpTimer != null;
+    Timer erpTimer = null;
 
-    if (timerExists) {
-      try {
-        erpTimer.cancel();
-      } catch (NoSuchObjectLocalException e) {
-        logger.error(e);
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
+        erpTimer = timer;
+        break;
       }
-      erpTimer = null;
     }
+    if (erpTimer != null) {
+      erpTimer.cancel();
+    }
+    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
+
     if (BeeUtils.isPositive(minutes)) {
       erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(null, false));
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
 
       logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
           erpTimer.getNextTimeout());
     } else {
-      if (timerExists) {
+      if (erpTimer != null) {
         logger.info("Removed ERP timer");
       }
     }
