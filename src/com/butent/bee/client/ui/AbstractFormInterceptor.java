@@ -58,6 +58,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   }
 
   @Override
+  public void afterStateChange(State state, boolean modal) {
+  }
+  
+  @Override
   public void afterUpdateRow(IsRow result) {
   }
 
@@ -75,6 +79,10 @@ public abstract class AbstractFormInterceptor implements FormFactory.FormInterce
   public void beforeRefresh(FormView form, IsRow row) {
   }
 
+  @Override
+  public void beforeStateChange(State state, boolean modal) {
+  }
+  
   @Override
   public IdentifiableWidget createCustomWidget(String name, Element description) {
     return null;

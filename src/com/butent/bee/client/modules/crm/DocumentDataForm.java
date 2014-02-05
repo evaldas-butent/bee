@@ -86,6 +86,13 @@ public class DocumentDataForm extends AbstractFormInterceptor
     private JavaScriptObject tiny;
     private String deferedContent;
 
+    public void destroy(boolean automatic) {
+      if (isActive()) {
+        destroy(tiny, automatic);
+        tiny = null;
+      }
+    }
+
     public void doDefered() {
       setContent(tiny, BeeUtils.nvl(deferedContent, ""));
     }
@@ -152,6 +159,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
         deferedContent = content;
       }
     }
+
+    private native void destroy(JavaScriptObject editor, boolean automatic) /*-{
+      editor.destroy(automatic);
+    }-*/;
 
     private native String getContent(JavaScriptObject editor) /*-{
       return editor.getContent();
@@ -235,6 +246,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   private final TinyEditor tinyEditor = new TinyEditor();
 
+  private TabbedPages tabbedPages;
+
   private final GridInterceptor childInterceptor = new AbstractGridInterceptor() {
     @Override
     public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -272,7 +285,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
         grid.setGridInterceptor(childInterceptor);
       }
     } else if (widget instanceof TabbedPages) {
-      ((TabbedPages) widget).addSelectionHandler(this);
+      tabbedPages = (TabbedPages) widget;
+      tabbedPages.addSelectionHandler(this);
     }
   }
 
@@ -307,6 +321,15 @@ public class DocumentDataForm extends AbstractFormInterceptor
       return false;
     }
     return true;
+  }
+
+  @Override
+  public void beforeStateChange(State state, boolean modal) {
+    if (state == State.CLOSED && modal && tinyEditor.isActive()) {
+      tinyEditor.destroy(false);
+    } else if (state == State.OPEN && modal && tabbedPages != null) {
+      tabbedPages.selectPage(0, SelectionOrigin.SCRIPT);
+    }
   }
 
   @Override
@@ -377,10 +400,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onSelection(SelectionEvent<Pair<Integer, SelectionOrigin>> event) {
-    if (!tinyEditor.isActive() && event.getSource() instanceof TabbedPages) {
+    if (!tinyEditor.isActive() && tabbedPages != null) {
       Widget content = getFormView().getWidgetByName(COL_DOCUMENT_CONTENT);
 
-      if (Objects.equals(((TabbedPages) event.getSource()).getSelectedWidget(), content)) {
+      if (Objects.equals(tabbedPages.getSelectedWidget(), content)) {
         if (content instanceof HasOneWidget) {
           tinyEditor.init(DomUtils.getId(((HasOneWidget) content).getWidget()));
         }
@@ -397,6 +420,12 @@ public class DocumentDataForm extends AbstractFormInterceptor
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     requery(newRow);
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    tinyEditor.destroy(false);
+    super.onUnload(form);
   }
 
   protected void parseContent(String content, final Consumer<String> consumer) {

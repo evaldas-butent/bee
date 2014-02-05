@@ -36,6 +36,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -76,6 +77,8 @@ public final class FormFactory {
     void afterInsertRow(IsRow result, boolean forced);
 
     void afterRefresh(FormView form, IsRow row);
+    
+    void afterStateChange(State state, boolean modal);
 
     void afterUpdateRow(IsRow result);
 
@@ -83,6 +86,8 @@ public final class FormFactory {
 
     void beforeRefresh(FormView form, IsRow row);
 
+    void beforeStateChange(State state, boolean modal);
+    
     boolean focusSource(String source);
     
     long getActiveRowId();
