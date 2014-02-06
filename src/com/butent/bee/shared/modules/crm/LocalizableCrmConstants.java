@@ -58,6 +58,8 @@ public interface LocalizableCrmConstants {
 
   String crmFinishTimeMustBeGreaterThanStart();
   
+  String crmMailTaskSubject();
+  
   String crmNewRecurringTask();
 
   String crmNewRequest();

@@ -105,4 +105,7 @@
       <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
     </row>
   </Table>
+  
+  <CheckBox source="CopyByMail" text="=crmMailTask" />
+  
 </FlowPanel>

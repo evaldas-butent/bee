@@ -334,6 +334,7 @@ public final class CrmConstants {
   public static final String COL_RT_REMINDER = "Reminder";
   public static final String COL_RT_REMIND_BEFORE = "RemindBefore";
   public static final String COL_RT_REMIND_AT = "RemindAt";
+  public static final String COL_RT_COPY_BY_MAIL = "CopyByMail";
 
   public static final String COL_RTD_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTD_FROM = "DateFrom";
@@ -353,6 +354,8 @@ public final class CrmConstants {
   public static final String COL_RTOB_USER = "User";
   public static final String COL_RTOBGR_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTOBGR_GROUP = "Group";
+
+  public static final String COL_MAIL_ASSIGNED_TASKS = "MailAssignedTasks";
 
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
@@ -388,6 +391,8 @@ public final class CrmConstants {
   public static final String PROP_LAST_PUBLISH = "LastPublish";
 
   public static final String PROP_LAST_EVENT_ID = "LastEventId";
+
+  public static final String PROP_MAIL = "Mail";
 
   public static final String GRID_TASKS = "Tasks";
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";

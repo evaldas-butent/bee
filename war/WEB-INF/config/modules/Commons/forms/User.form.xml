@@ -38,6 +38,9 @@
           required="true" />
       </row>
     </Table>
+    
+    <br/>
+    <CheckBox source="MailAssignedTasks" text="=crmMailAssignedTasks" style="margin-left: 10px;" />
       
     <br/>
     <ChildGrid class="flexible" name="UserFeeds" relColumn="User" />
