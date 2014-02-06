@@ -222,11 +222,6 @@ public class CommonsModuleBean implements BeeModule {
         BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
-        BeeParameter.createSet(COMMONS_MODULE, "PRMcollection", false, null),
-        BeeParameter.createDate(COMMONS_MODULE, "PRMdate", false, null),
-        BeeParameter.createDateTime(COMMONS_MODULE, "PRMdatetime", false, null),
-        BeeParameter.createNumber(COMMONS_MODULE, "PRMnumber", false, null),
-        BeeParameter.createTime(COMMONS_MODULE, "PRMtime", false, null),
         BeeParameter.createText(COMMONS_MODULE, PRM_URL, false, null));
 
     params.addAll(getSqlEngineParameters());
@@ -313,7 +308,7 @@ public class CommonsModuleBean implements BeeModule {
 
         List<Pair<String, IsCondition>> joins = NewsHelper.buildJoin(TBL_COMPANY_USERS,
             SqlUtils.join(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable, urc));
-        
+
         return NewsHelper.getAccessQuery(usageTable, urc, joins, getUserCompanyCondition(userId),
             userId);
       }
@@ -326,7 +321,7 @@ public class CommonsModuleBean implements BeeModule {
 
         List<Pair<String, IsCondition>> joins = NewsHelper.buildJoin(usageTable,
             sys.joinTables(TBL_COMPANY_USERS, usageTable, relationColumn));
-        
+
         return NewsHelper.getUpdatesQuery(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable,
             joins, getUserCompanyCondition(userId), userId, startDate);
       }

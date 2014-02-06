@@ -9,12 +9,12 @@
 
     <ExternalJoin source="Criteria" name="Group" joinType="LEFT">
       <IdColumn name="ID" />
-      <SimpleColumn name="Sort" />
       <SimpleColumn name="Criterion" />
       <SimpleColumn name="Value" />
+      <SimpleColumn name="Ordinal" />
     </ExternalJoin>
   </Columns>
   <Order>
-    <OrderBy column="Sort" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>

@@ -33,7 +33,7 @@
     <String name="DurationTime" precision="10" label="=crmRTDurationTime" />
 
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
-    <Numeric name="RemindBefore" precision="2" defValue="1" label="=crmRTRemindBefore" />
+    <Numeric name="RemindBefore" precision="2" label="=crmRTRemindBefore" />
     <String name="RemindAt" precision="10" label="=crmRTRemindAt" />
   </Fields>
 </Table>

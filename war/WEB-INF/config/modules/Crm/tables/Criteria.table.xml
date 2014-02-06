@@ -6,9 +6,9 @@
   >
   <Fields>
     <Relation name="Group" relation="CriteriaGroups" notNull="true" label="=criteriaGroup" cascade="DELETE" />
-    <Numeric name="Sort" precision="2" label="=sort" />
     <String name="Criterion" precision="50" notNull="true" label="=criterionName" />
     <String name="Value" precision="100" label="=criterionValue" />
+    <Numeric name="Ordinal" precision="2" label="=ordinal" />
   </Fields>
   <Constraints>
     <Unique fields="Group Criterion" />

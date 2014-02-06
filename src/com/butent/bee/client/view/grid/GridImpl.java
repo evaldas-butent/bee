@@ -1316,6 +1316,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (event.hasSourceId(getId())) {
       return;
     }
+    if (getGrid().containsRow(event.getRowId())) {
+      return;
+    }
+    
+    if (getGridInterceptor() != null && !getGridInterceptor().onRowInsert(event)) {
+      return;
+    }
+
     if (BeeUtils.isEmpty(event.getSourceId()) && !event.isSpookyActionAtADistance()) {
       return;
     }
@@ -1339,10 +1347,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
 
     } else if (getViewPresenter() == null || getViewPresenter().hasFilter()) {
-      return;
-    }
-
-    if (getGrid().containsRow(event.getRowId())) {
       return;
     }
 
@@ -2526,14 +2530,19 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void showForm(boolean edit, boolean show) {
     String containerId = edit ? getEditFormContainerId() : getNewRowFormContainerId();
+
     ModalForm popup = edit ? getEditPopup() : getNewRowPopup();
+    boolean modal = popup != null;
+
     FormView form = getForm(edit);
+    
+    State state = show ? State.OPEN : State.CLOSED;
+    if (form.getFormInterceptor() != null) {
+      form.getFormInterceptor().beforeStateChange(state, modal);
+    }
 
     if (show) {
-      if (popup == null) {
-        showGrid(false);
-        StyleUtils.unhideDisplay(containerId);
-      } else {
+      if (modal) {
         if (isChild() && isNewRowFormGenerated()) {
           if (!newRowFormState.contains(State.INITIALIZED)) {
             amendGeneratedSize(popup, form);
@@ -2542,6 +2551,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         } else {
           popup.center();
         }
+
+      } else {
+        showGrid(false);
+        StyleUtils.unhideDisplay(containerId);
       }
 
       if (edit) {
@@ -2565,25 +2578,28 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       setActiveFormContainerId(containerId);
 
       if (pendingResize.remove(containerId)) {
-        if (popup == null) {
-          UiHelper.maybeResize(this, containerId);
-        } else {
+        if (modal) {
           popup.onResize();
+        } else {
+          UiHelper.maybeResize(this, containerId);
         }
       }
 
     } else {
-      if (popup == null) {
+      if (modal) {
+        popup.close();
+      } else {
         StyleUtils.hideDisplay(containerId);
         showGrid(true);
-      } else {
-        popup.close();
       }
 
       setActiveFormContainerId(null);
     }
 
-    form.setState(show ? State.OPEN : State.CLOSED);
+    form.setState(state);
+    if (form.getFormInterceptor() != null) {
+      form.getFormInterceptor().afterStateChange(state, modal);
+    }
   }
 
   private void showGrid(boolean show) {

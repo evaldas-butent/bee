@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DistinctDocumentItems" source="DocumentItems"
+  >
+  <Columns>
+    <HiddenColumn name="Document" />
+    <SimpleJoin name="Document" joinType="INNER">
+      <HiddenColumn name="Category" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Description" />
+  </Columns>
+  <GroupBy columns="Description" />
+  <Order>
+    <OrderBy column="Description" />
+  </Order>
+</View>

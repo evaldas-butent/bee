@@ -80,4 +80,15 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
       return super.beforeAction(action, presenter);
     }
   }
+
+  @Override
+  public boolean onRowInsert(RowInsertEvent event) {
+    if (BeeKeeper.getUser().is(event.getRow().getLong(getDataIndex(COL_OWNER)))) {
+      getGridPresenter().refresh(false);
+      return false;
+
+    } else {
+      return super.onRowInsert(event);
+    }
+  }
 }

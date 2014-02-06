@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Tasks" viewName="Tasks" caption="=tasks"
-  cacheData="false" asyncThreshold="-1" favorite="Summary"
+  cacheData="false" asyncThreshold="-1" favorite="Summary" enabledActions="copy"
   order="Status, FinishTime, TaskID desc" maxColumnWidth="160"
   >
   <g:columns>

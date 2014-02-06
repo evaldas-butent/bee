@@ -28,6 +28,10 @@ public final class CrmUtils {
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
 
+  public static Set<String> getRelationPropertyNames() {
+    return ensureTaskPropertyToRelation().keySet();
+  }
+
   public static Set<String> getRelations() {
     return ensureTaskPropertyToRelation().inverse().keySet();
   }

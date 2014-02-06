@@ -3,15 +3,14 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="Trips" viewName="Trips" caption="=trips"
-  newRowPopup="true" order="TripID desc"
+  newRowPopup="true" order="TripID desc" flexGrow="1"
   >
 
   <g:columns>
     <DataColumn name="Date" />
-    <DataColumn name="TripNo" caption="=trTripNo" flexGrow="1" flexShrink="1" />
+    <DataColumn name="TripNo" caption="=trTripNo" />
     <DataColumn name="Status" caption="=status" />
-    <CalcColumn name="Vehicle" type="string" caption="=transport" flexGrow="1" flexShrink="1"
-      searchBy="VehicleNumber TrailerNumber">
+    <CalcColumn name="Vehicle" type="string" caption="=transport" searchBy="VehicleNumber TrailerNumber">
       <render>
         <ui:function>
           var vehicle = row.VehicleNumber;
@@ -23,7 +22,7 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="Driver" caption="=vehicleDriver" flexGrow="1" flexShrink="1" />
+    <DataColumn name="Driver" caption="=vehicleDriver" />
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />

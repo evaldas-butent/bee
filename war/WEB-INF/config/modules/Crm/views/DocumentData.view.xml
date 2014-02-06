@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DocumentData" source="DocumentData"
+  >
+  <Columns>
+    <ExternalJoin source="CriteriaGroups" name="Data" joinType="INNER">
+      <SimpleColumn name="Name" />
+      <HiddenColumn name="Ordinal" alias="GroupOrdinal" />
+
+      <ExternalJoin name="Group" source="Criteria" joinType="LEFT">
+        <SimpleColumn name="Criterion" />
+        <SimpleColumn name="Value" />
+        <HiddenColumn name="Ordinal" />
+      </ExternalJoin>
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="GroupOrdinal" />
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>
+ 

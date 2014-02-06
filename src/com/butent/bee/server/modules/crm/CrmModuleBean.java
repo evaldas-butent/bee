@@ -548,9 +548,10 @@ public class CrmModuleBean implements BeeModule {
 
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addField(TBL_CRITERIA_GROUPS, sys.getIdName(TBL_CRITERIA_GROUPS), COL_CRITERIA_GROUP)
-        .addField(TBL_CRITERIA_GROUPS, COL_CRITERIA_SORT, COL_CRITERIA_GROUP + COL_CRITERIA_SORT)
+        .addField(TBL_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL,
+            COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL)
         .addFields(TBL_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
-        .addFields(TBL_CRITERIA, COL_CRITERIA_SORT, COL_CRITERION_NAME, COL_CRITERION_VALUE)
+        .addFields(TBL_CRITERIA, COL_CRITERIA_ORDINAL, COL_CRITERION_NAME, COL_CRITERION_VALUE)
         .addFrom(TBL_CRITERIA_GROUPS)
         .addFromLeft(TBL_CRITERIA,
             sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
@@ -565,13 +566,14 @@ public class CrmModuleBean implements BeeModule {
       if (!groups.containsKey(groupId)) {
         groups.put(groupId, qs.insertData(new SqlInsert(TBL_CRITERIA_GROUPS)
             .addConstant(COL_DOCUMENT_DATA, dataId)
-            .addConstant(COL_CRITERIA_SORT, row.getValue(COL_CRITERIA_GROUP + COL_CRITERIA_SORT))
+            .addConstant(COL_CRITERIA_ORDINAL,
+                row.getValue(COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL))
             .addConstant(COL_CRITERIA_GROUP_NAME, row.getValue(COL_CRITERIA_GROUP_NAME))));
       }
       if (!BeeUtils.isEmpty(criterion)) {
         qs.insertData(new SqlInsert(TBL_CRITERIA)
             .addConstant(COL_CRITERIA_GROUP, groups.get(groupId))
-            .addConstant(COL_CRITERIA_SORT, row.getValue(COL_CRITERIA_SORT))
+            .addConstant(COL_CRITERIA_ORDINAL, row.getValue(COL_CRITERIA_ORDINAL))
             .addConstant(COL_CRITERION_NAME, criterion)
             .addConstant(COL_CRITERION_VALUE, row.getValue(COL_CRITERION_VALUE)));
       }
@@ -2145,7 +2147,7 @@ public class CrmModuleBean implements BeeModule {
         fields.append(tr().append(td, td().text(usr.getUserSign(taskUsers.get(i)))));
       }
     }
-    
+
     List<Element> cells = fields.queryTag(Tags.TD);
     for (Element cell : cells) {
       if (cell.index() == 0) {

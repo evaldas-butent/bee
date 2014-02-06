@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.ec;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -46,12 +48,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -165,11 +167,9 @@ public class TecDocBean {
   IdGeneratorBean ig;
   @EJB
   ParamHolderBean prm;
+
   @Resource
   TimerService timerService;
-
-  private Timer butentTimer;
-  private Timer motonetTimer;
 
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
@@ -178,48 +178,32 @@ public class TecDocBean {
   }
 
   public void initTimers() {
-    Integer minutes = prm.getInteger(PRM_BUTENT_INTERVAL);
-    boolean timerExists = butentTimer != null;
+    for (Entry<String, EcSupplier> entry : ImmutableMap.of(PRM_BUTENT_INTERVAL, EcSupplier.EOLTAS,
+        PRM_MOTONET_INTERVAL, EcSupplier.MOTOPROFIL).entrySet()) {
 
-    if (timerExists) {
-      try {
-        butentTimer.cancel();
-      } catch (NoSuchObjectLocalException e) {
-        logger.error(e, EcSupplier.EOLTAS);
+      Timer tcdTimer = null;
+
+      for (Timer timer : timerService.getTimers()) {
+        if (Objects.equal(timer.getInfo(), entry.getValue())) {
+          tcdTimer = timer;
+          break;
+        }
       }
-      butentTimer = null;
-    }
-    if (BeeUtils.isPositive(minutes)) {
-      butentTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(EcSupplier.EOLTAS, false));
-
-      logger.info(EcSupplier.EOLTAS, "created timer every", minutes, "minutes starting at",
-          butentTimer.getNextTimeout());
-    } else {
-      if (timerExists) {
-        logger.info(EcSupplier.EOLTAS, "removed timer");
+      if (tcdTimer != null) {
+        tcdTimer.cancel();
       }
-    }
-    minutes = prm.getInteger(PRM_MOTONET_INTERVAL);
-    timerExists = motonetTimer != null;
+      Integer minutes = prm.getInteger(entry.getKey());
 
-    if (timerExists) {
-      try {
-        motonetTimer.cancel();
-      } catch (NoSuchObjectLocalException e) {
-        logger.error(e, EcSupplier.MOTOPROFIL);
-      }
-      motonetTimer = null;
-    }
-    if (BeeUtils.isPositive(minutes)) {
-      motonetTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(EcSupplier.MOTOPROFIL, false));
+      if (BeeUtils.isPositive(minutes)) {
+        tcdTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+            minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(entry.getValue(), false));
 
-      logger.info(EcSupplier.MOTOPROFIL, "created timer every", minutes, "minutes starting at",
-          motonetTimer.getNextTimeout());
-    } else {
-      if (timerExists) {
-        logger.info(EcSupplier.MOTOPROFIL, "removed timer");
+        logger.info(entry.getValue(), "created timer every", minutes, "minutes starting at",
+            tcdTimer.getNextTimeout());
+      } else {
+        if (tcdTimer != null) {
+          logger.info(entry.getValue(), "removed timer");
+        }
       }
     }
   }

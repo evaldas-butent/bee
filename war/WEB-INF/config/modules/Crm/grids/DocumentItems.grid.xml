@@ -7,8 +7,12 @@
   flexGrow="1" caption="=documentItems"
   >
   <g:columns>
-    <DataColumn name="Description" />
-    <DataColumn name="Quantity" />
+    <AutoColumn name="Description" viewName="DistinctDocumentItems" viewColumn="Description">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </AutoColumn>
+    <DataColumn name="Quantity">
+      <footer aggregate="sum" />
+    </DataColumn>
     <DataColumn name="Price" />
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
@@ -21,9 +25,11 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <footer aggregate="sum" />
     </CalcColumn>
-    <DataColumn name="Data" caption="-" width="30" sortable="false" readOnly="true">
-      <render><ui:expression>row.Data ? '...' : ''</ui:expression></render>
+    <DataColumn name="Data" caption="-" width="20" sortable="false" readOnly="true">
+      <style><bodyStyle><ui:font>FontAwesome 20</ui:font></bodyStyle></style>
+      <render><ui:expression>row.Data ? '\uf044' : ''</ui:expression></render>
     </DataColumn>
   </g:columns>
 </g:Grid>

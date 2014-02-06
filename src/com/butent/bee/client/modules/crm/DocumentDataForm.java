@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.crm;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
-import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -47,11 +47,10 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.BiFunction;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -86,6 +85,13 @@ public class DocumentDataForm extends AbstractFormInterceptor
     private JavaScriptObject tiny;
     private String deferedContent;
 
+    public void destroy(boolean automatic) {
+      if (isActive()) {
+        destroy(tiny, automatic);
+        tiny = null;
+      }
+    }
+
     public void doDefered() {
       setContent(tiny, BeeUtils.nvl(deferedContent, ""));
     }
@@ -115,17 +121,73 @@ public class DocumentDataForm extends AbstractFormInterceptor
       JsUtils.setProperty(jso, "pagebreak_separator",
           "<div style=\"page-break-before:always;\"></div>");
 
+      BiFunction<String, String, String> td = new BiFunction<String, String, String>() {
+        @Override
+        public String apply(String input, String attributes) {
+          String stylePrefix = "style=\"";
+
+          return "<td style=\"border:1px solid black;"
+              + (BeeUtils.startsWith(attributes, stylePrefix)
+                  ? attributes.substring(stylePrefix.length())
+                  : "\" " + BeeUtils.nvl(attributes, "")) + ">" + input + "</td>";
+        }
+      };
+      LocalizableConstants loc = Localized.getConstants();
+
       JsArrayMixed templateArray = JavaScriptObject.createArray().cast();
 
       JavaScriptObject template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", Localized.getConstants().group());
+      JsUtils.setProperty(template, "title", Localized.getConstants().criteriaGroups());
       JsUtils.setProperty(template, "content",
-          "<p><table style=\"border-collapse:collapse;\"><tbody>"
-              + "<!--{CriteriaGroups}-->"
-              + "<tr><td colspan=\"3\" style=\"border:1px solid black;\">{Name}</td></tr>"
-              + "<!--{Criteria}--><tr><td style=\"border:1px solid black;\">{Criterion}</td>"
-              + "<td style=\"border:1px solid black;\">{Value}</td></tr>"
-              + "<!--{Criteria}--><!--{CriteriaGroups}--></tbody></table></p>");
+          new StringBuilder("<p/><div><table style=\"border-collapse:collapse;\"><tbody>")
+              .append("<!--{CriteriaGroups}--><tr>")
+              .append(td.apply("{Name}", "colspan=\"3\""))
+              .append("</tr><!--{Criteria}--><tr>")
+              .append(td.apply("{Criterion}", null))
+              .append(td.apply("{Value}", null))
+              .append("</tr><!--{Criteria}-->")
+              .append("<!--{CriteriaGroups}--></tbody></table></div><p/>").toString());
+
+      templateArray.push(template);
+
+      template = JavaScriptObject.createObject();
+      JsUtils.setProperty(template, "title", Localized.getConstants().documentItems());
+      JsUtils.setProperty(template, "content",
+          new StringBuilder("<p/><div><table style=\"border-collapse:collapse;"
+              + " border:1px solid black;\"><tbody>")
+              .append("<tr style=\"text-align:center;\">")
+              .append(td.apply(loc.ordinal(), null))
+              .append(td.apply(loc.description(), null))
+              .append(td.apply(loc.quantity(), null))
+              .append(td.apply(loc.price(), null))
+              .append(td.apply(loc.amount(), null))
+              .append(td.apply(loc.vat(), null))
+              .append(td.apply(loc.total(), null))
+              .append("</tr><!--{DocumentItems}--><tr style=\"text-align:right;\">")
+              .append(td.apply("{Index}", null))
+              .append(td.apply("{Description}", "style=\"text-align:left;\""))
+              .append(td.apply("{Quantity}", null))
+              .append(td.apply("{Price}", null))
+              .append(td.apply("{Amount}", null))
+              .append(td.apply("{Vat}", null))
+              .append(td.apply("{VatPlusAmount}", null))
+              .append("</tr><!--{DocumentItems}--><tr style=\"text-align:right;\">")
+              .append("<td style=\"text-align:left;\" colspan=\"2\">" + loc.totalOf() + "</td>")
+              .append("<td>{QuantityAmount}</td>")
+              .append("<td colspan=\"2\">{TotalAmount}</td>")
+              .append("<td>{VatAmount}</td>")
+              .append("<td>{Total}</td>")
+              .append("</tr></tbody></table></div><p/>").toString());
+
+      templateArray.push(template);
+
+      template = JavaScriptObject.createObject();
+      JsUtils.setProperty(template, "title", Localized.getConstants().content());
+      JsUtils.setProperty(template, "content",
+          new StringBuilder("<p/><div><!--{DocumentItems}-->")
+              .append("<p><strong>{Index}. {Description}</strong></p>")
+              .append("<p>{Content}</p>")
+              .append("<!--{DocumentItems}--></div><p/>").toString());
 
       templateArray.push(template);
 
@@ -152,6 +214,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
         deferedContent = content;
       }
     }
+
+    private native void destroy(JavaScriptObject editor, boolean automatic) /*-{
+      editor.destroy(automatic);
+    }-*/;
 
     private native String getContent(JavaScriptObject editor) /*-{
       return editor.getContent();
@@ -235,6 +301,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   private final TinyEditor tinyEditor = new TinyEditor();
 
+  private TabbedPages tabbedPages;
+
   private final GridInterceptor childInterceptor = new AbstractGridInterceptor() {
     @Override
     public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -272,7 +340,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
         grid.setGridInterceptor(childInterceptor);
       }
     } else if (widget instanceof TabbedPages) {
-      ((TabbedPages) widget).addSelectionHandler(this);
+      tabbedPages = (TabbedPages) widget;
+      tabbedPages.addSelectionHandler(this);
     }
   }
 
@@ -297,7 +366,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       if (BeeUtils.isEmpty(content)) {
         getFormView().notifyWarning(Localized.getConstants().documentContentIsEmpty());
       } else {
-        parseContent(content, new Consumer<String>() {
+        parseContent(content, getLongValue(COL_DOCUMENT_DATA), new Consumer<String>() {
           @Override
           public void accept(String input) {
             Printer.print(input, null);
@@ -307,6 +376,15 @@ public class DocumentDataForm extends AbstractFormInterceptor
       return false;
     }
     return true;
+  }
+
+  @Override
+  public void beforeStateChange(State state, boolean modal) {
+    if (state == State.CLOSED && modal && tinyEditor.isActive()) {
+      tinyEditor.destroy(false);
+    } else if (state == State.OPEN && modal && tabbedPages != null) {
+      tabbedPages.selectPage(0, SelectionOrigin.SCRIPT);
+    }
   }
 
   @Override
@@ -377,10 +455,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onSelection(SelectionEvent<Pair<Integer, SelectionOrigin>> event) {
-    if (!tinyEditor.isActive() && event.getSource() instanceof TabbedPages) {
+    if (!tinyEditor.isActive() && tabbedPages != null) {
       Widget content = getFormView().getWidgetByName(COL_DOCUMENT_CONTENT);
 
-      if (Objects.equals(((TabbedPages) event.getSource()).getSelectedWidget(), content)) {
+      if (Objects.equals(tabbedPages.getSelectedWidget(), content)) {
         if (content instanceof HasOneWidget) {
           tinyEditor.init(DomUtils.getId(((HasOneWidget) content).getWidget()));
         }
@@ -399,43 +477,71 @@ public class DocumentDataForm extends AbstractFormInterceptor
     requery(newRow);
   }
 
-  protected void parseContent(String content, final Consumer<String> consumer) {
-    final List<String> parts = Lists.newArrayList(Splitter
-        .on("<!--{" + TBL_CRITERIA_GROUPS + "}-->").split(content));
+  @Override
+  public void onUnload(FormView form) {
+    tinyEditor.destroy(false);
+    super.onUnload(form);
+  }
 
-    final Holder<Integer> holder = Holder.of(parts.size());
-
-    BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
+  protected void parseContent(final String content, long dataId, final Consumer<String> consumer) {
+    Queries.getRowSet(TBL_DOCUMENT_DATA, null, Filter.compareId(dataId), new RowSetCallback() {
       @Override
-      public void accept(Integer index, String value) {
-        parts.set(index, value);
-        holder.set(holder.get() - 1);
+      public void onSuccess(BeeRowSet result) {
+        Multimap<String, Pair<String, String>> data = LinkedListMultimap.create();
+        int grpIdx = result.getColumnIndex(COL_CRITERIA_GROUP_NAME);
+        int crtIdx = result.getColumnIndex(COL_CRITERION_NAME);
+        int valIdx = result.getColumnIndex(COL_CRITERION_VALUE);
 
-        if (!BeeUtils.isPositive(holder.get())) {
-          StringBuilder sb = new StringBuilder();
-
-          for (String part : parts) {
-            sb.append(part);
-          }
-          String result = sb.toString();
-
-          for (Entry<String, Editor> entry : criteria.entrySet()) {
-            result = BeeUtils.replace(result.replace("&Scaron;", "Š").replace("&scaron;", "š"),
-                "{" + entry.getKey() + "}", entry.getValue().getNormalizedValue());
-          }
-          consumer.accept(result);
+        for (BeeRow row : result.getRows()) {
+          data.put(row.getString(grpIdx), Pair.of(row.getString(crtIdx), row.getString(valIdx)));
         }
-      }
-    };
-    for (int i = 0; i < parts.size(); i++) {
-      String part = parts.get(i);
+        final List<String> groupBlocks = Lists.newArrayList(Splitter
+            .on("<!--{" + TBL_CRITERIA_GROUPS + "}-->").split(content));
 
-      if (i % 2 > 0 && i < parts.size() - 1) {
-        parseGroup(part, i, executor);
-      } else {
-        executor.accept(i, part);
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < groupBlocks.size(); i++) {
+          String groupBlock = groupBlocks.get(i);
+
+          if (i % 2 > 0 && i < groupBlocks.size() - 1) {
+            List<String> criteriaBlocks = Splitter.on("<!--{" + TBL_CRITERIA + "}-->")
+                .splitToList(groupBlock);
+
+            for (String group : data.keySet()) {
+              if (BeeUtils.isEmpty(group)) {
+                continue;
+              }
+              for (int j = 0; j < criteriaBlocks.size(); j++) {
+                String criteriaBlock = criteriaBlocks.get(j)
+                    .replace("{" + COL_CRITERIA_GROUP_NAME + "}", group);
+
+                if (j % 2 > 0 && j < criteriaBlocks.size() - 1) {
+                  for (Pair<String, String> pair : data.get(group)) {
+                    if (!BeeUtils.isEmpty(pair.getA())) {
+                      sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}", pair.getA())
+                          .replace("{" + COL_CRITERION_VALUE + "}", BeeUtils.nvl(pair.getB(), "")));
+                    }
+                  }
+                } else {
+                  sb.append(criteriaBlock);
+                }
+              }
+            }
+          } else {
+            sb.append(groupBlock);
+          }
+        }
+        String parsed = sb.toString().replace("&Scaron;", "Š").replace("&scaron;", "š");
+        Collection<Pair<String, String>> mainCriteria = data.get(null);
+
+        if (!BeeUtils.isEmpty(mainCriteria)) {
+          for (Pair<String, String> entry : mainCriteria) {
+            parsed = parsed.replace("{" + entry.getA() + "}", BeeUtils.nvl(entry.getB(), ""));
+          }
+        }
+        consumer.accept(parsed);
       }
-    }
+    });
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {
@@ -484,69 +590,6 @@ public class DocumentDataForm extends AbstractFormInterceptor
         oldValues.add(oldValue);
       }
     }
-  }
-
-  private static String parseCriteria(String content, String group,
-      Collection<Pair<String, String>> crit) {
-
-    if (BeeUtils.isEmpty(crit)) {
-      return "";
-    }
-    StringBuilder sb = new StringBuilder();
-    List<String> parts = Splitter.on("<!--{" + TBL_CRITERIA + "}-->").splitToList(content);
-
-    for (int i = 0; i < parts.size(); i++) {
-      String part = parts.get(i).replace("{" + COL_CRITERIA_GROUP_NAME + "}", group);
-
-      if (i % 2 > 0 && i < parts.size() - 1) {
-        for (Pair<String, String> pair : crit) {
-          sb.append(part.replace("{" + COL_CRITERION_NAME + "}", pair.getA())
-              .replace("{" + COL_CRITERION_VALUE + "}", BeeUtils.nvl(pair.getB(), "")));
-        }
-      } else {
-        sb.append(part);
-      }
-    }
-    return sb.toString();
-  }
-
-  private void parseGroup(final String content, final Integer idx,
-      final BiConsumer<Integer, String> executor) {
-    if (groupsGrid == null) {
-      executor.accept(idx, null);
-      return;
-    }
-    GridView gridView = groupsGrid.getPresenter().getGridView();
-    int nameIdx = gridView.getDataIndex(COL_CRITERIA_GROUP_NAME);
-    final Map<Long, String> groups = Maps.newLinkedHashMap();
-
-    for (IsRow row : gridView.getRowData()) {
-      groups.put(row.getId(), row.getString(nameIdx));
-    }
-    if (BeeUtils.isEmpty(groups)) {
-      executor.accept(idx, null);
-      return;
-    }
-    Queries.getRowSet(TBL_CRITERIA, null, Filter.any(COL_CRITERIA_GROUP, groups.keySet()),
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Multimap<Long, Pair<String, String>> crit = LinkedHashMultimap.create();
-            int grpIdx = result.getColumnIndex(COL_CRITERIA_GROUP);
-            int crtIdx = result.getColumnIndex(COL_CRITERION_NAME);
-            int valIdx = result.getColumnIndex(COL_CRITERION_VALUE);
-
-            for (BeeRow row : result.getRows()) {
-              crit.put(row.getLong(grpIdx), Pair.of(row.getString(crtIdx), row.getString(valIdx)));
-            }
-            StringBuilder sb = new StringBuilder();
-
-            for (Long group : groups.keySet()) {
-              sb.append(parseCriteria(content, groups.get(group), crit.get(group)));
-            }
-            executor.accept(idx, sb.toString());
-          }
-        });
   }
 
   private void render() {

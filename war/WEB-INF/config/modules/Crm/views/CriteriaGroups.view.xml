@@ -6,10 +6,10 @@
   >
   <Columns>
     <SimpleColumn name="Data" />
-    <SimpleColumn name="Sort" />
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Ordinal" />
   </Columns>
   <Order>
-    <OrderBy column="Sort" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>

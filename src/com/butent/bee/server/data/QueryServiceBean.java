@@ -39,6 +39,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
@@ -196,7 +197,7 @@ public class QueryServiceBean {
           }
         }
       }
-      
+
       ResponseObject response = insertDataWithResponse(si);
       if (response.hasErrors()) {
         return response;
@@ -794,8 +795,17 @@ public class QueryServiceBean {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
-    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER, usr.getCurrentUserId()).getQuery());
+    boolean isDebugEnabled = logger.isDebugEnabled();
 
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.INFO);
+    }
+    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER,
+        usr.getCurrentUserId()).getQuery());
+
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.DEBUG);
+    }
     activateTables(query);
 
     final TableModifyEvent event;

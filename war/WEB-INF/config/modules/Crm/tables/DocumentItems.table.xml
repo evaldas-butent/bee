@@ -8,7 +8,7 @@
     <Relation name="Document" relation="Documents" notNull="true" cascade="DELETE" label="=document" />
 
     <String name="Description" precision="100" notNull="true" label="=description" />
-    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" defValue="1" />
+    <Numeric name="Quantity" precision="12" scale="3" label="=quantity" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
     <Boolean name="VatPlus" label="=vatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />

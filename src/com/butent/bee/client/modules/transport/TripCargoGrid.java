@@ -128,7 +128,7 @@ class TripCargoGrid extends AbstractGridInterceptor {
 
   @Override
   public void onEditStart(EditStartEvent event) {
-    if (!BeeUtils.inListSame(event.getColumnId(), "Loading", "Unloading", "CargoOrder",
+    if (!BeeUtils.inListSame(event.getColumnId(), "Loading", "Unloading", "Ordinal",
         COL_CARGO_PERCENT, COL_ORDER_NO, COL_DESCRIPTION)) {
       event.consume();
     }
