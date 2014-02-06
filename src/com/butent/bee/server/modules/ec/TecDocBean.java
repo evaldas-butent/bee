@@ -184,7 +184,7 @@ public class TecDocBean {
       Timer tcdTimer = null;
 
       for (Timer timer : timerService.getTimers()) {
-        if (Objects.equal(timer.getInfo(), entry.getKey())) {
+        if (Objects.equal(timer.getInfo(), entry.getValue())) {
           tcdTimer = timer;
           break;
         }
@@ -196,7 +196,7 @@ public class TecDocBean {
 
       if (BeeUtils.isPositive(minutes)) {
         tcdTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-            minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(entry.getKey(), false));
+            minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(entry.getValue(), false));
 
         logger.info(entry.getValue(), "created timer every", minutes, "minutes starting at",
             tcdTimer.getNextTimeout());
