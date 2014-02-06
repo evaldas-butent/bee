@@ -88,6 +88,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -443,32 +444,45 @@ public class CrmModuleBean implements BeeModule {
   }
 
   private void addTaskProperties(BeeRow row, List<BeeColumn> columns, Collection<Long> taskUsers,
-      Long eventId) {
+      Long eventId, Collection<String> propNames, boolean addRelations) {
     long taskId = row.getId();
 
-    if (!BeeUtils.isEmpty(taskUsers)) {
-      taskUsers.remove(row.getLong(DataUtils.getColumnIndex(COL_EXECUTOR, columns)));
-      taskUsers.remove(row.getLong(DataUtils.getColumnIndex(COL_OWNER, columns)));
+    if (propNames.contains(PROP_OBSERVERS) && !BeeUtils.isEmpty(taskUsers)) {
+      Long owner = row.getLong(DataUtils.getColumnIndex(COL_OWNER, columns));
+      Long executor = row.getLong(DataUtils.getColumnIndex(COL_EXECUTOR, columns));
 
-      if (!taskUsers.isEmpty()) {
-        row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(taskUsers));
+      List<Long> observers = Lists.newArrayList();
+      for (Long user : taskUsers) {
+        if (!Objects.equals(user, owner) && !Objects.equals(user, executor)) {
+          observers.add(user);
+        }
+      }
+
+      if (!observers.isEmpty()) {
+        row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
       }
     }
 
-    Multimap<String, Long> taskRelations = getRelations(COL_TASK, taskId);
-    for (String property : taskRelations.keySet()) {
-      row.setProperty(property, DataUtils.buildIdList(taskRelations.get(property)));
+    if (addRelations) {
+      Multimap<String, Long> taskRelations = getRelations(COL_TASK, taskId);
+      for (String property : taskRelations.keySet()) {
+        row.setProperty(property, DataUtils.buildIdList(taskRelations.get(property)));
+      }
     }
 
-    List<StoredFile> files = getTaskFiles(taskId);
-    if (!files.isEmpty()) {
-      row.setProperty(PROP_FILES, Codec.beeSerialize(files));
+    if (propNames.contains(PROP_FILES)) {
+      List<StoredFile> files = getTaskFiles(taskId);
+      if (!files.isEmpty()) {
+        row.setProperty(PROP_FILES, Codec.beeSerialize(files));
+      }
     }
 
-    BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS,
-        ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
-    if (!DataUtils.isEmpty(events)) {
-      row.setProperty(PROP_EVENTS, events.serialize());
+    if (propNames.contains(PROP_EVENTS)) {
+      BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS,
+          ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
+      if (!DataUtils.isEmpty(events)) {
+        row.setProperty(PROP_EVENTS, events.serialize());
+      }
     }
 
     if (eventId != null) {
@@ -503,6 +517,9 @@ public class CrmModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(updatedRelations)) {
       updateTaskRelations(row.getId(), updatedRelations, row);
     }
+    
+    Set<String> propNames = Sets.newHashSet(PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
+    boolean addRelations = true;
 
     Map<Integer, String> shadow = row.getShadow();
     if (shadow != null && !shadow.isEmpty()) {
@@ -527,11 +544,12 @@ public class CrmModuleBean implements BeeModule {
 
       response = deb.commitRow(updated);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
-        addTaskProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, eventId);
+        addTaskProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, eventId,
+            propNames, addRelations);
       }
 
     } else {
-      response = getTaskData(row.getId(), eventId);
+      response = getTaskData(row.getId(), eventId, propNames, addRelations);
     }
 
     return response;
@@ -1183,14 +1201,17 @@ public class CrmModuleBean implements BeeModule {
     return dates;
   }
 
-  private ResponseObject getTaskData(long taskId, Long eventId) {
+  private ResponseObject getTaskData(long taskId, Long eventId, Collection<String> propNames,
+      boolean addRelations) {
+
     BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.error(SVC_GET_TASK_DATA, "task id: " + taskId + " not found");
     }
 
     BeeRow data = rowSet.getRow(0);
-    addTaskProperties(data, rowSet.getColumns(), getTaskUsers(taskId), eventId);
+    addTaskProperties(data, rowSet.getColumns(), getTaskUsers(taskId), eventId, propNames,
+        addRelations);
 
     return ResponseObject.response(data);
   }
@@ -1198,12 +1219,21 @@ public class CrmModuleBean implements BeeModule {
   private ResponseObject getTaskData(RequestInfo reqInfo) {
     long taskId = BeeUtils.toLong(reqInfo.getParameter(VAR_TASK_ID));
     if (!DataUtils.isId(taskId)) {
-      String msg = BeeUtils.joinWords(SVC_GET_TASK_DATA, "task id not received");
+      String msg = BeeUtils.joinWords(reqInfo.getService(), "task id not received");
       logger.warning(msg);
       return ResponseObject.error(msg);
     }
+    
+    Set<String> propNames = Sets.newHashSet();
 
-    return getTaskData(taskId, null);
+    String propList = reqInfo.getParameter(VAR_TASK_PROPERTIES);
+    if (!BeeUtils.isEmpty(propList)) {
+      propNames.addAll(NameUtils.toSet(propList));
+    }
+    
+    boolean addRelations = reqInfo.hasParameter(VAR_TASK_RELATIONS);
+
+    return getTaskData(taskId, null, propNames, addRelations);
   }
 
   private List<StoredFile> getTaskFiles(long taskId) {
@@ -1778,7 +1808,7 @@ public class CrmModuleBean implements BeeModule {
 
     Long senderAccount = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
     if (!DataUtils.isId(senderAccount)) {
-      logger.warning(label, "sender account not specified",
+      logger.info(label, "sender account not specified",
           BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
       return count;
     }

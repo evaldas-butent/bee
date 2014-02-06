@@ -14,11 +14,90 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class RelationUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RelationUtils.class);
+
+  public static Collection<String> copyWithDescendants(DataInfo sourceInfo, String sourceColumn,
+      IsRow sourceRow, DataInfo targetInfo, String targetColumn, IsRow targetRow) {
+
+    List<String> result = Lists.newArrayList();
+    if (BeeUtils.anyNull(sourceInfo, sourceRow, targetInfo, targetRow)
+        || BeeUtils.anyEmpty(sourceColumn, targetColumn)) {
+      return result;
+    }
+
+    int sourceIndex = sourceInfo.getColumnIndex(sourceColumn);
+    if (sourceIndex < 0) {
+      logger.warning(sourceInfo.getViewName(), sourceColumn, "column not found");
+      return result;
+    }
+
+    int targetIndex = targetInfo.getColumnIndex(targetColumn);
+    if (targetIndex < 0) {
+      logger.warning(targetInfo.getViewName(), targetColumn, "column not found");
+      return result;
+    }
+
+    Long sourceValue = sourceRow.getLong(sourceIndex);
+    Long targetValue = targetRow.getLong(targetIndex);
+
+    if (Objects.equals(sourceValue, targetValue)) {
+      return result;
+    }
+
+    boolean clear = sourceValue == null;
+
+    if (clear) {
+      targetRow.clearCell(targetIndex);
+    } else {
+      targetRow.setValue(targetIndex, sourceValue);
+    }
+    result.add(targetColumn);
+
+    Collection<ViewColumn> targetDescendants = targetInfo.getDescendants(targetColumn, false);
+    if (targetDescendants.isEmpty()) {
+      logger.warning(targetInfo.getViewName(), targetColumn, "no descendants found");
+      return result;
+    }
+
+    if (clear) {
+      for (ViewColumn tc : targetDescendants) {
+        int index = targetInfo.getColumnIndex(tc.getName());
+        if (index >= 0 && !targetRow.isNull(index)) {
+          targetRow.clearCell(index);
+          result.add(tc.getName());
+        }
+      }
+      return result;
+    }
+
+    int sourceLevel = Math.max(sourceInfo.getViewColumnLevel(sourceColumn), 0);
+    int targetLevel = Math.max(targetInfo.getViewColumnLevel(targetColumn), 0);
+
+    for (ViewColumn tc : targetDescendants) {
+      targetIndex = targetInfo.getColumnIndex(tc.getName());
+      if (BeeConst.isUndef(targetIndex)) {
+        logger.warning(targetInfo.getViewName(), tc.getName(), "column not found");
+        continue;
+      }
+
+      sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField(),
+          sourceLevel + tc.getLevel() - targetLevel);
+      if (sourceIndex >= 0) {
+        String value = sourceRow.getString(sourceIndex);
+        if (!BeeUtils.equalsTrimRight(targetRow.getString(targetIndex), value)) {
+          targetRow.setValue(targetIndex, value);
+          result.add(tc.getName());
+        }
+      }
+    }
+    
+    return result;
+  }
 
   public static List<String> getRenderColumns(DataInfo dataInfo, String colName) {
     List<String> result = Lists.newArrayList();
@@ -154,8 +233,8 @@ public final class RelationUtils {
       logger.warning(targetInfo.getViewName(), targetColumn, "no descendants found");
       return result;
     }
-    
-    int tcLevel = Math.max(targetInfo.getViewColumnLevel(targetColumn), 0); 
+
+    int tcLevel = Math.max(targetInfo.getViewColumnLevel(targetColumn), 0);
 
     for (ViewColumn tc : targetColumns) {
       int targetIndex = targetInfo.getColumnIndex(tc.getName());
@@ -173,7 +252,7 @@ public final class RelationUtils {
       } else {
         int sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField(),
             tc.getLevel() + tcLevel - 1);
-        if (!BeeConst.isUndef(sourceIndex) 
+        if (!BeeConst.isUndef(sourceIndex)
             && !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
                 sourceRow.getString(sourceIndex))) {
           targetRow.setValue(targetIndex, sourceRow.getString(sourceIndex));

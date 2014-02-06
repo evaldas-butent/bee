@@ -231,10 +231,10 @@ class TaskBuilder extends AbstractFormInterceptor {
       return TimeUtils.combine(datePart, getMillis(NAME_END_TIME));
     }
 
-    if (start != null) {
+    if (start != null && !BeeUtils.isEmpty(duration)) {
       Long millis = TimeUtils.parseTime(duration);
       if (BeeUtils.isPositive(millis)) {
-        return TimeUtils.combine(start, millis);
+        return new DateTime(start.getTime() + millis);
       }
     }
     return null;

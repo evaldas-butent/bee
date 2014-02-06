@@ -11,38 +11,38 @@
 
     <row>
       <Label text="=companies" />
-      <ChildSelector childTable="Relations" viewName="Companies" renderColumns="Name"
-        editPopup="true" newRowEnabled="false" style="&inp;" />
+      <ChildSelector childTable="Relations" viewName="Companies" property="Companies"
+        renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row>
       <Label text="=persons" />
-      <ChildSelector childTable="Relations" viewName="Persons" 
+      <ChildSelector childTable="Relations" viewName="Persons" property="Persons"
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row>
       <Label text="=documents" />
-      <ChildSelector childTable="Relations" viewName="Documents" renderColumns="Name"
-        editPopup="true" newRowEnabled="false" style="&inp;" />
+      <ChildSelector childTable="Relations" viewName="Documents" property="Documents"
+        renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row>
       <Label text="=appointments" />
-      <ChildSelector childTable="Relations" viewName="Appointments"
+      <ChildSelector childTable="Relations" viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="false" editPopup="true" style="&inp;" />
     </row>
 
     <row>
       <Label text="=discussions" />
-      <ChildSelector childTable="Relations" viewName="Discussions"
+      <ChildSelector childTable="Relations" viewName="Discussions" property="Discussions"
         renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp;" />
     </row>
 
     <row>
       <Label text="=tasks" />
-      <ChildSelector childTable="Relations" viewName="Tasks" 
+      <ChildSelector childTable="Relations" viewName="Tasks" property="Tasks"
         renderColumns="Summary ExecutorFirstName ExecutorLastName"
         choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
         newRowEnabled="false" editPopup="true" style="&inp;" />

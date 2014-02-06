@@ -51,8 +51,7 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
                 BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                   @Override
                   public void onResponse(ResponseObject response) {
-                    if (Queries.checkResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response,
-                        BeeRow.class)) {
+                    if (Queries.checkRowResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response)) {
                       BeeRow row = BeeRow.restore(response.getResponseAsString());
                       GridView gridView = presenter.getGridView();
                       

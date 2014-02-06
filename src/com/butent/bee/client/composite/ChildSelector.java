@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -78,8 +79,9 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
         && BeeUtils.same(targetColumn, sourceColumn)) {
       return null;
     }
-
-    return new ChildSelector(relation, table, targetColumn, sourceColumn);
+    
+    String rowProperty = attributes.get(UiConstants.ATTR_PROPERTY);
+    return new ChildSelector(relation, table, targetColumn, sourceColumn, rowProperty);
   }
 
   private final String childTable;
@@ -92,8 +94,8 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
   private HandlerRegistration parentRowReg;
 
   private ChildSelector(Relation relation, String childTable, String targetRelColumn,
-      String sourceRelColumn) {
-    super(relation, true, null);
+      String sourceRelColumn, String rowProperty) {
+    super(relation, true, rowProperty);
 
     this.childTable = childTable;
     this.targetRelColumn = targetRelColumn;
@@ -134,11 +136,12 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
   }
 
   @Override
-  public void onParentRow(ParentRowEvent event) {
+  public void onParentRow(final ParentRowEvent event) {
     final Long rowId = event.getRowId();
 
     if (DataUtils.isId(rowId)) {
       setTargetRowId(null);
+
       Queries.getRelatedValues(childTable, targetRelColumn, rowId, sourceRelColumn,
           new Queries.IdListCallback() {
             @Override
@@ -150,7 +153,15 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
 
     } else {
       setTargetRowId(rowId);
-      render(BeeConst.STRING_EMPTY);
+      
+      String value;
+      if (event.getRow() == null || BeeUtils.isEmpty(getRowProperty())) {
+        value = BeeConst.STRING_EMPTY; 
+      } else {
+        value = event.getRow().getProperty(getRowProperty());
+      }
+      
+      render(value);
     }
   }
 
