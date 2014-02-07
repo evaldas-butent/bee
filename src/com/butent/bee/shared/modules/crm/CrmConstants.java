@@ -204,6 +204,8 @@ public final class CrmConstants {
   public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String TBL_CRITERIA = "Criteria";
 
+  public static final String TBL_RECURRING_TASKS = "RecurringTasks";
+  
   public static final String TBL_RT_DATES = "RTDates";
   public static final String TBL_RT_FILES = "RTFiles";
   public static final String TBL_RT_EXECUTORS = "RTExecutors";

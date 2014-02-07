@@ -151,6 +151,10 @@ public abstract class Message {
   }
   
   public abstract boolean isValid();
+  
+  public boolean isLoggable() {
+    return true;
+  }
 
   @Override
   public abstract String toString();

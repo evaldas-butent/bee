@@ -819,7 +819,7 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime oldStart = getDateTime(COL_START_TIME);
         DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-        DateTime newStart = (startId == null) ? oldStart 
+        DateTime newStart = (startId == null) ? oldStart
             : BeeUtils.nvl(dialog.getDateTime(startId), oldStart);
         DateTime newEnd = dialog.getDateTime(endId);
 
@@ -908,6 +908,20 @@ class TaskEditor extends AbstractFormInterceptor {
         BeeRow newRow = getNewRow();
         RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
             Data.getDataInfo(CommonsConstants.VIEW_USERS), selector.getRelatedRow(), true);
+
+        TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
+            newRow.getInteger(getDataIndex(COL_STATUS)));
+        TaskStatus newStatus = null;
+
+        if (oldStatus == TaskStatus.ACTIVE && !Objects.equal(newUser, userId)) {
+          newStatus = TaskStatus.NOT_VISITED;
+        } else if (oldStatus == TaskStatus.NOT_VISITED && Objects.equal(newUser, userId)) {
+          newStatus = TaskStatus.ACTIVE;
+        }
+        
+        if (newStatus != null) {
+          newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
+        }
 
         ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
 
@@ -1264,6 +1278,10 @@ class TaskEditor extends AbstractFormInterceptor {
       public void onSuccess(ResponseObject result) {
         BeeRow data = getResponseRow(event.getCaption(), result, this);
         if (data != null) {
+          if (result.hasWarnings()) {
+            BeeKeeper.getScreen().notifyWarning(result.getWarnings());
+          }
+
           onResponse(data);
 
           if (!BeeUtils.isEmpty(files)) {

@@ -25,6 +25,7 @@ import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.modules.commons.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -490,7 +491,7 @@ public class CrmModuleBean implements BeeModule {
     }
   }
 
-  @Schedule(hour = "4", persistent = false)
+  @Schedule(hour = "5", persistent = false)
   private void checkTaskStatus() {
     logger.info("check task status timeout");
 
@@ -517,7 +518,7 @@ public class CrmModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(updatedRelations)) {
       updateTaskRelations(row.getId(), updatedRelations, row);
     }
-    
+
     Set<String> propNames = Sets.newHashSet(PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
     boolean addRelations = true;
 
@@ -811,6 +812,20 @@ public class CrmModuleBean implements BeeModule {
     switch (event) {
       case CREATE:
         response = createTasks(taskData, taskRow, currentUser);
+
+        if (!response.hasErrors() && response.hasResponse(String.class)) {
+          Set<Long> createdTasks = DataUtils.parseIdSet(response.getResponseAsString());
+          Long senderEmailId = getSenderEmailId("create task:");
+
+          if (senderEmailId != null) {
+            boolean pref = BeeConst.isTrue(taskRow.getProperty(PROP_MAIL));
+
+            for (Long id : createdTasks) {
+              ResponseObject mailResponse = mailNewTask(senderEmailId, id, pref, false);
+              response.addMessagesFrom(mailResponse);
+            }
+          }
+        }
         break;
 
       case VISIT:
@@ -845,6 +860,16 @@ public class CrmModuleBean implements BeeModule {
 
         if (!response.hasErrors()) {
           response = commitTaskData(taskData, oldUsers, true, updatedRelations, eventId);
+        }
+
+        if (!response.hasErrors() && event == TaskEvent.FORWARD
+            && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
+          Long senderEmailId = getSenderEmailId("forward task:");
+
+          if (senderEmailId != null) {
+            ResponseObject mailResponse = mailNewTask(senderEmailId, taskId, true, false);
+            response.addMessagesFrom(mailResponse);
+          }
         }
         break;
     }
@@ -1175,6 +1200,27 @@ public class CrmModuleBean implements BeeModule {
     }
   }
 
+  private Long getSenderEmailId(String logLabel) {
+    Long account = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+    if (!DataUtils.isId(account)) {
+      logger.info(logLabel, "sender account not specified",
+          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
+      return null;
+    }
+
+    Long emailId = qs.getLong(new SqlSelect()
+        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
+        .addFrom(MailConstants.TBL_ACCOUNTS)
+        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, account)));
+
+    if (!DataUtils.isId(emailId)) {
+      logger.severe(logLabel, "email id not available for account", account);
+      return null;
+    } else {
+      return emailId;
+    }
+  }
+
   private Set<JustDate> getSpawnedDates(long rtId, DateRange range) {
     Set<JustDate> dates = Sets.newHashSet();
 
@@ -1223,14 +1269,14 @@ public class CrmModuleBean implements BeeModule {
       logger.warning(msg);
       return ResponseObject.error(msg);
     }
-    
+
     Set<String> propNames = Sets.newHashSet();
 
     String propList = reqInfo.getParameter(VAR_TASK_PROPERTIES);
     if (!BeeUtils.isEmpty(propList)) {
       propNames.addAll(NameUtils.toSet(propList));
     }
-    
+
     boolean addRelations = reqInfo.hasParameter(VAR_TASK_RELATIONS);
 
     return getTaskData(taskId, null, propNames, addRelations);
@@ -1539,6 +1585,104 @@ public class CrmModuleBean implements BeeModule {
     return resp;
   }
 
+  private ResponseObject mailNewTask(Long senderEmailId, long taskId,
+      boolean ownerPreference, boolean automatic) {
+
+    ResponseObject response = ResponseObject.emptyResponse();
+    String label = "mail new task";
+
+    HasConditions where = SqlUtils.and(SqlUtils.equals(TBL_TASKS, COL_TASK_ID, taskId));
+    if (!ownerPreference) {
+      where.add(SqlUtils.notNull(CommonsConstants.TBL_USERS, COL_MAIL_ASSIGNED_TASKS));
+    }
+    if (!automatic) {
+      where.add(SqlUtils.notEqual(TBL_TASKS, COL_OWNER, SqlUtils.field(TBL_TASKS, COL_EXECUTOR)));
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TASKS, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
+            COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
+        .addFrom(TBL_TASKS)
+        .addFromInner(CommonsConstants.TBL_USERS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASKS, COL_EXECUTOR))
+        .setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return response;
+    }
+
+    SimpleRow row = data.getRow(0);
+
+    Long executor = row.getLong(COL_EXECUTOR);
+
+    Long recipientEmailId = usr.getEmailId(executor, false);
+    if (recipientEmailId == null) {
+      logger.warning(label, taskId, "executor", executor, "email not available");
+      return response;
+    }
+
+    LocalizableConstants constants = usr.getLocalizableConstants(executor);
+    if (constants == null) {
+      logger.warning(label, taskId, "executor", executor, "localization not available");
+      return response;
+    }
+
+    Document document = taskToHtml(taskId, row.getDateTime(COL_START_TIME),
+        row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
+        row.getValue(COL_DESCRIPTION), row.getLong(COL_OWNER), executor, constants);
+    String content = document.buildLines();
+
+    logger.info(label, taskId, "mail to", executor, recipientEmailId);
+
+    ResponseObject mailResponse = mail.sendMail(senderEmailId, recipientEmailId,
+        constants.crmMailTaskSubject(), content);
+
+    if (mailResponse.hasErrors()) {
+      response.addWarning("Send mail failed");
+    }
+    return response;
+  }
+
+  private void mailScheduledTasks(Set<Long> tasks) {
+    if (BeeUtils.isEmpty(tasks)) {
+      return;
+    }
+
+    Long senderEmailId = getSenderEmailId("scheduled tasks:");
+    if (senderEmailId == null) {
+      return;
+    }
+
+    HasConditions where = SqlUtils.and(
+        SqlUtils.inList(TBL_TASKS, COL_TASK_ID, tasks),
+        SqlUtils.or(
+            SqlUtils.notNull(TBL_RECURRING_TASKS, COL_RT_COPY_BY_MAIL),
+            SqlUtils.notNull(CommonsConstants.TBL_USERS, COL_MAIL_ASSIGNED_TASKS)));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TASKS, COL_TASK_ID)
+        .addFrom(TBL_TASKS)
+        .addFromInner(TBL_RECURRING_TASKS,
+            sys.joinTables(TBL_RECURRING_TASKS, TBL_TASKS, COL_RECURRING_TASK))
+        .addFromInner(CommonsConstants.TBL_USERS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASKS, COL_EXECUTOR))
+        .setWhere(where);
+
+    Long[] ids = qs.getLongColumn(query);
+    if (ids == null || ids.length == 0) {
+      return;
+    }
+
+    for (Long id : ids) {
+      ResponseObject response = mailNewTask(senderEmailId, id, true, true);
+      if (response.hasErrors() || response.hasWarnings()) {
+        logger.warning("mail scheduled tasks canceled");
+        break;
+      }
+    }
+  }
+
   private int maybeUpdateTaskStatus() {
     int updated = 0;
 
@@ -1573,8 +1717,12 @@ public class CrmModuleBean implements BeeModule {
   private void recurringTaskSchedulingTimeout() {
     logger.info("recurring task scheduling timeout ");
 
-    int count = scheduleRecurringTasks(DateRange.day(TimeUtils.today()));
-    logger.info("recurring task scheduler created", count, "tasks");
+    Set<Long> tasks = scheduleRecurringTasks(DateRange.day(TimeUtils.today()));
+    logger.info("recurring task scheduler created", tasks.size(), "tasks");
+    
+    if (!tasks.isEmpty()) {
+      mailScheduledTasks(tasks);
+    }
   }
 
   private ResponseObject registerTaskDuration(long durationType, RequestInfo reqInfo) {
@@ -1652,8 +1800,8 @@ public class CrmModuleBean implements BeeModule {
         .setWhere(where));
   }
 
-  private int scheduleRecurringTasks(DateRange defRange) {
-    int count = 0;
+  private Set<Long> scheduleRecurringTasks(DateRange defRange) {
+    Set<Long> result = Sets.newHashSet();
 
     String label = "scheduling tasks";
 
@@ -1669,13 +1817,13 @@ public class CrmModuleBean implements BeeModule {
     BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, filter);
     if (DataUtils.isEmpty(rtData)) {
       logger.info(label, defRange, "no active recurring tasks found");
-      return count;
+      return result;
     }
 
     List<BeeColumn> taskColumns = sys.getView(VIEW_TASKS).getRowSetColumns();
     if (BeeUtils.isEmpty(taskColumns)) {
       logger.severe(label, defRange, "task columns not available");
-      return count;
+      return result;
     }
 
     for (BeeRow rtRow : rtData.getRows()) {
@@ -1769,15 +1917,15 @@ public class CrmModuleBean implements BeeModule {
 
         if (BeeUtils.isEmpty(tasks)) {
           logger.severe(label, rtId, date, "no tasks created");
-          return count;
+          return result;
         }
 
-        count += tasks.size();
+        result.addAll(tasks);
         logger.info("recurring task", rtId, "scheduled", date, tasks);
       }
     }
 
-    return count;
+    return result;
   }
 
   private ResponseObject scheduleTasks(RequestInfo reqInfo) {
@@ -1798,27 +1946,20 @@ public class CrmModuleBean implements BeeModule {
       range = DateRange.closed(new JustDate(from), new JustDate(until));
     }
 
-    int count = scheduleRecurringTasks(range);
-    return ResponseObject.response(count);
+    Set<Long> tasks = scheduleRecurringTasks(range);
+    if (!tasks.isEmpty()) {
+      mailScheduledTasks(tasks);
+    }
+
+    return ResponseObject.response(tasks.size());
   }
 
   private int sendTaskReminders(long timeRemaining) {
     int count = 0;
     String label = "task reminders:";
 
-    Long senderAccount = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
-    if (!DataUtils.isId(senderAccount)) {
-      logger.info(label, "sender account not specified",
-          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
-      return count;
-    }
-
-    Long senderEmailId = qs.getLong(new SqlSelect()
-        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
-        .addFrom(MailConstants.TBL_ACCOUNTS)
-        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, senderAccount)));
+    Long senderEmailId = getSenderEmailId(label);
     if (!DataUtils.isId(senderEmailId)) {
-      logger.severe(label, "sender email id not available, account", senderAccount);
       return count;
     }
 
@@ -1912,7 +2053,6 @@ public class CrmModuleBean implements BeeModule {
           constants.crmReminderMailSubject(), content);
 
       if (mailResponse.hasErrors()) {
-        mailResponse.log(logger);
         logger.severe(label, "mail error - canceled");
         break;
       }
@@ -2112,6 +2252,8 @@ public class CrmModuleBean implements BeeModule {
     if (tasks.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
+    
+    mailScheduledTasks(tasks);
 
     BeeRowSet result = qs.getViewData(VIEW_TASKS, Filter.idIn(tasks));
     return ResponseObject.response(result);

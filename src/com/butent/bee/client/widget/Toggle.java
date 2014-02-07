@@ -24,6 +24,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -32,7 +33,8 @@ import java.util.Objects;
 
 import elemental.js.dom.JsElement;
 
-public class Toggle extends CustomWidget implements Editor, HasValueChangeHandlers<String> {
+public class Toggle extends CustomWidget implements Editor, HasValueChangeHandlers<String>,
+    HasCheckedness {
 
   private final String upFace;
   private final String downFace;
@@ -75,7 +77,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addValueChangeHandler(handler);
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -154,6 +156,11 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
     setDown(!isDown());
   }
 
+  @Override
+  public boolean isChecked() {
+    return isDown();
+  }
+
   public boolean isDown() {
     return down;
   }
@@ -201,10 +208,15 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
     ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }
 
+  @Override
+  public void setChecked(boolean checked) {
+    setDown(checked);
+  }
+
   public void setDown(boolean down) {
     if (down != isDown()) {
       this.down = down;
-      
+
       if (!Objects.equals(downFace, upFace)) {
         getElement().setInnerHTML(down ? downFace : upFace);
       }

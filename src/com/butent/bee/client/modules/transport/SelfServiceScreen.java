@@ -23,6 +23,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -203,6 +204,11 @@ public class SelfServiceScreen extends ScreenImpl {
     return Pair.of(wrapper, 0);
   }
 
+  @Override
+  protected void onUserSignatureClick(long userId) {
+    PasswordService.change();
+  }
+  
   private void openGrid(String gridName, boolean intercept, Filter filter) {
     GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
     openGrid(gridName, intercept, gridOptions);

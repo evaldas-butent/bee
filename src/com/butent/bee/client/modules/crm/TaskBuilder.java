@@ -25,6 +25,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -32,12 +33,14 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -54,6 +57,8 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_REMINDER_TIME = "Reminder_Time";
 
   private static final String NAME_FILES = "Files";
+  
+  private HasCheckedness mailToggle;
 
   TaskBuilder() {
     super();
@@ -69,6 +74,15 @@ class TaskBuilder extends AbstractFormInterceptor {
     if (BeeUtils.same(name, NAME_START_DATE) && (widget instanceof InputDate)) {
       InputDate startDate = (InputDate) widget;
       startDate.setDate(new JustDate());
+    } else if (BeeUtils.same(name, PROP_MAIL) && (widget instanceof HasCheckedness)) {
+      mailToggle = (HasCheckedness) widget;
+    }
+  }
+
+  @Override
+  public void beforeStateChange(State state, boolean modal) {
+    if (state == State.OPEN && mailToggle != null && mailToggle.isChecked()) {
+      mailToggle.setChecked(false);
     }
   }
 
@@ -135,6 +149,10 @@ class TaskBuilder extends AbstractFormInterceptor {
     if (reminderTime != null) {
       Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);
     }
+    
+    if (mailToggle != null && mailToggle.isChecked()) {
+      newRow.setProperty(PROP_MAIL, BooleanValue.S_TRUE);
+    }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
@@ -147,6 +165,10 @@ class TaskBuilder extends AbstractFormInterceptor {
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
 
+        if (response.hasWarnings()) {
+          BeeKeeper.getScreen().notifyWarning(response.getWarnings());
+        }
+        
         if (response.hasErrors()) {
           event.getCallback().onFailure(response.getErrors());
           
@@ -154,7 +176,7 @@ class TaskBuilder extends AbstractFormInterceptor {
           event.getCallback().onFailure("No tasks created");
           
         } else if (response.hasResponse(String.class)) {
-          List<Long> tasks = DataUtils.parseIdList((String) response.getResponse());
+          List<Long> tasks = DataUtils.parseIdList(response.getResponseAsString());
           if (tasks.isEmpty()) {
             event.getCallback().onFailure("No tasks created");
             return;
@@ -239,7 +261,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
     return null;
   }
-
+  
   private Long getMillis(String widgetName) {
     Widget widget = getFormView().getWidgetByName(widgetName);
     if (widget instanceof InputTime) {
