@@ -24,23 +24,23 @@
       <FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=companies" style="&chlabel;" />
-          <ChildSelector viewName="Companies" childTable="Relations" renderColumns="Name"
-            class="flexible" />
+          <ChildSelector name="Company" viewName="Companies" childTable="Relations"
+            renderColumns="Name" class="flexible" />
         </FlowPanel>
-        
+
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=persons" style="&chlabel;" />
-          <ChildSelector class="flexible" viewName="Persons" childTable="Relations"
+          <ChildSelector name="Person" class="flexible" viewName="Persons" childTable="Relations"
               renderColumns="FirstName LastName" />
         </FlowPanel>
-  
+
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=appointments" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Appointments" childTable="Relations"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
             newRowEnabled="false" />
         </FlowPanel>
-  
+
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=tasks" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Tasks" childTable="Relations" 

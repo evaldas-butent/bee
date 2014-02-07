@@ -11,10 +11,12 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.Autocomplete;
+import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowInsertCallback;
@@ -37,7 +39,9 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -62,6 +66,7 @@ public class DocumentForm extends DocumentDataForm {
   });
 
   private ChildGrid itemsGrid;
+  private final Map<String, ChildSelector> childSelectors = Maps.newHashMap();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -69,7 +74,11 @@ public class DocumentForm extends DocumentDataForm {
 
     super.afterCreateWidget(name, widget, callback);
 
-    if (BeeUtils.same(name, TBL_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
+    if (widget instanceof ChildSelector) {
+      if (!BeeUtils.isEmpty(name)) {
+        childSelectors.put(name, (ChildSelector) widget);
+      }
+    } else if (BeeUtils.same(name, TBL_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
 
       itemsGrid.setGridInterceptor(new AbstractGridInterceptor() {
@@ -195,16 +204,20 @@ public class DocumentForm extends DocumentDataForm {
     super.parseContent(content, dataId, new Consumer<String>() {
       @Override
       public void accept(String input) {
+        final Map<String, BeeRowSet> relations = Maps.newHashMap();
+
         final List<String> parts = Lists.newArrayList(Splitter
             .on("<!--{" + TBL_DOCUMENT_ITEMS + "}-->").split(input));
 
         final Map<String, Double> globals = Maps.newHashMap();
-        final Holder<Integer> holder = Holder.of(parts.size());
+        final Holder<Integer> holder = Holder.of(childSelectors.size() + parts.size());
 
-        BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
+        final BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
           @Override
           public void accept(Integer index, String value) {
-            parts.set(index, value);
+            if (index != null) {
+              parts.set(index, value);
+            }
             holder.set(holder.get() - 1);
 
             if (!BeeUtils.isPositive(holder.get())) {
@@ -219,10 +232,38 @@ public class DocumentForm extends DocumentDataForm {
                 result = result.replace("{" + global + "}",
                     BeeUtils.toString(globals.get(global), 2));
               }
+              for (final String relation : childSelectors.keySet()) {
+                ChildSelector selector = childSelectors.get(relation);
+                BeeRowSet rs = relations.get(relation);
+
+                for (BeeColumn col : Data.getColumns(selector.getOracle().getViewName())) {
+                  String val = DataUtils.isEmpty(rs)
+                      ? "" : BeeUtils.nvl(rs.getString(0, col.getId()), "");
+
+                  result = result.replace("{" + relation + col.getId() + "}", val);
+                }
+              }
               consumer.accept(result);
             }
           }
         };
+        for (final String relation : childSelectors.keySet()) {
+          ChildSelector selector = childSelectors.get(relation);
+          Long id = BeeUtils.peek(DataUtils.parseIdList(selector.getValue()));
+
+          if (DataUtils.isId(id)) {
+            Queries.getRowSet(selector.getOracle().getViewName(), null, Filter.compareId(id),
+                new RowSetCallback() {
+                  @Override
+                  public void onSuccess(BeeRowSet result) {
+                    relations.put(relation, result);
+                    executor.accept(null, null);
+                  }
+                });
+          } else {
+            executor.accept(null, null);
+          }
+        }
         for (int i = 0; i < parts.size(); i++) {
           String part = parts.get(i);
 

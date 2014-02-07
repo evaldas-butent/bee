@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Group" relation="CriteriaGroups" notNull="true" label="=criteriaGroup" cascade="DELETE" />
     <String name="Criterion" precision="50" notNull="true" label="=criterionName" />
-    <String name="Value" precision="100" label="=criterionValue" />
+    <String name="Value" precision="200" label="=criterionValue" />
     <Numeric name="Ordinal" precision="2" label="=ordinal" />
   </Fields>
   <Constraints>

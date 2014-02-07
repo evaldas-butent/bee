@@ -12,7 +12,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.io.BufferedInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -40,16 +39,6 @@ public class FileServlet extends LoginServlet {
 
   @EJB
   FileStorageBean fs;
-
-  private static void close(Closeable resource) {
-    if (resource != null) {
-      try {
-        resource.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
 
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
@@ -127,7 +116,11 @@ public class FileServlet extends LoginServlet {
       logger.error(e);
     } finally {
       if (input != null) {
-        close(input);
+        try {
+          input.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
       if (isTemporary) {
         logger.debug("File deleted:", file.getAbsolutePath(), file.delete());
