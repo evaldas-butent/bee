@@ -104,22 +104,21 @@
       <page>
         <text>=additionalInfo</text>
         <FlowPanel>
-	      <FlowPanel class="flexBox-horizontal-top" 
-	        style="margin-top: 2ex; margin-bottom: 1ex;">
-	        <Label text="=ecClientPersonCode" style="&lbl;" />
-	        <InputText source="PersonCode" style="&inp;" />
-	
-	        <Label text="=ecClientActivity" style="&lbl;" />
-	        <InputArea source="Activity" style="&inp; height: 40px;" />
-	      </FlowPanel>
-	      
-	      <FlowPanel style="margin-left: 2em;">
-	        <Label text="=ecKeyboardShortcuts" />
+          <FlowPanel class="flexBox-horizontal-top" style="margin-top: 2ex; margin-bottom: 1ex;">
+            <Label text="=ecClientPersonCode" style="&lbl;" />
+            <InputText source="PersonCode" style="&inp;" />
+
+            <Label text="=ecClientActivity" style="&lbl;" />
+            <InputArea source="Activity" style="&inp; height: 40px;" />
+          </FlowPanel>
+      
+          <FlowPanel style="margin-left: 2em;">
+            <Label text="=ecKeyboardShortcuts" />
   
             <CheckBox text="=ecToggleListPrice" source="ToggleListPrice" style="&toggle;" />
             <CheckBox text="=ecTogglePrice" source="TogglePrice" style="&toggle;" />
             <CheckBox text="=ecToggleStockLimit" source="ToggleStockLimit" style="&toggle;" />
-	      </FlowPanel>
+          </FlowPanel>
         </FlowPanel>
       </page>
 

@@ -31,6 +31,9 @@
 
     <SimpleColumn name="SeparateAttendees" />
 
+    <SimpleColumn name="MultidayLayout" />
+    <SimpleColumn name="MultidayTaskLayout" />
+
     <SimpleColumn name="DayView" />
     <SimpleColumn name="DaysView" />
     <SimpleColumn name="WorkWeekView" />
@@ -46,6 +49,33 @@
           <SimpleColumn alias="OwnerLastName" name="LastName" />
         </SimpleJoin>
       </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="AssignedTasks" />
+    <SimpleColumn name="AssignedTasksBackground" />
+    <SimpleColumn name="AssignedTasksForeground" />
+    
+    <SimpleColumn name="AssignedTasksStyle" />
+    <SimpleJoin name="AssignedTasksStyle" joinType="LEFT">
+      <SimpleColumn alias="AssignedTasksStyleName" name="Name" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="DelegatedTasks" />
+    <SimpleColumn name="DelegatedTasksBackground" />
+    <SimpleColumn name="DelegatedTasksForeground" />
+
+    <SimpleColumn name="DelegatedTasksStyle" />
+    <SimpleJoin name="DelegatedTasksStyle" joinType="LEFT">
+      <SimpleColumn alias="DelegatedTasksStyleName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ObservedTasks" />
+    <SimpleColumn name="ObservedTasksBackground" />
+    <SimpleColumn name="ObservedTasksForeground" />
+
+    <SimpleColumn name="ObservedTasksStyle" />
+    <SimpleJoin name="ObservedTasksStyle" joinType="LEFT">
+      <SimpleColumn alias="ObservedTasksStyleName" name="Name" />
     </SimpleJoin>
   </Columns>
   <Order>

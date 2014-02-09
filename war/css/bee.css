@@ -1125,22 +1125,20 @@
 .bee-TabbedPages-tab {
   display: inline-block;
   height: 25px;
-  background-color: white;
   border: 1px solid #e4e4e4;
   padding: 0 10px;
   cursor: pointer;
   margin-left: 3px;
 }
 .bee-TabbedPages-tab:hover {
-  background-color : WhiteSmoke;
+  border-color: blue;
 }
 
 .bee-TabbedPages-tabSelected {
-  background-color: #f2f2f2;
-  border-bottom-color: transparent;
+  background-color : #dfd;
+  border-color: green;
   z-index: 1;
   cursor: default;
-  padding-bottom: 3px;  
 }
 
 .bee-TabbedPages-content {
@@ -1859,14 +1857,11 @@
 
 .bee-ColorEditor-container {
   position: relative;
-  width: 200px;
+  width: 120px;
   height: 23px;
 }
 .bee-ColorEditor-textBox {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 25px;
+  width: calc(100% - 30px);
   margin: 0;
 }
 .bee-ColorEditor-picker {
@@ -1907,9 +1902,16 @@
   text-decoration: underline;
   cursor: pointer;
 }
+.bee-InternalLink:hover {
+  color: #00e;
+}
+
 .bee-ActionCellLink {
   text-decoration: underline;
   cursor: pointer;
+}
+.bee-ActionCellLink:hover {
+  color: #00e;
 }
 
 .bee-TreeView-actions img {

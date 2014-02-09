@@ -5,11 +5,16 @@
   newRowForm="Calendar" editForm="Calendar" favorite="Name" flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <DataColumn name="Name" caption="=calName" visible="true" />
-    <ActionColumn name="Open" source="Name" caption="=calLinkOpen" element="link" sortable="false" />
+    <DataColumn name="Name" visible="true" />
+    <ActionColumn name="Open" source="Name" label="=calLinkOpen" element="link"
+      sortable="false" filterOptions="-" />
 
     <DataColumn name="Description" caption="=calDescription" sortable="false" />
 
     <RelColumn name="Owner" caption="=owner" />
+    
+    <DataColumn name="AssignedTasks" visible="false" />
+    <DataColumn name="DelegatedTasks" visible="false" />
+    <DataColumn name="ObservedTasks" visible="false" />
   </g:columns>
 </g:Grid>

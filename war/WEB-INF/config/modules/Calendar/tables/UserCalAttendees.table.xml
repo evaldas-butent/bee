@@ -12,7 +12,7 @@
     <Integer name="Ordinal" label="=ordinal" />
     <String name="Caption" precision="100" label="=caption" />
     
-    <String name="Background" precision="100" label="=backgroud" />
+    <String name="Background" precision="100" label="=background" />
     <String name="Foreground" precision="100" label="=foreground" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
   </Fields>

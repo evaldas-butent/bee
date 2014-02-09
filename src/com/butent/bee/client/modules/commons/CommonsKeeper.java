@@ -20,9 +20,11 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -108,7 +110,11 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
-    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UserGroupMembersInterceptor());
+
+    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UniqueChildInterceptor(
+        Localized.getConstants().userGroupAddMembers(),
+        COL_UG_GROUP, COL_UG_USER, VIEW_USERS, Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
+        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME, ALS_POSITION_NAME)));
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

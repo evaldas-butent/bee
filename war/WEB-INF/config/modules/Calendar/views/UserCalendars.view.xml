@@ -24,6 +24,9 @@
 
     <SimpleColumn name="SeparateAttendees" />
 
+    <SimpleColumn name="MultidayLayout" />
+    <SimpleColumn name="MultidayTaskLayout" />
+
     <SimpleColumn name="DayView" />
     <SimpleColumn name="DaysView" />
     <SimpleColumn name="WorkWeekView" />

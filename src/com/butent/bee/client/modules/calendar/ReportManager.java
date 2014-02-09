@@ -274,7 +274,7 @@ class ReportManager {
       upperHour = null;
     }
 
-    Label atpLabel = new Label(Localized.getConstants().calAttendeesTypes());
+    Label atpLabel = new Label(Localized.getConstants().calAttendeeTypes());
     addStyle(atpLabel, "atpLabel");
     
     container.add(atpLabel);

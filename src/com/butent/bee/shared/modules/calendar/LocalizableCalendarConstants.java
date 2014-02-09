@@ -3,6 +3,10 @@ package com.butent.bee.shared.modules.calendar;
 public interface LocalizableCalendarConstants {
 
   String appointments();
+  
+  String calAddExecutorGroups();
+
+  String calAddExecutors();
 
   String calAppointmentEnd();
 
@@ -24,7 +28,7 @@ public interface LocalizableCalendarConstants {
 
   String calAttendees();
 
-  String calAttendeesTypes();
+  String calAttendeeTypes();
 
   String calDayView();
 
@@ -52,6 +56,14 @@ public interface LocalizableCalendarConstants {
 
   String calMonthView();
 
+  String calMultidayLayoutHorizontal();
+  
+  String calMultidayLayoutLastDay();
+  
+  String calMultidayLayoutVertical();
+  
+  String calMultidayLayoutWorkingHours();
+  
   String calName();
 
   String calOpaque();

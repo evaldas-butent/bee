@@ -376,8 +376,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         dataIndex = DataUtils.getColumnIndex(source, dataColumns);
       }
     }
-    String label = Localized.maybeTranslate(cd.getLabel());
 
+    String label = Localized.maybeTranslate(cd.getLabel());
     if (BeeUtils.isEmpty(label)) {
       int index;
       if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
@@ -389,8 +389,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         label = Localized.getLabel(dataColumns.get(index));
       }
     }
-    String caption = Localized.maybeTranslate(cd.getCaption());
 
+    String caption = Localized.maybeTranslate(cd.getCaption());
     if (BeeUtils.isEmpty(caption)) {
       caption = label;
     } else if (BeeUtils.isEmpty(label)) {
@@ -400,6 +400,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         label = columnId;
       }
     }
+
     String enumKey = cd.getEnumKey();
 
     CellSource cellSource;

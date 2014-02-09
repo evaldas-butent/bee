@@ -7,7 +7,7 @@
   name="Calendar" viewName="Calendars" caption="=calendar">
 
   <FlowPanel>
-    <Table style="margin-top: 1ex; border-collapse: collapse;" cellStyle="padding: 5px 10px;">
+    <Table style="margin-top: 1ex; border-collapse: collapse;" cellStyle="padding: 5px 1em;">
       <row>
         <Label text="=name" class="bee-required" />
         <InputText source="Name" />
@@ -15,7 +15,9 @@
         <DataSelector source="Owner" />
       </row>
       <row>
-        <Label text="=description" />
+        <cell verticalAlignment="top">
+          <Label text="=description" />
+        </cell>
         <cell colSpan="3">
           <InputArea source="Description" visibleLines="3" style="width: 100%;" />
         </cell>
@@ -24,21 +26,64 @@
   
     <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 120px; bottom: 1ex;">
       <page>
-        <text>=calAttendeesTypes</text>
+        <text>=calAttendeeTypes</text>
         <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />
       </page>
       <page>
         <text>=calAppointmentAttendees</text>
         <ChildGrid name="CalendarAttendees" relColumn="Calendar" />
       </page>
+
       <page>
         <text>=persons</text>
         <ChildGrid name="CalendarPersons" relColumn="Calendar" />
       </page>
+
       <page>
         <text>=appointmentTypes</text>
         <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
       </page>
+
+      <page>
+        <text>=tasks</text>
+        <Table style="border-collapse: collapse;" cellStyle="padding: 5px 1em;">
+          <row>
+            <cell><text/></cell>
+            <Label text="=background" horizontalAlignment="center" />
+            <Label text="=foreground" horizontalAlignment="center" />
+            <Label text="=style" horizontalAlignment="center" />
+          </row>
+              
+          <row>
+            <CheckBox source="AssignedTasks" text="=calTasksAssigned" />
+            <ColorEditor source="AssignedTasksBackground" />
+            <ColorEditor source="AssignedTasksForeground" />
+            <DataSelector source="AssignedTasksStyle" style="width: 100px;" />
+          </row>
+          <row>
+            <CheckBox source="DelegatedTasks" text="=calTasksDelegated" />
+            <ColorEditor source="DelegatedTasksBackground" />
+            <ColorEditor source="DelegatedTasksForeground" />
+            <DataSelector source="DelegatedTasksStyle" style="width: 100px;" />
+          </row>
+          <row>
+            <CheckBox source="ObservedTasks" text="=calTasksObserved" />
+            <ColorEditor source="ObservedTasksBackground" />
+            <ColorEditor source="ObservedTasksForeground" />
+            <DataSelector source="ObservedTasksStyle" style="width: 100px;" />
+          </row>
+        </Table>
+      </page>
+
+      <page>
+        <text>=crmTaskExecutors</text>
+        <ChildGrid name="CalendarExecutors" relColumn="Calendar" />
+      </page>
+      <page>
+        <text>=crmTaskExecutorGroups</text>
+        <ChildGrid name="CalExecutorGroups" relColumn="Calendar" />
+      </page>
+
       <page>
         <text>=settings</text>
         <xi:include href="widgets/Settings.widget.xml" />

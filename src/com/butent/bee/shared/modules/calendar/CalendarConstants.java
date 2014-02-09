@@ -54,6 +54,24 @@ public final class CalendarConstants {
       return getCaption(Localized.getConstants());
     }
   }
+  
+  public enum MultidayLayout implements HasCaption {
+    HORIZONTAL(Localized.getConstants().calMultidayLayoutHorizontal()),
+    VERTICAL(Localized.getConstants().calMultidayLayoutVertical()),
+    WORKING_HOURS(Localized.getConstants().calMultidayLayoutWorkingHours()),
+    LAST_DAY(Localized.getConstants().calMultidayLayoutLastDay());
+    
+    private final String caption;
+
+    private MultidayLayout(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
 
   public enum Report implements HasCaption {
     BUSY_MONTHS(Localized.getConstants().calReportTypeBusyMonths()),
@@ -164,9 +182,10 @@ public final class CalendarConstants {
 
   public static void register() {
     EnumUtils.register(AppointmentStatus.class);
+    EnumUtils.register(MultidayLayout.class);
     EnumUtils.register(ResponseStatus.class);
-    EnumUtils.register(Transparency.class);
     EnumUtils.register(TimeBlockClick.class);
+    EnumUtils.register(Transparency.class);
     EnumUtils.register("Calendar_Visibility", Visibility.class);
   }
 
@@ -235,8 +254,9 @@ public final class CalendarConstants {
 
   public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
-  public static final String GRID_CALENDARS = "Calendars";
   public static final String GRID_APPOINTMENTS = "Appointments";
+  public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
+  public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
 
@@ -261,6 +281,9 @@ public final class CalendarConstants {
   public static final String COL_TIME_BLOCK_CLICK_NUMBER = "TimeBlockClickNumber";
 
   public static final String COL_SEPARATE_ATTENDEES = "SeparateAttendees";
+
+  public static final String COL_MULTIDAY_LAYOUT = "MultidayLayout";
+  public static final String COL_MULTIDAY_TASK_LAYOUT = "MultidayTaskLayout";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "CompanyName";
@@ -368,6 +391,24 @@ public final class CalendarConstants {
   public static final String COL_ENABLED = "Enabled";
   public static final String COL_ORDINAL = "Ordinal";
 
+  public static final String COL_ASSIGNED_TASKS = "AssignedTasks";
+  public static final String COL_ASSIGNED_TASKS_BACKGROUND = "AssignedTasksBackground";
+  public static final String COL_ASSIGNED_TASKS_FOREGROUND = "AssignedTasksForeground";
+  public static final String COL_ASSIGNED_TASKS_STYLE = "AssignedTasksStyle";
+  
+  public static final String COL_DELEGATED_TASKS = "DelegatedTasks";
+  public static final String COL_DELEGATED_TASKS_BACKGROUND = "DelegatedTasksBackground";
+  public static final String COL_DELEGATED_TASKS_FOREGROUND = "DelegatedTasksForeground";
+  public static final String COL_DELEGATED_TASKS_STYLE = "DelegatedTasksStyle";
+
+  public static final String COL_OBSERVED_TASKS = "ObservedTasks";
+  public static final String COL_OBSERVED_TASKS_BACKGROUND = "ObservedTasksBackground";
+  public static final String COL_OBSERVED_TASKS_FOREGROUND = "ObservedTasksForeground";
+  public static final String COL_OBSERVED_TASKS_STYLE = "ObservedTasksStyle";
+
+  public static final String COL_EXECUTOR_USER = "User";
+  public static final String COL_EXECUTOR_GROUP = "Group";
+  
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 

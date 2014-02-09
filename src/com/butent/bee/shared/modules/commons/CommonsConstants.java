@@ -218,6 +218,7 @@ public final class CommonsConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_GROUP_SETTINGS = "UserGroupSettings";
   public static final String VIEW_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
@@ -378,6 +379,8 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_USER = "User";
   public static final String COL_AUTOCOMPLETE_KEY = "Key";
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
+
+  public static final String COL_USER_GROUP_SETTINGS_NAME = "Name";
 
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";

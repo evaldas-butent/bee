@@ -9,7 +9,7 @@
       choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName" />
     <RelColumn name="LastName" caption="=lastName" visible="true"
       choiceColumns="LastName FirstName CompanyName" searchableColumns="LastName" />
-    <RelColumn name="CompanyName" caption="=company"
+    <RelColumn name="CompanyName" label="=company"
       choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
   </g:columns>
 </g:Grid>

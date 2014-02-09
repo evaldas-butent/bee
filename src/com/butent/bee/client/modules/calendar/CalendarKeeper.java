@@ -31,6 +31,7 @@ import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -41,6 +42,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
@@ -182,6 +184,18 @@ public final class CalendarKeeper {
   public static void register() {
     GridFactory.registerGridInterceptor(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
+    GridFactory.registerGridInterceptor(GRID_CALENDAR_EXECUTORS, new UniqueChildInterceptor(
+        Localized.getConstants().calAddExecutors(),
+        COL_CALENDAR, COL_EXECUTOR_USER, CommonsConstants.VIEW_USERS,
+        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
+        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.ALS_COMPANY_NAME, CommonsConstants.ALS_POSITION_NAME)));
+
+    GridFactory.registerGridInterceptor(GRID_CAL_EXECUTOR_GROUPS, new UniqueChildInterceptor(
+        Localized.getConstants().calAddExecutorGroups(),
+        COL_CALENDAR, COL_EXECUTOR_GROUP, CommonsConstants.VIEW_USER_GROUP_SETTINGS,
+        CommonsConstants.COL_USER_GROUP_SETTINGS_NAME));
+    
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);

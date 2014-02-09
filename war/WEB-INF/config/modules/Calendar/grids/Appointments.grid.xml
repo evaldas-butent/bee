@@ -6,35 +6,31 @@
   newRowForm="Appointment" editForm="Appointment" order="AppointmentID desc"
   >
   <g:columns>
-    <RelColumn name="CompanyName" caption="=client" />
-    <RelColumn name="CompanyPhone" caption="=phone" />
+    <DataColumn name="TypeName" label="=calAppointmentType" />
+    <DataColumn name="Summary" visible="true" maxWidth="200" />
 
-    <RelColumn name="VehicleNumber" caption="=vehicleNumber" />
-    <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="=vehicleModel" />
+    <DataColumn name="Location" visible="false" maxWidth="200" />
+    <DataColumn name="Description" visible="false" maxWidth="200" />
 
-    <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
-      caption="=calAppointmentStart" visible="true" />
-    <CalcColumn type="string" name="End" sortBy="EffectiveEnd EndDateTime EndDate"
-      caption="=calAppointmentEnd" />
+    <DataColumn name="CompanyName" label="=company" />
+    <DataColumn name="CompanyPhone" visible="false" />
 
-    <DataColumn name="Summary" caption="=summary" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" />
+    <DataColumn name="VehicleNumber" visible="false" />
+    <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" visible="false" />
 
-    <DataColumn name="Status" caption="=calAppointmentStatus" />
+    <DataColumn name="StartDateTime" visible="true" />
+    <DataColumn name="EndDateTime" visible="true" />
 
-    <RelColumn name="Organizer" caption="=responsibleEmployee">
-      <renderToken source="OrganizerFirstName" />
-      <renderToken source="OrganizerLastName" />
-      <renderToken source="OrganizerCompanyName" prefix=", " />
-    </RelColumn>
+    <DataColumn name="Status" />
 
-    <DataColumn name="ColorName" caption="=color">
+    <DataColumn name="Organizer" renderColumns="OrganizerFirstName OrganizerLastName" />
+
+    <DataColumn name="ColorName" label="=color" visible="false">
       <dynStyle>
-        <ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline>
+        <ui:inline>background-color: [row.Background]; color: [row.Foreground];</ui:inline>
       </dynStyle>
     </DataColumn>
-    <DataColumn name="StyleName" caption="=style" />
 
-    <DataColumn name="TypeName" caption="=calAppointmentType" />
+    <DataColumn name="StyleName" label="=style" visible="false" />
   </g:columns>
 </g:Grid>
