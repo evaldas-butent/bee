@@ -7,7 +7,5 @@
   <Fields>
     <Relation name="Company" notNull="true" relation="Companies" label="=company" />
     <Relation name="AppointmentType" notNull="true" relation="AppointmentTypes" label="=calAppointmentType" />
-
-    <Relation name="TimeZone" relation="TimeZones" label="=timeZone"/>
   </Fields>
 </Table>

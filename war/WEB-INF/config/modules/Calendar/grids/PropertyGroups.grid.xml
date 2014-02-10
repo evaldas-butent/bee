@@ -7,7 +7,7 @@
   >
   <g:columns>
     <DataColumn name="Name" caption="=calName" minWidth="100" maxWidth="200" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" flexShrink="5" />
+    <DataColumn name="Description" caption="=description" flexShrink="5" />
 
     <RelColumn name="DefaultPropertyName" caption="=calDefaultParameter" newRowEnabled="false"
       flexGrow="0" />

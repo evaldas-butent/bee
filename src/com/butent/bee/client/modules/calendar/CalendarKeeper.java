@@ -182,8 +182,6 @@ public final class CalendarKeeper {
   }
 
   public static void register() {
-    GridFactory.registerGridInterceptor(GRID_APPOINTMENTS, new AppointmentGridHandler());
-
     GridFactory.registerGridInterceptor(GRID_CALENDAR_EXECUTORS, new UniqueChildInterceptor(
         Localized.getConstants().calAddExecutors(),
         COL_CALENDAR, COL_EXECUTOR_USER, CommonsConstants.VIEW_USERS,

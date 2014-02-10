@@ -17,9 +17,6 @@
         <SimpleColumn name="LastName" />
       </SimpleJoin>
     </SimpleJoin>
-    
-    <SimpleColumn name="Creator" />
-    <SimpleColumn name="Organizer" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />

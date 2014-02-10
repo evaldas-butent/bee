@@ -12,6 +12,6 @@
     <DataColumn name="Hours" caption="=unitHours" flexGrow="0" />
     <DataColumn name="Minutes" caption="=unitMinutes" flexGrow="0" />
 
-    <DataColumn name="Description" caption="=calDescription" flexGrow="2" flexShrink="2" />
+    <DataColumn name="Description" caption="=description" flexGrow="2" flexShrink="2" />
   </g:columns>
 </g:Grid>

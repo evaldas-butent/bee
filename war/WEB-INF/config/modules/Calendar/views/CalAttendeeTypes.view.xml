@@ -12,7 +12,6 @@
       <SimpleColumn alias="TypeName" name="Name" />
       <SimpleColumn alias="TypeDescription" name="Description" />
       <SimpleColumn alias="TypeTransparency" name="Transparency" />
-      <SimpleColumn alias="TypeResource" name="Resource" />
     </SimpleJoin>
   </Columns>
   <Order>

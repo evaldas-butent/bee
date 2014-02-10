@@ -9,7 +9,7 @@
     <ActionColumn name="Open" source="Name" label="=calLinkOpen" element="link"
       sortable="false" filterOptions="-" />
 
-    <DataColumn name="Description" caption="=calDescription" sortable="false" />
+    <DataColumn name="Description" caption="=description" sortable="false" />
 
     <RelColumn name="Owner" caption="=owner" />
     

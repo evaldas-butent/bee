@@ -6,7 +6,7 @@
   <g:body height="80" /> 
   <g:columns>
     <DataColumn name="Name" caption="=calAppointmentStyleName" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" />
+    <DataColumn name="Description" caption="=description" />
 
     <DataColumn name="Simple" caption="=appointmentStyleSimple" whiteSpace="pre-wrap" />
     <DataColumn name="Multi" caption="=calMultiday" whiteSpace="pre-wrap" />

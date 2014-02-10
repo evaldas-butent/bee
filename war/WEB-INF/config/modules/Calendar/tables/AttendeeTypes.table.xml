@@ -9,9 +9,5 @@
     <Text name="Description" label="=calAppointmentTypeDescription" />
 
     <Enum name="Transparency" key="Transparency" label="=calTransparency" />
-    <Boolean name="Resource" label="=resource" />
-    
-    <String name="AttendeeCreator" precision="30" />
-    <String name="AttendeeEditor" precision="30" />
   </Fields>
 </Table>

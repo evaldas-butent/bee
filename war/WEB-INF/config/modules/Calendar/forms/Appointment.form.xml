@@ -2,93 +2,74 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-  xmlns:d="http://www.butent.com/decorator"
 
   name="Appointment" viewName="Appointments" caption="=calAppointment">
 
-  <FlowPanel>
-    <AbsolutePanel style="top: 5px; height: 240px; left: 1em; right: 1em;">
-      <layer top="0" bottom="0" width="240">
-        <FlowPanel>
-          <DataSelector source="CompanyName" caption="=company" style="width: 140px;"
-            d:size="80" d:unit="px" />
-          <TextLabel source="CompanyPhone" caption="=phone" inline="true"
-            d:size="80" d:unit="px" />
-          <TextLabel caption="=email" inline="true" textOnly="true" d:size="80" d:unit="px"
-             renderColumns="CompanyLabel CompanyEmail">
-            <renderer type="mail" />
-          </TextLabel>
-          <br/>
+  <FlowPanel class="flexBox-vertical">
+    <Table style="border-collapse: collapse; margin-top: 1ex;" cellStyle="padding: 5px;">
+      <row>
+        <Label text="=summary" />
+        <InputText source="Summary" />
+        <Label text="=location" />
+        <InputText source="Location" />
+      </row>
 
-          <InputText source="Summary" caption="=summary"
-            style="width: 222px;" decorator="caption-top" />
-          <InputArea source="Description" caption="=calDescription" visibleLines="5"
-            style="width: 222px;" decorator="caption-top" />
-        </FlowPanel>
-      </layer>
+      <row>
+        <Label text="=company" />
+        <DataSelector source="Company" />
+        <Label text="=calAppointmentType" />
+        <DataSelector source="AppointmentType" />
+      </row>
+ 
+      <row>
+        <Label text="=calAppointmentStart" />
+        <InputDateTime source="StartDateTime" />
+        <Label text="=calAppointmentStatus" />
+        <ListBox source="Status" />
+      </row>
 
-      <layer top="0" bottom="0" left="260" right="260">
-        <FlowPanel>
-          <InputDate source="StartDate" caption="=scheduledStartingDate"
-            style="width: 80px;" d:size="180" d:unit="px" />
-          <div style="height: 2px;" />
-          <InputDate source="EndDate" caption="=scheduledEndingDate"
-            style="width: 80px;" d:size="180" d:unit="px" />
-          <br/>  
+      <row>
+        <Label text="=calAppointmentEnd" />
+        <InputDateTime source="EndDateTime" />
+      </row>
 
-          <InputDateTime source="StartDateTime" caption="=scheduledStartingTime" step="30"
-            style="width: 120px;" d:size="180" d:unit="px" />
-          <div style="height: 2px;" />
-          <InputDateTime source="EndDateTime" caption="=scheduledEndingTime" step="30"
-            style="width: 120px;" d:size="180" d:unit="px" />
-          <br/>  
+      <row>
+        <Label text="=color" />
+        <DataSelector source="Color" />
+        <Label text="=style" />
+        <DataSelector source="Style" />
+      </row>
 
-          <InputDateTime source="EffectiveStart" caption="=startDate" step="5"
-            style="width: 120px;" d:size="180" d:unit="px" />
-          <div style="height: 2px;" />
-          <InputDateTime source="EffectiveEnd" caption="=ended" step="5"
-            style="width: 120px;" d:size="180" d:unit="px" />
-          <br/>  
+      <row>
+        <Label text="=registered" />
+        <InputDateTime source="Created" />
+        <Label text="=creator" />
+        <DataSelector source="Creator" editSource="CreatorCompanyPerson" />
+      </row>
 
-          <ListBox source="Status" caption="=calAppointmentStatus"
-            style="width: 120px;" d:size="180" d:unit="px" />
-        </FlowPanel>
-      </layer>
+      <row>
+        <Radio source="Transparency" vertical="true" />
+        <Radio source="Visibility" vertical="true" />
+      </row>
+    </Table>
+    
+    <HorizontalPanel>
+      <Label text="=responsibleEmployee" />
+      <ChildSelector childTable="AppointmentOwners" viewName="Users" />
+    </HorizontalPanel>
 
-      <layer top="0" bottom="0" width="260" right="0">
-        <FlowPanel>
-          <DataSelector source="AppointmentType" caption="=calAppointmentType" 
-            style="width: 140px;" d:size="100" d:unit="px" />
-          <div style="height: 2px;" />
-          <DataSelector source="ColorName" caption="=color"
-            style="width: 140px;" d:size="100" d:unit="px" />
-          <div style="height: 2px;" />
-          <DataSelector source="Style" caption="=calStyle"
-            style="width: 140px;" d:size="100" d:unit="px" />
-
-          <br/>  
-          <DataSelector source="Organizer" caption="=responsibleEmployee" style="width: 242px;" 
-            decorator="caption-top">
-            <renderToken source="OrganizerFirstName" />
-            <renderToken source="OrganizerLastName" />
-            <renderToken source="OrganizerCompanyName" prefix=", " />
-          </DataSelector>
-
-          <br/>  
-          <InputDateTime source="Created" caption="=registered"
-            style="width: 140px;" d:size="100" d:unit="px" />
-          <div style="height: 2px;" />
-          <DataSelector source="Creator" caption="=creator" editSource="CreatorCompanyPerson"
-            style="width: 140px;" d:size="100" d:unit="px"/>
-        </FlowPanel>
-      </layer>
-    </AbsolutePanel>
-
-    <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 250px; bottom: 1ex;">
+    <TabbedPages class="flexible">
       <page>
         <text>=calAppointmentAttendees</text>
         <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />
       </page>
+
+      <page>
+        <text>=description</text>
+        <SimplePanel>
+          <InputArea source="Description" class="occupy-1" />
+        </SimplePanel>
+      </page>  
 
       <page>
         <text>=calParameters</text>
@@ -157,53 +138,6 @@
         <text>=calAppointmentHistory</text>
         <ChildGrid name="AppointmentHistory" relColumn="Appointment" />
       </page>
-
-      <page>
-        <text>=additionalInfo</text>
-        <Table style="margin-top: 2ex;" cellStyle="padding: 5px;">
-          <row>
-            <Radio source="Transparency" vertical="false" />
-            <Radio source="Visibility" vertical="false" />
-            <CheckBox source="ReadOnly" text="=calReadOnly" />
-          </row>
-
-          <row>
-            <InputText source="Location" caption="=location" 
-              style="width: 200px;" d:size="120" d:unit="px" />
-            <InputText source="HtmlLink" caption="=calHtmlLink"
-              style="width: 200px;" d:size="120" d:unit="px" />
-          </row>
-
-          <row>
-            <DataSelector source="StartTimeZone" caption="=calStartTimeZone"
-              style="width: 200px;" d:size="120" d:unit="px" />
-            <DataSelector source="EndTimeZone" caption="=calEndTimeZone"
-              style="width: 200px;" d:size="120" d:unit="px" />
-            <CheckBox source="UseDefaultReminders" text="=calUseDefaultReminders" />
-          </row>
-
-          <row>
-            <InputArea source="Recurrence" caption="=calRecurrence" style="width: 320px;" 
-              decorator="caption-top" />
-            <LongLabel source="RecurringEventId" caption="=calRecurringEventId" inline="true"
-              style="width: 200px;" d:size="120" d:unit="px" />
-          </row>
-
-          <row>
-            <InputText source="ICalUID" caption="=calICalUID"
-              style="width: 200px;" d:size="120" d:unit="px" />
-            <InputInteger source="Sequence" caption="=calSequence"
-              style="width: 200px;" d:size="120" d:unit="px" />
-          </row>
-
-          <row>
-            <CheckBox source="AnyoneCanAddSelf" text="=calAnyoneCanAddSelf" />
-            <CheckBox source="GuestsCanInviteOthers" text="=calGuestsCanInviteOthers" />
-            <CheckBox source="GuestsCanSeeOtherGuests" text="=calGuestsCanSeeOtherGuests" />
-          </row>
-        </Table>
-      </page>
-
     </TabbedPages>
   </FlowPanel>
 </f:Form>  

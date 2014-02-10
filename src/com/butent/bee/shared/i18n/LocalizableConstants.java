@@ -216,8 +216,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String enterTime();
 
-  String ended();
-
   String error();
 
   String exchangeCode();
@@ -543,8 +541,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String signOut();
 
   String sorry();
-
-  String startDate();
 
   String startRow();
 

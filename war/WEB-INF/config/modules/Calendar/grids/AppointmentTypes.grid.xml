@@ -7,7 +7,7 @@
   <g:body height="100" /> 
   <g:columns>
     <DataColumn name="Name" caption="=calAppointmentTypeName" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" whiteSpace="pre-wrap" />
+    <DataColumn name="Description" caption="=description" whiteSpace="pre-wrap" />
 
     <RelColumn name="ThemeName" caption="=colorTheme" />
     <RelColumn name="StyleName" caption="=calAppointmentStyle" />

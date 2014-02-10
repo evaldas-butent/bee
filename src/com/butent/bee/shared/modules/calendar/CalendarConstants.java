@@ -91,15 +91,6 @@ public final class CalendarConstants {
     }
   }
 
-  public enum ResponseStatus implements HasCaption {
-    NEEDS_ACTION, DECLINED, TENTATIVE, ACCEPTED;
-
-    @Override
-    public String getCaption() {
-      return BeeUtils.proper(this);
-    }
-  }
-
   public enum Transparency implements HasCaption {
     OPAQUE(Localized.getConstants().calOpaque()),
     TRANSPARENT(Localized.getConstants().calTransparent());
@@ -120,12 +111,13 @@ public final class CalendarConstants {
     }
   }
 
-  public enum Visibility implements HasCaption {
-    PUBLIC(Localized.getConstants().calPublic()), PRIVATE(Localized.getConstants().calPrivate());
+  public enum CalendarVisibility implements HasCaption {
+    PUBLIC(Localized.getConstants().calPublic()),
+    PRIVATE(Localized.getConstants().calPrivate());
 
     private final String caption;
 
-    private Visibility(String caption) {
+    private CalendarVisibility(String caption) {
       this.caption = caption;
     }
 
@@ -183,10 +175,9 @@ public final class CalendarConstants {
   public static void register() {
     EnumUtils.register(AppointmentStatus.class);
     EnumUtils.register(MultidayLayout.class);
-    EnumUtils.register(ResponseStatus.class);
     EnumUtils.register(TimeBlockClick.class);
     EnumUtils.register(Transparency.class);
-    EnumUtils.register("Calendar_Visibility", Visibility.class);
+    EnumUtils.register(CalendarVisibility.class);
   }
 
   public static final String CALENDAR_MODULE = "Calendar";
@@ -254,7 +245,6 @@ public final class CalendarConstants {
 
   public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
-  public static final String GRID_APPOINTMENTS = "Appointments";
   public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 
@@ -302,8 +292,6 @@ public final class CalendarConstants {
   public static final String COL_ATTENDEE_BACKGROUND = "AttendeeBackground";
   public static final String COL_ATTENDEE_FOREGROUND = "AttendeeForeground";
 
-  public static final String COL_TIME_ZONE = "TimeZone";
-
   public static final String COL_PROPERTY = "Property";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
   public static final String COL_PROPERTY_NAME = "PropertyName";
@@ -319,14 +307,8 @@ public final class CalendarConstants {
   public static final String COL_ERROR = "Error";
   public static final String COL_RECIPIENT = "Recipient";
 
-  public static final String COL_START_DATE = "StartDate";
   public static final String COL_START_DATE_TIME = "StartDateTime";
-
-  public static final String COL_END_DATE = "EndDate";
   public static final String COL_END_DATE_TIME = "EndDateTime";
-
-  public static final String COL_EFFECTIVE_START = "EffectiveStart";
-  public static final String COL_EFFECTIVE_END = "EffectiveEnd";
 
   public static final String COL_VEHICLE = "Vehicle";
   public static final String COL_VEHICLE_OWNER = "VehicleOwner";

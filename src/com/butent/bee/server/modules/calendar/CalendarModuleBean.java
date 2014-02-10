@@ -60,9 +60,9 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
@@ -607,7 +607,7 @@ public class CalendarModuleBean implements BeeModule {
         Filter.isNull(COL_CREATOR),
         Filter.isNull(COL_VISIBILITY),
         ComparisonFilter.isNotEqual(COL_VISIBILITY,
-            new IntegerValue(Visibility.PRIVATE.ordinal())));
+            new IntegerValue(CalendarVisibility.PRIVATE.ordinal())));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
     if (appointments == null || appointments.isEmpty()) {

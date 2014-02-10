@@ -6,15 +6,9 @@
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" label="=calName" />
-    <Text name="Description" label="=calDescription" />
+    <Text name="Description" label="=description" />
 
-    <String name="Location" precision="100" label="=location" />
-    <Relation name="TimeZone" relation="TimeZones" label="=timeZone" />
-
-    <Boolean name="ReadOnly" label="=calReadOnly" />
-    <Integer name="Visibility" label="=calVisibility" />
-
-    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
+    <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" />
 
     <Integer name="DefaultDisplayedDays" defValue="3" label="=calDefaultDisplayedDays" />
 

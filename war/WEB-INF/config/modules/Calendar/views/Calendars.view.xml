@@ -7,16 +7,7 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Description" />
 
-    <SimpleColumn name="Location" />
-    <SimpleColumn name="TimeZone" />
-    <SimpleJoin name="TimeZone" joinType="LEFT">
-      <SimpleColumn alias="TimeZoneName" name="Name" />
-    </SimpleJoin>
-
-    <SimpleColumn name="ReadOnly" />
     <SimpleColumn name="Visibility" />
-
-    <SimpleColumn name="Transparency" />
 
     <SimpleColumn name="DefaultDisplayedDays" />
 
