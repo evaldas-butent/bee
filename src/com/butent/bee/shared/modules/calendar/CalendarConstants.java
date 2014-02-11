@@ -218,6 +218,9 @@ public final class CalendarConstants {
 
   public static final String TBL_REPORT_OPTIONS = "ReportOptions";
 
+  public static final String TBL_CALENDAR_EXECUTORS = "CalendarExecutors";
+  public static final String TBL_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
+  
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_USER_CAL_ATTENDEES = "UserCalAttendees";
@@ -261,6 +264,7 @@ public final class CalendarConstants {
   public static final String COL_USER_CALENDAR = "UserCalendar";
 
   public static final String COL_CALENDAR_NAME = "Name";
+  public static final String COL_CALENDAR_OWNER = "Owner";
 
   public static final String COL_DEFAULT_DISPLAYED_DAYS = "DefaultDisplayedDays";
 
