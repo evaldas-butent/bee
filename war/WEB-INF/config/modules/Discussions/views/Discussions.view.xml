@@ -21,6 +21,16 @@
     </SimpleJoin>
 
     <SimpleColumn name="Accessibility" />
+   
+    <SimpleColumn name="Topic" />
+    <SimpleJoin name="Topic" joinType="LEFT">
+      <SimpleColumn alias="TopicName" name="Name" />
+    </SimpleJoin>
+     
+    <SimpleColumn name="VisibleFrom" />
+    <SimpleColumn name="VisibleTo" />
+    <SimpleColumn name="Important" />
+    <SimpleColumn name="PermitComment" />
     
     <ExternalJoin source="DiscussionsFiles" joinType="LEFT"
       name="Discussion">

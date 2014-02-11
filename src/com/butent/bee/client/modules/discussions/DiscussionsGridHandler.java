@@ -7,10 +7,12 @@ import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AttachmentRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.client.widget.FaLabel;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
@@ -24,6 +26,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -52,6 +55,10 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       return Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT));
     } else if (PROP_RELATIONS_COUNT.equals(columnName)) {
       return Images.asString(Images.get("link"));
+    } else if (PROP_ANNOUNCMENT.equals(columnName)) {
+      FaLabel fl = new FaLabel(FontAwesome.BULLHORN);
+      StyleUtils.setFontSize(fl, 16);
+      return fl.toString();
     } else {
       return super.getColumnCaption(columnName);
     }

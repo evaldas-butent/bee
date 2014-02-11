@@ -72,7 +72,7 @@
 
     <Disclosure xmlns="http://www.butent.com/widget"
       xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
-      <Label text="=discussDetailInfo" style="text-transform: uppercase; " />
+      <Label text="=discussDetailInfo" style="text-transform: uppercase;" />
 
       <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
         <FlowPanel>
@@ -133,6 +133,32 @@
         </FlowPanel>
 
         <FileGroup name="Files" />
+      </FlowPanel>
+    </Disclosure>
+    
+    <Disclosure xmlns="http://www.butent.com/widget"
+      xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
+      <Label text="=announcement" style="text-transform: uppercase;" />
+      <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
+        <FlowPanel>
+          <Label text="=adTopic" style=" min-width:80px;" />
+          <DataSelector source="Topic" style=" width: 250px" 
+            choiceColumns="Name" filter="Visible" />
+        </FlowPanel>
+        
+        <FlowPanel>
+          <Label text="=onTitle" style=" min-width:80px;" />
+          <InputDateTime source="VisibleFrom" style=" width: 100px" />
+          <Label html="—" style="margin-left:8px; margin-right:8px" />
+          <InputDateTime source="VisibleTo" style=" width: 100px" />
+        </FlowPanel>  
+        
+        <FlowPanel >
+          <Label text="=important" style=" min-width:80px;" />
+          <CheckBox source="Important" style=" min-width:70px; padding-right:18px;" /> 
+          <Label text="=prohibitComment" style=" min-width:80px;" />
+          <CheckBox source="PermitComment" style=" min-width:70px; padding-right:18px;" /> 
+        </FlowPanel>
       </FlowPanel>
     </Disclosure>
 

@@ -89,6 +89,31 @@
         choiceColumns="Name DocumentDate Number"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
-
+    
+    &separator;
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=announcement" style="&header;" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=adTopic" style="&lbl1; min-width:80px;" />
+      <DataSelector source="Topic" style="&inp2x; width: 250px" 
+        choiceColumns="Name" filter="Visible" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=onTitle" style="&lbl1; min-width:80px;" />
+      <InputDateTime source="VisibleFrom" style="&inp2x; width: 100px" />
+      <Label html="—" style="margin-left:8px; margin-right:8px" />
+      <InputDateTime source="VisibleTo" style="&inp2x; width: 100px" />
+    </FlowPanel>  
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=important" style="&lbl1; min-width:80px;" />
+      <CheckBox source="Important" style="&top1; min-width:70px; padding-right:18px;" /> 
+      <Label text="=prohibitComment" style="&lbl1; min-width:80px;" />
+      <CheckBox source="PermitComment" style="&top1; min-width:70px; padding-right:18px;" /> 
+    </FlowPanel>
+    
   </FlowPanel>
 </f:Form>  
