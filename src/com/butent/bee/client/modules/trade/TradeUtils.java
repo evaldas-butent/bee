@@ -47,6 +47,7 @@ public final class TradeUtils {
   private static final String STYLE_ITEMS_DATA = STYLE_ITEMS + "data";
   private static final String STYLE_ITEMS_FOOTER = STYLE_ITEMS + "footer";
 
+  private static final String COL_NAME = "Name";
   private static final String COL_TOTAL = "Total";
   private static final String COL_RATE_AMOUNT = COL_RATES_RATE + COL_TRADE_AMOUNT;
   private static final String COL_RATE_VAT = COL_RATES_RATE + COL_TRADE_VAT;

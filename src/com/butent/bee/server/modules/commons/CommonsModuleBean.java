@@ -140,7 +140,7 @@ public class CommonsModuleBean implements BeeModule {
 
     List<SearchResult> companiesSr =
         qs.getSearchResults(VIEW_COMPANIES,
-            Filter.anyContains(Sets.newHashSet(COL_NAME, COL_COMPANY_CODE, COL_PHONE,
+            Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
                 COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
 
     List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
@@ -151,7 +151,8 @@ public class CommonsModuleBean implements BeeModule {
         Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
 
     List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
-        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE), query));
+        Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
+            query));
 
     List<SearchResult> commonsSr = Lists.newArrayList();
     commonsSr.addAll(companiesSr);
@@ -687,11 +688,11 @@ public class CommonsModuleBean implements BeeModule {
       return ResponseObject.error("Wrong company ID");
     }
     SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
         .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-        .addField(TBL_CITIES, COL_NAME, COL_CITY)
-        .addField(TBL_COUNTRIES, COL_NAME, COL_COUNTRY)
+        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
         .addFrom(TBL_COMPANIES)
         .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
@@ -704,7 +705,7 @@ public class CommonsModuleBean implements BeeModule {
         ? Localized.getConstants() : Localizations.getConstants(loc);
 
     Map<String, String> translations = Maps.newHashMap();
-    translations.put(COL_NAME, constants.company());
+    translations.put(COL_COMPANY_NAME, constants.company());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
     translations.put(COL_ADDRESS, constants.address());

@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AppointmentProps" viewName="AppointmentProps" newRowCaption="=newParameter"
+  name="AppointmentProps" viewName="AppointmentProps" newRowColumns="-"
   >
   <g:columns>
-    <DataColumn name="GroupName" caption="=calAppointmentGroup" minWidth="100" visible="true" />
-    <RelColumn name="PropertyName" caption="=caption" choiceColumns="Name GroupName"
-      minWidth="100" visible="true" />
+    <DataColumn name="GroupName" label="=calParameterGroup" minWidth="100" visible="true" />
+    <DataColumn name="PropertyName" label="=calParameter" minWidth="100" visible="true" />
 
-    <DataColumn name="Hours" caption="=unitHours" />
-    <DataColumn name="Minutes" caption="=unitMinutes" />
+    <DataColumn name="Hours" />
+    <DataColumn name="Minutes" />
   </g:columns>
 </g:Grid>

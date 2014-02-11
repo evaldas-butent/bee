@@ -5,8 +5,10 @@
   idName="AppointmentPropID"
   >
   <Fields>
-    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" label="=calAppointment" />
-    <Relation name="Property" notNull="true" relation="ExtendedProperties" cascade="DELETE" label="=calAppointmentProperty" />
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE"
+      label="=calAppointment" />
+    <Relation name="Property" notNull="true" relation="ExtendedProperties" cascade="DELETE"
+      label="=calParameter" />
   </Fields>
   
   <Constraints>

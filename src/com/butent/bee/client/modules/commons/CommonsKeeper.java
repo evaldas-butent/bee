@@ -40,7 +40,7 @@ public final class CommonsKeeper {
 
       } else if (event.hasView(VIEW_COMPANIES)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
-            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
+            Lists.newArrayList(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
                 COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
 
       } else if (event.hasView(VIEW_PERSONS)) {
@@ -111,10 +111,9 @@ public final class CommonsKeeper {
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
 
-    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UniqueChildInterceptor(
-        Localized.getConstants().userGroupAddMembers(),
-        COL_UG_GROUP, COL_UG_USER, VIEW_USERS, Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
-        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME, ALS_POSITION_NAME)));
+    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
+        UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
+            COL_UG_GROUP, COL_UG_USER));
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

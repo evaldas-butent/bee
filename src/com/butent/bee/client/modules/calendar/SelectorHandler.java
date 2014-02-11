@@ -133,7 +133,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private static int getCompanyNameIndex() {
-    return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY_NAME);
+    return Data.getColumnIndex(VIEW_APPOINTMENTS, ALS_COMPANY_NAME);
   }
 
   private static void getCompanyRow(Long company, final RowCallback callback) {
@@ -228,7 +228,7 @@ class SelectorHandler implements SelectorEvent.Handler {
         Provider provider = ((HasDataProvider) gridView.getViewPresenter()).getDataProvider();
 
         if (provider != null) {
-          int index = provider.getColumnIndex(COL_PROPERTY);
+          int index = provider.getColumnIndex(COL_ATTENDEE_PROPERTY);
           Long exclude = DataUtils.isId(id) ? row.getLong(index) : null;
           List<Long> used = DataUtils.getDistinct(gridView.getRowData(), index, exclude);
 

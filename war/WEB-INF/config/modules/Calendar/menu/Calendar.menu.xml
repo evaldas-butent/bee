@@ -5,17 +5,17 @@ name="Calendar" label="=calendar" order="70"
 >
   <Item name="Calendars" label="=calendars" service="grid" parameters="Calendars" />
     
-  <Item name="Appointments" label="=appointments" service="grid" parameters="Appointments" separator="true" />
+  <Item name="Appointments" label="=calAppointments" service="grid" parameters="Appointments" separator="true" />
     
   <Item name="AppointmentTypes" label="=calAppointmentTypes" service="grid" parameters="AppointmentTypes" separator="true" />
     
   <Item name="Attendees" label="=calAppointmentAttendees" service="grid" parameters="Attendees" separator="true" />
   <Item name="AttendeeTypes" label="=calAttendeeTypes" service="grid" parameters="AttendeeTypes" />
 
-  <Item name="AppointmentProperties" label="=appointmentProperties" service="grid" parameters="ExtendedProperties" separator="true" />
-  <Item name="PropertyGroups" label="=appointmentPropertyGroups" service="grid" parameters="PropertyGroups" />
+  <Item name="AppointmentProperties" label="=calAppointmentProperties" service="grid" parameters="ExtendedProperties" separator="true" />
+  <Item name="PropertyGroups" label="=calAppointmentPropertyGroups" service="grid" parameters="PropertyGroups" />
     
-  <Item name="AppointmentStyles" label="=appointmentStyles" service="grid" parameters="AppointmentStyles" />
+  <Item name="AppointmentStyles" label="=calAppointmentStyles" service="grid" parameters="AppointmentStyles" />
 
   <Item name="Configuration" label="=settings" service="grid" parameters="Configuration" separator="true" />
 

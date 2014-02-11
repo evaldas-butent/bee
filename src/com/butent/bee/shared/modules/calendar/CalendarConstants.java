@@ -211,6 +211,7 @@ public final class CalendarConstants {
   public static final String TBL_APPOINTMENTS = "Appointments";
   public static final String TBL_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String TBL_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+  public static final String TBL_APPOINTMENT_OWNERS = "AppointmentOwners";
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
   public static final String TBL_ATTENDEES = "Attendees";
@@ -241,12 +242,14 @@ public final class CalendarConstants {
   public static final String VIEW_CAL_APPOINTMENT_TYPES = "CalAppointmentTypes";
   public static final String VIEW_CAL_ATTENDEE_TYPES = "CalAttendeeTypes";
   public static final String VIEW_CALENDAR_ATTENDEES = "CalendarAttendees";
-  public static final String VIEW_CALENDAR_PERSONS = "CalendarPersons";
 
   public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
   public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
+  public static final String GRID_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+  public static final String GRID_APPOINTMENT_OWNERS = "AppointmentOwners";
+  public static final String GRID_APPOINTMENT_PROPS = "AppointmentProps";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
 
@@ -256,8 +259,8 @@ public final class CalendarConstants {
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
   public static final String COL_USER_CALENDAR = "UserCalendar";
-  public static final String COL_CALENDAR_NAME = "CalendarName";
-  public static final String COL_NAME = "Name";
+
+  public static final String COL_CALENDAR_NAME = "Name";
 
   public static final String COL_DEFAULT_DISPLAYED_DAYS = "DefaultDisplayedDays";
 
@@ -276,27 +279,38 @@ public final class CalendarConstants {
   public static final String COL_MULTIDAY_TASK_LAYOUT = "MultidayTaskLayout";
 
   public static final String COL_COMPANY = "Company";
-  public static final String COL_COMPANY_NAME = "CompanyName";
-  public static final String COL_COMPANY_PHONE = "CompanyPhone";
-  public static final String COL_COMPANY_EMAIL = "CompanyEmail";
+  public static final String ALS_COMPANY_NAME = "CompanyName";
+  public static final String ALS_COMPANY_PHONE = "CompanyPhone";
+  public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
+
+  public static final String COL_APPOINTMENT_LOCATION = "Location";
 
   public static final String COL_APPOINTMENT = "Appointment";
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
-  public static final String COL_TYPE_NAME = "TypeName";
 
+  public static final String COL_APPOINTMENT_TYPE_NAME = "Name";
+  
   public static final String COL_ATTENDEE = "Attendee";
-  public static final String COL_ATTENDEE_NAME = "AttendeeName";
+  public static final String COL_ATTENDEE_NAME = "Name";
   public static final String COL_ATTENDEE_TYPE = "AttendeeType";
-  public static final String COL_ATTENDEE_ORDINAL = "AttendeeOrdinal";
-  public static final String COL_ATTENDEE_COLOR = "AttendeeColor";
-  public static final String COL_ATTENDEE_BACKGROUND = "AttendeeBackground";
-  public static final String COL_ATTENDEE_FOREGROUND = "AttendeeForeground";
+  
+  public static final String ALS_ATTENDEE_NAME = "AttendeeName";
+  public static final String ALS_ATTENDEE_ORDINAL = "AttendeeOrdinal";
+  public static final String ALS_ATTENDEE_COLOR = "AttendeeColor";
+  public static final String ALS_ATTENDEE_BACKGROUND = "AttendeeBackground";
+  public static final String ALS_ATTENDEE_FOREGROUND = "AttendeeForeground";
 
-  public static final String COL_PROPERTY = "Property";
+  public static final String COL_ATTENDEE_TYPE_NAME = "Name";
+  public static final String ALS_ATTENDEE_TYPE_NAME = "TypeName";
+
+  public static final String COL_PROPERTY_NAME = "Name";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
-  public static final String COL_PROPERTY_NAME = "PropertyName";
-  public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_DEFAULT_PROPERTY = "DefaultProperty";
+  public static final String ALS_PROPERTY_NAME = "PropertyName";
+  public static final String ALS_PROPERTY_GROUP_NAME = "GroupName";
+
+  public static final String COL_ATTENDEE_PROPERTY = "Property";
+  public static final String COL_APPOINTMENT_PROPERTY = "Property";
 
   public static final String COL_HOURS = "Hours";
   public static final String COL_MINUTES = "Minutes";
@@ -323,12 +337,8 @@ public final class CalendarConstants {
 
   public static final String COL_STATUS = "Status";
 
-  public static final String COL_ORGANIZER = "Organizer";
-  public static final String COL_ORGANIZER_FIRST_NAME = "OrganizerFirstName";
-  public static final String COL_ORGANIZER_LAST_NAME = "OrganizerLastName";
-
-  public static final String COL_OWNER_FIRST_NAME = "OwnerFirstName";
-  public static final String COL_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
 
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
 
@@ -353,7 +363,7 @@ public final class CalendarConstants {
   public static final String COL_ACTIVE_VIEW = "ActiveView";
 
   public static final String COL_TRANSPARENCY = "Transparency";
-  public static final String COL_TYPE_TRANSPARENCY = "TypeTransparency";
+  public static final String ALS_TYPE_TRANSPARENCY = "TypeTransparency";
 
   public static final String COL_VISIBILITY = "Visibility";
   public static final String COL_CREATOR = "Creator";
@@ -390,6 +400,8 @@ public final class CalendarConstants {
 
   public static final String COL_EXECUTOR_USER = "User";
   public static final String COL_EXECUTOR_GROUP = "Group";
+
+  public static final String COL_APPOINTMENT_OWNER = "Owner";
   
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";

@@ -132,8 +132,8 @@ final class Places {
       Places.countries = rowSet;
       
       if (BeeConst.isUndef(countryCodeIndex)) {
-        Places.countryCodeIndex = rowSet.getColumnIndex(CommonsConstants.COL_COMPANY_CODE);
-        Places.countryNameIndex = rowSet.getColumnIndex(CommonsConstants.COL_NAME);
+        Places.countryCodeIndex = rowSet.getColumnIndex(CommonsConstants.COL_COUNTRY_CODE);
+        Places.countryNameIndex = rowSet.getColumnIndex(CommonsConstants.COL_COUNTRY_NAME);
       }
     }
   }

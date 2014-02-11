@@ -24,7 +24,7 @@ public class Appointment implements Comparable<Appointment> {
   private static final int COLOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       CommonsConstants.COL_COLOR);
   private static final int COMPANY_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      COL_COMPANY_NAME);
+      ALS_COMPANY_NAME);
   private static final int CREATOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_CREATOR);
   private static final int DESCRIPTION_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_DESCRIPTION);

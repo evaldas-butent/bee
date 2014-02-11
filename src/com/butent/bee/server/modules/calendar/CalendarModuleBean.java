@@ -244,10 +244,8 @@ public class CalendarModuleBean implements BeeModule {
     List<SearchResult> results = Lists.newArrayList();
 
     Filter filter = Filter.or(
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            COL_ORGANIZER_FIRST_NAME, COL_ORGANIZER_LAST_NAME,
-            COL_COMPANY_NAME, COL_COMPANY_EMAIL,
-            COL_VEHICLE_NUMBER, COL_VEHICLE_PARENT_MODEL, COL_VEHICLE_MODEL), query),
+        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, COL_APPOINTMENT_LOCATION,
+            ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
         Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
     BeeRowSet appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
@@ -380,13 +378,16 @@ public class CalendarModuleBean implements BeeModule {
             .addMax(usageTable, NewsConstants.COL_USAGE_ACCESS)
             .addFrom(TBL_APPOINTMENTS)
             .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENTS))
+            .addFromLeft(TBL_APPOINTMENT_OWNERS,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT))
             .addFromLeft(TBL_APPOINTMENT_ATTENDEES,
                 sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
             .addFromLeft(TBL_ATTENDEES,
                 sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
             .setWhere(
                 SqlUtils.and(SqlUtils.equals(usageTable, NewsConstants.COL_USAGE_USER, userId),
-                    SqlUtils.or(SqlUtils.equals(TBL_APPOINTMENTS, COL_ORGANIZER, companyPerson),
+                    SqlUtils.or(
+                        SqlUtils.equals(TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT_OWNER, userId),
                         SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))))
             .addGroup(TBL_APPOINTMENTS, idColumn);
       }
@@ -407,12 +408,15 @@ public class CalendarModuleBean implements BeeModule {
             .addFields(usageTable, NewsConstants.COL_USAGE_UPDATE)
             .addFrom(TBL_APPOINTMENTS)
             .addFromInner(usageTable, news.joinUsage(TBL_APPOINTMENTS))
+            .addFromLeft(TBL_APPOINTMENT_OWNERS,
+                sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT))
             .addFromLeft(TBL_APPOINTMENT_ATTENDEES,
                 sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT))
             .addFromLeft(TBL_ATTENDEES,
                 sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
             .setWhere(SqlUtils.and(NewsHelper.getUpdatesCondition(usageTable, userId, startDate),
-                SqlUtils.or(SqlUtils.equals(TBL_APPOINTMENTS, COL_ORGANIZER, companyPerson),
+                SqlUtils.or(
+                    SqlUtils.equals(TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT_OWNER, userId),
                     SqlUtils.equals(TBL_ATTENDEES, COL_COMPANY_PERSON, companyPerson))));
 
         usageTable = NewsConstants.getUsageTable(TBL_APPOINTMENT_ATTENDEES);
@@ -480,7 +484,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(SVC_CREATE_APPOINTMENT, ": rowSet is empty");
     }
 
-    String propIds = rowSet.getTableProperty(COL_PROPERTY);
+    String propIds = rowSet.getTableProperty(TBL_APPOINTMENT_PROPS);
     String attIds = rowSet.getTableProperty(COL_ATTENDEE);
     String rtIds = rowSet.getTableProperty(COL_REMINDER_TYPE);
 
@@ -621,7 +625,7 @@ public class CalendarModuleBean implements BeeModule {
     BeeRowSet appRemind = qs.getViewData(VIEW_APPOINTMENT_REMINDERS);
 
     int aaIndex = appAtts.getColumnIndex(COL_ATTENDEE);
-    int apIndex = appProps.getColumnIndex(COL_PROPERTY);
+    int apIndex = appProps.getColumnIndex(COL_APPOINTMENT_PROPERTY);
     int arIndex = appRemind.getColumnIndex(COL_REMINDER_TYPE);
 
     List<BeeRow> children;
@@ -768,8 +772,8 @@ public class CalendarModuleBean implements BeeModule {
       return null;
     }
 
-    BeeRowSet result = new BeeRowSet(new BeeColumn(ValueType.TEXT, COL_TYPE_NAME),
-        new BeeColumn(ValueType.TEXT, COL_NAME));
+    BeeRowSet result = new BeeRowSet(new BeeColumn(ValueType.TEXT, ALS_ATTENDEE_TYPE_NAME),
+        new BeeColumn(ValueType.TEXT, COL_ATTENDEE_NAME));
     for (Integer hour : hours) {
       result.addColumn(ValueType.TEXT, hour.toString());
     }
@@ -786,8 +790,8 @@ public class CalendarModuleBean implements BeeModule {
       }
 
       String[] values = new String[result.getNumberOfColumns()];
-      values[0] = DataUtils.getString(attRowSet, attRow, COL_TYPE_NAME);
-      values[1] = DataUtils.getString(attRowSet, attRow, COL_NAME);
+      values[0] = DataUtils.getString(attRowSet, attRow, ALS_ATTENDEE_TYPE_NAME);
+      values[1] = DataUtils.getString(attRowSet, attRow, COL_ATTENDEE_NAME);
 
       for (int c = 0; c < hours.size(); c++) {
         Integer minutes = tableRow.get(hours.get(c));
@@ -855,8 +859,8 @@ public class CalendarModuleBean implements BeeModule {
       return null;
     }
 
-    BeeRowSet result = new BeeRowSet(new BeeColumn(ValueType.TEXT, COL_TYPE_NAME),
-        new BeeColumn(ValueType.TEXT, COL_NAME));
+    BeeRowSet result = new BeeRowSet(new BeeColumn(ValueType.TEXT, ALS_ATTENDEE_TYPE_NAME),
+        new BeeColumn(ValueType.TEXT, COL_ATTENDEE_NAME));
     for (YearMonth ym : months) {
       result.addColumn(ValueType.TEXT, ym.toString());
     }
@@ -873,8 +877,8 @@ public class CalendarModuleBean implements BeeModule {
       }
 
       String[] values = new String[columnCount];
-      values[0] = DataUtils.getString(attRowSet, attRow, COL_TYPE_NAME);
-      values[1] = DataUtils.getString(attRowSet, attRow, COL_NAME);
+      values[0] = DataUtils.getString(attRowSet, attRow, ALS_ATTENDEE_TYPE_NAME);
+      values[1] = DataUtils.getString(attRowSet, attRow, COL_ATTENDEE_NAME);
 
       for (int c = 0; c < months.size(); c++) {
         Integer minutes = tableRow.get(months.get(c));
@@ -901,9 +905,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     Filter calFilter = ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId));
-
     BeeRowSet calAppTypes = qs.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
-    BeeRowSet calPersons = qs.getViewData(VIEW_CALENDAR_PERSONS, calFilter);
 
     CompoundFilter appFilter = Filter.and();
     appFilter.add(VALID_APPOINTMENT);
@@ -923,10 +925,6 @@ public class CalendarModuleBean implements BeeModule {
     if (!calAppTypes.isEmpty()) {
       appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
           DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
-    }
-    if (!calPersons.isEmpty()) {
-      appFilter.add(Filter.any(COL_ORGANIZER,
-          DataUtils.getDistinct(calPersons, COL_COMPANY_PERSON)));
     }
 
     BeeRowSet appointments = getAppointments(appFilter, null);
@@ -1042,7 +1040,7 @@ public class CalendarModuleBean implements BeeModule {
 
     List<BeeRow> children;
     int attIndex = appAtts.getColumnIndex(COL_ATTENDEE);
-    int propIndex = appProps.getColumnIndex(COL_PROPERTY);
+    int propIndex = appProps.getColumnIndex(COL_APPOINTMENT_PROPERTY);
     int remindIndex = appRemind.getColumnIndex(COL_REMINDER_TYPE);
 
     Iterator<BeeRow> iterator = appointments.getRows().iterator();
@@ -1229,7 +1227,7 @@ public class CalendarModuleBean implements BeeModule {
 
   private void insertAppointmentProperty(long appId, long propId) {
     qs.insertData(new SqlInsert(TBL_APPOINTMENT_PROPS).addConstant(COL_APPOINTMENT, appId)
-        .addConstant(COL_PROPERTY, propId));
+        .addConstant(COL_APPOINTMENT_PROPERTY, propId));
   }
 
   private void insertAppointmentReminder(long appId, long rtId) {
@@ -1457,7 +1455,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(reqInfo.getService(), ": invalid row id", appId);
     }
 
-    String propIds = newRowSet.getTableProperty(COL_PROPERTY);
+    String propIds = newRowSet.getTableProperty(TBL_APPOINTMENT_PROPS);
     String attIds = newRowSet.getTableProperty(COL_ATTENDEE);
     String rtIds = newRowSet.getTableProperty(COL_REMINDER_TYPE);
 
@@ -1483,7 +1481,8 @@ public class CalendarModuleBean implements BeeModule {
     Filter appFilter = ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId));
 
     List<Long> oldProperties =
-        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_PROPS, appFilter), COL_PROPERTY);
+        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_PROPS, appFilter),
+            COL_APPOINTMENT_PROPERTY);
     List<Long> oldAttendees =
         DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_ATTENDEES, appFilter), COL_ATTENDEE);
     List<Long> oldReminders =
@@ -1495,7 +1494,7 @@ public class CalendarModuleBean implements BeeModule {
     List<Long> newReminders = DataUtils.parseIdList(rtIds);
 
     boolean childrenChanged = updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
-        COL_PROPERTY, oldProperties, newProperties);
+        COL_APPOINTMENT_PROPERTY, oldProperties, newProperties);
     childrenChanged |= updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
         COL_ATTENDEE, oldAttendees, newAttendees);
 

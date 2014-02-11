@@ -161,7 +161,7 @@
       </row>
 
       <row>
-        <Label text="=appointments" />
+        <Label text="=calAppointments" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
           newRowEnabled="false" editPopup="true" style="&inp2x;" />

@@ -716,7 +716,7 @@ public class MailPanel extends AbstractFormInterceptor {
         row.setValue(dataInfo.getColumnIndex("Customer"),
             BeeUtils.toLongOrNull(packet.get(CommonsConstants.COL_COMPANY)));
         row.setValue(dataInfo.getColumnIndex("CustomerName"),
-            packet.get(CommonsConstants.COL_COMPANY + CommonsConstants.COL_NAME));
+            packet.get(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME));
         row.setValue(dataInfo.getColumnIndex("CustomerPerson"),
             BeeUtils.toLongOrNull(packet.get(CommonsConstants.COL_PERSON)));
         row.setValue(dataInfo.getColumnIndex("PersonFirstName"),

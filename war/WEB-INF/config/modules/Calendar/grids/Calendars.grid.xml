@@ -12,6 +12,7 @@
     <DataColumn name="Description" caption="=description" sortable="false" />
 
     <RelColumn name="Owner" caption="=owner" />
+    <DataColumn name="Visibility" visible="false" />
     
     <DataColumn name="AssignedTasks" visible="false" />
     <DataColumn name="DelegatedTasks" visible="false" />

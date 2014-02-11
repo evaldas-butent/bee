@@ -22,12 +22,9 @@
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=registered" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="creator" />
 
-    <Relation name="Organizer" relation="CompanyPersons" label="=responsiblePerson" />
-
     <DateTime name="StartDateTime" notNull="true" label="=calAppointmentStart" />
     <DateTime name="EndDateTime" notNull="true" label="=calAppointmentEnd" />
 
-    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
     <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" />
 
     <Relation name="Company" relation="Companies" label="=client" />

@@ -42,13 +42,7 @@
               renderColumns="Name" choiceColumns="TypeName Name" style="&chld;" />
           </row>
           <row>
-            <Label text="=persons" />
-            <ChildSelector childTable="CalendarPersons" viewName="CompanyPersons"
-              renderColumns="FirstName LastName"
-              choiceColumns="FirstName LastName CompanyName PositionName" style="&chld;" />
-          </row>
-          <row>
-            <Label text="=appointmentTypes" />
+            <Label text="=calAppointmentTypes" />
             <ChildSelector childTable="CalAppointmentTypes" viewName="AppointmentTypes"
               renderColumns="Name" style="&chld;" />
           </row>

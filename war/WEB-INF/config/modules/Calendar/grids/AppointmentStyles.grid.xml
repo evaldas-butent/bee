@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AppointmentStyles" viewName="AppointmentStyles" caption="=appointmentStyles"
+  name="AppointmentStyles" viewName="AppointmentStyles" caption="=calAppointmentStyles"
   >
   <g:body height="80" /> 
   <g:columns>
-    <DataColumn name="Name" caption="=calAppointmentStyleName" visible="true" />
-    <DataColumn name="Description" caption="=description" />
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Description" whiteSpace="pre-line" />
 
-    <DataColumn name="Simple" caption="=appointmentStyleSimple" whiteSpace="pre-wrap" />
-    <DataColumn name="Multi" caption="=calMultiday" whiteSpace="pre-wrap" />
-    <DataColumn name="Compact" caption="=calCompact" whiteSpace="pre-wrap" />
+    <DataColumn name="Simple" whiteSpace="pre-wrap" />
+    <DataColumn name="Multi" whiteSpace="pre-wrap" />
+    <DataColumn name="Compact" whiteSpace="pre-wrap" />
     
-    <DataColumn name="Header" caption="=appointmentStyleHeader" whiteSpace="pre-wrap" />
-    <DataColumn name="Body" caption="=appointmentStyleBody" whiteSpace="pre-wrap" />
-    <DataColumn name="Footer" caption="=appointmentStyleFooter" whiteSpace="pre-wrap" />
+    <DataColumn name="Header" whiteSpace="pre-wrap" />
+    <DataColumn name="Body" whiteSpace="pre-wrap" />
+    <DataColumn name="Footer" whiteSpace="pre-wrap" />
   </g:columns>
 </g:Grid>

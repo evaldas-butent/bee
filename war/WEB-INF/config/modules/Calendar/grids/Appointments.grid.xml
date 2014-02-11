@@ -2,14 +2,15 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="Appointments" viewName="Appointments" caption="=appointments"
+  name="Appointments" viewName="Appointments" caption="=calAppointments"
   newRowForm="Appointment" editForm="Appointment" order="AppointmentID desc"
   >
   <g:columns>
+    <IdColumn name="Id" caption="=captionId" visible="false" />
+
     <DataColumn name="TypeName" label="=calAppointmentType" />
     <DataColumn name="Summary" visible="true" maxWidth="200" />
 
-    <DataColumn name="Location" visible="false" maxWidth="200" />
     <DataColumn name="Description" visible="false" maxWidth="200" />
 
     <DataColumn name="CompanyName" label="=company" />
@@ -22,8 +23,9 @@
     <DataColumn name="EndDateTime" visible="true" />
 
     <DataColumn name="Status" />
+    <DataColumn name="Visibility" visible="false" />
 
-    <DataColumn name="Organizer" renderColumns="OrganizerFirstName OrganizerLastName" />
+    <DataColumn name="Location" maxWidth="200" />
 
     <DataColumn name="ColorName" label="=color" visible="false">
       <dynStyle>

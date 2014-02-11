@@ -11,14 +11,14 @@
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
 
-    <DataColumn name="CompanyName" caption="=company" visible="false" />
-    <DataColumn name="PositionName" caption="=personPosition" visible="false" />
+    <DataColumn name="CompanyName" label="=company" visible="false" />
+    <DataColumn name="PositionName" label="=personPosition" visible="false" />
 
-    <DataColumn name="Background" caption="=backgroundColor" updateMode="row">
+    <DataColumn name="Background" updateMode="row">
       <dynStyle>&dyn;</dynStyle>
       <editor type="color" />
     </DataColumn>
-    <DataColumn name="Foreground" caption="=foregroundColor" updateMode="row">
+    <DataColumn name="Foreground" updateMode="row">
       <dynStyle>&dyn;</dynStyle>
       <editor type="color" />
     </DataColumn>

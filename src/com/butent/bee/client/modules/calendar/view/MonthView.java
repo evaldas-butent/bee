@@ -514,7 +514,7 @@ public class MonthView extends CalendarView {
       panel.add(widget);
     }
     
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().selectAppointment(),
+    final DialogBox dialog = DialogBox.create(Localized.getConstants().calSelectAppointment(),
         CalendarStyleManager.MORE_POPUP);
     
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {

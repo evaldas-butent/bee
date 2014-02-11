@@ -2,13 +2,19 @@ package com.butent.bee.shared.modules.calendar;
 
 public interface LocalizableCalendarConstants {
 
-  String appointments();
-  
-  String calAddExecutorGroups();
+  String calAddAttendees();
 
+  String calAddExecutorGroups();
+  
   String calAddExecutors();
 
+  String calAddOwners();
+  
+  String calAddParameters();
+
   String calAppointmentEnd();
+
+  String calAppointments();
 
   String calAppointmentStart();
 
@@ -30,9 +36,13 @@ public interface LocalizableCalendarConstants {
 
   String calAttendeeTypes();
 
-  String calDayView();
+  String calCreateNewAppointment();
 
   String calDaysView();
+
+  String calDayView();
+
+  String calDeleteAppointment();
 
   String calendar();
 
@@ -53,20 +63,22 @@ public interface LocalizableCalendarConstants {
   String calInvalidDateInterval();
 
   String calInvalidHoursInterval();
-
+  
   String calMonthView();
-
+  
   String calMultidayLayoutHorizontal();
   
   String calMultidayLayoutLastDay();
   
   String calMultidayLayoutVertical();
-  
+
   String calMultidayLayoutWorkingHours();
-  
+
   String calName();
 
   String calOpaque();
+
+  String calOverlappingAppointments();
 
   String calPlannedEndDateMustBeGreater();
 
@@ -98,6 +110,8 @@ public interface LocalizableCalendarConstants {
 
   String calResourceView();
 
+  String calSelectAppointment();
+
   String calSelectVehicle();
 
   String calServiceType();
@@ -113,12 +127,4 @@ public interface LocalizableCalendarConstants {
   String calWeekView();
 
   String calWorkWeekView();
-
-  String createNewAppointment();
-
-  String deleteAppointment();
-
-  String overlappingAppointments();
-
-  String selectAppointment();
 }

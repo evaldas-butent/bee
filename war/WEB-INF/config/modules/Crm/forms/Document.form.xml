@@ -35,7 +35,7 @@
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal" style="&row;">
-          <Label text="=appointments" style="&chlabel;" />
+          <Label text="=calAppointments" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Appointments" childTable="Relations"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
             newRowEnabled="false" />

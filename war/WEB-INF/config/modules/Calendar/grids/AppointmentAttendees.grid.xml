@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AppointmentAttendees" viewName="AppointmentAttendees" newRowCaption="=calNewAttendee"
-  minColumnWidth="100"
+  name="AppointmentAttendees" viewName="AppointmentAttendees"
+  newRowColumns="-" minColumnWidth="100"
   >
   <g:columns>
-    <RelColumn name="TypeName" caption="=calAppointmentType" visible="true" />
-    <RelColumn name="AttendeeName" caption="=calAttendeeName" visible="true" />
+    <DataColumn name="TypeName" label="=calAttendeeType" visible="true" />
+    <DataColumn name="AttendeeName" label="=calAttendeeName" visible="true" />
     
-    <DataColumn name="Comment" caption="=calComment" />
+    <DataColumn name="Comment" />
   </g:columns>
 </g:Grid>

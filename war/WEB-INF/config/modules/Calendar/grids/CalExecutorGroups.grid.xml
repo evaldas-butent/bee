@@ -8,13 +8,13 @@
   name="CalExecutorGroups" viewName="CalExecutorGroups" minColumnWidth="120"
   >
   <g:columns>
-    <DataColumn name="GroupName" caption="=group" visible="true" />
+    <DataColumn name="GroupName" label="=group" visible="true" />
 
-    <DataColumn name="Background" caption="=backgroundColor" updateMode="row">
+    <DataColumn name="Background" updateMode="row">
       <dynStyle>&dyn;</dynStyle>
       <editor type="color" />
     </DataColumn>
-    <DataColumn name="Foreground" caption="=foregroundColor" updateMode="row">
+    <DataColumn name="Foreground" updateMode="row">
       <dynStyle>&dyn;</dynStyle>
       <editor type="color" />
     </DataColumn>

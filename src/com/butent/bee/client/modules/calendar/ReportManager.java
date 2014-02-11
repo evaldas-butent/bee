@@ -279,10 +279,12 @@ class ReportManager {
     
     container.add(atpLabel);
 
-    Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME));
+    Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES,
+        Lists.newArrayList(COL_APPOINTMENT_TYPE_NAME));
     atpRel.disableNewRow();
     final MultiSelector atpSelector = MultiSelector.autonomous(atpRel,
-        RendererFactory.createRenderer(VIEW_ATTENDEE_TYPES, Lists.newArrayList(COL_NAME)));
+        RendererFactory.createRenderer(VIEW_ATTENDEE_TYPES,
+            Lists.newArrayList(COL_APPOINTMENT_TYPE_NAME)));
 
     atpSelector.render(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
     addStyle(atpSelector, "attendeeTypes");
@@ -294,11 +296,12 @@ class ReportManager {
     
     container.add(attLabel);
 
-    Relation attRel = Relation.create(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
+    Relation attRel = Relation.create(VIEW_ATTENDEES,
+        Lists.newArrayList(COL_ATTENDEE_NAME, ALS_ATTENDEE_TYPE_NAME));
     attRel.disableNewRow();
 
     final MultiSelector attSelector = MultiSelector.autonomous(attRel,
-        RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_NAME)));
+        RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_ATTENDEE_NAME)));
 
     attSelector.render(Data.getString(viewName, options, COL_ATTENDEES));
     addStyle(attSelector, "attendees");

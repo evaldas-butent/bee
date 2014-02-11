@@ -6,8 +6,8 @@
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <DataColumn name="Name" caption="=calName" minWidth="100" maxWidth="200" visible="true" />
-    <DataColumn name="Description" caption="=description" flexShrink="5" />
+    <DataColumn name="Name" minWidth="100" maxWidth="200" visible="true" />
+    <DataColumn name="Description" flexShrink="5" />
 
     <RelColumn name="DefaultPropertyName" caption="=calDefaultParameter" newRowEnabled="false"
       flexGrow="0" />

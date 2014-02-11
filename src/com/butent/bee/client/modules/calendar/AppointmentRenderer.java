@@ -55,13 +55,13 @@ class AppointmentRenderer {
 
   static {
     DEFAULT_SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
-    DEFAULT_SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_COMPANY_NAME),
+    DEFAULT_SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(ALS_COMPANY_NAME),
         BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL)),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(COL_DESCRIPTION),
         wrap(KEY_REMINDERS));
 
     DEFAULT_MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
-    DEFAULT_MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_COMPANY_NAME),
+    DEFAULT_MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(ALS_COMPANY_NAME),
         wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES));
 
@@ -69,20 +69,17 @@ class AppointmentRenderer {
         wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER));
 
     DEFAULT_TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
-        BeeConst.STRING_EMPTY, wrap(COL_COMPANY_NAME),
+        BeeConst.STRING_EMPTY, wrap(ALS_COMPANY_NAME),
         BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
             wrap(COL_VEHICLE_NUMBER)), BeeConst.STRING_EMPTY,
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), BeeConst.STRING_EMPTY, wrap(COL_DESCRIPTION),
-        BeeConst.STRING_EMPTY, BeeUtils.joinWords(wrap(COL_ORGANIZER_FIRST_NAME),
-            wrap(COL_ORGANIZER_LAST_NAME)), wrap(KEY_REMINDERS));
+        BeeConst.STRING_EMPTY, wrap(KEY_REMINDERS));
 
     STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
-        wrap(COL_COMPANY_NAME),
+        wrap(ALS_COMPANY_NAME),
         BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
             wrap(COL_VEHICLE_NUMBER)), wrap(COL_SUMMARY),
-        wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(COL_DESCRIPTION),
-        BeeUtils.joinWords(wrap(COL_ORGANIZER_FIRST_NAME), wrap(COL_ORGANIZER_LAST_NAME)),
-        wrap(KEY_REMINDERS));
+        wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(COL_DESCRIPTION), wrap(KEY_REMINDERS));
   }
 
   private static String wrap(String s) {

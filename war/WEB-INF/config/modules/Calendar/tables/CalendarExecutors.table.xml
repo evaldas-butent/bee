@@ -9,8 +9,8 @@
       label="=calendar" />
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
 
-    <String name="Background" precision="100" label="=background" />
-    <String name="Foreground" precision="100" label="=foreground" />
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
   </Fields>
 

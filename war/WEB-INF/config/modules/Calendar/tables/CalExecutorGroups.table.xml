@@ -10,8 +10,8 @@
     <Relation name="Group" notNull="true" relation="UserGroupSettings" cascade="DELETE"
       label="=group" />
       
-    <String name="Background" precision="100" label="=background" />
-    <String name="Foreground" precision="100" label="=foreground" />
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
   </Fields>
 

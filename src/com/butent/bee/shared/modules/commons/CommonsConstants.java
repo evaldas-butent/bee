@@ -302,7 +302,6 @@ public final class CommonsConstants {
   public static final String COL_LAST_NAME = "LastName";
   public static final String COL_PHOTO = "Photo";
 
-  public static final String COL_NAME = "Name";
   public static final String COL_CATEGORY = "Category";
 
   public static final String COL_ITEM = "Item";
@@ -334,6 +333,7 @@ public final class CommonsConstants {
   public static final String COL_COUNTRY_NAME = "Name";
   public static final String COL_COUNTRY_CODE = "Code";
 
+  public static final String COL_REMINDER_NAME = "Name";
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_HOURS = "Hours";
   public static final String COL_REMINDER_MINUTES = "Minutes";

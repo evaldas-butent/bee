@@ -5,15 +5,16 @@
   idName="AppointmentStyleID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" label="=calAppointmentStyleName" />
-    <Text name="Description" label="=description"/>
+    <String name="Name" precision="30" notNull="true" unique="true"
+      label="=calAppointmentStyleName" />
+    <Text name="Description" label="=description" />
 
-    <Text name="Simple" label="=calSimple" />
-    <Text name="Multi" label="=calMultiday"/>
-    <Text name="Compact" label="=calCompact"/>
+    <Text name="Simple" label="=calAppointmentStyleSimple" />
+    <Text name="Multi" label="=calMultiday" />
+    <Text name="Compact" label="=calCompact" />
 
-    <Text name="Header" label="=calHeader" />
-    <Text name="Body" label="=calBody" />
-    <Text name="Footer" label="=calFooter" />
+    <Text name="Header" label="=calAppointmentStyleHeader" />
+    <Text name="Body" label="=calAppointmentStyleBody" />
+    <Text name="Footer" label="=calAppointmentStyleFooter" />
   </Fields>
 </Table>

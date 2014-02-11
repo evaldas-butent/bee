@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -21,6 +22,15 @@ import java.util.List;
 import java.util.Set;
 
 public class UniqueChildInterceptor extends AbstractGridInterceptor {
+
+  public static UniqueChildInterceptor forUsers(String dialogCaption, String parentColumn,
+      String childColumn) {
+    return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn,
+        CommonsConstants.VIEW_USERS,
+        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
+        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.ALS_COMPANY_NAME, CommonsConstants.ALS_POSITION_NAME));
+  }
 
   private final String dialogCaption;
 

@@ -3,10 +3,15 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="Appointment" viewName="Appointments" caption="=calAppointment">
+  name="Appointment" viewName="Appointments" caption="=calAppointment" showRowId="true">
 
   <FlowPanel class="flexBox-vertical">
-    <Table style="border-collapse: collapse; margin-top: 1ex;" cellStyle="padding: 5px;">
+    <Table style="border-collapse: collapse; margin-top: 1ex; margin-bottom: 2ex;"
+       cellStyle="padding: 4px 10px;">
+       
+      <col index="0" cellStyle="text-align: right;" />
+      <col index="2" cellStyle="text-align: right;" />
+
       <row>
         <Label text="=summary" />
         <InputText source="Summary" />
@@ -16,52 +21,50 @@
 
       <row>
         <Label text="=company" />
-        <DataSelector source="Company" />
-        <Label text="=calAppointmentType" />
-        <DataSelector source="AppointmentType" />
+        <DataSelector source="Company" renderColumns="CompanyName" />
+        <Label text="=type" class="bee-required" />
+        <DataSelector source="AppointmentType" renderColumns="TypeName" />
       </row>
  
       <row>
-        <Label text="=calAppointmentStart" />
+        <Label text="=calAppointmentStart" class="bee-required" />
         <InputDateTime source="StartDateTime" />
-        <Label text="=calAppointmentStatus" />
+        <Label text="=calAppointmentStatus" class="bee-required" />
         <ListBox source="Status" />
       </row>
 
       <row>
-        <Label text="=calAppointmentEnd" />
+        <Label text="=calAppointmentEnd" class="bee-required" />
         <InputDateTime source="EndDateTime" />
+        <cell><text/></cell>
+        <Radio source="Visibility" vertical="false" />
       </row>
 
       <row>
         <Label text="=color" />
-        <DataSelector source="Color" />
+        <DataSelector source="Color" renderColumns="ColorName" />
         <Label text="=style" />
-        <DataSelector source="Style" />
+        <DataSelector source="Style" renderColumns="StyleName" />
       </row>
 
       <row>
         <Label text="=registered" />
         <InputDateTime source="Created" />
         <Label text="=creator" />
-        <DataSelector source="Creator" editSource="CreatorCompanyPerson" />
-      </row>
-
-      <row>
-        <Radio source="Transparency" vertical="true" />
-        <Radio source="Visibility" vertical="true" />
+        <DataSelector source="Creator" editSource="CreatorCompanyPerson"
+          renderColumns="CreatorFirstName CreatorLastName" />
       </row>
     </Table>
     
-    <HorizontalPanel>
-      <Label text="=responsibleEmployee" />
-      <ChildSelector childTable="AppointmentOwners" viewName="Users" />
-    </HorizontalPanel>
-
     <TabbedPages class="flexible">
       <page>
         <text>=calAppointmentAttendees</text>
         <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />
+      </page>
+
+      <page>
+        <text>=responsiblePersons</text>
+        <ChildGrid name="AppointmentOwners" relColumn="Appointment" />
       </page>
 
       <page>
@@ -132,11 +135,6 @@
             </cell>  
           </row>
         </Table>
-      </page>
-
-      <page>
-        <text>=calAppointmentHistory</text>
-        <ChildGrid name="AppointmentHistory" relColumn="Appointment" />
       </page>
     </TabbedPages>
   </FlowPanel>
