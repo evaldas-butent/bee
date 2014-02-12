@@ -202,6 +202,11 @@ public final class EcKeeper {
     data.ensureCategoriesAndBrandsAndStockLabels(callback);
   }
 
+  public static void ensureClientStockLabels(Consumer<Boolean> callback) {
+    Assert.notNull(callback);
+    data.ensureClientStockLabels(callback);
+  }
+
   public static void ensureWarehouses(Consumer<Boolean> callback) {
     Assert.notNull(callback);
     data.ensureWarehouses(callback);

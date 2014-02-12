@@ -344,7 +344,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
       }
     }
     
-    if (hasEmptiness()) {
+    if (hasEmptiness() || isColumnNullable()) {
       Button notEmpty = new Button(NOT_NULL_VALUE_LABEL, new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {

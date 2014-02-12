@@ -4,7 +4,8 @@
   name="TcdModels" viewName="TcdModels" caption="=tcdModels"
   >
   <g:columns>
-    <RelColumn name="Manufacturer" renderColumns="ManufacturerName" minWidth="200" />
+    <RelColumn name="Manufacturer" renderColumns="ManufacturerName" minWidth="200"
+      filterSupplier="value" searchBy="ManufacturerName" />
     <DataColumn name="ModelName" minWidth="200" />
     <DataColumn name="Visible" />
   </g:columns>

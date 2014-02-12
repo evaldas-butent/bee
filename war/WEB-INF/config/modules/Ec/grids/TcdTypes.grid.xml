@@ -6,7 +6,7 @@
   <g:columns>
     <DataColumn name="ManufacturerName" visible="true" autoFit="true" />
     <RelColumn name="Model" renderColumns="ModelName" choiceColumns="ManufacturerName ModelName"
-      visible="true" autoFit="true" />
+      visible="true" autoFit="true" filterSupplier="value" searchBy="ModelName" />
     <DataColumn name="TypeName" visible="true" autoFit="true" />
 
     <DataColumn name="ProducedFrom" visible="true" />

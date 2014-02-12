@@ -64,17 +64,18 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.modules.crm.TaskType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 final class TaskList {
@@ -85,12 +86,12 @@ final class TaskList {
     private static final String NAME_SLACK = "Slack";
     private static final String NAME_STAR = "Star";
 
-    private final Type type;
+    private final TaskType type;
     private final String caption;
 
     private final Long userId;
 
-    private GridHandler(Type type, String caption) {
+    private GridHandler(TaskType type, String caption) {
       this.type = type;
       this.caption = caption;
 
@@ -170,8 +171,8 @@ final class TaskList {
     public ColumnDescription beforeCreateColumn(GridView gridView,
         ColumnDescription columnDescription) {
 
-      if (type == Type.ASSIGNED && columnDescription.is(COL_EXECUTOR)
-          || type == Type.DELEGATED && columnDescription.is(COL_OWNER)) {
+      if (type == TaskType.ASSIGNED && columnDescription.is(COL_EXECUTOR)
+          || type == TaskType.DELEGATED && columnDescription.is(COL_OWNER)) {
 
         if (columnDescription.getVisible() == null
             && !GridSettings.hasVisibleColumns(gridView.getGridKey())) {
@@ -205,10 +206,12 @@ final class TaskList {
       Provider provider = presenter.getDataProvider();
       Long owner = activeRow.getLong(provider.getColumnIndex(COL_OWNER));
 
-      if (owner == userId) {
+      if (Objects.equals(owner, userId)) {
         return GridInterceptor.DeleteMode.SINGLE;
       } else {
-        presenter.getGridView().notifyWarning(Localized.getConstants().crmTaskDeleteCanManager());
+        presenter.getGridView().notifyWarning(
+            BeeUtils.joinWords(Localized.getConstants().crmTask(), activeRow.getId()),
+            Localized.getConstants().crmTaskDeleteCanManager());
         return GridInterceptor.DeleteMode.CANCEL;
       }
     }
@@ -966,71 +969,13 @@ final class TaskList {
     }
   }
 
-  private enum Type implements HasCaption {
-    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
-      }
-    },
-
-    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks(), Feed.TASKS_DELEGATED) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
-            ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue));
-      }
-    },
-
-    OBSERVED(Localized.getConstants().crmTasksObservedTasks(), Feed.TASKS_OBSERVED) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
-            ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue),
-            Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-                ComparisonFilter.isEqual(COL_USER, userValue)));
-      }
-    },
-
-    GENERAL(Localized.getConstants().crmTasksList(), Feed.TASKS_ALL) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return null;
-      }
-    };
-
-    private static Type getByFeed(Feed input) {
-      for (Type type : values()) {
-        if (type.feed == input) {
-          return type;
-        }
-      }
-      return null;
-    }
-
-    private final String caption;
-    private final Feed feed;
-
-    private Type(String caption, Feed feed) {
-      this.caption = caption;
-      this.feed = feed;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-
-    abstract Filter getFilter(LongValue userValue);
-  }
-
   private static final int DEFAULT_STAR_COUNT = 3;
 
   private static final String STYLE_MODE_NEW = "bee-crm-Mode-new";
   private static final String STYLE_MODE_UPD = "bee-crm-Mode-upd";
 
   static Consumer<GridOptions> getFeedFilterHandler(Feed feed) {
-    final Type type = Type.getByFeed(feed);
+    final TaskType type = TaskType.getByFeed(feed);
     Assert.notNull(type);
 
     Consumer<GridOptions> consumer = new Consumer<GridFactory.GridOptions>() {
@@ -1045,14 +990,7 @@ final class TaskList {
   }
 
   static void open(String args) {
-    Type type = null;
-
-    for (Type z : Type.values()) {
-      if (BeeUtils.startsSame(args, z.name())) {
-        type = z;
-        break;
-      }
-    }
+    TaskType type = TaskType.getByPrefix(args);
 
     if (type == null) {
       Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", args));

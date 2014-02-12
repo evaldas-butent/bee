@@ -1131,11 +1131,10 @@
   margin-left: 3px;
 }
 .bee-TabbedPages-tab:hover {
-  border-color: blue;
+  border-color: #999;
 }
 
 .bee-TabbedPages-tabSelected {
-  background-color : #dfd;
   border-color: green;
   z-index: 1;
   cursor: default;

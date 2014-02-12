@@ -12,8 +12,8 @@
     <DataColumn name="UnitName" />
     <DataColumn name="Weight" />
     <DataColumn name="Visible" />
-    <DataColumn name="Novelty" filterOptions="empty" />
-    <DataColumn name="Featured" filterOptions="empty" />
+    <DataColumn name="Novelty" />
+    <DataColumn name="Featured" />
 
     <DataColumn name="Description" visible="false" />
 
