@@ -46,7 +46,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
 
   private final CalendarSettings settings;
 
-  private final AppointmentManager appointmentManager;
+  private final CalendarDataManager appointmentManager;
   private final List<Long> attendees = Lists.newArrayList();
 
   private final Map<CalendarView.Type, CalendarView> viewCache = Maps.newHashMap();
@@ -73,7 +73,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
 
     this.calendarId = calendarId;
     this.settings = settings;
-    this.appointmentManager = new AppointmentManager();
+    this.appointmentManager = new CalendarDataManager();
 
     this.date = TimeUtils.today();
 

@@ -68,6 +68,7 @@ import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.crm.TaskType;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
@@ -84,6 +85,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +116,7 @@ public class CalendarModuleBean implements BeeModule {
     return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + DateTime.TIME_FIELD_SEPARATOR
         + TimeUtils.padTwo(minutes % TimeUtils.MINUTES_PER_HOUR);
   }
+
   private static void formatTimeColumns(BeeRowSet rowSet, int colFrom, int colTo) {
     for (BeeRow row : rowSet.getRows()) {
       for (int c = colFrom; c <= colTo; c++) {
@@ -124,6 +127,7 @@ public class CalendarModuleBean implements BeeModule {
       }
     }
   }
+
   private static Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
     if (!BeeUtils.isEmpty(attendeeTypes) || !BeeUtils.isEmpty(attendees)) {
       return Filter.or(Filter.any(COL_ATTENDEE_TYPE, attendeeTypes),
@@ -136,6 +140,7 @@ public class CalendarModuleBean implements BeeModule {
       return null;
     }
   }
+
   private static Range<DateTime> getDateRange(JustDate lower, JustDate upper) {
     if (lower != null && upper != null) {
       return Range.closedOpen(lower.getDateTime(), upper.getDateTime());
@@ -147,6 +152,7 @@ public class CalendarModuleBean implements BeeModule {
       return Range.all();
     }
   }
+
   private static Range<Integer> getHourRange(Integer lower, Integer upper) {
     if (BeeUtils.isPositive(lower) && BeeUtils.isPositive(upper)) {
       return Range.closedOpen(lower, upper);
@@ -158,6 +164,7 @@ public class CalendarModuleBean implements BeeModule {
       return Range.all();
     }
   }
+
   private static Map<Integer, Integer> splitByHour(DateTime start, DateTime end,
       Range<DateTime> dateRange, Range<Integer> hourRange) {
     Map<Integer, Integer> result = Maps.newHashMap();
@@ -187,6 +194,7 @@ public class CalendarModuleBean implements BeeModule {
     }
     return result;
   }
+
   private static Map<YearMonth, Integer> splitByYearMonth(DateTime start, DateTime end,
       Range<DateTime> range) {
     Map<YearMonth, Integer> result = Maps.newHashMap();
@@ -410,9 +418,9 @@ public class CalendarModuleBean implements BeeModule {
             ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
         Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
-    BeeRowSet appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
-    if (appointments != null) {
-      for (BeeRow row : appointments.getRows()) {
+    List<BeeRow> appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
+    if (!BeeUtils.isEmpty(appointments)) {
+      for (BeeRow row : appointments) {
         results.add(new SearchResult(VIEW_APPOINTMENTS, row));
       }
     }
@@ -430,8 +438,8 @@ public class CalendarModuleBean implements BeeModule {
       response = createAppointment(reqInfo);
     } else if (BeeUtils.same(svc, SVC_UPDATE_APPOINTMENT)) {
       response = updateAppointment(reqInfo);
-    } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_APPOINTMENTS)) {
-      response = getCalendarAppointments(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_ITEMS)) {
+      response = getCalendarItems(reqInfo);
     } else if (BeeUtils.same(svc, SVC_SAVE_ACTIVE_VIEW)) {
       response = saveActiveView(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_OVERLAPPING_APPOINTMENTS)) {
@@ -749,7 +757,7 @@ public class CalendarModuleBean implements BeeModule {
     }
   }
 
-  private BeeRowSet getAppointments(Filter filter, Order order) {
+  private List<BeeRow> getAppointments(Filter filter, Order order) {
     long userId = usr.getCurrentUserId();
 
     Filter visible = Filter.or().add(
@@ -760,10 +768,10 @@ public class CalendarModuleBean implements BeeModule {
             new IntegerValue(CalendarVisibility.PRIVATE.ordinal())));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
-    if (appointments == null || appointments.isEmpty()) {
+    if (DataUtils.isEmpty(appointments)) {
       logger.debug("no appointments found where", filter);
       logger.debug("visible where", visible);
-      return appointments;
+      return Lists.newArrayList();
     }
 
     BeeRowSet appAtts = qs.getViewData(VIEW_APPOINTMENT_ATTENDEES);
@@ -801,7 +809,7 @@ public class CalendarModuleBean implements BeeModule {
       }
     }
 
-    return appointments;
+    return appointments.getRows().getList();
   }
 
   private SimpleRowSet getAttendeePeriods(JustDate lowerDate, JustDate upperDate,
@@ -1031,7 +1039,7 @@ public class CalendarModuleBean implements BeeModule {
     return result;
   }
 
-  private ResponseObject getCalendarAppointments(RequestInfo reqInfo) {
+  private ResponseObject getCalendarItems(RequestInfo reqInfo) {
     long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
     if (!DataUtils.isId(calendarId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_CALENDAR_ID);
@@ -1060,14 +1068,28 @@ public class CalendarModuleBean implements BeeModule {
           DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
     }
 
-    BeeRowSet appointments = getAppointments(appFilter, null);
+    List<BeeRow> appointments = getAppointments(appFilter, null);
+    List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
 
-    logger.info(SVC_GET_CALENDAR_APPOINTMENTS, calendarId,
+    logger.info(reqInfo.getService(), calendarId,
         (startTime == null) ? BeeConst.STRING_EMPTY : new DateTime(startTime).toCompactString(),
         (endTime == null) ? BeeConst.STRING_EMPTY : new DateTime(endTime).toCompactString(),
-        BeeConst.STRING_EQ, appointments.getNumberOfRows());
+        BeeConst.STRING_EQ, appointments.size(), BeeConst.STRING_PLUS, tasks.size());
+    
+    
+    Map<String, Object> result = Maps.newHashMap();
+    if (!appointments.isEmpty()) {
+      result.put(ItemType.APPOINTMENT.name(), appointments);
+    }
+    if (!tasks.isEmpty()) {
+      result.put(ItemType.TASK.name(), tasks);
+    }
 
-    return ResponseObject.response(appointments);
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
   }
 
   private BeeRowSet getCalendarAttendees(long userId, long calendarId) {
@@ -1104,7 +1126,6 @@ public class CalendarModuleBean implements BeeModule {
     return qs.getViewData(VIEW_ATTENDEES, attFilter);
   }
 
-  @SuppressWarnings("unused")
   private List<CalendarTask> getCalendarTasks(long calendarId, Long startMillis, Long endMillis) {
     List<CalendarTask> tasks = Lists.newArrayList();
 
@@ -1132,36 +1153,61 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     Set<Long> executors = Sets.newHashSet();
+    Map<Long, ColorAndStyle> executorAppearance = Maps.newHashMap();
 
-    Long[] users = qs.getLongColumn(new SqlSelect()
-        .addFields(TBL_CALENDAR_EXECUTORS, COL_EXECUTOR_USER)
-        .addFrom(TBL_CALENDAR_EXECUTORS)
-        .setWhere(SqlUtils.equals(TBL_CALENDAR_EXECUTORS, COL_CALENDAR, calendarId)));
-
-    if (users != null) {
-      for (Long user : users) {
-        executors.add(user);
-      }
-    }
-
-    users = qs.getLongColumn(new SqlSelect()
+    SimpleRowSet exGroupData = qs.getData(new SqlSelect()
         .setDistinctMode(true)
         .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFields(TBL_CAL_EXECUTOR_GROUPS, COL_BACKGROUND, COL_FOREGROUND, COL_STYLE)
         .addFrom(TBL_CAL_EXECUTOR_GROUPS)
         .addFromInner(CommonsConstants.TBL_USER_GROUPS,
             SqlUtils.join(TBL_CAL_EXECUTOR_GROUPS, COL_EXECUTOR_GROUP,
                 CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
         .setWhere(SqlUtils.equals(TBL_CAL_EXECUTOR_GROUPS, COL_CALENDAR, calendarId)));
 
-    if (users != null) {
-      for (Long user : users) {
+    if (!DataUtils.isEmpty(exGroupData)) {
+      for (SimpleRow exRow : exGroupData) {
+        Long user = exRow.getLong(CommonsConstants.COL_UG_USER);
         executors.add(user);
+
+        ColorAndStyle cs = ColorAndStyle.maybeCreate(exRow.getValue(COL_BACKGROUND),
+            exRow.getValue(COL_FOREGROUND), exRow.getLong(COL_STYLE));
+        if (cs != null) {
+          if (executorAppearance.containsKey(user)) {
+            cs.merge(executorAppearance.get(user), false);
+          }
+          executorAppearance.put(user, cs);
+        }
+      }
+    }
+
+    SimpleRowSet executorData = qs.getData(new SqlSelect()
+        .addFields(TBL_CALENDAR_EXECUTORS, COL_EXECUTOR_USER,
+            COL_BACKGROUND, COL_FOREGROUND, COL_STYLE)
+        .addFrom(TBL_CALENDAR_EXECUTORS)
+        .setWhere(SqlUtils.equals(TBL_CALENDAR_EXECUTORS, COL_CALENDAR, calendarId)));
+
+    if (!DataUtils.isEmpty(executorData)) {
+      for (SimpleRow exRow : executorData) {
+        Long user = exRow.getLong(COL_EXECUTOR_USER);
+        executors.add(user);
+
+        ColorAndStyle cs = ColorAndStyle.maybeCreate(exRow.getValue(COL_BACKGROUND),
+            exRow.getValue(COL_FOREGROUND), exRow.getLong(COL_STYLE));
+        if (cs != null) {
+          if (executorAppearance.containsKey(user)) {
+            cs.merge(executorAppearance.get(user), false);
+          }
+          executorAppearance.put(user, cs);
+        }
       }
     }
 
     if (!assigned && !delegated && !observed && executors.isEmpty()) {
       return tasks;
     }
+
+    EnumMap<TaskType, ColorAndStyle> typeAppearance = Maps.newEnumMap(TaskType.class);
 
     String source = CrmConstants.TBL_TASKS;
     String idName = sys.getIdName(source);
@@ -1182,6 +1228,14 @@ public class CalendarModuleBean implements BeeModule {
       if (executors.contains(calendarOwner)) {
         executors.remove(calendarOwner);
       }
+
+      ColorAndStyle cs = ColorAndStyle.maybeCreate(
+          DataUtils.getString(calRowSet, calendar, COL_ASSIGNED_TASKS_BACKGROUND),
+          DataUtils.getString(calRowSet, calendar, COL_ASSIGNED_TASKS_FOREGROUND),
+          DataUtils.getLong(calRowSet, calendar, COL_ASSIGNED_TASKS_STYLE));
+      if (cs != null) {
+        typeAppearance.put(TaskType.ASSIGNED, cs);
+      }
     }
 
     if (delegated) {
@@ -1192,6 +1246,14 @@ public class CalendarModuleBean implements BeeModule {
             SqlUtils.equals(source, CrmConstants.COL_OWNER, calendarOwner),
             SqlUtils.notEqual(source, CrmConstants.COL_EXECUTOR, calendarOwner)));
       }
+
+      ColorAndStyle cs = ColorAndStyle.maybeCreate(
+          DataUtils.getString(calRowSet, calendar, COL_DELEGATED_TASKS_BACKGROUND),
+          DataUtils.getString(calRowSet, calendar, COL_DELEGATED_TASKS_FOREGROUND),
+          DataUtils.getLong(calRowSet, calendar, COL_DELEGATED_TASKS_STYLE));
+      if (cs != null) {
+        typeAppearance.put(TaskType.DELEGATED, cs);
+      }
     }
 
     if (observed) {
@@ -1200,6 +1262,14 @@ public class CalendarModuleBean implements BeeModule {
           SqlUtils.notEqual(source, CrmConstants.COL_EXECUTOR, calendarOwner),
           SqlUtils.in(source, idName, CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK,
               SqlUtils.equals(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, calendarOwner))));
+
+      ColorAndStyle cs = ColorAndStyle.maybeCreate(
+          DataUtils.getString(calRowSet, calendar, COL_OBSERVED_TASKS_BACKGROUND),
+          DataUtils.getString(calRowSet, calendar, COL_OBSERVED_TASKS_FOREGROUND),
+          DataUtils.getLong(calRowSet, calendar, COL_OBSERVED_TASKS_STYLE));
+      if (cs != null) {
+        typeAppearance.put(TaskType.OBSERVED, cs);
+      }
     }
 
     if (!executors.isEmpty()) {
@@ -1232,23 +1302,66 @@ public class CalendarModuleBean implements BeeModule {
         continue;
       }
 
-      CalendarTask task = new CalendarTask(id, row);
+      Long owner = row.getLong(CrmConstants.COL_OWNER);
+      Long executor = row.getLong(CrmConstants.COL_EXECUTOR);
 
-      Long owner = task.getOwner();
-      Long executor = task.getExecutor();
+      Set<Long> observers = Sets.newHashSet();
 
-      Long[] observers = qs.getLongColumn(new SqlSelect()
+      Long[] taskUsers = qs.getLongColumn(new SqlSelect()
           .addFields(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER)
           .addFrom(CrmConstants.TBL_TASK_USERS)
           .setWhere(SqlUtils.and(
               SqlUtils.equals(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK, id),
               SqlUtils.notEqual(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, owner),
               SqlUtils.notEqual(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, executor))));
-      
-      if (observers != null && observers.length > 0) {
-        task.setObservers(Sets.newHashSet(observers));
+
+      if (taskUsers != null && taskUsers.length > 0) {
+        for (Long user : taskUsers) {
+          observers.add(user);
+        }
+      }
+
+      TaskType type;
+      if (!DataUtils.isId(calendarOwner)) {
+        type = TaskType.GENERAL;
+      } else if (Objects.equal(executor, calendarOwner)) {
+        type = TaskType.ASSIGNED;
+      } else if (Objects.equal(owner, calendarOwner)) {
+        type = TaskType.DELEGATED;
+      } else if (observers.contains(calendarOwner)) {
+        type = TaskType.OBSERVED;
+      } else {
+        type = TaskType.GENERAL;
+      }
+
+      CalendarTask task = new CalendarTask(type, id, row);
+
+      if (!observers.isEmpty()) {
+        task.setObservers(observers);
       }
       
+      ColorAndStyle cs;
+      if (executor != null && executorAppearance.containsKey(executor)) {
+        cs = executorAppearance.get(executor);
+      } else {
+        cs = null;
+      }
+      
+      if (typeAppearance.containsKey(type)) {
+        if (cs == null) {
+          cs = typeAppearance.get(type);
+        } else {
+          cs = cs.copy();
+          cs.merge(typeAppearance.get(type), false);
+        }
+      }
+      
+      if (cs != null) {
+        task.setBackground(cs.getBackground());
+        task.setForeground(cs.getForeground());
+        task.setStyle(cs.getStyle());
+      }
+
       tasks.add(task);
     }
 

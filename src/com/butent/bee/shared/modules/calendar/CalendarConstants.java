@@ -55,6 +55,10 @@ public final class CalendarConstants {
     }
   }
   
+  public enum ItemType {
+    APPOINTMENT, TASK
+  }
+  
   public enum MultidayLayout implements HasCaption {
     HORIZONTAL(Localized.getConstants().calMultidayLayoutHorizontal()),
     VERTICAL(Localized.getConstants().calMultidayLayoutVertical()),
@@ -186,7 +190,7 @@ public final class CalendarConstants {
   public static final String SVC_GET_USER_CALENDAR = "get_user_calendar";
   public static final String SVC_CREATE_APPOINTMENT = "create_appointment";
   public static final String SVC_UPDATE_APPOINTMENT = "update_appointment";
-  public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments";
+  public static final String SVC_GET_CALENDAR_ITEMS = "get_calendar_items";
   public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view";
   public static final String SVC_GET_OVERLAPPING_APPOINTMENTS = "get_overlapping_appointments";
   public static final String SVC_GET_REPORT_OPTIONS = "get_report_options";
@@ -354,6 +358,8 @@ public final class CalendarConstants {
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
 
+  public static final String COL_BACKGROUND = "Background";
+  public static final String COL_FOREGROUND = "Foreground";
   public static final String COL_STYLE = "Style";
 
   public static final String COL_SIMPLE = "Simple";

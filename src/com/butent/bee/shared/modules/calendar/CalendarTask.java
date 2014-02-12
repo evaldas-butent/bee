@@ -7,6 +7,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskPriority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
+import com.butent.bee.shared.modules.crm.TaskType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -17,7 +18,7 @@ import java.util.Collection;
 public class CalendarTask implements BeeSerializable {
   
   private enum Serial {
-    ID, START, END, SUMMARY, DESCRIPTION, COMPANY_NAME, PRIORITY, STATUS, OWNER, EXECUTOR,
+    TYPE, ID, START, END, SUMMARY, DESCRIPTION, COMPANY_NAME, PRIORITY, STATUS, OWNER, EXECUTOR,
     OBSERVERS, BACKGRUOND, FOREGROUND, STYLE 
   }
   
@@ -27,6 +28,7 @@ public class CalendarTask implements BeeSerializable {
     return ct;
   }
   
+  private TaskType type;
   private long id;
   
   private DateTime start;
@@ -50,7 +52,8 @@ public class CalendarTask implements BeeSerializable {
 
   private Long style;
 
-  public CalendarTask(long id, SimpleRow row) {
+  public CalendarTask(TaskType type, long id, SimpleRow row) {
+    this.type = type;
     this.id = id;
 
     this.start = row.getDateTime(CrmConstants.COL_START_TIME);
@@ -87,6 +90,9 @@ public class CalendarTask implements BeeSerializable {
       }
 
       switch (members[i]) {
+        case TYPE:
+          setType(Codec.unpack(TaskType.class, value));
+          break;
         case ID:
           setId(BeeUtils.toLong(value));
           break;
@@ -197,6 +203,10 @@ public class CalendarTask implements BeeSerializable {
     return summary;
   }
 
+  public TaskType getType() {
+    return type;
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -205,6 +215,9 @@ public class CalendarTask implements BeeSerializable {
 
     for (Serial member : members) {
       switch (member) {
+        case TYPE:
+          arr[i++] = Codec.pack(getType());
+          break;
         case ID:
           arr[i++] = getId();
           break;
@@ -315,5 +328,9 @@ public class CalendarTask implements BeeSerializable {
 
   private void setId(long id) {
     this.id = id;
+  }
+
+  private void setType(TaskType type) {
+    this.type = type;
   }
 }
