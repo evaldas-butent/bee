@@ -125,6 +125,8 @@ public class DiscussionsModuleBean implements BeeModule {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_DATA)) {
       response = getDiscussionData(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_ANNOUNCEMENTS_DATA)) {
+      response = getAnnouncements();
     } else {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);
       logger.warning(message);
@@ -747,6 +749,47 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return getDiscussionData(discussionId, null);
+  }
+
+  private ResponseObject getAnnouncements() {
+    SqlSelect select = new SqlSelect()
+        .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
+        .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
+        .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
+        .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
+        .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
+            .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+                CommonsConstants.COL_FIRST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.COL_LAST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_PHOTO,
+            CommonsConstants.COL_PHOTO)
+        .addFrom(TBL_ADS_TOPICS)
+        .addFromLeft(TBL_DISCUSSIONS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
+            .addFromLeft(CommonsConstants.TBL_USERS,
+                sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
+        .addFromLeft(
+            CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                CommonsConstants.COL_COMPANY_PERSON))
+        .addFromLeft(
+            CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON))
+        .setWhere(SqlUtils.and(
+            SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
+            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
+            ))
+        .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
+        .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED);
+
+    SimpleRowSet rs = qs.getData(select);
+
+    if (!rs.isEmpty()) {
+      return ResponseObject.response(rs);
+    }
+
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject getDiscussionData(long discussionId, Long commentId) {

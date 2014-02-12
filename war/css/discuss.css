@@ -201,3 +201,71 @@
   border: 1px solid #ccc;
   outline: none;
 }
+
+.bee-discuss-adsFormContent {
+  background-color: white;
+  margin-left: 1em;
+}
+
+.bee-discuss-adsFormContent-TopicName {
+  
+}
+
+.bee-discuss-adsFormContent-Important {
+  color: red;
+  font-weight: bold;
+}
+
+.bee-discuss-adsFormContent-Important > td {
+  border-bottom: 1px solid red !important;
+}
+
+.bee-discuss-adsFormContent-empty {
+  border-top: 1px solid #CCC;
+}
+
+.bee-discuss-adsFormContent-empty > td {
+  border-top: 1px solid #CCC;
+}
+
+.bee-discuss-adsFormContent-TopicName > td {
+  border-bottom: 2px solid #ccc;
+  width: 100%;
+  padding-top: 2em;
+}
+
+.bee-discuss-adsFormContent-Created {
+ /* min-width: 200px;*/
+}
+
+.bee-discuss-adsFormContent-Subject {
+  font-weight: bolder;
+  width: 100%;
+  vertical-align: top;
+  padding-left: 1ex;
+}
+
+.bee-discuss-adsFormContent-Owner {
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.bee-discuss-adsFormContent-Description {
+  width: 100%;
+  vertical-align: top;
+  padding: 1ex;
+  max-height: 370px;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.bee-discuss-adsFormContent-Owner-Photo {
+  text-align: center;
+  max-width: 40px;
+  min-width: 40px;
+  padding-left: 1ex;
+}
+
+.bee-discuss-adsFormContent-Owner-Publisher {
+  
+}

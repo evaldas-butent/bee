@@ -13,6 +13,8 @@ public final class DiscussionsKeeper {
     /* Form interceptors */
     FormFactory.registerFormInterceptor(FORM_NEW_DISCUSSION, new CreateDiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_DISCUSSION, new DiscussionInterceptor());
+    FormFactory.registerFormInterceptor(FORM_ANNOUNCEMENTS_BOARD,
+        new AnnouncementsBoardInterceptor());
     /* Menu */
     BeeKeeper.getMenu().registerMenuCallback(MENU_SERVICE_DISCUSSIONS_LIST,
         new MenuManager.MenuCallback() {

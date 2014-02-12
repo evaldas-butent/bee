@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="AnnouncementsBoard" caption="=announcementsBoard" enabledActions="refresh">
+  
+  <Table name="AdsContent" class="bee-discuss-adsFormContent" >
+    <!--  Content generating via form interceptor -->
+  </Table>
+</f:Form>  

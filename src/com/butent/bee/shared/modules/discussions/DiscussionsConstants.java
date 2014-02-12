@@ -106,16 +106,19 @@ public final class DiscussionsConstants {
   public static final String ALS_LAST_COMMET = "LastComment";
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
+  public static final String ALS_TOPIC_NAME = "TopicName";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_COMMENT_TEXT = "CommentText";
+  public static final String COL_CREATED = "Created";
   public static final String COL_DISCUSSION = "Discussion";
   public static final String COL_DISCUSSION_ID = "DiscussionID";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_DELETED = "Deleted";
   public static final String COL_IMAGE_RESOURCE_NAME = "ImageResourceName";
+  public static final String COL_IMPORTANT = "Important";
   public static final String COL_MARK_NAME = "Name";
   public static final String COL_MARK_RESOURCE = "ImageResourceName";
   public static final String COL_FILE = "File";
@@ -125,7 +128,10 @@ public final class DiscussionsConstants {
   public static final String COL_LAST_ACCESS = "LastAccess";
   public static final String COL_MARK = "Mark";
   public static final String COL_MEMBER = "Member";
+  public static final String COL_NAME = "Name";
+  public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_OWNER = "Owner";
+  public static final String COL_PERMIT_COMMENT = "PermitComment";
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String COL_PUBLISHER_LAST_NAME = "PublisherLastName";
@@ -135,10 +141,14 @@ public final class DiscussionsConstants {
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
   public static final String COL_SUBJECT = "Subject";
-  public static final String COL_CREATED = "Created";
+  public static final String COL_TOPIC = "Topic";
+  public static final String COL_VISIBLE = "Visible";
+  public static final String COL_VISIBLE_FROM = "VisibleFrom";
+  public static final String COL_VISIBLE_TO = "VisibleTo";
 
   public static final String FORM_NEW_DISCUSSION = "NewDiscussion";
   public static final String FORM_DISCUSSION = "Discussion";
+  public static final String FORM_ANNOUNCEMENTS_BOARD = "AnnouncementsBoard";
 
   public static final String GRID_DISCUSSIONS = "Discussions";
 
@@ -180,7 +190,9 @@ public final class DiscussionsConstants {
   public static final String PRM_DISCUSS_INACTIVE_TIME_IN_DAYS = "DiscussInactiveTimeInDays";
 
   public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
+  public static final String SVC_GET_ANNOUNCEMENTS_DATA = "get_ads_data";
 
+  public static final String TBL_ADS_TOPICS = "AdsTopics";
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
