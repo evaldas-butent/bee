@@ -674,19 +674,6 @@ public final class BeeUtils {
     }
   }
 
-  public static <E extends Enum<?>> E getConstant(Class<E> clazz, Integer ordinal) {
-    if (clazz == null || ordinal == null || ordinal < 0) {
-      return null;
-    }
-
-    E[] constants = clazz.getEnumConstants();
-    if (ordinal < constants.length) {
-      return constants[ordinal];
-    } else {
-      return null;
-    }
-  }
-
   public static int getDecimals(String s) {
     int index = (s == null) ? BeeConst.UNDEF : s.lastIndexOf(BeeConst.CHAR_POINT);
     return (index >= 0) ? s.length() - index - 1 : 0;

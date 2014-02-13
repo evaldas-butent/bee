@@ -2,7 +2,6 @@ package com.butent.bee.shared.modules.crm;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -14,25 +13,24 @@ public enum TaskType implements HasCaption {
   ASSIGNED(Localized.getConstants().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
     @Override
     public Filter getFilter(LongValue userValue) {
-      return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
+      return Filter.isEqual(COL_EXECUTOR, userValue);
     }
   },
 
   DELEGATED(Localized.getConstants().crmTasksDelegatedTasks(), Feed.TASKS_DELEGATED) {
     @Override
     public Filter getFilter(LongValue userValue) {
-      return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
-          ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue));
+      return Filter.and(Filter.isEqual(COL_OWNER, userValue),
+          Filter.isNotEqual(COL_EXECUTOR, userValue));
     }
   },
 
   OBSERVED(Localized.getConstants().crmTasksObservedTasks(), Feed.TASKS_OBSERVED) {
     @Override
     public Filter getFilter(LongValue userValue) {
-      return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
-          ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue),
-          Filter.in(COL_TASK_ID, VIEW_TASK_USERS, COL_TASK,
-              ComparisonFilter.isEqual(COL_USER, userValue)));
+      return Filter.and(Filter.isNotEqual(COL_OWNER, userValue),
+          Filter.isNotEqual(COL_EXECUTOR, userValue),
+          Filter.in(COL_TASK_ID, VIEW_TASK_USERS, COL_TASK, Filter.isEqual(COL_USER, userValue)));
     }
   },
 

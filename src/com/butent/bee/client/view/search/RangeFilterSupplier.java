@@ -21,7 +21,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.filter.Operator;
@@ -227,17 +226,17 @@ public class RangeFilterSupplier extends AbstractFilterSupplier {
       return null;
 
     } else if (BeeUtils.isEmpty(lower)) {
-      return ComparisonFilter.compareWithValue(getColumn(), UPPER_OPERATOR, upper);
+      return Filter.compareWithValue(getColumn(), UPPER_OPERATOR, upper);
 
     } else if (BeeUtils.isEmpty(upper)) {
-      return ComparisonFilter.compareWithValue(getColumn(), LOWER_OPERATOR, lower);
+      return Filter.compareWithValue(getColumn(), LOWER_OPERATOR, lower);
 
     } else if (lower.equals(upper)) {
-      return ComparisonFilter.compareWithValue(getColumn(), Operator.EQ, lower);
+      return Filter.compareWithValue(getColumn(), Operator.EQ, lower);
 
     } else {
-      return Filter.and(ComparisonFilter.compareWithValue(getColumn(), LOWER_OPERATOR, lower),
-          ComparisonFilter.compareWithValue(getColumn(), UPPER_OPERATOR, upper));
+      return Filter.and(Filter.compareWithValue(getColumn(), LOWER_OPERATOR, lower),
+          Filter.compareWithValue(getColumn(), UPPER_OPERATOR, upper));
     }
   }
 

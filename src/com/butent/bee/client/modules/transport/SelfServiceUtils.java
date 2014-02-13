@@ -16,7 +16,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 
@@ -62,7 +61,7 @@ final class SelfServiceUtils {
   }
   
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = ComparisonFilter.notNull(COL_EXPEDITION_TYPE_SELF_SERVICE);
+    Filter filter = Filter.notNull(COL_EXPEDITION_TYPE_SELF_SERVICE);
     Order order = Order.ascending(COL_EXPEDITION_TYPE_SELF_SERVICE, COL_EXPEDITION_TYPE_NAME);
     
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);
@@ -75,7 +74,7 @@ final class SelfServiceUtils {
   }
 
   static void setDefaultShippingTerm(FormView form, IsRow newRow, String targetColumn) {
-    Filter filter = ComparisonFilter.notNull(COL_SHIPPING_TERM_SELF_SERVICE);
+    Filter filter = Filter.notNull(COL_SHIPPING_TERM_SELF_SERVICE);
     Order order = Order.ascending(COL_SHIPPING_TERM_SELF_SERVICE, COL_SHIPPING_TERM_NAME);
 
     RelatedValuesCallback callback = new RelatedValuesCallback(form, newRow, targetColumn);

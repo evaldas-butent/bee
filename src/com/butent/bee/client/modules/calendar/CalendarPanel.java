@@ -67,9 +67,7 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -737,9 +735,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       String viewName = VIEW_APPOINTMENT_ATTENDEES;
       long appId = appointment.getId();
 
-      Queries.delete(viewName, Filter.and(
-          ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId)),
-          ComparisonFilter.isEqual(COL_ATTENDEE, new LongValue(oldAttendee))), null);
+      Queries.delete(viewName, Filter.and(Filter.equals(COL_APPOINTMENT, appId),
+          Filter.equals(COL_ATTENDEE, oldAttendee)), null);
 
       if (add) {
         List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_APPOINTMENT),

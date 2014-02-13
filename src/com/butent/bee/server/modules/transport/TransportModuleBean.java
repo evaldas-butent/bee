@@ -47,9 +47,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -1388,7 +1386,7 @@ public class TransportModuleBean implements BeeModule {
 
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
-    Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
+    Filter filter = Filter.equals(COL_USER, userId);
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
     if (!DataUtils.isEmpty(rowSet)) {
@@ -1411,8 +1409,7 @@ public class TransportModuleBean implements BeeModule {
 
     BeeRowSet rowSet;
     if (theme != null) {
-      rowSet = qs.getViewData(VIEW_THEME_COLORS,
-          ComparisonFilter.isEqual(COL_THEME, new LongValue(theme)));
+      rowSet = qs.getViewData(VIEW_THEME_COLORS, Filter.equals(COL_THEME, theme));
     } else {
       rowSet = null;
     }

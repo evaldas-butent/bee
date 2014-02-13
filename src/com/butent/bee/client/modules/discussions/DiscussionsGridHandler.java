@@ -20,7 +20,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -112,8 +111,8 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       final Integer value) {
     final long rowId = event.getRowValue().getId();
 
-    Filter filter = Filter.and(ComparisonFilter.isEqual(COL_DISCUSSION, new LongValue(rowId)),
-        ComparisonFilter.isEqual(CommonsConstants.COL_USER, new LongValue(userId)));
+    Filter filter = Filter.and(Filter.equals(COL_DISCUSSION, rowId),
+        Filter.equals(CommonsConstants.COL_USER, userId));
 
     Queries.update(VIEW_DISCUSSIONS_USERS, filter, COL_STAR, new IntegerValue(value),
         new Queries.IntCallback() {

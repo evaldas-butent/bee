@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.calendar;
 
+import com.google.common.collect.ImmutableMap;
+
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
@@ -8,6 +10,8 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.Map;
 
 public final class CalendarConstants {
 
@@ -240,9 +244,8 @@ public final class CalendarConstants {
   public static final String VIEW_APPOINTMENTS = "Appointments";
   public static final String VIEW_APPOINTMENT_TYPES = "AppointmentTypes";
 
-  public static final String VIEW_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String VIEW_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
-  public static final String VIEW_APPOINTMENT_REMINDERS = "AppointmentReminders";
+  public static final String VIEW_APPOINTMENT_OWNERS = "AppointmentOwners";
 
   public static final String VIEW_APPOINTMENT_STYLES = "AppointmentStyles";
 
@@ -413,13 +416,17 @@ public final class CalendarConstants {
 
   public static final String COL_APPOINTMENT_OWNER = "Owner";
   
+  public static final Map<String, String> APPOINTMENT_CHILDREN =
+      ImmutableMap.of(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE,
+          TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT_OWNER,
+          TBL_APPOINTMENT_PROPS, COL_APPOINTMENT_PROPERTY,
+          TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE);
+  
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 
   public static final String PRM_REMINDER_TIME_FROM = "ReminderTimeFrom";
   public static final String PRM_REMINDER_TIME_UNTIL = "ReminderTimeUntil";
-
-  public static final String PROP_USER_CAL_ATTENDEES = "UserCalAttendees";
 
   public static final JustDate MIN_DATE = new JustDate(2010, 1, 1);
   public static final JustDate MAX_DATE = TimeUtils.endOfMonth(TimeUtils.today(), 12);

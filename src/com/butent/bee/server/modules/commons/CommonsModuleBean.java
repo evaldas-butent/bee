@@ -48,7 +48,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -805,8 +804,7 @@ public class CommonsModuleBean implements BeeModule {
     }
     BeeView view = sys.getView(viewName);
 
-    SqlSelect query = view.getQuery(ComparisonFilter.idIn(idList), null)
-        .resetFields().resetOrder();
+    SqlSelect query = view.getQuery(Filter.idIn(idList), null).resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();
     Map<String, Pair<String, String>> idMap = Maps.newHashMap();

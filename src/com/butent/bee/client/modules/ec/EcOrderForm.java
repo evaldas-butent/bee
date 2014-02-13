@@ -30,8 +30,8 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
@@ -50,9 +50,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants.EcOrderStatus;
@@ -207,7 +205,7 @@ class EcOrderForm extends AbstractFormInterceptor {
     Long client = getActiveRow().getLong(index);
     Assert.notNull(client);
 
-    Filter filter = ComparisonFilter.isEqual(COL_UNSUPPLIED_ITEM_CLIENT, new LongValue(client));
+    Filter filter = Filter.equals(COL_UNSUPPLIED_ITEM_CLIENT, client);
     Queries.getRowSet(VIEW_UNSUPPLIED_ITEMS, null, filter, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {

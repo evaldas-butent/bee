@@ -5,15 +5,17 @@
   idName="UserCalAttendeeID"
   >
   <Fields>
-    <Relation name="UserCalendar" notNull="true" relation="UserCalendars" cascade="DELETE" label="=calendar"/>
-    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" label="=calAttendee"/>
+    <Relation name="UserCalendar" notNull="true" relation="UserCalendars" cascade="DELETE" 
+      label="=calendar" />
+    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" 
+      label="=calAttendee" />
     
-    <Boolean name="Enabled" label="=propertyEnabled" />
+    <Boolean name="Enabled" label="=enabled" />
     <Integer name="Ordinal" label="=ordinal" />
     <String name="Caption" precision="100" label="=caption" />
     
-    <String name="Background" precision="100" label="=background" />
-    <String name="Foreground" precision="100" label="=foreground" />
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
     <Relation name="Style" relation="AppointmentStyles" label="=style" />
   </Fields>
 

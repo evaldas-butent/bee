@@ -48,13 +48,13 @@ public class CalendarDataManager {
     return appointments;
   }
 
-  public void loadAppointments(long calendarId, final Range<DateTime> calendarRange, boolean force,
+  public void loadItems(long calendarId, final Range<DateTime> calendarRange, boolean force,
       final IntCallback callback) {
 
     if (!force && getRange() != null && calendarRange != null
         && getRange().encloses(calendarRange)) {
       if (callback != null) {
-        callback.onSuccess(appointments.size());
+        callback.onSuccess(getSize());
       }
       return;
     }
@@ -62,9 +62,9 @@ public class CalendarDataManager {
     ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_ITEMS);
     params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
 
-    if (range != null) {
-      params.addQueryItem(PARAM_START_TIME, range.lowerEndpoint().getTime());
-      params.addQueryItem(PARAM_END_TIME, range.upperEndpoint().getTime());
+    if (calendarRange != null) {
+      params.addQueryItem(PARAM_START_TIME, calendarRange.lowerEndpoint().getTime());
+      params.addQueryItem(PARAM_END_TIME, calendarRange.upperEndpoint().getTime());
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {

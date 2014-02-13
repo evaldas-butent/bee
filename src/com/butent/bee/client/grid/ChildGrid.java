@@ -25,9 +25,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
@@ -202,7 +200,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private Filter getFilter(IsRow row) {
-    return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
+    return Filter.equals(getRelSource(), getParentValue(row));
   }
 
   private GridDescription getGridDescription() {

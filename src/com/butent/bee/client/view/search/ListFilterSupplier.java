@@ -18,10 +18,8 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -240,12 +238,10 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
         filters.add(Filter.isNull(columnId));
 
       } else if (isForeign()) {
-        filters.add(ComparisonFilter.isEqual(columnId, 
-            new LongValue(BeeUtils.toLongOrNull(value))));
+        filters.add(Filter.equals(columnId, BeeUtils.toLongOrNull(value)));
 
       } else {
-        filters.add(ComparisonFilter.isEqual(columnId, 
-            Value.parseValue(getColumnType(), value, false)));
+        filters.add(Filter.isEqual(columnId, Value.parseValue(getColumnType(), value, false)));
       }
     }
     

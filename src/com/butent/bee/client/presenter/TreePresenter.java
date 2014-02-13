@@ -35,7 +35,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
@@ -365,7 +364,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(relationColumnName)) {
-      flt = ComparisonFilter.compareWithValue(relationColumnName, Operator.EQ,
+      flt = Filter.compareWithValue(relationColumnName, Operator.EQ,
           new LongValue(relationId == null ? BeeConst.UNDEF : relationId));
     }
     Queries.getRowSet(getViewName(), null, flt, null, new RowSetCallback() {

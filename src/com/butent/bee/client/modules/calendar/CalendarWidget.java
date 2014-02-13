@@ -46,7 +46,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
 
   private final CalendarSettings settings;
 
-  private final CalendarDataManager appointmentManager;
+  private final CalendarDataManager dataManager;
   private final List<Long> attendees = Lists.newArrayList();
 
   private final Map<CalendarView.Type, CalendarView> viewCache = Maps.newHashMap();
@@ -73,7 +73,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
 
     this.calendarId = calendarId;
     this.settings = settings;
-    this.appointmentManager = new CalendarDataManager();
+    this.dataManager = new CalendarDataManager();
 
     this.date = TimeUtils.today();
 
@@ -82,7 +82,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
 
   public void addAppointment(Appointment appointment, boolean refresh) {
     Assert.notNull(appointment);
-    appointmentManager.addAppointment(appointment);
+    dataManager.addAppointment(appointment);
     if (refresh) {
       refresh(false);
     }
@@ -104,7 +104,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
   }
 
   public List<Appointment> getAppointments() {
-    return appointmentManager.getAppointments();
+    return dataManager.getAppointments();
   }
 
   public List<Long> getAttendees() {
@@ -140,7 +140,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
       final long startMillis = System.currentTimeMillis();
       final Range<DateTime> range = getView().getVisibleRange();
 
-      appointmentManager.loadAppointments(calendarId, range, force, new IntCallback() {
+      dataManager.loadItems(calendarId, range, force, new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
           logger.debug("load", CalendarUtils.renderRange(range), result,
@@ -196,7 +196,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
       return;
     }
 
-    appointmentManager.sortAppointments();
+    dataManager.sortAppointments();
 
     doLayout();
     doSizing();
@@ -207,7 +207,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
   }
 
   public boolean removeAppointment(long id, boolean refresh) {
-    boolean removed = appointmentManager.removeAppointment(id);
+    boolean removed = dataManager.removeAppointment(id);
     if (removed && refresh) {
       refresh(false);
     }

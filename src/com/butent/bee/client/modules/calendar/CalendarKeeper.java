@@ -285,7 +285,7 @@ public final class CalendarKeeper {
 
               BeeRow row = AppointmentBuilder.createEmptyRow(typeRow, start);
               if (att != null) {
-                row.setProperty(VIEW_APPOINTMENT_ATTENDEES, BeeUtils.toString(att));
+                row.setProperty(TBL_APPOINTMENT_ATTENDEES, BeeUtils.toString(att));
               }
 
               result.updateRow(row, false);
@@ -725,7 +725,7 @@ public final class CalendarKeeper {
           @Override
           public void onSuccess(BeeRowSet result) {
             BeeRow row = result.getRow(0);
-            BeeRowSet ucAttendees = BeeRowSet.restore(row.getProperty(PROP_USER_CAL_ATTENDEES));
+            BeeRowSet ucAttendees = BeeRowSet.restore(row.getProperty(TBL_USER_CAL_ATTENDEES));
 
             CalendarSettings settings = CalendarSettings.create(row, result.getColumns());
             CalendarPanel calendarPanel = new CalendarPanel(calendarId, calendarName, settings,

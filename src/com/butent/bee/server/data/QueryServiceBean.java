@@ -496,6 +496,19 @@ public class QueryServiceBean {
     return getSingleColumn(query).getLongColumn(0);
   }
 
+  public List<Long> getLongList(IsQuery query) {
+    List<Long> result = Lists.newArrayList();
+    
+    Long[] arr = getLongColumn(query);
+    if (arr != null && arr.length > 0) {
+      for (Long value : arr) {
+        result.add(value);
+      }
+    }
+
+    return result;
+  }
+
   public String getNextNumber(String tblName, String fldName, String prefix, String prefixFld) {
     Object value = null;
 

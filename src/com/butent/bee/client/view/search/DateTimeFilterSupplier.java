@@ -23,7 +23,6 @@ import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -217,12 +216,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     if (start == null && end == null) {
       return null;
     } else if (end == null) {
-      return ComparisonFilter.isMoreEqual(getColumnId(), getComparisonValue(start));
+      return Filter.isMoreEqual(getColumnId(), getComparisonValue(start));
     } else if (start == null) {
-      return ComparisonFilter.isLess(getColumnId(), getComparisonValue(end));
+      return Filter.isLess(getColumnId(), getComparisonValue(end));
     } else {
-      return Filter.and(ComparisonFilter.isMoreEqual(getColumnId(), getComparisonValue(start)),
-          ComparisonFilter.isLess(getColumnId(), getComparisonValue(end)));
+      return Filter.and(Filter.isMoreEqual(getColumnId(), getComparisonValue(start)),
+          Filter.isLess(getColumnId(), getComparisonValue(end)));
     }
   }
 

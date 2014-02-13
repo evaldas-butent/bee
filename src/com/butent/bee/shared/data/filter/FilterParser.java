@@ -190,7 +190,7 @@ public final class FilterParser {
           flt = Filter.compareVersion(operator, value);
 
         } else if (column2 != null) {
-          flt = ComparisonFilter.compareWithColumn(column, operator, column2);
+          flt = Filter.compareWithColumn(column, operator, column2);
 
         } else if (BeeUtils.isEmpty(value) && !isOperator) {
           flt = Filter.notNull(colName);
@@ -202,10 +202,9 @@ public final class FilterParser {
           if (BeeUtils.isEmpty(value)) {
             flt = Filter.isNull(colName);
           } else if ("{u}".equals(value) && column.getType() == ValueType.LONG && userId != null) {
-            flt = ComparisonFilter.compareWithValue(column.getId(), operator,
-                new LongValue(userId));
+            flt = Filter.compareWithValue(column.getId(), operator, new LongValue(userId));
           } else {
-            flt = ComparisonFilter.compareWithValue(column, operator, value);
+            flt = Filter.compareWithValue(column, operator, value);
           }
         }
 

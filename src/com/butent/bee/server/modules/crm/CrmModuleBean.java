@@ -48,11 +48,9 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.Tags;
@@ -479,8 +477,7 @@ public class CrmModuleBean implements BeeModule {
     }
 
     if (propNames.contains(PROP_EVENTS)) {
-      BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS,
-          ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
+      BeeRowSet events = qs.getViewData(VIEW_TASK_EVENTS, Filter.equals(COL_TASK, taskId));
       if (!DataUtils.isEmpty(events)) {
         row.setProperty(PROP_EVENTS, events.serialize());
       }
@@ -1180,14 +1177,12 @@ public class CrmModuleBean implements BeeModule {
       }
     }
 
-    BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES,
-        Filter.isEqual(COL_RTD_RECURRING_TASK, new LongValue(rtId)));
+    BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES, Filter.equals(COL_RTD_RECURRING_TASK, rtId));
     if (!DataUtils.isEmpty(rtDates)) {
       data.put(rtDates.getViewName(), rtDates.serialize());
     }
 
-    BeeRowSet tasks = qs.getViewData(VIEW_TASKS,
-        Filter.isEqual(COL_RECURRING_TASK, new LongValue(rtId)),
+    BeeRowSet tasks = qs.getViewData(VIEW_TASKS, Filter.equals(COL_RECURRING_TASK, rtId),
         Order.ascending(ALS_EXECUTOR_LAST_NAME, ALS_EXECUTOR_FIRST_NAME));
     if (!DataUtils.isEmpty(tasks)) {
       data.put(tasks.getViewName(), tasks.serialize());
@@ -1285,8 +1280,7 @@ public class CrmModuleBean implements BeeModule {
   private List<StoredFile> getTaskFiles(long taskId) {
     List<StoredFile> result = Lists.newArrayList();
 
-    BeeRowSet rowSet = qs.getViewData(VIEW_TASK_FILES,
-        ComparisonFilter.isEqual(COL_TASK, new LongValue(taskId)));
+    BeeRowSet rowSet = qs.getViewData(VIEW_TASK_FILES, Filter.equals(COL_TASK, taskId));
     if (rowSet == null || rowSet.isEmpty()) {
       return result;
     }
@@ -1810,9 +1804,9 @@ public class CrmModuleBean implements BeeModule {
 
     Filter filter = Filter.and(
         Filter.or(Filter.isNull(COL_RT_SCHEDULE_DAYS),
-            ComparisonFilter.isMoreEqual(COL_RT_SCHEDULE_DAYS, new IntegerValue(0))),
+            Filter.isMoreEqual(COL_RT_SCHEDULE_DAYS, new IntegerValue(0))),
         Filter.or(Filter.isNull(COL_RT_SCHEDULE_UNTIL),
-            ComparisonFilter.isMoreEqual(COL_RT_SCHEDULE_UNTIL, new DateValue(defStart))));
+            Filter.isMoreEqual(COL_RT_SCHEDULE_UNTIL, new DateValue(defStart))));
 
     BeeRowSet rtData = qs.getViewData(VIEW_RECURRING_TASKS, filter);
     if (DataUtils.isEmpty(rtData)) {
@@ -1879,7 +1873,7 @@ public class CrmModuleBean implements BeeModule {
               DataUtils.getInteger(rtData, rtRow, COL_RT_WORKDAY_TRANSITION)));
 
       BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES,
-          Filter.isEqual(COL_RTD_RECURRING_TASK, new LongValue(rtId)));
+          Filter.equals(COL_RTD_RECURRING_TASK, rtId));
 
       if (!DataUtils.isEmpty(rtDates)) {
         List<ScheduleDateRange> scheduleDateRanges = CrmUtils.getScheduleDateRanges(rtDates);

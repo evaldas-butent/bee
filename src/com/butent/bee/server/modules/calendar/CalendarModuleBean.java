@@ -48,7 +48,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -86,7 +85,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -108,7 +106,7 @@ import javax.ejb.TimerService;
 public class CalendarModuleBean implements BeeModule {
 
   private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notNull(COL_START_DATE_TIME),
-      ComparisonFilter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
+      Filter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
 
   private static BeeLogger logger = LogUtils.getLogger(CalendarModuleBean.class);
 
@@ -126,6 +124,20 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
     }
+  }
+
+  private static Map<String, SqlSelect> getAppointmentChildrenQueries() {
+    Map<String, SqlSelect> queries = Maps.newHashMap();
+
+    for (Map.Entry<String, String> child : APPOINTMENT_CHILDREN.entrySet()) {
+      String source = child.getKey();
+      String field = child.getValue();
+      
+      queries.put(source,
+          new SqlSelect().addFields(source, field).addFrom(source).addOrder(source, field));
+    }
+    
+    return queries;
   }
 
   private static Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
@@ -269,22 +281,16 @@ public class CalendarModuleBean implements BeeModule {
 
     rowSet.addRow(rowId, arr);
   }
-
   @EJB
   SystemBean sys;
-
   @EJB
   UserServiceBean usr;
-
   @EJB
   QueryServiceBean qs;
-
   @EJB
   DataEditorBean deb;
-
   @EJB
   MailModuleBean mail;
-
   @EJB
   ParamHolderBean prm;
 
@@ -653,33 +659,23 @@ public class CalendarModuleBean implements BeeModule {
     if (rowSet.isEmpty()) {
       return ResponseObject.error(SVC_CREATE_APPOINTMENT, ": rowSet is empty");
     }
-
-    String propIds = rowSet.getTableProperty(TBL_APPOINTMENT_PROPS);
-    String attIds = rowSet.getTableProperty(COL_ATTENDEE);
-    String rtIds = rowSet.getTableProperty(COL_REMINDER_TYPE);
-
+    
     ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
 
     long appId = ((BeeRow) response.getResponse()).getId();
-
-    if (!BeeUtils.isEmpty(propIds)) {
-      for (long propId : DataUtils.parseIdList(propIds)) {
-        insertAppointmentProperty(appId, propId);
-      }
-    }
-
-    if (!BeeUtils.isEmpty(attIds)) {
-      for (long attId : DataUtils.parseIdList(attIds)) {
-        insertAppointmentAttendee(appId, attId);
-      }
-    }
-
-    if (!BeeUtils.isEmpty(rtIds)) {
-      for (long rtId : DataUtils.parseIdList(rtIds)) {
-        insertAppointmentReminder(appId, rtId);
+    
+    for (Map.Entry<String, String> entry : APPOINTMENT_CHILDREN.entrySet()) {
+      String childTable = entry.getKey();
+      
+      List<Long> children = DataUtils.parseIdList(rowSet.getTableProperty(childTable));
+      if (!children.isEmpty()) {
+        for (long child : children) {
+          qs.insertData(new SqlInsert(childTable).addConstant(COL_APPOINTMENT, appId)
+              .addConstant(entry.getValue(), child));
+        }
       }
     }
 
@@ -756,62 +752,37 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(result);
     }
   }
-
+  
   private List<BeeRow> getAppointments(Filter filter, Order order) {
-    long userId = usr.getCurrentUserId();
+    List<BeeRow> result = Lists.newArrayList();
+
+    Long userId = usr.getCurrentUserId();
+    if (!DataUtils.isId(userId)) {
+      return result;
+    }
 
     Filter visible = Filter.or().add(
-        ComparisonFilter.isEqual(COL_CREATOR, new LongValue(userId)),
-        Filter.isNull(COL_CREATOR),
+        Filter.equals(COL_CREATOR, userId),
+        Filter.in(sys.getIdName(TBL_APPOINTMENTS), VIEW_APPOINTMENT_OWNERS, COL_APPOINTMENT,
+            Filter.equals(COL_APPOINTMENT_OWNER, userId)),
         Filter.isNull(COL_VISIBILITY),
-        ComparisonFilter.isNotEqual(COL_VISIBILITY,
-            new IntegerValue(CalendarVisibility.PRIVATE.ordinal())));
+        Filter.isEqual(COL_VISIBILITY, IntegerValue.of(CalendarVisibility.PUBLIC)));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
     if (DataUtils.isEmpty(appointments)) {
-      logger.debug("no appointments found where", filter);
-      logger.debug("visible where", visible);
-      return Lists.newArrayList();
+      return result;
+    }
+    
+    Map<String, SqlSelect> queries = getAppointmentChildrenQueries();
+    
+    for (BeeRow row : appointments.getRows()) {
+      setAppopintmentProperties(row, queries);
+      result.add(row);
     }
 
-    BeeRowSet appAtts = qs.getViewData(VIEW_APPOINTMENT_ATTENDEES);
-    BeeRowSet appProps = qs.getViewData(VIEW_APPOINTMENT_PROPS);
-    BeeRowSet appRemind = qs.getViewData(VIEW_APPOINTMENT_REMINDERS);
-
-    int aaIndex = appAtts.getColumnIndex(COL_ATTENDEE);
-    int apIndex = appProps.getColumnIndex(COL_APPOINTMENT_PROPERTY);
-    int arIndex = appRemind.getColumnIndex(COL_REMINDER_TYPE);
-
-    List<BeeRow> children;
-    Iterator<BeeRow> iterator = appointments.getRows().iterator();
-
-    while (iterator.hasNext()) {
-      BeeRow row = iterator.next();
-      String appId = BeeUtils.toString(row.getId());
-
-      children = DataUtils.filterRows(appAtts, COL_APPOINTMENT, appId);
-
-      if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_ATTENDEES,
-            DataUtils.buildIdList(DataUtils.getDistinct(children, aaIndex)));
-      }
-
-      children = DataUtils.filterRows(appProps, COL_APPOINTMENT, appId);
-      if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_PROPS,
-            DataUtils.buildIdList(DataUtils.getDistinct(children, apIndex)));
-      }
-
-      children = DataUtils.filterRows(appRemind, COL_APPOINTMENT, appId);
-      if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_REMINDERS,
-            DataUtils.buildIdList(DataUtils.getDistinct(children, arIndex)));
-      }
-    }
-
-    return appointments.getRows().getList();
+    return result;
   }
-
+  
   private SimpleRowSet getAttendeePeriods(JustDate lowerDate, JustDate upperDate,
       List<Long> attendeeTypes, List<Long> attendees, boolean canceled) {
 
@@ -1039,61 +1010,8 @@ public class CalendarModuleBean implements BeeModule {
     return result;
   }
 
-  private ResponseObject getCalendarItems(RequestInfo reqInfo) {
-    long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
-    if (!DataUtils.isId(calendarId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_CALENDAR_ID);
-    }
-
-    Filter calFilter = ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId));
-    BeeRowSet calAppTypes = qs.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
-
-    CompoundFilter appFilter = Filter.and();
-    appFilter.add(VALID_APPOINTMENT);
-    appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
-        new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
-
-    Long startTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_START_TIME));
-    Long endTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_END_TIME));
-
-    if (startTime != null) {
-      appFilter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(startTime)));
-    }
-    if (endTime != null) {
-      appFilter.add(ComparisonFilter.isLess(COL_START_DATE_TIME, new LongValue(endTime)));
-    }
-
-    if (!calAppTypes.isEmpty()) {
-      appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
-          DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
-    }
-
-    List<BeeRow> appointments = getAppointments(appFilter, null);
-    List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
-
-    logger.info(reqInfo.getService(), calendarId,
-        (startTime == null) ? BeeConst.STRING_EMPTY : new DateTime(startTime).toCompactString(),
-        (endTime == null) ? BeeConst.STRING_EMPTY : new DateTime(endTime).toCompactString(),
-        BeeConst.STRING_EQ, appointments.size(), BeeConst.STRING_PLUS, tasks.size());
-    
-    
-    Map<String, Object> result = Maps.newHashMap();
-    if (!appointments.isEmpty()) {
-      result.put(ItemType.APPOINTMENT.name(), appointments);
-    }
-    if (!tasks.isEmpty()) {
-      result.put(ItemType.TASK.name(), tasks);
-    }
-
-    if (result.isEmpty()) {
-      return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.response(result);
-    }
-  }
-
   private BeeRowSet getCalendarAttendees(long userId, long calendarId) {
-    Filter calFilter = ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId));
+    Filter calFilter = Filter.equals(COL_CALENDAR, calendarId);
 
     BeeRowSet calAttTypes = qs.getViewData(VIEW_CAL_ATTENDEE_TYPES, calFilter);
     BeeRowSet calAttendees = qs.getViewData(VIEW_CALENDAR_ATTENDEES, calFilter);
@@ -1108,14 +1026,10 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (attFilter.isEmpty()) {
-      String tblUsers = CommonsConstants.TBL_USERS;
-      Long cp = qs.getLong(new SqlSelect()
-          .addFields(tblUsers, CommonsConstants.COL_COMPANY_PERSON)
-          .addFrom(tblUsers)
-          .setWhere(sys.idEquals(tblUsers, userId)));
+      Long cp = usr.getCompanyPerson(userId);
 
       if (cp != null) {
-        Filter cpFilter = ComparisonFilter.isEqual(COL_COMPANY_PERSON, new LongValue(cp));
+        Filter cpFilter = Filter.equals(COL_COMPANY_PERSON, cp);
         BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES, cpFilter);
         if (!attendees.isEmpty()) {
           return attendees;
@@ -1124,6 +1038,57 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     return qs.getViewData(VIEW_ATTENDEES, attFilter);
+  }
+
+  private ResponseObject getCalendarItems(RequestInfo reqInfo) {
+    long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
+    if (!DataUtils.isId(calendarId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_CALENDAR_ID);
+    }
+
+    Filter calFilter = Filter.equals(COL_CALENDAR, calendarId);
+    BeeRowSet calAppTypes = qs.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
+
+    CompoundFilter appFilter = Filter.and();
+    appFilter.add(VALID_APPOINTMENT);
+    appFilter.add(Filter.isNotEqual(COL_STATUS, IntegerValue.of(AppointmentStatus.CANCELED)));
+
+    Long startTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_START_TIME));
+    Long endTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_END_TIME));
+
+    if (startTime != null) {
+      appFilter.add(Filter.isMore(COL_END_DATE_TIME, new LongValue(startTime)));
+    }
+    if (endTime != null) {
+      appFilter.add(Filter.isLess(COL_START_DATE_TIME, new LongValue(endTime)));
+    }
+
+    if (!calAppTypes.isEmpty()) {
+      appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
+          DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
+    }
+
+    List<BeeRow> appointments = getAppointments(appFilter, null);
+    List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
+
+    logger.info(reqInfo.getService(), calendarId,
+        (startTime == null) ? BeeConst.STRING_EMPTY : new DateTime(startTime).toCompactString(),
+        (endTime == null) ? BeeConst.STRING_EMPTY : new DateTime(endTime).toCompactString(),
+        BeeConst.STRING_EQ, appointments.size(), BeeConst.STRING_PLUS, tasks.size());
+
+    Map<String, Object> result = Maps.newHashMap();
+    if (!appointments.isEmpty()) {
+      result.put(ItemType.APPOINTMENT.name(), appointments);
+    }
+    if (!tasks.isEmpty()) {
+      result.put(ItemType.TASK.name(), tasks);
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
   }
 
   private List<CalendarTask> getCalendarTasks(long calendarId, Long startMillis, Long endMillis) {
@@ -1339,14 +1304,14 @@ public class CalendarModuleBean implements BeeModule {
       if (!observers.isEmpty()) {
         task.setObservers(observers);
       }
-      
+
       ColorAndStyle cs;
       if (executor != null && executorAppearance.containsKey(executor)) {
         cs = executorAppearance.get(executor);
       } else {
         cs = null;
       }
-      
+
       if (typeAppearance.containsKey(type)) {
         if (cs == null) {
           cs = typeAppearance.get(type);
@@ -1355,7 +1320,7 @@ public class CalendarModuleBean implements BeeModule {
           cs.merge(typeAppearance.get(type), false);
         }
       }
-      
+
       if (cs != null) {
         task.setBackground(cs.getBackground());
         task.setForeground(cs.getForeground());
@@ -1369,89 +1334,46 @@ public class CalendarModuleBean implements BeeModule {
   }
 
   private ResponseObject getOverlappingAppointments(RequestInfo reqInfo) {
-    String svc = SVC_GET_OVERLAPPING_APPOINTMENTS;
-
     String appId = reqInfo.getParameter(PARAM_APPOINTMENT_ID);
 
     String start = reqInfo.getParameter(PARAM_APPOINTMENT_START);
     if (!BeeUtils.isLong(start)) {
-      return ResponseObject.parameterNotFound(svc, PARAM_APPOINTMENT_START);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_APPOINTMENT_START);
     }
     String end = reqInfo.getParameter(PARAM_APPOINTMENT_END);
     if (!BeeUtils.isLong(end)) {
-      return ResponseObject.parameterNotFound(svc, PARAM_APPOINTMENT_END);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_APPOINTMENT_END);
     }
 
-    String attIds = reqInfo.getParameter(PARAM_ATTENDEES);
-    if (BeeUtils.isEmpty(attIds)) {
-      return ResponseObject.parameterNotFound(svc, PARAM_ATTENDEES);
+    List<Long> resources = DataUtils.parseIdList(reqInfo.getParameter(PARAM_ATTENDEES));
+    if (resources.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_ATTENDEES);
     }
 
     CompoundFilter filter = Filter.and();
-    filter.add(ComparisonFilter.isNotEqual(COL_STATUS,
-        new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
+    filter.add(Filter.isNotEqual(COL_STATUS, IntegerValue.of(AppointmentStatus.CANCELED)));
 
     if (BeeUtils.isLong(appId)) {
       filter.add(Filter.compareId(Operator.NE, BeeUtils.toLong(appId)));
     }
 
-    filter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
-    filter.add(ComparisonFilter.isLess(COL_START_DATE_TIME, new LongValue(BeeUtils.toLong(end))));
+    filter.add(Filter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
+    filter.add(Filter.isLess(COL_START_DATE_TIME, new LongValue(BeeUtils.toLong(end))));
+    
+    filter.add(Filter.in(sys.getIdName(TBL_ATTENDEES), VIEW_APPOINTMENT_ATTENDEES, COL_APPOINTMENT,
+        Filter.any(COL_ATTENDEE, resources)));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, filter);
     if (appointments.isEmpty()) {
       return ResponseObject.response(appointments);
     }
 
-    Filter in = Filter.any(COL_APPOINTMENT, DataUtils.getRowIds(appointments));
-
-    BeeRowSet appAtts = qs.getViewData(VIEW_APPOINTMENT_ATTENDEES, in);
-    BeeRowSet appProps = qs.getViewData(VIEW_APPOINTMENT_PROPS, in);
-    BeeRowSet appRemind = qs.getViewData(VIEW_APPOINTMENT_REMINDERS, in);
-
-    List<Long> resources = DataUtils.parseIdList(attIds);
-
-    List<BeeRow> children;
-    int attIndex = appAtts.getColumnIndex(COL_ATTENDEE);
-    int propIndex = appProps.getColumnIndex(COL_APPOINTMENT_PROPERTY);
-    int remindIndex = appRemind.getColumnIndex(COL_REMINDER_TYPE);
-
-    Iterator<BeeRow> iterator = appointments.getRows().iterator();
-    while (iterator.hasNext()) {
-      BeeRow row = iterator.next();
-      String id = BeeUtils.toString(row.getId());
-
-      children = DataUtils.filterRows(appAtts, COL_APPOINTMENT, id);
-
-      boolean ok = false;
-      for (BeeRow r : children) {
-        if (resources.contains(r.getLong(attIndex))) {
-          ok = true;
-          break;
-        }
-      }
-      if (!ok) {
-        iterator.remove();
-        continue;
-      }
-
-      row.setProperty(VIEW_APPOINTMENT_ATTENDEES,
-          DataUtils.buildIdList(DataUtils.getDistinct(children, attIndex)));
-
-      children = DataUtils.filterRows(appProps, COL_APPOINTMENT, id);
-      if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_PROPS,
-            DataUtils.buildIdList(DataUtils.getDistinct(children, propIndex)));
-      }
-
-      children = DataUtils.filterRows(appRemind, COL_APPOINTMENT, id);
-      if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_REMINDERS,
-            DataUtils.buildIdList(DataUtils.getDistinct(children, remindIndex)));
-      }
+    Map<String, SqlSelect> queries = getAppointmentChildrenQueries();
+    for (BeeRow row : appointments.getRows()) {
+      setAppopintmentProperties(row, queries);
     }
 
-    logger.info(svc, appointments.getNumberOfRows(), appointments.getViewName());
+    logger.info(reqInfo.getService(), appointments.getNumberOfRows(), appointments.getViewName());
     return ResponseObject.response(appointments);
   }
 
@@ -1463,8 +1385,8 @@ public class CalendarModuleBean implements BeeModule {
 
     long userId = usr.getCurrentUserId();
 
-    Filter filter = Filter.and(ComparisonFilter.isEqual(COL_USER, new LongValue(userId)),
-        ComparisonFilter.isEqual(COL_REPORT, new IntegerValue(report)));
+    Filter filter = Filter.and(Filter.equals(COL_USER, userId),
+        Filter.isEqual(COL_REPORT, new IntegerValue(report)));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_REPORT_OPTIONS, filter);
     if (rowSet.getNumberOfRows() == 1) {
@@ -1488,7 +1410,7 @@ public class CalendarModuleBean implements BeeModule {
   }
 
   private BeeRowSet getUserCalAttendees(long ucId, long userId, long calendarId, boolean isNew) {
-    Filter filter = ComparisonFilter.isEqual(COL_USER_CALENDAR, new LongValue(ucId));
+    Filter filter = Filter.equals(COL_USER_CALENDAR, ucId);
 
     if (!isNew) {
       BeeRowSet ucAttendees = qs.getViewData(VIEW_USER_CAL_ATTENDEES, filter);
@@ -1527,17 +1449,20 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_CALENDAR_ID);
     }
 
-    long userId = usr.getCurrentUserId();
+    Long userId = usr.getCurrentUserId();
+    if (!DataUtils.isId(userId)) {
+      return ResponseObject.error(reqInfo.getService(), "current user not available");
+    }
 
-    Filter filter = Filter.and(ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId)),
-        ComparisonFilter.isEqual(COL_USER, new LongValue(userId)));
+    Filter filter = Filter.and(Filter.equals(COL_CALENDAR, calendarId),
+        Filter.equals(COL_USER, userId));
 
     BeeRowSet ucRowSet = qs.getViewData(VIEW_USER_CALENDARS, filter);
     if (!ucRowSet.isEmpty()) {
       BeeRow row = ucRowSet.getRow(0);
       BeeRowSet ucAttendees = getUserCalAttendees(row.getId(), userId, calendarId, false);
       if (!DataUtils.isEmpty(ucAttendees)) {
-        row.setProperty(PROP_USER_CAL_ATTENDEES, ucAttendees.serialize());
+        row.setProperty(TBL_USER_CAL_ATTENDEES, ucAttendees.serialize());
       }
 
       return ResponseObject.response(ucRowSet);
@@ -1567,6 +1492,13 @@ public class CalendarModuleBean implements BeeModule {
           settings.getTimeBlockClickNumber().ordinal());
     }
 
+    if (settings.getMultidayLayout() != null) {
+      sqlInsert.addConstant(COL_MULTIDAY_LAYOUT, settings.getMultidayLayout().ordinal());
+    }
+    if (settings.getMultidayTaskLayout() != null) {
+      sqlInsert.addConstant(COL_MULTIDAY_TASK_LAYOUT, settings.getMultidayTaskLayout().ordinal());
+    }
+
     for (ViewType view : ViewType.values()) {
       if (settings.isVisible(view)) {
         sqlInsert.addConstant(view.getColumnId(), true);
@@ -1587,25 +1519,10 @@ public class CalendarModuleBean implements BeeModule {
     BeeRow row = result.getRow(0);
     BeeRowSet ucAttendees = getUserCalAttendees(row.getId(), userId, calendarId, true);
     if (!DataUtils.isEmpty(ucAttendees)) {
-      row.setProperty(PROP_USER_CAL_ATTENDEES, ucAttendees.serialize());
+      row.setProperty(TBL_USER_CAL_ATTENDEES, ucAttendees.serialize());
     }
 
     return ResponseObject.response(result);
-  }
-
-  private void insertAppointmentAttendee(long appId, long attId) {
-    qs.insertData(new SqlInsert(TBL_APPOINTMENT_ATTENDEES).addConstant(COL_APPOINTMENT, appId)
-        .addConstant(COL_ATTENDEE, attId));
-  }
-
-  private void insertAppointmentProperty(long appId, long propId) {
-    qs.insertData(new SqlInsert(TBL_APPOINTMENT_PROPS).addConstant(COL_APPOINTMENT, appId)
-        .addConstant(COL_APPOINTMENT_PROPERTY, propId));
-  }
-
-  private void insertAppointmentReminder(long appId, long rtId) {
-    qs.insertData(new SqlInsert(TBL_APPOINTMENT_REMINDERS).addConstant(COL_APPOINTMENT, appId)
-        .addConstant(COL_REMINDER_TYPE, rtId));
   }
 
   @Timeout
@@ -1712,6 +1629,22 @@ public class CalendarModuleBean implements BeeModule {
     return qs.updateDataWithResponse(update);
   }
 
+  private void setAppopintmentProperties(BeeRow row, Map<String, SqlSelect> queries) {
+    long appId = row.getId();
+    
+    for (Map.Entry<String, SqlSelect> entry : queries.entrySet()) {
+      String source = entry.getKey();
+
+      SqlSelect query = entry.getValue();
+      query.setWhere(SqlUtils.equals(source, COL_APPOINTMENT, appId));
+      
+      List<Long> values = qs.getLongList(query);
+      if (!values.isEmpty()) {
+        row.setProperty(source, DataUtils.buildIdList(values));
+      }
+    }
+  }
+
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {
@@ -1722,10 +1655,6 @@ public class CalendarModuleBean implements BeeModule {
     if (!DataUtils.isId(appId)) {
       return ResponseObject.error(reqInfo.getService(), ": invalid row id", appId);
     }
-
-    String propIds = newRowSet.getTableProperty(TBL_APPOINTMENT_PROPS);
-    String attIds = newRowSet.getTableProperty(COL_ATTENDEE);
-    String rtIds = newRowSet.getTableProperty(COL_REMINDER_TYPE);
 
     String viewName = VIEW_APPOINTMENTS;
     BeeRowSet oldRowSet = qs.getViewData(viewName, Filter.compareId(appId));
@@ -1746,35 +1675,35 @@ public class CalendarModuleBean implements BeeModule {
       }
     }
 
-    Filter appFilter = ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId));
+    boolean childrenChanged = false;    
+    boolean updateReminders = false;    
 
-    List<Long> oldProperties =
-        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_PROPS, appFilter),
-            COL_APPOINTMENT_PROPERTY);
-    List<Long> oldAttendees =
-        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_ATTENDEES, appFilter), COL_ATTENDEE);
-    List<Long> oldReminders =
-        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_REMINDERS, appFilter),
-            COL_REMINDER_TYPE);
+    for (Map.Entry<String, String> entry : APPOINTMENT_CHILDREN.entrySet()) {
+      String table = entry.getKey();
+      String column = entry.getValue();
+      
+      List<Long> oldValues = qs.getLongList(new SqlSelect()
+        .addFields(table, column)
+        .addFrom(table)
+        .setWhere(SqlUtils.equals(table, COL_APPOINTMENT, appId)));
+      
+      List<Long> newValues = DataUtils.parseIdList(newRowSet.getTableProperty(table));
+      
+      if (TBL_APPOINTMENT_REMINDERS.equals(table)) {
+        updateReminders = !oldValues.isEmpty() || !newValues.isEmpty();
+      }
 
-    List<Long> newProperties = DataUtils.parseIdList(propIds);
-    List<Long> newAttendees = DataUtils.parseIdList(attIds);
-    List<Long> newReminders = DataUtils.parseIdList(rtIds);
-
-    boolean childrenChanged = updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
-        COL_APPOINTMENT_PROPERTY, oldProperties, newProperties);
-    childrenChanged |= updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
-        COL_ATTENDEE, oldAttendees, newAttendees);
-
-    if (!oldReminders.isEmpty() || !newReminders.isEmpty()) {
-      childrenChanged |= updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
-          COL_REMINDER_TYPE, oldReminders, newReminders);
-
-      createNotificationTimers(Pair.of(TBL_APPOINTMENTS, appId));
+      if (!BeeUtils.sameElements(oldValues, newValues)
+          && updateChildren(table, COL_APPOINTMENT, appId, column, oldValues, newValues)) {
+        childrenChanged = true;
+      }
     }
-
+    
     if (childrenChanged) {
       news.maybeRecordUpdate(VIEW_APPOINTMENTS, appId);
+    }
+    if (updateReminders) {
+      createNotificationTimers(Pair.of(TBL_APPOINTMENTS, appId));
     }
 
     return response;

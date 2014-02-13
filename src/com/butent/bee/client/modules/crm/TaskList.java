@@ -53,7 +53,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -428,8 +427,7 @@ final class TaskList {
         final Integer value) {
       final long rowId = event.getRowValue().getId();
 
-      Filter filter = Filter.and(ComparisonFilter.isEqual(COL_TASK, new LongValue(rowId)),
-          ComparisonFilter.isEqual(COL_USER, new LongValue(userId)));
+      Filter filter = Filter.and(Filter.equals(COL_TASK, rowId), Filter.equals(COL_USER, userId));
 
       Queries.update(VIEW_TASK_USERS, filter, COL_STAR, new IntegerValue(value),
           new Queries.IntCallback() {
@@ -703,8 +701,8 @@ final class TaskList {
       LATE {
         @Override
         Filter getFilter() {
-          return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
-              ComparisonFilter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
+          return Filter.and(Filter.isLess(COL_STATUS, IntegerValue.of(TaskStatus.COMPLETED)),
+              Filter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
         }
 
         @Override
@@ -721,8 +719,8 @@ final class TaskList {
       SCHEDULED {
         @Override
         Filter getFilter() {
-          return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
-              ComparisonFilter.isMoreEqual(COL_START_TIME,
+          return Filter.and(Filter.isLess(COL_STATUS, IntegerValue.of(TaskStatus.COMPLETED)),
+              Filter.isMoreEqual(COL_START_TIME,
                   new DateTimeValue(TimeUtils.today(1).getDateTime())));
         }
 

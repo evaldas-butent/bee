@@ -48,6 +48,7 @@ public class Appointment implements Comparable<Appointment> {
   private final BeeRow row;
 
   private final List<Long> attendees = Lists.newArrayList();
+  private final List<Long> owners = Lists.newArrayList();
   private final List<Long> properties = Lists.newArrayList();
   private final List<Long> reminders = Lists.newArrayList();
 
@@ -61,17 +62,22 @@ public class Appointment implements Comparable<Appointment> {
     this.row = row;
     this.separatedAttendee = separatedAttendee;
 
-    String attList = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
+    String attList = row.getProperty(TBL_APPOINTMENT_ATTENDEES);
     if (!BeeUtils.isEmpty(attList)) {
       attendees.addAll(DataUtils.parseIdList(attList));
     }
 
-    String propList = row.getProperty(VIEW_APPOINTMENT_PROPS);
+    String ownerList = row.getProperty(TBL_APPOINTMENT_OWNERS);
+    if (!BeeUtils.isEmpty(ownerList)) {
+      owners.addAll(DataUtils.parseIdList(ownerList));
+    }
+
+    String propList = row.getProperty(TBL_APPOINTMENT_PROPS);
     if (!BeeUtils.isEmpty(propList)) {
       properties.addAll(DataUtils.parseIdList(propList));
     }
 
-    String remindList = row.getProperty(VIEW_APPOINTMENT_REMINDERS);
+    String remindList = row.getProperty(TBL_APPOINTMENT_REMINDERS);
     if (!BeeUtils.isEmpty(remindList)) {
       reminders.addAll(DataUtils.parseIdList(remindList));
     }
@@ -128,6 +134,10 @@ public class Appointment implements Comparable<Appointment> {
 
   public long getId() {
     return row.getId();
+  }
+
+  public List<Long> getOwners() {
+    return owners;
   }
 
   public List<Long> getProperties() {
@@ -200,6 +210,6 @@ public class Appointment implements Comparable<Appointment> {
     if (!BeeUtils.isEmpty(ids)) {
       attendees.addAll(ids);
     }
-    row.setProperty(VIEW_APPOINTMENT_ATTENDEES, DataUtils.buildIdList(ids));
+    row.setProperty(TBL_APPOINTMENT_ATTENDEES, DataUtils.buildIdList(ids));
   }
 }

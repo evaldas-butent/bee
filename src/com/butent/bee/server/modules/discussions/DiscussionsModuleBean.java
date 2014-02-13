@@ -39,9 +39,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -359,8 +357,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     BeeRowSet comments =
-        qs.getViewData(VIEW_DISCUSSIONS_COMMENTS, ComparisonFilter.isEqual(COL_DISCUSSION,
-            new LongValue(discussionId)));
+        qs.getViewData(VIEW_DISCUSSIONS_COMMENTS, Filter.equals(COL_DISCUSSION, discussionId));
     if (!DataUtils.isEmpty(comments)) {
       row.setProperty(PROP_COMMENTS, comments.serialize());
     }
@@ -893,8 +890,7 @@ public class DiscussionsModuleBean implements BeeModule {
     List<StoredFile> result = Lists.newArrayList();
 
     BeeRowSet rowSet =
-        qs.getViewData(VIEW_DISCUSSIONS_FILES, ComparisonFilter.isEqual(COL_DISCUSSION,
-            new LongValue(discussionId)));
+        qs.getViewData(VIEW_DISCUSSIONS_FILES, Filter.equals(COL_DISCUSSION, discussionId));
 
     if (rowSet == null || rowSet.isEmpty()) {
       return result;

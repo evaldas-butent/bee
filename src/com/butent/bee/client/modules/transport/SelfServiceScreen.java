@@ -32,7 +32,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -133,18 +132,17 @@ public class SelfServiceScreen extends ScreenImpl {
           public void onClick(ClickEvent event) {
             Value company = new LongValue(BeeKeeper.getUser().getCompany());
 
-            Filter orderFilter = Filter.or(ComparisonFilter.isEqual(COL_CUSTOMER, company),
-                ComparisonFilter.isEqual(COL_PAYER, company));
+            Filter orderFilter = Filter.or(Filter.isEqual(COL_CUSTOMER, company),
+                Filter.isEqual(COL_PAYER, company));
             openGrid(VIEW_ORDERS, orderFilter);
 
             Filter saleFilter = Filter.or(
-                ComparisonFilter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
-                ComparisonFilter.isEqual(TradeConstants.COL_SALE_PAYER, company));
+                Filter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
+                Filter.isEqual(TradeConstants.COL_SALE_PAYER, company));
             openGrid("CargoProformaInvoices", saleFilter);
             openGrid(VIEW_CARGO_INVOICES, saleFilter);
 
-            Filter purchaseFilter = ComparisonFilter.isEqual(TradeConstants.COL_TRADE_SUPPLIER,
-                company);
+            Filter purchaseFilter = Filter.isEqual(TradeConstants.COL_TRADE_SUPPLIER, company);
             openGrid(VIEW_CARGO_CREDIT_INVOICES, purchaseFilter);
           }
         }));

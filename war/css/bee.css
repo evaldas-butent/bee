@@ -580,17 +580,17 @@
 }
 
 .bee-CellGridBody:hover {
-  background-color: #e1e1e1 !important;
-  background-image: none !important;
+  background-color: #e1e1e1;
+  background-image: none;
 }
 
-.bee-CellGridActiveRow {
-  background-color: #cfc !important;
+.bee-CellGridBody.bee-CellGridActiveRow {
+  background-color: #cfc;
 }
 
-.bee-CellGridActiveCell {
-  background-color: #c7e3f9 !important;
-  outline: #c7e3f9 solid 2px !important;
+.bee-CellGridBody.bee-CellGridActiveRow.bee-CellGridActiveCell {
+  background-color: #c7e3f9;
+  outline: #c7e3f9 solid 2px;
   outline-offset: -1px;
 }
 
@@ -735,25 +735,6 @@
 
 .bee-Toggle {
   text-align: center;
-  cursor: pointer;
-}
-
-.bee-StringPicker {
-  overflow: auto;
-}
-
-.bee-StringPicker-item {
-  margin-bottom: 2px;
-  cursor: pointer;
-}
-.bee-StringPicker-item:hover {
-  background-color: LightCyan;
-}
-
-.bee-StringPicker-selected {
-  margin-bottom: 2px;
-  background-color: #628cd5 !important;
-  color: white;
   cursor: pointer;
 }
 
@@ -1292,8 +1273,8 @@
   border-bottom-style: none;
 }
 .bee-Workspace-tabPanel > div:only-of-type {
-  border-top: 1px solid #e4e4e4 !important;
-  border-bottom-style: solid !important;
+  border-top: 1px solid #e4e4e4;
+  border-bottom-style: solid;
 }
 .bee-Workspace-tabSelected .bee-Workspace-caption {
   cursor: default;
@@ -1396,16 +1377,16 @@
 }
 
 .bee-Workspace-action-up {
-  cursor: n-resize !important;
+  cursor: n-resize;
 }
 .bee-Workspace-action-down {
-  cursor: s-resize !important;
+  cursor: s-resize;
 }
 .bee-Workspace-action-left {
-  cursor: w-resize !important;
+  cursor: w-resize;
 }
 .bee-Workspace-action-right {
-  cursor: e-resize !important;
+  cursor: e-resize;
 }
 
 .bee-MessageBox-message-cell {
@@ -1585,9 +1566,6 @@
   background-color: white;
   width: calc(100% - 11px);
   border: 1px solid WhiteSmoke;
-}
-.bee-CentralScrutinizer > .bee-FavoritesDisplay {
-  width: calc(100% - 9px) !important;
 }
 
 .bee-Appliance-icon {

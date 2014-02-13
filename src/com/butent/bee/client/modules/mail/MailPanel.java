@@ -57,10 +57,10 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
-import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.State;
@@ -74,8 +74,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -648,7 +647,7 @@ public class MailPanel extends AbstractFormInterceptor {
     if (presenter != null) {
       presenter.getGridView().getGrid().reset();
       presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
-          ComparisonFilter.isEqual(COL_FOLDER, new LongValue(getCurrentFolderId())));
+          Filter.equals(COL_FOLDER, getCurrentFolderId()));
       presenter.refresh(false);
     }
   }

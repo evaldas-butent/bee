@@ -8,11 +8,12 @@ import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -29,54 +30,50 @@ final class DiscussionsList {
     ACTIVE(Localized.getConstants().discussActive()) {
       @Override
       Filter getFilter(LongValue userId) {
-        Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
-        Filter isOwner = ComparisonFilter.isEqual(COL_OWNER, userId);
-        Filter isPublic = ComparisonFilter.notNull(COL_ACCESSIBILITY);
-        Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
-        Filter isActive =
-            ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.ACTIVE
-            .ordinal()));
+        Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
+        Filter isOwner = Filter.isEqual(COL_OWNER, userId);
+        Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
+        Filter isUserFilter = Filter.isEqual(COL_USER, userId);
+        Filter isActive = Filter.isEqual(COL_STATUS, IntegerValue.of(DiscussionStatus.ACTIVE));
 
         Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
             VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-            ComparisonFilter.and(isUserFilter, isMemberFilter));
-        return ComparisonFilter.and(ComparisonFilter.or(
-            ComparisonFilter.or(discussUsersFilter, isOwner), isPublic),
+            Filter.and(isUserFilter, isMemberFilter));
+        return Filter.and(Filter.or(
+            Filter.or(discussUsersFilter, isOwner), isPublic),
             isActive);
       }
     },
     CLOSED(Localized.getConstants().discussClosed()) {
       @Override
       Filter getFilter(LongValue userId) {
-        Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
-        Filter isOwner = ComparisonFilter.isEqual(COL_OWNER, userId);
-        Filter isPublic = ComparisonFilter.notNull(COL_ACCESSIBILITY);
-        Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
-        Filter isActive =
-            ComparisonFilter.isEqual(COL_STATUS, Value.getValue(DiscussionStatus.CLOSED
-            .ordinal()));
+        Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
+        Filter isOwner = Filter.isEqual(COL_OWNER, userId);
+        Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
+        Filter isUserFilter = Filter.isEqual(COL_USER, userId);
+        Filter isActive = Filter.isEqual(COL_STATUS, IntegerValue.of(DiscussionStatus.CLOSED));
 
         Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
             VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-            ComparisonFilter.and(isUserFilter, isMemberFilter));
-        return ComparisonFilter.and(ComparisonFilter.or(
-            ComparisonFilter.or(discussUsersFilter, isOwner), isPublic),
+            Filter.and(isUserFilter, isMemberFilter));
+        return Filter.and(Filter.or(
+            Filter.or(discussUsersFilter, isOwner), isPublic),
             isActive);
       }
     },
     OBSERVED(Localized.getConstants().discussObserved()) {
       @Override
       Filter getFilter(LongValue userId) {
-        Filter activeStatusFilter = ComparisonFilter.isEqual(COL_STATUS,
-            Value.getValue(DiscussionStatus.ACTIVE.ordinal()));
-        Filter notOwnerFilter = ComparisonFilter.isNotEqual(COL_OWNER, userId);
-        Filter isMemberFilter = ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true));
-        Filter isUserFilter = ComparisonFilter.isEqual(COL_USER, userId);
+        Filter activeStatusFilter = Filter.isEqual(COL_STATUS,
+            IntegerValue.of(DiscussionStatus.ACTIVE));
+        Filter notOwnerFilter = Filter.isNotEqual(COL_OWNER, userId);
+        Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
+        Filter isUserFilter = Filter.isEqual(COL_USER, userId);
         Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
             VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-            ComparisonFilter.and(isUserFilter, isMemberFilter));
+            Filter.and(isUserFilter, isMemberFilter));
 
-        return ComparisonFilter.and(activeStatusFilter, notOwnerFilter, discussUsersFilter);
+        return Filter.and(activeStatusFilter, notOwnerFilter, discussUsersFilter);
       }
     },
     STARRED(Localized.getConstants().discussStarred()) {
@@ -85,19 +82,19 @@ final class DiscussionsList {
         Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
         Filter isMember =
             Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-                ComparisonFilter.and(ComparisonFilter.isEqual(COL_USER, userId),
-                ComparisonFilter.isEqual(COL_MEMBER, Value.getValue(true))));
+                Filter.and(Filter.isEqual(COL_USER, userId),
+                Filter.isEqual(COL_MEMBER, BooleanValue.TRUE)));
         
         Filter isStarred =
             Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
-                ComparisonFilter.and(ComparisonFilter.notNull(COL_STAR),
-                    ComparisonFilter.isEqual(COL_USER, userId)));
+                Filter.and(Filter.notNull(COL_STAR),
+                    Filter.isEqual(COL_USER, userId)));
 
         Filter notPublicIsMember = Filter.and(Filter.isNot(isPublic), isMember);
         Filter isPublicNotMember = Filter.and(isPublic, Filter.isNot(isMember));
         Filter isPublicIsMember = Filter.and(isPublic, isMember);
 
-        return ComparisonFilter.and(isStarred, Filter.or(Lists.newArrayList(notPublicIsMember,
+        return Filter.and(isStarred, Filter.or(Lists.newArrayList(notPublicIsMember,
             isPublicNotMember,
             isPublicIsMember)));
       }

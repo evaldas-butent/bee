@@ -21,11 +21,9 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -177,8 +175,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     }
 
     Queries.getRowSet(TransportConstants.VIEW_VEHICLES, null,
-        ComparisonFilter.isEqual(TransportConstants.COL_OWNER, new LongValue(companyId)),
-        new Queries.RowSetCallback() {
+        Filter.equals(TransportConstants.COL_OWNER, companyId), new Queries.RowSetCallback() {
 
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -218,7 +215,7 @@ class SelectorHandler implements SelectorEvent.Handler {
 
     if (BeeUtils.same(gridView.getViewName(), VIEW_PROPERTY_GROUPS)) {
       if (DataUtils.isId(id)) {
-        filter = ComparisonFilter.isEqual(COL_PROPERTY_GROUP, new LongValue(id));
+        filter = Filter.equals(COL_PROPERTY_GROUP, id);
       } else {
         filter = Filter.isNull(COL_PROPERTY_GROUP);
       }
@@ -267,8 +264,7 @@ class SelectorHandler implements SelectorEvent.Handler {
 
     if (event.isOpened()) {
       if (DataUtils.isId(company)) {
-        Filter filter = ComparisonFilter.isEqual(TransportConstants.COL_OWNER,
-            new LongValue(company));
+        Filter filter = Filter.equals(TransportConstants.COL_OWNER, company);
         event.getSelector().setAdditionalFilter(filter);
       }
 
