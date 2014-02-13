@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -58,6 +59,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -127,6 +129,8 @@ public class DiscussionsModuleBean implements BeeModule {
       response = getDiscussionData(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_ANNOUNCEMENTS_DATA)) {
       response = getAnnouncements();
+    } else if (BeeUtils.same(svc, SVC_GET_BIRTHDAYS)) {
+      response = getBirthdays();
     } else {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);
       logger.warning(message);
@@ -144,7 +148,9 @@ public class DiscussionsModuleBean implements BeeModule {
         BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false,
             null),
         BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
-        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, false, null)
+        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, false, null),
+        BeeParameter.createRelation(DISCUSSIONS_MODULE, PRM_DISCUSS_BIRTHDAYS, false,
+            TBL_ADS_TOPICS, COL_NAME)
         );
 
     return params;
@@ -752,22 +758,24 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private ResponseObject getAnnouncements() {
+    Long birthTopic = prm.getRelation(PRM_DISCUSS_BIRTHDAYS);
+
     SqlSelect select = new SqlSelect()
         .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
         .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
         .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
         .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
         .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
-            .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-                CommonsConstants.COL_FIRST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_FIRST_NAME)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
             CommonsConstants.COL_LAST_NAME)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_PHOTO,
             CommonsConstants.COL_PHOTO)
         .addFrom(TBL_ADS_TOPICS)
         .addFromLeft(TBL_DISCUSSIONS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
-            .addFromLeft(CommonsConstants.TBL_USERS,
-                sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
+        .addFromLeft(CommonsConstants.TBL_USERS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
         .addFromLeft(
             CommonsConstants.TBL_COMPANY_PERSONS,
             sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
@@ -783,10 +791,85 @@ public class DiscussionsModuleBean implements BeeModule {
         .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
         .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED);
 
+    if (DataUtils.isId(birthTopic)) {
+      select.addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS),
+          birthTopic), true, null), ALS_BIRTHDAY);
+
+      select.setWhere(SqlUtils.or(
+          select.getWhere(),
+          SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS), birthTopic)
+          ));
+    }
+
     SimpleRowSet rs = qs.getData(select);
 
     if (!rs.isEmpty()) {
-      return ResponseObject.response(rs);
+      ResponseObject resp = ResponseObject.response(rs);
+      return resp;
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject getBirthdays() {
+    JustDate now = new JustDate(System.currentTimeMillis());
+
+    List<Integer> availableDays = new ArrayList<>();
+
+    now.setDom(now.getDom() - ((DEFAULT_BIRTHDAYS_DAYS_RANGE / 2) + 1));
+
+    for (int i = 0; i < DEFAULT_BIRTHDAYS_DAYS_RANGE + 1; i++) {
+      now.increment();
+      availableDays.add(now.getDoy());
+    }
+
+    List<Long> activeUsers = new ArrayList<>();
+
+    for (UserData userData : usr.getAllUserData()) {
+      if (!usr.isBlocked(userData.getLogin())) {
+        activeUsers.add(userData.getPerson());
+      }
+    }
+
+    SqlSelect select = new SqlSelect()
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_FIRST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.COL_LAST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH,
+            CommonsConstants.COL_DATE_OF_BIRTH)
+        .addFrom(CommonsConstants.TBL_PERSONS)
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(CommonsConstants.TBL_PERSONS, sys
+                .getIdName(CommonsConstants.TBL_PERSONS), activeUsers),
+            SqlUtils.notNull(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH)))
+        .addOrder(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH);
+
+    SimpleRowSet up = qs.getData(select);
+    SimpleRowSet birthdays =
+        new SimpleRowSet(new String[] {COL_NAME, CommonsConstants.COL_DATE_OF_BIRTH});
+
+    for (String[] upRow : up.getRows()) {
+      if (!BeeUtils.isLong(upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)])) {
+        continue;
+      }
+
+      JustDate date =
+          new JustDate(BeeUtils
+              .toLong(upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)]));
+
+      if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
+        birthdays.addRow(new String[] {
+            BeeUtils.joinWords(upRow[up.getColumnIndex(CommonsConstants.COL_FIRST_NAME)],
+                upRow[up.getColumnIndex(CommonsConstants.COL_LAST_NAME)]),
+            upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)]
+        });
+      }
+
+    }
+
+    if (!birthdays.isEmpty()) {
+      return ResponseObject.response(birthdays);
     }
 
     return ResponseObject.emptyResponse();

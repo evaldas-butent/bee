@@ -301,6 +301,7 @@ public final class CommonsConstants {
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
   public static final String COL_PHOTO = "Photo";
+  public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
   public static final String COL_CATEGORY = "Category";
 

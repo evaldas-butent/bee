@@ -263,9 +263,38 @@
   text-align: center;
   max-width: 40px;
   min-width: 40px;
-  padding-left: 1ex;
+  padding: 1ex;
 }
 
 .bee-discuss-adsFormContent-Owner-Publisher {
   
+}
+
+.bee-discuss-adsFormContent-Birthday {
+  
+}
+
+.bee-discuss-adsFormContent-OwnerBirthday {
+  width: 50px;
+  padding: 1em;
+}
+
+.bee-discuss-adsFormContent-TopicNameBirthday {
+  color: green;
+}
+.bee-discuss-adsFormContent-TopicNameBirthday > td {
+  border-bottom: 2px solid green !important; 
+}
+
+.bee-discuss-adsFormContent-DescriptionBirthday-birthList {
+  color: green;
+  padding: 1em;
+}
+
+.bee-discuss-adsFormContent-DescriptionBirthday-happyDay {
+  font-weight: bolder;
+}
+
+.bee-discuss-adsFormContent-DescriptionBirthday-birthList > td {
+  padding-left: 1em;
 }

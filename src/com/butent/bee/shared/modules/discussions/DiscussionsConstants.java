@@ -101,6 +101,7 @@ public final class DiscussionsConstants {
   public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
   public static final String STYLE_SHEET = "discuss";
 
+  public static final String ALS_BIRTHDAY = "Birthday";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_LAST_COMMET = "LastComment";
@@ -188,9 +189,11 @@ public final class DiscussionsConstants {
   public static final String PRM_MAX_UPLOAD_FILE_SIZE = "MaxUploadFileSize";
   public static final String PRM_ALLOW_DELETE_OWN_COMMENTS = "AllowDeleteOwnComments";
   public static final String PRM_DISCUSS_INACTIVE_TIME_IN_DAYS = "DiscussInactiveTimeInDays";
+  public static final String PRM_DISCUSS_BIRTHDAYS = "DiscussBirthdays";
 
   public static final String SVC_GET_DISCUSSION_DATA = "get_discuss_data";
   public static final String SVC_GET_ANNOUNCEMENTS_DATA = "get_ads_data";
+  public static final String SVC_GET_BIRTHDAYS = "get_birthdays";
 
   public static final String TBL_ADS_TOPICS = "AdsTopics";
   public static final String TBL_DISCUSSIONS = "Discussions";
@@ -223,6 +226,7 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
 
   public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
+  public static final int DEFAULT_BIRTHDAYS_DAYS_RANGE = 6;
 
   private DiscussionsConstants() {
 

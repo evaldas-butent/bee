@@ -79,6 +79,9 @@ public final class Images {
     @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
 
+    @Source("cake_230x265.jpg")
+    ImageResource cake();
+
     @Source("calendar.png")
     ImageResource calendar();
 
