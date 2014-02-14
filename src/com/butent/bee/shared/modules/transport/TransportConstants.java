@@ -379,8 +379,10 @@ public final class TransportConstants {
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
   public static final String SVC_SEND_TO_ERP = "SendToERP";
+  public static final String SVC_SEND_MESSAGE = "SendMessage";
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
+  public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
 
   public static final String VAR_ID = Service.RPC_VAR_PREFIX + "id";
 

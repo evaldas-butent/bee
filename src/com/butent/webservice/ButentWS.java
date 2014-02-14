@@ -129,13 +129,13 @@ public class ButentWS extends Service {
     logger.debug("ImportClient:", "importing client...");
 
     StringBuilder sb = new StringBuilder("<client>")
-        .append(tag("klientas", companyName))
-        .append(tag("kodas", companyCode))
-        .append(tag("pvm_kodas", companyVATCode))
-        .append(tag("adresas", companyAddress))
-        .append(tag("indeksas", companyPostIndex))
-        .append(tag("miestas", companyCity))
-        .append(tag("salis", companyCountry))
+        .append(XmlUtils.tag("klientas", companyName))
+        .append(XmlUtils.tag("kodas", companyCode))
+        .append(XmlUtils.tag("pvm_kodas", companyVATCode))
+        .append(XmlUtils.tag("adresas", companyAddress))
+        .append(XmlUtils.tag("indeksas", companyPostIndex))
+        .append(XmlUtils.tag("miestas", companyCity))
+        .append(XmlUtils.tag("salis", companyCountry))
         .append("</client>");
 
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
@@ -197,9 +197,9 @@ public class ButentWS extends Service {
     logger.debug("ImportItem:", "importing item...");
 
     StringBuilder sb = new StringBuilder("<item>")
-        .append(tag("pavad", itemName))
-        .append(tag("gamintojas", brandName))
-        .append(tag("gam_art", brandCode))
+        .append(XmlUtils.tag("pavad", itemName))
+        .append(XmlUtils.tag("gamintojas", brandName))
+        .append(XmlUtils.tag("gam_art", brandCode))
         .append("</item>");
 
     String answer = ((ButentWebServiceSoapPort) response.getResponse())
@@ -219,16 +219,6 @@ public class ButentWS extends Service {
     logger.debug("ImportItem:", "import succeeded. New ItemID =", answer);
 
     return ResponseObject.response(answer);
-  }
-
-  public static String tag(String tagName, Object value) {
-    if (value == null) {
-      return "";
-    }
-    return new StringBuilder("<").append(tagName).append(">")
-        .append(value)
-        .append("</").append(tagName).append(">")
-        .toString();
   }
 
   public ButentWS(URL wsdlLocation) {

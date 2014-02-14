@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -457,10 +457,12 @@ public class DocumentDataForm extends AbstractFormInterceptor
             }
             render();
           }
-        }, new Supplier<Editor>() {
+        }, new Function<String, Editor>() {
           @Override
-          public Editor get() {
-            return createAutocomplete("DistinctCriteria", COL_CRITERION_NAME, null);
+          public Editor apply(String value) {
+            Editor editor = createAutocomplete("DistinctCriteria", COL_CRITERION_NAME, null);
+            editor.setValue(value);
+            return editor;
           }
         });
   }

@@ -368,6 +368,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String maxValue();
 
+  String message();
+
   String minValue();
 
   String mobile();
@@ -532,6 +534,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String selectAtLeastOneRow();
 
+  String send();
+
   String service();
 
   String services();
@@ -555,6 +559,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String supplier();
 
   String tabControl();
+
+  String template();
 
   String time();
 
