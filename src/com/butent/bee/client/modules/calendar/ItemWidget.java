@@ -9,12 +9,14 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class AppointmentWidget extends Flow {
+public class ItemWidget extends Flow {
 
-  private final Appointment appointment;
+  private final CalendarItem item;
   private final boolean multi;
   private final int columnIndex;
 
@@ -27,14 +29,14 @@ public class AppointmentWidget extends Flow {
   private final Widget bodyPanel;
   private final Mover footerPanel;
 
-  public AppointmentWidget(Appointment appointment, boolean multi) {
-    this(appointment, multi, BeeConst.UNDEF, BeeConst.UNDEF, null);
+  public ItemWidget(CalendarItem item, boolean multi) {
+    this(item, multi, BeeConst.UNDEF, BeeConst.UNDEF, null);
   }
   
-  public AppointmentWidget(Appointment appointment, boolean multi, int columnIndex, double height,
+  public ItemWidget(CalendarItem item, boolean multi, int columnIndex, double height,
       Orientation footerOrientation) {
 
-    this.appointment = appointment;
+    this.item = item;
     this.multi = multi;
     this.columnIndex = columnIndex;
 
@@ -70,8 +72,8 @@ public class AppointmentWidget extends Flow {
     }
   }
 
-  public Appointment getAppointment() {
-    return appointment;
+  public CalendarItem getItem() {
+    return item;
   }
 
   public Widget getBodyPanel() {
@@ -118,19 +120,23 @@ public class AppointmentWidget extends Flow {
     return width;
   }
 
+  public boolean isAppointment() {
+    return item.getItemType() == ItemType.APPOINTMENT;
+  }
+
   public boolean isMulti() {
     return multi;
   }
 
   public void render(long calendarId, String bg) {
-    setBackground(BeeUtils.notEmpty(bg, appointment.getBackground()));
-    setForeground(appointment.getForeground());
+    setBackground(BeeUtils.notEmpty(bg, item.getBackground()));
+    setForeground(item.getForeground());
 
-    CalendarKeeper.renderAppoinment(calendarId, this, multi);
+    CalendarKeeper.renderItem(calendarId, this, multi);
   }
 
   public void renderCompact(long calendarId, String bg) {
-    String background = BeeUtils.notEmpty(bg, appointment.getBackground());
+    String background = BeeUtils.notEmpty(bg, item.getBackground());
     if (!BeeUtils.isEmpty(background)) {
       getCompactBar().getElement().getStyle().setBackgroundColor(background);
     }

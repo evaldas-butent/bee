@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -28,31 +29,29 @@ import java.util.Map;
 public class CalendarDataManager {
 
   private static BeeLogger logger = LogUtils.getLogger(CalendarDataManager.class);
-  
-  private final List<Appointment> appointments = Lists.newArrayList();
-  private final List<CalendarTask> tasks = Lists.newArrayList();
 
+  private final List<CalendarItem> items = Lists.newArrayList();
   private Range<DateTime> range;
 
   public CalendarDataManager() {
     super();
   }
 
-  public void addAppointment(Appointment appt) {
-    if (appt != null) {
-      appointments.add(appt);
+  public void addItem(CalendarItem item) {
+    if (item != null) {
+      items.add(item);
     }
   }
 
-  public List<Appointment> getAppointments() {
-    return appointments;
+  public List<CalendarItem> getItems() {
+    return items;
   }
 
-  public void loadItems(long calendarId, final Range<DateTime> calendarRange, boolean force,
+  public void loadItems(long calendarId, final Range<DateTime> visibleRange, boolean force,
       final IntCallback callback) {
 
-    if (!force && getRange() != null && calendarRange != null
-        && getRange().encloses(calendarRange)) {
+    if (!force && getRange() != null && visibleRange != null
+        && getRange().encloses(visibleRange)) {
       if (callback != null) {
         callback.onSuccess(getSize());
       }
@@ -62,47 +61,46 @@ public class CalendarDataManager {
     ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_ITEMS);
     params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
 
-    if (calendarRange != null) {
-      params.addQueryItem(PARAM_START_TIME, calendarRange.lowerEndpoint().getTime());
-      params.addQueryItem(PARAM_END_TIME, calendarRange.upperEndpoint().getTime());
+    if (visibleRange != null) {
+      params.addQueryItem(PARAM_START_TIME, visibleRange.lowerEndpoint().getTime());
+      params.addQueryItem(PARAM_END_TIME, visibleRange.upperEndpoint().getTime());
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        appointments.clear();
-        tasks.clear();
+        items.clear();
 
         if (!response.isEmpty()) {
           Map<String, String> data = Codec.beeDeserializeMap(response.getResponseAsString());
-          
+
           for (Map.Entry<String, String> entry : data.entrySet()) {
             ItemType type = EnumUtils.getEnumByName(ItemType.class, entry.getKey());
             if (type == null) {
               logger.severe("item type not recognized", entry.getKey());
               continue;
             }
-            
-            String[] items = Codec.beeDeserializeCollection(entry.getValue());
-            if (ArrayUtils.isEmpty(items)) {
-              logger.warning("items is empty", entry.getKey());
+
+            String[] arr = Codec.beeDeserializeCollection(entry.getValue());
+            if (ArrayUtils.isEmpty(arr)) {
+              logger.warning("item type", entry.getKey(), "has no values");
               continue;
             }
-            
-            for (String item : items) {
+
+            for (String item : arr) {
               switch (type) {
                 case APPOINTMENT:
-                  appointments.add(new Appointment(BeeRow.restore(item)));
+                  addItem(new Appointment(BeeRow.restore(item)));
                   break;
                 case TASK:
-                  tasks.add(CalendarTask.restore(item));
+                  addItem(CalendarTask.restore(item));
                   break;
               }
             }
           }
         }
 
-        setRange(calendarRange);
+        setRange(visibleRange);
         if (callback != null) {
           callback.onSuccess(getSize());
         }
@@ -116,17 +114,19 @@ public class CalendarDataManager {
       return false;
     }
 
-    appointments.remove(index);
+    items.remove(index);
     return true;
   }
 
-  public void sortAppointments() {
-    Collections.sort(appointments);
+  public void sort() {
+    if (items.size() > 1) {
+      Collections.sort(items);
+    }
   }
 
   private int getAppointmentIndex(long id) {
-    for (int i = 0; i < appointments.size(); i++) {
-      if (appointments.get(i).getId() == id) {
+    for (int i = 0; i < items.size(); i++) {
+      if (items.get(i).getId() == id && items.get(i).getItemType() == ItemType.APPOINTMENT) {
         return i;
       }
     }
@@ -138,7 +138,7 @@ public class CalendarDataManager {
   }
 
   private int getSize() {
-    return appointments.size() + tasks.size();
+    return items.size();
   }
 
   private void setRange(Range<DateTime> range) {

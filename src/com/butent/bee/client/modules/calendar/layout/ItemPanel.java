@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.shared.BeeConst;
@@ -16,16 +16,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-public class AppointmentPanel extends Composite {
+public class ItemPanel extends Composite {
 
-  public AppointmentPanel() {
+  public ItemPanel() {
     Simple scrollArea = new Simple();
     scrollArea.addStyleName(CalendarStyleManager.SCROLL_AREA);
 
     Timeline timeline = new Timeline();
     timeline.addStyleName(CalendarStyleManager.TIME_STRIP);
 
-    AppointmentGrid grid = new AppointmentGrid();
+    ItemGrid grid = new ItemGrid();
     grid.addStyleName(CalendarStyleManager.APPOINTMENT_GRID);
 
     Flow layout = new Flow();
@@ -48,7 +48,7 @@ public class AppointmentPanel extends Composite {
     getGrid().build(columnCount, settings, todayStartColumn, todayEndColumn);
   }
 
-  public void doScroll(CalendarSettings settings, Collection<AppointmentWidget> widgets) {
+  public void doScroll(CalendarSettings settings, Collection<ItemWidget> widgets) {
     int oldPos = getScrollArea().getElement().getScrollTop();
     int newPos = CalendarUtils.getStartPixels(settings, widgets);
 
@@ -86,8 +86,8 @@ public class AppointmentPanel extends Composite {
     return result;
   }
 
-  public AppointmentGrid getGrid() {
-    return (AppointmentGrid) getLayoutPanel().getWidget(1);
+  public ItemGrid getGrid() {
+    return (ItemGrid) getLayoutPanel().getWidget(1);
   }
 
   public Simple getScrollArea() {

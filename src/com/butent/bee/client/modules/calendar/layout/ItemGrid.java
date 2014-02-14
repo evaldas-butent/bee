@@ -10,11 +10,11 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.TimeUtils;
 
-public class AppointmentGrid extends Absolute {
+public class ItemGrid extends Absolute {
   
   private int nowIndex = BeeConst.UNDEF; 
 
-  public AppointmentGrid() {
+  public ItemGrid() {
     super();
   }
 

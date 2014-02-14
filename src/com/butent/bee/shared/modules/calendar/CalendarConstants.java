@@ -433,6 +433,21 @@ public final class CalendarConstants {
 
   public static final String STYLE_SHEET = "calendar";
 
+  public static final String KEY_PERIOD = "Period";
+
+  public static final String CHILD_SEPARATOR = ", ";
+  
+  private static final String SUBSTITUTE_PREFIX = "{";
+  private static final String SUBSTITUTE_SUFFIX = "}";
+  
+  public static boolean hasSubstitutes(String s) {
+    return s != null && s.contains(SUBSTITUTE_PREFIX) && s.contains(SUBSTITUTE_SUFFIX);
+  }
+  
+  public static String wrap(String s) {
+    return SUBSTITUTE_PREFIX + s.trim() + SUBSTITUTE_SUFFIX;
+  }
+  
   private CalendarConstants() {
   }
 }

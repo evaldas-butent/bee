@@ -28,6 +28,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -37,7 +38,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appointment>,
+public class CalendarWidget extends FlowPanel implements HasOpenHandlers<CalendarItem>,
     HasTimeBlockClickHandlers, HasUpdateHandlers, RequiresResize, ProvidesResize {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarWidget.class);
@@ -80,16 +81,16 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     sinkEvents(Event.ONMOUSEDOWN | Event.ONDBLCLICK);
   }
 
-  public void addAppointment(Appointment appointment, boolean refresh) {
-    Assert.notNull(appointment);
-    dataManager.addAppointment(appointment);
+  public void addItem(CalendarItem item, boolean refresh) {
+    Assert.notNull(item);
+    dataManager.addItem(item);
     if (refresh) {
       refresh(false);
     }
   }
 
   @Override
-  public HandlerRegistration addOpenHandler(OpenHandler<Appointment> handler) {
+  public HandlerRegistration addOpenHandler(OpenHandler<CalendarItem> handler) {
     return addHandler(handler, OpenEvent.getType());
   }
 
@@ -103,8 +104,8 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     return addHandler(handler, UpdateEvent.getType());
   }
 
-  public List<Appointment> getAppointments() {
-    return dataManager.getAppointments();
+  public List<CalendarItem> getItems() {
+    return dataManager.getItems();
   }
 
   public List<Long> getAttendees() {
@@ -135,7 +136,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     return view;
   }
 
-  public void loadAppointments(boolean force, final boolean scroll) {
+  public void loadItems(boolean force, final boolean scroll) {
     if (getView() != null) {
       final long startMillis = System.currentTimeMillis();
       final Range<DateTime> range = getView().getVisibleRange();
@@ -196,7 +197,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
       return;
     }
 
-    dataManager.sortAppointments();
+    dataManager.sort();
 
     doLayout();
     doSizing();
@@ -253,7 +254,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
     }
     
     if (changed) {
-      loadAppointments(false, true);
+      loadItems(false, true);
     }
     
     return changed;
@@ -265,7 +266,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Appoint
 
       getView().doLayout(calendarId);
       
-      logger.debug("layout", getView().getAppointmentWidgets().size(),
+      logger.debug("layout", getView().getItemWidgets().size(),
           TimeUtils.elapsedMillis(startMillis));
     }
   }

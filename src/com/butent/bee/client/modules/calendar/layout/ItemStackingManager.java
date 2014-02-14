@@ -3,25 +3,25 @@ package com.butent.bee.client.modules.calendar.layout;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AppointmentStackingManager {
+public class ItemStackingManager {
 
-  private final Map<Integer, List<AppointmentLayoutDescription>> layers = Maps.newHashMap();
+  private final Map<Integer, List<ItemLayoutDescription>> layers = Maps.newHashMap();
 
   private final int maxLayer;
 
   private int highestLayer;
 
-  public AppointmentStackingManager(int maxLayer) {
+  public ItemStackingManager(int maxLayer) {
     this.maxLayer = maxLayer;
   }
 
-  public void assignLayer(AppointmentLayoutDescription description) {
+  public void assignLayer(ItemLayoutDescription description) {
     boolean layerAssigned = false;
     int layer = 0;
 
@@ -32,16 +32,16 @@ public class AppointmentStackingManager {
     } while (!layerAssigned);
   }
 
-  public void assignLayer(int fromWeekDay, int toWeekDay, Appointment appointment) {
-    assignLayer(new AppointmentLayoutDescription(fromWeekDay, toWeekDay, appointment));
+  public void assignLayer(int fromWeekDay, int toWeekDay, CalendarItem item) {
+    assignLayer(new ItemLayoutDescription(fromWeekDay, toWeekDay, item));
   }
 
   public int countOverLimit(int day) {
     int count = 0;
     for (int layer = 0; layer <= highestLayer; layer++) {
-      List<AppointmentLayoutDescription> descriptions = layers.get(layer);
+      List<ItemLayoutDescription> descriptions = layers.get(layer);
       if (descriptions != null) {
-        for (AppointmentLayoutDescription description : descriptions) {
+        for (ItemLayoutDescription description : descriptions) {
           if (layer > maxLayer && description.overlaps(day, day)) {
             count++;
           }
@@ -51,19 +51,19 @@ public class AppointmentStackingManager {
     return count;
   }
 
-  public List<AppointmentLayoutDescription> getDescriptionsInLayer(int layerIndex) {
+  public List<ItemLayoutDescription> getDescriptionsInLayer(int layerIndex) {
     return layers.get(layerIndex);
   }
 
-  public List<Appointment> getOverLimit(int day) {
-    List<Appointment> result = Lists.newArrayList();
+  public List<CalendarItem> getOverLimit(int day) {
+    List<CalendarItem> result = Lists.newArrayList();
 
     for (int layer = 0; layer <= highestLayer; layer++) {
-      List<AppointmentLayoutDescription> descriptions = layers.get(layer);
+      List<ItemLayoutDescription> descriptions = layers.get(layer);
       if (descriptions != null) {
-        for (AppointmentLayoutDescription description : descriptions) {
+        for (ItemLayoutDescription description : descriptions) {
           if (layer > maxLayer && description.overlaps(day, day)) {
-            result.add(description.getAppointment());
+            result.add(description.getItem());
           }
         }
       }
@@ -94,15 +94,15 @@ public class AppointmentStackingManager {
     return currentlyInspectedLayer;
   }
 
-  private boolean assignLayer(int layer, AppointmentLayoutDescription description) {
-    List<AppointmentLayoutDescription> layerDescriptions = layers.get(layer);
+  private boolean assignLayer(int layer, ItemLayoutDescription description) {
+    List<ItemLayoutDescription> layerDescriptions = layers.get(layer);
 
     boolean assigned = false;
     if (!overlaps(layerDescriptions, description.getWeekStartDay(), description.getWeekEndDay())) {
       highestLayer = Math.max(highestLayer, layer);
 
       if (layer > maxLayer && description.spansMoreThanADay()) {
-        AppointmentLayoutDescription split = description.split();
+        ItemLayoutDescription split = description.split();
         layerDescriptions.add(description);
         assignLayer(split);
       } else {
@@ -116,7 +116,7 @@ public class AppointmentStackingManager {
 
   private void initLayer(int layerIndex) {
     if (!isLayerAllocated(layerIndex)) {
-      layers.put(layerIndex, new ArrayList<AppointmentLayoutDescription>());
+      layers.put(layerIndex, new ArrayList<ItemLayoutDescription>());
     }
   }
 
@@ -124,10 +124,10 @@ public class AppointmentStackingManager {
     return layers.get(layerIndex) != null;
   }
 
-  private static boolean overlaps(List<AppointmentLayoutDescription> descriptions, int start,
+  private static boolean overlaps(List<ItemLayoutDescription> descriptions, int start,
       int end) {
     if (descriptions != null) {
-      for (AppointmentLayoutDescription description : descriptions) {
+      for (ItemLayoutDescription description : descriptions) {
         if (description.overlaps(start, end)) {
           return true;
         }

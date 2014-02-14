@@ -22,6 +22,7 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -72,7 +73,9 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -138,10 +141,19 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     this.calendar = new CalendarWidget(calendarId, settings);
 
-    calendar.addOpenHandler(new OpenHandler<Appointment>() {
+    calendar.addOpenHandler(new OpenHandler<CalendarItem>() {
       @Override
-      public void onOpen(OpenEvent<Appointment> event) {
-        CalendarKeeper.openAppointment(event.getTarget(), getCalendarId());
+      public void onOpen(OpenEvent<CalendarItem> event) {
+        CalendarItem item = event.getTarget();
+
+        switch (item.getItemType()) {
+          case APPOINTMENT:
+            CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
+            break;
+          case TASK:
+            RowEditor.openRow(CrmConstants.VIEW_TASKS, item.getId(), true, null);
+            break;
+        }
       }
     });
 
@@ -361,7 +373,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       if (event.isUpdated()) {
         calendar.removeAppointment(event.getAppointment().getId(), false);
       }
-      calendar.addAppointment(event.getAppointment(), true);
+      calendar.addItem(event.getAppointment(), true);
     }
   }
 
@@ -409,7 +421,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         StyleUtils.setHeight(target, height);
 
         int start = CalendarUtils.getStartPixels(getSettings(),
-            calendar.getView().getAppointmentWidgets());
+            calendar.getView().getItemWidgets());
         if (start > 0) {
           target.setScrollTop(start);
         }
@@ -601,9 +613,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       return 0;
     }
 
-    int start = CalendarUtils.getStartPixels(getSettings(),
-        calendar.getView().getAppointmentWidgets());
-    int end = CalendarUtils.getEndPixels(getSettings(), calendar.getView().getAppointmentWidgets());
+    int start = CalendarUtils.getStartPixels(getSettings(), calendar.getView().getItemWidgets());
+    int end = CalendarUtils.getEndPixels(getSettings(), calendar.getView().getItemWidgets());
 
     int height;
     if (end > start) {
@@ -664,7 +675,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   private void refresh(boolean scroll) {
-    calendar.loadAppointments(true, scroll);
+    calendar.loadItems(true, scroll);
   }
 
   private void refreshCalendar(boolean scroll) {

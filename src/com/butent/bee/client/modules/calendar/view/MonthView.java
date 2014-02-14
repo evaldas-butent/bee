@@ -15,17 +15,16 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.client.modules.calendar.dnd.MonthMoveController;
-import com.butent.bee.client.modules.calendar.layout.AppointmentLayoutDescription;
-import com.butent.bee.client.modules.calendar.layout.AppointmentStackingManager;
+import com.butent.bee.client.modules.calendar.layout.ItemLayoutDescription;
+import com.butent.bee.client.modules.calendar.layout.ItemStackingManager;
 import com.butent.bee.client.modules.calendar.layout.DayLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.MonthLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
@@ -34,6 +33,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -46,30 +46,29 @@ import java.util.Map;
 
 public class MonthView extends CalendarView {
 
-  public static final Comparator<Appointment> APPOINTMENT_COMPARATOR =
-      new Comparator<Appointment>() {
-        @Override
-        public int compare(Appointment a1, Appointment a2) {
-          int compare = Boolean.valueOf(a2.isMultiDay()).compareTo(a1.isMultiDay());
-          if (compare == BeeConst.COMPARE_EQUAL) {
-            compare = a1.compareTo(a2);
-          }
-          return compare;
-        }
-      };
+  public static final Comparator<CalendarItem> ITEM_COMPARATOR = new Comparator<CalendarItem>() {
+    @Override
+    public int compare(CalendarItem x, CalendarItem y) {
+      int result = Boolean.compare(x.isMultiDay(), y.isMultiDay());
+      if (result == BeeConst.COMPARE_EQUAL) {
+        result = x.compareTo(y);
+      }
+      return result;
+    }
+  };
 
-  private static final int APPOINTMENT_HEIGHT = 17;
-  private static final int APPOINTMENT_MARGIN_TOP = 3;
+  private static final int ITEM_HEIGHT = 17;
+  private static final int ITEM_MARGIN_TOP = 3;
 
-  private static final double APPOINTMENT_MARGIN_LEFT = 0.3;
-  private static final double APPOINTMENT_MARGIN_RIGHT = 0.3;
+  private static final double ITEM_MARGIN_LEFT = 0.3;
+  private static final double ITEM_MARGIN_RIGHT = 0.3;
 
   private static final int PERCENT_SCALE = 3;
 
   private final HtmlTable grid = new HtmlTable();
   private final Flow canvas = new Flow();
 
-  private final Map<String, List<Appointment>> moreLabels = Maps.newHashMap();
+  private final Map<String, List<CalendarItem>> moreLabels = Maps.newHashMap();
 
   private MonthMoveController moveController;
 
@@ -82,7 +81,7 @@ public class MonthView extends CalendarView {
   private int weekDayHeaderHeight;
   private int dayHeaderHeight;
 
-  private int maxCellAppointments;
+  private int maxCellItems;
 
   public MonthView() {
     super();
@@ -94,7 +93,7 @@ public class MonthView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
-    
+
     widget.clear();
 
     widget.add(grid);
@@ -111,35 +110,35 @@ public class MonthView extends CalendarView {
 
     canvas.clear();
 
-    getAppointmentWidgets().clear();
+    getItemWidgets().clear();
     moreLabels.clear();
 
     buildGrid();
 
     calculateHeights();
 
-    this.maxCellAppointments = cellHeight / (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP) - 1;
+    this.maxCellItems = cellHeight / (ITEM_HEIGHT + ITEM_MARGIN_TOP) - 1;
 
     moveController.setHeaderHeight(weekDayHeaderHeight);
-    
+
     List<Long> attendees = getCalendarWidget().getAttendees();
     boolean separate = getSettings().separateAttendees();
     Map<Long, String> attColors = CalendarKeeper.getAttendeeColors(calendarId);
 
-    List<Appointment> byRange = CalendarUtils.filterByRange(getAppointments(), firstDate,
+    List<CalendarItem> byRange = CalendarUtils.filterByRange(getItems(), firstDate,
         requiredRows * TimeUtils.DAYS_PER_WEEK);
-    List<Appointment> filtered = CalendarUtils.filterByAttendees(byRange, attendees, separate);
+    List<CalendarItem> filtered = CalendarUtils.filterByAttendees(byRange, attendees, separate);
 
-    Collections.sort(filtered, APPOINTMENT_COMPARATOR);
+    Collections.sort(filtered, ITEM_COMPARATOR);
     MonthLayoutDescription monthLayoutDescription = new MonthLayoutDescription(firstDate,
-        requiredRows, filtered, maxCellAppointments - 1);
+        requiredRows, filtered, maxCellItems - 1);
 
     WeekLayoutDescription[] weeks = monthLayoutDescription.getWeekDescriptions();
     for (int i = 0; i < requiredRows; i++) {
       WeekLayoutDescription weekDescription = weeks[i];
       if (weekDescription != null) {
-        layOnTopAppointments(calendarId, weekDescription, i, separate, attColors);
-        layOnWeekDaysAppointments(calendarId, weekDescription, i, separate, attColors);
+        layOnTopItems(calendarId, weekDescription, i, separate, attColors);
+        layOnWeekDaysItems(calendarId, weekDescription, i, separate, attColors);
       }
     }
   }
@@ -147,7 +146,7 @@ public class MonthView extends CalendarView {
   @Override
   public void doScroll() {
   }
-  
+
   @Override
   public void doSizing() {
   }
@@ -203,11 +202,11 @@ public class MonthView extends CalendarView {
 
     JustDate start = calculateFirstDate(date);
     int rows = calculateRequiredRows(date);
-    
+
     return Range.closedOpen(start.getDateTime(),
         TimeUtils.nextDay(start, rows * TimeUtils.DAYS_PER_WEEK).getDateTime());
   }
-  
+
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
     if (element.equals(canvas.getElement())) {
@@ -215,14 +214,14 @@ public class MonthView extends CalendarView {
       return true;
 
     } else if (moreLabels.containsKey(element.getId())) {
-      showAppointments(calendarId, moreLabels.get(element.getId()));
+      showItems(calendarId, moreLabels.get(element.getId()));
       return true;
 
     } else {
-      AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);
-      if (widget != null 
+      ItemWidget widget = CalendarUtils.findWidget(getItemWidgets(), element);
+      if (widget != null
           && (widget.isMulti() || !widget.getCompactBar().getElement().isOrHasChild(element))) {
-        openAppointment(widget.getAppointment());
+        openItem(widget.getItem());
         return true;
       }
     }
@@ -322,15 +321,15 @@ public class MonthView extends CalendarView {
     }
     return rows;
   }
-  
+
   private void dayClicked(Event event) {
     int row = getRow(event.getClientY() - canvas.getElement().getAbsoluteTop());
-  
+
     int x = event.getClientX() - canvas.getElement().getAbsoluteLeft();
     int col = getColumn(x);
-    
+
     DateTime start = getCellDate(row, col).getDateTime();
-    
+
     double colWidth = getColumnWidth();
     double h = BeeUtils.rescale(x - col * colWidth, 0, colWidth, 0, 24);
     int hour = BeeUtils.clamp(BeeUtils.round(h), 0, 23);
@@ -344,96 +343,95 @@ public class MonthView extends CalendarView {
   private double getColumnWidth() {
     return (double) canvas.getElement().getClientWidth() / TimeUtils.DAYS_PER_WEEK;
   }
-  
+
   private double getRowHeight() {
     return (canvas.getElement().getClientHeight() - weekDayHeaderHeight) / (double) requiredRows;
   }
 
-  private void layOnAppointment(long calendarId, Appointment appointment, boolean multi,
+  private void layOnItem(long calendarId, CalendarItem item, boolean multi,
       int colStart, int colEnd, int row, int cellPosition, boolean separate,
       Map<Long, String> attColors) {
-
-    String bg = (separate && attColors != null) 
-        ?  attColors.get(appointment.getSeparatedAttendee()) : null;
     
-    AppointmentWidget widget = new AppointmentWidget(appointment, multi);
+    Long sa = separate ? item.getSeparatedAttendee() : null;
+    String bg = (sa != null && attColors != null) ? attColors.get(sa) : null;
+
+    ItemWidget widget = new ItemWidget(item, multi);
     if (multi) {
       widget.render(calendarId, bg);
     } else {
       widget.renderCompact(calendarId, bg);
     }
 
-    placeItemInGrid(widget, appointment, multi, colStart, colEnd, row, cellPosition);
+    placeItemInGrid(widget, item, multi, colStart, colEnd, row, cellPosition);
 
     if (!multi) {
       widget.getCompactBar().addMoveHandler(moveController);
     }
 
-    getAppointmentWidgets().add(widget);
+    getItemWidgets().add(widget);
     canvas.add(widget);
   }
 
-  private void layOnMoreLabel(List<Appointment> appointments, int dayOfWeek, int weekOfMonth) {
-    Label more = new Label("+ " + appointments.size());
+  private void layOnMoreLabel(List<CalendarItem> items, int dayOfWeek, int weekOfMonth) {
+    Label more = new Label("+ " + items.size());
     more.setStyleName(CalendarStyleManager.MORE_LABEL);
 
-    placeItemInGrid(more, null, false, dayOfWeek, dayOfWeek, weekOfMonth, maxCellAppointments);
+    placeItemInGrid(more, null, false, dayOfWeek, dayOfWeek, weekOfMonth, maxCellItems);
 
     canvas.add(more);
-    moreLabels.put(more.getId(), appointments);
+    moreLabels.put(more.getId(), items);
   }
 
-  private void layOnTopAppointments(long calendarId, WeekLayoutDescription weekDescription,
+  private void layOnTopItems(long calendarId, WeekLayoutDescription weekDescription,
       int weekOfMonth, boolean separate, Map<Long, String> attColors) {
 
-    AppointmentStackingManager manager = weekDescription.getTopAppointmentsManager();
-    for (int layer = 0; layer < maxCellAppointments; layer++) {
-      List<AppointmentLayoutDescription> descriptions = manager.getDescriptionsInLayer(layer);
+    ItemStackingManager manager = weekDescription.getTopItemsManager();
+    for (int layer = 0; layer < maxCellItems; layer++) {
+      List<ItemLayoutDescription> descriptions = manager.getDescriptionsInLayer(layer);
       if (descriptions == null) {
         break;
       }
 
-      for (AppointmentLayoutDescription description : descriptions) {
-        layOnAppointment(calendarId, description.getAppointment(), true,
+      for (ItemLayoutDescription description : descriptions) {
+        layOnItem(calendarId, description.getItem(), true,
             description.getWeekStartDay(), description.getWeekEndDay(), weekOfMonth, layer,
             separate, attColors);
       }
     }
   }
 
-  private void layOnWeekDaysAppointments(long calendarId, WeekLayoutDescription week,
+  private void layOnWeekDaysItems(long calendarId, WeekLayoutDescription week,
       int weekOfMonth, boolean separate, Map<Long, String> attColors) {
 
-    AppointmentStackingManager manager = week.getTopAppointmentsManager();
+    ItemStackingManager manager = week.getTopItemsManager();
 
     for (int dayOfWeek = 0; dayOfWeek < TimeUtils.DAYS_PER_WEEK; dayOfWeek++) {
-      DayLayoutDescription dayAppointments = week.getDayLayoutDescription(dayOfWeek);
+      DayLayoutDescription dayItems = week.getDayLayoutDescription(dayOfWeek);
       int layer = manager.lowestLayerIndex(dayOfWeek);
 
-      if (dayAppointments != null) {
-        int count = dayAppointments.getAppointments().size();
+      if (dayItems != null) {
+        int count = dayItems.getItemCount();
 
         for (int i = 0; i < count; i++) {
-          Appointment appointment = dayAppointments.getAppointments().get(i);
+          CalendarItem item = dayItems.getItems().get(i);
           layer = manager.nextLowestLayerIndex(dayOfWeek, layer);
 
-          if (layer > maxCellAppointments - 1) {
+          if (layer > maxCellItems - 1) {
             int remaining = count + manager.countOverLimit(dayOfWeek) - i;
 
             if (remaining == 1) {
-              layOnAppointment(calendarId, appointment, false, dayOfWeek, dayOfWeek, weekOfMonth,
+              layOnItem(calendarId, item, false, dayOfWeek, dayOfWeek, weekOfMonth,
                   layer, separate, attColors);
             } else {
-              List<Appointment> overLimit = manager.getOverLimit(dayOfWeek);
-              overLimit.addAll(Lists.newArrayList(dayAppointments.getAppointments()
-                  .subList(i, count)));
+              List<CalendarItem> overLimit = manager.getOverLimit(dayOfWeek);
+              overLimit.addAll(Lists.newArrayList(dayItems.getItems().subList(i, count)));
 
               layOnMoreLabel(overLimit, dayOfWeek, weekOfMonth);
             }
             break;
           }
 
-          layOnAppointment(calendarId, appointment, false, dayOfWeek, dayOfWeek, weekOfMonth,
+          layOnItem(calendarId, item, false, dayOfWeek, dayOfWeek, weekOfMonth,
               layer, separate, attColors);
           layer++;
         }
@@ -444,7 +442,7 @@ public class MonthView extends CalendarView {
     }
   }
 
-  private void placeItemInGrid(Widget widget, Appointment appointment, boolean multi,
+  private void placeItemInGrid(Widget widget, CalendarItem item, boolean multi,
       int colStart, int colEnd, int row, int cellPosition) {
 
     double colWidth = 100d / TimeUtils.DAYS_PER_WEEK;
@@ -452,12 +450,12 @@ public class MonthView extends CalendarView {
     double left = colStart * colWidth;
     double width = (colEnd - colStart + 1) * colWidth;
 
-    double marginLeft = APPOINTMENT_MARGIN_LEFT;
-    double marginRight = APPOINTMENT_MARGIN_RIGHT;
+    double marginLeft = ITEM_MARGIN_LEFT;
+    double marginRight = ITEM_MARGIN_RIGHT;
 
-    if (appointment != null) {
-      DateTime start = appointment.getStart();
-      DateTime end = appointment.getEnd();
+    if (item != null) {
+      DateTime start = item.getStart();
+      DateTime end = item.getEnd();
 
       int startMinutes = TimeUtils.minutesSinceDayStarted(start);
       int endMinutes = TimeUtils.minutesSinceDayStarted(end);
@@ -471,12 +469,12 @@ public class MonthView extends CalendarView {
               (TimeUtils.MINUTES_PER_DAY - endMinutes) * colWidth / TimeUtils.MINUTES_PER_DAY;
         }
 
-      } else if (widget instanceof AppointmentWidget) {
-        Widget bar = ((AppointmentWidget) widget).getCompactBar();
+      } else if (widget instanceof ItemWidget) {
+        Widget bar = ((ItemWidget) widget).getCompactBar();
 
         double x = startMinutes * 100d / TimeUtils.MINUTES_PER_DAY;
         StyleUtils.setLeft(bar, BeeUtils.round(x, PERCENT_SCALE), CssUnit.PCT);
-        
+
         if (TimeUtils.sameDate(start, end)) {
           x = (TimeUtils.MINUTES_PER_DAY - endMinutes) * 100d / TimeUtils.MINUTES_PER_DAY;
         } else {
@@ -489,8 +487,8 @@ public class MonthView extends CalendarView {
     left += marginLeft;
     width -= marginLeft + marginRight;
 
-    int y = weekDayHeaderHeight + row * cellOffsetHeight + dayHeaderHeight + APPOINTMENT_MARGIN_TOP
-        + cellPosition * (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP);
+    int y = weekDayHeaderHeight + row * cellOffsetHeight + dayHeaderHeight + ITEM_MARGIN_TOP
+        + cellPosition * (ITEM_HEIGHT + ITEM_MARGIN_TOP);
     double top = 100d * y / grid.getOffsetHeight();
 
     StyleUtils.setLeft(widget, BeeUtils.round(left, PERCENT_SCALE), CssUnit.PCT);
@@ -498,48 +496,48 @@ public class MonthView extends CalendarView {
 
     StyleUtils.setTop(widget, BeeUtils.round(top, PERCENT_SCALE), CssUnit.PCT);
   }
-  
-  private void showAppointments(long calendarId, List<Appointment> appointments) {
-    if (BeeUtils.isEmpty(appointments)) {
+
+  private void showItems(long calendarId, List<CalendarItem> items) {
+    if (BeeUtils.isEmpty(items)) {
       return;
     }
-    
+
     final Flow panel = new Flow();
     panel.addStyleName(CalendarStyleManager.MORE_PANEL);
-    
-    for (Appointment appointment : appointments) {
-      AppointmentWidget widget = new AppointmentWidget(appointment, appointment.isMultiDay());
+
+    for (CalendarItem item : items) {
+      ItemWidget widget = new ItemWidget(item, item.isMultiDay());
       widget.render(calendarId, null);
-      
+
       panel.add(widget);
     }
-    
+
     final DialogBox dialog = DialogBox.create(Localized.getConstants().calSelectAppointment(),
         CalendarStyleManager.MORE_POPUP);
-    
+
     Binder.addMouseDownHandler(panel, new MouseDownHandler() {
       @Override
       public void onMouseDown(MouseDownEvent event) {
         if (event.getNativeButton() == NativeEvent.BUTTON_LEFT) {
-          Appointment appointment = null;
+          CalendarItem item = null;
 
           Element element = EventUtils.getEventTargetElement(event);
           for (int i = 0; i < panel.getWidgetCount(); i++) {
             if (panel.getWidget(i).getElement().isOrHasChild(element)) {
-              appointment = ((AppointmentWidget) panel.getWidget(i)).getAppointment();
+              item = ((ItemWidget) panel.getWidget(i)).getItem();
               dialog.close();
               break;
             }
           }
-          
-          if (appointment != null) {
+
+          if (item != null) {
             event.stopPropagation();
-            openAppointment(appointment);
+            openItem(item);
           }
         }
       }
     });
-    
+
     dialog.setAnimationEnabled(true);
 
     dialog.setWidget(panel);

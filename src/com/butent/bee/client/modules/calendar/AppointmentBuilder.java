@@ -1478,7 +1478,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     panel.addStyleName(CalendarStyleManager.MORE_PANEL);
 
     for (Appointment appointment : overlappingAppointments) {
-      AppointmentWidget widget = new AppointmentWidget(appointment, appointment.isMultiDay());
+      ItemWidget widget = new ItemWidget(appointment, appointment.isMultiDay());
       widget.render(BeeConst.UNDEF, null);
 
       panel.add(widget);

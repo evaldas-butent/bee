@@ -87,7 +87,7 @@ public final class CalendarStyleManager {
     }
   }
   
-  static void applyStyle(AppointmentWidget widget, String panelStyle,
+  static void applyStyle(ItemWidget widget, String panelStyle,
       String headerStyle, String bodyStyle, String footerStyle) {
     if (!BeeUtils.isEmpty(panelStyle)) {
       StyleUtils.updateStyle(widget, panelStyle);

@@ -1,31 +1,84 @@
 package com.butent.bee.shared.modules.calendar;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskPriority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.crm.TaskType;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-public class CalendarTask implements BeeSerializable {
+public class CalendarTask extends CalendarItem implements BeeSerializable {
   
   private enum Serial {
     TYPE, ID, START, END, SUMMARY, DESCRIPTION, COMPANY_NAME, PRIORITY, STATUS, OWNER, EXECUTOR,
     OBSERVERS, BACKGRUOND, FOREGROUND, STYLE 
   }
   
+  private static final String SIMPLE_HEADER_TEMPLATE;
+  private static final String SIMPLE_BODY_TEMPLATE;
+
+  private static final String MULTI_HEADER_TEMPLATE;
+  private static final String MULTI_BODY_TEMPLATE;
+
+  private static final String COMPACT_TEMPLATE;
+  private static final String TITLE_TEMPLATE;
+
+  private static final String STRING_TEMPLATE;
+
+  static {
+    SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
+    SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(ALS_COMPANY_NAME),
+        BeeUtils.joinWords(wrap(COL_STATUS), wrap(CrmConstants.COL_OWNER),
+        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS)));
+
+    MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
+    MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(ALS_COMPANY_NAME),
+        wrap(COL_STATUS), wrap(CrmConstants.COL_OWNER),
+        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS));
+
+    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(CrmConstants.COL_EXECUTOR));
+
+    TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
+        BeeConst.STRING_EMPTY, wrap(ALS_COMPANY_NAME), BeeConst.STRING_EMPTY,
+        wrap(CrmConstants.COL_OWNER), wrap(CrmConstants.COL_EXECUTOR), BeeConst.STRING_EMPTY,
+        wrap(CrmConstants.PROP_OBSERVERS), BeeConst.STRING_EMPTY, wrap(COL_DESCRIPTION));
+
+    STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
+        wrap(ALS_COMPANY_NAME), wrap(CrmConstants.COL_OWNER),
+        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS));        
+  }
+  
   public static CalendarTask restore(String s) {
     CalendarTask ct = new CalendarTask();
     ct.deserialize(s);
     return ct;
+  }
+  
+  private static String formatUser(Long user, Map<Long, UserData> users) {
+    if (user != null && users.containsKey(user)) {
+      return users.get(user).getUserSign();
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
   }
   
   private TaskType type;
@@ -146,33 +199,59 @@ public class CalendarTask implements BeeSerializable {
       }
     }
   }
-
+  
+  @Override
   public String getBackground() {
     return background;
   }
+  
+  @Override
+  public String getCompactTemplate() {
+    return COMPACT_TEMPLATE;
+  }
 
+  @Override
   public String getCompanyName() {
     return companyName;
   }
-
+  
+  @Override
   public String getDescription() {
     return description;
   }
 
+  @Override
   public DateTime getEnd() {
     return end;
   }
-
+  
   public Long getExecutor() {
     return executor;
   }
-
+  
+  @Override
   public String getForeground() {
     return foreground;
   }
 
+  @Override
   public long getId() {
     return id;
+  }
+
+  @Override
+  public ItemType getItemType() {
+    return ItemType.TASK;
+  }
+
+  @Override
+  public String getMultiBodyTemplate() {
+    return MULTI_BODY_TEMPLATE;
+  }
+
+  @Override
+  public String getMultiHeaderTemplate() {
+    return MULTI_HEADER_TEMPLATE;
   }
 
   public Collection<Long> getObservers() {
@@ -187,6 +266,22 @@ public class CalendarTask implements BeeSerializable {
     return priority;
   }
 
+  @Override
+  public Long getSeparatedAttendee() {
+    return null;
+  }
+
+  @Override
+  public String getSimpleBodyTemplate() {
+    return SIMPLE_BODY_TEMPLATE;
+  }
+
+  @Override
+  public String getSimpleHeaderTemplate() {
+    return SIMPLE_HEADER_TEMPLATE;
+  }
+
+  @Override
   public DateTime getStart() {
     return start;
   }
@@ -195,12 +290,61 @@ public class CalendarTask implements BeeSerializable {
     return status;
   }
 
+  @Override
+  public String getStringTemplate() {
+    return STRING_TEMPLATE;
+  }
+  
+  @Override
   public Long getStyle() {
     return style;
   }
 
+  @Override
+  public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users) {
+    Map<String, String> result = Maps.newHashMap();
+    
+    result.put(wrap(CrmConstants.COL_TASK_ID), BeeUtils.toString(getId()));
+
+    result.put(wrap(COL_START_DATE_TIME), TimeUtils.renderCompact(getStart()));
+    result.put(wrap(COL_END_DATE_TIME), TimeUtils.renderCompact(getEnd()));
+    
+    result.put(wrap(COL_SUMMARY), BeeUtils.trim(getSummary()));
+    result.put(wrap(COL_DESCRIPTION), BeeUtils.trim(getDescription()));
+
+    result.put(wrap(ALS_COMPANY_NAME), BeeUtils.trim(getCompanyName()));
+    
+    result.put(wrap(CrmConstants.COL_PRIORITY),
+        (getPriority() == null) ? BeeConst.STRING_EMPTY : getPriority().getCaption());
+    result.put(wrap(COL_STATUS),
+        (getStatus() == null) ? BeeConst.STRING_EMPTY : getStatus().getCaption());
+    
+    result.put(wrap(CrmConstants.COL_OWNER), formatUser(getOwner(), users));
+    result.put(wrap(CrmConstants.COL_EXECUTOR), formatUser(getExecutor(), users));
+    
+    if (BeeUtils.isEmpty(getObservers())) {
+      result.put(wrap(CrmConstants.PROP_OBSERVERS), BeeConst.STRING_EMPTY);
+    } else {
+      List<String> names = Lists.newArrayList();
+      for (Long observer : getObservers()) {
+        names.add(formatUser(observer, users));
+      }
+      result.put(wrap(CrmConstants.PROP_OBSERVERS), BeeUtils.join(CHILD_SEPARATOR, names));
+    }
+    
+    result.put(wrap(KEY_PERIOD), TimeUtils.renderPeriod(getStart(), getEnd()));
+
+    return result;
+  }
+
+  @Override
   public String getSummary() {
     return summary;
+  }
+
+  @Override
+  public String getTitleTemplate() {
+    return TITLE_TEMPLATE;
   }
 
   public TaskType getType() {
