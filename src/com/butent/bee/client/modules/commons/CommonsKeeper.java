@@ -20,9 +20,11 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -38,7 +40,7 @@ public final class CommonsKeeper {
 
       } else if (event.hasView(VIEW_COMPANIES)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
-            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
+            Lists.newArrayList(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
                 COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
 
       } else if (event.hasView(VIEW_PERSONS)) {
@@ -70,7 +72,7 @@ public final class CommonsKeeper {
 
     @Override
     public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-      if (BeeUtils.isEmpty(getDataValue(COL_PASSWORD))) {
+      if (BeeUtils.isEmpty(getStringValue(COL_PASSWORD))) {
         event.consume();
         changePassword();
       }
@@ -108,7 +110,10 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
-    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UserGroupMembersInterceptor());
+
+    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
+        UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
+            COL_UG_GROUP, COL_UG_USER));
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

@@ -53,7 +53,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
   }
 
   private void onBlock() {
-    String host = getDataValue(COL_REGISTRATION_HOST);
+    String host = getStringValue(COL_REGISTRATION_HOST);
     if (BeeUtils.isEmpty(host)) {
       return;
     }
@@ -70,38 +70,38 @@ class EcRegistrationForm extends AbstractFormInterceptor {
   }
 
   private void onCreateUser() {
-    String email = BeeUtils.trim(getDataValue(COL_REGISTRATION_EMAIL));
+    String email = BeeUtils.trim(getStringValue(COL_REGISTRATION_EMAIL));
     if (BeeUtils.isEmpty(email)) {
       notifyRequired(Localized.getConstants().email());
       return;
     }
 
-    String firstName = getDataValue(COL_REGISTRATION_FIRST_NAME);
+    String firstName = getStringValue(COL_REGISTRATION_FIRST_NAME);
     if (BeeUtils.isEmpty(firstName)) {
       notifyRequired(Localized.getConstants().ecClientFirstName());
       return;
     }
 
-    String companyName = getDataValue(COL_REGISTRATION_COMPANY_NAME);
+    String companyName = getStringValue(COL_REGISTRATION_COMPANY_NAME);
     if (BeeUtils.isEmpty(companyName)) {
-      companyName = BeeUtils.joinWords(firstName, getDataValue(COL_REGISTRATION_LAST_NAME));
+      companyName = BeeUtils.joinWords(firstName, getStringValue(COL_REGISTRATION_LAST_NAME));
     }
     
     final EcClientType type = EnumUtils.getEnumByIndex(EcClientType.class,
-        getDataInt(COL_REGISTRATION_TYPE));
+        getIntegerValue(COL_REGISTRATION_TYPE));
     if (type == null) {
       notifyRequired(Localized.getConstants().ecClientType());
       return;
     }
 
-    final Long branch = getDataLong(COL_REGISTRATION_BRANCH);
+    final Long branch = getLongValue(COL_REGISTRATION_BRANCH);
     if (!DataUtils.isId(branch)) {
       notifyRequired(Localized.getConstants().branch());
       return;
     }
     
-    final String personCode = getDataValue(COL_REGISTRATION_PERSON_CODE);
-    final String activity = getDataValue(COL_REGISTRATION_ACTIVITY);
+    final String personCode = getStringValue(COL_REGISTRATION_PERSON_CODE);
+    final String activity = getStringValue(COL_REGISTRATION_ACTIVITY);
 
     Map<String, String> userFields = Maps.newHashMap();
     userFields.put(CommonsConstants.COL_EMAIL, email);
@@ -123,7 +123,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     String login = BeeUtils.notEmpty(BeeUtils.getPrefix(email, BeeConst.CHAR_AT), email);
     final String password = BeeUtils.left(login, 1);
     
-    final Integer locale = getDataInt(COL_REGISTRATION_LANGUAGE);
+    final Integer locale = getIntegerValue(COL_REGISTRATION_LANGUAGE);
 
     String caption = Localized.getConstants().ecRegistrationCommandCreate();
     CommonsUtils.createUser(caption, login, password, UserInterface.E_COMMERCE, userFields,
@@ -164,7 +164,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
   }
 
   private void putUserField(Map<String, String> parameters, String source, String destination) {
-    String value = getDataValue(source);
+    String value = getStringValue(source);
     if (!BeeUtils.isEmpty(value)) {
       parameters.put(destination, value.trim());
     }
@@ -195,7 +195,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
         header.addCommandItem(this.registerCommand);
       }
 
-      if (!BeeUtils.isEmpty(getDataValue(COL_REGISTRATION_HOST))
+      if (!BeeUtils.isEmpty(getStringValue(COL_REGISTRATION_HOST))
           && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =

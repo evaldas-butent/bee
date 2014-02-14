@@ -6,21 +6,21 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.client.modules.calendar.dnd.DayMoveController;
 import com.butent.bee.client.modules.calendar.dnd.ResizeController;
-import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
-import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
+import com.butent.bee.client.modules.calendar.layout.ItemAdapter;
+import com.butent.bee.client.modules.calendar.layout.ItemPanel;
 import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
 import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -33,7 +33,7 @@ public class ResourceView extends CalendarView {
 
   private final ResourceViewHeader viewHeader = new ResourceViewHeader();
   private final MultiDayPanel viewMulti = new MultiDayPanel();
-  private final AppointmentPanel viewBody = new AppointmentPanel();
+  private final ItemPanel viewBody = new ItemPanel();
 
   private DayMoveController moveController;
   private ResizeController resizeController;
@@ -79,7 +79,7 @@ public class ResourceView extends CalendarView {
 
     resizeController.setSettings(getSettings());
 
-    getAppointmentWidgets().clear();
+    getItemWidgets().clear();
     
     int multiHeight = BeeConst.UNDEF;
     
@@ -89,23 +89,23 @@ public class ResourceView extends CalendarView {
       Long id = attendees.get(i);
       String bg = attendeeColors.get(id);
 
-      List<Appointment> simple = CalendarUtils.filterSimple(getAppointments(), date, id);
+      List<CalendarItem> simple = CalendarUtils.filterSimple(getItems(), date, id);
       if (!simple.isEmpty()) {
-        List<AppointmentAdapter> adapters =
+        List<ItemAdapter> adapters =
             CalendarLayoutManager.doLayout(simple, i, cc, getSettings());
-        addAppointmentsToGrid(calendarId, adapters, false, i, bg);
+        addItemsToGrid(calendarId, adapters, false, i, bg);
       }
 
-      List<Appointment> multi = CalendarUtils.filterMulti(getAppointments(), date, 1, id);
+      List<CalendarItem> multi = CalendarUtils.filterMulti(getItems(), date, 1, id);
       if (!multi.isEmpty()) {
-        List<AppointmentAdapter> adapters = Lists.newArrayList();
-        for (Appointment appointment : multi) {
-          adapters.add(new AppointmentAdapter(appointment));
+        List<ItemAdapter> adapters = Lists.newArrayList();
+        for (CalendarItem item : multi) {
+          adapters.add(new ItemAdapter(item));
         }
         
         multiHeight = Math.max(multiHeight,
             CalendarLayoutManager.doMultiLayout(adapters, date, i, cc));
-        addAppointmentsToGrid(calendarId, adapters, true, i, bg);
+        addItemsToGrid(calendarId, adapters, true, i, bg);
       }
     }
     
@@ -118,7 +118,7 @@ public class ResourceView extends CalendarView {
   
   @Override
   public void doScroll() {
-    viewBody.doScroll(getSettings(), getAppointmentWidgets());
+    viewBody.doScroll(getSettings(), getItemWidgets());
   }
 
   @Override
@@ -156,11 +156,11 @@ public class ResourceView extends CalendarView {
   
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
-    AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);
+    ItemWidget widget = CalendarUtils.findWidget(getItemWidgets(), element);
 
     if (widget != null) {
       if (widget.canClick(element)) {
-        openAppointment(widget.getAppointment());
+        openItem(widget.getItem());
         return true;
       } else {
         return false;
@@ -179,13 +179,13 @@ public class ResourceView extends CalendarView {
     viewBody.onClock(getSettings());
   }
   
-  private void addAppointmentsToGrid(long calendarId, List<AppointmentAdapter> adapters,
+  private void addItemsToGrid(long calendarId, List<ItemAdapter> adapters,
       boolean multi, int columnIndex, String bg) {
 
     Orientation footerOrientation = multi ? null : Orientation.VERTICAL;
     
-    for (AppointmentAdapter adapter : adapters) {
-      AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi,
+    for (ItemAdapter adapter : adapters) {
+      ItemWidget widget = new ItemWidget(adapter.getItem(), multi,
           columnIndex, adapter.getHeight(), footerOrientation);
 
       widget.setLeft(adapter.getLeft());
@@ -196,7 +196,7 @@ public class ResourceView extends CalendarView {
 
       widget.render(calendarId, bg);
 
-      getAppointmentWidgets().add(widget);
+      getItemWidgets().add(widget);
 
       if (multi) {
         viewMulti.getGrid().add(widget);

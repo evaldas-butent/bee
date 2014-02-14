@@ -212,7 +212,7 @@ public final class CommonsUtils {
         Flow flow = new Flow();
         flow.setStyleName(STYLE_COMPANY);
 
-        for (String col : new String[] {COL_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
+        for (String col : new String[] {COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
             COL_ADDRESS, COL_PHONE, COL_EMAIL_ADDRESS}) {
 
           Flow record = new Flow();

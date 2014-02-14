@@ -9,6 +9,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.ScheduleDateMode;
+import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -111,6 +113,9 @@ public final class CommonsConstants {
     EnumUtils.register(SupportedLocale.class);
     EnumUtils.register(UserGroupVisibility.class);
     EnumUtils.register(UserInterface.class);
+
+    EnumUtils.register(ScheduleDateMode.class);
+    EnumUtils.register(WorkdayTransition.class);
   }
 
   public static final String COMMONS_MODULE = "Commons";
@@ -213,6 +218,7 @@ public final class CommonsConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_GROUP_SETTINGS = "UserGroupSettings";
   public static final String VIEW_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
@@ -295,8 +301,8 @@ public final class CommonsConstants {
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
   public static final String COL_PHOTO = "Photo";
+  public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
-  public static final String COL_NAME = "Name";
   public static final String COL_CATEGORY = "Category";
 
   public static final String COL_ITEM = "Item";
@@ -328,7 +334,10 @@ public final class CommonsConstants {
   public static final String COL_COUNTRY_NAME = "Name";
   public static final String COL_COUNTRY_CODE = "Code";
 
+  public static final String COL_REMINDER_NAME = "Name";
   public static final String COL_REMINDER_METHOD = "Method";
+  public static final String COL_REMINDER_HOURS = "Hours";
+  public static final String COL_REMINDER_MINUTES = "Minutes";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
   public static final String COL_REMINDER_TEMPLATE = "Template";
 
@@ -371,6 +380,8 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_USER = "User";
   public static final String COL_AUTOCOMPLETE_KEY = "Key";
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
+
+  public static final String COL_USER_GROUP_SETTINGS_NAME = "Name";
 
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";

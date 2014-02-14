@@ -20,7 +20,7 @@
       </page>
       <page>
         <text>=content</text>
-        <RichTextEditor source="Content" class="occupy-1" />
+        <xi:include href="widgets/Content.widget.xml" />
       </page>
     </TabbedPages>
   </FlowPanel>

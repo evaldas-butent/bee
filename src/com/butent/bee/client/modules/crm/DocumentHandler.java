@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -21,6 +22,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -52,9 +54,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -214,7 +214,7 @@ public final class DocumentHandler {
       if (category == null) {
         return null;
       } else {
-        return ComparisonFilter.isEqual(COL_DOCUMENT_CATEGORY, new LongValue(category));
+        return Filter.equals(COL_DOCUMENT_CATEGORY, category);
       }
     }
 
@@ -417,10 +417,13 @@ public final class DocumentHandler {
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
 
-    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentDataForm());
+    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentTemplateForm());
     FormFactory.registerFormInterceptor("Document", new DocumentForm());
+    FormFactory.registerFormInterceptor("DocumentItem", new DocumentDataForm());
 
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
+
+    TradeUtils.registerTotalRenderer(TBL_DOCUMENT_ITEMS, VAR_TOTAL);
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {

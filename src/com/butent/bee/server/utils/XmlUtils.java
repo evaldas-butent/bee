@@ -930,6 +930,16 @@ public final class XmlUtils {
     return result.toString();
   }
 
+  public static String tag(String tagName, Object value) {
+    if (value == null) {
+      return "";
+    }
+    return new StringBuilder("<").append(tagName).append(">")
+        .append(value)
+        .append("</").append(tagName).append(">")
+        .toString();
+  }
+
   public static String toString(Node nd, boolean indent) {
     Assert.notNull(nd);
     Transformer transformer;

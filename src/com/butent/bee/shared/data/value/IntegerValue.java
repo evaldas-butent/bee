@@ -19,8 +19,12 @@ public class IntegerValue extends Value {
   public static IntegerValue getNullValue() {
     return NULL_VALUE;
   }
+  
+  public static IntegerValue of(Enum<?> e) {
+    return (e == null) ? NULL_VALUE : new IntegerValue(e.ordinal());
+  }
 
-  private Integer value;
+  private final Integer value;
 
   public IntegerValue(Integer value) {
     this.value = value;

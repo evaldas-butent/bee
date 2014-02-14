@@ -17,10 +17,6 @@
       <InputText source="LoadingCompany" autocompleteKey="cargo-place-company" />
     </row>
     <row>
-      <Label text="=personContact" horizontalAlignment="right" />
-      <InputText source="LoadingContact" autocompleteKey="cargo-place-contact" />
-    </row>
-    <row>
       <Label text="=address" horizontalAlignment="right" />
       <InputText source="LoadingAddress" autocompleteKey="cargo-place-address" />
     </row>
@@ -55,6 +51,10 @@
       </FlowPanel>
     </row>
     <row>
+      <Label text="=personContact" horizontalAlignment="right" />
+      <InputText source="LoadingContact" autocompleteKey="cargo-place-contact" />
+    </row>
+    <row>
       <Label text="=ref" horizontalAlignment="right" />
       <InputArea source="LoadingTerminal" style="wdith: 155px;" />
     </row>
@@ -74,10 +74,7 @@
       <Label text="=company" horizontalAlignment="right" />
       <InputText source="UnloadingCompany" autocompleteKey="cargo-place-company" />
     </row>
-    <row>
-      <Label text="=personContact" horizontalAlignment="right" />
-      <InputText source="UnloadingContact" autocompleteKey="cargo-place-contact" />
-    </row>
+   
     <row>
       <Label text="=address" horizontalAlignment="right" />
       <InputText source="UnloadingAddress" autocompleteKey="cargo-place-address" />
@@ -111,6 +108,10 @@
 
         <Flag source="UnloadingCountryCode" style="padding-left: 2px;" />
       </FlowPanel>
+    </row>
+    <row>
+      <Label text="=personContact" horizontalAlignment="right" />
+      <InputText source="UnloadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
       <Label text="=ref" horizontalAlignment="right" decorator="caption-top" />

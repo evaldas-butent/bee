@@ -72,6 +72,14 @@
             <Label text="=bankAccount" />
             <InputText source="BankAccount" />
           </row>
+          <row>
+            <Label text="=daysAsBuyer" />
+            <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
+          </row>
+          <row>
+            <Label text="=daysAsSupplier" />
+            <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
+          </row>
         </Table>
       </page>
       <page>
@@ -79,30 +87,30 @@
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
       <page>
-      	<text>=responsibilities</text>
-       	<ChildGrid name="CompanyUsers" relColumn="Company" />
+        <text>=responsibilities</text>
+        <ChildGrid name="CompanyUsers" relColumn="Company" />
       </page>
       <page>
         <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
           <Table>
-          	 <row>
-          	   <Label text="=companySize" />
-          	   <DataSelector source="CompanySize" style="width: 100px;" />
-          	   <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;" />
-          	   <DataSelector source="InformationSource" style="width: 100px;" />
-          	 </row>
-          	 <row>
-          	   <Label text="=companyActivities" style="margin-right: 5px" />
-          	   <cell colSpan="3">
-                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
-                   label="=companyActivities" style="width: 338px;" />
-          	   </cell>
-          	 </row>
-          	 <row>
-          	   <Label text="=rating" />
-          	   <InputText source="Rating" style="width:100px;" />
-          	 </row>
+            <row>
+              <Label text="=companySize" />
+              <DataSelector source="CompanySize" style="width: 100px;" />
+              <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;" />
+              <DataSelector source="InformationSource" style="width: 100px;" />
+            </row>
+            <row>
+              <Label text="=companyActivities" style="margin-right: 5px" />
+              <cell colSpan="3">
+                <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
+                  label="=companyActivities" style="width: 338px;" />
+              </cell>
+            </row>
+            <row>
+              <Label text="=rating" />
+              <InputText source="Rating" style="width:100px;" />
+            </row>
           </Table>
         </FlowPanel>
       </page>

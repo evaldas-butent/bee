@@ -18,6 +18,18 @@
       </page>
 
       <page>
+        <text>=crmRTDateExceptions</text>
+        <ChildGrid name="RTDates" relColumn="RecurringTask" />
+      </page>
+
+      <page>
+        <text>=description</text>
+        <SimplePanel>
+          <InputArea source="Description" class="occupy-1" />
+        </SimplePanel>
+      </page>  
+
+      <page>
         <text>=relatedTo</text>
         <xi:include href="widgets/RTRelations.widget.xml" />
       </page>

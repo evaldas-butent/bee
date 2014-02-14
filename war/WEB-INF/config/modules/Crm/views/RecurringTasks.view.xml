@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="RecurringTasks" source="RecurringTasks" caption="=crmRecurringTasks"
-  newRowForm="NewRecurringTask" newRowCaption="=crmNewRecurringTask"
+  newRowForm="RecurringTask" newRowCaption="=crmNewRecurringTask"
   editForm="RecurringTask" rowCaption="Summary" 
   >
   <Columns>
@@ -38,8 +38,12 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="ScheduleAfter" />
-    <SimpleColumn name="ScheduleBefore" />
+    <SimpleColumn name="ScheduleFrom" />
+    <SimpleColumn name="ScheduleUntil" />
+
+    <SimpleColumn name="ScheduleDays" />
+
+    <SimpleColumn name="WorkdayTransition" />
 
     <SimpleColumn name="DayOfMonth" />
     <SimpleColumn name="Month" />
@@ -47,10 +51,8 @@
     <SimpleColumn name="Year" />
 
     <SimpleColumn name="StartAt" />
-
     <SimpleColumn name="DurationDays" />
-    <SimpleColumn name="DurationHours" />
-    <SimpleColumn name="DurationMinutes" />
+    <SimpleColumn name="DurationTime" />
 
     <SimpleColumn name="Reminder" />
     <SimpleJoin name="Reminder" joinType="LEFT">
@@ -59,6 +61,8 @@
 
     <SimpleColumn name="RemindBefore" />
     <SimpleColumn name="RemindAt" />
+
+    <SimpleColumn name="CopyByMail" />
   </Columns>
 </View>
  

@@ -626,27 +626,6 @@ class TaskEditor extends AbstractFormInterceptor {
     return createParams(event, getNewRow(), comment);
   }
 
-  private void doActivate() {
-    final TaskDialog dialog =
-        new TaskDialog(Localized.getConstants().crmTaskForwardingForExecution());
-
-    final String cid = dialog.addComment(false);
-
-    dialog.addAction(Localized.getConstants().crmTaskForwardForExecution(), new ScheduledCommand() {
-      @Override
-      public void execute() {
-
-        ParameterList params = createParams(TaskEvent.ACTIVATE, getNewRow(TaskStatus.ACTIVE),
-            dialog.getComment(cid));
-
-        sendRequest(params, TaskEvent.ACTIVATE);
-        dialog.close();
-      }
-    });
-
-    dialog.display();
-  }
-
   private void doApprove() {
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskConfirmation());
 
@@ -814,9 +793,6 @@ class TaskEditor extends AbstractFormInterceptor {
         break;
 
       case ACTIVATE:
-        doActivate();
-        break;
-
       case CREATE:
       case VISIT:
       case EDIT:
@@ -843,7 +819,7 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime oldStart = getDateTime(COL_START_TIME);
         DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-        DateTime newStart = (startId == null) ? oldStart 
+        DateTime newStart = (startId == null) ? oldStart
             : BeeUtils.nvl(dialog.getDateTime(startId), oldStart);
         DateTime newEnd = dialog.getDateTime(endId);
 
@@ -902,7 +878,8 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String sid =
         dialog.addSelector(Localized.getConstants().crmTaskExecutor(), CommonsConstants.VIEW_USERS,
-            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), true, exclusions);
+            Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
+            true, exclusions);
 
     final String cid = dialog.addComment(true);
 
@@ -931,6 +908,20 @@ class TaskEditor extends AbstractFormInterceptor {
         BeeRow newRow = getNewRow();
         RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
             Data.getDataInfo(CommonsConstants.VIEW_USERS), selector.getRelatedRow(), true);
+
+        TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
+            newRow.getInteger(getDataIndex(COL_STATUS)));
+        TaskStatus newStatus = null;
+
+        if (oldStatus == TaskStatus.ACTIVE && !Objects.equal(newUser, userId)) {
+          newStatus = TaskStatus.NOT_VISITED;
+        } else if (oldStatus == TaskStatus.NOT_VISITED && Objects.equal(newUser, userId)) {
+          newStatus = TaskStatus.ACTIVE;
+        }
+        
+        if (newStatus != null) {
+          newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
+        }
 
         ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
 
@@ -1165,8 +1156,6 @@ class TaskEditor extends AbstractFormInterceptor {
         return TaskStatus.in(status, TaskStatus.COMPLETED) && userId != executor;
 
       case ACTIVATE:
-        return TaskStatus.in(status, TaskStatus.SCHEDULED);
-
       case CREATE:
       case EDIT:
       case VISIT:
@@ -1201,6 +1190,9 @@ class TaskEditor extends AbstractFormInterceptor {
   private void requeryEvents(final long taskId) {
     ParameterList params = CrmKeeper.createArgs(SVC_GET_TASK_DATA);
     params.addDataItem(VAR_TASK_ID, taskId);
+    params.addDataItem(VAR_TASK_PROPERTIES, BeeUtils.join(BeeConst.STRING_COMMA,
+        PROP_OBSERVERS, PROP_FILES, PROP_EVENTS));
+    params.addDataItem(VAR_TASK_RELATIONS, BeeConst.STRING_ALL);
 
     Callback<ResponseObject> callback = new Callback<ResponseObject>() {
       @Override
@@ -1286,6 +1278,10 @@ class TaskEditor extends AbstractFormInterceptor {
       public void onSuccess(ResponseObject result) {
         BeeRow data = getResponseRow(event.getCaption(), result, this);
         if (data != null) {
+          if (result.hasWarnings()) {
+            BeeKeeper.getScreen().notifyWarning(result.getWarnings());
+          }
+
           onResponse(data);
 
           if (!BeeUtils.isEmpty(files)) {
@@ -1439,8 +1435,8 @@ class TaskEditor extends AbstractFormInterceptor {
     }
 
     String publisher = BeeUtils.joinWords(
-        row.getString(DataUtils.getColumnIndex(COL_PUBLISHER_FIRST_NAME, columns)),
-        row.getString(DataUtils.getColumnIndex(COL_PUBLISHER_LAST_NAME, columns)));
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_FIRST_NAME, columns)),
+        row.getString(DataUtils.getColumnIndex(ALS_PUBLISHER_LAST_NAME, columns)));
     if (!BeeUtils.isEmpty(publisher)) {
       col0.add(createEventCell(COL_PUBLISHER, publisher));
     }

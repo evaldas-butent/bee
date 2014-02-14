@@ -2,6 +2,7 @@ package com.butent.bee.client.event;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.DOM;
@@ -112,7 +113,21 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     INSTANCE.mouseDownPriorHandlers.remove(handler);
   }
 
+  private static boolean isExternalElement(Element element) {
+    if (element == null) {
+      return false;
+    }
+    if (element.getId() != null && element.getId().startsWith("mce_")) {
+      return true;
+    }
+    if (element.getClassName() != null && element.getClassName().startsWith("mce-")) {
+      return true;
+    }
+    return false;
+  }
+
   private final List<PreviewHandler> handlers = Lists.newArrayList();
+
   private final List<PreviewHandler> mouseDownPriorHandlers = Lists.newArrayList();
 
   private int modalCount;
@@ -155,19 +170,19 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       }
     }
 
-    if (handlers.isEmpty()) {
-      return;
-
-    } else if (handlers.size() == 1) {
-      handlers.get(0).onEventPreview(event, getTargetNode(event));
-
-    } else {
+    if (!handlers.isEmpty() && !isExternalEvent(event)) {
       int size = handlers.size();
-      for (int i = size - 1; i >= 0; i--) {
-        if (i < handlers.size()) {
-          handlers.get(i).onEventPreview(event, getTargetNode(event));
-          if (event.isCanceled() || event.isConsumed()) {
-            break;
+
+      if (size == 1) {
+        handlers.get(0).onEventPreview(event, getTargetNode(event));
+
+      } else {
+        for (int i = size - 1; i >= 0; i--) {
+          if (i < handlers.size()) {
+            handlers.get(i).onEventPreview(event, getTargetNode(event));
+            if (event.isCanceled() || event.isConsumed()) {
+              break;
+            }
           }
         }
       }
@@ -205,6 +220,18 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       }
     }
     return BeeConst.UNDEF;
+  }
+
+  private boolean isExternalEvent(NativePreviewEvent event) {
+    Node node = getTargetNode(event);
+    if (node == null) {
+      return false;
+    }
+
+    if (Element.is(node) && isExternalElement(Element.as(node))) {
+      return true;
+    }
+    return isExternalElement(node.getParentElement());
   }
 
   private void maybeSortHandlers() {

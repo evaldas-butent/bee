@@ -16,6 +16,7 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
@@ -324,6 +325,23 @@ public final class UiHelper {
     return null;
   }
 
+  public static HtmlTable getParentTable(Widget w) {
+    Assert.notNull(w);
+
+    Widget p = w;
+    for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {
+      if (p instanceof HtmlTable) {
+        return (HtmlTable) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+  
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
     return new Consumer<InputText>() {
       @Override

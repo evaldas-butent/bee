@@ -11,8 +11,8 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
-import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
+// import com.butent.bee.shared.modules.ec.EcConstants;
+// import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -74,14 +74,14 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  GOODS(CommonsConstants.TBL_ITEMS, CommonsConstants.VIEW_ITEMS,
-      Lists.newArrayList(CommonsConstants.COL_ITEM_NAME),
-      Lists.newArrayList(CommonsConstants.COL_ITEM_ARTICLE)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedGoods();
-    }
-  },
+  // GOODS(CommonsConstants.TBL_ITEMS, CommonsConstants.VIEW_ITEMS,
+  // Lists.newArrayList(CommonsConstants.COL_ITEM_NAME),
+  // Lists.newArrayList(CommonsConstants.COL_ITEM_ARTICLE)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedGoods();
+  // }
+  // },
 
   DOCUMENTS(CrmConstants.TBL_DOCUMENTS, CrmConstants.VIEW_DOCUMENTS,
       CrmConstants.COL_DOCUMENT_NAME) {
@@ -106,152 +106,154 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  EC_CLIENTS_MY(EcConstants.TBL_CLIENTS, EcConstants.VIEW_CLIENTS,
-      Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedEcClientsMy();
-    }
-  },
-
-  EC_CLIENTS_ALL(EcConstants.TBL_CLIENTS, EcConstants.VIEW_CLIENTS,
-      Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedEcClientsAll();
-    }
-  },
-
-  EC_ORDERS_MY(EcConstants.TBL_ORDERS, EcConstants.VIEW_ORDERS,
-      Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
-      Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedEcOrdersMy();
-    }
-  },
-
-  EC_ORDERS_ALL(EcConstants.TBL_ORDERS, EcConstants.VIEW_ORDERS,
-      Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
-      Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedEcOrdersAll();
-    }
-  },
-
-  EC_REGISTRATIONS(EcConstants.TBL_REGISTRATIONS, EcConstants.VIEW_REGISTRATIONS,
-      Lists.newArrayList(EcConstants.COL_REGISTRATION_FIRST_NAME,
-          EcConstants.COL_REGISTRATION_LAST_NAME),
-      Lists.newArrayList(EcConstants.COL_REGISTRATION_COMPANY_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedEcRegistrations();
-    }
-  },
-
-  ORDER_CARGO(TransportConstants.TBL_ORDER_CARGO, TransportConstants.VIEW_ORDER_CARGO,
-      Lists.newArrayList(TransportConstants.COL_CARGO_DESCRIPTION),
-      Lists.newArrayList(TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE),
-          TransportConstants.loadingColumnAlias(CommonsConstants.ALS_CITY_NAME),
-          TransportConstants.loadingColumnAlias(CommonsConstants.ALS_COUNTRY_NAME),
-          TransportConstants.unloadingColumnAlias(TransportConstants.COL_PLACE_DATE),
-          TransportConstants.unloadingColumnAlias(CommonsConstants.ALS_CITY_NAME),
-          TransportConstants.unloadingColumnAlias(CommonsConstants.ALS_COUNTRY_NAME))) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrCargo();
-    }
-  },
-
-  TRANSPORTATION_ORDERS_MY(TransportConstants.TBL_ORDERS, TransportConstants.VIEW_ORDERS,
-      Lists.newArrayList(TransportConstants.COL_ORDER_DATE, TransportConstants.COL_ORDER_NO),
-      Lists.newArrayList(TransportConstants.COL_CUSTOMER_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrOrdersMy();
-    }
-  },
-
-  TRANSPORTATION_ORDERS_ALL(TransportConstants.TBL_ORDERS, TransportConstants.VIEW_ORDERS,
-      Lists.newArrayList(TransportConstants.COL_ORDER_DATE, TransportConstants.COL_ORDER_NO),
-      Lists.newArrayList(TransportConstants.COL_CUSTOMER_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrOrdersAll();
-    }
-  },
-
-  TRIPS(TransportConstants.TBL_TRIPS, TransportConstants.VIEW_TRIPS,
-      Lists.newArrayList(TransportConstants.COL_TRIP_DATE, TransportConstants.COL_TRIP_NO,
-          TransportConstants.ALS_VEHICLE_NUMBER)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrTrips();
-    }
-  },
-
-  CARGO_REQUESTS_MY(TransportConstants.TBL_CARGO_REQUESTS, TransportConstants.VIEW_CARGO_REQUESTS,
-      Lists.newArrayList(TransportConstants.ALS_REQUEST_CUSTOMER_FIRST_NAME,
-          TransportConstants.ALS_REQUEST_CUSTOMER_LAST_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRequestsMy();
-    }
-  },
-
-  CARGO_REQUESTS_ALL(TransportConstants.TBL_CARGO_REQUESTS, TransportConstants.VIEW_CARGO_REQUESTS,
-      Lists.newArrayList(TransportConstants.ALS_REQUEST_CUSTOMER_FIRST_NAME,
-          TransportConstants.ALS_REQUEST_CUSTOMER_LAST_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRequestsAll();
-    }
-  },
-
-  SHIPMENT_REQUESTS_MY(TransportConstants.TBL_SHIPMENT_REQUESTS,
-      TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRequestsUnregisteredMy();
-    }
-  },
-
-  SHIPMENT_REQUESTS_ALL(TransportConstants.TBL_SHIPMENT_REQUESTS,
-      TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRequestsUnregisteredAll();
-    }
-  },
-
-  TRANSPORT_REGISTRATIONS(TransportConstants.TBL_REGISTRATIONS,
-      TransportConstants.VIEW_REGISTRATIONS, TransportConstants.COL_REGISTRATION_COMPANY_NAME) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrRegistrations();
-    }
-  },
-
-  VEHICLES(TransportConstants.TBL_VEHICLES, TransportConstants.VIEW_VEHICLES,
-      Lists.newArrayList(TransportConstants.COL_VEHICLE_NUMBER, TransportConstants.COL_TYPE_NAME),
-      Lists.newArrayList(TransportConstants.COL_PARENT_MODEL_NAME,
-          TransportConstants.COL_MODEL_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrVehicles();
-    }
-  },
-
-  DRIVERS(TransportConstants.TBL_DRIVERS, TransportConstants.VIEW_DRIVERS,
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrDrivers();
-    }
-  },
+  // EC_CLIENTS_MY(EcConstants.TBL_CLIENTS, EcConstants.VIEW_CLIENTS,
+  // Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
+  // Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedEcClientsMy();
+  // }
+  // },
+  //
+  // EC_CLIENTS_ALL(EcConstants.TBL_CLIENTS, EcConstants.VIEW_CLIENTS,
+  // Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
+  // Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedEcClientsAll();
+  // }
+  // },
+  //
+  // EC_ORDERS_MY(EcConstants.TBL_ORDERS, EcConstants.VIEW_ORDERS,
+  // Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
+  // Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedEcOrdersMy();
+  // }
+  // },
+  //
+  // EC_ORDERS_ALL(EcConstants.TBL_ORDERS, EcConstants.VIEW_ORDERS,
+  // Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
+  // Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedEcOrdersAll();
+  // }
+  // },
+  //
+  // EC_REGISTRATIONS(EcConstants.TBL_REGISTRATIONS, EcConstants.VIEW_REGISTRATIONS,
+  // Lists.newArrayList(EcConstants.COL_REGISTRATION_FIRST_NAME,
+  // EcConstants.COL_REGISTRATION_LAST_NAME),
+  // Lists.newArrayList(EcConstants.COL_REGISTRATION_COMPANY_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedEcRegistrations();
+  // }
+  // },
+  //
+  // ORDER_CARGO(TransportConstants.TBL_ORDER_CARGO, TransportConstants.VIEW_ORDER_CARGO,
+  // Lists.newArrayList(TransportConstants.COL_CARGO_DESCRIPTION),
+  // Lists.newArrayList(TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE),
+  // TransportConstants.loadingColumnAlias(CommonsConstants.ALS_CITY_NAME),
+  // TransportConstants.loadingColumnAlias(CommonsConstants.ALS_COUNTRY_NAME),
+  // TransportConstants.unloadingColumnAlias(TransportConstants.COL_PLACE_DATE),
+  // TransportConstants.unloadingColumnAlias(CommonsConstants.ALS_CITY_NAME),
+  // TransportConstants.unloadingColumnAlias(CommonsConstants.ALS_COUNTRY_NAME))) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrCargo();
+  // }
+  // },
+  //
+  // TRANSPORTATION_ORDERS_MY(TransportConstants.TBL_ORDERS, TransportConstants.VIEW_ORDERS,
+  // Lists.newArrayList(TransportConstants.COL_ORDER_DATE, TransportConstants.COL_ORDER_NO),
+  // Lists.newArrayList(TransportConstants.COL_CUSTOMER_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrOrdersMy();
+  // }
+  // },
+  //
+  // TRANSPORTATION_ORDERS_ALL(TransportConstants.TBL_ORDERS, TransportConstants.VIEW_ORDERS,
+  // Lists.newArrayList(TransportConstants.COL_ORDER_DATE, TransportConstants.COL_ORDER_NO),
+  // Lists.newArrayList(TransportConstants.COL_CUSTOMER_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrOrdersAll();
+  // }
+  // },
+  //
+  // TRIPS(TransportConstants.TBL_TRIPS, TransportConstants.VIEW_TRIPS,
+  // Lists.newArrayList(TransportConstants.COL_TRIP_DATE, TransportConstants.COL_TRIP_NO,
+  // TransportConstants.ALS_VEHICLE_NUMBER)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrTrips();
+  // }
+  // },
+  //
+  // CARGO_REQUESTS_MY(TransportConstants.TBL_CARGO_REQUESTS,
+  // TransportConstants.VIEW_CARGO_REQUESTS,
+  // Lists.newArrayList(TransportConstants.ALS_REQUEST_CUSTOMER_FIRST_NAME,
+  // TransportConstants.ALS_REQUEST_CUSTOMER_LAST_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrRequestsMy();
+  // }
+  // },
+  //
+  // CARGO_REQUESTS_ALL(TransportConstants.TBL_CARGO_REQUESTS,
+  // TransportConstants.VIEW_CARGO_REQUESTS,
+  // Lists.newArrayList(TransportConstants.ALS_REQUEST_CUSTOMER_FIRST_NAME,
+  // TransportConstants.ALS_REQUEST_CUSTOMER_LAST_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrRequestsAll();
+  // }
+  // },
+  //
+  // SHIPMENT_REQUESTS_MY(TransportConstants.TBL_SHIPMENT_REQUESTS,
+  // TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrRequestsUnregisteredMy();
+  // }
+  // },
+  //
+  // SHIPMENT_REQUESTS_ALL(TransportConstants.TBL_SHIPMENT_REQUESTS,
+  // TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrRequestsUnregisteredAll();
+  // }
+  // },
+  //
+  // TRANSPORT_REGISTRATIONS(TransportConstants.TBL_REGISTRATIONS,
+  // TransportConstants.VIEW_REGISTRATIONS, TransportConstants.COL_REGISTRATION_COMPANY_NAME) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrRegistrations();
+  // }
+  // },
+  //
+  // VEHICLES(TransportConstants.TBL_VEHICLES, TransportConstants.VIEW_VEHICLES,
+  // Lists.newArrayList(TransportConstants.COL_VEHICLE_NUMBER, TransportConstants.COL_TYPE_NAME),
+  // Lists.newArrayList(TransportConstants.COL_PARENT_MODEL_NAME,
+  // TransportConstants.COL_MODEL_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrVehicles();
+  // }
+  // },
+  //
+  // DRIVERS(TransportConstants.TBL_DRIVERS, TransportConstants.VIEW_DRIVERS,
+  // Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+  // @Override
+  // public String getCaption(LocalizableConstants constants) {
+  // return constants.feedTrDrivers();
+  // }
+  // },
 
   DISCUSSIONS(DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS,

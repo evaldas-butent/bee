@@ -8,8 +8,9 @@
     <SimpleColumn name="Group" />
     <SimpleColumn name="Criterion" />
     <SimpleColumn name="Value" />
+    <SimpleColumn name="Ordinal" />
   </Columns>
   <Order>
-    <OrderBy column="Criterion" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>

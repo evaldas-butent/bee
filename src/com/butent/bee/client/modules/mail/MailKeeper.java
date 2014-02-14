@@ -23,9 +23,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -62,7 +60,7 @@ public final class MailKeeper {
       @Override
       public Map<String, Filter> getInitialParentFilters() {
         return ImmutableMap.of("UserFilter",
-            ComparisonFilter.isEqual(COL_USER, new LongValue(BeeKeeper.getUser().getUserId())));
+            Filter.equals(COL_USER, BeeKeeper.getUser().getUserId()));
       }
 
       @Override

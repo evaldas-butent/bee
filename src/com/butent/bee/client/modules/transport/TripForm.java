@@ -10,9 +10,11 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
@@ -75,6 +77,15 @@ public class TripForm extends AbstractFormInterceptor {
           return true;
         }
       });
+    }
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
+    if (BeeUtils.same(name, VIEW_TRIP_CARGO) && widget instanceof ChildGrid) {
+      ((ChildGrid) widget).setGridInterceptor(new TripCargoGrid(getFormView()));
     }
   }
 

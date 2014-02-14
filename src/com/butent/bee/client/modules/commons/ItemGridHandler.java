@@ -11,9 +11,7 @@ import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.GridDescription;
@@ -109,7 +107,7 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
     } else {
       return Filter.in(Data.getIdColumn(CommonsConstants.VIEW_ITEMS),
           CommonsConstants.VIEW_ITEM_CATEGORIES, CommonsConstants.COL_ITEM,
-          ComparisonFilter.isEqual(CommonsConstants.COL_CATEGORY, new LongValue(category)));
+          Filter.equals(CommonsConstants.COL_CATEGORY, category));
     }
   }
 

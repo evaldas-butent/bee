@@ -210,3 +210,187 @@
   max-height: 100%;
   cursor: default;
 }
+
+.bee-crm-rt-actionSchedule {
+  font-size: 17px;
+  padding-right: 3px;
+  color: #888;
+  cursor: pointer;
+}
+.bee-crm-rt-actionSchedule:hover {
+  color: black;
+}
+
+.bee-crm-rt-cron-values {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  width: 640px;
+  margin-bottom: 2px;
+}
+
+.bee-crm-rt-value-toggle {
+  display: inline-block;
+  padding: 2px 2px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.bee-crm-rt-value-toggle-down {
+  background-color: #bfb;
+}
+.bee-crm-rt-value-toggle:hover {
+  outline: red solid 1px;
+  outline-offset: -1px;
+}
+
+.bee-crm-rt-cron-label {
+  min-width: 120px;
+}
+.bee-crm-rt-cron-input {
+  width: 400px;
+}
+.bee-crm-rt-cron-error {
+  padding-left: 3px;
+  color: transparent;
+}
+.bee-crm-rt-failure {
+  color: red;
+  background-color: yellow;
+}
+
+.bee-crm-rt-cron-help {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  text-align: center;
+  font-weight: bolder;
+  border: 1px solid #aaa;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.bee-crm-rt-cron-help:hover {
+  background-color: #aaa;
+  color: white;
+}
+.bee-crm-rt-cron-examples {
+  border-collapse: collapse;
+}
+.bee-crm-rt-cron-examples td {
+  padding: 2px 5px;
+}
+.bee-crm-rt-cron-examples tr:nth-child(odd) {
+  background-color: white;
+}
+.bee-crm-rt-cron-examples tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+.bee-crm-rt-schedule-panel {
+  overflow: auto;
+}
+.bee-crm-rt-month-panel {
+  display: inline-block;
+  margin: 1ex 1em;
+}
+
+.bee-crm-rt-month-label {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.bee-crm-rt-month-table {
+  border-collapse: collapse;
+}
+.bee-crm-rt-month-table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  background-color: white;
+  width: 26px;
+  height: 22px;
+}
+
+.bee-crm-rt-today {
+  outline: #f99 ridge 5px;
+}
+
+.bee-crm-rt-holiday {
+  color: red;
+}
+.bee-crm-rt-exclude {
+  text-decoration: line-through;
+}
+.bee-crm-rt-weekend {
+  color: #999;
+}
+.bee-crm-rt-day-has-tasks.bee-crm-rt-weekend,
+.bee-crm-rt-day-scheduled.bee-crm-rt-weekend {
+  color: black;
+}
+
+.bee-crm-rt-month-table td.bee-crm-rt-day-has-tasks {
+  background-color: blanchedalmond;
+  cursor: pointer;
+}
+.bee-crm-rt-month-table td.bee-crm-rt-day-scheduled {
+  background-color: #bfb;
+  cursor: pointer;
+}
+.bee-crm-rt-month-table td.bee-crm-rt-infertile {
+  background-color: #cfc;
+}
+.bee-crm-rt-day-has-tasks:hover,
+.bee-crm-rt-day-scheduled:hover {
+  font-weight: bold;
+  font-size: larger;
+  outline: black solid 1px;
+}
+
+.bee-crm-rt-info-label {
+  display: inline-block;
+  padding-right: 1em;
+  font-size: smaller;
+}
+
+.bee-crm-rt-offspring-dialog {
+  background-color: whitesmoke;
+}
+.bee-crm-rt-offspring-panel {
+  max-height: 500px;
+  overflow: auto;
+}
+.bee-crm-rt-offspring-table {
+  border-collapse: collapse;
+}
+.bee-crm-rt-offspring-table tr:hover {
+  background-color: blanchedalmond;
+}
+.bee-crm-rt-offspring-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-crm-rt-offspring-open,
+.bee-crm-rt-offspring-create,
+.bee-crm-rt-offspring-delete {
+  color: #888;
+  font-size: 20px;
+  padding: 2px;
+  cursor: pointer;
+}
+.bee-crm-rt-offspring-open:hover {
+  background-color: gray;
+  color: white;
+}
+.bee-crm-rt-offspring-create:hover {
+  background-color: #080;
+  color: white;
+}
+.bee-crm-rt-offspring-delete:hover {
+  background-color: red;
+  color: white;
+}

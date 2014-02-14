@@ -2,26 +2,26 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AppointmentTypes" viewName="AppointmentTypes"
-  caption="=appointmentTypes" newRowCaption="=newAppointmentType"
+  caption="=calAppointmentTypes"
   >
   <g:body height="100" /> 
   <g:columns>
-    <DataColumn name="Name" caption="=calAppointmentTypeName" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" whiteSpace="pre-wrap" />
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Description" whiteSpace="pre-line" />
 
-    <RelColumn name="ThemeName" caption="=colorTheme" />
-    <RelColumn name="StyleName" caption="=calAppointmentStyle" />
+    <RelColumn name="Theme" renderColumns="ThemeName" />
+    <RelColumn name="Style" renderColumns="StyleName" />
 
-    <DataColumn name="SimpleHeader" caption="=appointmentRenderSimpleHeader" whiteSpace="pre-wrap" />
-    <DataColumn name="SimpleBody" caption="=appointmentRenderSimpleBody" whiteSpace="pre-wrap" />
+    <DataColumn name="SimpleHeader" whiteSpace="pre-wrap" />
+    <DataColumn name="SimpleBody" whiteSpace="pre-wrap" />
 
-    <DataColumn name="MultiHeader" caption="=appointmentRenderMultiHeader" whiteSpace="pre-wrap" />
-    <DataColumn name="MultiBody" caption="=appointmentRenderMultiBody" whiteSpace="pre-wrap" />
+    <DataColumn name="MultiHeader" whiteSpace="pre-wrap" />
+    <DataColumn name="MultiBody" whiteSpace="pre-wrap" />
    
-    <DataColumn name="AppointmentCompact" caption="=calCompactForm" whiteSpace="pre-wrap" />
-    <DataColumn name="AppointmentTitle" caption="=calFlowingText" whiteSpace="pre-wrap" />
+    <DataColumn name="AppointmentCompact" whiteSpace="pre-wrap" />
+    <DataColumn name="AppointmentTitle" whiteSpace="pre-wrap" />
 
-    <DataColumn name="AppointmentCreator" caption="=appointmentCreator" />
-    <DataColumn name="AppointmentEditor" caption="=appointmentEditor" />
+    <DataColumn name="AppointmentCreator" />
+    <DataColumn name="AppointmentEditor" />
   </g:columns>
 </g:Grid>

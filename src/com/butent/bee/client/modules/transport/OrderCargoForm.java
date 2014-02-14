@@ -6,7 +6,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -30,8 +32,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class OrderCargoForm extends AbstractFormInterceptor {
@@ -73,11 +74,12 @@ class OrderCargoForm extends AbstractFormInterceptor {
           }
         }
       });
-    } else if (widget instanceof InputBoolean && BeeUtils.same(name, "Partial")) {
+    } else if (widget instanceof InputBoolean
+        && (BeeUtils.same(name, "Partial") || (BeeUtils.same(name, "Outsized")))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
-          refreshPartial(BeeUtils.toBoolean(event.getValue()));
+          refreshMetrics(getCheckCount(getFormView()) > 0);
         }
       });
     }
@@ -86,7 +88,8 @@ class OrderCargoForm extends AbstractFormInterceptor {
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refresh(row.getLong(form.getDataIndex(ExchangeUtils.COL_CURRENCY)));
-    refreshPartial(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial"))));
+    refreshMetrics(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial")))
+        || BeeUtils.unbox(row.getBoolean(form.getDataIndex("Outsized"))));
   }
 
   @Override
@@ -100,8 +103,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
     header.clearCommandPanel();
 
     if (Data.isViewEditable(VIEW_CARGO_INVOICES)) {
-      header.addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
-          Value.getValue(row.getId()))));
+      header.addCommandItem(new InvoiceCreator(Filter.equals(COL_CARGO, row.getId())));
     }
     header.addCommandItem(new Profit(COL_CARGO, row.getId()));
 
@@ -111,6 +113,27 @@ class OrderCargoForm extends AbstractFormInterceptor {
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     form.getViewPresenter().getHeader().clearCommandPanel();
+  }
+
+  private static int getCheckCount(FormView form) {
+    int checkBoxObserved = 0;
+    
+    InputBoolean ib1 = (InputBoolean) form.getWidgetByName("Partial");
+    InputBoolean ib2 = (InputBoolean) form.getWidgetByName("Outsized");
+    
+    if (ib1 != null) {
+      if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib1.getValue()))) {
+        checkBoxObserved = checkBoxObserved + 1;
+      }
+    }
+
+    if (ib2 != null) {
+      if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib2.getValue()))) {
+        checkBoxObserved = checkBoxObserved + 1;
+      }
+    }
+
+    return checkBoxObserved;
   }
 
   private void refresh(Long currency) {
@@ -143,7 +166,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
     }
   }
 
-  private void refreshPartial(boolean on) {
+  private void refreshMetrics(boolean on) {
     Widget widget = getFormView().getWidgetByName("Metrics");
 
     if (widget != null) {

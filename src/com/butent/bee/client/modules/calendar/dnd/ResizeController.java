@@ -4,7 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.style.StyleUtils;
@@ -22,14 +22,14 @@ public class ResizeController implements MoveEvent.Handler {
 
   private CalendarSettings settings;
 
-  private AppointmentWidget appointmentWidget;
+  private ItemWidget itemWidget;
 
   private int initialHeight;
   private int currentHeight;
   private int maxHeight;
 
   private int marginBottom;
-  
+
   private boolean scrollEnabled;
   private int initialScrollTop;
 
@@ -52,13 +52,13 @@ public class ResizeController implements MoveEvent.Handler {
 
     int snapSize = getSettings().getPixelsPerInterval();
 
-    if (getAppointmentWidget() == null) {
-      AppointmentWidget widget = CalendarUtils.getAppointmentWidget(mover);
+    if (getItemWidget() == null) {
+      ItemWidget widget = CalendarUtils.getItemWidget(mover);
       if (widget == null) {
         return;
       }
 
-      setAppointmentWidget(widget);
+      setItemWidget(widget);
 
       int height = StyleUtils.getHeight(widget);
       setInitialHeight(height);
@@ -68,22 +68,22 @@ public class ResizeController implements MoveEvent.Handler {
           - StyleUtils.getTop(widget));
 
       setMarginBottom((snapSize - height % snapSize) % snapSize);
-      
-      setScrollEnabled(scrollArea != null 
+
+      setScrollEnabled(scrollArea != null
           && scrollArea.getElement().getScrollHeight() > scrollArea.getOffsetHeight());
       setInitialScrollTop(isScrollEnabled() ? scrollArea.getElement().getScrollTop() : 0);
     }
 
     int y = mover.getCurrentY();
     int scrollTop = isScrollEnabled() ? scrollArea.getElement().getScrollTop() : 0;
-    
+
     int desired = getInitialHeight() + y - mover.getStartY() + scrollTop - getInitialScrollTop();
     int clamped = BeeUtils.clamp(desired, snapSize, getMaxHeight());
 
     int newHeight = BeeUtils.snap(clamped, snapSize) - getMarginBottom();
 
     if (newHeight > 0 && getCurrentHeight() != newHeight) {
-      StyleUtils.setHeight(getAppointmentWidget(), newHeight);
+      StyleUtils.setHeight(getItemWidget(), newHeight);
       setCurrentHeight(newHeight);
     }
 
@@ -91,38 +91,40 @@ public class ResizeController implements MoveEvent.Handler {
       if (getCurrentHeight() != getInitialHeight()) {
         int minutes = CalendarUtils.getMinutes(newHeight + getMarginBottom(), getSettings());
 
-        Appointment appointment = getAppointmentWidget().getAppointment();
+        if (getItemWidget().isAppointment()) {
+          Appointment appointment = (Appointment) getItemWidget().getItem();
 
-        DateTime newEnd = new DateTime(appointment.getStart().getTime()
-            + minutes * TimeUtils.MILLIS_PER_MINUTE);
+          DateTime newEnd = new DateTime(appointment.getStart().getTime()
+              + minutes * TimeUtils.MILLIS_PER_MINUTE);
 
-        calendarView.updateAppointment(appointment, appointment.getStart(), newEnd,
-            appointmentWidget.getColumnIndex(), appointmentWidget.getColumnIndex());
+          calendarView.updateAppointment(appointment, appointment.getStart(), newEnd,
+              itemWidget.getColumnIndex(), itemWidget.getColumnIndex());
+        }
 
         calendarView.getCalendarWidget().refresh(false);
       }
 
-      setAppointmentWidget(null);
-    
+      setItemWidget(null);
+
     } else if (isScrollEnabled()) {
       int top = scrollArea.getElement().getAbsoluteTop();
-      
+
       int newPos = BeeConst.UNDEF;
 
       if (scrollTop > 0 && event.getDeltaY() < 0 && y < top + snapSize) {
         newPos = Math.max(BeeUtils.snap(scrollTop, snapSize) - snapSize, 0);
-      
+
       } else {
         int clientHeight = scrollArea.getElement().getClientHeight();
         int scrollHeight = scrollArea.getElement().getScrollHeight();
-        
+
         if (scrollTop + clientHeight < scrollHeight && event.getDeltaY() > 0
             && y > top + clientHeight - snapSize) {
           newPos = Math.min(BeeUtils.snap(scrollTop, snapSize) + snapSize,
               scrollHeight - clientHeight);
         }
       }
-      
+
       if (newPos >= 0 && newPos != scrollTop) {
         scrollArea.getElement().setScrollTop(newPos);
       }
@@ -131,10 +133,6 @@ public class ResizeController implements MoveEvent.Handler {
 
   public void setSettings(CalendarSettings settings) {
     this.settings = settings;
-  }
-
-  private AppointmentWidget getAppointmentWidget() {
-    return appointmentWidget;
   }
 
   private int getCurrentHeight() {
@@ -147,6 +145,10 @@ public class ResizeController implements MoveEvent.Handler {
 
   private int getInitialScrollTop() {
     return initialScrollTop;
+  }
+
+  private ItemWidget getItemWidget() {
+    return itemWidget;
   }
 
   private int getMarginBottom() {
@@ -165,10 +167,6 @@ public class ResizeController implements MoveEvent.Handler {
     return scrollEnabled;
   }
 
-  private void setAppointmentWidget(AppointmentWidget appointmentWidget) {
-    this.appointmentWidget = appointmentWidget;
-  }
-
   private void setCurrentHeight(int currentHeight) {
     this.currentHeight = currentHeight;
   }
@@ -179,6 +177,10 @@ public class ResizeController implements MoveEvent.Handler {
 
   private void setInitialScrollTop(int initialScrollTop) {
     this.initialScrollTop = initialScrollTop;
+  }
+
+  private void setItemWidget(ItemWidget itemWidget) {
+    this.itemWidget = itemWidget;
   }
 
   private void setMarginBottom(int marginBottom) {

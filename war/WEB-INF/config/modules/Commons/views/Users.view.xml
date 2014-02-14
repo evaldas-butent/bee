@@ -30,6 +30,8 @@
     <SimpleColumn name="BlockAfter" />
     <SimpleColumn name="BlockBefore" />
 
+    <SimpleColumn name="MailAssignedTasks" />
+
     <SimpleColumn name="Properties" />
   </Columns>
   <Order>

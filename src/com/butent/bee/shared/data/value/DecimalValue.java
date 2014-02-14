@@ -18,7 +18,7 @@ public class DecimalValue extends Value {
     return NULL_VALUE;
   }
 
-  private BigDecimal value;
+  private final BigDecimal value;
 
   public DecimalValue(BigDecimal value) {
     this.value = value;

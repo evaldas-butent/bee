@@ -3,13 +3,13 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="TripCargo" viewName="TripCargo"
-  editForm="CargoPlace" editPopup="true" editInPlace="CargoOrder CargoPercent"
+  editForm="CargoPlace" editPopup="true" editInPlace="Ordinal CargoPercent"
   flexGrow="1"
   >
   <g:body height="50" />
 
   <g:columns>
-    <DataColumn name="CargoOrder" caption="=ordinal" />
+    <DataColumn name="Ordinal" />
     <RelColumn name="OrderNo" caption="=orderNumber" minWidth="100" editEnabled="true"
       editPopup="true" editSource="Order" />
     <RelColumn name="Description" caption="=cargo" editEnabled="true" editPopup="true"

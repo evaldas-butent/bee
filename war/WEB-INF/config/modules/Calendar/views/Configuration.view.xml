@@ -13,10 +13,5 @@
     <SimpleJoin name="AppointmentType" joinType="LEFT">
       <SimpleColumn alias="TypeName" name="Name" />
     </SimpleJoin>
-
-    <SimpleColumn name="TimeZone" />
-    <SimpleJoin name="TimeZone" joinType="LEFT">
-      <SimpleColumn alias="TimeZoneName" name="Name" />
-    </SimpleJoin>
   </Columns>
 </View>

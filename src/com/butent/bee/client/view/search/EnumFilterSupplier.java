@@ -10,7 +10,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.IntegerValue;
@@ -177,7 +176,7 @@ public class EnumFilterSupplier extends AbstractFilterSupplier {
         if (ordinal.equals(nullIndex)) {
           filters.add(Filter.isNull(getColumnId()));
         } else {
-          filters.add(ComparisonFilter.isEqual(getColumnId(), new IntegerValue(ordinal)));
+          filters.add(Filter.isEqual(getColumnId(), new IntegerValue(ordinal)));
         }
       }
     }

@@ -1,8 +1,8 @@
 package com.butent.bee.client;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -146,14 +146,25 @@ public class Global implements Module {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, ConfirmationCallback callback) {
-    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null);
+    confirm(caption, icon, messages, optionYes, optionNo, callback, null);
+  }
+
+  public static void confirm(String caption, Icon icon, List<String> messages,
+      String optionYes, String optionNo, ConfirmationCallback callback, Element target) {
+    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback, null, null, null,
+        target);
   }
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback) {
+    confirmDelete(caption, icon, messages, callback, null);
+  }
+
+  public static void confirmDelete(String caption, Icon icon, List<String> messages,
+      ConfirmationCallback callback, Element target) {
     msgBoxen.confirm(caption, icon, messages, Localized.getConstants().delete(),
         Localized.getConstants().cancel(), callback, null,
-        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM));
+        StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
   public static void debug(String s) {
@@ -162,7 +173,7 @@ public class Global implements Module {
 
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
-    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null);
+    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null, null);
   }
 
   public static CacheManager getCache() {
@@ -197,10 +208,10 @@ public class Global implements Module {
     return newsAggregator;
   }
 
-  public static void getParameter(String module, String prm, final Consumer<String> prmConsumer) {
-    if (prmConsumer == null || BeeUtils.anyEmpty(module, prm)) {
-      return;
-    }
+  public static void getParameter(String prm, final Consumer<String> prmConsumer) {
+    Assert.notEmpty(prm);
+    Assert.notNull(prmConsumer);
+
     ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
@@ -237,8 +248,8 @@ public class Global implements Module {
   }
 
   public static void inputCollection(String caption, String valueCaption, final boolean unique,
-      Collection<String> collection, final Consumer<Collection<String>> consumer,
-      final Supplier<Editor> supplier) {
+      Collection<String> defaultCollection, final Consumer<Collection<String>> consumer,
+      final Function<String, Editor> editorSupplier) {
 
     Assert.notNull(consumer);
 
@@ -248,18 +259,19 @@ public class Global implements Module {
       public void accept(String value) {
         Editor input = null;
 
-        if (supplier != null) {
-          input = supplier.get();
+        if (editorSupplier != null) {
+          input = editorSupplier.apply(value);
         }
         if (input == null) {
           input = new InputText();
+
+          if (!BeeUtils.isEmpty(value)) {
+            input.setValue(value);
+          }
         }
         int row = table.getRowCount();
         table.setWidget(row, 0, input.asWidget());
 
-        if (!BeeUtils.isEmpty(value)) {
-          input.setValue(value);
-        }
         final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
         delete.setTitle(Localized.getConstants().delete());
         delete.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -278,8 +290,8 @@ public class Global implements Module {
         table.setWidget(row, 1, delete);
       }
     };
-    if (!BeeUtils.isEmpty(collection)) {
-      for (String value : collection) {
+    if (!BeeUtils.isEmpty(defaultCollection)) {
+      for (String value : defaultCollection) {
         rowCreator.accept(value);
       }
     }
@@ -517,7 +529,7 @@ public class Global implements Module {
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
-        null, null, null, null);
+        null, null, null, null, null);
   }
 
   public static boolean nativeConfirm(String... lines) {
@@ -541,6 +553,23 @@ public class Global implements Module {
 
   public static void setDebug(boolean debug) {
     Global.debug = debug;
+  }
+
+  public static void setParameter(String prm, String value) {
+    Assert.notEmpty(prm);
+
+    ParameterList args = CommonsKeeper.createArgs(SVC_SET_PARAMETER);
+    args.addDataItem(VAR_PARAMETER, prm);
+
+    if (!BeeUtils.isEmpty(value)) {
+      args.addDataItem(VAR_PARAMETER_VALUE, value);
+    }
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(BeeKeeper.getScreen());
+      }
+    });
   }
 
   public static void showError(List<String> messages) {

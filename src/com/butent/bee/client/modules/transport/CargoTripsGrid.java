@@ -8,7 +8,6 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -28,7 +27,7 @@ class CargoTripsGrid extends AbstractGridInterceptor {
         CompoundFilter tripFilter = Filter.and();
 
         for (IsRow row : gridView.getGrid().getRowData()) {
-          tripFilter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(tripIndex)));
+          tripFilter.add(Filter.compareId(Operator.NE, row.getLong(tripIndex)));
         }
         TripSelector.select(new String[] {BeeUtils.toString(cargoId)}, tripFilter,
             gridView.getElement());

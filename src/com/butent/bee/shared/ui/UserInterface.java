@@ -32,7 +32,7 @@ public enum UserInterface implements HasCaption {
 
     @Override
     public List<String> getScripts() {
-      return Lists.newArrayList("settings");
+      return Lists.newArrayList("settings", "js/tinymce/js/tinymce/tinymce.min.js");
     }
 
     @Override
@@ -204,9 +204,9 @@ public enum UserInterface implements HasCaption {
     MENU(false),
     NEWS(false),
     USERS(true);
-    
+
     private final boolean required;
-    
+
     private Component(boolean required) {
       this.required = required;
     }
@@ -224,7 +224,7 @@ public enum UserInterface implements HasCaption {
 
   public static final String MAIN_STYLE_SHEET = "bee";
 
-  public static final String TITLE = "B-novo";
+  public static final String TITLE = "B-NOVO";
 
   public static UserInterface getByShortName(String input) {
     for (UserInterface ui : values()) {
@@ -244,16 +244,16 @@ public enum UserInterface implements HasCaption {
 
   public static Collection<Component> getRequiredComponents() {
     EnumSet<Component> components = EnumSet.noneOf(Component.class);
-    
+
     for (Component component : Component.values()) {
       if (component.isRequired()) {
         components.add(component);
       }
     }
-    
+
     return components;
   }
-  
+
   public static UserInterface normalize(UserInterface ui) {
     return (ui == null) ? DEFAULT : ui;
   }

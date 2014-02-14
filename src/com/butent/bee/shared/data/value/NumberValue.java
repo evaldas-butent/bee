@@ -22,7 +22,7 @@ public class NumberValue extends Value {
     return NULL_VALUE;
   }
 
-  private Double value;
+  private final Double value;
 
   public NumberValue(Double value) {
     this.value = value;

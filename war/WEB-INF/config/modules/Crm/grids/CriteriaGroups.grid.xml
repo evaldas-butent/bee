@@ -6,5 +6,6 @@
   >
   <g:columns>
     <AutoColumn name="Name" viewName="DistinctCriteriaGroups" viewColumn="Name" visible="true" required="true" />
+    <DataColumn name="Ordinal" visible="false" />
   </g:columns>
 </g:Grid>

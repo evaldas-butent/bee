@@ -25,6 +25,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -38,6 +39,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
@@ -151,6 +153,59 @@ public class QueryServiceBean {
   UserServiceBean usr;
   @EJB
   ParamHolderBean prm;
+
+  public ResponseObject copyData(String tableName, String filterColumn, Object filterValue,
+      Object newValue) {
+
+    if (BeeUtils.anyEmpty(tableName, filterColumn) || BeeUtils.anyNull(filterValue, newValue)) {
+      return ResponseObject.error("copy data invalid parameters:", tableName, filterColumn,
+          filterValue, newValue);
+    }
+    if (filterValue.equals(newValue)) {
+      return ResponseObject.error("copy data", tableName, filterColumn, filterValue, newValue,
+          "values must be different");
+    }
+
+    Collection<String> fields = sys.getTableFieldNames(tableName);
+    if (!fields.contains(filterColumn)) {
+      return ResponseObject.error("copy data", tableName, filterColumn, "column not found");
+    }
+
+    SqlSelect query = new SqlSelect();
+    for (String field : fields) {
+      query.addFields(tableName, field);
+    }
+
+    query.addFrom(tableName)
+        .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue))
+        .addOrder(tableName, sys.getIdName(tableName));
+
+    SimpleRowSet data = getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.response(0);
+    }
+
+    for (SimpleRow row : data) {
+      SqlInsert si = new SqlInsert(tableName)
+          .addConstant(filterColumn, newValue);
+
+      for (String field : fields) {
+        if (!field.equals(filterColumn)) {
+          String value = row.getValue(field);
+          if (value != null) {
+            si.addConstant(field, value);
+          }
+        }
+      }
+
+      ResponseObject response = insertDataWithResponse(si);
+      if (response.hasErrors()) {
+        return response;
+      }
+    }
+
+    return ResponseObject.response(data.getNumberOfRows());
+  }
 
   public SimpleRowSet dbConstraints(String dbName, String dbSchema, String table,
       SqlKeyword... types) {
@@ -439,6 +494,19 @@ public class QueryServiceBean {
 
   public Long[] getLongColumn(IsQuery query) {
     return getSingleColumn(query).getLongColumn(0);
+  }
+
+  public List<Long> getLongList(IsQuery query) {
+    List<Long> result = Lists.newArrayList();
+    
+    Long[] arr = getLongColumn(query);
+    if (arr != null && arr.length > 0) {
+      for (Long value : arr) {
+        result.add(value);
+      }
+    }
+
+    return result;
   }
 
   public String getNextNumber(String tblName, String fldName, String prefix, String prefixFld) {
@@ -740,8 +808,17 @@ public class QueryServiceBean {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
-    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER, usr.getCurrentUserId()).getQuery());
+    boolean isDebugEnabled = logger.isDebugEnabled();
 
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.INFO);
+    }
+    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER,
+        usr.getCurrentUserId()).getQuery());
+
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.DEBUG);
+    }
     activateTables(query);
 
     final TableModifyEvent event;

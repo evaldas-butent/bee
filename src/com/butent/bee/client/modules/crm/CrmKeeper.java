@@ -8,19 +8,24 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -33,8 +38,9 @@ public final class CrmKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
-    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY, COL_COMPANY_NAME,
-        COL_EXECUTOR_FIRST_NAME, COL_EXECUTOR_LAST_NAME, COL_FINISH_TIME, COL_STATUS);
+    private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
+        CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
+        COL_FINISH_TIME, COL_STATUS);
 
     private DataInfo taskViewInfo;
 
@@ -58,7 +64,6 @@ public final class CrmKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_TASK, new TaskBuilder());
     FormFactory.registerFormInterceptor(FORM_TASK, new TaskEditor());
 
-    FormFactory.registerFormInterceptor(FORM_NEW_RECURRING_TASK, new RecurringTaskHandler());
     FormFactory.registerFormInterceptor(FORM_RECURRING_TASK, new RecurringTaskHandler());
 
     FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
@@ -66,6 +71,7 @@ public final class CrmKeeper {
 
     GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());
 
+    GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid()); 
     GridFactory.registerGridInterceptor(GRID_RT_FILES, 
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
             CommonsConstants.ALS_FILE_NAME));
@@ -117,6 +123,30 @@ public final class CrmKeeper {
         params.addQueryItem(VAR_TASK_ID, input);
         
         BeeKeeper.getRpc().makeRequest(params);
+      }
+    });
+  }
+  
+  public static void scheduleTasks(final DateRange range) {
+    Assert.notNull(range);
+    
+    ParameterList params = createArgs(SVC_RT_SCHEDULE);
+    params.addQueryItem(COL_RT_SCHEDULE_FROM, range.getMinDays());
+    if (range.size() > 1) {
+      params.addQueryItem(COL_RT_SCHEDULE_UNTIL, range.getMaxDays());
+    }
+    
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse() && BeeUtils.isPositiveInt(response.getResponseAsString())) {
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+          BeeKeeper.getScreen().notifyInfo(BeeUtils.joinWords(range, "sheduled",
+              response.getResponseAsString(), "tasks"));
+
+        } else {
+          BeeKeeper.getScreen().notifyWarning(range.toString(), "no tasks sheduled");
+        }
       }
     });
   }

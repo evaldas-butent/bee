@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
@@ -14,6 +15,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -417,6 +419,21 @@ public final class Codec {
     int len = s.length();
     Assert.isPositive(len);
     return fromBytes(fromBase64(s));
+  }
+
+  public static List<Long> deserializeIdList(String data) {
+    List<Long> result = Lists.newArrayList();
+
+    String[] arr = beeDeserializeCollection(data);
+    if (arr != null) {
+      for (String value : arr) {
+        Long id = BeeUtils.toLongOrNull(value);
+        if (id != null) {
+          result.add(id);
+        }
+      }
+    }
+    return result;
   }
 
   /**

@@ -650,6 +650,10 @@ public final class DataUtils {
     return row != null && isId(row.getId());
   }
 
+  public static boolean idEquals(IsRow row, Long id) {
+    return row != null && id != null && id.equals(row.getId());
+  }
+
   public static boolean isEmpty(BeeRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }

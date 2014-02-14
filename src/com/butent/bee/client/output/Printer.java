@@ -12,7 +12,7 @@ import com.google.gwt.dom.client.TextAreaElement;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.utils.BrowsingContext;
+import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -42,7 +42,7 @@ public final class Printer {
 
   private static final String WINDOW_FEATURES = "resizable,scrollbars,menubar,toolbar";
 
-  private static final boolean useFrame = BrowsingContext.isChrome();
+  private static final boolean useFrame = LayoutEngine.detect() == LayoutEngine.WEBKIT;
   private static Frame frame;
 
   private static String cssRules;
@@ -179,7 +179,7 @@ public final class Printer {
           logger.warning("print attempt", counter, "failed");
           return counter < NUMBER_OF_ATTEMPTS;
         }
-        
+
         if (widget != null) {
           frame.getContentDocument().setTitle(BeeUtils.trim(widget.getCaption()));
         }

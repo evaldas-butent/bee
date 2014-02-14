@@ -1,0 +1,480 @@
+package com.butent.bee.shared.modules.calendar;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskPriority;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
+import com.butent.bee.shared.modules.crm.TaskType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+public class CalendarTask extends CalendarItem implements BeeSerializable {
+  
+  private enum Serial {
+    TYPE, ID, START, END, SUMMARY, DESCRIPTION, COMPANY_NAME, PRIORITY, STATUS, OWNER, EXECUTOR,
+    OBSERVERS, BACKGRUOND, FOREGROUND, STYLE 
+  }
+  
+  private static final String SIMPLE_HEADER_TEMPLATE;
+  private static final String SIMPLE_BODY_TEMPLATE;
+
+  private static final String MULTI_HEADER_TEMPLATE;
+  private static final String MULTI_BODY_TEMPLATE;
+
+  private static final String COMPACT_TEMPLATE;
+  private static final String TITLE_TEMPLATE;
+
+  private static final String STRING_TEMPLATE;
+
+  static {
+    SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
+    SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(ALS_COMPANY_NAME),
+        BeeUtils.joinWords(wrap(COL_STATUS), wrap(CrmConstants.COL_OWNER),
+        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS)));
+
+    MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
+    MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(ALS_COMPANY_NAME),
+        wrap(COL_STATUS), wrap(CrmConstants.COL_OWNER),
+        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS));
+
+    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(CrmConstants.COL_EXECUTOR));
+
+    TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
+        BeeConst.STRING_EMPTY, wrap(ALS_COMPANY_NAME), BeeConst.STRING_EMPTY,
+        wrap(CrmConstants.COL_OWNER), wrap(CrmConstants.COL_EXECUTOR), BeeConst.STRING_EMPTY,
+        wrap(CrmConstants.PROP_OBSERVERS), BeeConst.STRING_EMPTY, wrap(COL_DESCRIPTION));
+
+    STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
+        wrap(ALS_COMPANY_NAME), wrap(CrmConstants.COL_OWNER),
+        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS));        
+  }
+  
+  public static CalendarTask restore(String s) {
+    CalendarTask ct = new CalendarTask();
+    ct.deserialize(s);
+    return ct;
+  }
+  
+  private static String formatUser(Long user, Map<Long, UserData> users) {
+    if (user != null && users.containsKey(user)) {
+      return users.get(user).getUserSign();
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+  
+  private TaskType type;
+  private long id;
+  
+  private DateTime start;
+  private DateTime end;
+
+  private String summary;
+  private String description;
+  
+  private String companyName;
+
+  private TaskPriority priority;
+  private TaskStatus status;
+  
+  private Long owner;
+  private Long executor;
+  
+  private Collection<Long> observers;
+  
+  private String background;
+  private String foreground;
+
+  private Long style;
+
+  public CalendarTask(TaskType type, long id, SimpleRow row) {
+    this.type = type;
+    this.id = id;
+
+    this.start = row.getDateTime(CrmConstants.COL_START_TIME);
+    this.end = row.getDateTime(CrmConstants.COL_FINISH_TIME);
+    
+    this.summary = row.getValue(CrmConstants.COL_SUMMARY);
+    this.description = row.getValue(CrmConstants.COL_DESCRIPTION);
+    
+    this.companyName = row.getValue(CommonsConstants.ALS_COMPANY_NAME);
+    
+    this.priority = EnumUtils.getEnumByIndex(TaskPriority.class, 
+        row.getInt(CrmConstants.COL_PRIORITY));
+    this.status = EnumUtils.getEnumByIndex(TaskStatus.class, 
+        row.getInt(CrmConstants.COL_STATUS));
+    
+    this.owner = row.getLong(CrmConstants.COL_OWNER);
+    this.executor = row.getLong(CrmConstants.COL_EXECUTOR);
+  }
+  
+  private CalendarTask() {
+    super();
+  }
+
+  @Override
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
+
+    for (int i = 0; i < members.length; i++) {
+      String value = arr[i];
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+
+      switch (members[i]) {
+        case TYPE:
+          setType(Codec.unpack(TaskType.class, value));
+          break;
+        case ID:
+          setId(BeeUtils.toLong(value));
+          break;
+
+        case START:
+          setStart(DateTime.restore(value));
+          break;
+        case END:
+          setEnd(DateTime.restore(value));
+          break;
+
+        case SUMMARY:
+          setSummary(value);
+          break;
+        case DESCRIPTION:
+          setDescription(value);
+          break;
+        
+        case COMPANY_NAME:
+          setCompanyName(value);
+          break;
+        
+        case PRIORITY:
+          setPriority(Codec.unpack(TaskPriority.class, value));
+          break;
+        case STATUS:
+          setStatus(Codec.unpack(TaskStatus.class, value));
+          break;
+
+        case OWNER:
+          setOwner(BeeUtils.toLongOrNull(value));
+          break;
+        case EXECUTOR:
+          setExecutor(BeeUtils.toLongOrNull(value));
+          break;
+        
+        case OBSERVERS:
+          setObservers(Codec.deserializeIdList(value));
+          break;
+        
+        case BACKGRUOND:
+          setBackground(value);
+          break;
+        case FOREGROUND:
+          setForeground(value);
+          break;
+
+        case STYLE:
+          setStyle(BeeUtils.toLongOrNull(value));
+          break;
+      }
+    }
+  }
+  
+  @Override
+  public String getBackground() {
+    return background;
+  }
+  
+  @Override
+  public String getCompactTemplate() {
+    return COMPACT_TEMPLATE;
+  }
+
+  @Override
+  public String getCompanyName() {
+    return companyName;
+  }
+  
+  @Override
+  public String getDescription() {
+    return description;
+  }
+
+  @Override
+  public DateTime getEnd() {
+    return end;
+  }
+  
+  public Long getExecutor() {
+    return executor;
+  }
+  
+  @Override
+  public String getForeground() {
+    return foreground;
+  }
+
+  @Override
+  public long getId() {
+    return id;
+  }
+
+  @Override
+  public ItemType getItemType() {
+    return ItemType.TASK;
+  }
+
+  @Override
+  public String getMultiBodyTemplate() {
+    return MULTI_BODY_TEMPLATE;
+  }
+
+  @Override
+  public String getMultiHeaderTemplate() {
+    return MULTI_HEADER_TEMPLATE;
+  }
+
+  public Collection<Long> getObservers() {
+    return observers;
+  }
+
+  public Long getOwner() {
+    return owner;
+  }
+
+  public TaskPriority getPriority() {
+    return priority;
+  }
+
+  @Override
+  public Long getSeparatedAttendee() {
+    return null;
+  }
+
+  @Override
+  public String getSimpleBodyTemplate() {
+    return SIMPLE_BODY_TEMPLATE;
+  }
+
+  @Override
+  public String getSimpleHeaderTemplate() {
+    return SIMPLE_HEADER_TEMPLATE;
+  }
+
+  @Override
+  public DateTime getStart() {
+    return start;
+  }
+
+  public TaskStatus getStatus() {
+    return status;
+  }
+
+  @Override
+  public String getStringTemplate() {
+    return STRING_TEMPLATE;
+  }
+  
+  @Override
+  public Long getStyle() {
+    return style;
+  }
+
+  @Override
+  public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users) {
+    Map<String, String> result = Maps.newHashMap();
+    
+    result.put(wrap(CrmConstants.COL_TASK_ID), BeeUtils.toString(getId()));
+
+    result.put(wrap(COL_START_DATE_TIME), TimeUtils.renderCompact(getStart()));
+    result.put(wrap(COL_END_DATE_TIME), TimeUtils.renderCompact(getEnd()));
+    
+    result.put(wrap(COL_SUMMARY), BeeUtils.trim(getSummary()));
+    result.put(wrap(COL_DESCRIPTION), BeeUtils.trim(getDescription()));
+
+    result.put(wrap(ALS_COMPANY_NAME), BeeUtils.trim(getCompanyName()));
+    
+    result.put(wrap(CrmConstants.COL_PRIORITY),
+        (getPriority() == null) ? BeeConst.STRING_EMPTY : getPriority().getCaption());
+    result.put(wrap(COL_STATUS),
+        (getStatus() == null) ? BeeConst.STRING_EMPTY : getStatus().getCaption());
+    
+    result.put(wrap(CrmConstants.COL_OWNER), formatUser(getOwner(), users));
+    result.put(wrap(CrmConstants.COL_EXECUTOR), formatUser(getExecutor(), users));
+    
+    if (BeeUtils.isEmpty(getObservers())) {
+      result.put(wrap(CrmConstants.PROP_OBSERVERS), BeeConst.STRING_EMPTY);
+    } else {
+      List<String> names = Lists.newArrayList();
+      for (Long observer : getObservers()) {
+        names.add(formatUser(observer, users));
+      }
+      result.put(wrap(CrmConstants.PROP_OBSERVERS), BeeUtils.join(CHILD_SEPARATOR, names));
+    }
+    
+    result.put(wrap(KEY_PERIOD), TimeUtils.renderPeriod(getStart(), getEnd()));
+
+    return result;
+  }
+
+  @Override
+  public String getSummary() {
+    return summary;
+  }
+
+  @Override
+  public String getTitleTemplate() {
+    return TITLE_TEMPLATE;
+  }
+
+  public TaskType getType() {
+    return type;
+  }
+
+  @Override
+  public String serialize() {
+    Serial[] members = Serial.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
+
+    for (Serial member : members) {
+      switch (member) {
+        case TYPE:
+          arr[i++] = Codec.pack(getType());
+          break;
+        case ID:
+          arr[i++] = getId();
+          break;
+          
+        case START:
+          arr[i++] = getStart();
+          break;
+        case END:
+          arr[i++] = getEnd();
+          break;
+
+        case SUMMARY:
+          arr[i++] = getSummary();
+          break;
+        case DESCRIPTION:
+          arr[i++] = getDescription();
+          break;
+
+        case COMPANY_NAME:
+          arr[i++] = getCompanyName();
+          break;
+        
+        case PRIORITY:
+          arr[i++] = Codec.pack(getPriority());
+          break;
+        case STATUS:
+          arr[i++] = Codec.pack(getStatus());
+          break;
+
+        case OWNER:
+          arr[i++] = getOwner();
+          break;
+        case EXECUTOR:
+          arr[i++] = getExecutor();
+          break;
+
+        case OBSERVERS:
+          arr[i++] = getObservers();
+          break;
+
+        case FOREGROUND:
+          arr[i++] = getForeground();
+          break;
+        case BACKGRUOND:
+          arr[i++] = getBackground();
+          break;
+
+        case STYLE:
+          arr[i++] = getStyle();
+          break;
+      }
+    }
+    
+    return Codec.beeSerialize(arr);
+  }
+
+  public void setBackground(String background) {
+    this.background = background;
+  }
+
+  public void setCompanyName(String companyName) {
+    this.companyName = companyName;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setEnd(DateTime end) {
+    this.end = end;
+  }
+
+  public void setExecutor(Long executor) {
+    this.executor = executor;
+  }
+
+  public void setForeground(String foreground) {
+    this.foreground = foreground;
+  }
+
+  public void setObservers(Collection<Long> observers) {
+    this.observers = observers;
+  }
+
+  public void setOwner(Long owner) {
+    this.owner = owner;
+  }
+
+  public void setPriority(TaskPriority priority) {
+    this.priority = priority;
+  }
+
+  public void setStart(DateTime start) {
+    this.start = start;
+  }
+
+  public void setStatus(TaskStatus status) {
+    this.status = status;
+  }
+
+  public void setStyle(Long style) {
+    this.style = style;
+  }
+
+  public void setSummary(String summary) {
+    this.summary = summary;
+  }
+
+  private void setId(long id) {
+    this.id = id;
+  }
+
+  private void setType(TaskType type) {
+    this.type = type;
+  }
+}

@@ -3,7 +3,8 @@
   xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 
   name="Discussions" viewName="Discussions" caption="=discussions"
-  cacheData="false" asyncThreshold="-1" favorite="Subject" flexGrow="1" order="DiscussionID desc">
+  cacheData="false" asyncThreshold="-1" favorite="Subject" flexGrow="1" order="DiscussionID desc"
+  disabledActions="delete" >
   <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html"
       horizontalAlignment="center" width="20" maxWidth="20" caption="-"
@@ -37,6 +38,21 @@
       label="=discussHasRelations">
       <renderer type="image" />
     </PropColumn>
+    
+    <CalcColumn name="Announcement" type="boolean"
+      width="20" maxWidth="20" autoFit="true" 
+      caption="=announcement">
+        <render>
+          <ui:function>
+            var topic = row.Topic;
+            if (topic != null) {
+              return true;
+            }
+            
+            return false;
+          </ui:function>
+        </render>
+    </CalcColumn>
     
     <PropColumn name="LastCommentData" type="string" cellType="html"
       caption="=discussLastComment" label="=discussLastComment" width="180"

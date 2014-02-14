@@ -6,7 +6,8 @@
   >
   <Fields>
     <Relation name="Data" relation="DocumentData" notNull="true" label="=documentData" cascade="DELETE" />
-    <String name="Name" precision="30" label="=criteriaGroup" />
+    <String name="Name" precision="50" label="=criteriaGroup" />
+    <Numeric name="Ordinal" precision="2" label="=ordinal" />
   </Fields>
   <Constraints>
     <Unique fields="Data Name" />

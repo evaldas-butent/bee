@@ -89,7 +89,9 @@
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
     <SimpleColumn name="BankAccount" />
-
+    <SimpleColumn name="DaysAsBuyer" />
+    <SimpleColumn name="DaysAsSupplier" />
+    
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DocumentItems" source="DocumentItems"
+  caption="=documentItems" newRowCaption="=newDocumentItem"
+  editForm="DocumentItem"
+  >
+  <Columns>
+    <SimpleColumn name="Document" />
+    <SimpleJoin joinType="LEFT" name="Document">
+      <SimpleColumn name="Category" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
+    <SimpleColumn name="Data" />
+    <SimpleJoin joinType="LEFT" name="Data">
+      <SimpleColumn name="Content" />
+    </SimpleJoin>
+  </Columns>
+</View>

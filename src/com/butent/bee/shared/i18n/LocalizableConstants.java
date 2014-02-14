@@ -160,6 +160,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String contacts();
 
+  String content();
+
   String continueQuestion();
 
   String country();
@@ -213,8 +215,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String enterDate();
 
   String enterTime();
-
-  String ended();
 
   String error();
 
@@ -368,6 +368,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String maxValue();
 
+  String message();
+
   String minValue();
 
   String mobile();
@@ -444,6 +446,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String period();
 
+  String person();
+
   String personContact();
 
   String personContacts();
@@ -518,17 +522,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String saveFilter();
 
-  String scheduledEndingDate();
+  String scheduleDateExclude();
 
-  String scheduledEndingTime();
+  String scheduleDateInclude();
 
-  String scheduledStartingDate();
+  String scheduleDateNonWork();
 
-  String scheduledStartingTime();
+  String scheduleDateWork();
 
   String selectAll();
 
   String selectAtLeastOneRow();
+
+  String send();
 
   String service();
 
@@ -539,8 +545,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String signOut();
 
   String sorry();
-
-  String startDate();
 
   String startRow();
 
@@ -555,6 +559,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String supplier();
 
   String tabControl();
+
+  String template();
 
   String time();
 
@@ -617,6 +623,14 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String width();
 
   String winter();
+
+  String workdayTransitionBackward();
+
+  String workdayTransitionForward();
+
+  String workdayTransitionNearest();
+
+  String workdayTransitionNone();
 
   String yes();
 }

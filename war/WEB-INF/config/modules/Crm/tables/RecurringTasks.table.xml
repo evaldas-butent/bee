@@ -15,22 +15,27 @@
     <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
 
-    <DateTime name="ScheduleAfter" notNull="true" label="=crmRTScheduleAfter" />
-    <DateTime name="ScheduleBefore" label="=crmRTScheduleBefore" />
+    <Date name="ScheduleFrom" notNull="true" label="=crmRTScheduleFrom" />
+    <Date name="ScheduleUntil" label="=crmRTScheduleUntil" />
+
+    <Numeric name="ScheduleDays" precision="3" label="=crmRTScheduleDays" />
+
+    <Enum name="WorkdayTransition" key="WorkdayTransition" notNull="true" defValue="1" 
+      label="=crmRTWorkdayTransition" />
 
     <String name="DayOfMonth" precision="100" label="=crmRTDayOfMonth" />
-    <String name="Month" precision="30" label="=crmRTMonth" />
-    <String name="DayOfWeek" precision="60" label="=crmRTDayOfWeek" />
-    <String name="Year" precision="60" label="=crmRTYear" />
+    <String name="Month" precision="100" label="=crmRTMonth" />
+    <String name="DayOfWeek" precision="100" label="=crmRTDayOfWeek" />
+    <String name="Year" precision="100" label="=crmRTYear" />
 
     <String name="StartAt" precision="10" label="=crmRTStartAt" />
-
     <Numeric name="DurationDays" precision="2" defValue="1" label="=crmRTDurationDays" />
-    <Numeric name="DurationHours" precision="2" label="=crmRTDurationHours" />
-    <Numeric name="DurationMinutes" precision="2" label="=crmRTDurationMinutes" />
+    <String name="DurationTime" precision="10" label="=crmRTDurationTime" />
 
     <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="=crmReminder" />
-    <Numeric name="RemindBefore" precision="2" defValue="1" label="=crmRTRemindBefore" />
+    <Numeric name="RemindBefore" precision="2" label="=crmRTRemindBefore" />
     <String name="RemindAt" precision="10" label="=crmRTRemindAt" />
+    
+    <Boolean name="CopyByMail" label="=crmMailTask" />
   </Fields>
 </Table>

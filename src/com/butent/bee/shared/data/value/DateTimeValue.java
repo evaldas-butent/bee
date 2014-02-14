@@ -14,13 +14,14 @@ import java.math.BigDecimal;
  * second, millisecond values.
  */
 public class DateTimeValue extends Value {
+
   private static final DateTimeValue NULL_VALUE = new DateTimeValue(null);
 
   public static DateTimeValue getNullValue() {
     return NULL_VALUE;
   }
 
-  private DateTime value;
+  private final DateTime value;
 
   public DateTimeValue(DateTime date) {
     this.value = date;

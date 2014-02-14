@@ -19,6 +19,8 @@
     <DataColumn name="BlockAfter" />
     <DataColumn name="BlockBefore" />
 
+    <DataColumn name="MailAssignedTasks" visible="false" />
+
     <DataColumn name="Properties" visible="false" />
   </g:columns>
 </g:Grid>

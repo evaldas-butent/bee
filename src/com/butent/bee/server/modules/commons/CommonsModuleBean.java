@@ -48,7 +48,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -140,7 +139,7 @@ public class CommonsModuleBean implements BeeModule {
 
     List<SearchResult> companiesSr =
         qs.getSearchResults(VIEW_COMPANIES,
-            Filter.anyContains(Sets.newHashSet(COL_NAME, COL_COMPANY_CODE, COL_PHONE,
+            Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
                 COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
 
     List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
@@ -151,7 +150,8 @@ public class CommonsModuleBean implements BeeModule {
         Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
 
     List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
-        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE), query));
+        Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
+            query));
 
     List<SearchResult> commonsSr = Lists.newArrayList();
     commonsSr.addAll(companiesSr);
@@ -212,7 +212,7 @@ public class CommonsModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(COMMONS_MODULE, "ProgramTitle", false, "B-NOVO"),
+        BeeParameter.createText(COMMONS_MODULE, "ProgramTitle", false, UserInterface.TITLE),
         BeeParameter.createRelation(COMMONS_MODULE, PRM_COMPANY_NAME, false,
             TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createNumber(COMMONS_MODULE, PRM_VAT_PERCENT, false, 21),
@@ -222,11 +222,6 @@ public class CommonsModuleBean implements BeeModule {
         BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
         BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
-        BeeParameter.createSet(COMMONS_MODULE, "PRMcollection", false, null),
-        BeeParameter.createDate(COMMONS_MODULE, "PRMdate", false, null),
-        BeeParameter.createDateTime(COMMONS_MODULE, "PRMdatetime", false, null),
-        BeeParameter.createNumber(COMMONS_MODULE, "PRMnumber", false, null),
-        BeeParameter.createTime(COMMONS_MODULE, "PRMtime", false, null),
         BeeParameter.createText(COMMONS_MODULE, PRM_URL, false, null));
 
     params.addAll(getSqlEngineParameters());
@@ -313,7 +308,7 @@ public class CommonsModuleBean implements BeeModule {
 
         List<Pair<String, IsCondition>> joins = NewsHelper.buildJoin(TBL_COMPANY_USERS,
             SqlUtils.join(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable, urc));
-        
+
         return NewsHelper.getAccessQuery(usageTable, urc, joins, getUserCompanyCondition(userId),
             userId);
       }
@@ -326,7 +321,7 @@ public class CommonsModuleBean implements BeeModule {
 
         List<Pair<String, IsCondition>> joins = NewsHelper.buildJoin(usageTable,
             sys.joinTables(TBL_COMPANY_USERS, usageTable, relationColumn));
-        
+
         return NewsHelper.getUpdatesQuery(TBL_COMPANY_USERS, COL_COMPANY_USER_COMPANY, usageTable,
             joins, getUserCompanyCondition(userId), userId, startDate);
       }
@@ -486,7 +481,7 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_COMPANIES, columns, row);
-    response = deb.commitRow(rowSet, false);
+    response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -669,7 +664,7 @@ public class CommonsModuleBean implements BeeModule {
     }
 
     BeeRowSet cpRowSet = DataUtils.createRowSetForInsert(VIEW_COMPANY_PERSONS, cpColumns, cpRow);
-    response = deb.commitRow(cpRowSet, false);
+    response = deb.commitRow(cpRowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -692,11 +687,11 @@ public class CommonsModuleBean implements BeeModule {
       return ResponseObject.error("Wrong company ID");
     }
     SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
         .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-        .addField(TBL_CITIES, COL_NAME, COL_CITY)
-        .addField(TBL_COUNTRIES, COL_NAME, COL_COUNTRY)
+        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
         .addFrom(TBL_COMPANIES)
         .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
@@ -709,7 +704,7 @@ public class CommonsModuleBean implements BeeModule {
         ? Localized.getConstants() : Localizations.getConstants(loc);
 
     Map<String, String> translations = Maps.newHashMap();
-    translations.put(COL_NAME, constants.company());
+    translations.put(COL_COMPANY_NAME, constants.company());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
     translations.put(COL_ADDRESS, constants.address());
@@ -809,8 +804,7 @@ public class CommonsModuleBean implements BeeModule {
     }
     BeeView view = sys.getView(viewName);
 
-    SqlSelect query = view.getQuery(ComparisonFilter.idIn(idList), null)
-        .resetFields().resetOrder();
+    SqlSelect query = view.getQuery(Filter.idIn(idList), null).resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();
     Map<String, Pair<String, String>> idMap = Maps.newHashMap();

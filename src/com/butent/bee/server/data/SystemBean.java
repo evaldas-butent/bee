@@ -290,6 +290,10 @@ public class SystemBean {
     return getTable(tblName).getFields();
   }
 
+  public Collection<String> getTableFieldNames(String tblName) {
+    return getTable(tblName).getFieldNames();
+  }
+
   public List<ExtendedProperty> getTableInfo(String tblName) {
     return getTable(tblName).getExtendedInfo();
   }

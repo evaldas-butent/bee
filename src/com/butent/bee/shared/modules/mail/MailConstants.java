@@ -121,6 +121,8 @@ public final class MailConstants {
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 
+  public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
+
   public static final String STYLE_SHEET = "mail";
 
   private MailConstants() {

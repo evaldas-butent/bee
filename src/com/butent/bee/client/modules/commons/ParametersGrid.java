@@ -421,6 +421,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
     });
   }
 
+  @SuppressWarnings("unused")
   private void reset(BeeParameter param) {
     ParameterList args = CommonsKeeper.createArgs(SVC_RESET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, param.getName());
@@ -442,18 +443,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
     } else {
       param.setValue(value);
     }
-    ParameterList args = CommonsKeeper.createArgs(SVC_SET_PARAMETER);
-    args.addDataItem(VAR_PARAMETER, param.getName());
-
-    if (!BeeUtils.isEmpty(value)) {
-      args.addDataItem(VAR_PARAMETER_VALUE, value);
-    }
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getGridView());
-      }
-    });
+    Global.setParameter(param.getName(), value);
     return true;
   }
 }

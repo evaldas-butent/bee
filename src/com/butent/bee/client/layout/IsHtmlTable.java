@@ -1,6 +1,8 @@
 package com.butent.bee.client.layout;
 
-public interface IsHtmlTable {
+import com.google.gwt.event.dom.client.HasClickHandlers;
+
+public interface IsHtmlTable extends HasClickHandlers {
   
   void setBorderSpacing(int spacing);
 

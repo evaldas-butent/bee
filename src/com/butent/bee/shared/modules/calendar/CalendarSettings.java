@@ -2,14 +2,18 @@ package com.butent.bee.shared.modules.calendar;
 
 import com.google.common.collect.Maps;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.MultidayLayout;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -24,25 +28,39 @@ public final class CalendarSettings {
     return settings;
   }
   
+  private static boolean getBool(IsRow row, List<? extends IsColumn> columns, String columnId) {
+    Boolean value = row.getBoolean(DataUtils.getColumnIndex(columnId, columns));
+    return (value == null) ? false : value;
+  }
+
+  private static int getInt(IsRow row, List<? extends IsColumn> columns, String columnId) {
+    Integer value = row.getInteger(DataUtils.getColumnIndex(columnId, columns));
+    return (value == null) ? BeeConst.UNDEF : value;
+  }
+
   private long id;
 
   private int pixelsPerInterval;
   private int intervalsPerHour;
-
   private int workingHourStart;
+
   private int workingHourEnd;
+
   private int scrollToHour;
-
-  private int defaultDisplayedDays;
-
-  private TimeBlockClick timeBlockClickNumber;
   
+  private int defaultDisplayedDays;
+  
+  private TimeBlockClick timeBlockClickNumber;
   private boolean separateAttendees;
   
-  private final EnumMap<ViewType, Boolean> views;
+  private MultidayLayout multidayLayout;
   
-  private ViewType activeView;
+  private MultidayLayout multidayTaskLayout;
 
+  private final EnumMap<ViewType, Boolean> views;
+
+  private ViewType activeView;
+  
   private CalendarSettings() {
     this.views = Maps.newEnumMap(ViewType.class);
     
@@ -54,7 +72,7 @@ public final class CalendarSettings {
   public ViewType getActiveView() {
     return activeView;
   }
-  
+
   public int getDefaultDisplayedDays() {
     return defaultDisplayedDays;
   }
@@ -71,10 +89,18 @@ public final class CalendarSettings {
     return intervalsPerHour;
   }
 
+  public MultidayLayout getMultidayLayout() {
+    return multidayLayout;
+  }
+
+  public MultidayLayout getMultidayTaskLayout() {
+    return multidayTaskLayout;
+  }
+  
   public int getPixelsPerInterval() {
     return pixelsPerInterval;
   }
-
+  
   public int getScrollToHour() {
     return scrollToHour;
   }
@@ -86,11 +112,11 @@ public final class CalendarSettings {
   public int getWorkingHourEnd() {
     return workingHourEnd;
   }
-  
+
   public int getWorkingHourStart() {
     return workingHourStart;
   }
-  
+
   public boolean isAnyVisible() {
     for (ViewType view : ViewType.values()) {
       if (isVisible(view)) {
@@ -115,31 +141,37 @@ public final class CalendarSettings {
   public void loadFrom(IsRow row, List<? extends IsColumn> columns) {
     setId(row.getId());
 
-    setPixelsPerInterval(getInt(row, columns, CalendarConstants.COL_PIXELS_PER_INTERVAL));
-    setIntervalsPerHour(getInt(row, columns, CalendarConstants.COL_INTERVALS_PER_HOUR));
+    setPixelsPerInterval(getInt(row, columns, COL_PIXELS_PER_INTERVAL));
+    setIntervalsPerHour(getInt(row, columns, COL_INTERVALS_PER_HOUR));
 
-    setWorkingHourStart(getInt(row, columns, CalendarConstants.COL_WORKING_HOUR_START));
-    setWorkingHourEnd(getInt(row, columns, CalendarConstants.COL_WORKING_HOUR_END));
-    setScrollToHour(getInt(row, columns, CalendarConstants.COL_SCROLL_TO_HOUR));
+    setWorkingHourStart(getInt(row, columns, COL_WORKING_HOUR_START));
+    setWorkingHourEnd(getInt(row, columns, COL_WORKING_HOUR_END));
+    setScrollToHour(getInt(row, columns, COL_SCROLL_TO_HOUR));
 
-    setDefaultDisplayedDays(getInt(row, columns, CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS));
+    setDefaultDisplayedDays(getInt(row, columns, COL_DEFAULT_DISPLAYED_DAYS));
 
-    int tbcn = getInt(row, columns, CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER);
-    setTimeBlockClickNumber(BeeUtils.getConstant(TimeBlockClick.class, tbcn));
+    Integer tbcn = row.getInteger(DataUtils.getColumnIndex(COL_TIME_BLOCK_CLICK_NUMBER, columns));
+    setTimeBlockClickNumber(EnumUtils.getEnumByIndex(TimeBlockClick.class, tbcn));
     
-    setSeparateAttendees(getBool(row, columns, CalendarConstants.COL_SEPARATE_ATTENDEES));
+    setSeparateAttendees(getBool(row, columns, COL_SEPARATE_ATTENDEES));
+
+    Integer mdl = row.getInteger(DataUtils.getColumnIndex(COL_MULTIDAY_LAYOUT, columns));
+    setMultidayLayout(EnumUtils.getEnumByIndex(MultidayLayout.class, mdl));
+
+    mdl = row.getInteger(DataUtils.getColumnIndex(COL_MULTIDAY_TASK_LAYOUT, columns));
+    setMultidayTaskLayout(EnumUtils.getEnumByIndex(MultidayLayout.class, mdl));
     
     for (ViewType view : ViewType.values()) {
       views.put(view, getBool(row, columns, view.getColumnId()));
     }
     
-    int av;
-    if (DataUtils.contains(columns, CalendarConstants.COL_ACTIVE_VIEW)) {
-      av = getInt(row, columns, CalendarConstants.COL_ACTIVE_VIEW);
+    Integer av;
+    if (DataUtils.contains(columns, COL_ACTIVE_VIEW)) {
+      av = row.getInteger(DataUtils.getColumnIndex(COL_ACTIVE_VIEW, columns));
     } else {
-      av = BeeConst.UNDEF;
+      av = null;
     }
-    setActiveView(BeeUtils.getConstant(ViewType.class, av));
+    setActiveView(EnumUtils.getEnumByIndex(ViewType.class, av));
   }
 
   public boolean separateAttendees() {
@@ -154,35 +186,33 @@ public final class CalendarSettings {
     this.defaultDisplayedDays = BeeUtils.clamp(defaultDisplayedDays, 2, 100);
   }
 
-  private static boolean getBool(IsRow row, List<? extends IsColumn> columns, String columnId) {
-    Boolean value = row.getBoolean(DataUtils.getColumnIndex(columnId, columns));
-    return (value == null) ? false : value;
-  }
-
-  private static int getInt(IsRow row, List<? extends IsColumn> columns, String columnId) {
-    Integer value = row.getInteger(DataUtils.getColumnIndex(columnId, columns));
-    return (value == null) ? BeeConst.UNDEF : value;
-  }
-
   private void setId(long id) {
     this.id = id;
   }
-
+  
   private void setIntervalsPerHour(int intervals) {
     int value = BeeUtils.clamp(intervals, 1, TimeUtils.MINUTES_PER_HOUR);
     while (TimeUtils.MINUTES_PER_HOUR % value != 0) {
       value--;
     }
 
-    intervalsPerHour = value;
+    this.intervalsPerHour = value;
+  }
+
+  private void setMultidayLayout(MultidayLayout multidayLayout) {
+    this.multidayLayout = multidayLayout;
+  }
+
+  private void setMultidayTaskLayout(MultidayLayout multidayTaskLayout) {
+    this.multidayTaskLayout = multidayTaskLayout;
   }
 
   private void setPixelsPerInterval(int px) {
-    pixelsPerInterval = BeeUtils.clamp(px, 1, 100);
+    this.pixelsPerInterval = BeeUtils.clamp(px, 1, 100);
   }
-  
+
   private void setScrollToHour(int hour) {
-    scrollToHour = hour;
+    this.scrollToHour = hour;
   }
 
   private void setSeparateAttendees(boolean separateAttendees) {
@@ -194,10 +224,10 @@ public final class CalendarSettings {
   }
 
   private void setWorkingHourEnd(int end) {
-    workingHourEnd = end;
+    this.workingHourEnd = end;
   }
 
   private void setWorkingHourStart(int start) {
-    workingHourStart = start;
+    this.workingHourStart = start;
   }
 }

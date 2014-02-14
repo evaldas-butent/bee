@@ -68,7 +68,7 @@
     </FlowPanel>
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=appointments" style="&top1;min-width:80px; padding-right:18px;" />
+      <Label text="=calAppointments" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
@@ -89,6 +89,30 @@
         choiceColumns="Name DocumentDate Number"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
-
+    
+    &separator;
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=announcement" style="&header;" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=adTopic" style="&lbl1; min-width:150px;" />
+      <DataSelector source="Topic" style="&inp2x; width: 250px" 
+        choiceColumns="Name" filter="Visible" />
+    </FlowPanel>
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">
+      <Label text="=displayInBoard" style="&lbl1; min-width:150px;" />
+      <Label text="=dateFromShort" style="text-transform: lowercase; margin-right:4px"/>
+      <InputDateTime source="VisibleFrom" style="&inp2x; width: 100px; margin-right:8px"/>
+      <Label text="=dateToShort" style="text-transform: lowercase; margin-right:4px"/>
+      <InputDateTime source="VisibleTo" style="&inp2x; width: 100px" />
+    </FlowPanel>  
+    
+    <FlowPanel style="&section;" class="flexBox-horizontal">      
+      <CheckBox name="Important" source="Important" text="=important" style="&top1; min-width:70px; padding-right:18px;" />
+      <CheckBox name="PermitComment" source="PermitComment" text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" /> 
+    </FlowPanel>
+    
   </FlowPanel>
 </f:Form>  

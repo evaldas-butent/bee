@@ -40,7 +40,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -162,12 +162,12 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     ucIndex = rowSet.getColumnIndex(COL_USER_CALENDAR);
     attIndex = rowSet.getColumnIndex(COL_ATTENDEE);
 
-    nameIndex = rowSet.getColumnIndex(COL_ATTENDEE_NAME);
+    nameIndex = rowSet.getColumnIndex(ALS_ATTENDEE_NAME);
     ordinalIndex = rowSet.getColumnIndex(COL_ORDINAL);
     captionIndex = rowSet.getColumnIndex(COL_CAPTION);
     enabledIndex = rowSet.getColumnIndex(COL_ENABLED);
 
-    attBgIndex = rowSet.getColumnIndex(COL_ATTENDEE_BACKGROUND);
+    attBgIndex = rowSet.getColumnIndex(ALS_ATTENDEE_BACKGROUND);
     bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
 
     initialized = true;
@@ -424,7 +424,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private static DataSelector createSelector() {
     Relation relation = Relation.create(VIEW_ATTENDEES,
-        Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
+        Lists.newArrayList(COL_ATTENDEE_NAME, ALS_ATTENDEE_TYPE_NAME));
     relation.disableEdit();
 
     DataSelector dataSelector = new DataSelector(relation, true);
@@ -643,8 +643,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   private static void updateCell(long rowId, String columnId, Value value) {
-    Queries.update(VIEW_USER_CAL_ATTENDEES, ComparisonFilter.compareId(rowId), columnId, value,
-        null);
+    Queries.update(VIEW_USER_CAL_ATTENDEES, Filter.compareId(rowId), columnId, value, null);
   }
 
   private void updateColor(Long rowId, String value) {

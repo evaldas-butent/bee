@@ -54,7 +54,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
   }
 
   private void onBlock() {
-    String host = getDataValue(COL_REGISTRATION_HOST);
+    String host = getStringValue(COL_REGISTRATION_HOST);
     if (BeeUtils.isEmpty(host)) {
       return;
     }
@@ -72,7 +72,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
   }
 
   private void onCreateUser() {
-    String email = BeeUtils.trim(getDataValue(COL_REGISTRATION_EMAIL));
+    String email = BeeUtils.trim(getStringValue(COL_REGISTRATION_EMAIL));
     if (BeeUtils.isEmpty(email)) {
       return;
     }
@@ -88,7 +88,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     putUserField(parameters, COL_REGISTRATION_EXCHANGE_CODE,
         CommonsConstants.COL_COMPANY_EXCHANGE_CODE);
 
-    String contact = BeeUtils.trim(getDataValue(COL_REGISTRATION_CONTACT));
+    String contact = BeeUtils.trim(getStringValue(COL_REGISTRATION_CONTACT));
     if (!BeeUtils.isEmpty(contact)) {
       int p = contact.lastIndexOf(BeeConst.CHAR_SPACE);
       if (p > 0) {
@@ -122,7 +122,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
   }
 
   private void putUserField(Map<String, String> parameters, String source, String destination) {
-    String value = getDataValue(source);
+    String value = getStringValue(source);
     if (!BeeUtils.isEmpty(value)) {
       parameters.put(destination, value.trim());
     }
@@ -156,7 +156,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
         header.addCommandItem(this.registerCommand);
       }
 
-      if (!BeeUtils.isEmpty(getDataValue(COL_REGISTRATION_HOST)) 
+      if (!BeeUtils.isEmpty(getStringValue(COL_REGISTRATION_HOST)) 
           && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =

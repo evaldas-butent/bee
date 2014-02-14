@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="AppointmentReminders" viewName="AppointmentReminders" newRowCaption="=calNewReminder"
+  name="AppointmentReminders" viewName="AppointmentReminders"
+  newRowCaption="=calNewReminder" autoFit="true"
   >
   <g:columns>
-    <RelColumn name="Recipient" caption="=recipient">
+    <RelColumn name="Recipient" visible="false">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
       <renderToken source="CompanyName" prefix=", " />
     </RelColumn>
-    <DataColumn name="Mobile" />
-    <DataColumn name="Email" renderColumns="Label Email">
+
+    <DataColumn name="Mobile" visible="false" />
+    <DataColumn name="Email" renderColumns="Label Email" visible="false">
       <renderer type="mail" />
     </DataColumn>
 
-    <RelColumn name="TypeName" caption="=type" newRowEnabled="false" />
-    <DataColumn name="Method" caption="=reminderMethod" />
+    <RelColumn name="TypeName" label="=type" newRowEnabled="false" visible="true" />
+    <DataColumn name="Method" visible="false" />
 
-    <DataColumn name="Hours" caption="=calHoursTo" />
-    <DataColumn name="Minutes" caption="=calMinutesTo" />
-    <DataColumn name="Scheduled" caption="=calSendTo" />
+    <DataColumn name="Hours" />
+    <DataColumn name="Minutes" />
+    <DataColumn name="Scheduled" />
 
-    <DataColumn name="Message" caption="=calMessage" />
-    <DataColumn name="Sent" caption="=calSent" readOnly="true" />
-    <DataColumn name="Error" caption="=errorMessage" readOnly="true" />
+    <DataColumn name="Message" maxWidth="200" />
+    <DataColumn name="Sent" readOnly="true" />
+    <DataColumn name="Error" readOnly="true" visible="false" />
   </g:columns>
 </g:Grid>

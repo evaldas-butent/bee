@@ -1,6 +1,9 @@
 package com.butent.bee.client.layout;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -41,6 +44,11 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     table.setClassName("bee-CellVector");
   }
 
+  @Override
+  public HandlerRegistration addClickHandler(ClickHandler handler) {
+    return addDomHandler(handler, ClickEvent.getType());
+  }
+  
   public void addStyleToCell(Widget w, String styleName) {
     Element td = getWidgetTd(w);
     if (td != null) {

@@ -5,6 +5,6 @@
   idName="DataID"
   >
   <Fields>
-    <Text name="Content" label="=content" />
+    <Text name="Content" label="=content" audit="false" />
   </Fields>
 </Table>

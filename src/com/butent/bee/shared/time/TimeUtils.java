@@ -68,7 +68,7 @@ public final class TimeUtils {
   public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
   public static final RangeOptions CLOSED_NOT_REQUIRED = new RangeOptions(false, false, false);
 
-  public static final String PERIOD_SEPARATOR = "--";
+  public static final String PERIOD_SEPARATOR = "..";
   
   private static final String[] FIELD_NAME = {
       "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
@@ -372,15 +372,19 @@ public final class TimeUtils {
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
+ 
     if (dt == null) {
-      return true;
+      return !options.isLowerRequired() && min == null;
+    
     } else if (min == null && max == null) {
       return !options.isLowerRequired() && !options.isUpperRequired();
 
     } else if (dt instanceof DateTime || min instanceof DateTime || max instanceof DateTime) {
       return options.contains(DateTime.get(min), DateTime.get(max), DateTime.get(dt));
+
     } else if (dt instanceof JustDate || min instanceof JustDate || max instanceof JustDate) {
       return options.contains(JustDate.get(min), JustDate.get(max), JustDate.get(dt));
+    
     } else {
       return false;
     }
@@ -416,6 +420,10 @@ public final class TimeUtils {
     return x instanceof HasDateValue || x instanceof Date;
   }
 
+  public static boolean isDow(int dow) {
+    return dow >= 1 && dow <= DAYS_PER_WEEK;
+  }
+  
   public static boolean isLeq(HasYearMonth d1, HasYearMonth d2) {
     return compare(d1, d2) <= 0;
   }
@@ -489,6 +497,18 @@ public final class TimeUtils {
     return today().getMonth();
   }
 
+  public static int monthDiff(HasYearMonth start, HasYearMonth end) {
+    Assert.notNull(start);
+    Assert.notNull(end);
+
+    return end.getYear() * 12 + end.getMonth() - start.getYear() * 12 - start.getMonth();
+  }
+  
+  public static int monthLength(HasYearMonth ym) {
+    Assert.notNull(ym);
+    return Grego.monthLength(ym.getYear(), ym.getMonth());
+  }
+  
   public static String monthToString(int month) {
     return padTwo(month);
   }
@@ -932,7 +952,11 @@ public final class TimeUtils {
   }
 
   public static JustDate startOfYear() {
-    return startOfYear(today());
+    return startOfYear(year());
+  }
+
+  public static JustDate startOfYear(int year) {
+    return new JustDate(year, 1, 1);
   }
   
   public static JustDate startOfYear(HasYearMonth ref) {

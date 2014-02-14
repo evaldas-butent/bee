@@ -41,15 +41,15 @@
         </page>
       </TabbedPages> 
       <FlowPanel style="margin-left:10px;">
-      	<Table>
-      	  <row>
-      	  	<Label text="=trLoadedKilometers" horizontalAlignment="right" />
-      	  	<InputInteger source="LoadedKilometers" style="width:70px" />
-      	  </row>
-      	  <row>
+        <Table>
+          <row>
+            <Label text="=trLoadedKilometers" horizontalAlignment="right" />
+            <InputInteger source="LoadedKilometers" style="width:70px" />
+          </row>
+          <row>
             <Label text="=trEmptyKilometers"  horizontalAlignment="right" />
             <InputInteger source="EmptyKilometers" style="width:70px" />
-      	  </row>
+          </row>
           <row>
             <Label text="=cargoChangeOfPallets" horizontalAlignment="right" />
             <InputInteger source="ExchangeOfPalettes" style="width:30px" />
@@ -60,7 +60,7 @@
           </row>
           <row><text>&amp;nbsp;</text></row>
           <row>
-            <CheckBox source="Outsized" text="=outsized" />
+            <CheckBox name="Outsized" source="Outsized" text="=outsized" />
           </row>
           <row>
             <CheckBox source="Dangerous" text="=dangerous" />
@@ -95,7 +95,7 @@
               </row>
             </Table>
           </row>
-      	</Table>
+        </Table>
       </FlowPanel>
     </FlowPanel>
     &separator;

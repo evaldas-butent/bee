@@ -7,11 +7,11 @@
   >
   <g:columns>
     <RelColumn name="GroupName" caption="=calParameterGroup" minWidth="100" visible="true" />
-    <DataColumn name="Name" caption="=calName" minWidth="100" visible="true" />
+    <DataColumn name="Name" minWidth="100" visible="true" />
 
-    <DataColumn name="Hours" caption="=unitHours" flexGrow="0" />
-    <DataColumn name="Minutes" caption="=unitMinutes" flexGrow="0" />
+    <DataColumn name="Hours" flexGrow="0" />
+    <DataColumn name="Minutes" flexGrow="0" />
 
-    <DataColumn name="Description" caption="=calDescription" flexGrow="2" flexShrink="2" />
+    <DataColumn name="Description" flexGrow="2" flexShrink="2" />
   </g:columns>
 </g:Grid>

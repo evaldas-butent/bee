@@ -11,9 +11,10 @@
       <IdColumn name="ID" />
       <SimpleColumn name="Criterion" />
       <SimpleColumn name="Value" />
+      <SimpleColumn name="Ordinal" />
     </ExternalJoin>
   </Columns>
   <Order>
-    <OrderBy column="Criterion" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>

@@ -242,8 +242,8 @@ public class TradeModuleBean implements BeeModule {
       return ResponseObject.error("View source not supported:", trade);
     }
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_ITEMS, COL_NAME)
-        .addField(TBL_UNITS, COL_NAME, COL_UNIT)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME)
+        .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
         .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
             COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
             COL_TRADE_ITEM_NOTE)

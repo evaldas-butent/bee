@@ -11,6 +11,7 @@ import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -23,7 +24,7 @@ public abstract class CalendarView {
     DAY, MONTH, RESOURCE
   }
   
-  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
+  private final List<ItemWidget> itemWidgets = Lists.newArrayList();
   
   private CalendarWidget calendarWidget;
 
@@ -43,8 +44,8 @@ public abstract class CalendarView {
 
   public abstract void doSizing();
   
-  public List<AppointmentWidget> getAppointmentWidgets() {
-    return appointmentWidgets;
+  public List<ItemWidget> getItemWidgets() {
+    return itemWidgets;
   }
   
   public CalendarWidget getCalendarWidget() {
@@ -67,9 +68,9 @@ public abstract class CalendarView {
   
   public abstract void onClock();
 
-  public void openAppointment(Appointment appointment) {
+  public void openItem(CalendarItem item) {
     if (getCalendarWidget() != null) {
-      OpenEvent.fire(getCalendarWidget(), appointment);
+      OpenEvent.fire(getCalendarWidget(), item);
     }
   }
 
@@ -83,8 +84,8 @@ public abstract class CalendarView {
     }
   }
 
-  protected List<Appointment> getAppointments() {
-    return getCalendarWidget().getAppointments();
+  protected List<CalendarItem> getItems() {
+    return getCalendarWidget().getItems();
   }
   
   protected JustDate getDate() {

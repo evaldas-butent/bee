@@ -99,6 +99,11 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
       return inputElem.isDefaultChecked();
     }
   }
+  
+  @Override
+  public boolean isChecked() {
+    return getValue();
+  }
 
   @Override
   public boolean isEnabled() {
@@ -110,6 +115,11 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
     inputElem.setAccessKey(String.valueOf(key));
   }
 
+  @Override
+  public void setChecked(boolean checked) {
+    setValue(checked);
+  }
+  
   @Override
   public void setEnabled(boolean enabled) {
     inputElem.setDisabled(!enabled);

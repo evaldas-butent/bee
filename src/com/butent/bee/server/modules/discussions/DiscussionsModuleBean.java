@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.discussions;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -10,11 +11,11 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -37,14 +38,15 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
@@ -55,6 +57,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +68,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
@@ -99,8 +101,6 @@ public class DiscussionsModuleBean implements BeeModule {
   @Resource
   TimerService timerService;
 
-  private Timer discussTimer;
-
   @Override
   public Collection<String> dependsOn() {
     return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
@@ -125,6 +125,10 @@ public class DiscussionsModuleBean implements BeeModule {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_DISCUSSION_DATA)) {
       response = getDiscussionData(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_ANNOUNCEMENTS_DATA)) {
+      response = getAnnouncements();
+    } else if (BeeUtils.same(svc, SVC_GET_BIRTHDAYS)) {
+      response = getBirthdays();
     } else {
       String message = BeeUtils.joinWords("Discussion service not recognized:", svc);
       logger.warning(message);
@@ -142,7 +146,9 @@ public class DiscussionsModuleBean implements BeeModule {
         BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false,
             null),
         BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
-        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, false, null)
+        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, false, null),
+        BeeParameter.createRelation(DISCUSSIONS_MODULE, PRM_DISCUSS_BIRTHDAYS, false,
+            TBL_ADS_TOPICS, COL_NAME)
         );
 
     return params;
@@ -265,12 +271,12 @@ public class DiscussionsModuleBean implements BeeModule {
               String lastCommentVal = lastCommentData.get(row.getId());
 
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
-              
+
               String filesCountVal = "";
               if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_FILES_COUNT))) {
                 filesCountVal = row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT));
               }
-              
+
               row.setProperty(PROP_FILES_COUNT, filesCountVal);
 
               String relValue = "";
@@ -285,7 +291,7 @@ public class DiscussionsModuleBean implements BeeModule {
               }
 
               row.setProperty(PROP_RELATIONS_COUNT, relValue);
-              
+
               if (BeeUtils.isEmpty(row.getProperty(PROP_USER))) {
                 row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
                 createDiscussionUser(row.getId(), usr.getCurrentUserId(), null, false);
@@ -351,8 +357,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     BeeRowSet comments =
-        qs.getViewData(VIEW_DISCUSSIONS_COMMENTS, ComparisonFilter.isEqual(COL_DISCUSSION,
-            new LongValue(discussionId)));
+        qs.getViewData(VIEW_DISCUSSIONS_COMMENTS, Filter.equals(COL_DISCUSSION, discussionId));
     if (!DataUtils.isEmpty(comments)) {
       row.setProperty(PROP_COMMENTS, comments.serialize());
     }
@@ -409,9 +414,9 @@ public class DiscussionsModuleBean implements BeeModule {
       boolean isMember) {
 
     SqlUpdate update = new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(COL_MEMBER, isMember)
-            .setWhere(
-                SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER,
-                    userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId)));
+        .setWhere(
+            SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER,
+                userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId)));
 
     if (time != null) {
       update.addConstant(COL_LAST_ACCESS, time);
@@ -494,7 +499,7 @@ public class DiscussionsModuleBean implements BeeModule {
       BeeRowSet updated = new BeeRowSet(data.getViewName(), columns);
       updated.addRow(updRow);
 
-      response = deb.commitRow(updated, true);
+      response = deb.commitRow(updated);
       if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
         addDiscussionProperties((BeeRow) response.getResponse(), data.getColumns(), newUsers, null,
             commentId);
@@ -581,7 +586,7 @@ public class DiscussionsModuleBean implements BeeModule {
         newRow.setValue(discussData.getColumnIndex(COL_STATUS), status.ordinal());
         discussData.clearRows();
         discussData.addRow(newRow);
-        response = deb.commitRow(discussData, false);
+        response = deb.commitRow(discussData);
 
         if (response.hasErrors()) {
           break;
@@ -749,8 +754,162 @@ public class DiscussionsModuleBean implements BeeModule {
     return getDiscussionData(discussionId, null);
   }
 
+  private ResponseObject getAnnouncements() {
+    Long birthTopic = prm.getRelation(PRM_DISCUSS_BIRTHDAYS);
+    DateTime nowStart = new DateTime();
+    nowStart.setHour(0);
+    nowStart.setMinute(0);
+    nowStart.setSecond(0);
+    nowStart.setMillis(0);
+
+    DateTime nowFinish = new DateTime();
+    nowFinish.setHour(23);
+    nowFinish.setMinute(59);
+    nowFinish.setSecond(59);
+    nowFinish.setMillis(999);
+
+
+    SqlSelect select = new SqlSelect()
+        .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
+        .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
+        .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
+        .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
+        .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
+        .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_FIRST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.COL_LAST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_PHOTO,
+            CommonsConstants.COL_PHOTO)
+        .addFrom(TBL_ADS_TOPICS)
+        .addFromLeft(TBL_DISCUSSIONS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
+        .addFromLeft(CommonsConstants.TBL_USERS,
+            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
+        .addFromLeft(
+            CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                CommonsConstants.COL_COMPANY_PERSON))
+        .addFromLeft(
+            CommonsConstants.TBL_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
+                CommonsConstants.COL_PERSON))
+        .setWhere(SqlUtils.and(
+            SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
+            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
+                    SqlUtils.or(
+                        SqlUtils.and(
+                            SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                                .currentTimeMillis()),
+                            SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                                .currentTimeMillis())
+                            ),
+                        SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                            )
+                        )))
+        .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
+        .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED);
+
+    if (DataUtils.isId(birthTopic)) {
+      select.addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS),
+          birthTopic), true, null), ALS_BIRTHDAY);
+      select.addExpr(SqlUtils.sqlIf(SqlUtils.or(
+                        SqlUtils.and(
+                            SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                                .currentTimeMillis()),
+                            SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                                .currentTimeMillis())
+                            ),
+                        SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                            )
+          ), true, null), ALS_BIRTHDAY_VALID);
+
+      select.setWhere(SqlUtils.or(
+          select.getWhere(),
+          SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS), birthTopic)
+          ));
+    }
+
+    SimpleRowSet rs = qs.getData(select);
+
+    if (!rs.isEmpty()) {
+      ResponseObject resp = ResponseObject.response(rs);
+      return resp;
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject getBirthdays() {
+    JustDate now = new JustDate(System.currentTimeMillis());
+
+    List<Integer> availableDays = new ArrayList<>();
+
+    now.setDom(now.getDom() - ((DEFAULT_BIRTHDAYS_DAYS_RANGE / 2) + 1));
+
+    for (int i = 0; i < DEFAULT_BIRTHDAYS_DAYS_RANGE + 1; i++) {
+      now.increment();
+      availableDays.add(now.getDoy());
+    }
+
+    List<Long> activeUsers = new ArrayList<>();
+
+    for (UserData userData : usr.getAllUserData()) {
+      if (!usr.isBlocked(userData.getLogin())) {
+        activeUsers.add(userData.getPerson());
+      }
+    }
+
+    SqlSelect select = new SqlSelect()
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_FIRST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
+            CommonsConstants.COL_LAST_NAME)
+        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH,
+            CommonsConstants.COL_DATE_OF_BIRTH)
+        .addFrom(CommonsConstants.TBL_PERSONS)
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(CommonsConstants.TBL_PERSONS, sys
+                .getIdName(CommonsConstants.TBL_PERSONS), activeUsers),
+            SqlUtils.notNull(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH)))
+        .addOrder(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH);
+
+    SimpleRowSet up = qs.getData(select);
+    SimpleRowSet birthdays =
+        new SimpleRowSet(new String[] {COL_NAME, CommonsConstants.COL_DATE_OF_BIRTH});
+
+    for (String[] upRow : up.getRows()) {
+      if (!BeeUtils.isLong(upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)])) {
+        continue;
+      }
+
+      JustDate date =
+          new JustDate(BeeUtils
+              .toLong(upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)]));
+
+      if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
+        birthdays.addRow(new String[] {
+            BeeUtils.joinWords(upRow[up.getColumnIndex(CommonsConstants.COL_FIRST_NAME)],
+                upRow[up.getColumnIndex(CommonsConstants.COL_LAST_NAME)]),
+            upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)]
+        });
+      }
+
+    }
+
+    if (!birthdays.isEmpty()) {
+      return ResponseObject.response(birthdays);
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
   private ResponseObject getDiscussionData(long discussionId, Long commentId) {
-    BeeRowSet rowSet = qs.getViewData(VIEW_DISCUSSIONS, ComparisonFilter.compareId(discussionId));
+    BeeRowSet rowSet = qs.getViewData(VIEW_DISCUSSIONS, Filter.compareId(discussionId));
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.emptyResponse();
     }
@@ -767,8 +926,7 @@ public class DiscussionsModuleBean implements BeeModule {
     List<StoredFile> result = Lists.newArrayList();
 
     BeeRowSet rowSet =
-        qs.getViewData(VIEW_DISCUSSIONS_FILES, ComparisonFilter.isEqual(COL_DISCUSSION,
-            new LongValue(discussionId)));
+        qs.getViewData(VIEW_DISCUSSIONS_FILES, Filter.equals(COL_DISCUSSION, discussionId));
 
     if (rowSet == null || rowSet.isEmpty()) {
       return result;
@@ -1000,29 +1158,26 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private void initTimer() {
+    Timer discussTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+        discussTimer = timer;
+        break;
+      }
+    }
+    if (discussTimer != null) {
+      discussTimer.cancel();
+    }
     Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
-    boolean timerExists = discussTimer != null;
-
-    if (timerExists) {
-      try {
-        discussTimer.cancel();
-      } catch (NoSuchObjectLocalException er) {
-        logger.error(er);
-      }
-
-      discussTimer = null;
-    }
-
     if (BeeUtils.isPositive(days)) {
-      discussTimer =
-          timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
-              DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(null, false));
+      discussTimer = timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
+          DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false));
 
-      logger.info("Created DISCUSSION refresh timer starting at",
-          discussTimer.getNextTimeout());
+      logger.info("Created DISCUSSION refresh timer starting at", discussTimer.getNextTimeout());
     } else {
-      if (timerExists) {
+      if (discussTimer != null) {
         logger.info("Removed DISCUSSION timer");
       }
     }

@@ -34,7 +34,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -167,12 +167,12 @@ public class DataEditorBean {
     return count;
   }
 
-  public ResponseObject commitRow(BeeRowSet rs, boolean returnAllFields) {
-    Assert.notNull(rs);
-    if (rs.getNumberOfRows() != 1) {
-      return ResponseObject.error("Can commit only one row at a time");
-    }
-    return commitRow(rs, 0, returnAllFields ? BeeRow.class : RowInfo.class);
+  public ResponseObject commitRow(BeeRowSet rs) {
+    return commitRow(rs, BeeRow.class);
+  }
+
+  public ResponseObject commitRow(BeeRowSet rs, Class<?> returnType) {
+    return commitRow(rs, 0, returnType);
   }
 
   public ResponseObject commitRow(BeeRowSet rs, int rowIndex, Class<?> returnType) {
@@ -267,9 +267,9 @@ public class DataEditorBean {
 
       if (!response.hasErrors()) {
         if (RowInfo.class.equals(returnType)) {
-          response.setResponse(new BeeRow(id, tblInfo.version));
+          response.setResponse(new RowInfo(id, tblInfo.version, false));
         } else {
-          BeeRowSet newRs = qs.getViewData(view.getName(), ComparisonFilter.compareId(id));
+          BeeRowSet newRs = qs.getViewData(view.getName(), Filter.compareId(id));
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
@@ -920,7 +920,7 @@ public class DataEditorBean {
       }
     }
     Assert.state(DataUtils.isId(id));
-    SimpleRow res = qs.getRow(ss.setWhere(view.getCondition(ComparisonFilter.compareId(id), null)));
+    SimpleRow res = qs.getRow(ss.setWhere(view.getCondition(Filter.compareId(id), null)));
 
     if (res == null) {
       logger.warning("refreshUpdates:", ss.getQuery(), "getRow is null");

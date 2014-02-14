@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="RTDates" viewName="RTDates"
+  >
+  <g:columns>
+    <DataColumn name="DateFrom" width="100" visible="true" />
+    <DataColumn name="DateUntil" width="100" visible="true" />
+
+    <DataColumn name="Mode" minWidth="100" visible="true" autoFit="true" />
+  </g:columns>
+</g:Grid>

@@ -40,7 +40,6 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -77,7 +76,7 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
     final Set<Long> ids = Sets.newHashSet();
 
     for (RowInfo row : presenter.getGridView().getSelectedRows(SelectedRows.ALL)) {
-      flt.add(ComparisonFilter.compareId(row.getId()));
+      flt.add(Filter.compareId(row.getId()));
       ids.add(row.getId());
     }
     if (flt.isEmpty()) {

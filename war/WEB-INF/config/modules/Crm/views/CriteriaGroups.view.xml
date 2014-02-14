@@ -7,8 +7,9 @@
   <Columns>
     <SimpleColumn name="Data" />
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Ordinal" />
   </Columns>
   <Order>
-    <OrderBy column="Name" />
+    <OrderBy column="Ordinal" />
   </Order>
 </View>

@@ -65,6 +65,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="ReminderTime" />
+    <SimpleColumn name="ReminderSent" />
   </Columns>
   
   <Order>

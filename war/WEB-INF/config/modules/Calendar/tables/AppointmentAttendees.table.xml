@@ -10,10 +10,6 @@
     <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" 
       label="=calAttendee" />
 
-    <Boolean name="Optional" />
-    <Enum name="ResponseStatus" key="ResponseStatus" />
-    <Integer name="AdditionalGuests" />
-
     <Text name="Comment" label="=calComment" />
   </Fields>
   

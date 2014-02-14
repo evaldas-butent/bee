@@ -25,8 +25,4 @@ public interface LocalizableTradeConstants {
   String trdQuantity();
 
   String trdTotal();
-
-  String trdVat();
-
-  String vatSum();
 }

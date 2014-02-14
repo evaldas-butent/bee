@@ -15,6 +15,8 @@
     
     <DateTime name="BlockAfter" label="=blockAfter" />
     <DateTime name="BlockBefore" label="=blockBefore" />
+
+    <Boolean name="MailAssignedTasks" label="=crmMailAssignedTasks" />
       
     <Text name="Properties" label="=userProperties" />
   </Fields>

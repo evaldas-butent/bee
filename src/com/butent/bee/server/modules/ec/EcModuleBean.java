@@ -30,9 +30,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.mail.MailModuleBean;
-import com.butent.bee.server.news.ExtendedUsageQueryProvider;
+// import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
-import com.butent.bee.server.news.NewsHelper;
+// import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -60,11 +60,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateTimeValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.Tags;
@@ -105,7 +103,7 @@ import com.butent.bee.shared.modules.ec.EcOrderEvent;
 import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.news.Feed;
+// import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -575,32 +573,32 @@ public class EcModuleBean implements BeeModule {
         }
       }
     });
-    
-    news.registerUsageQueryProvider(Feed.EC_CLIENTS_MY, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
-      }
 
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoins(TBL_CLIENTS, news.joinUsage(TBL_CLIENTS),
-            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_CLIENTS, COL_CLIENT_MANAGER));
-      }
-    });
-
-    news.registerUsageQueryProvider(Feed.EC_ORDERS_MY, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
-      }
-      
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoins(TBL_ORDERS, news.joinUsage(TBL_ORDERS),
-            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_ORDERS, COL_ORDER_MANAGER));
-      }
-    });
+//    news.registerUsageQueryProvider(Feed.EC_CLIENTS_MY, new ExtendedUsageQueryProvider() {
+//      @Override
+//      protected List<IsCondition> getConditions(long userId) {
+//        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
+//      }
+//
+//      @Override
+//      protected List<Pair<String, IsCondition>> getJoins() {
+//        return NewsHelper.buildJoins(TBL_CLIENTS, news.joinUsage(TBL_CLIENTS),
+//            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_CLIENTS, COL_CLIENT_MANAGER));
+//      }
+//    });
+//
+//    news.registerUsageQueryProvider(Feed.EC_ORDERS_MY, new ExtendedUsageQueryProvider() {
+//      @Override
+//      protected List<IsCondition> getConditions(long userId) {
+//        return NewsHelper.buildConditions(SqlUtils.equals(TBL_MANAGERS, COL_MANAGER_USER, userId));
+//      }
+//
+//      @Override
+//      protected List<Pair<String, IsCondition>> getJoins() {
+//        return NewsHelper.buildJoins(TBL_ORDERS, news.joinUsage(TBL_ORDERS),
+//            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_ORDERS, COL_ORDER_MANAGER));
+//      }
+//    });
   }
 
   private ResponseObject addToUnsuppliedItems(Long orderId) {
@@ -737,7 +735,7 @@ public class EcModuleBean implements BeeModule {
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_CLIENTS, columns, row);
 
-    ResponseObject response = deb.commitRow(rowSet, true);
+    ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
@@ -752,7 +750,7 @@ public class EcModuleBean implements BeeModule {
       Long recipient = DataUtils.getLong(columns, row, ALS_EMAIL_ID);
       if (!DataUtils.isId(recipient)) {
         Long userId = DataUtils.getLong(columns, row, COL_CLIENT_USER);
-        recipient = usr.getEmailId(userId);
+        recipient = usr.getEmailId(userId, true);
       }
 
       String login = DataUtils.getString(columns, row, COL_LOGIN);
@@ -939,9 +937,9 @@ public class EcModuleBean implements BeeModule {
 
     Filter filter = Filter.and(
         Filter.or(Filter.isNull(COL_BANNER_SHOW_AFTER),
-            ComparisonFilter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
+            Filter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
         Filter.or(Filter.isNull(COL_BANNER_SHOW_BEFORE),
-            ComparisonFilter.isMore(COL_BANNER_SHOW_BEFORE, now)));
+            Filter.isMore(COL_BANNER_SHOW_BEFORE, now)));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_BANNERS, filter);
     boolean changed;
@@ -1208,7 +1206,7 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getClientInfo() {
     BeeRowSet rowSet = qs.getViewData(VIEW_CLIENTS,
-        ComparisonFilter.isEqual(COL_CLIENT_USER, new LongValue(usr.getCurrentUserId())));
+        Filter.equals(COL_CLIENT_USER, usr.getCurrentUserId()));
 
     if (DataUtils.isEmpty(rowSet)) {
       String msg = BeeUtils.joinWords("client not available for user", usr.getCurrentUser());
@@ -1235,6 +1233,9 @@ public class EcModuleBean implements BeeModule {
     SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_CLIENT_PRIMARY_BRANCH,
         COL_CLIENT_SECONDARY_BRANCH);
     if (clientInfo == null) {
+      result.add(BeeConst.STRING_EMPTY);
+      result.add(BeeConst.STRING_EMPTY);
+
       return ResponseObject.response(result);
     }
 
@@ -1505,7 +1506,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
-        ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
+        Filter.equals(COL_ORDER_CLIENT, client),
         new Order(COL_ORDER_DATE, false));
 
     if (!DataUtils.isEmpty(orderData)) {
@@ -1576,7 +1577,7 @@ public class EcModuleBean implements BeeModule {
         }
 
         BeeRowSet eventData = qs.getViewData(VIEW_ORDER_EVENTS,
-            ComparisonFilter.isEqual(COL_ORDER_EVENT_ORDER, new LongValue(orderRow.getId())),
+            Filter.equals(COL_ORDER_EVENT_ORDER, orderRow.getId()),
             new Order(COL_ORDER_EVENT_DATE, true));
 
         if (!DataUtils.isEmpty(eventData)) {
@@ -1600,7 +1601,7 @@ public class EcModuleBean implements BeeModule {
     int size = finInfo.getOrders().size() + finInfo.getInvoices().size();
 
     BeeRowSet unsuppliedItems = qs.getViewData(VIEW_UNSUPPLIED_ITEMS,
-        ComparisonFilter.isEqual(COL_UNSUPPLIED_ITEM_CLIENT, new LongValue(client)));
+        Filter.equals(COL_UNSUPPLIED_ITEM_CLIENT, client));
     if (!DataUtils.isEmpty(unsuppliedItems)) {
       finInfo.setUnsuppliedItems(unsuppliedItems);
       size += unsuppliedItems.getNumberOfRows();
@@ -1667,8 +1668,7 @@ public class EcModuleBean implements BeeModule {
       }
     }
 
-    BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
-        ComparisonFilter.isEqual(COL_GROUP, new LongValue(groupId)));
+    BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA, Filter.equals(COL_GROUP, groupId));
 
     if (!DataUtils.isEmpty(criteria)) {
       int idIndex = criteria.getColumnIndex(COL_GROUP_CRITERIA);
@@ -1867,8 +1867,7 @@ public class EcModuleBean implements BeeModule {
           group.setBrandSelection(true);
         }
 
-        BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
-            ComparisonFilter.isEqual(COL_GROUP, new LongValue(id)));
+        BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA, Filter.equals(COL_GROUP, id));
         if (!DataUtils.isEmpty(criteria)) {
           int colIndex = criteria.getColumnIndex(COL_GROUP_CRITERIA);
           for (int i = 0; i < criteria.getNumberOfRows(); i++) {
@@ -2306,7 +2305,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.parameterNotFound(SVC_MAIL_ORDER, VAR_ORDER);
     }
 
-    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, ComparisonFilter.compareId(orderId));
+    BeeRowSet orderData = qs.getViewData(VIEW_ORDERS, Filter.compareId(orderId));
     if (DataUtils.isEmpty(orderData)) {
       String msg = BeeUtils.joinWords(SVC_MAIL_ORDER, "order not found:", orderId);
       logger.severe(msg);
@@ -2331,7 +2330,7 @@ public class EcModuleBean implements BeeModule {
     Long clientEmailId = null;
     if (!isClient
         || BeeUtils.isTrue(DataUtils.getBoolean(orderData, orderRow, COL_ORDER_COPY_BY_MAIL))) {
-      clientEmailId = usr.getEmailId(clientUser);
+      clientEmailId = usr.getEmailId(clientUser, true);
 
       if (DataUtils.isId(clientEmailId)) {
         recipients.add(clientEmailId);
@@ -2510,7 +2509,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     BeeRowSet eventData = qs.getViewData(VIEW_ORDER_EVENTS,
-        ComparisonFilter.isEqual(COL_ORDER_EVENT_ORDER, new LongValue(orderRow.getId())),
+        Filter.equals(COL_ORDER_EVENT_ORDER, orderRow.getId()),
         new Order(COL_ORDER_EVENT_DATE, true));
 
     Document doc = new Document();

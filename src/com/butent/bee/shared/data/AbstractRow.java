@@ -1,5 +1,7 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.primitives.Longs;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -48,6 +50,11 @@ public abstract class AbstractRow implements IsRow {
     if (properties != null) {
       properties.remove(key);
     }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return (obj instanceof IsRow) && id == ((IsRow) obj).getId();
   }
 
   @Override
@@ -157,6 +164,11 @@ public abstract class AbstractRow implements IsRow {
   @Override
   public long getVersion() {
     return version;
+  }
+
+  @Override
+  public int hashCode() {
+    return Longs.hashCode(id);
   }
 
   @Override
@@ -306,5 +318,4 @@ public abstract class AbstractRow implements IsRow {
   protected void setShadow(Map<Integer, String> shadow) {
     this.shadow = shadow;
   }
-
 }

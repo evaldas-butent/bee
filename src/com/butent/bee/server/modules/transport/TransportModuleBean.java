@@ -28,9 +28,9 @@ import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.server.modules.commons.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
-import com.butent.bee.server.news.ExtendedUsageQueryProvider;
+// import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
-import com.butent.bee.server.news.NewsHelper;
+// import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
@@ -39,7 +39,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
-import com.butent.bee.shared.Pair;
+// import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -47,16 +47,16 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
-import com.butent.bee.shared.news.Feed;
+// import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
@@ -67,6 +67,12 @@ import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -75,12 +81,12 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
+import javax.servlet.http.HttpServletResponse;
 
 @Stateless
 @LocalBean
@@ -111,8 +117,6 @@ public class TransportModuleBean implements BeeModule {
 
   @Resource
   TimerService timerService;
-
-  private Timer erpTimer;
 
   @Override
   public Collection<String> dependsOn() {
@@ -207,6 +211,10 @@ public class TransportModuleBean implements BeeModule {
       response = sendToERP(reqInfo.getParameter("view_name"),
           DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
 
+    } else if (BeeUtils.same(svc, SVC_SEND_MESSAGE)) {
+      response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
+          Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
+
     } else if (BeeUtils.same(svc, SVC_GET_IMPORT_MAPPINGS)) {
       response = getImportMappings(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_PROPERTY)),
           reqInfo.getParameter(VAR_MAPPING_TABLE), reqInfo.getParameter(VAR_MAPPING_FIELD));
@@ -232,8 +240,14 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
+        BeeParameter.createCollection(TRANSPORT_MODULE, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createText(TRANSPORT_MODULE, "ERPCreditOperation", false, null),
-        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null));
+        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsServiceAddress", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsUserName", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsPassword", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsServiceId", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsDisplayText", false, null));
   }
 
   @Override
@@ -460,57 +474,57 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_ORDER_CARGO, COL_ORDER));
-      }
+    // news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
+    // @Override
+    // protected List<IsCondition> getConditions(long userId) {
+    // return NewsHelper.buildConditions(SqlUtils.notNull(TBL_ORDER_CARGO, COL_ORDER));
+    // }
+    //
+    // @Override
+    // protected List<Pair<String, IsCondition>> getJoins() {
+    // return NewsHelper.buildJoin(TBL_ORDER_CARGO, news.joinUsage(TBL_ORDER_CARGO));
+    // }
+    // });
+    //
+    // news.registerUsageQueryProvider(Feed.TRANSPORTATION_ORDERS_MY,
+    // new ExtendedUsageQueryProvider() {
+    // @Override
+    // protected List<IsCondition> getConditions(long userId) {
+    // return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER,
+    // userId));
+    // }
+    //
+    // @Override
+    // protected List<Pair<String, IsCondition>> getJoins() {
+    // return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
+    // }
+    // });
 
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoin(TBL_ORDER_CARGO, news.joinUsage(TBL_ORDER_CARGO));
-      }
-    });
-
-    news.registerUsageQueryProvider(Feed.TRANSPORTATION_ORDERS_MY,
-        new ExtendedUsageQueryProvider() {
-          @Override
-          protected List<IsCondition> getConditions(long userId) {
-            return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER,
-                userId));
-          }
-
-          @Override
-          protected List<Pair<String, IsCondition>> getJoins() {
-            return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
-          }
-        });
-
-    news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_CARGO_REQUESTS,
-            COL_CARGO_REQUEST_MANAGER, userId));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoin(TBL_CARGO_REQUESTS, news.joinUsage(TBL_CARGO_REQUESTS));
-      }
-    });
-
-    news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.equals(TBL_SHIPMENT_REQUESTS,
-            COL_QUERY_MANAGER, userId));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS, news.joinUsage(TBL_SHIPMENT_REQUESTS));
-      }
-    });
+    // news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+    // @Override
+    // protected List<IsCondition> getConditions(long userId) {
+    // return NewsHelper.buildConditions(SqlUtils.equals(TBL_CARGO_REQUESTS,
+    // COL_CARGO_REQUEST_MANAGER, userId));
+    // }
+    //
+    // @Override
+    // protected List<Pair<String, IsCondition>> getJoins() {
+    // return NewsHelper.buildJoin(TBL_CARGO_REQUESTS, news.joinUsage(TBL_CARGO_REQUESTS));
+    // }
+    // });
+    //
+    // news.registerUsageQueryProvider(Feed.SHIPMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+    // @Override
+    // protected List<IsCondition> getConditions(long userId) {
+    // return NewsHelper.buildConditions(SqlUtils.equals(TBL_SHIPMENT_REQUESTS,
+    // COL_QUERY_MANAGER, userId));
+    // }
+    //
+    // @Override
+    // protected List<Pair<String, IsCondition>> getJoins() {
+    // return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS, news.joinUsage(TBL_SHIPMENT_REQUESTS));
+    // }
+    // });
   }
 
   private ResponseObject createCreditInvoiceItems(Long purchaseId, Double amount, Long currency,
@@ -1391,7 +1405,7 @@ public class TransportModuleBean implements BeeModule {
 
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
-    Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
+    Filter filter = Filter.equals(COL_USER, userId);
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
     if (!DataUtils.isEmpty(rowSet)) {
@@ -1414,8 +1428,7 @@ public class TransportModuleBean implements BeeModule {
 
     BeeRowSet rowSet;
     if (theme != null) {
-      rowSet = qs.getViewData(VIEW_THEME_COLORS,
-          ComparisonFilter.isEqual(COL_THEME, new LongValue(theme)));
+      rowSet = qs.getViewData(VIEW_THEME_COLORS, Filter.equals(COL_THEME, theme));
     } else {
       rowSet = null;
     }
@@ -1973,28 +1986,112 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private void initTimer() {
-    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
-    boolean timerExists = erpTimer != null;
+    Timer erpTimer = null;
 
-    if (timerExists) {
-      try {
-        erpTimer.cancel();
-      } catch (NoSuchObjectLocalException e) {
-        logger.error(e);
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
+        erpTimer = timer;
+        break;
       }
-      erpTimer = null;
     }
+    if (erpTimer != null) {
+      erpTimer.cancel();
+    }
+    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
+
     if (BeeUtils.isPositive(minutes)) {
       erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(null, false));
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
 
       logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
           erpTimer.getNextTimeout());
     } else {
-      if (timerExists) {
+      if (erpTimer != null) {
         logger.info("Removed ERP timer");
       }
     }
+  }
+
+  private ResponseObject sendMessage(String message, String[] recipients) {
+    String address = prm.getText("SmsServiceAddress");
+
+    if (BeeUtils.isEmpty(address)) {
+      return ResponseObject.error("SmsServiceAddress is empty");
+    }
+    StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>")
+        .append("<sms-send>")
+        .append("<authentication>")
+        .append(XmlUtils.tag("username", prm.getText("SmsUserName")))
+        .append(XmlUtils.tag("password", prm.getText("SmsPassword")))
+        .append(XmlUtils.tag("serviceId", prm.getText("SmsServiceId")))
+        .append("</authentication>")
+        .append("<originator>")
+        .append(XmlUtils.tag("source", prm.getText("SmsDisplayText")))
+        .append("</originator>")
+        .append("<sms-messages>");
+
+    for (String phone : recipients) {
+      xml.append("<sms>")
+          .append(XmlUtils.tag("destination", phone))
+          .append(XmlUtils.tag("msg", message))
+          .append(XmlUtils.tag("dr", true))
+          .append(XmlUtils.tag("id", 0))
+          .append(XmlUtils.tag("sendTime", new DateTime().toString()))
+          .append("</sms>");
+    }
+    xml.append("</sms-messages>")
+        .append("</sms-send>");
+
+    ResponseObject response = ResponseObject.info(Localized.getConstants().ok());
+    DataOutputStream wr = null;
+    BufferedReader in = null;
+
+    try {
+      URL url = new URL(address);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Accept", "text/xml");
+      conn.setDoOutput(true);
+
+      wr = new DataOutputStream(conn.getOutputStream());
+      wr.writeBytes(xml.toString());
+      wr.flush();
+      wr.close();
+
+      if (conn.getResponseCode() != HttpServletResponse.SC_OK) {
+        response = ResponseObject.error(Localized.getConstants().error(), conn.getResponseCode(),
+            conn.getResponseMessage());
+      } else {
+        in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String input;
+
+        while ((input = in.readLine()) != null) {
+          sb.append(input);
+        }
+        in.close();
+        input = sb.toString();
+        String status = XmlUtils.getText(input, "status");
+
+        if (!BeeUtils.same(status, "OK")) {
+          response = ResponseObject.error(input);
+        }
+      }
+    } catch (IOException e) {
+      try {
+        if (wr != null) {
+          wr.close();
+        }
+        if (in != null) {
+          in.close();
+        }
+      } catch (IOException ex) {
+        logger.error(ex);
+      }
+      response = ResponseObject.error(e);
+    }
+    return response;
   }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {
@@ -2007,10 +2104,11 @@ public class TransportModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, ExchangeUtils.COL_CURRENCY,
-            COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
         .addFrom(trade)
+        .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
                 COL_TRADE_WAREHOUSE_FROM))
@@ -2097,6 +2195,7 @@ public class TransportModuleBean implements BeeModule {
       doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
       doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
+      doc.setCurrency(invoice.getValue(COL_CURRENCY));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

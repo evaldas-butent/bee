@@ -39,11 +39,16 @@ public class FileGridInterceptor extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean beforeAction(Action action, final GridPresenter presenter) {
+  public boolean beforeAction(Action action, GridPresenter presenter) {
     if (Action.ADD.equals(action)) {
-      if (collector != null) {
-        collector.clickInput();
+      if (collector == null || getGridView() == null) {
+        return false;
       }
+      if (getGridView().likeAMotherlessChild() && !presenter.validateParent()) {
+        return false;
+      }
+
+      collector.clickInput();
       return false;
 
     } else {

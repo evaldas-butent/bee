@@ -16,8 +16,7 @@
   <g:columns>
     <IdColumn name="ID" caption="=captionId" width="50" />
     <DataColumn name="Date" caption="=date" width="100" visible="true" />
-    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" 
-      filterOptions="empty" />
+    <DataColumn name="Finished" caption="=crmRequestFinish" width="100" format="DATE_TIME_SHORT" />
     <RelColumn name="Customer" caption="=client" minWidth="100" visible="true" />
 
     <DataColumn name="Content" caption="=crmRequest" minWidth="100" flexShrink="1" 

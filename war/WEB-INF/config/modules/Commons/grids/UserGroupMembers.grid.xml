@@ -7,7 +7,7 @@
   <g:columns>
     <DataColumn name="FirstName" visible="true" />
     <DataColumn name="LastName" visible="true" />
-    <DataColumn name="CompanyName" caption="=company" />
-    <DataColumn name="PositionName" />
+    <DataColumn name="CompanyName" label="=company" />
+    <DataColumn name="PositionName" label="=personPosition" />
   </g:columns>
 </g:Grid>

@@ -12,7 +12,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.io.BufferedInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  * Manages file transfers between client and server sides.
  */
 
-@WebServlet(urlPatterns = "/file")
+@WebServlet(urlPatterns = "/file/*")
 @SuppressWarnings("serial")
 public class FileServlet extends LoginServlet {
 
@@ -41,27 +40,31 @@ public class FileServlet extends LoginServlet {
   @EJB
   FileStorageBean fs;
 
-  private static void close(Closeable resource) {
-    if (resource != null) {
-      try {
-        resource.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
   @Override
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
     Map<String, String> parameters = HttpUtils.getHeaders(req, false);
     parameters.putAll(HttpUtils.getParameters(req, false));
 
-    Long fileId = BeeUtils.toLongOrNull(Codec.decodeBase64(parameters.get(Service.VAR_FILE_ID)));
-    String fileName = Codec.decodeBase64(parameters.get(Service.VAR_FILE_NAME));
+    Long fileId = BeeUtils.isEmpty(req.getPathInfo())
+        ? null : BeeUtils.toLongOrNull(req.getPathInfo().substring(1));
+
+    String fileName = null;
     String path = null;
     String mimeType = null;
     boolean isTemporary = false;
 
+    if (!DataUtils.isId(fileId)) {
+      String prm = parameters.get(Service.VAR_FILE_ID);
+
+      if (!BeeUtils.isEmpty(prm)) {
+        fileId = BeeUtils.toLongOrNull(Codec.decodeBase64(prm));
+      }
+      prm = parameters.get(Service.VAR_FILE_NAME);
+
+      if (!BeeUtils.isEmpty(prm)) {
+        fileName = Codec.decodeBase64(prm);
+      }
+    }
     if (DataUtils.isId(fileId)) {
       try {
         StoredFile sf = fs.getFile(fileId);
@@ -127,7 +130,11 @@ public class FileServlet extends LoginServlet {
       logger.error(e);
     } finally {
       if (input != null) {
-        close(input);
+        try {
+          input.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
       if (isTemporary) {
         logger.debug("File deleted:", file.getAbsolutePath(), file.delete());

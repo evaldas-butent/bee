@@ -2,13 +2,13 @@ package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 
 import java.util.List;
 
 public class DayLayoutDescription {
 
-  private final List<Appointment> appointments = Lists.newArrayList();
+  private final List<CalendarItem> items = Lists.newArrayList();
 
   private final int dayIndex;
 
@@ -16,19 +16,19 @@ public class DayLayoutDescription {
     this.dayIndex = dayIndex;
   }
 
-  public void addAppointment(Appointment appointment) {
-    appointments.add(appointment);
+  public void addItem(CalendarItem item) {
+    items.add(item);
   }
 
-  public List<Appointment> getAppointments() {
-    return appointments;
+  public List<CalendarItem> getItems() {
+    return items;
   }
 
   public int getDayIndex() {
     return dayIndex;
   }
 
-  public int getTotalAppointmentCount() {
-    return appointments.size();
+  public int getItemCount() {
+    return items.size();
   }
 }

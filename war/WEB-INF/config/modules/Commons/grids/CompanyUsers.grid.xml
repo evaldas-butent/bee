@@ -6,12 +6,12 @@
   >
   <g:columns>
     <RelColumn name="User" minWidth="150" maxWidth="200" visible="true">
-    	<renderToken source="FirstName" suffix=" " />
-    	<renderToken source="LastName" />
+      <renderToken source="FirstName" suffix=" " />
+      <renderToken source="LastName" />
     </RelColumn>
     
     <RelColumn name="Responsibility" minWidth="100" maxWidth="150" visible="true">
-    	<renderToken source="ResponsibilityName" />
+      <renderToken source="ResponsibilityName" />
     </RelColumn>
 
     <DataColumn name="AccountingCode" visible="true" />

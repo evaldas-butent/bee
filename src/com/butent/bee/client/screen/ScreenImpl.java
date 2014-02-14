@@ -11,9 +11,11 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Bee;
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
@@ -25,7 +27,6 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
@@ -39,11 +40,13 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -484,7 +487,7 @@ public class ScreenImpl implements Screen {
     BodyPanel.get().add(p);
     setScreenPanel(p);
   }
-
+  
   protected Widget createUserContainer() {
     Horizontal userContainer = new Horizontal();
 
@@ -502,7 +505,10 @@ public class ScreenImpl implements Screen {
     signature.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        PasswordService.change();
+        Long userId = BeeKeeper.getUser().getUserId();
+        if (DataUtils.isId(userId)) {
+          onUserSignatureClick(userId);
+        }
       }
     });
 
@@ -524,7 +530,7 @@ public class ScreenImpl implements Screen {
               public void onConfirm() {
                 Bee.exit();
               }
-            }, null, StyleUtils.className(FontSize.MEDIUM), null);
+            }, null, StyleUtils.className(FontSize.MEDIUM), null, null);
       }
     });
 
@@ -617,6 +623,10 @@ public class ScreenImpl implements Screen {
     
     int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
     return Pair.of(panel, width);
+  }
+
+  protected void onUserSignatureClick(long userId) {
+    RowEditor.openRow(CommonsConstants.VIEW_USERS, userId, true, null);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

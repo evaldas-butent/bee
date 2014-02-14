@@ -14,7 +14,7 @@
   </g:north>
   <g:columns>
     <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessor" caption="=captionPId" width="40" />
+    <DataColumn name="Assessor" caption="=captionPid" width="40" />
     <DataColumn name="Date" caption="=creationDate" width="110" />
     <DataColumn name="Status" width="70" />
     <DataColumn name="OrderNo" caption="=orderNumber" width="70" />

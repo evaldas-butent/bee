@@ -36,6 +36,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -46,6 +47,8 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
@@ -74,6 +77,8 @@ public final class FormFactory {
     void afterInsertRow(IsRow result, boolean forced);
 
     void afterRefresh(FormView form, IsRow row);
+    
+    void afterStateChange(State state, boolean modal);
 
     void afterUpdateRow(IsRow result);
 
@@ -81,15 +86,15 @@ public final class FormFactory {
 
     void beforeRefresh(FormView form, IsRow row);
 
+    void beforeStateChange(State state, boolean modal);
+    
+    boolean focusSource(String source);
+    
     long getActiveRowId();
 
     int getDataIndex(String source);
 
-    Integer getDataInt(String source);
-
-    Long getDataLong(String source);
-
-    String getDataValue(String source);
+    DateTime getDateTimeValue(String source);
 
     FormView getFormView();
 
@@ -97,9 +102,17 @@ public final class FormFactory {
 
     FormInterceptor getInstance();
 
+    Integer getIntegerValue(String source);
+
+    JustDate getDateValue(String source);
+
+    Long getLongValue(String source);
+
     AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
     BeeRowSet getRowSet();
+
+    String getStringValue(String source);
 
     boolean hasFooter(int rowCount);
 

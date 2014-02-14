@@ -5,13 +5,15 @@
   idName="AppointmentReminderID"
   >
   <Fields>
-    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" label="=calAppointment" />
-    <Relation name="ReminderType" notNull="true" relation="ReminderTypes" cascade="DELETE" label="=reminderType" />
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE"
+      label="=calAppointment" />
+    <Relation name="ReminderType" notNull="true" relation="ReminderTypes" cascade="DELETE" 
+      label="=reminderType" />
     <Relation name="Recipient" relation="CompanyPersons" cascade="DELETE" label="=recipient" />
 
-    <Integer name="Hours" label="=unitHours" />
-    <Integer name="Minutes" label="=unitMinutes" />
-    <DateTime name="Scheduled" label ="=calScheduled" />
+    <Integer name="Hours" label="=calHoursTo" />
+    <Integer name="Minutes" label="=calMinutesTo" />
+    <DateTime name="Scheduled" label ="=calSendTo" />
 
     <Text name="Message" label="=calMessage" />
     <DateTime name="Sent" label="=calSent" />

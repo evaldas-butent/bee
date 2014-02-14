@@ -12,6 +12,8 @@ public interface LocalizableCrmConstants {
 
   String creditTolerance();
 
+  String criteriaGroups();
+
   String crmActionComment();
 
   String crmActionFinish();
@@ -21,8 +23,6 @@ public interface LocalizableCrmConstants {
   String crmActionSuspend();
 
   String crmAdded();
-
-  String crmCreatedNewTasks();
 
   String crmDeleted();
 
@@ -57,16 +57,30 @@ public interface LocalizableCrmConstants {
   String crmFinishDateMustBeGreaterThanStart();
 
   String crmFinishTimeMustBeGreaterThanStart();
+  
+  String crmMailTaskSubject();
+  
+  String crmNewRecurringTask();
 
   String crmNewRequest();
 
   String crmNewTask();
+
+  String crmReminderMailSubject();
 
   String crmReminderTimeMustBeGreaterThan();
 
   String crmReminderTimeMustBeLessThan();
 
   String crmRequest();
+
+  String crmRTActionSchedule();
+
+  String crmRTCopyQuestion();
+
+  String crmRTSpawnTaskQuestion();
+
+  String crmRTSpawnTasksQuestion();
 
   String crmSelectedSameExecutor();
 
@@ -75,6 +89,8 @@ public interface LocalizableCrmConstants {
   String crmSpentTime();
 
   String crmStartDate();
+
+  String crmTask();
 
   String crmTaskCancel();
 
@@ -94,9 +110,13 @@ public interface LocalizableCrmConstants {
 
   String crmTaskConfirmDate();
 
-  String crmTaskDelete();
+  String crmTaskCopyQuestion();
+  
+  String crmTaskDescription();
 
   String crmTaskDeleteCanManager();
+
+  String crmTaskDeleteQuestion();
 
   String crmTaskEventApproved();
 
@@ -129,6 +149,8 @@ public interface LocalizableCrmConstants {
   String crmTaskForwardedForExecution();
 
   String crmTaskForwardingForExecution();
+
+  String crmTaskManager();
 
   String crmTaskObservers();
 
@@ -164,6 +186,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskStatusSuspended();
 
+  String crmTaskSubject();
+
   String crmTaskSuspension();
 
   String crmTaskTermChange();
@@ -175,6 +199,8 @@ public interface LocalizableCrmConstants {
   String documentContentIsEmpty();
 
   String documentFileExists();
+
+  String documentItems();
 
   String documentName();
 
@@ -222,6 +248,8 @@ public interface LocalizableCrmConstants {
 
   String result();
 
+  String selectDocumentTemplate();
+
   String specifyResult();
 
   String startingDate();
@@ -251,6 +279,8 @@ public interface LocalizableCrmConstants {
   String taskLabelStarred();
 
   String taskReminder();
+
+  String tasks();
 
   String taskTemplate();
 

@@ -138,8 +138,8 @@ import java.util.Set;
  * Creates cell grid elements, connecting view and presenter elements of them.
  */
 
-public class GridImpl extends Absolute implements GridView, EditStartEvent.Handler,
-    EditEndEvent.Handler, SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
+public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler,
+    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -377,25 +377,28 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       }
     }
 
-    String caption = Localized.maybeTranslate(cd.getCaption());
-    if (BeeUtils.isEmpty(caption)) {
+    String label = Localized.maybeTranslate(cd.getLabel());
+    if (BeeUtils.isEmpty(label)) {
       int index;
       if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
         index = DataUtils.getColumnIndex(originalSource, dataColumns);
       } else {
         index = dataIndex;
       }
-
       if (!BeeConst.isUndef(index)) {
-        caption = Localized.getLabel(dataColumns.get(index));
+        label = Localized.getLabel(dataColumns.get(index));
       }
     }
 
-    String label;
-    if (Captions.isCaption(caption)) {
-      label = caption;
-    } else {
-      label = BeeUtils.notEmpty(Localized.maybeTranslate(cd.getLabel()), columnId);
+    String caption = Localized.maybeTranslate(cd.getCaption());
+    if (BeeUtils.isEmpty(caption)) {
+      caption = label;
+    } else if (BeeUtils.isEmpty(label)) {
+      if (Captions.isCaption(caption)) {
+        label = caption;
+      } else {
+        label = columnId;
+      }
     }
 
     String enumKey = cd.getEnumKey();
@@ -1314,6 +1317,14 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
     if (event.hasSourceId(getId())) {
       return;
     }
+    if (getGrid().containsRow(event.getRowId())) {
+      return;
+    }
+    
+    if (getGridInterceptor() != null && !getGridInterceptor().onRowInsert(event)) {
+      return;
+    }
+
     if (BeeUtils.isEmpty(event.getSourceId()) && !event.isSpookyActionAtADistance()) {
       return;
     }
@@ -1337,10 +1348,6 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       }
 
     } else if (getViewPresenter() == null || getViewPresenter().hasFilter()) {
-      return;
-    }
-
-    if (getGrid().containsRow(event.getRowId())) {
       return;
     }
 
@@ -2524,14 +2531,19 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
 
   private void showForm(boolean edit, boolean show) {
     String containerId = edit ? getEditFormContainerId() : getNewRowFormContainerId();
+
     ModalForm popup = edit ? getEditPopup() : getNewRowPopup();
+    boolean modal = popup != null;
+
     FormView form = getForm(edit);
+    
+    State state = show ? State.OPEN : State.CLOSED;
+    if (form.getFormInterceptor() != null) {
+      form.getFormInterceptor().beforeStateChange(state, modal);
+    }
 
     if (show) {
-      if (popup == null) {
-        showGrid(false);
-        StyleUtils.unhideDisplay(containerId);
-      } else {
+      if (modal) {
         if (isChild() && isNewRowFormGenerated()) {
           if (!newRowFormState.contains(State.INITIALIZED)) {
             amendGeneratedSize(popup, form);
@@ -2540,6 +2552,10 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
         } else {
           popup.center();
         }
+
+      } else {
+        showGrid(false);
+        StyleUtils.unhideDisplay(containerId);
       }
 
       if (edit) {
@@ -2563,25 +2579,28 @@ public class GridImpl extends Absolute implements GridView, EditStartEvent.Handl
       setActiveFormContainerId(containerId);
 
       if (pendingResize.remove(containerId)) {
-        if (popup == null) {
-          UiHelper.maybeResize(this, containerId);
-        } else {
+        if (modal) {
           popup.onResize();
+        } else {
+          UiHelper.maybeResize(this, containerId);
         }
       }
 
     } else {
-      if (popup == null) {
+      if (modal) {
+        popup.close();
+      } else {
         StyleUtils.hideDisplay(containerId);
         showGrid(true);
-      } else {
-        popup.close();
       }
 
       setActiveFormContainerId(null);
     }
 
-    form.setState(show ? State.OPEN : State.CLOSED);
+    form.setState(state);
+    if (form.getFormInterceptor() != null) {
+      form.getFormInterceptor().afterStateChange(state, modal);
+    }
   }
 
   private void showGrid(boolean show) {

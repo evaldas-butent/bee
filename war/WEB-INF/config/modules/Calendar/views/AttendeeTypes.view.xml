@@ -8,10 +8,6 @@
     <SimpleColumn name="Description" />
 
     <SimpleColumn name="Transparency" />
-    <SimpleColumn name="Resource" />
-
-    <SimpleColumn name="AttendeeCreator" />
-    <SimpleColumn name="AttendeeEditor" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

@@ -17,10 +17,6 @@
       </SimpleJoin>
     </SimpleJoin>
     
-    <SimpleColumn name="Optional" />
-    <SimpleColumn name="ResponseStatus" />
-    <SimpleColumn name="AdditionalGuests" />
-
     <SimpleColumn name="Comment" />
   </Columns>
   <Order>

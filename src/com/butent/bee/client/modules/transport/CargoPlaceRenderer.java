@@ -61,7 +61,7 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
             Localized.getConstants().country()));
     data.put(COL_PLACE_TERMINAL,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_TERMINAL, columns),
-            Localized.getConstants().terminal()));
+            Localized.getConstants().ref()));
 
     int codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
 

@@ -12,7 +12,6 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -73,7 +72,7 @@ public class IdFilterSupplier extends AbstractFilterSupplier {
   @Override
   public Filter parse(FilterValue input) {
     if (input != null && BeeUtils.isLong(input.getValue())) {
-      return ComparisonFilter.compareId(BeeUtils.toLong(input.getValue()));
+      return Filter.compareId(BeeUtils.toLong(input.getValue()));
     } else {
       return null;
     }

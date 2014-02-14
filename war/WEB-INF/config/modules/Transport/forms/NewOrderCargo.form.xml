@@ -12,7 +12,7 @@
       style="font-weight: bold; color: blue; width:300px;"  d:size="60" d:unit="px" />        
     <CheckBox source="Partial" text="=partialCargo"/>
     <FlowPanel class="flexBox-vertical">
-    	<xi:include href="widgets/CargoPlaces.widget.xml" />
+      <xi:include href="widgets/CargoPlaces.widget.xml" />
     </FlowPanel>
   </FlowPanel>  
   

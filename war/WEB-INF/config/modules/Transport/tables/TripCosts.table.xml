@@ -13,9 +13,9 @@
     <Double name="Quantity" notNull="true" label="=quantity" />
     <Numeric name="Price" precision="15" scale="5" label="=price" />
     <Relation name="Currency" relation="Currencies" label="=currencyShort" />
-    <Boolean name="VatPlus" label="+" />
+    <Boolean name="VatPlus" label="=vatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
-    <Boolean name="VatPercent" label="%" />
+    <Boolean name="VatPercent" label="=vatPercent" />
 
     <String name="Number" precision="20" label="=number" />
     <Relation name="Supplier" relation="Companies" label="=trSupplier" />

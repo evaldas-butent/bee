@@ -23,6 +23,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -31,7 +32,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -132,18 +132,17 @@ public class SelfServiceScreen extends ScreenImpl {
           public void onClick(ClickEvent event) {
             Value company = new LongValue(BeeKeeper.getUser().getCompany());
 
-            Filter orderFilter = Filter.or(ComparisonFilter.isEqual(COL_CUSTOMER, company),
-                ComparisonFilter.isEqual(COL_PAYER, company));
+            Filter orderFilter = Filter.or(Filter.isEqual(COL_CUSTOMER, company),
+                Filter.isEqual(COL_PAYER, company));
             openGrid(VIEW_ORDERS, orderFilter);
 
             Filter saleFilter = Filter.or(
-                ComparisonFilter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
-                ComparisonFilter.isEqual(TradeConstants.COL_SALE_PAYER, company));
+                Filter.isEqual(TradeConstants.COL_TRADE_CUSTOMER, company),
+                Filter.isEqual(TradeConstants.COL_SALE_PAYER, company));
             openGrid("CargoProformaInvoices", saleFilter);
             openGrid(VIEW_CARGO_INVOICES, saleFilter);
 
-            Filter purchaseFilter = ComparisonFilter.isEqual(TradeConstants.COL_TRADE_SUPPLIER,
-                company);
+            Filter purchaseFilter = Filter.isEqual(TradeConstants.COL_TRADE_SUPPLIER, company);
             openGrid(VIEW_CARGO_CREDIT_INVOICES, purchaseFilter);
           }
         }));
@@ -203,6 +202,11 @@ public class SelfServiceScreen extends ScreenImpl {
     return Pair.of(wrapper, 0);
   }
 
+  @Override
+  protected void onUserSignatureClick(long userId) {
+    PasswordService.change();
+  }
+  
   private void openGrid(String gridName, boolean intercept, Filter filter) {
     GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
     openGrid(gridName, intercept, gridOptions);

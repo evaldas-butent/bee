@@ -28,11 +28,9 @@ import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -457,12 +455,10 @@ public class Favorites implements HandlesDeleteEvents {
     HtmlTable display = group.getDisplay(key);
     display.removeRow(group.indexOf(key, item));
 
-    Filter filter = Filter.and().add(
-        ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
-        ComparisonFilter.isEqual(COL_KEY, new TextValue(key)),
-        ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
-    Queries.delete(CommonsConstants.TBL_FAVORITES, filter, null);
+    Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
+        Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
 
+    Queries.delete(CommonsConstants.TBL_FAVORITES, filter, null);
     return group.remove(key, item);
   }
 
@@ -478,9 +474,9 @@ public class Favorites implements HandlesDeleteEvents {
 
     CompoundFilter filter = Filter.and();
     filter.add(BeeKeeper.getUser().getFilter(CommonsConstants.COL_FAVORITE_USER),
-        ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
-        ComparisonFilter.isEqual(COL_KEY, new TextValue(key)),
-        ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
+        Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
+        Filter.isEqual(COL_KEY, new TextValue(key)),
+        Filter.equals(COL_ITEM, id));
 
     Queries.update(CommonsConstants.TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
     return true;

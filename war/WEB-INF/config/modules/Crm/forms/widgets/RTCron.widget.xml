@@ -1,51 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE FlowPanel [
   <!ENTITY tbl "border-collapse: collapse;">
-  <!ENTITY spinner "width: 40px;">
-  <!ENTITY tod "width: 50px;">
-  <!ENTITY timeStep "30">
+  <!ENTITY col0 "text-align: right; padding-right: 1em;">
+  <!ENTITY col2 "padding-left: 5px;">
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget">
   <br/>
+  <FlowPanel name="DomValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;" cellStyle="padding-bottom: 3px;">
-    <col index="0" cellStyle="text-align: right; padding-right: 1em;" />
+  <Table style="&tbl;">
+    <col index="0" cellStyle="&col0;" />
+    <col index="2" cellStyle="&col2;" />
 
     <row>
-      <Label text="=crmRTDayOfMonth" />
-      <InputText source="DayOfMonth" />
+      <Label text="=crmRTDayOfMonth" class="bee-crm-rt-cron-label" />
+      <InputText source="DayOfMonth" class="bee-crm-rt-cron-input" />
+      <Label text="?" name="DomHelp" class="bee-crm-rt-cron-help" />
     </row>
     <row>
-      <Label text="=crmRTMonth" />
-      <InputText source="Month" />
+      <cell><text/></cell>
+      <div name="DomError" class="bee-crm-rt-cron-error" />
+    </row>
+  </Table>
+
+  <br/>
+  <FlowPanel name="MonthValues" class="bee-crm-rt-cron-values" />
+
+  <Table style="&tbl;">
+    <col index="0" cellStyle="&col0;" />
+    <col index="2" cellStyle="&col2;" />
+
+    <row>
+      <Label text="=crmRTMonth" class="bee-crm-rt-cron-label" />
+      <InputText source="Month" class="bee-crm-rt-cron-input" />
+      <Label text="?" name="MonthHelp" class="bee-crm-rt-cron-help" />
     </row>
     <row>
-      <Label text="=crmRTDayOfWeek" />
-      <InputText source="DayOfWeek" />
+      <cell><text/></cell>
+      <div name="MonthError" class="bee-crm-rt-cron-error" />
+    </row>
+  </Table>
+
+  <br/>
+  <FlowPanel name="DowValues" class="bee-crm-rt-cron-values" />
+
+  <Table style="&tbl;">
+    <col index="0" cellStyle="&col0;" />
+    <col index="2" cellStyle="&col2;" />
+
+    <row>
+      <Label text="=crmRTDayOfWeek" class="bee-crm-rt-cron-label" />
+      <InputText source="DayOfWeek" class="bee-crm-rt-cron-input" />
+      <Label text="?" name="DowHelp" class="bee-crm-rt-cron-help" />
     </row>
     <row>
-      <Label text="=crmRTYear" />
-      <InputText source="Year" />
+      <cell><text/></cell>
+      <div name="DowError" class="bee-crm-rt-cron-error" />
     </row>
   </Table>
   
   <br/>
   <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
-    <Label text="=crmRTStartAt" />
-    <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />
-    <Label text="=duration" />
-    <InputSpinner source="DurationDays" minValue="0" maxValue="31" style="&spinner;" />
-    <InputSpinner source="DurationHours" minValue="0" maxValue="23" style="&spinner;" />
-    <InputSpinner source="DurationMinutes" minValue="0" maxValue="59" style="&spinner;" />
-  </HorizontalPanel>
-
-  <br/>
-  <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
-    <Label text="=taskReminder" />
-    <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" />
-    <Label text="=crmRTRemindBefore" />
-    <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="&spinner;" />
-    <Label text="=crmRTRemindAt" />
-    <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
-  </HorizontalPanel>
+    <Label text="=crmRTWorkdayTransition" />
+    <Radio source="WorkdayTransition" />
+  </HorizontalPanel>  
 </FlowPanel>

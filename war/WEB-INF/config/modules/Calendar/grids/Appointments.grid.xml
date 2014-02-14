@@ -2,39 +2,37 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="Appointments" viewName="Appointments" caption="=appointments"
+  name="Appointments" viewName="Appointments" caption="=calAppointments"
   newRowForm="Appointment" editForm="Appointment" order="AppointmentID desc"
   >
   <g:columns>
-    <RelColumn name="CompanyName" caption="=client" />
-    <RelColumn name="CompanyPhone" caption="=phone" />
+    <IdColumn name="Id" caption="=captionId" visible="false" />
 
-    <RelColumn name="VehicleNumber" caption="=vehicleNumber" />
-    <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="=vehicleModel" />
+    <DataColumn name="TypeName" label="=calAppointmentType" />
+    <DataColumn name="Summary" visible="true" maxWidth="200" />
 
-    <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
-      caption="=calAppointmentStart" visible="true" />
-    <CalcColumn type="string" name="End" sortBy="EffectiveEnd EndDateTime EndDate"
-      caption="=calAppointmentEnd" />
+    <DataColumn name="Description" visible="false" maxWidth="200" />
 
-    <DataColumn name="Summary" caption="=summary" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" />
+    <DataColumn name="CompanyName" label="=company" />
+    <DataColumn name="CompanyPhone" visible="false" />
 
-    <DataColumn name="Status" caption="=calAppointmentStatus" />
+    <DataColumn name="VehicleNumber" visible="false" />
+    <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" visible="false" />
 
-    <RelColumn name="Organizer" caption="=responsibleEmployee">
-      <renderToken source="OrganizerFirstName" />
-      <renderToken source="OrganizerLastName" />
-      <renderToken source="OrganizerCompanyName" prefix=", " />
-    </RelColumn>
+    <DataColumn name="StartDateTime" visible="true" />
+    <DataColumn name="EndDateTime" visible="true" />
 
-    <DataColumn name="ColorName" caption="=color">
+    <DataColumn name="Status" />
+    <DataColumn name="Visibility" visible="false" />
+
+    <DataColumn name="Location" maxWidth="200" />
+
+    <DataColumn name="ColorName" label="=color" visible="false">
       <dynStyle>
-        <ui:inline>background-color: [row.Background] !important; color: [row.Foreground];</ui:inline>
+        <ui:inline>background-color: [row.Background]; color: [row.Foreground];</ui:inline>
       </dynStyle>
     </DataColumn>
-    <DataColumn name="StyleName" caption="=style" />
 
-    <DataColumn name="TypeName" caption="=calAppointmentType" />
+    <DataColumn name="StyleName" label="=style" visible="false" />
   </g:columns>
 </g:Grid>

@@ -103,6 +103,7 @@ import com.butent.bee.client.maps.MapWidget;
 import com.butent.bee.client.maps.Marker;
 import com.butent.bee.client.maps.MarkerOptions;
 import com.butent.bee.client.modules.commons.CommonsKeeper;
+import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -174,6 +175,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -479,6 +481,9 @@ public final class CliWorker {
     } else if ("rooms".equals(z)) {
       showPropData("Client Rooms", Global.getRooms().getInfo());
 
+    } else if ("rts".equals(z)) {
+      scheduleTasks(arr, errorPopup);
+      
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 
@@ -2013,6 +2018,20 @@ public final class CliWorker {
 
   // CHECKSTYLE:ON
 
+  private static void scheduleTasks(String[] arr, boolean errorPopup) {
+    JustDate from = (arr.length > 1) ? TimeUtils.parseDate(arr[1]) : TimeUtils.today();
+    JustDate until = (arr.length > 2) ? TimeUtils.parseDate(arr[2]) : null;
+    
+    if (from == null || until != null && TimeUtils.isLess(until, from)) {
+      showError(errorPopup, arr);
+    } else {
+      DateRange range = (until == null) ? DateRange.day(from) : DateRange.closed(from, until);
+      logger.debug("schedule tasks", range);
+      
+      CrmKeeper.scheduleTasks(range);
+    }
+  }
+
   private static void setDebug(String args) {
     if (BeeUtils.same(args, "ec")) {
       logger.debug(args, "debug", EcKeeper.toggleDebug());
@@ -3210,7 +3229,7 @@ public final class CliWorker {
       }
     }
   }
-
+  
   private static void showProgress(String[] arr, boolean errorPopup) {
     if (!Features.supportsElementProgress()) {
       showError(errorPopup, "progress element not supported");

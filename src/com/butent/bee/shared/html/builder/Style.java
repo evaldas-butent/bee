@@ -1,9 +1,9 @@
 package com.butent.bee.shared.html.builder;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Style.HasCssName;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.HasCssName;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;

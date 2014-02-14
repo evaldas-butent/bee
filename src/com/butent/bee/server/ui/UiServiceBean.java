@@ -52,7 +52,6 @@ import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -661,7 +660,7 @@ public class UiServiceBean {
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
     String column = reqInfo.getParameter(Service.VAR_COLUMN);
 
-    Filter filter = ComparisonFilter.compareId(BeeUtils.toLong(rowId));
+    Filter filter = Filter.compareId(BeeUtils.toLong(rowId));
 
     BeeRowSet rowSet = qs.getViewData(viewName, filter, null, BeeConst.UNDEF, BeeConst.UNDEF,
         Lists.newArrayList(column));
@@ -690,7 +689,7 @@ public class UiServiceBean {
 
     Filter filter = null;
     if (!BeeUtils.isEmpty(rowId)) {
-      filter = ComparisonFilter.compareId(BeeUtils.toLong(rowId));
+      filter = Filter.compareId(BeeUtils.toLong(rowId));
     } else if (!BeeUtils.isEmpty(where)) {
       filter = Filter.restore(where);
     }
@@ -1278,7 +1277,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject insertRow(RequestInfo reqInfo) {
-    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()));
   }
 
   private ResponseObject insertRows(RequestInfo reqInfo) {
@@ -1490,11 +1489,11 @@ public class UiServiceBean {
 
   private ResponseObject updateCell(RequestInfo reqInfo) {
     BeeRowSet rs = BeeRowSet.restore(reqInfo.getContent());
-    ResponseObject response = deb.commitRow(rs, false);
+    ResponseObject response = deb.commitRow(rs, RowInfo.class);
 
     if (!response.hasErrors()) {
       long rowId = rs.getRow(0).getId();
-      BeeRowSet updated = qs.getViewData(rs.getViewName(), ComparisonFilter.compareId(rowId), null,
+      BeeRowSet updated = qs.getViewData(rs.getViewName(), Filter.compareId(rowId), null,
           BeeConst.UNDEF, BeeConst.UNDEF, DataUtils.getColumnNames(rs.getColumns()));
 
       if (DataUtils.isEmpty(updated)) {
@@ -1539,7 +1538,7 @@ public class UiServiceBean {
     deb.commitChildren(parentId, children, response);
 
     if (!response.hasErrors()) {
-      BeeRowSet rowSet = qs.getViewData(viewName, ComparisonFilter.compareId(parentId));
+      BeeRowSet rowSet = qs.getViewData(viewName, Filter.compareId(parentId));
 
       if (DataUtils.isEmpty(rowSet)) {
         response.addError("could not get parent row:", viewName, parentId);
@@ -1552,7 +1551,6 @@ public class UiServiceBean {
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {
-    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()));
   }
-
 }

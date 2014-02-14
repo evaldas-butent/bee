@@ -244,7 +244,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public boolean hasResponse() {
-    return hasResponse(null);
+    return response != null;
   }
 
   public boolean hasResponse(Class<?> clazz) {

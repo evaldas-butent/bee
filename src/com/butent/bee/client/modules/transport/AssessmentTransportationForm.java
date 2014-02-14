@@ -4,7 +4,10 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CARGO;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_TRIP;
+import static com.butent.bee.shared.modules.transport.TransportConstants.TBL_CARGO_TRIPS;
+import static com.butent.bee.shared.modules.transport.TransportConstants.TBL_ORDER_CARGO;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -20,9 +23,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
@@ -55,7 +56,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     }
     Queries.getRowSet(TBL_ORDER_CARGO, null,
         Filter.in(Data.getIdColumn(TBL_ORDER_CARGO), TBL_CARGO_TRIPS, COL_CARGO,
-            ComparisonFilter.isEqual(COL_TRIP, new LongValue(row.getId()))),
+            Filter.equals(COL_TRIP, row.getId())),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {

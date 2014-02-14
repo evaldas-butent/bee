@@ -79,6 +79,9 @@ public final class Images {
     @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
 
+    @Source("cake_230x265.jpg")
+    ImageResource cake();
+
     @Source("calendar.png")
     ImageResource calendar();
 
@@ -263,7 +266,7 @@ public final class Images {
     ImageResource silverFilterRemove();
     
     @Source("silver/invoice_17x18.png")
-    ImageResource silverInvoive();
+    ImageResource silverInvoice();
 
     @Source("silver/mail_17x18.png")
     ImageResource silverMail();
@@ -501,7 +504,7 @@ public final class Images {
     map.put(key("silverEdit"), resources.silverEdit());
     map.put(key("silverFilter"), resources.silverFilter());
     map.put(key("silverFilterRemove"), resources.silverFilterRemove());
-    map.put(key("silverInvoice"), resources.silverInvoive());
+    map.put(key("silverInvoice"), resources.silverInvoice());
     map.put(key("silverMail"), resources.silverMail());
     map.put(key("silverMinus"), resources.silverMinus());
     map.put(key("silverPlus"), resources.silverPlus());

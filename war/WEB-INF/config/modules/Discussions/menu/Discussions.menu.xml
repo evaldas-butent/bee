@@ -8,6 +8,6 @@ name="Discussions" label="=discussions" order="110"
  <Item name="ClosedDiscussions" label="=discussClosed" service="discuss_list" parameters="closed" />
  <Item name="ObservedDiscussions" label="=discussObserved" service="discuss_list" parameters="observed" />
  <Item name="StarredDiscussions" label="=discussStarred" service="discuss_list" parameters="starred" /> 
- <Item name="AllDiscussions" label="=discussAll" service="discuss_list" parameters="all" separator="true" /> 
- 
+ <Item name="AllDiscussions" label="=discussAll" service="discuss_list" parameters="all" separator="true" />
+ <Item name="AnnouncementsBoard" label="=announcementsBoard" service="form" parameters="AnnouncementsBoard" separator="true" />
 </Entry>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CalExecutorGroups"
+  idName="CalExecutorGroupID"
+  >
+  <Fields>
+    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE"
+      label="=calendar" />
+    <Relation name="Group" notNull="true" relation="UserGroupSettings" cascade="DELETE"
+      label="=group" />
+      
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+    <Relation name="Style" relation="AppointmentStyles" label="=style" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Calendar Group" />
+  </Constraints>
+</Table>

@@ -6,6 +6,7 @@
   flexGrow="1"
   >
   <g:columns>
+    <DataColumn name="Id" caption="ID" format="#" />
     <DataColumn name="File" caption="=documentFileOpen" readOnly="true" cellType="html"
       sortable="false" minWidth="100" visible="true" />
 

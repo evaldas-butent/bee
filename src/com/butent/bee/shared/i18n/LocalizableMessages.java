@@ -2,12 +2,13 @@ package com.butent.bee.shared.i18n;
 
 import com.google.gwt.i18n.client.Messages;
 
+import com.butent.bee.shared.modules.crm.LocalizableCrmMessages;
 import com.butent.bee.shared.modules.ec.LocalizableEcMessages;
 import com.butent.bee.shared.modules.mail.LocalizableMailMessages;
 import com.butent.bee.shared.modules.transport.LocalizableTransportMessages;
 
-public interface LocalizableMessages extends Messages, LocalizableEcMessages,
-    LocalizableMailMessages, LocalizableTransportMessages {
+public interface LocalizableMessages extends Messages, LocalizableCrmMessages,
+    LocalizableEcMessages, LocalizableMailMessages, LocalizableTransportMessages {
 
   String allValuesEmpty(String label, String count);
 
@@ -18,8 +19,6 @@ public interface LocalizableMessages extends Messages, LocalizableEcMessages,
   String deletedRows(int count);
 
   String deleteSelectedRows(int count);
-
-  String documentSavedInFiles(String document);
 
   String endSession(String appName);
 

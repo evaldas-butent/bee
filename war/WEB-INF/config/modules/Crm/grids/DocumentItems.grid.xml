@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="DocumentItems" viewName="DocumentItems"
+  editInPlace="Description Quantity Price VatPlus Vat VatPercent"
+  flexGrow="1" caption="=documentItems"
+  >
+  <g:columns>
+    <AutoColumn name="Description" viewName="DistinctDocumentItems" viewColumn="Description">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </AutoColumn>
+    <DataColumn name="Quantity">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="Price" />
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
+      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+    </DataColumn>
+    <DataColumn name="Vat" />
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
+      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    </DataColumn>
+    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <footer aggregate="sum" />
+    </CalcColumn>
+    <DataColumn name="Data" caption="-" width="20" sortable="false" readOnly="true">
+      <style><bodyStyle><ui:font>FontAwesome 20</ui:font></bodyStyle></style>
+      <render><ui:expression>row.Data ? '\uf044' : ''</ui:expression></render>
+    </DataColumn>
+  </g:columns>
+</g:Grid>

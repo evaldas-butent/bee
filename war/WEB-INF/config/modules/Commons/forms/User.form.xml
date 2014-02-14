@@ -37,12 +37,10 @@
         <ChildSelector childTable="UserRoles" viewName="Roles" style="width: 400px;" 
           required="true" />
       </row>
-
-      <row>
-        <Label text="=groups" />
-        <ChildSelector childTable="UserGroups" viewName="UserGroupSettings" style="width: 400px;" />
-      </row>
     </Table>
+    
+    <br/>
+    <CheckBox source="MailAssignedTasks" text="=crmMailAssignedTasks" style="margin-left: 10px;" />
       
     <br/>
     <ChildGrid class="flexible" name="UserFeeds" relColumn="User" />

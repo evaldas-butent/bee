@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -135,6 +136,22 @@ public final class BeeUtils {
     return false;
   }
 
+  public static boolean anyNull(Object first, Object second, Object... rest) {
+    if (first == null || second == null) {
+      return true;
+    }
+    if (rest == null) {
+      return false;
+    }
+
+    for (Object obj : rest) {
+      if (obj == null) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.
@@ -461,7 +478,7 @@ public final class BeeUtils {
       return src.trim().toLowerCase().contains(ctxt.trim().toLowerCase());
     }
   }
-
+  
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;
@@ -657,19 +674,6 @@ public final class BeeUtils {
     }
   }
 
-  public static <E extends Enum<?>> E getConstant(Class<E> clazz, Integer ordinal) {
-    if (clazz == null || ordinal == null || ordinal < 0) {
-      return null;
-    }
-
-    E[] constants = clazz.getEnumConstants();
-    if (ordinal < constants.length) {
-      return constants[ordinal];
-    } else {
-      return null;
-    }
-  }
-
   public static int getDecimals(String s) {
     int index = (s == null) ? BeeConst.UNDEF : s.lastIndexOf(BeeConst.CHAR_POINT);
     return (index >= 0) ? s.length() - index - 1 : 0;
@@ -815,6 +819,19 @@ public final class BeeUtils {
     return cs.length() >= min;
   }
 
+  public static int indexOfSame(List<String> list, String s) {
+    if (isEmpty(list)) {
+      return BeeConst.UNDEF;
+    }
+
+    for (int i = 0; i < list.size(); i++) {
+      if (same(list.get(i), s)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+
   public static boolean inList(int x, int first, int second, int... rest) {
     if (x == first || x == second) {
       return true;
@@ -953,6 +970,10 @@ public final class BeeUtils {
     }
   }
 
+  public static boolean isAsciiLetter(char c) {
+    return Ascii.isUpperCase(c) || Ascii.isLowerCase(c);
+  }
+  
   public static boolean isBetween(Double d, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (!isDouble(d)) {
@@ -1222,6 +1243,10 @@ public final class BeeUtils {
     }
   }
 
+  public static boolean isNegative(Integer x) {
+    return (x == null) ? false : x < 0;
+  }
+  
   public static boolean isNonNegative(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;
@@ -1695,19 +1720,19 @@ public final class BeeUtils {
     return null;
   }
 
-  public static int plusPercent(int x, Double p) {
-    if (x != 0 && isDouble(p)) {
-      return x + round(x * p / 100d);
-    } else {
-      return x;
-    }
-  }
-
   public static Double plusPercent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
       return d + d * p / 100d;
     } else {
       return d;
+    }
+  }
+
+  public static int plusPercent(int x, Double p) {
+    if (x != 0 && isDouble(p)) {
+      return x + round(x * p / 100d);
+    } else {
+      return x;
     }
   }
 
