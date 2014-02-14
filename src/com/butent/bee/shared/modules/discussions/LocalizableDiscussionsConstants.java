@@ -85,4 +85,6 @@ public interface LocalizableDiscussionsConstants {
   String discussStatusNew();
 
   String discussStarred();
+
+  String more();
 }

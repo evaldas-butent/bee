@@ -1280,6 +1280,13 @@
   cursor: default;
 }
 
+.bee-Workspace-caption {
+  width: 150px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .bee-Workspace-newTab {
   margin-left: 1px;
   width: 25px;

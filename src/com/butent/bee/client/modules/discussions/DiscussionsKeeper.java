@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 
 public final class DiscussionsKeeper {
 
@@ -38,6 +39,7 @@ public final class DiscussionsKeeper {
   static ParameterList createDiscussionRpcParameters(DiscussionEvent event) {
     return createArgs(DISCUSSIONS_PREFIX + event.name());
   }
+
 
   private DiscussionsKeeper() {
 

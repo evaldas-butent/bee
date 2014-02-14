@@ -47,11 +47,16 @@
   
   <!ENTITY relDocumentsLbl "&lblRight;">
   <!ENTITY relDocumentsInp "&inpLeft; width: 400px;">
+  <!ENTITY separator "<hr/>">
+  <!ENTITY header "font-style: italic;">
+  <!ENTITY lbl1 "&inline; max-width: 128px; min-width: 110px; text-align: right; padding-right: 18px; min-height: 20px; max-height: 20px; padding-top: 1px;">
+  <!ENTITY inp2x "&inline; width: 540px;">
+  <!ENTITY top1 "text-align: right; padding-right: 18px; max-width: 128px; padding-top: 1px;">
   
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
-  caption="=discussion" >
+  caption="=discussion">
 
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
@@ -67,8 +72,9 @@
           readOnly="true" />
       </FlowPanel>
     </FlowPanel>
-    
-    <FlowPanel name ="DiscussMarkTypes" class="flexBox-horizontal bee-discuss-markTypes-container" />
+
+    <FlowPanel name="DiscussMarkTypes"
+      class="flexBox-horizontal bee-discuss-markTypes-container" />
 
     <Disclosure xmlns="http://www.butent.com/widget"
       xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
@@ -92,22 +98,20 @@
         <FlowPanel>
           <Label text="=companies" style="&relCompaniesLbl;" />
           <MultiSelector viewName="Companies" property="Companies"
-            renderColumns="Name" style="&relCompaniesInp;"  />
+            renderColumns="Name" style="&relCompaniesInp;" />
         </FlowPanel>
 
         <FlowPanel>
           <Label text="=persons" style="&relPersonsLbl;" />
           <MultiSelector viewName="Persons" property="Persons"
-            renderColumns="FirstName LastName" style="&relPersonsInp;"
-             />
+            renderColumns="FirstName LastName" style="&relPersonsInp;" />
         </FlowPanel>
 
         <FlowPanel>
           <Label text="=calAppointments" style="&relAppoitmentsLbl;" />
           <MultiSelector viewName="Appointments" property="Appointments"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-            newRowEnabled="false" style="&relAppoitmentsInp;"
-            />
+            newRowEnabled="false" style="&relAppoitmentsInp;" />
         </FlowPanel>
 
         <FlowPanel>
@@ -133,34 +137,39 @@
         </FlowPanel>
 
         <FileGroup name="Files" />
+         &separator;
+        <FlowPanel class="flexBox-horizontal">
+          <Label text="=announcement" style="&header;" />
+        </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal">
+          <Label text="=adTopic" style="&lbl1; min-width:150px;" />
+          <DataSelector source="Topic" style="&inp2x; width: 250px"
+            choiceColumns="Name" filter="Visible" disablable="false"/>
+        </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal">
+          <Label text="=displayInBoard" style="&lbl1; min-width:150px;" />
+          <Label text="=dateFromShort"
+            style="text-transform: lowercase; margin-right:4px" />
+          <InputDateTime source="VisibleFrom"
+            style="&inp2x; width: 100px; margin-right:8px" disablable="false" />
+          <Label text="=dateToShort"
+            style="text-transform: lowercase; margin-right:4px" />
+          <InputDateTime source="VisibleTo" style="&inp2x; width: 100px" disablable="false" />
+        </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal">
+          <CheckBox name="Important" source="Important" text="=important"
+            style="&top1; min-width:70px; padding-right:18px;" disablable="false"/>
+          <CheckBox name="PermitComment" source="PermitComment"
+            text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" 
+            disablable="false" />
+        </FlowPanel>
       </FlowPanel>
     </Disclosure>
-    
-    <Disclosure xmlns="http://www.butent.com/widget"
-      xmlns:xi="http://www.w3.org/2001/XInclude" open="false">
-      <Label text="=announcement" style="text-transform: uppercase;" />
-      <FlowPanel class="flexBox-vertical" style="&discussDataPanel;">
-        <FlowPanel>
-          <Label text="=adTopic" style=" min-width:80px;" />
-          <DataSelector source="Topic" style=" width: 250px" 
-            choiceColumns="Name" filter="Visible" />
-        </FlowPanel>
-        
-        <FlowPanel>
-          <Label text="=onTitle" style=" min-width:80px;" />
-          <InputDateTime source="VisibleFrom" style=" width: 100px" />
-          <Label html="—" style="margin-left:8px; margin-right:8px" />
-          <InputDateTime source="VisibleTo" style=" width: 100px" />
-        </FlowPanel>  
-        
-        <FlowPanel >
-          <Label text="=important" style=" min-width:80px;" />
-          <CheckBox source="Important" style=" min-width:70px; padding-right:18px;" /> 
-          <Label text="=prohibitComment" style=" min-width:80px;" />
-          <CheckBox source="PermitComment" style=" min-width:70px; padding-right:18px;" /> 
-        </FlowPanel>
-      </FlowPanel>
-    </Disclosure>
+
+
 
     <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container"
       style="&commentsPanel;" />

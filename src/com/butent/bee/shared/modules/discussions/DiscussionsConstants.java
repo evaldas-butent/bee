@@ -102,6 +102,7 @@ public final class DiscussionsConstants {
   public static final String STYLE_SHEET = "discuss";
 
   public static final String ALS_BIRTHDAY = "Birthday";
+  public static final String ALS_BIRTHDAY_VALID = "BirthdayValid";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_LAST_COMMET = "LastComment";

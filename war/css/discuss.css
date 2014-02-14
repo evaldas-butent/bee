@@ -205,6 +205,9 @@
 .bee-discuss-adsFormContent {
   background-color: white;
   margin-left: 1em;
+  word-wrap: normal;
+  margin: 1ex;
+  width: 95%;
 }
 
 .bee-discuss-adsFormContent-TopicName {
@@ -231,7 +234,7 @@
 .bee-discuss-adsFormContent-TopicName > td {
   border-bottom: 2px solid #ccc;
   width: 100%;
-  padding-top: 2em;
+  padding-top: 1em;
 }
 
 .bee-discuss-adsFormContent-Created {
@@ -240,7 +243,7 @@
 
 .bee-discuss-adsFormContent-Subject {
   font-weight: bolder;
-  width: 100%;
+ /* width: 100%;*/
   vertical-align: top;
   padding-left: 1ex;
 }
@@ -251,7 +254,7 @@
 }
 
 .bee-discuss-adsFormContent-Description {
-  width: 100%;
+ /* width: 100%;*/
   vertical-align: top;
   padding: 1ex;
   max-height: 370px;
@@ -297,4 +300,22 @@
 
 .bee-discuss-adsFormContent-DescriptionBirthday-birthList > td {
   padding-left: 1em;
+}
+
+.bee-discuss-adsFormContent-action {
+  text-align: center;
+}
+
+.bee-discuss-adsFormContent-actionDiscussion {
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  width: 50px;
+  height: 1em;
+  padding: 0px;
+  padding-bottom: 1ex;
+  line-height: 5px;
+  letter-spacing: 2px;
+  background: white;
 }

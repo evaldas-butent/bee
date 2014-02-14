@@ -756,8 +756,21 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject getAnnouncements() {
     Long birthTopic = prm.getRelation(PRM_DISCUSS_BIRTHDAYS);
+    DateTime nowStart = new DateTime();
+    nowStart.setHour(0);
+    nowStart.setMinute(0);
+    nowStart.setSecond(0);
+    nowStart.setMillis(0);
+
+    DateTime nowFinish = new DateTime();
+    nowFinish.setHour(23);
+    nowFinish.setMinute(59);
+    nowFinish.setSecond(59);
+    nowFinish.setMillis(999);
+
 
     SqlSelect select = new SqlSelect()
+        .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
         .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
         .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
         .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
@@ -783,14 +796,37 @@ public class DiscussionsModuleBean implements BeeModule {
                 CommonsConstants.COL_PERSON))
         .setWhere(SqlUtils.and(
             SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
-            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
-            ))
+            SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
+                    SqlUtils.or(
+                        SqlUtils.and(
+                            SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                                .currentTimeMillis()),
+                            SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                                .currentTimeMillis())
+                            ),
+                        SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                            )
+                        )))
         .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
         .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED);
 
     if (DataUtils.isId(birthTopic)) {
       select.addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS),
           birthTopic), true, null), ALS_BIRTHDAY);
+      select.addExpr(SqlUtils.sqlIf(SqlUtils.or(
+                        SqlUtils.and(
+                            SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                                .currentTimeMillis()),
+                            SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                                .currentTimeMillis())
+                            ),
+                        SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                            )
+          ), true, null), ALS_BIRTHDAY_VALID);
 
       select.setWhere(SqlUtils.or(
           select.getWhere(),

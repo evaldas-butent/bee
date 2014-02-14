@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.discussions;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
@@ -8,6 +9,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
@@ -18,12 +20,14 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -37,6 +41,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_PREFIX = "bee-discuss-adsFormContent-";
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
+  private static final String STYLE_ACTION = "action";
 
   @Override
   public FormInterceptor getInstance() {
@@ -102,7 +107,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
               renderBirthdaySection(rsRow, rs, adsTable);
               publishedBirths = true;
             }
-            renderAnnoucementsSection(rsRow, rs, adsTable);
+            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY_VALID)])) {
+              renderAnnoucementsSection(rsRow, rs, adsTable);
+            }
           } else {
             renderAnnoucementsSection(rsRow, rs, adsTable);
           }
@@ -141,6 +148,29 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
         + COL_DESCRIPTION);
 
     row++;
+    
+    final Long rowId = BeeUtils.toLongOrNull(rsRow[rs.getColumnIndex(COL_DISCUSSION)]);
+
+    if (DataUtils.isId(rowId)) {
+      ScheduledCommand command = new ScheduledCommand() {
+        
+        @Override
+        public void execute() {
+          RowEditor.openRow(VIEW_DISCUSSIONS, rowId, false, null);
+        }
+      };
+
+      Button moreButton = new Button("...", command);
+      moreButton.setTitle(Localized.getConstants().more());
+      moreButton.addStyleName(STYLE_PREFIX + STYLE_ACTION + COL_DISCUSSION);
+      adsTable.setText(row, 0, BeeConst.STRING_EMPTY);
+      adsTable.setWidget(row, 1, moreButton);
+
+      adsTable.getRow(row).addClassName(STYLE_PREFIX + STYLE_ACTION);
+      // adsTable.getCellFormatter().setColSpan(row, 0, 2);
+
+      row++;
+    }
     adsTable.setHtml(row, 0, BeeConst.STRING_EMPTY);
 
     adsTable.getRow(row).addClassName(STYLE_PREFIX + BeeConst.EMPTY);
@@ -160,7 +190,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
     row++;
     Image img = new Image(Global.getImages().cake());
     img.addStyleName(STYLE_PREFIX + COL_OWNER + ALS_BIRTHDAY);
-    adsTable.setHtml(row, 0, img.toString(), STYLE_PREFIX + COL_OWNER);
+    adsTable.setWidget(row, 0, img, STYLE_PREFIX + COL_OWNER);
     adsTable.getCellFormatter().setRowSpan(row, 0, 2);
 
     adsTable.setHtml(row, 1, Localized.getConstants().birthdaysParties(), STYLE_PREFIX
