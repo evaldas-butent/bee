@@ -349,6 +349,7 @@
   margin-top: 5px;
   border: 1px solid #444;
   padding-left: 2px;
+  cursor: pointer;
 }
 
 .bee-cal-ColorBar-item {

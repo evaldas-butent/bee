@@ -373,7 +373,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       if (event.isUpdated()) {
         calendar.removeAppointment(event.getAppointment().getId(), false);
       }
-      calendar.addItem(event.getAppointment(), true);
+      calendar.addItem(event.getAppointment());
     }
   }
 
@@ -532,12 +532,15 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
   }
 
-  void updateSettings(BeeRow row, List<BeeColumn> columns) {
+  void updateSettings(BeeRow row, List<BeeColumn> columns, boolean requery) {
     getSettings().loadFrom(row, columns);
 
     int viewIndex = updateViews(getSettings());
     boolean updated = activateView(views.get(viewIndex));
-    if (!updated) {
+    
+    if (requery) {
+      refresh(true);
+    } else if (!updated) {
       refreshCalendar(true);
     }
   }
@@ -759,7 +762,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       changed = true;
     }
 
-    if (appointment.getStart().equals(newStart) && appointment.getEnd().equals(newEnd)) {
+    if (appointment.getStartTime().equals(newStart) && appointment.getEndTime().equals(newEnd)) {
       return changed;
     }
 

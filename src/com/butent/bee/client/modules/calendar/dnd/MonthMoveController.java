@@ -103,9 +103,9 @@ public class MonthMoveController implements MoveEvent.Handler {
     if (getItemWidget().isAppointment()) {
       Appointment appointment = (Appointment) getItemWidget().getItem();
 
-      if (!TimeUtils.sameDate(date, appointment.getStart())) {
-        DateTime start = TimeUtils.combine(date, appointment.getStart());
-        DateTime end = TimeUtils.combine(date, appointment.getEnd());
+      if (!TimeUtils.sameDate(date, appointment.getStartTime())) {
+        DateTime start = TimeUtils.combine(date, appointment.getStartTime());
+        DateTime end = TimeUtils.combine(date, appointment.getEndTime());
 
         monthView.updateAppointment(appointment, start, end, BeeConst.UNDEF, BeeConst.UNDEF);
       }

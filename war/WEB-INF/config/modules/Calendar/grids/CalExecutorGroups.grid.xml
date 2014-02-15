@@ -19,7 +19,7 @@
       <editor type="color" />
     </DataColumn>
 
-    <RelColumn name="Style" visible="false" />
+    <RelColumn name="Style" />
   </g:columns>
 </g:Grid>
 

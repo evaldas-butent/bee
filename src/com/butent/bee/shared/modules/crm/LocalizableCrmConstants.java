@@ -154,6 +154,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskObservers();
 
+  String crmTaskPriority();
+
   String crmTaskPriorityHigh();
 
   String crmTaskPriorityLow();
@@ -171,6 +173,8 @@ public interface LocalizableCrmConstants {
   String crmTasksList();
 
   String crmTasksObservedTasks();
+
+  String crmTaskStatus();
 
   String crmTaskStatusActive();
 

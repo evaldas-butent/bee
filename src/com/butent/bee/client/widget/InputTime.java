@@ -253,8 +253,8 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   @Override
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
-        .or(CharMatcher.is(DateTime.TIME_FIELD_SEPARATOR))
-        .or(CharMatcher.is(DateTime.MILLIS_SEPARATOR));
+        .or(CharMatcher.is(TimeUtils.TIME_FIELD_SEPARATOR))
+        .or(CharMatcher.is(TimeUtils.MILLIS_SEPARATOR));
   }
   
   protected int getDefaultMaxLength() {

@@ -104,4 +104,5 @@
   <module name="FileTabCharacter"/>
   <module name="Translation"/>
   <module name="SuppressionCommentFilter"/>
+  <module name="UniqueProperties"/>
 </module>

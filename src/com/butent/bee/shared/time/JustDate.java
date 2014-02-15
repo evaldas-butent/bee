@@ -13,8 +13,6 @@ import java.util.Date;
  */
 public class JustDate extends AbstractDate implements Comparable<JustDate> {
 
-  public static final char FIELD_SEPARATOR = '-';
-
   public static JustDate copyOf(JustDate original) {
     if (original == null) {
       return null;
@@ -304,7 +302,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   @Override
   public String toString() {
-    return TimeUtils.dateToString(this, FIELD_SEPARATOR);
+    return TimeUtils.dateToString(this);
   }
 
   private void computeFields() {

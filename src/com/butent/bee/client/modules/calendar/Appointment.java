@@ -4,21 +4,23 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.calendar.CalendarHelper.KEY_PERIOD;
+import static com.butent.bee.shared.modules.calendar.CalendarHelper.build;
+import static com.butent.bee.shared.modules.calendar.CalendarHelper.joinChildren;
+import static com.butent.bee.shared.modules.calendar.CalendarHelper.wrap;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.modules.calendar.CalendarItem;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -83,11 +85,9 @@ public class Appointment extends CalendarItem {
         wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER));
 
     TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
-        BeeConst.STRING_EMPTY, wrap(ALS_COMPANY_NAME),
-        BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
-            wrap(COL_VEHICLE_NUMBER)), BeeConst.STRING_EMPTY,
-        wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS), BeeConst.STRING_EMPTY,
-        wrap(COL_DESCRIPTION), BeeConst.STRING_EMPTY, wrap(KEY_REMINDERS));
+        wrap(ALS_COMPANY_NAME), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
+        wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS), wrap(COL_DESCRIPTION),
+        wrap(KEY_REMINDERS));
 
     STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
         wrap(ALS_COMPANY_NAME),
@@ -135,6 +135,11 @@ public class Appointment extends CalendarItem {
     }
   }
 
+  @Override
+  public CalendarItem copy() {
+    return new Appointment(getRow(), getSeparatedAttendee());
+  }
+
   public List<Long> getAttendees() {
     return attendees;
   }
@@ -165,16 +170,6 @@ public class Appointment extends CalendarItem {
   @Override
   public String getDescription() {
     return row.getString(DESCRIPTION_INDEX);
-  }
-
-  @Override
-  public DateTime getEnd() {
-    return row.getDateTime(END_DATE_TIME_INDEX);
-  }
-
-  @Override
-  public long getEndMillis() {
-    return BeeUtils.unbox(row.getLong(END_DATE_TIME_INDEX));
   }
 
   @Override
@@ -234,16 +229,6 @@ public class Appointment extends CalendarItem {
   }
 
   @Override
-  public DateTime getStart() {
-    return row.getDateTime(START_DATE_TIME_INDEX);
-  }
-
-  @Override
-  public long getStartMillis() {
-    return BeeUtils.unbox(row.getLong(START_DATE_TIME_INDEX));
-  }
-
-  @Override
   public String getStringTemplate() {
     return STRING_TEMPLATE;
   }
@@ -254,63 +239,62 @@ public class Appointment extends CalendarItem {
   }
 
   @Override
-  public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users) {
+  public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users,
+      boolean addLabels) {
+
     Map<String, String> result = Maps.newHashMap();
 
     List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
 
     for (int i = 0; i < columns.size(); i++) {
-      String key = columns.get(i).getId();
-      String value = row.getString(i);
+      BeeColumn column = columns.get(i);
+      String key = column.getId();
+      String value = DataUtils.render(column, row, i);
 
-      if (key.equals(COL_STATUS) && BeeUtils.isInt(value)) {
-        value = EnumUtils.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
-      } else if (value != null && ValueType.DATE_TIME.equals(columns.get(i).getType())) {
-        value = CalendarUtils.renderDateTime(row.getDateTime(i));
-      }
-
-      result.put(wrap(key), BeeUtils.trim(value));
+      result.put(wrap(key), build(Localized.getLabel(column), value, addLabels));
     }
 
-    String attNames = BeeConst.STRING_EMPTY;
-    String ownerNames = BeeConst.STRING_EMPTY;
-    String propNames = BeeConst.STRING_EMPTY;
-    String remindNames = BeeConst.STRING_EMPTY;
+    List<String> attNames = Lists.newArrayList();
+    List<String> ownerNames = Lists.newArrayList();
+    List<String> propNames = Lists.newArrayList();
+    List<String> remindNames = Lists.newArrayList();
 
     if (!getAttendees().isEmpty()) {
       for (Long id : getAttendees()) {
-        attNames = BeeUtils.join(CHILD_SEPARATOR, attNames,
-            CalendarKeeper.getAttendeeCaption(calendarId, id));
+        attNames.add(CalendarKeeper.getAttendeeCaption(calendarId, id));
       }
     }
 
     if (!getOwners().isEmpty()) {
       for (Long id : getOwners()) {
         if (users.containsKey(id)) {
-          ownerNames = BeeUtils.join(CHILD_SEPARATOR, ownerNames, users.get(id).getUserSign());
+          ownerNames.add(users.get(id).getUserSign());
         }
       }
     }
 
     if (!getProperties().isEmpty()) {
       for (Long id : getProperties()) {
-        propNames = BeeUtils.join(CHILD_SEPARATOR, propNames, CalendarKeeper.getPropertyName(id));
+        propNames.add(CalendarKeeper.getPropertyName(id));
       }
     }
 
     if (!getReminders().isEmpty()) {
       for (Long id : getReminders()) {
-        remindNames = BeeUtils.join(CHILD_SEPARATOR, remindNames,
-            CalendarKeeper.getReminderTypeName(id));
+        remindNames.add(CalendarKeeper.getReminderTypeName(id));
       }
     }
 
-    result.put(wrap(KEY_RESOURCES), attNames);
-    result.put(wrap(KEY_OWNERS), ownerNames);
-    result.put(wrap(KEY_PROPERTIES), propNames);
-    result.put(wrap(KEY_REMINDERS), remindNames);
+    result.put(wrap(KEY_RESOURCES), build(Localized.getConstants().calAppointmentAttendees(),
+        joinChildren(attNames), addLabels));
+    result.put(wrap(KEY_OWNERS), build(Localized.getConstants().responsiblePersons(),
+        joinChildren(ownerNames), addLabels));
+    result.put(wrap(KEY_PROPERTIES), build(Localized.getConstants().calParameters(),
+        joinChildren(propNames), addLabels));
+    result.put(wrap(KEY_REMINDERS), joinChildren(remindNames));
 
-    result.put(wrap(KEY_PERIOD), CalendarUtils.renderPeriod(getStart(), getEnd()));
+    result.put(wrap(KEY_PERIOD), build(Localized.getConstants().period(),
+        TimeUtils.renderPeriod(getStart(), getEnd(), !addLabels), addLabels));
 
     return result;
   }
@@ -355,5 +339,15 @@ public class Appointment extends CalendarItem {
       attendees.addAll(ids);
     }
     row.setProperty(TBL_APPOINTMENT_ATTENDEES, DataUtils.buildIdList(ids));
+  }
+
+  @Override
+  protected DateTime getEnd() {
+    return row.getDateTime(END_DATE_TIME_INDEX);
+  }
+
+  @Override
+  protected DateTime getStart() {
+    return row.getDateTime(START_DATE_TIME_INDEX);
   }
 }

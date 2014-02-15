@@ -30,13 +30,13 @@ public class WeekLayoutDescription {
   }
 
   public void addItem(CalendarItem item) {
-    int dayOfWeek = dayInWeek(item.getStart(), false);
+    int dayOfWeek = dayInWeek(item.getStartTime(), false);
     initDay(dayOfWeek).addItem(item);
   }
 
   public void addMultiDayItem(CalendarItem item) {
-    int weekStartDay = dayInWeek(item.getStart(), false);
-    int weekEndDay = dayInWeek(item.getEnd(), true);
+    int weekStartDay = dayInWeek(item.getStartTime(), false);
+    int weekEndDay = dayInWeek(item.getEndTime(), true);
 
     stackingManager.assignLayer(weekStartDay, weekEndDay, item);
   }
@@ -44,14 +44,14 @@ public class WeekLayoutDescription {
   public void addMultiWeekItem(CalendarItem item, WidgetPart part) {
     switch (part) {
       case FIRST_WEEK:
-        int weekStartDay = dayInWeek(item.getStart(), false);
+        int weekStartDay = dayInWeek(item.getStartTime(), false);
         stackingManager.assignLayer(weekStartDay, LAST_DAY, item);
         break;
       case IN_BETWEEN:
         stackingManager.assignLayer(FIRST_DAY, LAST_DAY, item);
         break;
       case LAST_WEEK:
-        int weekEndDay = dayInWeek(item.getEnd(), true);
+        int weekEndDay = dayInWeek(item.getEndTime(), true);
         stackingManager.assignLayer(FIRST_DAY, weekEndDay, item);
         break;
     }

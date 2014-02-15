@@ -259,8 +259,8 @@ public final class CalendarLayoutManager {
       adapter.setColumnStart(columnStart);
       adapter.setColumnSpan(columnSpan);
 
-      DateTime startDate = adapter.getItem().getStart();
-      DateTime endDate = adapter.getItem().getEnd();
+      DateTime startDate = adapter.getItem().getStartTime();
+      DateTime endDate = adapter.getItem().getEndTime();
 
       for (int r = 0; r < adapters.size(); r++) {
         boolean isRowOccupied = false;

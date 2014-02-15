@@ -81,12 +81,9 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
     sinkEvents(Event.ONMOUSEDOWN | Event.ONDBLCLICK);
   }
 
-  public void addItem(CalendarItem item, boolean refresh) {
-    Assert.notNull(item);
-    dataManager.addItem(item);
-    if (refresh) {
-      refresh(false);
-    }
+  public void addItem(CalendarItem item) {
+    dataManager.addItem(item, settings);
+    refresh(false);
   }
 
   @Override
@@ -141,7 +138,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
       final long startMillis = System.currentTimeMillis();
       final Range<DateTime> range = getView().getVisibleRange();
 
-      dataManager.loadItems(calendarId, range, force, new IntCallback() {
+      dataManager.loadItems(calendarId, range, settings, force, new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
           logger.debug("load", CalendarUtils.renderRange(range), result,

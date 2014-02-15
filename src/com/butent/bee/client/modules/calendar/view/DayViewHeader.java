@@ -31,13 +31,13 @@ public class DayViewHeader extends Horizontal {
     
     labelFormats.put(Range.lessThan(35), DateTimeFormat.getFormat("d"));
     labelFormats.put(Range.closedOpen(35, 45),
-        DateTimeFormat.getFormat("M" + JustDate.FIELD_SEPARATOR + "d"));
+        DateTimeFormat.getFormat("M" + TimeUtils.DATE_FIELD_SEPARATOR + "d"));
     labelFormats.put(Range.closedOpen(45, 60),
-        DateTimeFormat.getFormat("MM" + JustDate.FIELD_SEPARATOR + "dd"));
+        DateTimeFormat.getFormat("MM" + TimeUtils.DATE_FIELD_SEPARATOR + "dd"));
     labelFormats.put(Range.closedOpen(60, 120),
-        DateTimeFormat.getFormat("EEE, MM" + JustDate.FIELD_SEPARATOR + "dd"));
+        DateTimeFormat.getFormat("EEE, MM" + TimeUtils.DATE_FIELD_SEPARATOR + "dd"));
     labelFormats.put(Range.closedOpen(120, 150),
-        DateTimeFormat.getFormat("EEEE, MM" + JustDate.FIELD_SEPARATOR + "dd"));
+        DateTimeFormat.getFormat("EEEE, MM" + TimeUtils.DATE_FIELD_SEPARATOR + "dd"));
     labelFormats.put(Range.atLeast(150), DateTimeFormat.getFormat("EEEE, MMMM d"));
   }
 

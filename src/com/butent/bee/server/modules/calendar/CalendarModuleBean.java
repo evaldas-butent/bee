@@ -111,7 +111,7 @@ public class CalendarModuleBean implements BeeModule {
   private static BeeLogger logger = LogUtils.getLogger(CalendarModuleBean.class);
 
   private static String formatMinutes(int minutes) {
-    return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + DateTime.TIME_FIELD_SEPARATOR
+    return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + TimeUtils.TIME_FIELD_SEPARATOR
         + TimeUtils.padTwo(minutes % TimeUtils.MINUTES_PER_HOUR);
   }
 
@@ -1251,7 +1251,7 @@ public class CalendarModuleBean implements BeeModule {
         .addField(CommonsConstants.TBL_COMPANIES,
             CommonsConstants.COL_COMPANY_NAME, CommonsConstants.ALS_COMPANY_NAME)
         .addFrom(source)
-        .addFromInner(CommonsConstants.TBL_COMPANIES,
+        .addFromLeft(CommonsConstants.TBL_COMPANIES,
             sys.joinTables(CommonsConstants.TBL_COMPANIES, source, CrmConstants.COL_COMPANY))
         .setWhere(where)
         .addOrder(source, CrmConstants.COL_START_TIME, CrmConstants.COL_FINISH_TIME, idName);
@@ -1360,8 +1360,8 @@ public class CalendarModuleBean implements BeeModule {
     filter.add(Filter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
     filter.add(Filter.isLess(COL_START_DATE_TIME, new LongValue(BeeUtils.toLong(end))));
     
-    filter.add(Filter.in(sys.getIdName(TBL_ATTENDEES), VIEW_APPOINTMENT_ATTENDEES, COL_APPOINTMENT,
-        Filter.any(COL_ATTENDEE, resources)));
+    filter.add(Filter.in(sys.getIdName(TBL_APPOINTMENTS), VIEW_APPOINTMENT_ATTENDEES,
+        COL_APPOINTMENT, Filter.any(COL_ATTENDEE, resources)));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, filter);
     if (appointments.isEmpty()) {

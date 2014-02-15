@@ -370,7 +370,7 @@ public class DayMoveController implements MoveEvent.Handler {
     setPointerOffsetX(mover.getStartX() - widget.getElement().getAbsoluteLeft());
     setPointerOffsetY(mover.getStartY() - widget.getElement().getAbsoluteTop());
 
-    long maxMillis = TimeUtils.startOfDay(widget.getItem().getStart(), 1).getTime()
+    long maxMillis = TimeUtils.startOfDay(widget.getItem().getStartTime(), 1).getTime()
         - widget.getItem().getDuration();
     setMaxTop(CalendarUtils.getIntervalStartPixels(new DateTime(maxMillis), getSettings()));
 
