@@ -552,11 +552,12 @@
 
 .bee-cal-Controller {
   overflow: hidden;
+  background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);  
 }
 .bee-cal-Controller-disclosure {
   position: absolute;
   left: 10px;
-  top: 20px;
+  top: 8px;
 }
 .bee-cal-Controller-open .bee-cal-Controller-disclosure-closed {
   display: none;
@@ -568,7 +569,7 @@
 .bee-cal-Controller-datePicker {
   position: absolute;
   left: 35px;
-  top: 20px;
+  top: 8px;
   transition: top 200ms;
 }
 .bee-cal-Controller-closed .bee-cal-Controller-datePicker {
@@ -578,13 +579,17 @@
 .bee-cal-Controller-datePicker img {
   -webkit-filter: grayscale(100%);
 }
+.bee-cal-Controller-datePicker .bee-DatePicker-days td {
+  height: 16px;
+  font-size: 12px;
+}
 
 .bee-cal-Controller-tablePanel {
   position: absolute;
   left: 10px;
   right: 5px;
-  top: 250px;
-  bottom: 80px;
+  top: 160px;
+  bottom: 40px;
   overflow: auto;
   transition: top 200ms;
 }
@@ -598,11 +603,11 @@
   line-height: 11px;
 }
 .bee-cal-Controller-table tr:hover {
-  background-color: #f2f2f2;
+  background-color: #e8e8e8;
 }
 
 .bee-cal-Controller-closed .bee-cal-Controller-tablePanel {
-  top: 50px;
+  top: 32px;
 }
 
 .bee-cal-Controller-color {
@@ -620,12 +625,23 @@
   min-width: 50px;
 }
 
-.bee-cal-Controller-table td img {
+.bee-cal-Controller-table .bee-fa-label {
   visibility: hidden;
-  width: 18px;
+  font-size: 18px;
+  padding: 2px;
 }
-.bee-cal-Controller-table tr:hover td img {
+.bee-cal-Controller-table tr:hover .bee-fa-label {
   visibility: visible;
+}
+
+.bee-cal-Controller-up:hover,
+.bee-cal-Controller-down:hover {
+  background-color: green;
+  color: white;
+}
+.bee-cal-Controller-remove:hover {
+  background-color: red;
+  color: white;
 }
 
 .bee-cal-Controller-table tr:first-child .bee-cal-Controller-up {
@@ -642,7 +658,7 @@
   position: absolute;
   left: 16px;
   width: 180px;
-  bottom: 40px;
+  bottom: 8px;
 } 
 
 .bee-cal-Controller-colorPicker {
