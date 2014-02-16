@@ -28,12 +28,13 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.calendar.CalendarView.Type;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
@@ -43,6 +44,7 @@ import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
@@ -53,6 +55,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderSilverImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -74,9 +77,10 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -90,27 +94,35 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
+public class CalendarPanel extends Split implements AppointmentEvent.Handler, Presenter, View,
     Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain,
     HandlesAllDataEvents {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
   private static final String STYLE_PANEL = "bee-cal-Panel";
-  private static final String STYLE_CONTROLS = "bee-cal-Panel-controls";
+  private static final String STYLE_PREFIX = STYLE_PANEL + "-";
 
-  private static final String STYLE_TODAY = "bee-cal-Panel-today";
+  private static final String STYLE_CONTROLS = STYLE_PREFIX + "controls";
 
-  private static final String STYLE_NAV_CONTAINER = "bee-cal-Panel-navContainer";
-  private static final String STYLE_NAV_ITEM = "bee-cal-Panel-navItem";
-  private static final String STYLE_NAV_PREV = "bee-cal-Panel-navPrev";
-  private static final String STYLE_NAV_NEXT = "bee-cal-Panel-navNext";
+  private static final String STYLE_TODAY = STYLE_PREFIX + "today";
 
-  private static final String STYLE_DATE = "bee-cal-Panel-date";
+  private static final String STYLE_NAV_CONTAINER = STYLE_PREFIX + "navContainer";
+  private static final String STYLE_NAV_ITEM = STYLE_PREFIX + "navItem";
+  private static final String STYLE_NAV_PREV = STYLE_PREFIX + "navPrev";
+  private static final String STYLE_NAV_NEXT = STYLE_PREFIX + "navNext";
 
-  private static final String STYLE_VIEW_PREFIX = "bee-cal-Panel-view-";
+  private static final String STYLE_DATE = STYLE_PREFIX + "date";
 
-  private static final String STYLE_CALENDAR = "bee-cal-Panel-calendar";
+  private static final String STYLE_VIEW_PREFIX = STYLE_PREFIX + "view-";
+
+  private static final String STYLE_CALENDAR = STYLE_PREFIX + "calendar";
+
+  private static final String STYLE_TODO_PREFIX = STYLE_PREFIX + "todo-";
+  private static final String STYLE_TODO_CONTAINER = STYLE_TODO_PREFIX + "container";
+  private static final String STYLE_TODO_HIDDEN = STYLE_TODO_PREFIX + "hidden";
+
+  private static final String TODO_LIST_SUPPLIER_KEY = "grid_calendar_todo_list";
 
   private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
@@ -127,6 +139,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private final Label dateBox;
   private final TabBar viewTabs;
 
+  private final Flow todoContainer;
+
   private final List<ViewType> views = Lists.newArrayList();
 
   private final Timer timer;
@@ -137,7 +151,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   public CalendarPanel(long calendarId, String caption, CalendarSettings settings,
       BeeRowSet ucAttendees) {
-    super();
+    super(BeeConst.UNDEF);
     addStyleName(STYLE_PANEL);
 
     this.calendarId = calendarId;
@@ -182,6 +196,15 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS, Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
+    Button todoListCommand = new Button(Localized.getConstants().crmTodoList());
+    todoListCommand.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        showTodoList();
+      }
+    });
+    header.addCommandItem(todoListCommand);
+
     this.dateBox = new Label();
     dateBox.addStyleName(STYLE_DATE);
 
@@ -213,7 +236,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     };
     timer.scheduleRepeating(TimeUtils.MILLIS_PER_MINUTE);
 
-    add(header);
+    addNorth(header, header.getHeight());
 
     Label today = new Label(Localized.getConstants().calToday());
     today.addStyleName(STYLE_TODAY);
@@ -265,7 +288,12 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     controls.add(nav);
 
     controls.add(viewTabs);
-    add(controls);
+    addNorth(controls, 40);
+
+    this.todoContainer = new Flow(STYLE_TODO_CONTAINER);
+    addEast(todoContainer, 0, 2);
+
+    addStyleName(STYLE_TODO_HIDDEN);
 
     Simple container = new Simple();
     container.addStyleName(STYLE_CALENDAR);
@@ -756,6 +784,38 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
 
     dateBox.setHtml(html);
+  }
+
+  private void showTodoList() {
+    if (todoContainer.isEmpty()) {
+      if (getOffsetWidth() < 100) {
+        BeeKeeper.getScreen().notifyWarning("NO");
+        return;
+      }
+
+      GridFactory.createGrid(CrmConstants.GRID_TODO_LIST, TODO_LIST_SUPPLIER_KEY,
+          GridFactory.getGridInterceptor(CrmConstants.GRID_TODO_LIST),
+          EnumSet.of(UiOption.EMBEDDED), null, new PresenterCallback() {
+            @Override
+            public void onCreate(Presenter presenter) {
+              if (!todoContainer.isEmpty()) {
+                todoContainer.clear();
+              }
+             
+              int size = Math.min(getOffsetWidth() / 3, 320);
+              setWidgetSize(todoContainer, size);
+              todoContainer.add(presenter.getWidget());
+
+              removeStyleName(STYLE_TODO_HIDDEN);
+            }
+          });
+
+    } else {
+      todoContainer.clear();
+
+      addStyleName(STYLE_TODO_HIDDEN);
+      setWidgetSize(todoContainer, 0);
+    }
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,

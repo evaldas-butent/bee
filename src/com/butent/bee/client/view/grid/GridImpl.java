@@ -104,6 +104,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -1356,6 +1357,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (getGridInterceptor() != null && event.hasView(getViewName())) {
+      getGridInterceptor().onRowUpdate(event);
+    }
+  }
+
+  @Override
   public void onSettingsChange(SettingsChangeEvent event) {
     GridSettings.onSettingsChange(gridKey, event);
   }
@@ -1475,6 +1483,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     super.onLoad();
 
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
   }
 
   @Override

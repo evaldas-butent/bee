@@ -338,6 +338,7 @@
       <xs:enumeration value="delete" />
       <xs:enumeration value="edit" />
       <xs:enumeration value="filter" />
+      <xs:enumeration value="print" />
       <xs:enumeration value="refresh" />
       <xs:enumeration value="save" />
     </xs:restriction>

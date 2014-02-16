@@ -398,6 +398,8 @@ public final class CrmConstants {
   public static final String PROP_MAIL = "Mail";
 
   public static final String GRID_TASKS = "Tasks";
+  public static final String GRID_TODO_LIST = "TodoList";
+
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";

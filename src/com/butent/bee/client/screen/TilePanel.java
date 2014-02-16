@@ -724,8 +724,11 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
   }
 
-  void addTile(Workspace workspace, Direction direction) {
+  boolean addTile(Workspace workspace, Direction direction) {
     Tile activeTile = getActiveTile();
+    if (activeTile == null) {
+      return false;
+    }
 
     int size = direction.isHorizontal()
         ? activeTile.getOffsetWidth() : activeTile.getOffsetHeight();
@@ -733,9 +736,14 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
     if (size < MIN_SIZE) {
       Global.showError(Lists.newArrayList("Sub-Planck length is not allowed in this universe"));
-      return;
+      return false;
+    } else {
+      addTile(workspace, activeTile, direction, size);
+      return true;
     }
+  }
 
+  void addTile(Workspace workspace, Tile activeTile, Direction direction, int size) {
     LayoutData data = getLayoutData(activeTile);
     if (!data.getDirection().isCenter()
         && direction.isHorizontal() == data.getDirection().isHorizontal()) {

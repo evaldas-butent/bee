@@ -1288,7 +1288,7 @@ public class CalendarModuleBean implements BeeModule {
 
       TaskType type;
       if (!DataUtils.isId(calendarOwner)) {
-        type = TaskType.GENERAL;
+        type = TaskType.ALL;
       } else if (Objects.equal(executor, calendarOwner)) {
         type = TaskType.ASSIGNED;
       } else if (Objects.equal(owner, calendarOwner)) {
@@ -1296,7 +1296,7 @@ public class CalendarModuleBean implements BeeModule {
       } else if (observers.contains(calendarOwner)) {
         type = TaskType.OBSERVED;
       } else {
-        type = TaskType.GENERAL;
+        type = TaskType.ALL;
       }
 
       CalendarTask task = new CalendarTask(type, id, row);

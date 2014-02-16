@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -41,7 +42,7 @@ import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
     EditStartEvent.Handler, ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName,
-    EditorConsumer {
+    EditorConsumer, RowUpdateEvent.Handler {
 
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;

@@ -180,6 +180,8 @@ public final class CrmKeeper {
 
     GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());
 
+    GridFactory.registerGridInterceptor(GRID_TODO_LIST, new TodoListInterceptor());
+
     GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid());
     GridFactory.registerGridInterceptor(GRID_RT_FILES,
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,

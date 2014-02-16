@@ -34,7 +34,7 @@ public enum TaskType implements HasCaption {
     }
   },
 
-  GENERAL(Localized.getConstants().crmTasksList(), Feed.TASKS_ALL) {
+  ALL(Localized.getConstants().crmTasksAll(), Feed.TASKS_ALL) {
     @Override
     public Filter getFilter(LongValue userValue) {
       return null;

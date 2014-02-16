@@ -31,8 +31,6 @@ public class ModalForm extends Popup {
     super(OutsideClick.IGNORE, STYLE_NAME);
     this.requiresUnload = requiresUnload;
 
-    setAnimationEnabled(true);
-
     widget.addStyleName(STYLE_NAME + "-content");
     setWidget(widget);
 

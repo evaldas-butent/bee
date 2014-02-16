@@ -384,11 +384,6 @@
 }
 
 .bee-cal-Panel-controls {
-  position: absolute;
-  top: 30px;
-  height: 40px;
-  left: 0;
-  right: 0;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -444,12 +439,15 @@
   font-weight: bold;
 }
 
-.bee-cal-Panel-calendar {
+.bee-cal-Panel-todo-hidden > .bee-VSplitter {
+  visibility: hidden;
+}
+.bee-cal-Panel-todo-container > .bee-GridContainer {
   position: absolute;
-  top: 70px;
-  bottom: 1px;
-  left: 1px;
-  right: 1px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
 .bee-cal-ReportOptions-container {

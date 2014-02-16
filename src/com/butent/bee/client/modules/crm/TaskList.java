@@ -241,6 +241,11 @@ final class TaskList {
     }
 
     @Override
+    public GridInterceptor getInstance() {
+      return new GridHandler(type, caption);
+    }
+
+    @Override
     public String getSupplierKey() {
       return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", GRID_TASKS, type));
     }
