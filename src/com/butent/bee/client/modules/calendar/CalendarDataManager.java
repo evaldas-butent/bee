@@ -237,15 +237,15 @@ public class CalendarDataManager {
     });
   }
 
-  public boolean removeAppointment(long id) {
-    int index = getAppointmentIndex(id);
+  public boolean removeItem(ItemType type, long id) {
+    int index = getItemIndex(type, id);
     if (BeeConst.isUndef(index)) {
       return false;
     }
 
     do {
       items.remove(index);
-      index = getAppointmentIndex(id);
+      index = getItemIndex(type, id);
     } while (!BeeConst.isUndef(index));
 
     return true;
@@ -257,9 +257,9 @@ public class CalendarDataManager {
     }
   }
   
-  private int getAppointmentIndex(long id) {
+  private int getItemIndex(ItemType type, long id) {
     for (int i = 0; i < items.size(); i++) {
-      if (items.get(i).getId() == id && items.get(i).getItemType() == ItemType.APPOINTMENT) {
+      if (items.get(i).getItemType() == type && items.get(i).getId() == id) {
         return i;
       }
     }

@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
@@ -46,7 +47,7 @@ public class DayView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
-    
+
     widget.clear();
 
     widget.add(dayViewHeader);
@@ -79,12 +80,12 @@ public class DayView extends CalendarView {
     resizeController.setSettings(getSettings());
 
     getItemWidgets().clear();
-    
+
     boolean separate = getSettings().separateAttendees();
     Map<Long, String> attColors = CalendarKeeper.getAttendeeColors(calendarId);
 
     JustDate tmpDate = JustDate.copyOf(date);
-    
+
     for (int i = 0; i < days; i++) {
       List<CalendarItem> simple = CalendarUtils.filterSimple(getItems(), tmpDate,
           attendees, separate);
@@ -100,7 +101,7 @@ public class DayView extends CalendarView {
 
     List<CalendarItem> multi = CalendarUtils.filterMulti(getItems(), date, days,
         attendees, separate);
-    
+
     if (!multi.isEmpty()) {
       List<ItemAdapter> adapters = Lists.newArrayList();
       for (CalendarItem item : multi) {
@@ -182,9 +183,10 @@ public class DayView extends CalendarView {
 
   private void addItemsToGrid(long calendarId, List<ItemAdapter> adapters,
       boolean multi, int columnIndex, boolean separate, Map<Long, String> attColors) {
-    
+
     Orientation footerOrientation = multi ? null : Orientation.VERTICAL;
-    
+    Long userId = BeeKeeper.getUser().getUserId();
+
     for (ItemAdapter adapter : adapters) {
       ItemWidget widget = new ItemWidget(adapter.getItem(), multi,
           columnIndex, adapter.getHeight(), footerOrientation);
@@ -194,7 +196,7 @@ public class DayView extends CalendarView {
 
       widget.setTop(adapter.getTop());
       widget.setHeight(adapter.getHeight());
-      
+
       String bg = null;
       if (separate && attColors != null && widget.isAppointment()) {
         Long sa = ((Appointment) widget.getItem()).getSeparatedAttendee();
@@ -211,9 +213,15 @@ public class DayView extends CalendarView {
         multiDayPanel.getGrid().add(widget);
       } else {
         itemPanel.getGrid().add(widget);
-        
-        widget.getMoveHandle().addMoveHandler(moveController);
-        widget.getResizeHandle().addMoveHandler(resizeController);
+
+        if (widget.getItem().isMovable(userId)) {
+          widget.getMoveHandle().addMoveHandler(moveController);
+          widget.getMoveHandle().addStyleName(CalendarStyleManager.MOVABLE);
+        }
+        if (widget.getItem().isResizable(userId)) {
+          widget.getResizeHandle().addMoveHandler(resizeController);
+          widget.getResizeHandle().addStyleName(CalendarStyleManager.RESIZABLE);
+        }
       }
     }
   }

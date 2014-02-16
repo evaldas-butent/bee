@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -367,8 +368,9 @@ public class MonthView extends CalendarView {
 
     placeItemInGrid(widget, item, multi, colStart, colEnd, row, cellPosition);
 
-    if (!multi) {
+    if (!multi && item.isMovable(BeeKeeper.getUser().getUserId())) {
       widget.getCompactBar().addMoveHandler(moveController);
+      widget.getCompactBar().addStyleName(CalendarStyleManager.MOVABLE);
     }
 
     getItemWidgets().add(widget);

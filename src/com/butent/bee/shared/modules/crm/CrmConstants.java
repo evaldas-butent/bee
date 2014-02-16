@@ -142,6 +142,7 @@ public final class CrmConstants {
   public static final String SVC_GET_TASK_DATA = "get_task_data";
   public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
   public static final String SVC_ACCESS_TASK = "access_task";
+  public static final String SVC_EXTEND_TASK = "extend_task";
 
   public static final String SVC_TASKS_REPORTS_PREFIX = "get_tasks_reports_";
   public static final String SVC_TASKS_REPORTS_COMPANY_TIMES = SVC_TASKS_REPORTS_PREFIX

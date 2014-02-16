@@ -57,14 +57,18 @@ public abstract class CalendarItem implements Comparable<CalendarItem> {
   
   public abstract String getMultiHeaderTemplate();
   
+  public abstract String getPartialBodyTemplate();
+  
+  public abstract String getPartialHeaderTemplate();
+  
   public Range<DateTime> getRange() {
     return Range.closedOpen(getStartTime(), getEndTime());
   }
-  
+
   public abstract Long getSeparatedAttendee();
   
   public abstract String getSimpleBodyTemplate();
-  
+
   public abstract String getSimpleHeaderTemplate();
   
   public long getStartMillis() {
@@ -86,6 +90,8 @@ public abstract class CalendarItem implements Comparable<CalendarItem> {
   
   public abstract String getTitleTemplate();
   
+  public abstract boolean isMovable(Long userId);
+  
   public boolean isMultiDay() {
     return TimeUtils.isMore(getEndTime(), TimeUtils.startOfDay(getStartTime(), 1));
   }
@@ -93,6 +99,8 @@ public abstract class CalendarItem implements Comparable<CalendarItem> {
   public boolean isPartial() {
     return getPartStart() != null;
   }
+
+  public abstract boolean isResizable(Long userId);
   
   public boolean isValid() {
     return getStartTime() != null && getEndTime() != null && getStartMillis() < getEndMillis();

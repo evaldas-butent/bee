@@ -3,6 +3,7 @@ package com.butent.bee.client.view.grid.interceptor;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.IdCallback;
@@ -14,7 +15,10 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants.UserGroupVisibility;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -32,6 +36,20 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
             CommonsConstants.ALS_COMPANY_NAME, CommonsConstants.ALS_POSITION_NAME));
   }
 
+  public static UniqueChildInterceptor forUserGroups(String dialogCaption, String parentColumn,
+      String childColumn) {
+
+    List<String> columns = Lists.newArrayList(CommonsConstants.COL_USER_GROUP_SETTINGS_NAME);
+
+    Filter filter = Filter.or(
+        BeeKeeper.getUser().getFilter(CommonsConstants.COL_USER_GROUP_SETTINGS_OWNER),
+        Filter.isEqual(CommonsConstants.COL_USER_GROUP_SETTINGS_VISIBILITY,
+            IntegerValue.of(UserGroupVisibility.PUBLIC)));
+
+    return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn,
+        CommonsConstants.VIEW_USER_GROUP_SETTINGS, columns, columns, columns, filter);
+  }
+
   private final String dialogCaption;
 
   private final String parentColumn;
@@ -42,6 +60,8 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
   private final List<String> renderColumns;
   private final List<String> choiceColumns;
   private final List<String> searchableColumns;
+
+  private final Filter filter;
 
   public UniqueChildInterceptor(String dialogCaption, String parentColumn, String childColumn,
       String relationViewName, String column) {
@@ -56,12 +76,12 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
   public UniqueChildInterceptor(String dialogCaption, String parentColumn, String childColumn,
       String relationViewName, List<String> renderColumns, List<String> choiceColumns) {
     this(dialogCaption, parentColumn, childColumn, relationViewName, renderColumns, choiceColumns,
-        choiceColumns);
+        choiceColumns, null);
   }
 
   public UniqueChildInterceptor(String dialogCaption, String parentColumn, String childColumn,
       String relationViewName, List<String> renderColumns, List<String> choiceColumns,
-      List<String> searchableColumns) {
+      List<String> searchableColumns, Filter filter) {
     this.dialogCaption = dialogCaption;
     this.parentColumn = parentColumn;
     this.childColumn = childColumn;
@@ -69,6 +89,7 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
     this.renderColumns = renderColumns;
     this.choiceColumns = choiceColumns;
     this.searchableColumns = searchableColumns;
+    this.filter = filter;
   }
 
   @Override
@@ -81,6 +102,10 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
     }
     if (!BeeUtils.isEmpty(searchableColumns)) {
       relation.getSearchableColumns().addAll(searchableColumns);
+    }
+
+    if (filter != null) {
+      relation.setFilter(filter);
     }
 
     final MultiSelector selector = MultiSelector.autonomous(relation, renderColumns);
@@ -122,7 +147,7 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn, relationViewName,
-        renderColumns, choiceColumns, searchableColumns);
+        renderColumns, choiceColumns, searchableColumns, filter);
   }
 
   private void addChildren(final List<Long> children) {

@@ -55,6 +55,12 @@ public final class CalendarStyleManager {
   public static final String APPOINTMENT_BIG = "appointment-big";
   public static final String APPOINTMENT_MULTIDAY = "appointment-multiday";
 
+  public static final String TASK = "task";
+  public static final String PARTIAL = "partial";
+
+  public static final String MOVABLE = "movable";
+  public static final String RESIZABLE = "resizable";
+
   public static final String MONTH_GRID = "grid";
   public static final String MONTH_CANVAS = "canvas";
   

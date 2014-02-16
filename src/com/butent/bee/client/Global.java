@@ -573,7 +573,7 @@ public class Global implements Module {
   }
 
   public static void showError(List<String> messages) {
-    showError(null, messages, null, null);
+    showError(Localized.getConstants().error(), messages, null, null);
   }
 
   public static void showError(String message) {
@@ -582,7 +582,7 @@ public class Global implements Module {
       messages.add(message);
     }
 
-    showError(messages);
+    showError(Localized.getConstants().error(), messages);
   }
 
   public static void showError(String caption, List<String> messages) {

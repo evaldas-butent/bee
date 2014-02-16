@@ -56,6 +56,9 @@ public class Appointment extends CalendarItem {
   private static final String SIMPLE_HEADER_TEMPLATE;
   private static final String SIMPLE_BODY_TEMPLATE;
 
+  private static final String PARTIAL_HEADER_TEMPLATE;
+  private static final String PARTIAL_BODY_TEMPLATE;
+
   private static final String MULTI_HEADER_TEMPLATE;
   private static final String MULTI_BODY_TEMPLATE;
 
@@ -71,28 +74,36 @@ public class Appointment extends CalendarItem {
 
   static {
     SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
-    SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(ALS_COMPANY_NAME),
-        BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL)),
+    SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_APPOINTMENT_LOCATION),
+        wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL),
+            wrap(COL_VEHICLE_MODEL)),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
-        wrap(KEY_OWNERS), wrap(COL_DESCRIPTION), wrap(KEY_REMINDERS));
+        wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
+
+    PARTIAL_HEADER_TEMPLATE = wrap(COL_SUMMARY);
+    PARTIAL_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_APPOINTMENT_LOCATION),
+        wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL),
+            wrap(COL_VEHICLE_MODEL)),
+            wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
+            wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
 
     MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
-    MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(ALS_COMPANY_NAME),
-        wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
-        wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS));
+    MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_APPOINTMENT_LOCATION),
+        wrap(ALS_COMPANY_NAME), wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
+        wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS));
 
-    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY),
-        wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER));
+    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(KEY_PERIOD));
 
-    TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
-        wrap(ALS_COMPANY_NAME), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
+    TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS), wrap(COL_SUMMARY),
+        wrap(COL_APPOINTMENT_LOCATION), wrap(ALS_COMPANY_NAME),
+        wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS), wrap(COL_DESCRIPTION),
         wrap(KEY_REMINDERS));
 
     STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
-        wrap(ALS_COMPANY_NAME),
+        wrap(COL_SUMMARY), wrap(COL_APPOINTMENT_LOCATION), wrap(ALS_COMPANY_NAME),
         BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
-            wrap(COL_VEHICLE_NUMBER)), wrap(COL_SUMMARY),
+            wrap(COL_VEHICLE_NUMBER)),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS), wrap(COL_DESCRIPTION),
         wrap(KEY_REMINDERS));
   }
@@ -199,6 +210,16 @@ public class Appointment extends CalendarItem {
 
   public List<Long> getOwners() {
     return owners;
+  }
+
+  @Override
+  public String getPartialBodyTemplate() {
+    return PARTIAL_BODY_TEMPLATE;
+  }
+
+  @Override
+  public String getPartialHeaderTemplate() {
+    return PARTIAL_HEADER_TEMPLATE;
   }
 
   public List<Long> getProperties() {
@@ -323,6 +344,16 @@ public class Appointment extends CalendarItem {
 
   public String getVehicleParentModel() {
     return row.getString(VEHICLE_PARENT_MODEL_INDEX);
+  }
+
+  @Override
+  public boolean isMovable(Long userId) {
+    return isWhole();
+  }
+
+  @Override
+  public boolean isResizable(Long userId) {
+    return isWhole();
   }
 
   public void setEnd(DateTime end) {

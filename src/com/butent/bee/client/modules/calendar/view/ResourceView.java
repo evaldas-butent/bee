@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.ItemWidget;
@@ -183,6 +184,7 @@ public class ResourceView extends CalendarView {
       boolean multi, int columnIndex, String bg) {
 
     Orientation footerOrientation = multi ? null : Orientation.VERTICAL;
+    Long userId = BeeKeeper.getUser().getUserId();
     
     for (ItemAdapter adapter : adapters) {
       ItemWidget widget = new ItemWidget(adapter.getItem(), multi,
@@ -203,8 +205,14 @@ public class ResourceView extends CalendarView {
       } else {
         viewBody.getGrid().add(widget);
 
-        widget.getMoveHandle().addMoveHandler(moveController);
-        widget.getResizeHandle().addMoveHandler(resizeController);
+        if (widget.getItem().isMovable(userId)) {
+          widget.getMoveHandle().addMoveHandler(moveController);
+          widget.getMoveHandle().addStyleName(CalendarStyleManager.MOVABLE);
+        }
+        if (widget.getItem().isResizable(userId)) {
+          widget.getResizeHandle().addMoveHandler(resizeController);
+          widget.getResizeHandle().addStyleName(CalendarStyleManager.RESIZABLE);
+        }
       }
     }
   }

@@ -52,6 +52,13 @@ public class ItemWidget extends Flow {
     }
 
     addStyleName(styleName);
+    
+    if (item.getItemType() == ItemType.TASK) {
+      addStyleName(CalendarStyleManager.TASK);
+    }
+    if (item.isPartial()) {
+      addStyleName(CalendarStyleManager.PARTIAL);
+    }
 
     this.headerPanel = new Mover(CalendarStyleManager.HEADER);
     this.bodyPanel = new CustomDiv(CalendarStyleManager.BODY);

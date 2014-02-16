@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasRowId;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
@@ -75,6 +76,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -86,6 +88,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
     Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain,
@@ -191,7 +194,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     this.viewTabs = new TabBar(STYLE_VIEW_PREFIX, Orientation.HORIZONTAL);
     viewTabs.setKeyboardNavigationEnabled(false);
-    
+
     viewTabs.addSelectionHandler(new SelectionHandler<Integer>() {
       @Override
       public void onSelection(SelectionEvent<Integer> event) {
@@ -271,7 +274,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     registry.add(AppointmentEvent.register(this));
     registry.add(VisibilityChangeEvent.register(this));
-    
+
     registry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
 
     updateUcAttendees(ucAttendees, false);
@@ -371,7 +374,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         calendar.suspendLayout();
       }
       if (event.isUpdated()) {
-        calendar.removeAppointment(event.getAppointment().getId(), false);
+        calendar.removeItem(ItemType.APPOINTMENT, event.getAppointment().getId(), false);
       }
       calendar.addItem(event.getAppointment());
     }
@@ -379,28 +382,38 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
-    if (hasNonLocalAppointment(event)) {
+    if (hasNonLocalAppointment(event) || isRelevant(event)) {
       refresh(false);
     }
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
-    if (hasNonLocalAppointment(event)) {
+    if (hasNonLocalAppointment(event) || isRelevant(event)) {
       refresh(false);
     }
   }
 
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
-    if (VIEW_APPOINTMENTS.equals(event.getViewName())) {
+    if (event.hasView(VIEW_APPOINTMENTS) || event.hasView(CrmConstants.VIEW_TASKS)) {
+      ItemType type = event.hasView(VIEW_APPOINTMENTS) ? ItemType.APPOINTMENT : ItemType.TASK;
+
       boolean removed = false;
       for (RowInfo rowInfo : event.getRows()) {
-        removed |= calendar.removeAppointment(rowInfo.getId(), false);
+        removed |= calendar.removeItem(type, rowInfo.getId(), false);
       }
 
       if (removed) {
         refreshCalendar(false);
+      }
+
+    } else if (event.hasView(VIEW_CALENDARS)) {
+      for (RowInfo rowInfo : event.getRows()) {
+        if (Objects.equals(rowInfo.getId(), getCalendarId())) {
+          handleAction(Action.CLOSE);
+          break;
+        }
       }
     }
   }
@@ -449,25 +462,31 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   @Override
   public void onRowDelete(RowDeleteEvent event) {
-    if (VIEW_APPOINTMENTS.equals(event.getViewName())) {
-      boolean removed = calendar.removeAppointment(event.getRowId(), false);
+    if (event.hasView(VIEW_APPOINTMENTS) || event.hasView(CrmConstants.VIEW_TASKS)) {
+      ItemType type = event.hasView(VIEW_APPOINTMENTS) ? ItemType.APPOINTMENT : ItemType.TASK;
+      boolean removed = calendar.removeItem(type, event.getRowId(), false);
 
       if (removed) {
         refreshCalendar(false);
+      }
+
+    } else if (event.hasView(VIEW_CALENDARS)) {
+      if (Objects.equals(event.getRowId(), getCalendarId())) {
+        handleAction(Action.CLOSE);
       }
     }
   }
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (hasNonLocalAppointment(event)) {
+    if (hasNonLocalAppointment(event) || isRelevant(event)) {
       refresh(false);
     }
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    if (hasNonLocalAppointment(event)) {
+    if (hasNonLocalAppointment(event) || isRelevant(event)) {
       refresh(false);
     }
   }
@@ -537,7 +556,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     int viewIndex = updateViews(getSettings());
     boolean updated = activateView(views.get(viewIndex));
-    
+
     if (requery) {
       refresh(true);
     } else if (!updated) {
@@ -629,6 +648,22 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
 
     return height - scrollArea.getElement().getClientHeight();
+  }
+
+  private boolean isRelevant(ModificationEvent<?> event) {
+    if (event.hasView(VIEW_CALENDARS)) {
+      if (event instanceof HasRowId) {
+        return Objects.equals(((HasRowId) event).getRowId(), getCalendarId());
+      } else {
+        return true;
+      }
+
+    } else if (event.hasView(CrmConstants.VIEW_TASKS)) {
+      return CalendarKeeper.showsTasks(getCalendarId());
+
+    } else {
+      return false;
+    }
   }
 
   private void navigate(boolean forward) {
@@ -791,7 +826,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     return true;
   }
-  
+
   private int updateViews(CalendarSettings settings) {
     if (!views.isEmpty()) {
       viewTabs.clear();

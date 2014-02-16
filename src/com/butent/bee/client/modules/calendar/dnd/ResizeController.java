@@ -7,9 +7,11 @@ import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarView;
+import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -91,14 +93,19 @@ public class ResizeController implements MoveEvent.Handler {
       if (getCurrentHeight() != getInitialHeight()) {
         int minutes = CalendarUtils.getMinutes(newHeight + getMarginBottom(), getSettings());
 
-        if (getItemWidget().isAppointment()) {
-          Appointment appointment = (Appointment) getItemWidget().getItem();
+        CalendarItem item = getItemWidget().getItem();
+        DateTime newEnd = new DateTime(item.getStartMillis()
+            + minutes * TimeUtils.MILLIS_PER_MINUTE);
+        
+        switch (item.getItemType()) {
+          case APPOINTMENT:
+            calendarView.updateAppointment((Appointment) item, item.getStartTime(), newEnd,
+                itemWidget.getColumnIndex(), itemWidget.getColumnIndex());
+            break;
 
-          DateTime newEnd = new DateTime(appointment.getStartMillis()
-              + minutes * TimeUtils.MILLIS_PER_MINUTE);
-
-          calendarView.updateAppointment(appointment, appointment.getStartTime(), newEnd,
-              itemWidget.getColumnIndex(), itemWidget.getColumnIndex());
+          case TASK:
+            CrmKeeper.extendTask(item.getId(), item.getStartTime(), newEnd);
+            break;
         }
 
         calendarView.getCalendarWidget().refresh(false);

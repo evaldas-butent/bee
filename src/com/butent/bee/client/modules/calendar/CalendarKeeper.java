@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -196,9 +197,9 @@ public final class CalendarKeeper {
         UniqueChildInterceptor.forUsers(Localized.getConstants().calAddExecutors(),
             COL_CALENDAR, COL_EXECUTOR_USER));
 
-    GridFactory.registerGridInterceptor(GRID_CAL_EXECUTOR_GROUPS, new UniqueChildInterceptor(
-        Localized.getConstants().calAddExecutorGroups(), COL_CALENDAR, COL_EXECUTOR_GROUP,
-        CommonsConstants.VIEW_USER_GROUP_SETTINGS, CommonsConstants.COL_USER_GROUP_SETTINGS_NAME));
+    GridFactory.registerGridInterceptor(GRID_CAL_EXECUTOR_GROUPS,
+        UniqueChildInterceptor.forUserGroups(Localized.getConstants().calAddExecutorGroups(),
+            COL_CALENDAR, COL_EXECUTOR_GROUP));
 
     GridFactory.registerGridInterceptor(GRID_APPOINTMENT_ATTENDEES, new UniqueChildInterceptor(
         Localized.getConstants().calAddAttendees(), COL_APPOINTMENT, COL_ATTENDEE, VIEW_ATTENDEES,
@@ -590,6 +591,27 @@ public final class CalendarKeeper {
 
       BeeKeeper.getRpc().makeRequest(params);
     }
+  }
+  
+  static boolean showsTasks(long calendarId) {
+    Boolean value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_ASSIGNED_TASKS);
+    if (BeeUtils.isTrue(value)) {
+      return true;
+    }
+    
+    value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_DELEGATED_TASKS);
+    if (BeeUtils.isTrue(value)) {
+      return true;
+    }
+
+    value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_OBSERVED_TASKS);
+    if (BeeUtils.isTrue(value)) {
+      return true;
+    }
+    
+    Filter filter = Filter.equals(COL_CALENDAR, calendarId);
+    return CACHE.contains(VIEW_CALENDAR_EXECUTORS, filter) 
+        || CACHE.contains(VIEW_CAL_EXECUTOR_GROUPS, filter);
   }
 
   static void synchronizeDate(long calendarId, JustDate date, boolean sourceIsController) {

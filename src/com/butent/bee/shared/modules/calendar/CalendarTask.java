@@ -27,6 +27,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class CalendarTask extends CalendarItem implements BeeSerializable {
 
@@ -38,6 +39,9 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
   private static final String SIMPLE_HEADER_TEMPLATE;
   private static final String SIMPLE_BODY_TEMPLATE;
 
+  private static final String PARTIAL_HEADER_TEMPLATE;
+  private static final String PARTIAL_BODY_TEMPLATE;
+
   private static final String MULTI_HEADER_TEMPLATE;
   private static final String MULTI_BODY_TEMPLATE;
 
@@ -48,14 +52,19 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   static {
     SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
-    SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(ALS_COMPANY_NAME),
-        wrap(COL_STATUS), wrap(CrmConstants.COL_OWNER), wrap(CrmConstants.COL_EXECUTOR),
+    SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_STATUS), wrap(ALS_COMPANY_NAME),
+        wrap(CrmConstants.COL_OWNER), wrap(CrmConstants.COL_EXECUTOR),
+        wrap(CrmConstants.PROP_OBSERVERS));
+
+    PARTIAL_HEADER_TEMPLATE = wrap(COL_SUMMARY);
+    PARTIAL_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
+        wrap(ALS_COMPANY_NAME), wrap(CrmConstants.COL_OWNER), wrap(CrmConstants.COL_EXECUTOR),
         wrap(CrmConstants.PROP_OBSERVERS));
 
     MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
-    MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(ALS_COMPANY_NAME),
-        wrap(COL_STATUS), wrap(CrmConstants.COL_OWNER),
-        wrap(CrmConstants.COL_EXECUTOR), wrap(CrmConstants.PROP_OBSERVERS));
+    MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_STATUS), wrap(ALS_COMPANY_NAME),
+        wrap(CrmConstants.COL_OWNER), wrap(CrmConstants.COL_EXECUTOR),
+        wrap(CrmConstants.PROP_OBSERVERS));
 
     COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(CrmConstants.COL_EXECUTOR));
 
@@ -267,6 +276,16 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
     return owner;
   }
 
+  @Override
+  public String getPartialBodyTemplate() {
+    return PARTIAL_BODY_TEMPLATE;
+  }
+
+  @Override
+  public String getPartialHeaderTemplate() {
+    return PARTIAL_HEADER_TEMPLATE;
+  }
+
   public TaskPriority getPriority() {
     return priority;
   }
@@ -366,6 +385,18 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   public TaskType getType() {
     return type;
+  }
+
+  @Override
+  public boolean isMovable(Long userId) {
+    return isWhole() && isOwner(userId) && getStatus() == TaskStatus.SCHEDULED;
+  }
+
+  @Override
+  public boolean isResizable(Long userId) {
+    return isWhole() && isOwner(userId) && getStatus() != null
+        && TaskStatus.in(getStatus().ordinal(), TaskStatus.NOT_VISITED, TaskStatus.ACTIVE,
+            TaskStatus.SCHEDULED);
   }
 
   @Override
@@ -485,6 +516,10 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   public void setSummary(String summary) {
     this.summary = summary;
+  }
+
+  private boolean isOwner(Long userId) {
+    return userId != null && Objects.equals(getOwner(), userId);
   }
 
   private void setId(long id) {

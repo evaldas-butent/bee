@@ -30,6 +30,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -204,8 +205,8 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
     }
   }
 
-  public boolean removeAppointment(long id, boolean refresh) {
-    boolean removed = dataManager.removeAppointment(id);
+  public boolean removeItem(ItemType type, long id, boolean refresh) {
+    boolean removed = dataManager.removeItem(type, id);
     if (removed && refresh) {
       refresh(false);
     }

@@ -85,6 +85,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -175,6 +176,9 @@ public class CrmModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_TASK_DATA)) {
       response = getTaskData(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_EXTEND_TASK)) {
+      response = extendTask(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CHANGED_TASKS)) {
       response = getChangedTasks();
@@ -487,7 +491,7 @@ public class CrmModuleBean implements BeeModule {
       row.setProperty(PROP_LAST_EVENT_ID, BeeUtils.toString(eventId));
     }
   }
-
+  
   @Schedule(hour = "5", persistent = false)
   private void checkTaskStatus() {
     logger.info("check task status timeout");
@@ -874,6 +878,78 @@ public class CrmModuleBean implements BeeModule {
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
     }
+    return response;
+  }
+
+  private ResponseObject extendTask(RequestInfo reqInfo) {
+    Long taskId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TASK_ID));
+    if (!DataUtils.isId(taskId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TASK_ID);
+    }
+
+    Long startMillis = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_START_TIME));
+    Long endMillis = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_FINISH_TIME));
+
+    if (!BeeUtils.isPositive(startMillis) && !BeeUtils.isPositive(endMillis)) {
+      return ResponseObject.error(reqInfo.getService(), COL_START_TIME, "or", COL_FINISH_TIME,
+          "not specified");
+    }
+
+    String eventNote;
+    String notes = reqInfo.getParameter(VAR_TASK_NOTES);
+    if (BeeUtils.isEmpty(notes)) {
+      eventNote = null;
+    } else {
+      eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
+    }
+    
+    Long userId = usr.getCurrentUserId();
+    if (!DataUtils.isId(userId)) {
+      return ResponseObject.error(reqInfo.getService(), "user id not available");
+    }
+    
+    BeeRowSet data = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(reqInfo.getService(), "task", taskId, "not found");
+    }
+
+    BeeRow row = data.getRow(0);
+
+    if (BeeUtils.isPositive(startMillis)) {
+      row.preliminaryUpdate(data.getColumnIndex(COL_START_TIME), startMillis.toString());
+    }
+    
+    Long oldEnd = null;
+    if (BeeUtils.isPositive(endMillis)) {
+      int index = data.getColumnIndex(COL_FINISH_TIME);
+      Long value = row.getLong(index);
+      
+      if (value != null && !value.equals(endMillis)) {
+        oldEnd = value;
+      }
+      
+      row.preliminaryUpdate(index, endMillis.toString());
+    }
+
+    long now = System.currentTimeMillis();
+    Long eventId = null;
+    
+    ResponseObject response = registerTaskEvent(taskId, userId, TaskEvent.EXTEND, reqInfo,
+        eventNote, oldEnd, now);
+    if (response.hasResponse(Long.class)) {
+      eventId = (Long) response.getResponse();
+    }
+    if (!response.hasErrors()) {
+      response = registerTaskVisit(taskId, userId, now);
+    }
+
+    if (!response.hasErrors()) {
+      Set<Long> users = Collections.emptySet();
+      Set<String> relations = Collections.emptySet();
+      
+      response = commitTaskData(data, users, false, relations, eventId);
+    }
+
     return response;
   }
 

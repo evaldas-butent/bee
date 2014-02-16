@@ -8,9 +8,11 @@ import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.view.MonthView;
+import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -100,14 +102,21 @@ public class MonthMoveController implements MoveEvent.Handler {
   private void drop() {
     JustDate date = monthView.getCellDate(getSelectedRow(), getSelectedColumn());
 
-    if (getItemWidget().isAppointment()) {
-      Appointment appointment = (Appointment) getItemWidget().getItem();
+    CalendarItem item = getItemWidget().getItem();
 
-      if (!TimeUtils.sameDate(date, appointment.getStartTime())) {
-        DateTime start = TimeUtils.combine(date, appointment.getStartTime());
-        DateTime end = TimeUtils.combine(date, appointment.getEndTime());
+    if (!TimeUtils.sameDate(date, item.getStartTime())) {
+      DateTime start = TimeUtils.combine(date, item.getStartTime());
+      DateTime end = TimeUtils.combine(date, item.getEndTime());
 
-        monthView.updateAppointment(appointment, start, end, BeeConst.UNDEF, BeeConst.UNDEF);
+      switch (item.getItemType()) {
+        case APPOINTMENT:
+          monthView.updateAppointment((Appointment) item, start, end, BeeConst.UNDEF,
+              BeeConst.UNDEF);
+          break;
+
+        case TASK:
+          CrmKeeper.extendTask(item.getId(), start, end);
+          break;
       }
     }
 

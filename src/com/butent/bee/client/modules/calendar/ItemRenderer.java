@@ -38,13 +38,13 @@ class ItemRenderer {
     Map<String, String> substitutes = getSubstitutes(calendarId, item, false);
     String separator = multi ? MULTI_HTML_SEPARATOR : SIMPLE_HTML_SEPARATOR;
 
-    String template = BeeUtils.notEmpty(headerTemplate,
-        multi ? item.getMultiHeaderTemplate() : item.getSimpleHeaderTemplate());
+    String template = BeeUtils.notEmpty(headerTemplate, multi ? item.getMultiHeaderTemplate()
+        : item.isPartial() ? item.getPartialHeaderTemplate() : item.getSimpleHeaderTemplate());
     String header = parseTemplate(template, substitutes, separator);
     itemWidget.setHeaderHtml(header);
 
-    template = BeeUtils.notEmpty(bodyTemplate,
-        multi ? item.getMultiBodyTemplate() : item.getSimpleBodyTemplate());
+    template = BeeUtils.notEmpty(bodyTemplate, multi ? item.getMultiBodyTemplate() 
+        : item.isPartial() ? item.getPartialBodyTemplate() : item.getSimpleBodyTemplate());
     String body = parseTemplate(template, substitutes, separator);
     if (BeeUtils.allEmpty(header, body) || !multi && BeeUtils.isEmpty(body)) {
       body = renderEmpty(item);
@@ -87,15 +87,18 @@ class ItemRenderer {
 
   void renderSimple(long calendarId, ItemWidget itemWidget) {
     CalendarItem item = itemWidget.getItem();
-    render(calendarId, itemWidget, item.getSimpleHeaderTemplate(),
-        item.getSimpleBodyTemplate(), item.getTitleTemplate(), false);
+
+    render(calendarId, itemWidget,
+        item.isPartial() ? item.getPartialHeaderTemplate() : item.getSimpleHeaderTemplate(),
+        item.isPartial() ? item.getPartialBodyTemplate() : item.getSimpleBodyTemplate(),
+        item.getTitleTemplate(), false);
   }
 
   String renderString(long calendarId, CalendarItem item) {
     return parseTemplate(item.getStringTemplate(), getSubstitutes(calendarId, item, false),
         STRING_SEPARATOR);
   }
-  
+
   private static Map<String, String> getSubstitutes(long calendarId, CalendarItem item,
       boolean addLabels) {
     return item.getSubstitutes(calendarId, Global.getUsers().getUserData(), addLabels);

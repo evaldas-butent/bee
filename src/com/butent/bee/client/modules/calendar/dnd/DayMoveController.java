@@ -11,10 +11,12 @@ import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarView;
+import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -139,11 +141,18 @@ public class DayMoveController implements MoveEvent.Handler {
 
   private void drop() {
     Range<DateTime> range = getRange(getSelectedColumn(), getSelectedMinutes());
+    CalendarItem item = getItemWidget().getItem();
+    
+    switch (item.getItemType()) {
+      case APPOINTMENT:
+        calendarView.updateAppointment((Appointment) item,
+            range.lowerEndpoint(), range.upperEndpoint(),
+            getItemWidget().getColumnIndex(), getSelectedColumn());
+        break;
 
-    if (getItemWidget().isAppointment()) {
-      calendarView.updateAppointment((Appointment) getItemWidget().getItem(),
-          range.lowerEndpoint(), range.upperEndpoint(),
-          getItemWidget().getColumnIndex(), getSelectedColumn());
+      case TASK:
+        CrmKeeper.extendTask(item.getId(), range.lowerEndpoint(), range.upperEndpoint());
+        break;
     }
 
     calendarView.getCalendarWidget().refresh(false);

@@ -31,7 +31,7 @@
       <Label text="=calAppointments" />
       <ChildSelector childTable="Relations" viewName="Appointments" property="Appointments"
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-        newRowEnabled="false" editPopup="true" style="&inp;" />
+        newRowEnabled="true" editPopup="true" style="&inp;" />
     </row>
 
     <row>

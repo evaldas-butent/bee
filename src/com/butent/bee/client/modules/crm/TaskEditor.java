@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.crm;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
@@ -22,43 +21,31 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
-import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.client.widget.InputDateTime;
-import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -86,258 +73,6 @@ import java.util.Map;
 import java.util.Set;
 
 class TaskEditor extends AbstractFormInterceptor {
-
-  private static final class TaskDialog extends DialogBox {
-
-    private static final String STYLE_DIALOG = CRM_STYLE_PREFIX + "taskDialog";
-    private static final String STYLE_CELL = "Cell";
-
-    private TaskDialog(String caption) {
-      super(caption, STYLE_DIALOG);
-      addDefaultCloseBox();
-
-      HtmlTable container = new HtmlTable();
-      container.addStyleName(STYLE_DIALOG + "-container");
-
-      setWidget(container);
-    }
-
-    private void addAction(String caption, ScheduledCommand command) {
-      String styleName = STYLE_DIALOG + "-action";
-
-      Button button = new Button(caption, command);
-      button.addStyleName(styleName);
-
-      HtmlTable table = getContainer();
-      int row = table.getRowCount();
-      int col = 0;
-
-      table.setWidget(row, col, button);
-
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.CENTER);
-
-      table.getCellFormatter().setColSpan(row, col, 2);
-    }
-
-    private String addComment(boolean required) {
-      String styleName = STYLE_DIALOG + "-commentLabel";
-      Label label = new Label(Localized.getConstants().crmTaskComment());
-      label.addStyleName(styleName);
-      if (required) {
-        label.addStyleName(StyleUtils.NAME_REQUIRED);
-      }
-
-      HtmlTable table = getContainer();
-      int row = table.getRowCount();
-      int col = 0;
-
-      table.setWidget(row, col, label);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      col++;
-
-      InputArea input = new InputArea();
-      styleName = STYLE_DIALOG + "-commentArea";
-      input.addStyleName(styleName);
-
-      table.setWidget(row, col, input);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
-      return input.getId();
-    }
-
-    private String addDateTime(String caption, boolean required, DateTime def) {
-      HtmlTable table = getContainer();
-      int row = table.getRowCount();
-      int col = 0;
-
-      String styleName = STYLE_DIALOG + "-dateLabel";
-      Label label = new Label(caption);
-      label.addStyleName(styleName);
-      if (required) {
-        label.addStyleName(StyleUtils.NAME_REQUIRED);
-      }
-
-      table.setWidget(row, col, label);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      col++;
-
-      styleName = STYLE_DIALOG + "-dateInput";
-      InputDateTime input = new InputDateTime();
-      input.addStyleName(styleName);
-
-      if (def != null) {
-        input.setDateTime(def);
-      }
-
-      SimpleEditorHandler.observe(caption, input);
-
-      table.setWidget(row, col, input);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
-      return input.getId();
-    }
-
-    private Map<String, String> addDuration() {
-      Map<String, String> result = Maps.newHashMap();
-
-      result.put(COL_DURATION, addTime(Localized.getConstants().crmSpentTime()));
-      result.put(COL_DURATION_TYPE, addSelector(Localized.getConstants().crmDurationType(),
-          VIEW_DURATION_TYPES,
-          Lists.newArrayList(COL_NAME), false, null));
-      result.put(COL_DURATION_DATE, addDateTime(Localized.getConstants().crmTaskFinishDate(),
-          false, TimeUtils.nowMinutes()));
-
-      return result;
-    }
-
-    private String addFileCollector() {
-      HtmlTable table = getContainer();
-      int row = table.getRowCount();
-      int col = 0;
-
-      String styleName = STYLE_DIALOG + "-filesLabel";
-      Label label = new Label(Localized.getConstants().files());
-      label.addStyleName(styleName);
-
-      table.setWidget(row, col, label);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      col++;
-
-      styleName = STYLE_DIALOG + "-fileCollector";
-      FileCollector collector = new FileCollector(new Image(Global.getImages().attachment()));
-      collector.addStyleName(styleName);
-
-      table.setWidget(row, col, collector);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
-      Widget panel = getWidget();
-      if (panel instanceof DndTarget) {
-        collector.bindDnd((DndTarget) panel);
-      }
-
-      return collector.getId();
-    }
-
-    private String addSelector(String caption, String relView, List<String> relColumns,
-        boolean required, Collection<Long> exclusions) {
-      HtmlTable table = getContainer();
-      int row = table.getRowCount();
-      int col = 0;
-
-      String styleName = STYLE_DIALOG + "-selectorLabel";
-      Label label = new Label(caption);
-      label.addStyleName(styleName);
-      if (required) {
-        label.addStyleName(StyleUtils.NAME_REQUIRED);
-      }
-
-      table.setWidget(row, col, label);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      col++;
-
-      styleName = STYLE_DIALOG + "-selectorInput";
-      UnboundSelector selector = UnboundSelector.create(relView, relColumns);
-      selector.addStyleName(styleName);
-
-      if (!BeeUtils.isEmpty(exclusions)) {
-        selector.getOracle().setExclusions(exclusions);
-      }
-
-      table.setWidget(row, col, selector);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
-      return selector.getId();
-    }
-
-    private String addTime(String caption) {
-      HtmlTable table = getContainer();
-      int row = table.getRowCount();
-      int col = 0;
-
-      String styleName = STYLE_DIALOG + "-timeLabel";
-      Label label = new Label(caption);
-      label.addStyleName(styleName);
-
-      table.setWidget(row, col, label);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-      col++;
-
-      styleName = STYLE_DIALOG + "-timeInput";
-      InputTime input = new InputTime();
-      input.addStyleName(styleName);
-
-      SimpleEditorHandler.observe(caption, input);
-
-      table.setWidget(row, col, input);
-      table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
-
-      return input.getId();
-    }
-
-    private void display() {
-      center();
-      UiHelper.focus(getContent());
-    }
-
-    private void display(String focusId) {
-      center();
-      UiHelper.focus(getChild(focusId));
-    }
-
-    private Widget getChild(String id) {
-      return DomUtils.getChildQuietly(getContent(), id);
-    }
-
-    private String getComment(String id) {
-      Widget child = getChild(id);
-      if (child instanceof InputArea) {
-        return ((InputArea) child).getValue();
-      } else {
-        return null;
-      }
-    }
-
-    private HtmlTable getContainer() {
-      return (HtmlTable) getContent();
-    }
-
-    private DateTime getDateTime(String id) {
-      Widget child = getChild(id);
-      if (child instanceof InputDateTime) {
-        return ((InputDateTime) child).getDateTime();
-      } else {
-        return null;
-      }
-    }
-
-    private List<NewFileInfo> getFiles(String id) {
-      Widget child = getChild(id);
-      if (child instanceof FileCollector) {
-        return ((FileCollector) child).getFiles();
-      } else {
-        return Lists.newArrayList();
-      }
-    }
-
-    private DataSelector getSelector(String id) {
-      Widget child = getChild(id);
-      if (child instanceof DataSelector) {
-        return (DataSelector) child;
-      } else {
-        return null;
-      }
-    }
-
-    private String getTime(String id) {
-      Widget child = getChild(id);
-      if (child instanceof InputTime) {
-        return ((InputTime) child).getValue();
-      } else {
-        return null;
-      }
-    }
-  }
 
   private static final String STYLE_EVENT = CRM_STYLE_PREFIX + "taskEvent-";
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
@@ -525,7 +260,6 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private ParameterList createParams(TaskEvent event, BeeRow newRow, String comment) {
-
     FormView form = getFormView();
     String viewName = form.getViewName();
 
@@ -569,7 +303,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : removed) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
+            notes.add(CrmUtils.getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
 
@@ -577,7 +311,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : added) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(getInsertNote(Localized.getConstants().crmTaskObservers(), label));
+            notes.add(CrmUtils.getInsertNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
       }
@@ -600,7 +334,7 @@ class TaskEditor extends AbstractFormInterceptor {
           for (long id : removed) {
             String label = selector.getRowLabel(id);
             if (!BeeUtils.isEmpty(label)) {
-              notes.add(getDeleteNote(caption, label));
+              notes.add(CrmUtils.getDeleteNote(caption, label));
             }
           }
 
@@ -608,7 +342,7 @@ class TaskEditor extends AbstractFormInterceptor {
           for (long id : added) {
             String label = selector.getRowLabel(id);
             if (!BeeUtils.isEmpty(label)) {
-              notes.add(getInsertNote(caption, label));
+              notes.add(CrmUtils.getInsertNote(caption, label));
             }
           }
         }
@@ -1004,19 +738,8 @@ class TaskEditor extends AbstractFormInterceptor {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
 
-  private static String getDeleteNote(String label, String value) {
-    return BeeUtils.join(": ", label, BeeUtils.joinWords(Localized.getConstants().crmDeleted()
-        .toLowerCase(),
-        value));
-  }
-
   private Long getExecutor() {
     return getLong(COL_EXECUTOR);
-  }
-
-  private static String getInsertNote(String label, String value) {
-    return BeeUtils.join(": ", label, BeeUtils
-        .joinWords(Localized.getConstants().crmAdded().toLowerCase(), value));
   }
 
   private Long getLong(String colName) {
@@ -1076,10 +799,6 @@ class TaskEditor extends AbstractFormInterceptor {
     return updatedRelations;
   }
 
-  private static String getUpdateNote(String label, String oldValue, String newValue) {
-    return BeeUtils.join(": ", label, BeeUtils.join(" -> ", oldValue, newValue));
-  }
-
   private static List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
     List<String> notes = Lists.newArrayList();
     if (dataInfo == null || oldRow == null || newRow == null) {
@@ -1098,11 +817,11 @@ class TaskEditor extends AbstractFormInterceptor {
         String note;
 
         if (BeeUtils.isEmpty(oldValue)) {
-          note = getInsertNote(label, DataUtils.render(dataInfo, newRow, column, i));
+          note = CrmUtils.getInsertNote(label, DataUtils.render(dataInfo, newRow, column, i));
         } else if (BeeUtils.isEmpty(newValue)) {
-          note = getDeleteNote(label, DataUtils.render(dataInfo, oldRow, column, i));
+          note = CrmUtils.getDeleteNote(label, DataUtils.render(dataInfo, oldRow, column, i));
         } else {
-          note = getUpdateNote(label, DataUtils.render(dataInfo, oldRow, column, i),
+          note = CrmUtils.getUpdateNote(label, DataUtils.render(dataInfo, oldRow, column, i),
               DataUtils.render(dataInfo, newRow, column, i));
         }
 

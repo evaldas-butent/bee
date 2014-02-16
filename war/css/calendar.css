@@ -168,6 +168,8 @@
   padding-left: 1%;
   border-bottom: 2px ridge #ccc;
   white-space: nowrap;
+}
+.bee-cal .appointment .movable {
   cursor: move;
 }
 .bee-cal .appointment .body {
@@ -186,6 +188,8 @@
   right: 0;
   bottom: 0;
   height: 10%;
+}
+.bee-cal .appointment .resizable {
   cursor: row-resize;
 }
 
@@ -202,8 +206,10 @@
   min-height: 15px;
   padding-left: 1%;
   border-bottom: 2px ridge #ccc;
-  cursor: move;
   white-space: pre-wrap;
+}
+.bee-cal .appointment-big .movable {
+  cursor: move;
 }
 .bee-cal .appointment-big .body {
   padding-left: 2%;
@@ -215,6 +221,8 @@
 }
 .bee-cal .appointment-big .footer {
   height: 10px;
+}
+.bee-cal .appointment-big .resizable {
   cursor: row-resize;
 }
 
@@ -226,8 +234,10 @@
   height: 30%;
   padding-left: 1%;
   white-space: nowrap;
-  cursor: move;
   line-height: 11px;
+}
+.bee-cal .appointment-small .movable {
+  cursor: move;
 }
 .bee-cal .appointment-small .body {
   height: 50%;
@@ -236,6 +246,8 @@
 }
 .bee-cal .appointment-small .footer {
   height: 20%;
+}
+.bee-cal .appointment-small .resizable {
   cursor: row-resize;
 }
 
@@ -319,6 +331,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
+}
+.bee-cal-MonthView .appointment .movable {
   cursor: move;
 }
 

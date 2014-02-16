@@ -382,6 +382,8 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
 
   public static final String COL_USER_GROUP_SETTINGS_NAME = "Name";
+  public static final String COL_USER_GROUP_SETTINGS_OWNER = "Owner";
+  public static final String COL_USER_GROUP_SETTINGS_VISIBILITY = "Visibility";
 
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";
