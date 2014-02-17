@@ -138,7 +138,17 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
     adsTable.setHtml(row, 0, renderDateTime(rsRow[rs.getColumnIndex(COL_CREATED)]),
         STYLE_PREFIX + COL_CREATED);
 
-    adsTable.setHtml(row, 1, rsRow[rs.getColumnIndex(COL_SUBJECT)], STYLE_PREFIX
+    String attachment = "";
+
+    if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_FILE)])) {
+      int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_FILE)]);
+
+      if (BeeUtils.isPositive(fileCount)) {
+        attachment = (new Image(Global.getImages().attachment())).toString();
+      }
+    }
+
+    adsTable.setHtml(row, 1, attachment + rsRow[rs.getColumnIndex(COL_SUBJECT)], STYLE_PREFIX
         + COL_SUBJECT);
 
 

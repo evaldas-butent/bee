@@ -144,7 +144,7 @@
 
         <FlowPanel class="flexBox-horizontal">
           <Label text="=adTopic" style="&lbl1; min-width:150px;" />
-          <DataSelector source="Topic" style="&inp2x; width: 250px"
+          <DataSelector name="Topic" source="Topic" style="&inp2x; width: 250px"
             choiceColumns="Name" filter="Visible" disablable="false"/>
         </FlowPanel>
 
@@ -162,7 +162,7 @@
         <FlowPanel class="flexBox-horizontal">
           <CheckBox name="Important" source="Important" text="=important"
             style="&top1; min-width:70px; padding-right:18px;" disablable="false"/>
-          <CheckBox name="PermitComment" source="PermitComment"
+          <CheckBox name="PermitComment"
             text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" 
             disablable="false" />
         </FlowPanel>

@@ -40,7 +40,7 @@
     </PropColumn>
     
     <CalcColumn name="Announcement" type="boolean"
-      width="20" maxWidth="20" autoFit="true" 
+      width="20" maxWidth="20" autoFit="true" searchBy="TopicName" filterOptions="empty"
       caption="=announcement">
         <render>
           <ui:function>

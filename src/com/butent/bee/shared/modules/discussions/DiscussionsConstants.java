@@ -199,6 +199,7 @@ public final class DiscussionsConstants {
   public static final String TBL_ADS_TOPICS = "AdsTopics";
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
+  public static final String TBL_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
   public static final String TBL_DISCUSSIONS_COMMENTS_MARKS = "DiscussCommentsMarks";
   public static final String TBL_COMMENTS_MARK_TYPES = "CommentsMarksTypes";

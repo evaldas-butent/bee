@@ -111,7 +111,7 @@
     
     <FlowPanel style="&section;" class="flexBox-horizontal">      
       <CheckBox name="Important" source="Important" text="=important" style="&top1; min-width:70px; padding-right:18px;" />
-      <CheckBox name="PermitComment" source="PermitComment" text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" /> 
+      <CheckBox name="PermitComment" text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" /> 
     </FlowPanel>
     
   </FlowPanel>

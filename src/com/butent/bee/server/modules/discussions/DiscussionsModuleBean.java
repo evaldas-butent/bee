@@ -782,6 +782,7 @@ public class DiscussionsModuleBean implements BeeModule {
             CommonsConstants.COL_LAST_NAME)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_PHOTO,
             CommonsConstants.COL_PHOTO)
+        .addCountDistinct(TBL_DISCUSSIONS_FILES, COL_FILE, COL_FILE)
         .addFrom(TBL_ADS_TOPICS)
         .addFromLeft(TBL_DISCUSSIONS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
         .addFromLeft(CommonsConstants.TBL_USERS,
@@ -794,6 +795,10 @@ public class DiscussionsModuleBean implements BeeModule {
             CommonsConstants.TBL_PERSONS,
             sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
                 CommonsConstants.COL_PERSON))
+            .addFromLeft(TBL_DISCUSSIONS_FILES,
+            sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_FILES, COL_DISCUSSION))
+            .addFromLeft(TBL_DISCUSSIONS_USERS,
+                sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
         .setWhere(SqlUtils.and(
             SqlUtils.notNull(TBL_ADS_TOPICS, COL_VISIBLE),
             SqlUtils.notNull(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS)),
@@ -808,9 +813,21 @@ public class DiscussionsModuleBean implements BeeModule {
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
                             )
-                        )))
+                ),
+            SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
+                        CommonsConstants.COL_USER,
+                usr.getCurrentUserId()), SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
+                        SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())
+                        ),
+                    SqlUtils.notNull(TBL_DISCUSSIONS, COL_ACCESSIBILITY)
+                ))
+            )
         .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
-        .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED);
+        .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
+        .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
+        .addGroup(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS))
+            .addGroup(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
+            CommonsConstants.COL_LAST_NAME, CommonsConstants.COL_PHOTO);
 
     if (DataUtils.isId(birthTopic)) {
       select.addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS),
