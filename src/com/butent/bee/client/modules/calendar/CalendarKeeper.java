@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -61,6 +62,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public final class CalendarKeeper {
@@ -118,7 +120,8 @@ public final class CalendarKeeper {
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
           VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES,
           CommonsConstants.VIEW_THEMES, CommonsConstants.VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
-          VIEW_APPOINTMENT_STYLES, VIEW_CAL_APPOINTMENT_TYPES);
+          VIEW_APPOINTMENT_STYLES, VIEW_CALENDARS, VIEW_CAL_APPOINTMENT_TYPES,
+          VIEW_CALENDAR_EXECUTORS, VIEW_CAL_EXECUTOR_GROUPS);
 
   private static final ItemRenderer ITEM_RENDERER = new ItemRenderer();
 
@@ -194,9 +197,9 @@ public final class CalendarKeeper {
         UniqueChildInterceptor.forUsers(Localized.getConstants().calAddExecutors(),
             COL_CALENDAR, COL_EXECUTOR_USER));
 
-    GridFactory.registerGridInterceptor(GRID_CAL_EXECUTOR_GROUPS, new UniqueChildInterceptor(
-        Localized.getConstants().calAddExecutorGroups(), COL_CALENDAR, COL_EXECUTOR_GROUP,
-        CommonsConstants.VIEW_USER_GROUP_SETTINGS, CommonsConstants.COL_USER_GROUP_SETTINGS_NAME));
+    GridFactory.registerGridInterceptor(GRID_CAL_EXECUTOR_GROUPS,
+        UniqueChildInterceptor.forUserGroups(Localized.getConstants().calAddExecutorGroups(),
+            COL_CALENDAR, COL_EXECUTOR_GROUP));
 
     GridFactory.registerGridInterceptor(GRID_APPOINTMENT_ATTENDEES, new UniqueChildInterceptor(
         Localized.getConstants().calAddAttendees(), COL_APPOINTMENT, COL_ATTENDEE, VIEW_ATTENDEES,
@@ -589,6 +592,27 @@ public final class CalendarKeeper {
       BeeKeeper.getRpc().makeRequest(params);
     }
   }
+  
+  static boolean showsTasks(long calendarId) {
+    Boolean value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_ASSIGNED_TASKS);
+    if (BeeUtils.isTrue(value)) {
+      return true;
+    }
+    
+    value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_DELEGATED_TASKS);
+    if (BeeUtils.isTrue(value)) {
+      return true;
+    }
+
+    value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_OBSERVED_TASKS);
+    if (BeeUtils.isTrue(value)) {
+      return true;
+    }
+    
+    Filter filter = Filter.equals(COL_CALENDAR, calendarId);
+    return CACHE.contains(VIEW_CALENDAR_EXECUTORS, filter) 
+        || CACHE.contains(VIEW_CAL_EXECUTOR_GROUPS, filter);
+  }
 
   static void synchronizeDate(long calendarId, JustDate date, boolean sourceIsController) {
     if (date == null) {
@@ -808,7 +832,20 @@ public final class CalendarKeeper {
             getSettingsForm().getChildrenForUpdate(), null);
 
         if (updCount > 0) {
-          cp.updateSettings(newRow, rowSet.getColumns());
+          boolean requery = false;
+
+          List<String> colNames = Lists.newArrayList(COL_MULTIDAY_LAYOUT,
+              COL_MULTIDAY_TASK_LAYOUT, COL_WORKING_HOUR_START, COL_WORKING_HOUR_END);
+          
+          for (String colName : colNames) {
+            int index = rowSet.getColumnIndex(colName);
+            if (!Objects.equals(oldRow.getString(index), newRow.getString(index))) {
+              requery = true;
+              break;
+            }
+          }
+
+          cp.updateSettings(newRow, rowSet.getColumns(), requery);
         }
       }
     });

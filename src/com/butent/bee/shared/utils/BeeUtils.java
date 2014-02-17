@@ -544,6 +544,10 @@ public final class BeeUtils {
     }
     return src.substring(0, start) + src.substring(end);
   }
+  
+  public static double div(int x, int y) {
+    return x / (double) y;
+  }
 
   /**
    * Trims both Strings and then compares them.

@@ -5,7 +5,6 @@ import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
@@ -19,16 +18,6 @@ import java.util.Collection;
 import java.util.List;
 
 public final class CalendarUtils {
-
-  private static final DateTimeFormat DATE_TIME_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
-  private static final DateTimeFormat DATE_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-  private static final DateTimeFormat TIME_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
-
-  private static final DateTimeFormat MONTH_DAY = DateTimeFormat.getFormat("MM-dd");
-  private static final DateTimeFormat MONTH_DAY_TIME = DateTimeFormat.getFormat("MM-dd HH:mm");
 
   public static List<CalendarItem> filterByAttendee(Collection<CalendarItem> input, long id) {
     List<CalendarItem> result = Lists.newArrayList();
@@ -189,7 +178,7 @@ public final class CalendarUtils {
 
     for (ItemWidget widget : widgets) {
       if (!widget.isMulti()) {
-        DateTime end = widget.getItem().getEnd();
+        DateTime end = widget.getItem().getEndTime();
         int hour = end.getHour();
         if (end.getMinute() > 0) {
           hour++;
@@ -266,7 +255,7 @@ public final class CalendarUtils {
 
     for (ItemWidget widget : widgets) {
       if (!widget.isMulti()) {
-        int hour = widget.getItem().getStart().getHour();
+        int hour = widget.getItem().getStartTime().getHour();
         if (BeeConst.isUndef(result)) {
           result = hour;
         } else {
@@ -299,45 +288,10 @@ public final class CalendarUtils {
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
 
-  public static String renderDateTime(DateTime dateTime) {
-    if (dateTime.getYear() == TimeUtils.today().getYear()) {
-      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
-        return MONTH_DAY_TIME.format(dateTime);
-      } else {
-        return MONTH_DAY.format(dateTime);
-      }
-
-    } else {
-      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
-        return DATE_TIME_FORMAT.format(dateTime);
-      } else {
-        return DATE_FORMAT.format(dateTime);
-      }
-    }
-  }
-
-  public static String renderPeriod(DateTime start, DateTime end) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
-      }
-
-    } else if (end == null) {
-      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR;
-
-    } else if (TimeUtils.sameDate(start, end)) {
-      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR + TIME_FORMAT.format(end);
-
-    } else {
-      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
-    }
-  }
 
   public static String renderRange(Range<DateTime> range) {
     return (range == null) ? BeeConst.STRING_EMPTY
-        : renderPeriod(range.lowerEndpoint(), range.upperEndpoint());
+        : TimeUtils.renderPeriod(range.lowerEndpoint(), range.upperEndpoint(), true);
   }
 
   private static boolean intersects(CalendarItem item, long min, long max) {

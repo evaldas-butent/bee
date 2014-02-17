@@ -168,6 +168,8 @@
   padding-left: 1%;
   border-bottom: 2px ridge #ccc;
   white-space: nowrap;
+}
+.bee-cal .appointment .movable {
   cursor: move;
 }
 .bee-cal .appointment .body {
@@ -186,6 +188,8 @@
   right: 0;
   bottom: 0;
   height: 10%;
+}
+.bee-cal .appointment .resizable {
   cursor: row-resize;
 }
 
@@ -202,8 +206,10 @@
   min-height: 15px;
   padding-left: 1%;
   border-bottom: 2px ridge #ccc;
-  cursor: move;
   white-space: pre-wrap;
+}
+.bee-cal .appointment-big .movable {
+  cursor: move;
 }
 .bee-cal .appointment-big .body {
   padding-left: 2%;
@@ -215,6 +221,8 @@
 }
 .bee-cal .appointment-big .footer {
   height: 10px;
+}
+.bee-cal .appointment-big .resizable {
   cursor: row-resize;
 }
 
@@ -226,8 +234,10 @@
   height: 30%;
   padding-left: 1%;
   white-space: nowrap;
-  cursor: move;
   line-height: 11px;
+}
+.bee-cal .appointment-small .movable {
+  cursor: move;
 }
 .bee-cal .appointment-small .body {
   height: 50%;
@@ -236,6 +246,8 @@
 }
 .bee-cal .appointment-small .footer {
   height: 20%;
+}
+.bee-cal .appointment-small .resizable {
   cursor: row-resize;
 }
 
@@ -319,6 +331,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
+}
+.bee-cal-MonthView .appointment .movable {
   cursor: move;
 }
 
@@ -349,6 +363,7 @@
   margin-top: 5px;
   border: 1px solid #444;
   padding-left: 2px;
+  cursor: pointer;
 }
 
 .bee-cal-ColorBar-item {
@@ -369,11 +384,6 @@
 }
 
 .bee-cal-Panel-controls {
-  position: absolute;
-  top: 30px;
-  height: 40px;
-  left: 0;
-  right: 0;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -429,12 +439,15 @@
   font-weight: bold;
 }
 
-.bee-cal-Panel-calendar {
+.bee-cal-Panel-todo-hidden > .bee-VSplitter {
+  visibility: hidden;
+}
+.bee-cal-Panel-todo-container > .bee-GridContainer {
   position: absolute;
-  top: 70px;
-  bottom: 1px;
-  left: 1px;
-  right: 1px;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
 .bee-cal-ReportOptions-container {
@@ -539,11 +552,12 @@
 
 .bee-cal-Controller {
   overflow: hidden;
+  background-image: linear-gradient(to bottom, #ffffff, #f2f2f2);  
 }
 .bee-cal-Controller-disclosure {
   position: absolute;
   left: 10px;
-  top: 20px;
+  top: 8px;
 }
 .bee-cal-Controller-open .bee-cal-Controller-disclosure-closed {
   display: none;
@@ -555,7 +569,7 @@
 .bee-cal-Controller-datePicker {
   position: absolute;
   left: 35px;
-  top: 20px;
+  top: 8px;
   transition: top 200ms;
 }
 .bee-cal-Controller-closed .bee-cal-Controller-datePicker {
@@ -565,13 +579,17 @@
 .bee-cal-Controller-datePicker img {
   -webkit-filter: grayscale(100%);
 }
+.bee-cal-Controller-datePicker .bee-DatePicker-days td {
+  height: 16px;
+  font-size: 12px;
+}
 
 .bee-cal-Controller-tablePanel {
   position: absolute;
   left: 10px;
   right: 5px;
-  top: 250px;
-  bottom: 80px;
+  top: 160px;
+  bottom: 40px;
   overflow: auto;
   transition: top 200ms;
 }
@@ -585,11 +603,11 @@
   line-height: 11px;
 }
 .bee-cal-Controller-table tr:hover {
-  background-color: #f2f2f2;
+  background-color: #e8e8e8;
 }
 
 .bee-cal-Controller-closed .bee-cal-Controller-tablePanel {
-  top: 50px;
+  top: 32px;
 }
 
 .bee-cal-Controller-color {
@@ -607,12 +625,23 @@
   min-width: 50px;
 }
 
-.bee-cal-Controller-table td img {
+.bee-cal-Controller-table .bee-fa-label {
   visibility: hidden;
-  width: 18px;
+  font-size: 18px;
+  padding: 2px;
 }
-.bee-cal-Controller-table tr:hover td img {
+.bee-cal-Controller-table tr:hover .bee-fa-label {
   visibility: visible;
+}
+
+.bee-cal-Controller-up:hover,
+.bee-cal-Controller-down:hover {
+  background-color: green;
+  color: white;
+}
+.bee-cal-Controller-remove:hover {
+  background-color: red;
+  color: white;
 }
 
 .bee-cal-Controller-table tr:first-child .bee-cal-Controller-up {
@@ -629,7 +658,7 @@
   position: absolute;
   left: 16px;
   width: 180px;
-  bottom: 40px;
+  bottom: 8px;
 } 
 
 .bee-cal-Controller-colorPicker {

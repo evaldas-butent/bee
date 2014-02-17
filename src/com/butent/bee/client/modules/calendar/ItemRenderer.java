@@ -4,10 +4,10 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.hasSubstitutes;
-
 import com.butent.bee.client.Global;
+import com.butent.bee.shared.modules.calendar.CalendarHelper;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -35,16 +35,16 @@ class ItemRenderer {
 
     CalendarItem item = itemWidget.getItem();
 
-    Map<String, String> substitutes = getSubstitutes(calendarId, item);
+    Map<String, String> substitutes = getSubstitutes(calendarId, item, false);
     String separator = multi ? MULTI_HTML_SEPARATOR : SIMPLE_HTML_SEPARATOR;
 
-    String template = BeeUtils.notEmpty(headerTemplate,
-        multi ? item.getMultiHeaderTemplate() : item.getSimpleHeaderTemplate());
+    String template = BeeUtils.notEmpty(headerTemplate, multi ? item.getMultiHeaderTemplate()
+        : item.isPartial() ? item.getPartialHeaderTemplate() : item.getSimpleHeaderTemplate());
     String header = parseTemplate(template, substitutes, separator);
     itemWidget.setHeaderHtml(header);
 
-    template = BeeUtils.notEmpty(bodyTemplate,
-        multi ? item.getMultiBodyTemplate() : item.getSimpleBodyTemplate());
+    template = BeeUtils.notEmpty(bodyTemplate, multi ? item.getMultiBodyTemplate() 
+        : item.isPartial() ? item.getPartialBodyTemplate() : item.getSimpleBodyTemplate());
     String body = parseTemplate(template, substitutes, separator);
     if (BeeUtils.allEmpty(header, body) || !multi && BeeUtils.isEmpty(body)) {
       body = renderEmpty(item);
@@ -52,14 +52,15 @@ class ItemRenderer {
     itemWidget.setBodyHtml(body);
 
     template = BeeUtils.notEmpty(titleTemplate, item.getTitleTemplate());
-    String title = parseTemplate(template, substitutes, TEXT_LINE_SEPARATOR);
+    String title = parseTemplate(template, getSubstitutes(calendarId, item, true),
+        TEXT_LINE_SEPARATOR);
     itemWidget.setTitleText(title);
   }
 
   void renderCompact(long calendarId, CalendarItem item, String compactTemplate,
       Widget htmlWidget, String titleTemplate, Widget titleWidget) {
 
-    Map<String, String> substitutes = getSubstitutes(calendarId, item);
+    Map<String, String> substitutes = getSubstitutes(calendarId, item, false);
 
     String template = BeeUtils.notEmpty(compactTemplate, item.getCompactTemplate());
     String html = parseTemplate(template, substitutes, COMPACT_HTML_SEPARATOR);
@@ -71,7 +72,8 @@ class ItemRenderer {
     }
 
     template = BeeUtils.notEmpty(titleTemplate, item.getTitleTemplate());
-    String title = parseTemplate(template, substitutes, TEXT_LINE_SEPARATOR);
+    String title = parseTemplate(template, getSubstitutes(calendarId, item, true),
+        TEXT_LINE_SEPARATOR);
     if (!BeeUtils.isEmpty(title) && titleWidget != null) {
       titleWidget.setTitle(BeeUtils.trim(title));
     }
@@ -85,21 +87,25 @@ class ItemRenderer {
 
   void renderSimple(long calendarId, ItemWidget itemWidget) {
     CalendarItem item = itemWidget.getItem();
-    render(calendarId, itemWidget, item.getSimpleHeaderTemplate(),
-        item.getSimpleBodyTemplate(), item.getTitleTemplate(), false);
+
+    render(calendarId, itemWidget,
+        item.isPartial() ? item.getPartialHeaderTemplate() : item.getSimpleHeaderTemplate(),
+        item.isPartial() ? item.getPartialBodyTemplate() : item.getSimpleBodyTemplate(),
+        item.getTitleTemplate(), false);
   }
 
   String renderString(long calendarId, CalendarItem item) {
-    return parseTemplate(item.getStringTemplate(), getSubstitutes(calendarId, item),
+    return parseTemplate(item.getStringTemplate(), getSubstitutes(calendarId, item, false),
         STRING_SEPARATOR);
   }
-  
-  private static Map<String, String> getSubstitutes(long calendarId, CalendarItem item) {
-    return item.getSubstitutes(calendarId, Global.getUsers().getUserData());
+
+  private static Map<String, String> getSubstitutes(long calendarId, CalendarItem item,
+      boolean addLabels) {
+    return item.getSubstitutes(calendarId, Global.getUsers().getUserData(), addLabels);
   }
 
   private static String parseLine(String line, Map<String, String> substitutes) {
-    if (!hasSubstitutes(line) || substitutes.isEmpty()) {
+    if (!CalendarHelper.hasSubstitutes(line) || substitutes.isEmpty()) {
       return line;
     }
 
@@ -132,6 +138,6 @@ class ItemRenderer {
   }
 
   private static String renderEmpty(CalendarItem item) {
-    return CalendarUtils.renderPeriod(item.getStart(), item.getEnd());
+    return TimeUtils.renderPeriod(item.getStartTime(), item.getEndTime(), true);
   }
 }

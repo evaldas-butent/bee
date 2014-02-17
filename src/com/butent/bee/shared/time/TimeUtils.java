@@ -68,6 +68,11 @@ public final class TimeUtils {
   public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
   public static final RangeOptions CLOSED_NOT_REQUIRED = new RangeOptions(false, false, false);
 
+  public static final char DATE_FIELD_SEPARATOR = '-';
+  public static final char DATE_TIME_SEPARATOR = ' ';
+  public static final char TIME_FIELD_SEPARATOR = ':';
+  public static final char MILLIS_SEPARATOR = '.';
+  
   public static final String PERIOD_SEPARATOR = "..";
   
   private static final String[] FIELD_NAME = {
@@ -214,16 +219,17 @@ public final class TimeUtils {
     return fieldDifference(start, end, FIELD_DATE);
   }
 
-  public static String dateToString(HasDateValue date, char sep) {
+  public static String dateToString(HasDateValue date) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return dateToString(date.getYear(), date.getMonth(), date.getDom(), sep);
+      return dateToString(date.getYear(), date.getMonth(), date.getDom());
     }
   }
 
-  public static String dateToString(int year, int month, int dom, char sep) {
-    return yearToString(year) + sep + monthToString(month) + sep + dayOfMonthToString(dom);
+  public static String dateToString(int year, int month, int dom) {
+    return yearToString(year) + DATE_FIELD_SEPARATOR + monthToString(month) 
+        + DATE_FIELD_SEPARATOR + dayOfMonthToString(dom);
   }
 
   public static int dayDiff(HasDateValue start, HasDateValue end) {
@@ -410,6 +416,10 @@ public final class TimeUtils {
     return isBetween(dt, min, max, CLOSED_REQUIRED);
   }
 
+  public static boolean isCurrentYear(HasYearMonth ym) {
+    return ym != null && ym.getYear() == year();
+  }
+
   /**
    * Checks if {@code x} is and instance of HasDateValue or Date.
    * 
@@ -419,11 +429,11 @@ public final class TimeUtils {
   public static boolean isDateOrDateTime(Object x) {
     return x instanceof HasDateValue || x instanceof Date;
   }
-
+  
   public static boolean isDow(int dow) {
     return dow >= 1 && dow <= DAYS_PER_WEEK;
   }
-  
+
   public static boolean isLeq(HasYearMonth d1, HasYearMonth d2) {
     return compare(d1, d2) <= 0;
   }
@@ -496,7 +506,7 @@ public final class TimeUtils {
   public static int month() {
     return today().getMonth();
   }
-
+  
   public static int monthDiff(HasYearMonth start, HasYearMonth end) {
     Assert.notNull(start);
     Assert.notNull(end);
@@ -508,7 +518,7 @@ public final class TimeUtils {
     Assert.notNull(ym);
     return Grego.monthLength(ym.getYear(), ym.getMonth());
   }
-  
+
   public static String monthToString(int month) {
     return padTwo(month);
   }
@@ -601,7 +611,7 @@ public final class TimeUtils {
       return String.valueOf(number);
     }
   }
-
+  
   public static JustDate parseDate(String input) {
     if (BeeUtils.isEmpty(input)) {
       return null;
@@ -618,7 +628,7 @@ public final class TimeUtils {
       return null;
     }
   }
-  
+
   public static DateTime parseDateTime(String input) {
     if (BeeUtils.isEmpty(input)) {
       return null;
@@ -737,7 +747,7 @@ public final class TimeUtils {
     Assert.notNull(max);
     return new JustDate(BeeUtils.randomInt(min.getDays(), max.getDays()));
   }
-
+  
   /**
    * Generates a random DateTime between {@code min} and {@code max}.
    * 
@@ -750,7 +760,7 @@ public final class TimeUtils {
     Assert.notNull(max);
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
-  
+
   public static String render(HasYearMonth dt) {
     if (dt == null) {
       return BeeConst.STRING_EMPTY;
@@ -760,45 +770,76 @@ public final class TimeUtils {
   }
 
   public static String renderCompact(HasDateValue dt) {
+    return renderCompact(dt, false);
+  }
+
+  public static String renderCompact(HasDateValue dt, boolean dropCurrentYear) {
     if (dt == null) {
       return BeeConst.STRING_EMPTY;
+
     } else if (dt instanceof DateTime) {
-      return ((DateTime) dt).toCompactString();
+      if (dropCurrentYear && isCurrentYear(dt)) {
+        String ds = renderMonthDay(dt);
+        String ts = ((DateTime) dt).toCompactTimeString();
+        return BeeUtils.isEmpty(ts) ? ds : (ds + DATE_TIME_SEPARATOR + ts); 
+      } else {
+        return ((DateTime) dt).toCompactString();
+      }
+    
+    } else if (dropCurrentYear && isCurrentYear(dt)) {
+      return renderMonthDay(dt);
     } else {
       return dt.toString();
     }
   }
-
+  
   public static String renderDateTime(long time) {
     return renderDateTime(time, false);
   }
-
+  
   public static String renderDateTime(long time, boolean showMillis) {
     return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
   }
   
   public static String renderMinutes(int minutes, boolean leadingZero) {
     int hours = minutes / MINUTES_PER_HOUR;
-    return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + DateTime.TIME_FIELD_SEPARATOR
+    return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + TIME_FIELD_SEPARATOR
         + padTwo(minutes % MINUTES_PER_HOUR);
   }
 
+  public static String renderMonthDay(HasDateValue date) {
+    if (date == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return renderMonthDay(date.getMonth(), date.getDom());
+    }
+  }
+
+  public static String renderMonthDay(int month, int dom) {
+    return monthToString(month) + DATE_FIELD_SEPARATOR + dayOfMonthToString(dom);
+  }
+
   public static String renderPeriod(DateTime start, DateTime end) {
+    return renderPeriod(start, end, false); 
+  }
+  
+  public static String renderPeriod(DateTime start, DateTime end, boolean dropCurrentYear) {
     if (start == null) {
       if (end == null) {
         return BeeConst.STRING_EMPTY;
       } else {
-        return PERIOD_SEPARATOR + renderCompact(end);
+        return PERIOD_SEPARATOR + renderCompact(end, dropCurrentYear);
       }
 
     } else if (end == null) {
-      return renderCompact(start) + PERIOD_SEPARATOR;
+      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR;
 
     } else if (sameDate(start, end)) {
-      return renderCompact(start) + PERIOD_SEPARATOR + end.toCompactTimeString();
+      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR + end.toCompactTimeString();
 
     } else {
-      return renderCompact(start) + PERIOD_SEPARATOR + renderCompact(end);
+      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR 
+          + renderCompact(end, dropCurrentYear);
     }
   }
   
@@ -806,13 +847,13 @@ public final class TimeUtils {
       boolean leadingZero) {
     StringBuilder sb = new StringBuilder();
     sb.append(leadingZero ? padTwo(hour) : BeeUtils.toString(hour));
-    sb.append(DateTime.TIME_FIELD_SEPARATOR).append(padTwo(minute));
+    sb.append(TIME_FIELD_SEPARATOR).append(padTwo(minute));
 
     if (second > 0 || millis > 0) {
-      sb.append(DateTime.TIME_FIELD_SEPARATOR).append(padTwo(second));
+      sb.append(TIME_FIELD_SEPARATOR).append(padTwo(second));
     }
     if (millis > 0) {
-      sb.append(DateTime.MILLIS_SEPARATOR).append(millisToString(millis));
+      sb.append(MILLIS_SEPARATOR).append(millisToString(millis));
     }
     return sb.toString();
   }
@@ -955,10 +996,6 @@ public final class TimeUtils {
     return startOfYear(year());
   }
 
-  public static JustDate startOfYear(int year) {
-    return new JustDate(year, 1, 1);
-  }
-  
   public static JustDate startOfYear(HasYearMonth ref) {
     return startOfYear(ref, 0);
   }
@@ -969,6 +1006,10 @@ public final class TimeUtils {
     if (increment != 0) {
       year += increment;
     }
+    return new JustDate(year, 1, 1);
+  }
+  
+  public static JustDate startOfYear(int year) {
     return new JustDate(year, 1, 1);
   }
 
@@ -1219,7 +1260,7 @@ public final class TimeUtils {
         String digits = BeeUtils.parseDigits(input);
         int len = digits.length();
 
-        String sep = String.valueOf(JustDate.FIELD_SEPARATOR);
+        String sep = String.valueOf(DATE_FIELD_SEPARATOR);
 
         if (isYear(v)) {
           return new JustDate(v, 1, 1);

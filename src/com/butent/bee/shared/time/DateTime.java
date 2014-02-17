@@ -13,24 +13,6 @@ import java.util.Date;
  */
 public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
-  /**
-   * Separator for fields of date separate to YYYY.MM.DD format.
-   */
-  public static final char DATE_FIELD_SEPARATOR = '-';
-  /**
-   * Separator for date and time.
-   */
-  public static final char DATE_TIME_SEPARATOR = ' ';
-
-  /**
-   * Separator for fields of time separate to format hh.mm.ss.
-   */
-  public static final char TIME_FIELD_SEPARATOR = ':';
-
-  /**
-   * Separator for field of milliseconds separate.
-   */
-  public static final char MILLIS_SEPARATOR = '.';
 
   public static DateTime copyOf(DateTime original) {
     if (original == null) {
@@ -545,7 +527,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       return toDateString();
     } else {
       StringBuilder sb = new StringBuilder();
-      sb.append(toDateString()).append(DATE_TIME_SEPARATOR).append(timeString);
+      sb.append(toDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(timeString);
       return sb.toString();
     }
   }
@@ -560,10 +542,10 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
     StringBuilder sb = new StringBuilder();
     sb.append(TimeUtils.padTwo(getHour()));
-    sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
+    sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
     
     if (getSecond() != 0) {
-      sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getSecond()));
+      sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getSecond()));
     }
     return sb.toString();
   }
@@ -574,7 +556,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * @return String of date
    */
   public String toDateString() {
-    return TimeUtils.dateToString(this, DATE_FIELD_SEPARATOR);
+    return TimeUtils.dateToString(this);
   }
 
   /**
@@ -585,7 +567,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(23);
-    sb.append(toDateString()).append(DATE_TIME_SEPARATOR).append(toTimeString());
+    sb.append(toDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(toTimeString());
     return sb.toString();
   }
   
@@ -603,18 +585,18 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    */
   public String toTimeString() {
     StringBuilder sb = new StringBuilder(12);
-    sb.append(TimeUtils.padTwo(getHour())).append(TIME_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getMinute())).append(TIME_FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getHour())).append(TimeUtils.TIME_FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getMinute())).append(TimeUtils.TIME_FIELD_SEPARATOR);
     sb.append(TimeUtils.padTwo(getSecond()));
     int z = getMillis();
     if (z != 0) {
-      sb.append(MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
+      sb.append(TimeUtils.MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
     }
     return sb.toString();
   }
 
   public String toUtcDateString() {
-    return TimeUtils.dateToString(getUtcYear(), getUtcMonth(), getUtcDom(), DATE_FIELD_SEPARATOR);
+    return TimeUtils.dateToString(getUtcYear(), getUtcMonth(), getUtcDom());
   }
 
   /**
@@ -624,7 +606,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    */
   public String toUtcString() {
     StringBuilder sb = new StringBuilder(23);
-    sb.append(toUtcDateString()).append(DATE_TIME_SEPARATOR).append(toUtcTimeString());
+    sb.append(toUtcDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(toUtcTimeString());
     return sb.toString();
   }
 
@@ -635,12 +617,12 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    */
   public String toUtcTimeString() {
     StringBuilder sb = new StringBuilder(12);
-    sb.append(TimeUtils.padTwo(getUtcHour())).append(TIME_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getUtcMinute())).append(TIME_FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getUtcHour())).append(TimeUtils.TIME_FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getUtcMinute())).append(TimeUtils.TIME_FIELD_SEPARATOR);
     sb.append(TimeUtils.padTwo(getUtcSecond()));
     int z = getUtcMillis();
     if (z != 0) {
-      sb.append(MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
+      sb.append(TimeUtils.MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
     }
     return sb.toString();
   }

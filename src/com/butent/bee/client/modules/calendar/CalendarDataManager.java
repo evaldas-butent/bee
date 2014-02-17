@@ -16,11 +16,14 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
+import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,15 +33,141 @@ public class CalendarDataManager {
 
   private static BeeLogger logger = LogUtils.getLogger(CalendarDataManager.class);
 
+  private static DateTime max(DateTime x, DateTime y) {
+    return (x.getTime() >= y.getTime()) ? x : y;
+  }
+
+  private static DateTime min(DateTime x, DateTime y) {
+    return (x.getTime() <= y.getTime()) ? x : y;
+  }
+
+  private static DateTime hour(DateTime ref, int hour) {
+    return new DateTime(ref.getYear(), ref.getMonth(), ref.getDom(), hour, 0, 0);
+  }
+
+  private static List<CalendarItem> split(CalendarItem item, MultidayLayout mdl,
+      int whStart, int whEnd) {
+
+    List<CalendarItem> result = Lists.newArrayList();
+    
+    DateTime start = item.getStartTime();
+    DateTime end = item.getEndTime();
+    
+    DateTime tmp = DateTime.copyOf(start);
+    
+    DateTime from;
+    DateTime until;
+    
+    switch (mdl) {
+      case VERTICAL:
+        while (tmp.getTime() < end.getTime()) {
+          until = min(end, TimeUtils.startOfDay(tmp, 1));
+          result.add(item.split(tmp, until));
+          
+          tmp.setTime(until.getTime());
+        }
+        break;
+      
+      case WORKING_HOURS:
+        while (tmp.getTime() < end.getTime()) {
+          from = (TimeUtils.sameDate(tmp, start) && TimeUtils.minutesSinceDayStarted(start) > 0)
+              ? start : hour(tmp, whStart);
+          until = TimeUtils.sameDate(tmp, end) ? end : hour(tmp, whEnd);
+          
+          if (until.getTime() <= from.getTime()) {
+            if (TimeUtils.sameDate(from, start)) {
+              until = TimeUtils.startOfDay(from, 1);
+            } else {
+              from = TimeUtils.startOfDay(from);
+            }
+          }
+
+          result.add(item.split(from, until));
+          
+          tmp = TimeUtils.startOfDay(tmp, 1);
+        }
+        break;
+
+      case LAST_DAY:
+        if (TimeUtils.minutesSinceDayStarted(end) > 0) {
+          from = max(start, TimeUtils.startOfDay(end));
+          until = end;
+          
+          if (validateWorkingHours(whStart, whEnd)) {
+            tmp = hour(end, whStart);
+            if (tmp.getTime() > from.getTime() && tmp.getTime() < end.getTime()) {
+              from = tmp;
+            }
+          }
+
+        } else if (validateWorkingHours(whStart, whEnd)) {
+          from = max(start, hour(TimeUtils.startOfDay(end, -1), whStart));
+          until = hour(TimeUtils.startOfDay(end, -1), whEnd);
+
+          if (until.getTime() <= from.getTime()) {
+            until = end;
+          }
+          
+        } else {
+          from = max(start, TimeUtils.startOfDay(end, -1));
+          until = end;
+        }
+        
+        result.add(item.split(from, until));
+        break;
+
+      default:
+        result.add(item);
+    }
+    
+    return result;
+  }
+
+  private static boolean validateWorkingHours(int whStart, int whEnd) {
+    return whStart >= 0 && whEnd > whStart && whEnd <= TimeUtils.HOURS_PER_DAY;
+  }
+
   private final List<CalendarItem> items = Lists.newArrayList();
+
   private Range<DateTime> range;
 
   public CalendarDataManager() {
     super();
   }
 
-  public void addItem(CalendarItem item) {
-    if (item != null) {
+  public void addItem(CalendarItem item, CalendarSettings settings) {
+    if (item == null || !item.isValid()) {
+      logger.warning(NameUtils.getName(this), "attempt to add invalid item");
+      return;
+    }
+
+    if (item.isMultiDay() && settings != null) {
+      MultidayLayout mdl = null;
+
+      switch (item.getItemType()) {
+        case APPOINTMENT:
+          mdl = settings.getMultidayLayout();
+          break;
+        case TASK:
+          mdl = settings.getMultidayTaskLayout();
+          break;
+      }
+      
+      if (mdl == null || mdl == MultidayLayout.HORIZONTAL) {
+        items.add(item);
+
+      } else {
+        int whStart = settings.getWorkingHourStart();
+        int whEnd = settings.getWorkingHourEnd();
+        
+        if (mdl == MultidayLayout.WORKING_HOURS && !validateWorkingHours(whStart, whEnd)) {
+          mdl = MultidayLayout.VERTICAL;
+        }
+
+        items.addAll(split(item, mdl, whStart, whEnd));
+      }
+
+    } else {
       items.add(item);
     }
   }
@@ -47,8 +176,8 @@ public class CalendarDataManager {
     return items;
   }
 
-  public void loadItems(long calendarId, final Range<DateTime> visibleRange, boolean force,
-      final IntCallback callback) {
+  public void loadItems(long calendarId, final Range<DateTime> visibleRange,
+      final CalendarSettings settings, boolean force, final IntCallback callback) {
 
     if (!force && getRange() != null && visibleRange != null
         && getRange().encloses(visibleRange)) {
@@ -90,10 +219,10 @@ public class CalendarDataManager {
             for (String item : arr) {
               switch (type) {
                 case APPOINTMENT:
-                  addItem(new Appointment(BeeRow.restore(item)));
+                  addItem(new Appointment(BeeRow.restore(item)), settings);
                   break;
                 case TASK:
-                  addItem(CalendarTask.restore(item));
+                  addItem(CalendarTask.restore(item), settings);
                   break;
               }
             }
@@ -108,13 +237,17 @@ public class CalendarDataManager {
     });
   }
 
-  public boolean removeAppointment(long id) {
-    int index = getAppointmentIndex(id);
+  public boolean removeItem(ItemType type, long id) {
+    int index = getItemIndex(type, id);
     if (BeeConst.isUndef(index)) {
       return false;
     }
 
-    items.remove(index);
+    do {
+      items.remove(index);
+      index = getItemIndex(type, id);
+    } while (!BeeConst.isUndef(index));
+
     return true;
   }
 
@@ -123,10 +256,10 @@ public class CalendarDataManager {
       Collections.sort(items);
     }
   }
-
-  private int getAppointmentIndex(long id) {
+  
+  private int getItemIndex(ItemType type, long id) {
     for (int i = 0; i < items.size(); i++) {
-      if (items.get(i).getId() == id && items.get(i).getItemType() == ItemType.APPOINTMENT) {
+      if (items.get(i).getItemType() == type && items.get(i).getId() == id) {
         return i;
       }
     }
@@ -136,11 +269,11 @@ public class CalendarDataManager {
   private Range<DateTime> getRange() {
     return range;
   }
-
+  
   private int getSize() {
     return items.size();
   }
-
+  
   private void setRange(Range<DateTime> range) {
     this.range = range;
   }

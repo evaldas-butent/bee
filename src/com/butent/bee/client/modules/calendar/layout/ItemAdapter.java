@@ -31,8 +31,8 @@ public class ItemAdapter {
   public ItemAdapter(CalendarItem item) {
     this.item = item;
     
-    DateTime start = item.getStart();
-    DateTime end = item.getEnd();
+    DateTime start = item.getStartTime();
+    DateTime end = item.getEndTime();
 
     this.dayMinutesStart = TimeUtils.minutesSinceDayStarted(start);
     this.dayMinutesEnd = TimeUtils.sameDate(start, end)

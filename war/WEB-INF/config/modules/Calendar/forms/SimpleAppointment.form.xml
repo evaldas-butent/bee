@@ -64,7 +64,7 @@
 
     <Label text="=responsiblePersons" style="&absolute; left: 360px; top: 280px; width: 76px;" />
 
-    <ChildSelector childTable="AppointmentOwners" viewName="Users"
+    <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
       renderColumns="FirstName LastName"
       choiceColumns="FirstName LastName CompanyName PositionName"
       style="&absolute; left: 440px; top: 280px; width: 300px;" />

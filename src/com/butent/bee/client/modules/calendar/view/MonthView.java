@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -62,6 +63,9 @@ public class MonthView extends CalendarView {
 
   private static final double ITEM_MARGIN_LEFT = 0.3;
   private static final double ITEM_MARGIN_RIGHT = 0.3;
+
+  private static final double BAR_MARGIN_LEFT = 0.25;
+  private static final double BAR_MIN_WIDTH = 0.1;
 
   private static final int PERCENT_SCALE = 3;
 
@@ -117,7 +121,7 @@ public class MonthView extends CalendarView {
 
     calculateHeights();
 
-    this.maxCellItems = cellHeight / (ITEM_HEIGHT + ITEM_MARGIN_TOP) - 1;
+    this.maxCellItems = cellHeight / (ITEM_HEIGHT + ITEM_MARGIN_TOP);
 
     moveController.setHeaderHeight(weekDayHeaderHeight);
 
@@ -364,8 +368,9 @@ public class MonthView extends CalendarView {
 
     placeItemInGrid(widget, item, multi, colStart, colEnd, row, cellPosition);
 
-    if (!multi) {
+    if (!multi && item.isMovable(BeeKeeper.getUser().getUserId())) {
       widget.getCompactBar().addMoveHandler(moveController);
+      widget.getCompactBar().addStyleName(CalendarStyleManager.MOVABLE);
     }
 
     getItemWidgets().add(widget);
@@ -454,8 +459,8 @@ public class MonthView extends CalendarView {
     double marginRight = ITEM_MARGIN_RIGHT;
 
     if (item != null) {
-      DateTime start = item.getStart();
-      DateTime end = item.getEnd();
+      DateTime start = item.getStartTime();
+      DateTime end = item.getEndTime();
 
       int startMinutes = TimeUtils.minutesSinceDayStarted(start);
       int endMinutes = TimeUtils.minutesSinceDayStarted(end);
@@ -472,15 +477,18 @@ public class MonthView extends CalendarView {
       } else if (widget instanceof ItemWidget) {
         Widget bar = ((ItemWidget) widget).getCompactBar();
 
-        double x = startMinutes * 100d / TimeUtils.MINUTES_PER_DAY;
-        StyleUtils.setLeft(bar, BeeUtils.round(x, PERCENT_SCALE), CssUnit.PCT);
-
+        double barFrom = BeeUtils.clamp(BeeUtils.div(startMinutes, TimeUtils.MINUTES_PER_DAY),
+            BAR_MARGIN_LEFT, 1 - BAR_MIN_WIDTH);
+        double barTo;
         if (TimeUtils.sameDate(start, end)) {
-          x = (TimeUtils.MINUTES_PER_DAY - endMinutes) * 100d / TimeUtils.MINUTES_PER_DAY;
+          barTo = BeeUtils.clamp(BeeUtils.div(endMinutes, TimeUtils.MINUTES_PER_DAY),
+              barFrom + BAR_MIN_WIDTH, 1);
         } else {
-          x = 0;
+          barTo = 1;
         }
-        StyleUtils.setRight(bar, BeeUtils.round(x, PERCENT_SCALE), CssUnit.PCT);
+        
+        StyleUtils.setLeft(bar, BeeUtils.round(barFrom * 100, PERCENT_SCALE), CssUnit.PCT);
+        StyleUtils.setRight(bar, BeeUtils.round((1 - barTo) * 100, PERCENT_SCALE), CssUnit.PCT);
       }
     }
 

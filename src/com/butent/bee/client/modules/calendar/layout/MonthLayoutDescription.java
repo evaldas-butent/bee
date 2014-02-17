@@ -63,7 +63,7 @@ public class MonthLayoutDescription {
 
   private void placeItems(List<CalendarItem> items, int maxLayer) {
     for (CalendarItem item : items) {
-      int startWeek = calculateWeekFor(item.getStart(), false);
+      int startWeek = calculateWeekFor(item.getStartTime(), false);
 
       if (item.isMultiDay()) {
         positionMultiDayItem(startWeek, item, maxLayer);
@@ -75,7 +75,7 @@ public class MonthLayoutDescription {
   }
 
   private void positionMultiDayItem(int startWeek, CalendarItem item, int maxLayer) {
-    int endWeek = calculateWeekFor(item.getEnd(), true);
+    int endWeek = calculateWeekFor(item.getEndTime(), true);
 
     if (startWeek < endWeek) {
       distributeOverWeeks(startWeek, endWeek, item, maxLayer);

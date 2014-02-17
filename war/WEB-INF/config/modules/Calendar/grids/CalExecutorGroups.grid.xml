@@ -8,7 +8,7 @@
   name="CalExecutorGroups" viewName="CalExecutorGroups" minColumnWidth="120"
   >
   <g:columns>
-    <DataColumn name="GroupName" label="=group" visible="true" />
+    <RelColumn name="Group" visible="true" readOnly="true" editEnabled="true" editPopup="true" />
 
     <DataColumn name="Background" updateMode="row">
       <dynStyle>&dyn;</dynStyle>
@@ -19,7 +19,7 @@
       <editor type="color" />
     </DataColumn>
 
-    <RelColumn name="Style" visible="false" />
+    <RelColumn name="Style" />
   </g:columns>
 </g:Grid>
 

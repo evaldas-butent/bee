@@ -103,6 +103,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String branch();
 
   String cancel();
+  
+  String captionId();
 
   String changedValues();
 
@@ -491,6 +493,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String responsibleEmployee();
 
   String responsiblePerson();
+
+  String responsiblePersons();
 
   String rightStateAmendable();
 

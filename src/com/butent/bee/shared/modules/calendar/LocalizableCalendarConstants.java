@@ -12,6 +12,8 @@ public interface LocalizableCalendarConstants {
   
   String calAddParameters();
 
+  String calAppointmentAttendees();
+
   String calAppointmentEnd();
 
   String calAppointments();
@@ -79,6 +81,8 @@ public interface LocalizableCalendarConstants {
   String calOpaque();
 
   String calOverlappingAppointments();
+  
+  String calParameters();
 
   String calPlannedEndDateMustBeGreater();
 
@@ -87,6 +91,8 @@ public interface LocalizableCalendarConstants {
   String calPublic();
 
   String calReminder();
+
+  String calReminders();
 
   String calRepairType();
 

@@ -95,19 +95,23 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
 
         for (String[] rsRow : rs.getRows()) {
 
-          if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
-              && BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
-            if (!publishedBirths) {
-              renderBirthdaySection(rsRow, rs, adsTable);
-              publishedBirths = true;
-            }
-          } else if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
-              && !BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
-            if (!publishedBirths) {
-              renderBirthdaySection(rsRow, rs, adsTable);
-              publishedBirths = true;
-            }
-            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY_VALID)])) {
+          if (rs.hasColumn(ALS_BIRTHDAY)) {
+            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
+                && BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
+              if (!publishedBirths) {
+                renderBirthdaySection(rsRow, rs, adsTable);
+                publishedBirths = true;
+              }
+            } else if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
+                && !BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
+              if (!publishedBirths) {
+                renderBirthdaySection(rsRow, rs, adsTable);
+                publishedBirths = true;
+              }
+              if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY_VALID)])) {
+                renderAnnoucementsSection(rsRow, rs, adsTable);
+              }
+            } else {
               renderAnnoucementsSection(rsRow, rs, adsTable);
             }
           } else {

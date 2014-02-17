@@ -2,15 +2,7 @@ package com.butent.bee.shared.modules.crm;
 
 public interface LocalizableCrmConstants {
 
-  String author();
-
-  String createdOn();
-
-  String creditDays();
-
   String creditLimit();
-
-  String creditTolerance();
 
   String criteriaGroups();
 
@@ -154,6 +146,8 @@ public interface LocalizableCrmConstants {
 
   String crmTaskObservers();
 
+  String crmTaskPriority();
+
   String crmTaskPriorityHigh();
 
   String crmTaskPriorityLow();
@@ -164,13 +158,15 @@ public interface LocalizableCrmConstants {
 
   String crmTaskReturningForExecution();
 
+  String crmTasksAll();
+
   String crmTasksAssignedTasks();
 
   String crmTasksDelegatedTasks();
 
-  String crmTasksList();
-
   String crmTasksObservedTasks();
+
+  String crmTaskStatus();
 
   String crmTaskStatusActive();
 
@@ -194,7 +190,7 @@ public interface LocalizableCrmConstants {
 
   String crmTermNotChanged();
 
-  String customer();
+  String crmTodoList();
 
   String documentContentIsEmpty();
 
@@ -208,12 +204,6 @@ public interface LocalizableCrmConstants {
 
   String documents();
 
-  String endingDate();
-
-  String financialInfo();
-
-  String financialState();
-
   String hideZeroTimes();
 
   String hoursByCompanies();
@@ -222,21 +212,9 @@ public interface LocalizableCrmConstants {
 
   String hoursByUsers();
 
-  String informationSource();
-
-  String limitCurrency();
-
   String mainCriteria();
 
-  String manager();
-
   String newDocumentTemplate();
-
-  String rating();
-
-  String relationship();
-
-  String relationshipInfo();
 
   String requestFinish();
 
@@ -244,15 +222,9 @@ public interface LocalizableCrmConstants {
 
   String requestFinishToTask();
 
-  String requestFinishToTaskQuestion();
-
-  String result();
-
   String selectDocumentTemplate();
 
   String specifyResult();
-
-  String startingDate();
 
   String taskFilterAll();
 

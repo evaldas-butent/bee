@@ -11,6 +11,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.time.DateRange;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.ScheduleDateRange;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
@@ -26,8 +28,20 @@ import java.util.Set;
 
 public final class CrmUtils {
 
+  private static final String NOTE_LABEL_SEPARATOR = ": ";
+
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
 
+  public static String getDeleteNote(String label, String value) {
+    return BeeUtils.join(NOTE_LABEL_SEPARATOR, label,
+        BeeUtils.joinWords(Localized.getConstants().crmDeleted().toLowerCase(), value));
+  }
+  
+  public static String getInsertNote(String label, String value) {
+    return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils
+        .joinWords(Localized.getConstants().crmAdded().toLowerCase(), value));
+  }
+  
   public static Set<String> getRelationPropertyNames() {
     return ensureTaskPropertyToRelation().keySet();
   }
@@ -94,6 +108,10 @@ public final class CrmUtils {
     return users;
   }
 
+  public static String getUpdateNote(String label, String oldValue, String newValue) {
+    return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils.join(" -> ", oldValue, newValue));
+  }
+  
   public static boolean isScheduled(DateTime start) {
     return start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0;
   }

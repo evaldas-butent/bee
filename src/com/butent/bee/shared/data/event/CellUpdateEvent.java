@@ -8,6 +8,7 @@ import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasRowId;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -16,7 +17,8 @@ import com.butent.bee.shared.utils.Codec;
  * Handles an event when a cell value is updated in table based user interface components.
  */
 
-public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> {
+public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler>
+    implements HasRowId {
 
   /**
    * Requires implementing classes to have a method to handle cell update event.
@@ -35,7 +37,7 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> 
     Assert.notEmpty(viewName);
     Assert.isTrue(DataUtils.isId(rowId));
     Assert.notNull(source);
-    
+
     em.fireModificationEvent(new CellUpdateEvent(viewName, rowId, version, source, value),
         Locality.ENTANGLED);
   }
@@ -45,7 +47,7 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> 
     Assert.notNull(handler);
     handler.onCellUpdate(new CellUpdateEvent(viewName, rowId, version, source, value));
   }
-  
+
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
     Assert.notNull(eventBus);
     Assert.notNull(handler);
@@ -69,16 +71,16 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> 
     this.version = version;
 
     this.source = Assert.notNull(source);
-    
+
     this.value = value;
   }
-  
+
   CellUpdateEvent() {
   }
-  
+
   public boolean applyTo(BeeRowSet rowSet) {
     Assert.notNull(rowSet);
-    
+
     IsRow row = rowSet.getRowById(getRowId());
     if (row == null) {
       return false;
@@ -91,15 +93,15 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> 
   public void applyTo(IsRow row) {
     Assert.notNull(row);
     row.setVersion(getVersion());
-    
+
     source.set(row, value);
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 5);
-    
+
     int i = 0;
 
     this.viewName = arr[i++];
@@ -123,6 +125,7 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> 
     return Kind.UPDATE_CELL;
   }
 
+  @Override
   public long getRowId() {
     return rowId;
   }
@@ -134,7 +137,7 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler> 
   public long getVersion() {
     return version;
   }
-  
+
   @Override
   public String getViewName() {
     return viewName;

@@ -6,6 +6,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.HasRowId;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -13,7 +14,7 @@ import com.butent.bee.shared.utils.Codec;
  * Handles an event when a row value is inserted in table based user interface components.
  */
 
-public class RowInsertEvent extends ModificationEvent<RowInsertEvent.Handler> {
+public class RowInsertEvent extends ModificationEvent<RowInsertEvent.Handler> implements HasRowId {
 
   /**
    * Requires implementing classes to have a method to handle row insert event.
@@ -79,6 +80,7 @@ public class RowInsertEvent extends ModificationEvent<RowInsertEvent.Handler> {
     return row;
   }
 
+  @Override
   public long getRowId() {
     return getRow().getId();
   }
