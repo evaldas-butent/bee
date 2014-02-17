@@ -23,6 +23,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -214,6 +216,23 @@ public final class CalendarKeeper {
         Localized.getConstants().calAddParameters(), COL_APPOINTMENT, COL_APPOINTMENT_PROPERTY,
         VIEW_EXTENDED_PROPERTIES, Lists.newArrayList(COL_PROPERTY_NAME),
         Lists.newArrayList(COL_PROPERTY_NAME, ALS_PROPERTY_GROUP_NAME)));
+    
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_APPOINTMENTS,
+        CommonsConstants.ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_APPOINTMENTS));
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_ATTENDEES,
+        CommonsConstants.ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_ATTENDEES));
+    
+    ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_CALENDAR_EXECUTORS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
+        CommonsConstants.COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
+        CommonsConstants.COL_FOREGROUND, styleProvider);
+
+    styleProvider = ColorStyleProvider.createDefault(VIEW_CAL_EXECUTOR_GROUPS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CAL_EXECUTOR_GROUPS,
+        CommonsConstants.COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CAL_EXECUTOR_GROUPS,
+        CommonsConstants.COL_FOREGROUND, styleProvider);
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);

@@ -14,7 +14,6 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -276,9 +275,7 @@ public class ColumnInfo implements HasValueType, Flexible {
     return !BeeUtils.isEmpty(group) && BeeUtils.same(dynGroup, group);
   }
 
-  void initProperties(ColumnDescription columnDescription, GridDescription gridDescription,
-      List<? extends IsColumn> dataColumns) {
-
+  void initProperties(ColumnDescription columnDescription, GridDescription gridDescription) {
     Assert.notNull(columnDescription);
 
     if (columnDescription.getColType().isReadOnly()
@@ -321,14 +318,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     }
     if (columnDescription.getFooterStyle() != null) {
       setFooterStyle(StyleDescriptor.copyOf(columnDescription.getFooterStyle()));
-    }
-
-    if (columnDescription.getDynStyles() != null) {
-      ConditionalStyle styles = ConditionalStyle.create(columnDescription.getDynStyles(),
-          getColumnId(), dataColumns);
-      if (styles != null) {
-        setDynStyles(styles);
-      }
     }
 
     Boolean cr = columnDescription.getCellResizable();
@@ -389,9 +378,8 @@ public class ColumnInfo implements HasValueType, Flexible {
     this.bodyWidth = bodyWidth;
   }
 
-  void setLabel(String label) {
-    this.label = label;
-    ((HeaderCell) getHeader().getCell()).setCaption(label);
+  void setDynStyles(ConditionalStyle dynStyles) {
+    this.dynStyles = dynStyles;
   }
 
   void setFooterFont(String fontDeclaration) {
@@ -424,6 +412,11 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   void setHidable(boolean hidable) {
     this.hidable = hidable;
+  }
+
+  void setLabel(String label) {
+    this.label = label;
+    ((HeaderCell) getHeader().getCell()).setCaption(label);
   }
 
   void setResizedWidth(int resizedWidth) {
@@ -508,10 +501,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private void setColReadOnly(boolean colReadOnly) {
     this.colReadOnly = colReadOnly;
-  }
-
-  private void setDynStyles(ConditionalStyle dynStyles) {
-    this.dynStyles = dynStyles;
   }
 
   private void setFlexWidth(int flexWidth) {

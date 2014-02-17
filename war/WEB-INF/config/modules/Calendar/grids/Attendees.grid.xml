@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column"
   xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
 
   name="Attendees" viewName="Attendees"
   caption="=calAppointmentAttendees" newRowCaption="=calNewAttendee"
@@ -20,11 +19,7 @@
 
     <DataColumn name="Transparency" />
     
-    <DataColumn name="ColorName" label="=color">
-      <dynStyle>
-        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
-      </dynStyle>
-    </DataColumn>
+    <DataColumn name="ColorName" label="=color" />
 
     <DataColumn name="StyleName" label="=style" visible="false" />
     

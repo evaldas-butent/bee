@@ -453,6 +453,10 @@ public final class StyleUtils {
         + DEFINITION_SEPARATOR);
   }
 
+  public static SafeStyles buildStyle(String n1, String v1, String n2, String v2) {
+    return buildStyle(buildStyle(n1, v1), buildStyle(n2, v2));
+  }
+  
   public static SafeStyles buildTextTransform(TextTransform textTransform) {
     Assert.notNull(textTransform);
     return buildStyle(CssProperties.TEXT_TRANSFORM, textTransform.getCssName());

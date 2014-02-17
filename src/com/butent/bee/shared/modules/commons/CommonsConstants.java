@@ -246,6 +246,10 @@ public final class CommonsConstants {
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
+  public static final String GRID_COLORS = "Colors";
+  public static final String GRID_THEMES = "Themes";
+  public static final String GRID_THEME_COLORS = "ThemeColors";
+  
   public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
@@ -402,6 +406,11 @@ public final class CommonsConstants {
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
+
+  public static final String ALS_COLOR_NAME = "ColorName";
+  public static final String ALS_DEFAULT_COLOR_NAME = "DefaultColorName";
+  public static final String ALS_DEFAULT_BACKGROUND = "DefaultBackground";
+  public static final String ALS_DEFAULT_FOREGROUND = "DefaultForeground";
   
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";

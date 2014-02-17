@@ -1,9 +1,13 @@
 package com.butent.bee.client.style;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
@@ -12,6 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enables using conditional CSS styles for elements of user interface.
@@ -19,10 +24,27 @@ import java.util.List;
 
 public final class ConditionalStyle {
 
-  private final class Entry {
-    private final StyleDescriptor styleDescriptor;
-    private final Evaluator evaluator;
+  private static final class Entry {
 
+    private static JavaScriptObject initInterpreter(StyleDescriptor sd) {
+      if (sd == null || BeeUtils.isEmpty(STYLE_INTERPRETER_PREFIX)) {
+        return null;
+      }
+      String s = sd.getInline();
+      if (BeeUtils.isEmpty(s) || !s.startsWith(STYLE_INTERPRETER_PREFIX)) {
+        return null;
+      }
+
+      String xpr = s.substring(STYLE_INTERPRETER_PREFIX.length());
+      if (BeeUtils.isEmpty(xpr)) {
+        return null;
+      }
+      return Evaluator.createFuncInterpreter("return " + xpr.trim());
+    }
+
+    private final StyleDescriptor styleDescriptor;
+
+    private final Evaluator evaluator;
     private final JavaScriptObject styleInterpreter;
 
     private Entry(StyleDescriptor styleDescriptor, Evaluator evaluator) {
@@ -58,25 +80,13 @@ public final class ConditionalStyle {
       return s.contains(Evaluator.DEFAULT_REPLACE_PREFIX)
           && s.contains(Evaluator.DEFAULT_REPLACE_SUFFIX);
     }
-
-    private JavaScriptObject initInterpreter(StyleDescriptor sd) {
-      if (sd == null || BeeUtils.isEmpty(STYLE_INTERPRETER_PREFIX)) {
-        return null;
-      }
-      String s = sd.getInline();
-      if (BeeUtils.isEmpty(s) || !s.startsWith(STYLE_INTERPRETER_PREFIX)) {
-        return null;
-      }
-
-      String xpr = s.substring(STYLE_INTERPRETER_PREFIX.length());
-      if (BeeUtils.isEmpty(xpr)) {
-        return null;
-      }
-      return Evaluator.createFuncInterpreter("return " + xpr.trim());
-    }
   }
 
   private static final String STYLE_INTERPRETER_PREFIX = "=";
+  
+  private static final Map<String, StyleProvider> gridRowStyleProviders = Maps.newHashMap();
+  private static final Table<String, String, StyleProvider> gridColumnStyleProviders = 
+      HashBasedTable.create();
 
   public static ConditionalStyle create(Collection<ConditionalStyleDeclaration> declarations,
       String colName, List<? extends IsColumn> dataColumns) {
@@ -90,7 +100,7 @@ public final class ConditionalStyle {
         continue;
       }
       if (conditionalStyle == null) {
-        conditionalStyle = new ConditionalStyle();
+        conditionalStyle = new ConditionalStyle(null);
       }
       
       Evaluator evaluator;
@@ -104,10 +114,44 @@ public final class ConditionalStyle {
     }
     return conditionalStyle;
   }
+  
+  public static ConditionalStyle create(StyleProvider provider) {
+    if (provider == null) {
+      return null;
+    } else {
+      return new ConditionalStyle(provider);
+    }
+  }
+  
+  public static StyleProvider getGridColumnStyleProvider(String gridName, String columnName) {
+    return gridColumnStyleProviders.get(gridName, columnName);
+  }
 
+  public static StyleProvider getGridRowStyleProvider(String gridName) {
+    return gridRowStyleProviders.get(gridName);
+  }
+
+  public static void registerGridColumnStyleProvider(String gridName, String columnName,
+      StyleProvider styleProvider) {
+    Assert.notEmpty(gridName);
+    Assert.notEmpty(columnName);
+    Assert.notNull(styleProvider);
+  
+    gridColumnStyleProviders.put(gridName, columnName, styleProvider);
+  }
+
+  public static void registerGridRowStyleProvider(String gridName, StyleProvider styleProvider) {
+    Assert.notEmpty(gridName);
+    Assert.notNull(styleProvider);
+    
+    gridRowStyleProviders.put(gridName, styleProvider);
+  }
+  
   private final List<Entry> entries = Lists.newArrayList();
+  private final StyleProvider provider;
 
-  private ConditionalStyle() {
+  private ConditionalStyle(StyleProvider provider) {
+    this.provider = provider;
   }
   
   public StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex) {
@@ -121,7 +165,7 @@ public final class ConditionalStyle {
   
   private void addEntry(Entry entry) {
     if (entry != null) {
-      getEntries().add(entry);
+      entries.add(entry);
     }
   }
 
@@ -131,17 +175,17 @@ public final class ConditionalStyle {
     }
   }
   
-  private List<Entry> getEntries() {
-    return entries;
-  }
-
   private StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex,
       boolean updateCell, ValueType cellType, String cellValue) {
-    if (rowValue == null || getEntries().isEmpty()) {
+    if (rowValue == null) {
       return null;
     }
+    
+    if (provider != null) {
+      return provider.getStyleDescriptor(rowValue);
+    }
 
-    for (Entry entry : getEntries()) {
+    for (Entry entry : entries) {
       if (updateCell) {
         entry.getEvaluator().update(rowValue, rowIndex, colIndex, cellType, cellValue);
       } else {

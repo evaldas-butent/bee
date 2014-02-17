@@ -10,6 +10,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
+import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -92,6 +93,11 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   String getColumnCaption(String columnName);
 
+  /**
+   * Enables conditional styles for columns.
+   */
+  StyleProvider getColumnStyleProvider(String columnName);
+  
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
@@ -122,6 +128,11 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
 
   String getRowCaption(IsRow row, boolean edit);
+  
+  /**
+   * Enables conditional styles for rows.
+   */
+  StyleProvider getRowStyleProvider();
 
   boolean isRowEditable(IsRow row);
 

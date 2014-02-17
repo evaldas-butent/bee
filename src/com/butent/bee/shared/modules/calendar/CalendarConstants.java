@@ -259,10 +259,14 @@ public final class CalendarConstants {
 
   public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
+
+  public static final String GRID_APPOINTMENTS = "Appointments";
   public static final String GRID_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
   public static final String GRID_APPOINTMENT_OWNERS = "AppointmentOwners";
   public static final String GRID_APPOINTMENT_PROPS = "AppointmentProps";
 
+  public static final String GRID_ATTENDEES = "Attendees";
+  
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
 
   public static final String DEFAULT_NEW_APPOINTMENT_FORM = "SimpleAppointment";
