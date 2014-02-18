@@ -78,6 +78,11 @@ public class ProgressMessage extends Message {
     return getState() == State.CLOSED;
   }
 
+  @Override
+  public boolean isLoggable() {
+    return getValue() == null;
+  }
+
   public boolean isOpen() {
     return getState() == State.OPEN;
   }

@@ -4,13 +4,15 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.view.MonthView;
+import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -24,7 +26,7 @@ public class MonthMoveController implements MoveEvent.Handler {
 
   private int headerHeight;
 
-  private AppointmentWidget appointmentWidget;
+  private ItemWidget itemWidget;
   private int relativeLeft;
   private int relativeTop;
 
@@ -55,7 +57,7 @@ public class MonthMoveController implements MoveEvent.Handler {
     }
 
     if (event.isMoving()) {
-      if (getAppointmentWidget() == null) {
+      if (getItemWidget() == null) {
         if (!startDrag(mover)) {
           return;
         }
@@ -71,14 +73,14 @@ public class MonthMoveController implements MoveEvent.Handler {
         int left = BeeUtils.clamp(x - getPointerOffsetX() - getTargetLeft(), 0,
             getTargetWidth() - getSourceWidth());
         if (left != getRelativeLeft()) {
-          StyleUtils.setLeft(getAppointmentWidget(), left);
+          StyleUtils.setLeft(getItemWidget(), left);
           setRelativeLeft(left);
         }
 
         int top = BeeUtils.clamp(y - getPointerOffsetY() - getTargetTop(), getHeaderHeight(),
             getTargetHeight() - getSourceHeight());
         if (top != getRelativeTop()) {
-          StyleUtils.setTop(getAppointmentWidget(), top);
+          StyleUtils.setTop(getItemWidget(), top);
           setRelativeTop(top);
         }
       }
@@ -86,9 +88,9 @@ public class MonthMoveController implements MoveEvent.Handler {
       updatePosition();
 
     } else if (event.isFinished()) {
-      if (getAppointmentWidget() != null) {
+      if (getItemWidget() != null) {
         drop();
-        setAppointmentWidget(null);
+        setItemWidget(null);
       }
     }
   }
@@ -100,24 +102,33 @@ public class MonthMoveController implements MoveEvent.Handler {
   private void drop() {
     JustDate date = monthView.getCellDate(getSelectedRow(), getSelectedColumn());
 
-    Appointment appointment = getAppointmentWidget().getAppointment();
+    CalendarItem item = getItemWidget().getItem();
 
-    if (!TimeUtils.sameDate(date, appointment.getStart())) {
-      DateTime start = TimeUtils.combine(date, appointment.getStart());
-      DateTime end = TimeUtils.combine(date, appointment.getEnd());
+    if (!TimeUtils.sameDate(date, item.getStartTime())) {
+      DateTime start = TimeUtils.combine(date, item.getStartTime());
+      DateTime end = TimeUtils.combine(date, item.getEndTime());
 
-      monthView.updateAppointment(appointment, start, end, BeeConst.UNDEF, BeeConst.UNDEF);
+      switch (item.getItemType()) {
+        case APPOINTMENT:
+          monthView.updateAppointment((Appointment) item, start, end, BeeConst.UNDEF,
+              BeeConst.UNDEF);
+          break;
+
+        case TASK:
+          CrmKeeper.extendTask(item.getId(), start, end);
+          break;
+      }
     }
 
     monthView.getCalendarWidget().refresh(false);
   }
 
-  private AppointmentWidget getAppointmentWidget() {
-    return appointmentWidget;
-  }
-
   private int getHeaderHeight() {
     return headerHeight;
+  }
+
+  private ItemWidget getItemWidget() {
+    return itemWidget;
   }
 
   private int getPointerOffsetX() {
@@ -168,8 +179,8 @@ public class MonthMoveController implements MoveEvent.Handler {
     return targetWidth;
   }
 
-  private void setAppointmentWidget(AppointmentWidget appointmentWidget) {
-    this.appointmentWidget = appointmentWidget;
+  private void setItemWidget(ItemWidget itemWidget) {
+    this.itemWidget = itemWidget;
   }
 
   private void setPointerOffsetX(int pointerOffsetX) {
@@ -226,12 +237,12 @@ public class MonthMoveController implements MoveEvent.Handler {
       return false;
     }
 
-    AppointmentWidget widget = CalendarUtils.getAppointmentWidget(mover);
+    ItemWidget widget = CalendarUtils.getItemWidget(mover);
     if (widget == null) {
       return false;
     }
 
-    setAppointmentWidget(widget);
+    setItemWidget(widget);
 
     Widget target = widget.getParent();
 
@@ -250,8 +261,8 @@ public class MonthMoveController implements MoveEvent.Handler {
     setPointerOffsetX(mover.getStartX() - widget.getElement().getAbsoluteLeft());
     setPointerOffsetY(mover.getStartY() - widget.getElement().getAbsoluteTop());
 
-    StyleUtils.setWidth(getAppointmentWidget(), getSourceWidth());
-    getAppointmentWidget().addStyleName(CalendarStyleManager.DRAG);
+    StyleUtils.setWidth(getItemWidget(), getSourceWidth());
+    getItemWidget().addStyleName(CalendarStyleManager.DRAG);
 
     return true;
   }
@@ -259,14 +270,14 @@ public class MonthMoveController implements MoveEvent.Handler {
   private void updatePosition() {
     int row = monthView.getRow(getRelativeTop() + getPointerOffsetY());
     int col = monthView.getColumn(getRelativeLeft() + getPointerOffsetX());
-    
+
     if (getSelectedRow() != row || getSelectedColumn() != col) {
       if (!BeeConst.isUndef(getSelectedRow())) {
         monthView.setCellStyle(getSelectedRow(), getSelectedColumn(),
             CalendarStyleManager.POSITIONER, false);
       }
       monthView.setCellStyle(row, col, CalendarStyleManager.POSITIONER, true);
-      
+
       setSelectedRow(row);
       setSelectedColumn(col);
     }

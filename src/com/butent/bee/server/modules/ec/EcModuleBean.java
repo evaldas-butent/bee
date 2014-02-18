@@ -60,11 +60,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateTimeValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.Tags;
@@ -939,9 +937,9 @@ public class EcModuleBean implements BeeModule {
 
     Filter filter = Filter.and(
         Filter.or(Filter.isNull(COL_BANNER_SHOW_AFTER),
-            ComparisonFilter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
+            Filter.isLessEqual(COL_BANNER_SHOW_AFTER, now)),
         Filter.or(Filter.isNull(COL_BANNER_SHOW_BEFORE),
-            ComparisonFilter.isMore(COL_BANNER_SHOW_BEFORE, now)));
+            Filter.isMore(COL_BANNER_SHOW_BEFORE, now)));
 
     BeeRowSet rowSet = qs.getViewData(VIEW_BANNERS, filter);
     boolean changed;
@@ -1208,7 +1206,7 @@ public class EcModuleBean implements BeeModule {
 
   private ResponseObject getClientInfo() {
     BeeRowSet rowSet = qs.getViewData(VIEW_CLIENTS,
-        ComparisonFilter.isEqual(COL_CLIENT_USER, new LongValue(usr.getCurrentUserId())));
+        Filter.equals(COL_CLIENT_USER, usr.getCurrentUserId()));
 
     if (DataUtils.isEmpty(rowSet)) {
       String msg = BeeUtils.joinWords("client not available for user", usr.getCurrentUser());
@@ -1508,7 +1506,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
-        ComparisonFilter.isEqual(COL_ORDER_CLIENT, new LongValue(client)),
+        Filter.equals(COL_ORDER_CLIENT, client),
         new Order(COL_ORDER_DATE, false));
 
     if (!DataUtils.isEmpty(orderData)) {
@@ -1579,7 +1577,7 @@ public class EcModuleBean implements BeeModule {
         }
 
         BeeRowSet eventData = qs.getViewData(VIEW_ORDER_EVENTS,
-            ComparisonFilter.isEqual(COL_ORDER_EVENT_ORDER, new LongValue(orderRow.getId())),
+            Filter.equals(COL_ORDER_EVENT_ORDER, orderRow.getId()),
             new Order(COL_ORDER_EVENT_DATE, true));
 
         if (!DataUtils.isEmpty(eventData)) {
@@ -1603,7 +1601,7 @@ public class EcModuleBean implements BeeModule {
     int size = finInfo.getOrders().size() + finInfo.getInvoices().size();
 
     BeeRowSet unsuppliedItems = qs.getViewData(VIEW_UNSUPPLIED_ITEMS,
-        ComparisonFilter.isEqual(COL_UNSUPPLIED_ITEM_CLIENT, new LongValue(client)));
+        Filter.equals(COL_UNSUPPLIED_ITEM_CLIENT, client));
     if (!DataUtils.isEmpty(unsuppliedItems)) {
       finInfo.setUnsuppliedItems(unsuppliedItems);
       size += unsuppliedItems.getNumberOfRows();
@@ -1670,8 +1668,7 @@ public class EcModuleBean implements BeeModule {
       }
     }
 
-    BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
-        ComparisonFilter.isEqual(COL_GROUP, new LongValue(groupId)));
+    BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA, Filter.equals(COL_GROUP, groupId));
 
     if (!DataUtils.isEmpty(criteria)) {
       int idIndex = criteria.getColumnIndex(COL_GROUP_CRITERIA);
@@ -1870,8 +1867,7 @@ public class EcModuleBean implements BeeModule {
           group.setBrandSelection(true);
         }
 
-        BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA,
-            ComparisonFilter.isEqual(COL_GROUP, new LongValue(id)));
+        BeeRowSet criteria = qs.getViewData(VIEW_GROUP_CRITERIA, Filter.equals(COL_GROUP, id));
         if (!DataUtils.isEmpty(criteria)) {
           int colIndex = criteria.getColumnIndex(COL_GROUP_CRITERIA);
           for (int i = 0; i < criteria.getNumberOfRows(); i++) {
@@ -2513,7 +2509,7 @@ public class EcModuleBean implements BeeModule {
     }
 
     BeeRowSet eventData = qs.getViewData(VIEW_ORDER_EVENTS,
-        ComparisonFilter.isEqual(COL_ORDER_EVENT_ORDER, new LongValue(orderRow.getId())),
+        Filter.equals(COL_ORDER_EVENT_ORDER, orderRow.getId()),
         new Order(COL_ORDER_EVENT_DATE, true));
 
     Document doc = new Document();

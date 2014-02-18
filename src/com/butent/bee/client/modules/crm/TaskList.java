@@ -48,10 +48,11 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -62,16 +63,18 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.modules.crm.TaskType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 final class TaskList {
@@ -82,12 +85,12 @@ final class TaskList {
     private static final String NAME_SLACK = "Slack";
     private static final String NAME_STAR = "Star";
 
-    private final Type type;
+    private final TaskType type;
     private final String caption;
 
     private final Long userId;
 
-    private GridHandler(Type type, String caption) {
+    private GridHandler(TaskType type, String caption) {
       this.type = type;
       this.caption = caption;
 
@@ -122,51 +125,33 @@ final class TaskList {
           List<String> options = Lists.newArrayList(Localized.getConstants().crmNewTask(),
               Localized.getConstants().crmNewRecurringTask(), Localized.getConstants().cancel());
           int defValue = options.size() - 1;
-          
+
           Global.messageBox(title, Icon.QUESTION, msg, options, defValue, new ChoiceCallback() {
             @Override
             public void onSuccess(final int value) {
               if (value < 0 || value > 1 || presenter.getActiveRow() == null) {
                 return;
               }
-              
+
               ParameterList params = CrmKeeper.createArgs(SVC_GET_TASK_DATA);
-              params.addDataItem(VAR_TASK_ID, presenter.getActiveRow().getId());
-              
+              params.addQueryItem(VAR_TASK_ID, presenter.getActiveRow().getId());
+              params.addQueryItem(VAR_TASK_PROPERTIES, PROP_OBSERVERS);
+              params.addQueryItem(VAR_TASK_RELATIONS, 1);
+
               BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                 @Override
                 public void onResponse(ResponseObject response) {
-                  if (Queries.checkResponse(SVC_GET_TASK_DATA, VIEW_TASKS, response,
-                      BeeRow.class)) {
+                  if (Queries.checkRowResponse(SVC_GET_TASK_DATA, VIEW_TASKS, response)) {
                     BeeRow original = BeeRow.restore(response.getResponseAsString());
-                    
-                    String targetView = (value == 1) ? VIEW_RECURRING_TASKS : VIEW_TASKS;
-                    DataInfo targetDataInfo = Data.getDataInfo(targetView);
-                    BeeRow newRow = RowFactory.createEmptyRow(targetDataInfo, true);
 
-                    Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY,
-                        COL_DESCRIPTION, COL_COMPANY, COL_CONTACT, COL_REMINDER);
-
-                    for (String colName : colNames) {
-                      String colValue = original.getString(getDataIndex(colName));
-                      if (!BeeUtils.isEmpty(colValue)) {
-                        newRow.setValue(targetDataInfo.getColumnIndex(colName), colValue);
-                      }
+                    switch (value) {
+                      case 0:
+                        copyTask(original);
+                        break;
+                      case 1:
+                        copyAsRecurringTask(original);
+                        break;
                     }
-                    
-                    Set<String> propNames = Sets.newHashSet();
-                    propNames.add(PROP_EXECUTORS);
-                    propNames.add(PROP_OBSERVERS);
-                    propNames.addAll(CrmUtils.getRelations());
-                    
-                    for (String propName : propNames) {
-                      String propValue = original.getProperty(propName);
-                      if (!BeeUtils.isEmpty(propValue)) {
-                        newRow.setProperty(propName, propValue);
-                      }
-                    }
-                    
-                    RowFactory.createRow(targetDataInfo, newRow);
                   }
                 }
               });
@@ -180,13 +165,13 @@ final class TaskList {
         return super.beforeAction(action, presenter);
       }
     }
-    
+
     @Override
     public ColumnDescription beforeCreateColumn(GridView gridView,
         ColumnDescription columnDescription) {
 
-      if (type == Type.ASSIGNED && columnDescription.is(COL_EXECUTOR)
-          || type == Type.DELEGATED && columnDescription.is(COL_OWNER)) {
+      if (type == TaskType.ASSIGNED && columnDescription.is(COL_EXECUTOR)
+          || type == TaskType.DELEGATED && columnDescription.is(COL_OWNER)) {
 
         if (columnDescription.getVisible() == null
             && !GridSettings.hasVisibleColumns(gridView.getGridKey())) {
@@ -220,10 +205,12 @@ final class TaskList {
       Provider provider = presenter.getDataProvider();
       Long owner = activeRow.getLong(provider.getColumnIndex(COL_OWNER));
 
-      if (owner == userId) {
+      if (Objects.equals(owner, userId)) {
         return GridInterceptor.DeleteMode.SINGLE;
       } else {
-        presenter.getGridView().notifyWarning(Localized.getConstants().crmTaskDeleteCanManager());
+        presenter.getGridView().notifyWarning(
+            BeeUtils.joinWords(Localized.getConstants().crmTask(), activeRow.getId()),
+            Localized.getConstants().crmTaskDeleteCanManager());
         return GridInterceptor.DeleteMode.CANCEL;
       }
     }
@@ -251,6 +238,11 @@ final class TaskList {
       } else {
         return super.getFilterSupplier(columnName, columnDescription);
       }
+    }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return new GridHandler(type, caption);
     }
 
     @Override
@@ -286,12 +278,161 @@ final class TaskList {
       return true;
     }
 
+    private void copyAsRecurringTask(BeeRow oldRow) {
+      DataInfo sourceInfo = Data.getDataInfo(VIEW_TASKS);
+      if (sourceInfo == null) {
+        return;
+      }
+      DataInfo targetInfo = Data.getDataInfo(VIEW_RECURRING_TASKS);
+      if (targetInfo == null) {
+        return;
+      }
+
+      BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
+
+      Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY, COL_DESCRIPTION);
+      for (String colName : colNames) {
+        String value = oldRow.getString(getDataIndex(colName));
+        if (!BeeUtils.isEmpty(value)) {
+          newRow.setValue(targetInfo.getColumnIndex(colName), value);
+        }
+      }
+
+      DateTime startTime = oldRow.getDateTime(getDataIndex(COL_START_TIME));
+      DateTime finishTime = oldRow.getDateTime(getDataIndex(COL_FINISH_TIME));
+
+      if (startTime != null) {
+        int minutes = TimeUtils.minutesSinceDayStarted(startTime);
+        if (minutes > 0) {
+          newRow.setValue(targetInfo.getColumnIndex(COL_RT_START_AT),
+              TimeUtils.renderMinutes(minutes, true));
+        }
+      }
+
+      String duration = oldRow.getString(getDataIndex(COL_EXPECTED_DURATION));
+      if (!BeeUtils.isEmpty(duration)) {
+        newRow.clearCell(targetInfo.getColumnIndex(COL_RT_DURATION_DAYS));
+        newRow.setValue(targetInfo.getColumnIndex(COL_RT_DURATION_TIME), duration);
+
+      } else if (startTime != null && finishTime != null) {
+        long durationMillis = finishTime.getTime() - startTime.getTime();
+        long days = durationMillis / TimeUtils.MILLIS_PER_DAY;
+        long time = durationMillis % TimeUtils.MILLIS_PER_DAY;
+
+        if (durationMillis > 0 && (days > 0 || time > TimeUtils.MILLIS_PER_MINUTE)) {
+          if (days > 0) {
+            newRow.setValue(targetInfo.getColumnIndex(COL_RT_DURATION_DAYS), days);
+          } else {
+            newRow.clearCell(targetInfo.getColumnIndex(COL_RT_DURATION_DAYS));
+          }
+          
+          if (time > TimeUtils.MILLIS_PER_MINUTE) {
+            newRow.setValue(targetInfo.getColumnIndex(COL_RT_DURATION_TIME),
+                TimeUtils.renderMinutes(BeeUtils.toInt(time / TimeUtils.MILLIS_PER_MINUTE), true));
+          }
+        }
+      }
+
+      colNames = Sets.newHashSet(COL_COMPANY, COL_CONTACT, COL_REMINDER);
+      for (String colName : colNames) {
+        RelationUtils.copyWithDescendants(sourceInfo, colName, oldRow, targetInfo, colName, newRow);
+      }
+
+      Long owner = BeeKeeper.getUser().getUserId();
+      Long executor = oldRow.getLong(getDataIndex(COL_EXECUTOR));
+
+      if (executor != null) {
+        newRow.setProperty(PROP_EXECUTORS, executor.toString());
+      }
+
+      String observers = oldRow.getProperty(PROP_OBSERVERS);
+      if (!BeeUtils.isEmpty(observers)) {
+        List<Long> users = DataUtils.parseIdList(observers);
+
+        if (users.contains(owner)) {
+          users.remove(owner);
+        }
+        if (users.contains(executor)) {
+          users.remove(executor);
+        }
+
+        if (!users.isEmpty()) {
+          newRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(users));
+        }
+      }
+
+      for (String propName : CrmUtils.getRelationPropertyNames()) {
+        String propValue = oldRow.getProperty(propName);
+        if (!BeeUtils.isEmpty(propValue)) {
+          newRow.setProperty(propName, propValue);
+        }
+      }
+
+      RowFactory.createRow(targetInfo, newRow);
+    }
+
+    private void copyTask(BeeRow oldRow) {
+      DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
+      if (dataInfo == null) {
+        return;
+      }
+
+      BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+
+      Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY, COL_DESCRIPTION,
+          COL_EXPECTED_DURATION);
+      for (String colName : colNames) {
+        int index = getDataIndex(colName);
+        String value = oldRow.getString(index);
+
+        if (!BeeUtils.isEmpty(value)) {
+          newRow.setValue(index, value);
+        }
+      }
+
+      colNames = Sets.newHashSet(COL_COMPANY, COL_CONTACT, COL_REMINDER);
+      for (String colName : colNames) {
+        RelationUtils.copyWithDescendants(dataInfo, colName, oldRow, dataInfo, colName, newRow);
+      }
+
+      Long owner = BeeKeeper.getUser().getUserId();
+      Long executor = oldRow.getLong(getDataIndex(COL_EXECUTOR));
+
+      if (executor != null) {
+        newRow.setProperty(PROP_EXECUTORS, executor.toString());
+      }
+
+      String observers = oldRow.getProperty(PROP_OBSERVERS);
+      if (!BeeUtils.isEmpty(observers)) {
+        List<Long> users = DataUtils.parseIdList(observers);
+
+        if (users.contains(owner)) {
+          users.remove(owner);
+        }
+        if (users.contains(executor)) {
+          users.remove(executor);
+        }
+
+        if (!users.isEmpty()) {
+          newRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(users));
+        }
+      }
+
+      for (String propName : CrmUtils.getRelationPropertyNames()) {
+        String propValue = oldRow.getProperty(propName);
+        if (!BeeUtils.isEmpty(propValue)) {
+          newRow.setProperty(propName, propValue);
+        }
+      }
+
+      RowFactory.createRow(dataInfo, newRow);
+    }
+
     private void updateStar(final EditStartEvent event, final CellSource source,
         final Integer value) {
       final long rowId = event.getRowValue().getId();
 
-      Filter filter = Filter.and(ComparisonFilter.isEqual(COL_TASK, new LongValue(rowId)),
-          ComparisonFilter.isEqual(COL_USER, new LongValue(userId)));
+      Filter filter = Filter.and(Filter.equals(COL_TASK, rowId), Filter.equals(COL_USER, userId));
 
       Queries.update(VIEW_TASK_USERS, filter, COL_STAR, new IntegerValue(value),
           new Queries.IntCallback() {
@@ -565,8 +706,8 @@ final class TaskList {
       LATE {
         @Override
         Filter getFilter() {
-          return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
-              ComparisonFilter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
+          return Filter.and(Filter.isLess(COL_STATUS, IntegerValue.of(TaskStatus.COMPLETED)),
+              Filter.isLess(COL_FINISH_TIME, new DateTimeValue(TimeUtils.nowMinutes())));
         }
 
         @Override
@@ -583,8 +724,8 @@ final class TaskList {
       SCHEDULED {
         @Override
         Filter getFilter() {
-          return Filter.and(ComparisonFilter.isLess(COL_STATUS, new IntegerValue(4)),
-              ComparisonFilter.isMoreEqual(COL_START_TIME,
+          return Filter.and(Filter.isLess(COL_STATUS, IntegerValue.of(TaskStatus.COMPLETED)),
+              Filter.isMoreEqual(COL_START_TIME,
                   new DateTimeValue(TimeUtils.today(1).getDateTime())));
         }
 
@@ -831,72 +972,13 @@ final class TaskList {
     }
   }
 
-  private enum Type implements HasCaption {
-    ASSIGNED(Localized.getConstants().crmTasksAssignedTasks()/* , Feed.TASKS_ASSIGNED */) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return ComparisonFilter.isEqual(COL_EXECUTOR, userValue);
-      }
-    },
-
-    DELEGATED(Localized.getConstants().crmTasksDelegatedTasks()/* , Feed.TASKS_DELEGATED */) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return Filter.and(ComparisonFilter.isEqual(COL_OWNER, userValue),
-            ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue));
-      }
-    },
-
-    OBSERVED(Localized.getConstants().crmTasksObservedTasks()/* , Feed.TASKS_OBSERVED */) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return Filter.and(ComparisonFilter.isNotEqual(COL_OWNER, userValue),
-            ComparisonFilter.isNotEqual(COL_EXECUTOR, userValue),
-            Filter.in(Data.getIdColumn(VIEW_TASKS), VIEW_TASK_USERS, COL_TASK,
-                ComparisonFilter.isEqual(COL_USER, userValue)));
-      }
-    },
-
-    GENERAL(Localized.getConstants().crmTasksList()/* , Feed.TASKS_ALL */) {
-      @Override
-      Filter getFilter(LongValue userValue) {
-        return null;
-      }
-    };
-
-    private static Type getByFeed(@SuppressWarnings("unused") Feed input) {
-      // for (Type type : values()) {
-        // if (type.feed == input) {
-        // return type;
-        // }
-      // }
-      return null;
-    }
-
-    private final String caption;
-
-    // private final Feed feed;
-
-    private Type(String caption/* , Feed feed */) {
-      this.caption = caption;
-      // this.feed = feed;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-
-    abstract Filter getFilter(LongValue userValue);
-  }
-
   private static final int DEFAULT_STAR_COUNT = 3;
 
   private static final String STYLE_MODE_NEW = "bee-crm-Mode-new";
   private static final String STYLE_MODE_UPD = "bee-crm-Mode-upd";
 
   static Consumer<GridOptions> getFeedFilterHandler(Feed feed) {
-    final Type type = Type.getByFeed(feed);
+    final TaskType type = TaskType.getByFeed(feed);
     Assert.notNull(type);
 
     Consumer<GridOptions> consumer = new Consumer<GridFactory.GridOptions>() {
@@ -911,14 +993,7 @@ final class TaskList {
   }
 
   static void open(String args) {
-    Type type = null;
-
-    for (Type z : Type.values()) {
-      if (BeeUtils.startsSame(args, z.name())) {
-        type = z;
-        break;
-      }
-    }
+    TaskType type = TaskType.getByPrefix(args);
 
     if (type == null) {
       Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", args));

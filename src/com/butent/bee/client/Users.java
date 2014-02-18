@@ -140,7 +140,7 @@ public class Users {
 
   private static final String STYLE_PREFIX = "bee-Online-";
 
-  private final Map<Long, UserData> users = Maps.newHashMap();
+  private Map<Long, UserData> users = Maps.newHashMap();
   private final Map<String, Long> openSessions = Maps.newHashMap();
 
   private final OnlinePanel onlinePanel = new OnlinePanel();
@@ -232,6 +232,10 @@ public class Users {
     return result;
   }
 
+  public Map<Long, UserData> getUserData() {
+    return users;
+  }
+
   public UserData getUserData(Long userId) {
     UserData userData = users.get(userId);
     if (userData == null) {
@@ -242,6 +246,10 @@ public class Users {
 
   public Long getUserIdBySession(String sessionId) {
     return openSessions.get(sessionId);
+  }
+
+  public void setUsers(Map<Long, UserData> users) {
+    this.users = users;
   }
 
   public String getUserSignatureBySession(String sessionId) {

@@ -310,7 +310,7 @@ public class ParamHolderBean {
           .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module)));
 
       for (BeeParameter param : defaults) {
-        if (DataUtils.isId(param.getId())) {
+        if (param.supportsUsers() && DataUtils.isId(param.getId())) {
           String id = BeeUtils.toString(param.getId());
           param.setValue(BeeUtils.toLong(data.getValueByKey(FLD_PARAM, id, FLD_USER)),
               data.getValueByKey(FLD_PARAM, id, FLD_VALUE));

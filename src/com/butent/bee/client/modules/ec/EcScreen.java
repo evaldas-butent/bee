@@ -20,6 +20,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.modules.commons.PasswordService;
 import com.butent.bee.client.modules.ec.EcCommandWidget.Type;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -209,6 +210,12 @@ public class EcScreen extends ScreenImpl {
 
     Simple wrapper = new Simple(shell);
     return Pair.of(wrapper, 0);
+  }
+
+  
+  @Override
+  protected void onUserSignatureClick(long userId) {
+    PasswordService.change();
   }
 
   @Override

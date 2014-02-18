@@ -30,7 +30,7 @@
     <IdColumn name="Id" caption="=captionId" visible="false" />
     <DataColumn name="RegistrationNumber" visible="false" />
     <DataColumn name="Received" visible="false" />
-    <DataColumn name="Sent" visible="false" filterOptions="empty" />
+    <DataColumn name="Sent" visible="false" />
     <DataColumn name="Returned" visible="false" />
     <DataColumn name="Description" visible="false" />
   </g:columns>

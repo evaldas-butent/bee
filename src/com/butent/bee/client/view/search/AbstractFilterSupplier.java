@@ -468,6 +468,10 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     }
   }
 
+  protected boolean isColumnNullable() {
+    return (getColumn() == null) ? false : getColumn().isNullable();
+  }
+  
   protected boolean isSelected(Integer item) {
     return selectedItems.contains(item);
   }

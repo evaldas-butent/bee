@@ -79,7 +79,7 @@ public class Endpoint {
       }
     }
   }
-  
+
   public static boolean updateProgress(String progressId, double value) {
     String sessionId = progressToSession.get(progressId);
 
@@ -127,7 +127,7 @@ public class Endpoint {
       }
     }
   }
-  
+
   private static void sendToNeighbors(ChatRoom room, Message message, String mySessionId) {
     for (Session session : openSessions) {
       if (session.isOpen() && !mySessionId.equals(session.getId())
@@ -187,10 +187,10 @@ public class Endpoint {
           logger.log(level, logMessage.getText());
         }
         break;
-        
+
       case MODIFICATION:
         ModificationMessage modificationMessage = (ModificationMessage) message;
-        
+
         if (modificationMessage.isValid()) {
           sendToOtherSessions(modificationMessage, session.getId());
         } else {
@@ -502,8 +502,10 @@ public class Endpoint {
       String text = message.encode();
       session.getAsyncRemote().sendText(message.encode());
 
-      logger.debug("->", message);
-      logger.info("->", message.getType(), "length:", text.length(), toLog(session));
+      if (message.isLoggable()) {
+        logger.debug("->", message);
+        logger.info("->", message.getType(), "length:", text.length(), toLog(session));
+      }
     }
   }
 
@@ -592,8 +594,10 @@ public class Endpoint {
     } else {
       Message message = Message.decode(data);
       if (message != null) {
-        logger.debug("<-", message);
-        logger.info("<-", message.getType(), "length:", data.length(), toLog(session));
+        if (message.isLoggable()) {
+          logger.debug("<-", message);
+          logger.info("<-", message.getType(), "length:", data.length(), toLog(session));
+        }
         dispatch(session, message);
       }
     }

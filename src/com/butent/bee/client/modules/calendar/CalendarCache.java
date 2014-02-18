@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -114,10 +115,24 @@ class CalendarCache implements HandlesAllDataEvents {
     }
   }
 
+  boolean contains(String viewName, Filter filter) {
+    BeeRowSet rowSet = getRowSet(viewName);
+    if (rowSet == null) {
+      return false;
+    }
+    
+    for (BeeRow row : rowSet.getRows()) {
+      if (filter.isMatch(rowSet.getColumns(), row)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   void ensureData(String viewName) {
     getData(viewName, null);
   }
-  
+
   List<BeeColumn> getAppointmentViewColumns() {
     return getAppointmentViewInfo().getColumns();
   }
@@ -128,23 +143,13 @@ class CalendarCache implements HandlesAllDataEvents {
     }
     return appointmentViewInfo;
   }
-
-  void getData(String viewName, Callback callback) {
-    if (State.LOADED.equals(states.get(viewName))) {
-      if (callback != null) {
-        callback.onSuccess(data.get(viewName));
-      }
-
+  
+  Boolean getBoolean(String viewName, long rowId, String columnId) {
+    BeeRow row = getRow(viewName, rowId);
+    if (row == null) {
+      return null;
     } else {
-      if (callback != null) {
-        List<Callback> cbs = callbacks.get(viewName);
-        if (cbs == null) {
-          callbacks.put(viewName, Lists.newArrayList(callback));
-        } else {
-          cbs.add(callback);
-        }
-      }
-      loadData(viewName);
+      return Data.getBoolean(viewName, row, columnId);
     }
   }
 
@@ -207,6 +212,25 @@ class CalendarCache implements HandlesAllDataEvents {
     }
   }
 
+  void getData(String viewName, Callback callback) {
+    if (State.LOADED.equals(states.get(viewName))) {
+      if (callback != null) {
+        callback.onSuccess(data.get(viewName));
+      }
+
+    } else {
+      if (callback != null) {
+        List<Callback> cbs = callbacks.get(viewName);
+        if (cbs == null) {
+          callbacks.put(viewName, Lists.newArrayList(callback));
+        } else {
+          cbs.add(callback);
+        }
+      }
+      loadData(viewName);
+    }
+  }
+  
   Integer getInteger(String viewName, long rowId, String columnId) {
     BeeRow row = getRow(viewName, rowId);
     if (row == null) {
@@ -233,7 +257,7 @@ class CalendarCache implements HandlesAllDataEvents {
       return rowSet.getRowById(rowId);
     }
   }
-  
+
   BeeRowSet getRowSet(String viewName) {
     BeeRowSet rowSet = data.get(viewName);
     if (rowSet == null) {
@@ -241,7 +265,7 @@ class CalendarCache implements HandlesAllDataEvents {
     }
     return rowSet;
   }
-
+  
   String getString(String viewName, long rowId, String columnId) {
     BeeRow row = getRow(viewName, rowId);
     if (row == null) {

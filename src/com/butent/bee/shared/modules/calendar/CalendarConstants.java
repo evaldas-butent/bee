@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.calendar;
 
+import com.google.common.collect.ImmutableMap;
+
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
@@ -8,6 +10,8 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.Map;
 
 public final class CalendarConstants {
 
@@ -54,6 +58,28 @@ public final class CalendarConstants {
       return getCaption(Localized.getConstants());
     }
   }
+  
+  public enum ItemType {
+    APPOINTMENT, TASK
+  }
+  
+  public enum MultidayLayout implements HasCaption {
+    HORIZONTAL(Localized.getConstants().calMultidayLayoutHorizontal()),
+    VERTICAL(Localized.getConstants().calMultidayLayoutVertical()),
+    WORKING_HOURS(Localized.getConstants().calMultidayLayoutWorkingHours()),
+    LAST_DAY(Localized.getConstants().calMultidayLayoutLastDay());
+    
+    private final String caption;
+
+    private MultidayLayout(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
 
   public enum Report implements HasCaption {
     BUSY_MONTHS(Localized.getConstants().calReportTypeBusyMonths()),
@@ -70,15 +96,6 @@ public final class CalendarConstants {
     @Override
     public String getCaption() {
       return caption;
-    }
-  }
-
-  public enum ResponseStatus implements HasCaption {
-    NEEDS_ACTION, DECLINED, TENTATIVE, ACCEPTED;
-
-    @Override
-    public String getCaption() {
-      return BeeUtils.proper(this);
     }
   }
 
@@ -102,12 +119,13 @@ public final class CalendarConstants {
     }
   }
 
-  public enum Visibility implements HasCaption {
-    PUBLIC(Localized.getConstants().calPublic()), PRIVATE(Localized.getConstants().calPrivate());
+  public enum CalendarVisibility implements HasCaption {
+    PUBLIC(Localized.getConstants().calPublic()),
+    PRIVATE(Localized.getConstants().calPrivate());
 
     private final String caption;
 
-    private Visibility(String caption) {
+    private CalendarVisibility(String caption) {
       this.caption = caption;
     }
 
@@ -164,10 +182,10 @@ public final class CalendarConstants {
 
   public static void register() {
     EnumUtils.register(AppointmentStatus.class);
-    EnumUtils.register(ResponseStatus.class);
-    EnumUtils.register(Transparency.class);
+    EnumUtils.register(MultidayLayout.class);
     EnumUtils.register(TimeBlockClick.class);
-    EnumUtils.register("Calendar_Visibility", Visibility.class);
+    EnumUtils.register(Transparency.class);
+    EnumUtils.register(CalendarVisibility.class);
   }
 
   public static final String CALENDAR_MODULE = "Calendar";
@@ -176,7 +194,7 @@ public final class CalendarConstants {
   public static final String SVC_GET_USER_CALENDAR = "get_user_calendar";
   public static final String SVC_CREATE_APPOINTMENT = "create_appointment";
   public static final String SVC_UPDATE_APPOINTMENT = "update_appointment";
-  public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments";
+  public static final String SVC_GET_CALENDAR_ITEMS = "get_calendar_items";
   public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view";
   public static final String SVC_GET_OVERLAPPING_APPOINTMENTS = "get_overlapping_appointments";
   public static final String SVC_GET_REPORT_OPTIONS = "get_report_options";
@@ -201,12 +219,16 @@ public final class CalendarConstants {
   public static final String TBL_APPOINTMENTS = "Appointments";
   public static final String TBL_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String TBL_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+  public static final String TBL_APPOINTMENT_OWNERS = "AppointmentOwners";
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
   public static final String TBL_ATTENDEES = "Attendees";
 
   public static final String TBL_REPORT_OPTIONS = "ReportOptions";
 
+  public static final String TBL_CALENDAR_EXECUTORS = "CalendarExecutors";
+  public static final String TBL_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
+  
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_USER_CAL_ATTENDEES = "UserCalAttendees";
@@ -222,22 +244,29 @@ public final class CalendarConstants {
   public static final String VIEW_APPOINTMENTS = "Appointments";
   public static final String VIEW_APPOINTMENT_TYPES = "AppointmentTypes";
 
-  public static final String VIEW_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String VIEW_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
-  public static final String VIEW_APPOINTMENT_REMINDERS = "AppointmentReminders";
+  public static final String VIEW_APPOINTMENT_OWNERS = "AppointmentOwners";
 
   public static final String VIEW_APPOINTMENT_STYLES = "AppointmentStyles";
 
   public static final String VIEW_CAL_APPOINTMENT_TYPES = "CalAppointmentTypes";
   public static final String VIEW_CAL_ATTENDEE_TYPES = "CalAttendeeTypes";
   public static final String VIEW_CALENDAR_ATTENDEES = "CalendarAttendees";
-  public static final String VIEW_CALENDAR_PERSONS = "CalendarPersons";
+  public static final String VIEW_CALENDAR_EXECUTORS = "CalendarExecutors";
+  public static final String VIEW_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 
   public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
-  public static final String GRID_CALENDARS = "Calendars";
-  public static final String GRID_APPOINTMENTS = "Appointments";
+  public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
+  public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 
+  public static final String GRID_APPOINTMENTS = "Appointments";
+  public static final String GRID_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+  public static final String GRID_APPOINTMENT_OWNERS = "AppointmentOwners";
+  public static final String GRID_APPOINTMENT_PROPS = "AppointmentProps";
+
+  public static final String GRID_ATTENDEES = "Attendees";
+  
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
 
   public static final String DEFAULT_NEW_APPOINTMENT_FORM = "SimpleAppointment";
@@ -246,8 +275,9 @@ public final class CalendarConstants {
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
   public static final String COL_USER_CALENDAR = "UserCalendar";
-  public static final String COL_CALENDAR_NAME = "CalendarName";
-  public static final String COL_NAME = "Name";
+
+  public static final String COL_CALENDAR_NAME = "Name";
+  public static final String COL_CALENDAR_OWNER = "Owner";
 
   public static final String COL_DEFAULT_DISPLAYED_DAYS = "DefaultDisplayedDays";
 
@@ -262,30 +292,42 @@ public final class CalendarConstants {
 
   public static final String COL_SEPARATE_ATTENDEES = "SeparateAttendees";
 
+  public static final String COL_MULTIDAY_LAYOUT = "MultidayLayout";
+  public static final String COL_MULTIDAY_TASK_LAYOUT = "MultidayTaskLayout";
+
   public static final String COL_COMPANY = "Company";
-  public static final String COL_COMPANY_NAME = "CompanyName";
-  public static final String COL_COMPANY_PHONE = "CompanyPhone";
-  public static final String COL_COMPANY_EMAIL = "CompanyEmail";
+  public static final String ALS_COMPANY_NAME = "CompanyName";
+  public static final String ALS_COMPANY_PHONE = "CompanyPhone";
+  public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
+
+  public static final String COL_APPOINTMENT_LOCATION = "Location";
 
   public static final String COL_APPOINTMENT = "Appointment";
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
-  public static final String COL_TYPE_NAME = "TypeName";
 
+  public static final String COL_APPOINTMENT_TYPE_NAME = "Name";
+  
   public static final String COL_ATTENDEE = "Attendee";
-  public static final String COL_ATTENDEE_NAME = "AttendeeName";
+  public static final String COL_ATTENDEE_NAME = "Name";
   public static final String COL_ATTENDEE_TYPE = "AttendeeType";
-  public static final String COL_ATTENDEE_ORDINAL = "AttendeeOrdinal";
-  public static final String COL_ATTENDEE_COLOR = "AttendeeColor";
-  public static final String COL_ATTENDEE_BACKGROUND = "AttendeeBackground";
-  public static final String COL_ATTENDEE_FOREGROUND = "AttendeeForeground";
+  
+  public static final String ALS_ATTENDEE_NAME = "AttendeeName";
+  public static final String ALS_ATTENDEE_ORDINAL = "AttendeeOrdinal";
+  public static final String ALS_ATTENDEE_COLOR = "AttendeeColor";
+  public static final String ALS_ATTENDEE_BACKGROUND = "AttendeeBackground";
+  public static final String ALS_ATTENDEE_FOREGROUND = "AttendeeForeground";
 
-  public static final String COL_TIME_ZONE = "TimeZone";
+  public static final String COL_ATTENDEE_TYPE_NAME = "Name";
+  public static final String ALS_ATTENDEE_TYPE_NAME = "TypeName";
 
-  public static final String COL_PROPERTY = "Property";
+  public static final String COL_PROPERTY_NAME = "Name";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
-  public static final String COL_PROPERTY_NAME = "PropertyName";
-  public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_DEFAULT_PROPERTY = "DefaultProperty";
+  public static final String ALS_PROPERTY_NAME = "PropertyName";
+  public static final String ALS_PROPERTY_GROUP_NAME = "GroupName";
+
+  public static final String COL_ATTENDEE_PROPERTY = "Property";
+  public static final String COL_APPOINTMENT_PROPERTY = "Property";
 
   public static final String COL_HOURS = "Hours";
   public static final String COL_MINUTES = "Minutes";
@@ -296,14 +338,8 @@ public final class CalendarConstants {
   public static final String COL_ERROR = "Error";
   public static final String COL_RECIPIENT = "Recipient";
 
-  public static final String COL_START_DATE = "StartDate";
   public static final String COL_START_DATE_TIME = "StartDateTime";
-
-  public static final String COL_END_DATE = "EndDate";
   public static final String COL_END_DATE_TIME = "EndDateTime";
-
-  public static final String COL_EFFECTIVE_START = "EffectiveStart";
-  public static final String COL_EFFECTIVE_END = "EffectiveEnd";
 
   public static final String COL_VEHICLE = "Vehicle";
   public static final String COL_VEHICLE_OWNER = "VehicleOwner";
@@ -318,12 +354,8 @@ public final class CalendarConstants {
 
   public static final String COL_STATUS = "Status";
 
-  public static final String COL_ORGANIZER = "Organizer";
-  public static final String COL_ORGANIZER_FIRST_NAME = "OrganizerFirstName";
-  public static final String COL_ORGANIZER_LAST_NAME = "OrganizerLastName";
-
-  public static final String COL_OWNER_FIRST_NAME = "OwnerFirstName";
-  public static final String COL_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
 
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
 
@@ -335,6 +367,8 @@ public final class CalendarConstants {
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
 
+  public static final String COL_BACKGROUND = "Background";
+  public static final String COL_FOREGROUND = "Foreground";
   public static final String COL_STYLE = "Style";
 
   public static final String COL_SIMPLE = "Simple";
@@ -348,7 +382,7 @@ public final class CalendarConstants {
   public static final String COL_ACTIVE_VIEW = "ActiveView";
 
   public static final String COL_TRANSPARENCY = "Transparency";
-  public static final String COL_TYPE_TRANSPARENCY = "TypeTransparency";
+  public static final String ALS_TYPE_TRANSPARENCY = "TypeTransparency";
 
   public static final String COL_VISIBILITY = "Visibility";
   public static final String COL_CREATOR = "Creator";
@@ -368,13 +402,37 @@ public final class CalendarConstants {
   public static final String COL_ENABLED = "Enabled";
   public static final String COL_ORDINAL = "Ordinal";
 
+  public static final String COL_ASSIGNED_TASKS = "AssignedTasks";
+  public static final String COL_ASSIGNED_TASKS_BACKGROUND = "AssignedTasksBackground";
+  public static final String COL_ASSIGNED_TASKS_FOREGROUND = "AssignedTasksForeground";
+  public static final String COL_ASSIGNED_TASKS_STYLE = "AssignedTasksStyle";
+  
+  public static final String COL_DELEGATED_TASKS = "DelegatedTasks";
+  public static final String COL_DELEGATED_TASKS_BACKGROUND = "DelegatedTasksBackground";
+  public static final String COL_DELEGATED_TASKS_FOREGROUND = "DelegatedTasksForeground";
+  public static final String COL_DELEGATED_TASKS_STYLE = "DelegatedTasksStyle";
+
+  public static final String COL_OBSERVED_TASKS = "ObservedTasks";
+  public static final String COL_OBSERVED_TASKS_BACKGROUND = "ObservedTasksBackground";
+  public static final String COL_OBSERVED_TASKS_FOREGROUND = "ObservedTasksForeground";
+  public static final String COL_OBSERVED_TASKS_STYLE = "ObservedTasksStyle";
+
+  public static final String COL_EXECUTOR_USER = "User";
+  public static final String COL_EXECUTOR_GROUP = "Group";
+
+  public static final String COL_APPOINTMENT_OWNER = "Owner";
+  
+  public static final Map<String, String> APPOINTMENT_CHILDREN =
+      ImmutableMap.of(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE,
+          TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT_OWNER,
+          TBL_APPOINTMENT_PROPS, COL_APPOINTMENT_PROPERTY,
+          TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE);
+  
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 
   public static final String PRM_REMINDER_TIME_FROM = "ReminderTimeFrom";
   public static final String PRM_REMINDER_TIME_UNTIL = "ReminderTimeUntil";
-
-  public static final String PROP_USER_CAL_ATTENDEES = "UserCalAttendees";
 
   public static final JustDate MIN_DATE = new JustDate(2010, 1, 1);
   public static final JustDate MAX_DATE = TimeUtils.endOfMonth(TimeUtils.today(), 12);

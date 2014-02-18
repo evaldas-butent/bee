@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/widget" style="border-spacing: 10px;">
   
-  <col index="1" width="100" />
+  <col index="1" width="160" />
   
   <row>
     <Label text="=calIntervalsPerHour" />
@@ -46,6 +46,13 @@
   </row>
 
   <row>
+    <Label text="=calMultidayLayout" />
+    <ListBox source="MultidayLayout" />
     <CheckBox source="SeparateAttendees" text="=calSeparateAttendees" />
+  </row>
+
+  <row>
+    <Label text="=calMultidayTaskLayout" />
+    <ListBox source="MultidayTaskLayout" />
   </row>
 </Table>

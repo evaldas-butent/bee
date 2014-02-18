@@ -119,6 +119,10 @@ public final class Queries {
     }
   }
 
+  public static boolean checkRowResponse(String service, String viewName, ResponseObject response) {
+    return checkResponse(service, viewName, response, BeeRow.class);
+  }
+  
   public static void delete(final String viewName, Filter filter, final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(filter, "Delete: filter required");

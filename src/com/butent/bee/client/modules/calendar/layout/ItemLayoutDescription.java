@@ -2,28 +2,28 @@ package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Range;
 
-import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class AppointmentLayoutDescription {
+public class ItemLayoutDescription {
 
-  private final Appointment appointment;
+  private final CalendarItem item;
 
   private int fromWeekDay;
   private int toWeekDay;
 
-  public AppointmentLayoutDescription(int weekDay, Appointment appointment) {
-    this(weekDay, weekDay, appointment);
+  public ItemLayoutDescription(int weekDay, CalendarItem item) {
+    this(weekDay, weekDay, item);
   }
 
-  public AppointmentLayoutDescription(int fromWeekDay, int toWeekDay, Appointment appointment) {
+  public ItemLayoutDescription(int fromWeekDay, int toWeekDay, CalendarItem item) {
     this.toWeekDay = toWeekDay;
     this.fromWeekDay = fromWeekDay;
-    this.appointment = appointment;
+    this.item = item;
   }
 
-  public Appointment getAppointment() {
-    return appointment;
+  public CalendarItem getItem() {
+    return item;
   }
 
   public int getWeekEndDay() {
@@ -42,10 +42,10 @@ public class AppointmentLayoutDescription {
     return fromWeekDay < toWeekDay;
   }
 
-  public AppointmentLayoutDescription split() {
-    AppointmentLayoutDescription secondPart = null;
+  public ItemLayoutDescription split() {
+    ItemLayoutDescription secondPart = null;
     if (spansMoreThanADay()) {
-      secondPart = new AppointmentLayoutDescription(fromWeekDay + 1, toWeekDay, appointment);
+      secondPart = new ItemLayoutDescription(fromWeekDay + 1, toWeekDay, item);
       this.toWeekDay = this.fromWeekDay;
     } else {
       secondPart = this;

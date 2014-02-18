@@ -29,6 +29,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.JustDate;
@@ -85,14 +87,14 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     UP("up") {
       @Override
       Widget create(BeeRow row) {
-        return new Image(Global.getImages().silverTringleUp());
+        return new FaLabel(FontAwesome.ARROW_UP);
       }
     },
 
     DOWN("down") {
       @Override
       Widget create(BeeRow row) {
-        return new Image(Global.getImages().silverTringleDown());
+        return new FaLabel(FontAwesome.ARROW_DOWN);
       }
     },
 
@@ -106,7 +108,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     REMOVE("remove") {
       @Override
       Widget create(final BeeRow row) {
-        Image widget = new Image(Global.getImages().silverMinus());
+        FaLabel widget = new FaLabel(FontAwesome.TRASH_O);
         widget.setTitle(Localized.getConstants().actionRemove());
         return widget;
       }
@@ -162,12 +164,12 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     ucIndex = rowSet.getColumnIndex(COL_USER_CALENDAR);
     attIndex = rowSet.getColumnIndex(COL_ATTENDEE);
 
-    nameIndex = rowSet.getColumnIndex(COL_ATTENDEE_NAME);
+    nameIndex = rowSet.getColumnIndex(ALS_ATTENDEE_NAME);
     ordinalIndex = rowSet.getColumnIndex(COL_ORDINAL);
     captionIndex = rowSet.getColumnIndex(COL_CAPTION);
     enabledIndex = rowSet.getColumnIndex(COL_ENABLED);
 
-    attBgIndex = rowSet.getColumnIndex(COL_ATTENDEE_BACKGROUND);
+    attBgIndex = rowSet.getColumnIndex(ALS_ATTENDEE_BACKGROUND);
     bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
 
     initialized = true;
@@ -424,7 +426,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
   private static DataSelector createSelector() {
     Relation relation = Relation.create(VIEW_ATTENDEES,
-        Lists.newArrayList(COL_NAME, COL_TYPE_NAME));
+        Lists.newArrayList(COL_ATTENDEE_NAME, ALS_ATTENDEE_TYPE_NAME));
     relation.disableEdit();
 
     DataSelector dataSelector = new DataSelector(relation, true);

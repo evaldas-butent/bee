@@ -37,5 +37,7 @@
     <RelColumn name="Reminder" />
     <DataColumn name="RemindBefore" visible="false" />
     <DataColumn name="RemindAt" visible="false" />
+
+    <DataColumn name="CopyByMail" visible="false" />
   </g:columns>
 </g:Grid>

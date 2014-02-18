@@ -22,9 +22,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
@@ -104,7 +102,7 @@ public class DocumentTemplatesGrid extends AbstractGridInterceptor implements
       Filter flt;
 
       if (category != null) {
-        flt = ComparisonFilter.isEqual(COL_DOCUMENT_CATEGORY, new LongValue(category));
+        flt = Filter.equals(COL_DOCUMENT_CATEGORY, category);
       } else {
         flt = Filter.isFalse();
       }

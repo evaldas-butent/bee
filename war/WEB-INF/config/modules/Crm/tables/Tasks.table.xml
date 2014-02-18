@@ -16,7 +16,8 @@
     <DateTime name="Approved" label="=crmTaskConfirmDate" />
     <String name="ExpectedDuration" precision="10" label="=crmTaskExpectedDuration" />
 
-    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="=crmTaskManager" />
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER"
+      label="=crmTaskManager" />
     <Relation name="Executor" notNull="true" relation="Users" label="=crmTaskExecutor" />
 
     <Relation name="Company" relation="Companies" label="=company" />
@@ -28,6 +29,7 @@
 
     <Enum name="Status" key="TaskStatus" notNull="true" defValue="0" label="=crmTaskStatus" />
     
-    <Relation name="RecurringTask" relation="RecurringTasks" cascade="SET_NULL" label="=crmRecurringTask" />
+    <Relation name="RecurringTask" relation="RecurringTasks" cascade="SET_NULL"
+      label="=crmRecurringTask" />
   </Fields>
 </Table>

@@ -25,7 +25,7 @@ class InvoiceCreator extends Image implements ClickHandler {
   private final Filter filter;
 
   public InvoiceCreator(Filter filter) {
-    super(Global.getImages().silverInvoive());
+    super(Global.getImages().silverInvoice());
     setTitle(Localized.getConstants().createInvoice());
     setAlt(getTitle());
     addClickHandler(this);

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
 
   name="Themes" viewName="Themes" caption="=colorThemes" newRowCaption="=newTheme"
   editForm="Theme" flexGrow="1" flexShrink="1"
@@ -10,11 +9,6 @@
     <DataColumn name="Name" caption="=name" minWidth="100" visible="true" />
     <DataColumn name="Description" caption="=description" flexShrink="3" />
 
-    <RelColumn name="DefaultColorName" caption="=defaultColor">
-      <dynStyle>
-        <ui:inline>background-color: [row.DefaultBackground] !important; color: [row.DefaultForeground];</ui:inline>
-        <ui:expression>row.DefaultColor > 0</ui:expression>
-      </dynStyle>
-    </RelColumn>
+    <RelColumn name="DefaultColorName" caption="=defaultColor" />
   </g:columns>
 </g:Grid>

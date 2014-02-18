@@ -3,8 +3,12 @@
   <!ENTITY absolute "position: absolute;">
   <!ENTITY relative "position: relative;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
-  xmlns:d="http://www.butent.com/decorator" name="SimpleAppointment" viewName="Appointments"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="SimpleAppointment" viewName="Appointments"
   caption="=calAppointment" disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; width: 760px; height: 360px;">
@@ -22,7 +26,7 @@
       renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
       style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
 
-    <InputArea source="Description" placeholder="=calDescription" visibleLines="5"
+    <InputArea source="Description" placeholder="=description" visibleLines="5"
       style="&absolute; left: 360px; top: 40px; width: 382px;" />
 
     <InputDate name="StartDate" required="true" caption="=scheduledStartingTime"
@@ -47,22 +51,23 @@
     <ListBox name="Reminder" caption="=calReminder" style="width: 160px;"
       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 280px;" />
       
-    <Radio source="Visibility" vertical="false"
-      style="&absolute; left: 0; top: 324px;" />
+    <DataSelector source="AppointmentType" required="true" caption="=calAppointmentType"
+      style="width: 160px;" d:size="80" d:unit="px"
+      d:rootStyle="&absolute; left: 0; top: 320px;" />
+    <Radio source="Visibility" vertical="true"
+      style="&absolute; left: 260px; top: 316px;" />
 
-    <DataSelector source="CompanyName" caption="=calClient" style="width: 300px;"
-       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 240px;"
-       choiceColumns="Name Phone Email" />
+    <Label text="=company" style="&absolute; left: 360px; top: 240px; width: 76px;" />
 
-    <DataSelector source="Organizer" caption="=responsiblePerson" style="width: 300px;"
-      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;">
-      <renderToken source="OrganizerFirstName" />
-      <renderToken source="OrganizerLastName" />
-      <renderToken source="OrganizerCompanyName" prefix=", " />
-    </DataSelector>
+    <DataSelector source="CompanyName" choiceColumns="Name Phone Email"
+      style="&absolute; left: 440px; top: 240px; width: 300px;" />
 
-    <DataSelector source="AppointmentType" required="true" caption="=appointmentType" style="width: 300px;"
-      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 320px;" />
+    <Label text="=responsiblePersons" style="&absolute; left: 360px; top: 280px; width: 76px;" />
+
+    <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
+      renderColumns="FirstName LastName"
+      choiceColumns="FirstName LastName CompanyName PositionName"
+      style="&absolute; left: 440px; top: 280px; width: 300px;" />
 
   </FlowPanel>
 </f:Form>  

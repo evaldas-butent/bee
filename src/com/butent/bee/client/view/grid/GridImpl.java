@@ -54,6 +54,7 @@ import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -104,6 +105,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -376,8 +378,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         dataIndex = DataUtils.getColumnIndex(source, dataColumns);
       }
     }
-    String label = Localized.maybeTranslate(cd.getLabel());
 
+    String label = Localized.maybeTranslate(cd.getLabel());
     if (BeeUtils.isEmpty(label)) {
       int index;
       if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
@@ -389,8 +391,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         label = Localized.getLabel(dataColumns.get(index));
       }
     }
-    String caption = Localized.maybeTranslate(cd.getCaption());
 
+    String caption = Localized.maybeTranslate(cd.getCaption());
     if (BeeUtils.isEmpty(caption)) {
       caption = label;
     } else if (BeeUtils.isEmpty(label)) {
@@ -400,6 +402,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         label = columnId;
       }
     }
+
     String enumKey = cd.getEnumKey();
 
     CellSource cellSource;
@@ -630,7 +633,30 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       columnInfo.setHidable(false);
     }
 
-    columnInfo.initProperties(cd, gridDescription, dataColumns);
+    columnInfo.initProperties(cd, gridDescription);
+
+    ConditionalStyle columnStyles = null;
+
+    if (gridInterceptor != null) {
+      StyleProvider styleProvider = gridInterceptor.getColumnStyleProvider(columnId);
+      if (styleProvider != null) {
+        columnStyles = ConditionalStyle.create(styleProvider);
+      }
+    }
+    if (columnStyles == null && cd.getDynStyles() != null) {
+      columnStyles = ConditionalStyle.create(cd.getDynStyles(), columnId, dataColumns);
+    }
+    if (columnStyles == null) {
+      StyleProvider styleProvider = ConditionalStyle.getGridColumnStyleProvider(getGridName(),
+          columnId);
+      if (styleProvider != null) {
+        columnStyles = ConditionalStyle.create(styleProvider);
+      }
+    }
+
+    if (columnStyles != null) {
+      columnInfo.setDynStyles(columnStyles);
+    }
 
     getGrid().addColumn(columnInfo, !BeeUtils.isFalse(cd.getVisible()), beforeIndex);
 
@@ -691,12 +717,26 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       getGrid().setReadOnly(true);
     }
 
-    if (gridDescription.getRowStyles() != null) {
-      ConditionalStyle rowStyles = ConditionalStyle.create(gridDescription.getRowStyles(), null,
-          dataColumns);
-      if (rowStyles != null) {
-        getGrid().setRowStyles(rowStyles);
+    ConditionalStyle rowStyles = null;
+
+    if (gridInterceptor != null) {
+      StyleProvider styleProvider = gridInterceptor.getRowStyleProvider();
+      if (styleProvider != null) {
+        rowStyles = ConditionalStyle.create(styleProvider);
       }
+    }
+    if (rowStyles == null && gridDescription.getRowStyles() != null) {
+      rowStyles = ConditionalStyle.create(gridDescription.getRowStyles(), null, dataColumns);
+    }
+    if (rowStyles == null) {
+      StyleProvider styleProvider = ConditionalStyle.getGridRowStyleProvider(getGridName());
+      if (styleProvider != null) {
+        rowStyles = ConditionalStyle.create(styleProvider);
+      }
+    }
+
+    if (rowStyles != null) {
+      getGrid().setRowStyles(rowStyles);
     }
 
     if (gridDescription.getRowEditable() != null) {
@@ -1319,7 +1359,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (getGrid().containsRow(event.getRowId())) {
       return;
     }
-    
+
     if (getGridInterceptor() != null && !getGridInterceptor().onRowInsert(event)) {
       return;
     }
@@ -1352,6 +1392,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     getGrid().insertRow(event.getRow(), false);
     logger.info("grid", getId(), getViewName(), "insert row", event.getRowId());
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (getGridInterceptor() != null && event.hasView(getViewName())) {
+      getGridInterceptor().onRowUpdate(event);
+    }
   }
 
   @Override
@@ -1474,6 +1521,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     super.onLoad();
 
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
   }
 
   @Override
@@ -2535,7 +2583,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     boolean modal = popup != null;
 
     FormView form = getForm(edit);
-    
+
     State state = show ? State.OPEN : State.CLOSED;
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().beforeStateChange(state, modal);

@@ -16,6 +16,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -51,8 +52,7 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
                 BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                   @Override
                   public void onResponse(ResponseObject response) {
-                    if (Queries.checkResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response,
-                        BeeRow.class)) {
+                    if (Queries.checkRowResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response)) {
                       BeeRow row = BeeRow.restore(response.getResponseAsString());
                       GridView gridView = presenter.getGridView();
                       
@@ -79,6 +79,11 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
     } else {
       return super.beforeAction(action, presenter);
     }
+  }
+  
+  @Override
+  public GridInterceptor getInstance() {
+    return new RecurringTaskGrid();
   }
 
   @Override

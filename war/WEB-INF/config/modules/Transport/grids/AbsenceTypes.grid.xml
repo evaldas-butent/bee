@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AbsenceTypes" viewName="AbsenceTypes" caption="=trAbsenceTypes"
   >
@@ -7,10 +7,6 @@
     <DataColumn name="Name" flexGrow="1" flexShrink="1" />
     <DataColumn name="Label" minWidth="80" />
 
-    <RelColumn name="Color" renderColumns="ColorName" minWidth="80" >
-      <dynStyle>
-        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
-      </dynStyle>
-    </RelColumn>
+    <RelColumn name="Color" renderColumns="ColorName" minWidth="80" />
   </g:columns>
 </g:Grid>

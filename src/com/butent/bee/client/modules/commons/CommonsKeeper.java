@@ -14,15 +14,19 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -38,7 +42,7 @@ public final class CommonsKeeper {
 
       } else if (event.hasView(VIEW_COMPANIES)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
-            Lists.newArrayList(COL_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
+            Lists.newArrayList(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
                 COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
 
       } else if (event.hasView(VIEW_PERSONS)) {
@@ -108,7 +112,23 @@ public final class CommonsKeeper {
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
-    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS, new UserGroupMembersInterceptor());
+
+    GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
+        UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
+            COL_UG_GROUP, COL_UG_USER));
+
+    ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_FOREGROUND, styleProvider);
+
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_THEMES, ALS_DEFAULT_COLOR_NAME,
+        ColorStyleProvider.create(VIEW_THEMES, ALS_DEFAULT_BACKGROUND, ALS_DEFAULT_FOREGROUND));
+
+    styleProvider = ColorStyleProvider.createDefault(VIEW_THEME_COLORS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_THEME_COLORS, COL_BACKGROUND,
+        styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_THEME_COLORS, COL_FOREGROUND,
+        styleProvider);
 
     SelectorEvent.register(new CommonsSelectorHandler());
 

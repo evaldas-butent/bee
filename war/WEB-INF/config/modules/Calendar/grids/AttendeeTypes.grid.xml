@@ -2,12 +2,12 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AttendeeTypes" viewName="AttendeeTypes"
-  caption="=calAppointmentTypes" newRowCaption="=calNewAttendeeType"
+  caption="=calAttendeeTypes" newRowCaption="=calNewAttendeeType"
   >
   <g:columns>
-    <DataColumn name="Name" caption="=calAppointmentTypeName" minWidth="100" flexGrow="1" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" flexGrow="3" flexShrink="3" />
+    <DataColumn name="Name" minWidth="100" flexGrow="1" visible="true" />
+    <DataColumn name="Description" flexGrow="3" flexShrink="3" />
 
-    <DataColumn name="Transparency" caption="=calTransparency" flexShrink="1" />
+    <DataColumn name="Transparency" flexShrink="1" />
   </g:columns>
 </g:Grid>

@@ -2,9 +2,21 @@ package com.butent.bee.shared.modules.calendar;
 
 public interface LocalizableCalendarConstants {
 
-  String appointments();
+  String calAddAttendees();
+
+  String calAddExecutorGroups();
+  
+  String calAddExecutors();
+
+  String calAddOwners();
+  
+  String calAddParameters();
+
+  String calAppointmentAttendees();
 
   String calAppointmentEnd();
+
+  String calAppointments();
 
   String calAppointmentStart();
 
@@ -24,11 +36,15 @@ public interface LocalizableCalendarConstants {
 
   String calAttendees();
 
-  String calAttendeesTypes();
+  String calAttendeeTypes();
+
+  String calCreateNewAppointment();
+
+  String calDaysView();
 
   String calDayView();
 
-  String calDaysView();
+  String calDeleteAppointment();
 
   String calendar();
 
@@ -49,12 +65,24 @@ public interface LocalizableCalendarConstants {
   String calInvalidDateInterval();
 
   String calInvalidHoursInterval();
-
+  
   String calMonthView();
+  
+  String calMultidayLayoutHorizontal();
+  
+  String calMultidayLayoutLastDay();
+  
+  String calMultidayLayoutVertical();
+
+  String calMultidayLayoutWorkingHours();
 
   String calName();
 
   String calOpaque();
+
+  String calOverlappingAppointments();
+  
+  String calParameters();
 
   String calPlannedEndDateMustBeGreater();
 
@@ -63,6 +91,8 @@ public interface LocalizableCalendarConstants {
   String calPublic();
 
   String calReminder();
+
+  String calReminders();
 
   String calRepairType();
 
@@ -86,6 +116,8 @@ public interface LocalizableCalendarConstants {
 
   String calResourceView();
 
+  String calSelectAppointment();
+
   String calSelectVehicle();
 
   String calServiceType();
@@ -101,12 +133,4 @@ public interface LocalizableCalendarConstants {
   String calWeekView();
 
   String calWorkWeekView();
-
-  String createNewAppointment();
-
-  String deleteAppointment();
-
-  String overlappingAppointments();
-
-  String selectAppointment();
 }

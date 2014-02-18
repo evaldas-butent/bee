@@ -1,44 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY tbl "border-collapse: collapse; margin-top: 1ex;">
+  <!ENTITY cell "vertical-align: top; padding: 5px 1em;">
+  <!ENTITY chld "width: 450px;">
+  <!ENTITY tstl "width: 100px;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:d="http://www.butent.com/decorator"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="Calendar" viewName="Calendars" caption="=calendar">
 
   <FlowPanel>
-    <Table style="margin-top: 1ex; border-collapse: collapse;" cellStyle="padding: 5px 10px;">
+    <Table style="&tbl;" cellStyle="&cell;">
       <row>
         <Label text="=name" class="bee-required" />
-        <InputText source="Name" />
+        <InputText source="Name" style="width: 200px;" />
         <Label text="=owner" />
         <DataSelector source="Owner" />
       </row>
       <row>
         <Label text="=description" />
-        <cell colSpan="3">
-          <InputArea source="Description" visibleLines="3" style="width: 100%;" />
-        </cell>
+        <InputArea source="Description" visibleLines="3" style="width: 200px;" />
+        <cell><text/></cell>
+        <Radio source="Visibility" />
       </row>
     </Table>
   
     <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 120px; bottom: 1ex;">
       <page>
-        <text>=calAttendeesTypes</text>
-        <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />
+        <text>=filters</text>
+        <Table style="&tbl;" cellStyle="&cell;">
+          <row>
+            <Label text="=calAttendeeTypes" />
+            <ChildSelector childTable="CalAttendeeTypes" viewName="AttendeeTypes"
+              renderColumns="Name" style="&chld;" />
+          </row>
+          <row>
+            <Label text="=calAttendees" />
+            <ChildSelector childTable="CalendarAttendees" viewName="Attendees"
+              renderColumns="Name" choiceColumns="TypeName Name" style="&chld;" />
+          </row>
+          <row>
+            <Label text="=calAppointmentTypes" />
+            <ChildSelector childTable="CalAppointmentTypes" viewName="AppointmentTypes"
+              renderColumns="Name" style="&chld;" />
+          </row>
+        </Table>
+      </page>
+
+      <page>
+        <text>=tasks</text>
+        <Table style="&tbl;" cellStyle="&cell;">
+          <row>
+            <cell><text/></cell>
+            <Label text="=background" horizontalAlignment="center" />
+            <Label text="=foreground" horizontalAlignment="center" />
+            <Label text="=style" horizontalAlignment="center" />
+          </row>
+              
+          <row>
+            <CheckBox source="AssignedTasks" text="=calTasksAssigned" />
+            <ColorEditor source="AssignedTasksBackground" />
+            <ColorEditor source="AssignedTasksForeground" />
+            <DataSelector source="AssignedTasksStyle" style="&tstl;" />
+          </row>
+          <row>
+            <CheckBox source="DelegatedTasks" text="=calTasksDelegated" />
+            <ColorEditor source="DelegatedTasksBackground" />
+            <ColorEditor source="DelegatedTasksForeground" />
+            <DataSelector source="DelegatedTasksStyle" style="&tstl;" />
+          </row>
+          <row>
+            <CheckBox source="ObservedTasks" text="=calTasksObserved" />
+            <ColorEditor source="ObservedTasksBackground" />
+            <ColorEditor source="ObservedTasksForeground" />
+            <DataSelector source="ObservedTasksStyle" style="&tstl;" />
+          </row>
+        </Table>
+      </page>
+
+      <page>
+        <text>=crmTaskExecutors</text>
+        <ChildGrid name="CalendarExecutors" relColumn="Calendar" />
       </page>
       <page>
-        <text>=calAppointmentAttendees</text>
-        <ChildGrid name="CalendarAttendees" relColumn="Calendar" />
+        <text>=crmTaskExecutorGroups</text>
+        <ChildGrid name="CalExecutorGroups" relColumn="Calendar" />
       </page>
-      <page>
-        <text>=persons</text>
-        <ChildGrid name="CalendarPersons" relColumn="Calendar" />
-      </page>
-      <page>
-        <text>=appointmentTypes</text>
-        <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
-      </page>
+
       <page>
         <text>=settings</text>
         <xi:include href="widgets/Settings.widget.xml" />

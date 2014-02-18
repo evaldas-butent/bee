@@ -26,9 +26,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.SupportedLocale;
@@ -269,7 +267,7 @@ public class UserServiceBean {
   }
 
   public Filter getCurrentUserFilter(String column) {
-    return ComparisonFilter.isEqual(column, new LongValue(getCurrentUserId()));
+    return Filter.equals(column, getCurrentUserId());
   }
 
   public Long getCurrentUserId() {

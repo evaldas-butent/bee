@@ -16,7 +16,7 @@
     <Integer name="LowerHour" label="=calReportLowerHour" />
     <Integer name="UpperHour" label="=calReportUpperHour" />
     
-    <Text name="AttendeeTypes" label="=calAttendeesTypes" />
+    <Text name="AttendeeTypes" label="=calAttendeeTypes" />
     <Text name="Attendees" label="=calAttendees"/>
   </Fields>
 

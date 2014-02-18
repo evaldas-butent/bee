@@ -25,12 +25,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
@@ -71,7 +69,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
     long cargoId = activeRow.getLong(presenter.getGridView().getDataIndex(COL_CARGO));
 
     Queries.getRowSet(TBL_CARGO_TRIPS, Lists.newArrayList(COL_TRIP),
-        ComparisonFilter.isEqual(COL_CARGO, new LongValue(cargoId)), new RowSetCallback() {
+        Filter.equals(COL_CARGO, cargoId), new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet rowSet) {
             Queries.deleteRow(TBL_ORDERS, orderId, 0, new IntCallback() {
@@ -138,8 +136,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onLoad(GridDescription gridDescription) {
-    gridDescription.setFilter(ComparisonFilter.isEqual(COL_ASSESSOR_MANAGER,
-        new LongValue(BeeKeeper.getUser().getUserId())));
+    gridDescription.setFilter(Filter.equals(COL_ASSESSOR_MANAGER, BeeKeeper.getUser().getUserId()));
     return true;
   }
 
@@ -159,7 +156,7 @@ public class AssessmentsGrid extends AbstractGridInterceptor {
 
     for (AssessmentStatus check : checks.keySet()) {
       if (BooleanValue.unpack(checks.get(check).getValue())) {
-        filter.add(ComparisonFilter.isEqual(COL_STATUS, new IntegerValue(check.ordinal())));
+        filter.add(Filter.isEqual(COL_STATUS, IntegerValue.of(check)));
       }
     }
     if (filter.isEmpty()) {

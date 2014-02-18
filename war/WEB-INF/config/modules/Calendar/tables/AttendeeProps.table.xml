@@ -5,8 +5,10 @@
   idName="AttendeePropID"
   >
   <Fields>
-    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" label="=calAttendee" />
-    <Relation name="Property" notNull="true" relation="ExtendedProperties" cascade="DELETE" label="=calAttendeeProperty" />
+    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE"
+      label="=calAttendee" />
+    <Relation name="Property" notNull="true" relation="ExtendedProperties" cascade="DELETE"
+      label="=calAttendeeProperty" />
   </Fields>
 
   <Constraints>

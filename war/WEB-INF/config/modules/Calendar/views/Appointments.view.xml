@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Appointments" source="Appointments" caption="=appointments" newRowCaption="=newAppointment"
+  name="Appointments" source="Appointments" newRowForm="Appointment"
+  caption="=calAppointments" newRowCaption="=calNewAppointment"
   >
   <Columns>
     <SimpleColumn name="AppointmentType" />
@@ -13,7 +14,6 @@
     <SimpleColumn name="Description" />
 
     <SimpleColumn name="Location" />
-    <SimpleColumn name="HtmlLink" />
 
     <SimpleColumn name="Color" />
     <SimpleJoin name="Color" joinType="LEFT">
@@ -41,48 +41,11 @@
       </SimpleJoin>
     </SimpleJoin>
     
-    <SimpleColumn name="Organizer" />
-    <SimpleJoin name="Organizer" joinType="LEFT">
-      <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn alias="OrganizerCompanyName" name="Name" />
-      </SimpleJoin>
-      <SimpleColumn alias="OrganizerPerson" name="Person" />
-      <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn alias="OrganizerFirstName" name="FirstName" />
-        <SimpleColumn alias="OrganizerLastName" name="LastName" />
-      </SimpleJoin>
-    </SimpleJoin>
-
-    <SimpleColumn name="StartDate" />
     <SimpleColumn name="StartDateTime" />
-    <SimpleColumn name="StartTimeZone" />
-    <SimpleJoin name="StartTimeZone" joinType="LEFT">
-      <SimpleColumn alias="StartTimeZoneName" name="Name" />
-    </SimpleJoin>
-
-    <SimpleColumn name="EndDate" />
     <SimpleColumn name="EndDateTime" />
-    <SimpleColumn name="EndTimeZone" />
-    <SimpleJoin name="EndTimeZone" joinType="LEFT">
-      <SimpleColumn alias="EndTimeZoneName" name="Name" />
-    </SimpleJoin>
 
-    <SimpleColumn name="Recurrence" />
-    <SimpleColumn name="RecurringEventId" />
-
-    <SimpleColumn name="Transparency" />
     <SimpleColumn name="Visibility" />
-    <SimpleColumn name="ReadOnly" />
 
-    <SimpleColumn name="ICalUID" />
-    <SimpleColumn name="Sequence" />
-
-    <SimpleColumn name="AnyoneCanAddSelf" />
-    <SimpleColumn name="GuestsCanInviteOthers" />
-    <SimpleColumn name="GuestsCanSeeOtherGuests" />
-
-    <SimpleColumn name="UseDefaultReminders" />
-    
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
@@ -130,9 +93,6 @@
       </SimpleJoin>
       <SimpleColumn alias="VehicleNotes" name="Notes" />
     </SimpleJoin>
-    
-    <SimpleColumn name="EffectiveStart" />
-    <SimpleColumn name="EffectiveEnd" />
   </Columns>
 
   <Order>

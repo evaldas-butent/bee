@@ -161,6 +161,10 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     boolean discussPublic = BeeUtils.toBoolean(
         ((InputBoolean) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY)).getValue());
 
+    boolean discussClosed =
+        BeeUtils.toBoolean(((InputBoolean) getFormView().getWidgetByName(COL_PERMIT_COMMENT))
+            .getValue());
+
     String description = ((Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
         .getValue();
 
@@ -177,6 +181,10 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     if (discussPublic) {
       newRow.setProperty(PROP_MEMBERS, null);
+    }
+
+    if (discussClosed) {
+      Data.setValue(VIEW_DISCUSSIONS, newRow, COL_STATUS, DiscussionStatus.CLOSED.ordinal());
     }
 
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);

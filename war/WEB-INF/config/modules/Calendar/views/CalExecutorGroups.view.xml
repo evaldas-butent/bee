@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CalExecutorGroups" source="CalExecutorGroups"
+  caption="=crmTaskExecutorGroups" 
+  >
+  <Columns>
+    <SimpleColumn name="Calendar" />
+
+    <SimpleColumn name="Group" />
+    <SimpleJoin name="Group" joinType="INNER">
+      <SimpleColumn alias="GroupName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="Style" />
+    <SimpleJoin name="Style" joinType="LEFT">
+      <SimpleColumn alias="StyleName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="GroupName" />
+  </Order>
+</View>
+ 

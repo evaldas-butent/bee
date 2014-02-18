@@ -127,10 +127,10 @@
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label text="=appointments" style="&top1;" />
+        <Label text="=calAppointments" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-          newRowEnabled="false" style="&inp2x;" disablable="true" />
+          newRowEnabled="true" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

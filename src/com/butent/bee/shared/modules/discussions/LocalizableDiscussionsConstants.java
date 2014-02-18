@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.discussions;
 
 public interface LocalizableDiscussionsConstants {
 
+  String birthdaysParties();
+
   String discussions();
 
   String discussActionActivate();
@@ -83,4 +85,6 @@ public interface LocalizableDiscussionsConstants {
   String discussStatusNew();
 
   String discussStarred();
+
+  String more();
 }

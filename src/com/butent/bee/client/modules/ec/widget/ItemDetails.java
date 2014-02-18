@@ -96,11 +96,17 @@ public class ItemDetails extends Flow {
         EcKeeper.dispatchMessages(response);
 
         if (!response.hasErrors()) {
-          List<EcItem> items = EcKeeper.getResponseItems(response);
+          final List<EcItem> items = EcKeeper.getResponseItems(response);
+
           if (!BeeUtils.isEmpty(items)) {
-            ItemList itemList = new ItemList(items);
-            container.clear();
-            container.add(itemList);
+            EcKeeper.ensureClientStockLabels(new Consumer<Boolean>() {
+              @Override
+              public void accept(Boolean input) {
+                ItemList itemList = new ItemList(items);
+                container.clear();
+                container.add(itemList);
+              }
+            });
           }
         }
       }

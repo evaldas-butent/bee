@@ -82,7 +82,6 @@ public final class NewsConstants {
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_START_DATE_TIME);
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_END_DATE_TIME);
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_STATUS);
-    observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_ORGANIZER);
 
     observedColumns.put(EcConstants.TBL_CLIENTS, EcConstants.COL_CLIENT_MANAGER);
     observedColumns.put(EcConstants.TBL_ORDERS, EcConstants.COL_ORDER_STATUS);

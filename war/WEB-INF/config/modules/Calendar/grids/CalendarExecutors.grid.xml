@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="CalendarExecutors" viewName="CalendarExecutors" minColumnWidth="120"
+  >
+  <g:columns>
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
+
+    <DataColumn name="CompanyName" label="=company" visible="false" />
+    <DataColumn name="PositionName" label="=personPosition" visible="false" />
+
+    <DataColumn name="Background" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+
+    <RelColumn name="Style" />
+  </g:columns>
+</g:Grid>
+

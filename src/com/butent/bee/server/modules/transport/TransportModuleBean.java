@@ -47,16 +47,16 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 // import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
@@ -67,6 +67,12 @@ import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +86,7 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
+import javax.servlet.http.HttpServletResponse;
 
 @Stateless
 @LocalBean
@@ -204,6 +211,10 @@ public class TransportModuleBean implements BeeModule {
       response = sendToERP(reqInfo.getParameter("view_name"),
           DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
 
+    } else if (BeeUtils.same(svc, SVC_SEND_MESSAGE)) {
+      response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
+          Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
+
     } else if (BeeUtils.same(svc, SVC_GET_IMPORT_MAPPINGS)) {
       response = getImportMappings(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_PROPERTY)),
           reqInfo.getParameter(VAR_MAPPING_TABLE), reqInfo.getParameter(VAR_MAPPING_FIELD));
@@ -229,8 +240,14 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
+        BeeParameter.createCollection(TRANSPORT_MODULE, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createText(TRANSPORT_MODULE, "ERPCreditOperation", false, null),
-        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null));
+        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsServiceAddress", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsUserName", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsPassword", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsServiceId", false, null),
+        BeeParameter.createText(TRANSPORT_MODULE, "SmsDisplayText", false, null));
   }
 
   @Override
@@ -1388,7 +1405,7 @@ public class TransportModuleBean implements BeeModule {
 
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
-    Filter filter = ComparisonFilter.isEqual(COL_USER, new LongValue(userId));
+    Filter filter = Filter.equals(COL_USER, userId);
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
     if (!DataUtils.isEmpty(rowSet)) {
@@ -1411,8 +1428,7 @@ public class TransportModuleBean implements BeeModule {
 
     BeeRowSet rowSet;
     if (theme != null) {
-      rowSet = qs.getViewData(VIEW_THEME_COLORS,
-          ComparisonFilter.isEqual(COL_THEME, new LongValue(theme)));
+      rowSet = qs.getViewData(VIEW_THEME_COLORS, Filter.equals(COL_THEME, theme));
     } else {
       rowSet = null;
     }
@@ -1994,6 +2010,88 @@ public class TransportModuleBean implements BeeModule {
         logger.info("Removed ERP timer");
       }
     }
+  }
+
+  private ResponseObject sendMessage(String message, String[] recipients) {
+    String address = prm.getText("SmsServiceAddress");
+
+    if (BeeUtils.isEmpty(address)) {
+      return ResponseObject.error("SmsServiceAddress is empty");
+    }
+    StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>")
+        .append("<sms-send>")
+        .append("<authentication>")
+        .append(XmlUtils.tag("username", prm.getText("SmsUserName")))
+        .append(XmlUtils.tag("password", prm.getText("SmsPassword")))
+        .append(XmlUtils.tag("serviceId", prm.getText("SmsServiceId")))
+        .append("</authentication>")
+        .append("<originator>")
+        .append(XmlUtils.tag("source", prm.getText("SmsDisplayText")))
+        .append("</originator>")
+        .append("<sms-messages>");
+
+    for (String phone : recipients) {
+      xml.append("<sms>")
+          .append(XmlUtils.tag("destination", phone))
+          .append(XmlUtils.tag("msg", message))
+          .append(XmlUtils.tag("dr", true))
+          .append(XmlUtils.tag("id", 0))
+          .append(XmlUtils.tag("sendTime", new DateTime().toString()))
+          .append("</sms>");
+    }
+    xml.append("</sms-messages>")
+        .append("</sms-send>");
+
+    ResponseObject response = ResponseObject.info(Localized.getConstants().ok());
+    DataOutputStream wr = null;
+    BufferedReader in = null;
+
+    try {
+      URL url = new URL(address);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Accept", "text/xml");
+      conn.setDoOutput(true);
+
+      wr = new DataOutputStream(conn.getOutputStream());
+      wr.writeBytes(xml.toString());
+      wr.flush();
+      wr.close();
+
+      if (conn.getResponseCode() != HttpServletResponse.SC_OK) {
+        response = ResponseObject.error(Localized.getConstants().error(), conn.getResponseCode(),
+            conn.getResponseMessage());
+      } else {
+        in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String input;
+
+        while ((input = in.readLine()) != null) {
+          sb.append(input);
+        }
+        in.close();
+        input = sb.toString();
+        String status = XmlUtils.getText(input, "status");
+
+        if (!BeeUtils.same(status, "OK")) {
+          response = ResponseObject.error(input);
+        }
+      }
+    } catch (IOException e) {
+      try {
+        if (wr != null) {
+          wr.close();
+        }
+        if (in != null) {
+          in.close();
+        }
+      } catch (IOException ex) {
+        logger.error(ex);
+      }
+      response = ResponseObject.error(e);
+    }
+    return response;
   }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {

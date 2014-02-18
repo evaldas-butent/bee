@@ -21,8 +21,7 @@ import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -113,8 +112,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
       }
       event.consume();
       event.getSelector().getOracle().setExclusions(exclusions);
-      event.getSelector().setAdditionalFilter(ComparisonFilter
-          .isEqual(COL_ACCOUNT, new LongValue(activeRow.getId())));
+      event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT, activeRow.getId()));
     }
   }
 }

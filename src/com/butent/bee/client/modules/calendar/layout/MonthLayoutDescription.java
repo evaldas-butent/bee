@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription.WidgetPart;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -14,12 +14,12 @@ public class MonthLayoutDescription {
 
   private final WeekLayoutDescription[] weeks;
 
-  public MonthLayoutDescription(JustDate firstDate, int weekCount,
-      List<Appointment> appointments, int maxLayer) {
+  public MonthLayoutDescription(JustDate firstDate, int weekCount, List<CalendarItem> items,
+      int maxLayer) {
     this.firstDate = firstDate;
     this.weeks = new WeekLayoutDescription[weekCount];
 
-    placeAppointments(appointments, maxLayer);
+    placeItems(items, maxLayer);
   }
 
   public WeekLayoutDescription[] getWeekDescriptions() {
@@ -39,20 +39,18 @@ public class MonthLayoutDescription {
     }
   }
 
-  private void distributeOverWeeks(int startWeek, int endWeek, Appointment appointment,
-      int maxLayer) {
-
+  private void distributeOverWeeks(int startWeek, int endWeek, CalendarItem item, int maxLayer) {
     initWeek(startWeek, maxLayer);
-    weeks[startWeek].addMultiWeekAppointment(appointment, WidgetPart.FIRST_WEEK);
+    weeks[startWeek].addMultiWeekItem(item, WidgetPart.FIRST_WEEK);
 
     for (int week = startWeek + 1; week < endWeek; week++) {
       initWeek(week, maxLayer);
-      weeks[week].addMultiWeekAppointment(appointment, WidgetPart.IN_BETWEEN);
+      weeks[week].addMultiWeekItem(item, WidgetPart.IN_BETWEEN);
     }
 
     if (startWeek < endWeek) {
       initWeek(endWeek, maxLayer);
-      weeks[endWeek].addMultiWeekAppointment(appointment, WidgetPart.LAST_WEEK);
+      weeks[endWeek].addMultiWeekItem(item, WidgetPart.LAST_WEEK);
     }
   }
 
@@ -63,27 +61,27 @@ public class MonthLayoutDescription {
     }
   }
 
-  private void placeAppointments(List<Appointment> appointments, int maxLayer) {
-    for (Appointment appointment : appointments) {
-      int startWeek = calculateWeekFor(appointment.getStart(), false);
+  private void placeItems(List<CalendarItem> items, int maxLayer) {
+    for (CalendarItem item : items) {
+      int startWeek = calculateWeekFor(item.getStartTime(), false);
 
-      if (appointment.isMultiDay()) {
-        positionMultiDayAppointment(startWeek, appointment, maxLayer);
+      if (item.isMultiDay()) {
+        positionMultiDayItem(startWeek, item, maxLayer);
       } else {
         initWeek(startWeek, maxLayer);
-        weeks[startWeek].addAppointment(appointment);
+        weeks[startWeek].addItem(item);
       }
     }
   }
 
-  private void positionMultiDayAppointment(int startWeek, Appointment appointment, int maxLayer) {
-    int endWeek = calculateWeekFor(appointment.getEnd(), true);
+  private void positionMultiDayItem(int startWeek, CalendarItem item, int maxLayer) {
+    int endWeek = calculateWeekFor(item.getEndTime(), true);
 
     if (startWeek < endWeek) {
-      distributeOverWeeks(startWeek, endWeek, appointment, maxLayer);
+      distributeOverWeeks(startWeek, endWeek, item, maxLayer);
     } else {
       initWeek(startWeek, maxLayer);
-      weeks[startWeek].addMultiDayAppointment(appointment);
+      weeks[startWeek].addMultiDayItem(item);
     }
   }
 }

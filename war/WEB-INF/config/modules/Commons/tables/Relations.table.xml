@@ -9,7 +9,7 @@
     <Relation name="Cargo" relation="OrderCargo" label="=cargo" cascade="DELETE" />
     <Relation name="Company" relation="Companies" label="=company" cascade="DELETE" />
     <Relation name="Person" relation="Persons" label="=person" cascade="DELETE" />
-    <Relation name="Appointment" relation="Appointments" label="=appointment" cascade="DELETE" />
+    <Relation name="Appointment" relation="Appointments" label="=calAppointment" cascade="DELETE" />
     <Relation name="Task" relation="Tasks" label="=crmTask" cascade="DELETE" />
     <Relation name="RecurringTask" relation="RecurringTasks" label="=crmRecurringTask" cascade="DELETE" />
     <Relation name="Document" relation="Documents" label="=document" cascade="DELETE" />

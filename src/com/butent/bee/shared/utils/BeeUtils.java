@@ -544,6 +544,10 @@ public final class BeeUtils {
     }
     return src.substring(0, start) + src.substring(end);
   }
+  
+  public static double div(int x, int y) {
+    return x / (double) y;
+  }
 
   /**
    * Trims both Strings and then compares them.
@@ -671,19 +675,6 @@ public final class BeeUtils {
         arr[i] = (char) Integer.parseInt(u, 16);
       }
       return arr;
-    }
-  }
-
-  public static <E extends Enum<?>> E getConstant(Class<E> clazz, Integer ordinal) {
-    if (clazz == null || ordinal == null || ordinal < 0) {
-      return null;
-    }
-
-    E[] constants = clazz.getEnumConstants();
-    if (ordinal < constants.length) {
-      return constants[ordinal];
-    } else {
-      return null;
     }
   }
 

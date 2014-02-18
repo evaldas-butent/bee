@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
+<g:Grid xmlns="http://www.butent.com/column"
+  xmlns:g="http://www.butent.com/grid"
 
-  name="Attendees" viewName="Attendees" caption="=calAppointmentAttendees" newRowCaption="=calNewAttendee"
-  editForm="Attendee" newRowForm="Attendee" editInPlace="Ordinal" flexGrow="1" flexShrink="1"
+  name="Attendees" viewName="Attendees"
+  caption="=calAppointmentAttendees" newRowCaption="=calNewAttendee"
+  editForm="Attendee" newRowForm="Attendee" editInPlace="Ordinal"
   >
   <g:columns>
-    <DataColumn name="Ordinal" caption="=ordinal" flexGrow="0" />
+    <DataColumn name="Ordinal" />
 
-    <DataColumn name="TypeName" caption="=calAttendeeType" visible="true" />
+    <DataColumn name="TypeName" label="=calAttendeeType" visible="true" />
 
-    <DataColumn name="Name" caption="=calAttendeeName" minWidth="100" visible="true" />
-    <DataColumn name="Description" caption="=calDescription" flexShrink="3" />
-    <DataColumn name="Location" caption="=location" />
+    <DataColumn name="Name" minWidth="100" visible="true" />
+    <DataColumn name="Description" visible="false" />
+    <DataColumn name="Location" visible="false" />
 
-    <DataColumn name="CompanyPerson" caption="=responsibleEmployee">
-      <renderToken source="FirstName" />
-      <renderToken source="LastName" />
-      <renderToken source="CompanyName" prefix=", " />
-    </DataColumn>
+    <DataColumn name="CompanyPerson" renderColumns="FirstName LastName" />
 
-    <DataColumn name="Transparency" caption="=calTransparency" />
+    <DataColumn name="Transparency" />
     
-    <DataColumn name="ColorName" caption="=color" flexGrow="0" >
-      <dynStyle>
-        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
-      </dynStyle>
-    </DataColumn>
-    <DataColumn name="StyleName" caption="=style" />
+    <DataColumn name="ColorName" label="=color" />
+
+    <DataColumn name="StyleName" label="=style" visible="false" />
     
   </g:columns>
 </g:Grid>

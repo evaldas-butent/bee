@@ -13,7 +13,10 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -61,11 +64,9 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
@@ -120,7 +121,7 @@ public class AssessmentForm extends PrintFormInterceptor {
     }
 
     protected Filter getFilter() {
-      return ComparisonFilter.isEqual(COL_ASSESSOR, new LongValue(currentRow.getId()));
+      return Filter.equals(COL_ASSESSOR, currentRow.getId());
     }
   }
 
@@ -316,10 +317,11 @@ public class AssessmentForm extends PrintFormInterceptor {
         rowCallback = new RowUpdateCallback(formView.getViewName());
       }
       if (isPrimaryRequest(currentRow) && !BeeUtils.isEmpty(preconditionError)) {
-        Queries.getRowCount(TBL_CARGO_ASSESSORS, Filter.and(ComparisonFilter.isEqual(COL_CARGO,
-            new LongValue(currentRow.getLong(getFormView().getDataIndex(COL_CARGO)))),
-            Filter.compareId(Operator.NE, currentRow.getId()),
-            ComparisonFilter.isNotEqual(COL_STATUS, new IntegerValue(status.ordinal()))),
+        Queries.getRowCount(TBL_CARGO_ASSESSORS,
+            Filter.and(Filter.equals(COL_CARGO,
+                currentRow.getLong(getFormView().getDataIndex(COL_CARGO))),
+                Filter.compareId(Operator.NE, currentRow.getId()),
+                Filter.isNotEqual(COL_STATUS, IntegerValue.of(status))),
             new IntCallback() {
               @Override
               public void onSuccess(Integer result) {
@@ -359,10 +361,10 @@ public class AssessmentForm extends PrintFormInterceptor {
 
                   if (isPrimaryRequest(result)) {
                     Queries.update(TBL_CARGO_ASSESSORS,
-                        Filter.and(ComparisonFilter.isEqual(COL_CARGO,
-                            new LongValue(result.getLong(formView.getDataIndex(COL_CARGO)))),
+                        Filter.and(Filter.equals(COL_CARGO,
+                            result.getLong(formView.getDataIndex(COL_CARGO))),
                             Filter.compareId(Operator.NE, result.getId())),
-                        COL_STATUS, new IntegerValue(status.ordinal()), new IntCallback() {
+                        COL_STATUS, IntegerValue.of(status), new IntCallback() {
                           @Override
                           public void onSuccess(Integer res) {
                             if (status.isClosable()) {

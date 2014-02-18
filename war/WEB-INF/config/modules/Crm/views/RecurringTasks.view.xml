@@ -61,6 +61,8 @@
 
     <SimpleColumn name="RemindBefore" />
     <SimpleColumn name="RemindAt" />
+
+    <SimpleColumn name="CopyByMail" />
   </Columns>
 </View>
  

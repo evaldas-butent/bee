@@ -1,0 +1,11 @@
+.svn
+gwt-unitCache
+lib
+war\bee
+war\images\photo
+war\SqlDesigner
+war\WEB-INF\classes
+war\WEB-INF\deploy
+war\WEB-INF\lib
+war\WEB-INF\local\logs
+war\WEB-INF\local\repository

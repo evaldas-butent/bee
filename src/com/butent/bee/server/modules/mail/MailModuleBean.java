@@ -758,7 +758,7 @@ public class MailModuleBean implements BeeModule {
             sys.getIdName(CommonsConstants.TBL_COMPANY_PERSONS), CommonsConstants.COL_PERSON)
         .addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
             CommonsConstants.COL_LAST_NAME)
-        .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME)
+        .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME)
         .addFrom(TBL_MESSAGES)
         .addFromInner(CommonsConstants.TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
             CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
@@ -775,8 +775,8 @@ public class MailModuleBean implements BeeModule {
 
     if (data != null) {
       packet.put(CommonsConstants.COL_COMPANY, data.getLong(CommonsConstants.COL_COMPANY));
-      packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_NAME,
-          data.getValue(CommonsConstants.COL_NAME));
+      packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME,
+          data.getValue(CommonsConstants.COL_COMPANY_NAME));
       packet.put(CommonsConstants.COL_PERSON, data.getLong(CommonsConstants.COL_PERSON));
       packet.put(CommonsConstants.COL_FIRST_NAME, data.getValue(CommonsConstants.COL_FIRST_NAME));
       packet.put(CommonsConstants.COL_LAST_NAME, data.getValue(CommonsConstants.COL_LAST_NAME));
@@ -784,7 +784,7 @@ public class MailModuleBean implements BeeModule {
       data = qs.getRow(new SqlSelect()
           .addField(CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
               CommonsConstants.COL_COMPANY)
-          .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_NAME)
+          .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME)
           .addFrom(TBL_MESSAGES)
           .addFromInner(CommonsConstants.TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
               CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
@@ -795,8 +795,8 @@ public class MailModuleBean implements BeeModule {
 
       if (data != null) {
         packet.put(CommonsConstants.COL_COMPANY, data.getValue(CommonsConstants.COL_COMPANY));
-        packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_NAME,
-            data.getValue(CommonsConstants.COL_NAME));
+        packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME,
+            data.getValue(CommonsConstants.COL_COMPANY_NAME));
       }
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()

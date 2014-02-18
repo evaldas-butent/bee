@@ -6,7 +6,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -30,8 +32,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class OrderCargoForm extends AbstractFormInterceptor {
@@ -102,8 +103,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
     header.clearCommandPanel();
 
     if (Data.isViewEditable(VIEW_CARGO_INVOICES)) {
-      header.addCommandItem(new InvoiceCreator(ComparisonFilter.isEqual(COL_CARGO,
-          Value.getValue(row.getId()))));
+      header.addCommandItem(new InvoiceCreator(Filter.equals(COL_CARGO, row.getId())));
     }
     header.addCommandItem(new Profit(COL_CARGO, row.getId()));
 

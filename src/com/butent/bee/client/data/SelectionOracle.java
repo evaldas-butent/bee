@@ -24,7 +24,6 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -444,7 +443,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     Filter filter = null;
     for (IsColumn column : searchColumns) {
-      Filter flt = ComparisonFilter.compareWithValue(column, searchType, query);
+      Filter flt = Filter.compareWithValue(column, searchType, query);
       if (flt == null) {
         continue;
       }
@@ -650,8 +649,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private Filter translateQuery(String query, Operator searchType, IsColumn targetColumn) {
-    Filter filter = ComparisonFilter.compareWithValue(getTranslator().getColumn(0), searchType,
-        query);
+    Filter filter = Filter.compareWithValue(getTranslator().getColumn(0), searchType, query);
     if (filter == null) {
       return null;
     }
@@ -660,7 +658,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     List<BeeColumn> columns = getTranslator().getColumns();
     for (BeeRow row : getTranslator().getRows()) {
       if (filter.isMatch(columns, row)) {
-        result.add(ComparisonFilter.compareWithValue(targetColumn, Operator.EQ,
+        result.add(Filter.compareWithValue(targetColumn, Operator.EQ,
             BeeUtils.toString(row.getId())));
       }
     }

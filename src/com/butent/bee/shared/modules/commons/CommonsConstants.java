@@ -218,6 +218,7 @@ public final class CommonsConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_GROUP_SETTINGS = "UserGroupSettings";
   public static final String VIEW_USER_GROUP_MEMBERS = "UserGroupMembers";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
@@ -245,6 +246,10 @@ public final class CommonsConstants {
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
+  public static final String GRID_COLORS = "Colors";
+  public static final String GRID_THEMES = "Themes";
+  public static final String GRID_THEME_COLORS = "ThemeColors";
+  
   public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
@@ -300,8 +305,8 @@ public final class CommonsConstants {
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
   public static final String COL_PHOTO = "Photo";
+  public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
-  public static final String COL_NAME = "Name";
   public static final String COL_CATEGORY = "Category";
 
   public static final String COL_ITEM = "Item";
@@ -333,6 +338,7 @@ public final class CommonsConstants {
   public static final String COL_COUNTRY_NAME = "Name";
   public static final String COL_COUNTRY_CODE = "Code";
 
+  public static final String COL_REMINDER_NAME = "Name";
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_HOURS = "Hours";
   public static final String COL_REMINDER_MINUTES = "Minutes";
@@ -379,6 +385,10 @@ public final class CommonsConstants {
   public static final String COL_AUTOCOMPLETE_KEY = "Key";
   public static final String COL_AUTOCOMPLETE_VALUE = "Value";
 
+  public static final String COL_USER_GROUP_SETTINGS_NAME = "Name";
+  public static final String COL_USER_GROUP_SETTINGS_OWNER = "Owner";
+  public static final String COL_USER_GROUP_SETTINGS_VISIBILITY = "Visibility";
+
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";
   
@@ -396,6 +406,11 @@ public final class CommonsConstants {
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
+
+  public static final String ALS_COLOR_NAME = "ColorName";
+  public static final String ALS_DEFAULT_COLOR_NAME = "DefaultColorName";
+  public static final String ALS_DEFAULT_BACKGROUND = "DefaultBackground";
+  public static final String ALS_DEFAULT_FOREGROUND = "DefaultForeground";
   
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";

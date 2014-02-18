@@ -51,7 +51,7 @@ public class BooleanValue extends Value {
     return null;
   }
 
-  private Boolean value;
+  private final Boolean value;
 
   public BooleanValue(Boolean value) {
     this.value = value;

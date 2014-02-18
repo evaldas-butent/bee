@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,13 +9,16 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
@@ -33,11 +36,11 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -49,12 +52,14 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiFunction;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -67,6 +72,7 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -107,10 +113,12 @@ public class DocumentDataForm extends AbstractFormInterceptor
       Assert.state(!isActive());
       Assert.notEmpty(editorId);
 
+      LocalizableConstants loc = Localized.getConstants();
+
       JavaScriptObject jso = JavaScriptObject.createObject();
       JsUtils.setProperty(jso, "mode", "exact");
       JsUtils.setProperty(jso, "elements", editorId);
-      JsUtils.setProperty(jso, "language", Localized.getConstants().languageTag());
+      JsUtils.setProperty(jso, "language", loc.languageTag());
       JsUtils.setProperty(jso, "plugins", "advlist lists image charmap hr pagebreak searchreplace "
           + "visualblocks visualchars code fullscreen table template paste textcolor");
       JsUtils.setProperty(jso, "toolbar", "fullscreen | undo redo | styleselect "
@@ -132,12 +140,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   : "\" " + BeeUtils.nvl(attributes, "")) + ">" + input + "</td>";
         }
       };
-      LocalizableConstants loc = Localized.getConstants();
-
       JsArrayMixed templateArray = JavaScriptObject.createArray().cast();
 
       JavaScriptObject template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", Localized.getConstants().criteriaGroups());
+      JsUtils.setProperty(template, "title", loc.criteriaGroups());
       JsUtils.setProperty(template, "content",
           new StringBuilder("<p/><div><table style=\"border-collapse:collapse;\"><tbody>")
               .append("<!--{CriteriaGroups}--><tr>")
@@ -151,7 +157,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       templateArray.push(template);
 
       template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", Localized.getConstants().documentItems());
+      JsUtils.setProperty(template, "title", loc.documentItems());
       JsUtils.setProperty(template, "content",
           new StringBuilder("<p/><div><table style=\"border-collapse:collapse;"
               + " border:1px solid black;\"><tbody>")
@@ -182,12 +188,50 @@ public class DocumentDataForm extends AbstractFormInterceptor
       templateArray.push(template);
 
       template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", Localized.getConstants().content());
+      JsUtils.setProperty(template, "title", loc.content());
       JsUtils.setProperty(template, "content",
           new StringBuilder("<p/><div><!--{DocumentItems}-->")
               .append("<p><strong>{Index}. {Description}</strong></p>")
               .append("<p>{Content}</p>")
               .append("<!--{DocumentItems}--></div><p/>").toString());
+
+      templateArray.push(template);
+
+      template = JavaScriptObject.createObject();
+      JsUtils.setProperty(template, "title", loc.company());
+      List<String> descr = Lists.newArrayList();
+
+      for (BeeColumn col : Data.getColumns(CommonsConstants.TBL_COMPANIES)) {
+        descr.add("{" + COL_COMPANY + col.getId() + "}");
+      }
+      JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
+      JsUtils.setProperty(template, "content",
+          new StringBuilder("<p/>")
+              .append("<p><strong>{CompanyName}</strong></p>")
+              .append("<p>").append(loc.companyCode()).append(": {CompanyCode}</p>")
+              .append("<p>").append(loc.address()).append(": {CompanyAddress}</p>")
+              .append("<p>").append(loc.phone()).append(": {CompanyPhone}</p>")
+              .append("<p>").append(loc.email()).append(": {CompanyEmail}</p>")
+              .append("<p>").append("{CompanyWebsite}</p>")
+              .append("<p/>").toString());
+
+      templateArray.push(template);
+
+      template = JavaScriptObject.createObject();
+      JsUtils.setProperty(template, "title", loc.person());
+      descr.clear();
+
+      for (BeeColumn col : Data.getColumns(CommonsConstants.TBL_PERSONS)) {
+        descr.add("{" + COL_PERSON + col.getId() + "}");
+      }
+      JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
+      JsUtils.setProperty(template, "content",
+          new StringBuilder("<p/>")
+              .append("<p><strong>{PersonFirstName} {PersonLastName}</strong></p>")
+              .append("<p>").append(loc.phone()).append(": {PersonPhone}</p>")
+              .append("<p>").append(loc.mobile()).append(": {PersonMobile}</p>")
+              .append("<p>").append(loc.email()).append(": {PersonEmail}</p>")
+              .append("<p/>").toString());
 
       templateArray.push(template);
 
@@ -413,10 +457,12 @@ public class DocumentDataForm extends AbstractFormInterceptor
             }
             render();
           }
-        }, new Supplier<Editor>() {
+        }, new Function<String, Editor>() {
           @Override
-          public Editor get() {
-            return createAutocomplete("DistinctCriteria", COL_CRITERION_NAME, null);
+          public Editor apply(String value) {
+            Editor editor = createAutocomplete("DistinctCriteria", COL_CRITERION_NAME, null);
+            editor.setValue(value);
+            return editor;
           }
         });
   }
@@ -600,15 +646,38 @@ public class DocumentDataForm extends AbstractFormInterceptor
     panel.clear();
 
     if (criteria.size() > 0) {
-      HtmlTable table = new HtmlTable();
-      table.setColumnCellStyles(0, "text-align:right");
-      int c = 0;
+      int h = 0;
+      FlowPanel labelContainer = new FlowPanel();
+      labelContainer.getElement().getStyle().setMarginRight(5, Unit.PX);
+      panel.add(labelContainer);
+
+      FlowPanel inputContainer = new FlowPanel();
+      inputContainer.addStyleName(StyleUtils.NAME_FLEXIBLE);
+      panel.add(inputContainer);
 
       for (Entry<String, Editor> entry : criteria.entrySet()) {
-        table.setText(c, 0, entry.getKey());
-        table.setWidget(c++, 1, entry.getValue().asWidget());
+        Label label = new Label(entry.getKey());
+        StyleUtils.setTextAlign(label.getElement(), TextAlign.RIGHT);
+        SimplePanel labelDiv = new SimplePanel(label);
+        labelContainer.add(labelDiv);
+
+        Widget editor = entry.getValue().asWidget();
+        editor.setWidth("100%");
+        SimplePanel editorDiv = new SimplePanel(editor);
+        inputContainer.add(editorDiv);
+
+        if (!BeeUtils.isPositive(h)) {
+          h = BeeUtils.max(labelDiv.getElement().getClientHeight(),
+              editorDiv.getElement().getClientHeight());
+
+          if (!BeeUtils.isPositive(h)) {
+            h = 20;
+          }
+          h += 5;
+        }
+        StyleUtils.setHeight(labelDiv, h);
+        StyleUtils.setHeight(editorDiv, h);
       }
-      panel.add(table);
     }
   }
 

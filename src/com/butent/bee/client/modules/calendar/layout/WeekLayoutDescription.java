@@ -1,6 +1,6 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -15,7 +15,7 @@ public class WeekLayoutDescription {
   public static final int FIRST_DAY = 0;
   public static final int LAST_DAY = 6;
 
-  private final AppointmentStackingManager stackingManager;
+  private final ItemStackingManager stackingManager;
 
   private final DayLayoutDescription[] days;
 
@@ -26,33 +26,33 @@ public class WeekLayoutDescription {
     
     this.days = new DayLayoutDescription[7];
     
-    this.stackingManager = new AppointmentStackingManager(maxLayer);
+    this.stackingManager = new ItemStackingManager(maxLayer);
   }
 
-  public void addAppointment(Appointment appointment) {
-    int dayOfWeek = dayInWeek(appointment.getStart(), false);
-    initDay(dayOfWeek).addAppointment(appointment);
+  public void addItem(CalendarItem item) {
+    int dayOfWeek = dayInWeek(item.getStartTime(), false);
+    initDay(dayOfWeek).addItem(item);
   }
 
-  public void addMultiDayAppointment(Appointment appointment) {
-    int weekStartDay = dayInWeek(appointment.getStart(), false);
-    int weekEndDay = dayInWeek(appointment.getEnd(), true);
+  public void addMultiDayItem(CalendarItem item) {
+    int weekStartDay = dayInWeek(item.getStartTime(), false);
+    int weekEndDay = dayInWeek(item.getEndTime(), true);
 
-    stackingManager.assignLayer(weekStartDay, weekEndDay, appointment);
+    stackingManager.assignLayer(weekStartDay, weekEndDay, item);
   }
 
-  public void addMultiWeekAppointment(Appointment appointment, WidgetPart part) {
+  public void addMultiWeekItem(CalendarItem item, WidgetPart part) {
     switch (part) {
       case FIRST_WEEK:
-        int weekStartDay = dayInWeek(appointment.getStart(), false);
-        stackingManager.assignLayer(weekStartDay, LAST_DAY, appointment);
+        int weekStartDay = dayInWeek(item.getStartTime(), false);
+        stackingManager.assignLayer(weekStartDay, LAST_DAY, item);
         break;
       case IN_BETWEEN:
-        stackingManager.assignLayer(FIRST_DAY, LAST_DAY, appointment);
+        stackingManager.assignLayer(FIRST_DAY, LAST_DAY, item);
         break;
       case LAST_WEEK:
-        int weekEndDay = dayInWeek(appointment.getEnd(), true);
-        stackingManager.assignLayer(FIRST_DAY, weekEndDay, appointment);
+        int weekEndDay = dayInWeek(item.getEndTime(), true);
+        stackingManager.assignLayer(FIRST_DAY, weekEndDay, item);
         break;
     }
   }
@@ -61,7 +61,7 @@ public class WeekLayoutDescription {
     return days[day];
   }
 
-  public AppointmentStackingManager getTopAppointmentsManager() {
+  public ItemStackingManager getTopItemsManager() {
     return stackingManager;
   }
 

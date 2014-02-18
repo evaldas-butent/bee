@@ -103,6 +103,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String branch();
 
   String cancel();
+  
+  String captionId();
 
   String changedValues();
 
@@ -215,8 +217,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String enterDate();
 
   String enterTime();
-
-  String ended();
 
   String error();
 
@@ -370,6 +370,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String maxValue();
 
+  String message();
+
   String minValue();
 
   String mobile();
@@ -446,6 +448,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String period();
 
+  String person();
+
   String personContact();
 
   String personContacts();
@@ -490,6 +494,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String responsiblePerson();
 
+  String responsiblePersons();
+
   String rightStateAmendable();
 
   String rightStateVisible();
@@ -532,6 +538,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String selectAtLeastOneRow();
 
+  String send();
+
   String service();
 
   String services();
@@ -541,8 +549,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String signOut();
 
   String sorry();
-
-  String startDate();
 
   String startRow();
 
@@ -557,6 +563,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String supplier();
 
   String tabControl();
+
+  String template();
 
   String time();
 

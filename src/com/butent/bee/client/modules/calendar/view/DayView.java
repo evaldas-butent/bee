@@ -6,21 +6,23 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.client.modules.calendar.dnd.DayMoveController;
 import com.butent.bee.client.modules.calendar.dnd.ResizeController;
-import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
+import com.butent.bee.client.modules.calendar.layout.ItemAdapter;
 import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
-import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
+import com.butent.bee.client.modules.calendar.layout.ItemPanel;
 import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -33,7 +35,7 @@ public class DayView extends CalendarView {
 
   private final DayViewHeader dayViewHeader = new DayViewHeader();
   private final MultiDayPanel multiDayPanel = new MultiDayPanel();
-  private final AppointmentPanel appointmentPanel = new AppointmentPanel();
+  private final ItemPanel itemPanel = new ItemPanel();
 
   private DayMoveController moveController;
   private ResizeController resizeController;
@@ -45,12 +47,12 @@ public class DayView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
-    
+
     widget.clear();
 
     widget.add(dayViewHeader);
     widget.add(multiDayPanel);
-    widget.add(appointmentPanel);
+    widget.add(itemPanel);
 
     createMoveController();
     createResizeController();
@@ -69,7 +71,7 @@ public class DayView extends CalendarView {
     int todayColumn = CalendarUtils.getTodayColumn(date, days);
     multiDayPanel.setColumns(days, todayColumn, todayColumn);
 
-    appointmentPanel.build(days, getSettings(), todayColumn, todayColumn);
+    itemPanel.build(days, getSettings(), todayColumn, todayColumn);
 
     moveController.setDate(JustDate.copyOf(date));
     moveController.setColumnCount(days);
@@ -77,39 +79,39 @@ public class DayView extends CalendarView {
 
     resizeController.setSettings(getSettings());
 
-    getAppointmentWidgets().clear();
-    
+    getItemWidgets().clear();
+
     boolean separate = getSettings().separateAttendees();
     Map<Long, String> attColors = CalendarKeeper.getAttendeeColors(calendarId);
 
     JustDate tmpDate = JustDate.copyOf(date);
-    
+
     for (int i = 0; i < days; i++) {
-      List<Appointment> simple = CalendarUtils.filterSimple(getAppointments(), tmpDate,
+      List<CalendarItem> simple = CalendarUtils.filterSimple(getItems(), tmpDate,
           attendees, separate);
 
       if (!simple.isEmpty()) {
-        List<AppointmentAdapter> adapters =
+        List<ItemAdapter> adapters =
             CalendarLayoutManager.doLayout(simple, i, days, getSettings());
-        addAppointmentsToGrid(calendarId, adapters, false, i, separate, attColors);
+        addItemsToGrid(calendarId, adapters, false, i, separate, attColors);
       }
 
       TimeUtils.moveOneDayForward(tmpDate);
     }
 
-    List<Appointment> multi = CalendarUtils.filterMulti(getAppointments(), date, days,
+    List<CalendarItem> multi = CalendarUtils.filterMulti(getItems(), date, days,
         attendees, separate);
-    
+
     if (!multi.isEmpty()) {
-      List<AppointmentAdapter> adapters = Lists.newArrayList();
-      for (Appointment appointment : multi) {
-        adapters.add(new AppointmentAdapter(appointment));
+      List<ItemAdapter> adapters = Lists.newArrayList();
+      for (CalendarItem item : multi) {
+        adapters.add(new ItemAdapter(item));
       }
 
       int desiredHeight = CalendarLayoutManager.doMultiLayout(adapters, date, days);
       StyleUtils.setHeight(multiDayPanel.getGrid(), desiredHeight);
 
-      addAppointmentsToGrid(calendarId, adapters, true, BeeConst.UNDEF, separate, attColors);
+      addItemsToGrid(calendarId, adapters, true, BeeConst.UNDEF, separate, attColors);
     } else {
       StyleUtils.clearHeight(multiDayPanel.getGrid());
     }
@@ -117,20 +119,20 @@ public class DayView extends CalendarView {
 
   @Override
   public void doScroll() {
-    appointmentPanel.doScroll(getSettings(), getAppointmentWidgets());
+    itemPanel.doScroll(getSettings(), getItemWidgets());
   }
 
   @Override
   public void doSizing() {
     if (getCalendarWidget().getOffsetHeight() > 0) {
-      StyleUtils.setHeight(appointmentPanel, getCalendarWidget().getOffsetHeight()
+      StyleUtils.setHeight(itemPanel, getCalendarWidget().getOffsetHeight()
           - 2 - dayViewHeader.getOffsetHeight() - multiDayPanel.getOffsetHeight());
     }
   }
 
   @Override
   public Widget getScrollArea() {
-    return appointmentPanel.getScrollArea();
+    return itemPanel.getScrollArea();
   }
 
   @Override
@@ -156,17 +158,17 @@ public class DayView extends CalendarView {
 
   @Override
   public boolean onClick(long calendarId, Element element, Event event) {
-    AppointmentWidget widget = CalendarUtils.findWidget(getAppointmentWidgets(), element);
+    ItemWidget widget = CalendarUtils.findWidget(getItemWidgets(), element);
 
     if (widget != null) {
       if (widget.canClick(element)) {
-        openAppointment(widget.getAppointment());
+        openItem(widget.getItem());
         return true;
       } else {
         return false;
       }
 
-    } else if (appointmentPanel.isGrid(element)) {
+    } else if (itemPanel.isGrid(element)) {
       timeBlockClick(event);
       return true;
     } else {
@@ -176,16 +178,17 @@ public class DayView extends CalendarView {
 
   @Override
   public void onClock() {
-    appointmentPanel.onClock(getSettings());
+    itemPanel.onClock(getSettings());
   }
 
-  private void addAppointmentsToGrid(long calendarId, List<AppointmentAdapter> adapters,
+  private void addItemsToGrid(long calendarId, List<ItemAdapter> adapters,
       boolean multi, int columnIndex, boolean separate, Map<Long, String> attColors) {
-    
+
     Orientation footerOrientation = multi ? null : Orientation.VERTICAL;
-    
-    for (AppointmentAdapter adapter : adapters) {
-      AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi,
+    Long userId = BeeKeeper.getUser().getUserId();
+
+    for (ItemAdapter adapter : adapters) {
+      ItemWidget widget = new ItemWidget(adapter.getItem(), multi,
           columnIndex, adapter.getHeight(), footerOrientation);
 
       widget.setLeft(adapter.getLeft());
@@ -193,39 +196,50 @@ public class DayView extends CalendarView {
 
       widget.setTop(adapter.getTop());
       widget.setHeight(adapter.getHeight());
-      
-      String bg = (separate && attColors != null) 
-          ?  attColors.get(adapter.getAppointment().getSeparatedAttendee()) : null;
+
+      String bg = null;
+      if (separate && attColors != null && widget.isAppointment()) {
+        Long sa = ((Appointment) widget.getItem()).getSeparatedAttendee();
+        if (sa != null) {
+          bg = attColors.get(sa);
+        }
+      }
 
       widget.render(calendarId, bg);
 
-      getAppointmentWidgets().add(widget);
+      getItemWidgets().add(widget);
 
       if (multi) {
         multiDayPanel.getGrid().add(widget);
       } else {
-        appointmentPanel.getGrid().add(widget);
-        
-        widget.getMoveHandle().addMoveHandler(moveController);
-        widget.getResizeHandle().addMoveHandler(resizeController);
+        itemPanel.getGrid().add(widget);
+
+        if (widget.getItem().isMovable(userId)) {
+          widget.getMoveHandle().addMoveHandler(moveController);
+          widget.getMoveHandle().addStyleName(CalendarStyleManager.MOVABLE);
+        }
+        if (widget.getItem().isResizable(userId)) {
+          widget.getResizeHandle().addMoveHandler(resizeController);
+          widget.getResizeHandle().addStyleName(CalendarStyleManager.RESIZABLE);
+        }
       }
     }
   }
 
   private void createMoveController() {
     if (moveController == null) {
-      moveController = new DayMoveController(this, appointmentPanel.getScrollArea().getElement());
+      moveController = new DayMoveController(this, itemPanel.getScrollArea().getElement());
     }
   }
 
   private void createResizeController() {
     if (resizeController == null) {
-      resizeController = new ResizeController(this, appointmentPanel.getScrollArea());
+      resizeController = new ResizeController(this, itemPanel.getScrollArea());
     }
   }
 
   private void timeBlockClick(Event event) {
-    DateTime dateTime = appointmentPanel.getCoordinatesDate(event.getClientX(), event.getClientY(),
+    DateTime dateTime = itemPanel.getCoordinatesDate(event.getClientX(), event.getClientY(),
         getSettings(), getDate(), getDisplayedDays());
     createAppointment(dateTime, null);
   }

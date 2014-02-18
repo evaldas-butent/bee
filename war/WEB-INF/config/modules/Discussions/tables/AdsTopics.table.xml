@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="AdsTopics"
+  idName="AdTopicID"
+  >
+  <Fields>
+    <Integer name="Ordinal" label="=ordinal"/>
+    <String name="Name" precision="250" unique="true" label="=caption"/>
+    <Boolean name="Visible" defValue="true" label="=stateVisible" />
+  </Fields>
+</Table>

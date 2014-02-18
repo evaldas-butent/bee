@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="AppointmentOwners" viewName="AppointmentOwners" newRowColumns="-" minColumnWidth="120"
+  >
+  <g:columns>
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
+
+    <DataColumn name="CompanyName" label="=company" />
+    <DataColumn name="PositionName" label="=personPosition" />
+  </g:columns>
+</g:Grid>
+

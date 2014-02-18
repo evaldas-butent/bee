@@ -5,16 +5,10 @@
   idName="CalendarID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" label="=calName"/>
-    <Text name="Description" label="=calDescription" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=calName" />
+    <Text name="Description" label="=description" />
 
-    <String name="Location" precision="100" label="=location"/>
-    <Relation name="TimeZone" relation="TimeZones" label="=timeZone"/>
-
-    <Boolean name="ReadOnly" label="=calReadOnly" />
-    <Integer name="Visibility" label="=calVisibility" />
-
-    <Enum name="Transparency" key="Transparency" label="=calTransparency" />
+    <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" />
 
     <Integer name="DefaultDisplayedDays" defValue="3" label="=calDefaultDisplayedDays" />
 
@@ -23,19 +17,37 @@
 
     <Integer name="WorkingHourStart" defValue="8" label="=calWorkingHourStart" />
     <Integer name="WorkingHourEnd" defValue="17" label="=calWorkingHourEnd" />
-    <Integer name="ScrollToHour" defValue="8" label="=calScrollToHour"/>
+    <Integer name="ScrollToHour" defValue="8" label="=calScrollToHour" />
 
     <Enum name="TimeBlockClickNumber" key="TimeBlockClick" defValue="1" label="=calTimeBlockClickNumber" />
 
     <Boolean name="SeparateAttendees" label="=calSeparateAttendees" />
+    
+    <Enum name="MultidayLayout" key="MultidayLayout" label="=calMultidayLayout" />
+    <Enum name="MultidayTaskLayout" key="MultidayLayout" label="=calMultidayTaskLayout" />
 
     <Boolean name="DayView" defValue="true" label="=calDayView" />
     <Boolean name="DaysView" defValue="true" label="=calDaysView" />
     <Boolean name="WorkWeekView" defValue="true" label="=calWorkWeekView" />
     <Boolean name="WeekView" defValue="true" label="=calWeekView" />
-    <Boolean name="MonthView" defValue="true" label="=calMonthView"/>
-    <Boolean name="ResourceView" defValue="true" label="=calResourceView"/>
+    <Boolean name="MonthView" defValue="true" label="=calMonthView" />
+    <Boolean name="ResourceView" defValue="true" label="=calResourceView" />
     
     <Relation name="Owner" relation="Users" defExpr="CURRENT_USER" label="=owner" />
+
+    <Boolean name="AssignedTasks" label="=calTasksAssigned" />
+    <String name="AssignedTasksBackground" precision="100" label="=calTasksAssignedBackground" />
+    <String name="AssignedTasksForeground" precision="100" label="=calTasksAssignedForeground" />
+    <Relation name="AssignedTasksStyle" relation="AppointmentStyles" label="=calTasksAssignedStyle" />
+    
+    <Boolean name="DelegatedTasks" label="=calTasksDelegated" />
+    <String name="DelegatedTasksBackground" precision="100" label="=calTasksDelegatedBackground" />
+    <String name="DelegatedTasksForeground" precision="100" label="=calTasksDelegatedForeground" />
+    <Relation name="DelegatedTasksStyle" relation="AppointmentStyles" label="=calTasksDelegatedStyle" />
+
+    <Boolean name="ObservedTasks" label="=calTasksObserved" />
+    <String name="ObservedTasksBackground" precision="100" label="=calTasksObservedBackground" />
+    <String name="ObservedTasksForeground" precision="100" label="=calTasksObservedForeground" />
+    <Relation name="ObservedTasksStyle" relation="AppointmentStyles" label="=calTasksObservedStyle" />
   </Fields>
 </Table>

@@ -4,7 +4,7 @@
   name="TimeZones" viewName="TimeZones" caption="=timeZones" newRowCaption="=newTimeZone"
   >
   <g:columns>
-    <DataColumn name="Name" caption="=timeZoneName" minWidth="200" visible="true" />
-    <DataColumn name="StandardOffset" caption="=timeZoneUTCOffset" visible="true" />
+    <DataColumn name="Name" minWidth="200" visible="true" />
+    <DataColumn name="StandardOffset" visible="true" />
   </g:columns>
 </g:Grid>

@@ -2,9 +2,7 @@ package com.butent.bee.client;
 
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -28,7 +26,7 @@ public class UserInfo implements Module, HasInfo {
   
   public Filter getFilter(String column) {
     if (isLoggedIn() && !BeeUtils.isEmpty(column)) {
-      return ComparisonFilter.isEqual(column, new LongValue(getUserId()));
+      return Filter.equals(column, getUserId());
     } else {
       return null;
     }

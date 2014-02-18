@@ -2,15 +2,15 @@ package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.List;
 
-public class AppointmentAdapter {
+public class ItemAdapter {
 
-  private final Appointment appointment;
+  private final CalendarItem item;
   private final int dayMinutesStart;
   private final int dayMinutesEnd;
 
@@ -28,19 +28,15 @@ public class AppointmentAdapter {
   private double width;
   private double height;
 
-  public AppointmentAdapter(Appointment appointment) {
-    this.appointment = appointment;
+  public ItemAdapter(CalendarItem item) {
+    this.item = item;
     
-    DateTime start = appointment.getStart();
-    DateTime end = appointment.getEnd();
+    DateTime start = item.getStartTime();
+    DateTime end = item.getEndTime();
 
     this.dayMinutesStart = TimeUtils.minutesSinceDayStarted(start);
     this.dayMinutesEnd = TimeUtils.sameDate(start, end)
         ? TimeUtils.minutesSinceDayStarted(end) : TimeUtils.MINUTES_PER_DAY;
-  }
-
-  public Appointment getAppointment() {
-    return appointment;
   }
 
   public double getCellPercentFill() {
@@ -81,6 +77,10 @@ public class AppointmentAdapter {
 
   public List<TimeBlock> getIntersectingBlocks() {
     return intersectingBlocks;
+  }
+
+  public CalendarItem getItem() {
+    return item;
   }
 
   public double getLeft() {

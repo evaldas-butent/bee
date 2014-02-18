@@ -78,7 +78,6 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -134,15 +133,14 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       List<String> changes = Lists.newArrayList();
 
       BeeRowSet rowSet = DataUtils.getUpdated(VIEW_APPOINTMENTS,
-          CalendarKeeper.getAppointmentViewColumns(), oldRow, newRow,
-          getFormView().getChildrenForUpdate());
+          CalendarKeeper.getAppointmentViewColumns(), oldRow, newRow, null);
       if (!DataUtils.isEmpty(rowSet)) {
         changes.addAll(Localized.getLabels(rowSet.getColumns()));
       }
 
       Long oldService = null;
       Long oldRepair = null;
-      for (Long prop : DataUtils.parseIdSet(oldRow.getProperty(VIEW_APPOINTMENT_PROPS))) {
+      for (Long prop : DataUtils.parseIdSet(oldRow.getProperty(TBL_APPOINTMENT_PROPS))) {
         if (serviceTypes.contains(prop)) {
           oldService = prop;
         } else if (repairTypes.contains(prop)) {
@@ -166,9 +164,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         changes.add(Localized.getConstants().calRepairType());
       }
 
-      if (!isNew && !DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_ATTENDEES),
-          newRow.getProperty(VIEW_APPOINTMENT_ATTENDEES))) {
+      if (!isNew && !DataUtils.sameIdSet(oldRow.getProperty(TBL_APPOINTMENT_ATTENDEES),
+          newRow.getProperty(TBL_APPOINTMENT_ATTENDEES))) {
         changes.add(Localized.getConstants().calAttendees());
+      }
+      if (!DataUtils.sameIdSet(oldRow.getProperty(TBL_APPOINTMENT_OWNERS),
+          newRow.getProperty(TBL_APPOINTMENT_OWNERS))) {
+        changes.add(Localized.getConstants().responsiblePersons());
       }
 
       DateTime oldStart = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_START_DATE_TIME);
@@ -188,7 +190,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       if (reminderType != null) {
         reminders.add(reminderType);
       }
-      if (!DataUtils.sameIdSet(oldRow.getProperty(VIEW_APPOINTMENT_REMINDERS), reminders)) {
+      if (!DataUtils.sameIdSet(oldRow.getProperty(TBL_APPOINTMENT_REMINDERS), reminders)) {
         changes.add(Localized.getConstants().calReminder());
       }
 
@@ -210,7 +212,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       messages.add(msg + BeeConst.STRING_SPACE
           + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, changes));
 
-      messages.add(isNew ? Localized.getConstants().createNewAppointment()
+      messages.add(isNew ? Localized.getConstants().calCreateNewAppointment()
           : Localized.getConstants().saveChanges());
 
       DecisionCallback callback = new DecisionCallback() {
@@ -250,7 +252,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       Global.confirmDelete(Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY), Icon.WARNING,
-          Lists.newArrayList(Localized.getConstants().deleteAppointment()),
+          Lists.newArrayList(Localized.getConstants().calDeleteAppointment()),
           new ConfirmationCallback() {
             @Override
             public void onConfirm() {
@@ -531,7 +533,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         loadProperties();
         loadReminders();
 
-        getFormView().refresh(false, true);
+        getFormView().refresh(true, true);
         return false;
 
       default:
@@ -588,7 +590,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       } else {
         include.removeAll(exclude);
-        filter = include.isEmpty() ? ComparisonFilter.isFalse() : Filter.idIn(include);
+        filter = include.isEmpty() ? Filter.isFalse() : Filter.idIn(include);
       }
 
       event.getSelector().setAdditionalFilter(filter);
@@ -875,7 +877,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private static List<Long> getResources(IsRow row) {
-    return DataUtils.parseIdList(row.getProperty(VIEW_APPOINTMENT_ATTENDEES));
+    return DataUtils.parseIdList(row.getProperty(TBL_APPOINTMENT_ATTENDEES));
   }
 
   private String getResourceWidgetId() {
@@ -1009,7 +1011,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       for (long id : rowIds) {
         BeeRow row = rowSet.getRowById(id);
-        String item = Data.getString(rowSet.getViewName(), row, COL_NAME);
+        String item = Data.getString(rowSet.getViewName(), row, COL_PROPERTY_NAME);
         listBox.addItem(item);
       }
 
@@ -1030,7 +1032,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       String viewName = rowSet.getViewName();
       for (long id : reminderTypes) {
         BeeRow row = rowSet.getRowById(id);
-        String item = Data.getString(viewName, row, COL_NAME);
+        String item = Data.getString(viewName, row, CommonsConstants.COL_REMINDER_NAME);
         listBox.addItem(BeeUtils.trimRight(item));
       }
 
@@ -1070,7 +1072,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     for (BeeRow row : properties.getRows()) {
       long id = row.getId();
 
-      String groupName = Data.getString(viewName, row, COL_GROUP_NAME);
+      String groupName = Data.getString(viewName, row, ALS_PROPERTY_GROUP_NAME);
       boolean isDef = Objects.equal(Data.getLong(viewName, row, COL_DEFAULT_PROPERTY), id);
 
       if (BeeUtils.containsSame(groupName, "serv")) {
@@ -1127,7 +1129,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     String viewName = rowSet.getViewName();
     for (BeeRow row : rowSet.getRows()) {
-      Long property = Data.getLong(viewName, row, COL_PROPERTY);
+      Long property = Data.getLong(viewName, row, COL_ATTENDEE_PROPERTY);
       Long resource = Data.getLong(viewName, row, COL_ATTENDEE);
 
       if (serviceTypes.contains(property)) {
@@ -1197,9 +1199,9 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
       if (serviceType == null) {
-        row.clearProperty(VIEW_APPOINTMENT_PROPS);
+        row.clearProperty(TBL_APPOINTMENT_PROPS);
       } else {
-        row.setProperty(VIEW_APPOINTMENT_PROPS, serviceType.toString());
+        row.setProperty(TBL_APPOINTMENT_PROPS, serviceType.toString());
       }
     }
 
@@ -1209,13 +1211,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     if (!resources.isEmpty()) {
       BeeRowSet attendees = CalendarKeeper.getAttendees();
       for (long attId : resources) {
-        info.append(attendees.getStringByRowId(attId, COL_NAME)).append(separator);
+        info.append(attendees.getStringByRowId(attId, COL_ATTENDEE_NAME)).append(separator);
         if (!wasOpaque && CalendarKeeper.isAttendeeOpaque(attId)) {
           wasOpaque = true;
         }
       }
 
-      row.clearProperty(VIEW_APPOINTMENT_ATTENDEES);
+      row.clearProperty(TBL_APPOINTMENT_ATTENDEES);
       refreshResourceWidget(row);
 
       hideOverlap();
@@ -1241,7 +1243,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
       listBox.deselect();
 
-      row.clearProperty(VIEW_APPOINTMENT_REMINDERS);
+      row.clearProperty(TBL_APPOINTMENT_REMINDERS);
     }
 
     Widget widget = BeeUtils.isEmpty(getHourWidgetId()) ? null : getWidget(getHourWidgetId());
@@ -1272,7 +1274,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       return false;
     }
     setSaving(true);
-    
+
     AutocompleteProvider.retainValues(getFormView());
 
     BeeRow row = DataUtils.cloneRow(getFormView().getActiveRow());
@@ -1306,18 +1308,23 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     final String propList = DataUtils.buildIdList(getSelectedId(getServiceTypeWidgetId(),
         serviceTypes), getSelectedId(getRepairTypeWidgetId(), repairTypes));
     if (!BeeUtils.isEmpty(propList)) {
-      rowSet.setTableProperty(COL_PROPERTY, propList);
+      rowSet.setTableProperty(TBL_APPOINTMENT_PROPS, propList);
     }
 
-    final String attList = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
+    final String attList = row.getProperty(TBL_APPOINTMENT_ATTENDEES);
     if (!BeeUtils.isEmpty(attList)) {
-      rowSet.setTableProperty(COL_ATTENDEE, attList);
+      rowSet.setTableProperty(TBL_APPOINTMENT_ATTENDEES, attList);
     }
 
     Long reminderType = getSelectedId(getReminderWidgetId(), reminderTypes);
     final String remindList = DataUtils.isId(reminderType) ? reminderType.toString() : null;
     if (!BeeUtils.isEmpty(remindList)) {
-      rowSet.setTableProperty(COL_REMINDER_TYPE, remindList);
+      rowSet.setTableProperty(TBL_APPOINTMENT_REMINDERS, remindList);
+    }
+
+    final String ownerList = row.getProperty(TBL_APPOINTMENT_OWNERS);
+    if (!BeeUtils.isEmpty(ownerList)) {
+      rowSet.setTableProperty(TBL_APPOINTMENT_OWNERS, ownerList);
     }
 
     final String svc = isNew ? SVC_CREATE_APPOINTMENT : SVC_UPDATE_APPOINTMENT;
@@ -1339,13 +1346,16 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
           } else {
 
             if (!BeeUtils.isEmpty(attList)) {
-              result.setProperty(VIEW_APPOINTMENT_ATTENDEES, attList);
+              result.setProperty(TBL_APPOINTMENT_ATTENDEES, attList);
+            }
+            if (!BeeUtils.isEmpty(ownerList)) {
+              result.setProperty(TBL_APPOINTMENT_OWNERS, ownerList);
             }
             if (!BeeUtils.isEmpty(propList)) {
-              result.setProperty(VIEW_APPOINTMENT_PROPS, propList);
+              result.setProperty(TBL_APPOINTMENT_PROPS, propList);
             }
             if (!BeeUtils.isEmpty(remindList)) {
-              result.setProperty(VIEW_APPOINTMENT_REMINDERS, remindList);
+              result.setProperty(TBL_APPOINTMENT_REMINDERS, remindList);
             }
 
             if (isNew) {
@@ -1479,13 +1489,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     panel.addStyleName(CalendarStyleManager.MORE_PANEL);
 
     for (Appointment appointment : overlappingAppointments) {
-      AppointmentWidget widget = new AppointmentWidget(appointment, appointment.isMultiDay());
+      ItemWidget widget = new ItemWidget(appointment, appointment.isMultiDay());
       widget.render(BeeConst.UNDEF, null);
 
       panel.add(widget);
     }
 
-    DialogBox dialog = DialogBox.create(Localized.getConstants().overlappingAppointments(),
+    DialogBox dialog = DialogBox.create(Localized.getConstants().calOverlappingAppointments(),
         CalendarStyleManager.MORE_POPUP);
     dialog.setWidget(panel);
 
@@ -1510,7 +1520,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     String viewName = properties.getViewName();
     for (BeeRow row : properties.getRows()) {
-      if (BeeUtils.equalsTrim(propName, Data.getString(viewName, row, COL_NAME))) {
+      if (BeeUtils.equalsTrim(propName, Data.getString(viewName, row, COL_PROPERTY_NAME))) {
         hours = Data.getInteger(viewName, row, COL_HOURS);
         minutes = Data.getInteger(viewName, row, COL_MINUTES);
         break;

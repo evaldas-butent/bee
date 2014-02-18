@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcHistory" viewName="EcHistory" caption="=ecUserActions"
-  order="Date desc" cacheData="false" asyncThreshold="-1" disabledActions="add"
+  order="Date desc" cacheData="false" asyncThreshold="-1" readOnly="true"
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />

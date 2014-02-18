@@ -6,14 +6,17 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.event.logical.MoveEvent;
-import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarView;
+import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -32,7 +35,7 @@ public class DayMoveController implements MoveEvent.Handler {
   private JustDate date;
   private int columnCount;
 
-  private AppointmentWidget appointmentWidget;
+  private ItemWidget itemWidget;
   private int relativeLeft;
   private int relativeTop;
 
@@ -51,11 +54,11 @@ public class DayMoveController implements MoveEvent.Handler {
 
   private int pointerOffsetX;
   private int pointerOffsetY;
-  
+
   private Element positioner;
   private int selectedColumn = BeeConst.UNDEF;
   private int selectedMinutes = BeeConst.UNDEF;
-  
+
   private int maxTop;
 
   public DayMoveController(CalendarView calendarView, Element scrollArea) {
@@ -76,7 +79,7 @@ public class DayMoveController implements MoveEvent.Handler {
     }
 
     if (event.isMoving()) {
-      if (getAppointmentWidget() == null) {
+      if (getItemWidget() == null) {
         if (!startDrag(mover)) {
           return;
         }
@@ -91,7 +94,7 @@ public class DayMoveController implements MoveEvent.Handler {
         int left = BeeUtils.clamp(x - getPointerOffsetX() - getTargetLeft(), 0,
             getTargetWidth() - getSourceWidth());
         if (left != getRelativeLeft()) {
-          StyleUtils.setLeft(getAppointmentWidget(), left);
+          StyleUtils.setLeft(getItemWidget(), left);
           setRelativeLeft(left);
         }
 
@@ -100,7 +103,7 @@ public class DayMoveController implements MoveEvent.Handler {
         if (top != getRelativeTop()) {
           int dy = top - getRelativeTop();
 
-          StyleUtils.setTop(getAppointmentWidget(), top);
+          StyleUtils.setTop(getItemWidget(), top);
           setRelativeTop(top);
 
           if (isScrollEnabled()) {
@@ -117,9 +120,9 @@ public class DayMoveController implements MoveEvent.Handler {
         setPositioner(null);
       }
 
-      if (getAppointmentWidget() != null) {
+      if (getItemWidget() != null) {
         drop();
-        setAppointmentWidget(null);
+        setItemWidget(null);
       }
     }
   }
@@ -138,16 +141,25 @@ public class DayMoveController implements MoveEvent.Handler {
 
   private void drop() {
     Range<DateTime> range = getRange(getSelectedColumn(), getSelectedMinutes());
-
-    calendarView.updateAppointment(getAppointmentWidget().getAppointment(),
-        range.lowerEndpoint(), range.upperEndpoint(),
-        getAppointmentWidget().getColumnIndex(), getSelectedColumn());
+    CalendarItem item = getItemWidget().getItem();
     
+    switch (item.getItemType()) {
+      case APPOINTMENT:
+        calendarView.updateAppointment((Appointment) item,
+            range.lowerEndpoint(), range.upperEndpoint(),
+            getItemWidget().getColumnIndex(), getSelectedColumn());
+        break;
+
+      case TASK:
+        CrmKeeper.extendTask(item.getId(), range.lowerEndpoint(), range.upperEndpoint());
+        break;
+    }
+
     calendarView.getCalendarWidget().refresh(false);
   }
-  
-  private AppointmentWidget getAppointmentWidget() {
-    return appointmentWidget;
+
+  private ItemWidget getItemWidget() {
+    return itemWidget;
   }
 
   private int getColumnCount() {
@@ -157,7 +169,7 @@ public class DayMoveController implements MoveEvent.Handler {
   private int getColumnWidth() {
     return columnWidth;
   }
-  
+
   private JustDate getDate() {
     return date;
   }
@@ -189,8 +201,8 @@ public class DayMoveController implements MoveEvent.Handler {
     }
 
     DateTime start = new DateTime(startTime);
-    DateTime end = new DateTime(startTime + getAppointmentWidget().getAppointment().getDuration());
-    
+    DateTime end = new DateTime(startTime + getItemWidget().getItem().getDuration());
+
     return Range.closedOpen(start, end);
   }
 
@@ -260,12 +272,12 @@ public class DayMoveController implements MoveEvent.Handler {
 
     if (newPos >= 0 && newPos != oldPos) {
       scrollArea.setScrollTop(newPos);
-      setTargetTop(getAppointmentWidget().getParent().getAbsoluteTop());
+      setTargetTop(getItemWidget().getParent().getAbsoluteTop());
     }
   }
 
-  private void setAppointmentWidget(AppointmentWidget appointmentWidget) {
-    this.appointmentWidget = appointmentWidget;
+  private void setItemWidget(ItemWidget itemWidget) {
+    this.itemWidget = itemWidget;
   }
 
   private void setColumnWidth(int columnWidth) {
@@ -338,12 +350,12 @@ public class DayMoveController implements MoveEvent.Handler {
       return false;
     }
 
-    AppointmentWidget widget = CalendarUtils.getAppointmentWidget(mover);
+    ItemWidget widget = CalendarUtils.getItemWidget(mover);
     if (widget == null) {
       return false;
     }
 
-    setAppointmentWidget(widget);
+    setItemWidget(widget);
 
     Widget target = widget.getParent();
 
@@ -351,7 +363,7 @@ public class DayMoveController implements MoveEvent.Handler {
 
     setSourceWidth(Math.max(widget.getOffsetWidth(), getColumnWidth()));
     setSourceHeight(widget.getOffsetHeight());
-    
+
     setTargetLeft(target.getElement().getAbsoluteLeft());
     setTargetTop(target.getElement().getAbsoluteTop());
 
@@ -366,13 +378,13 @@ public class DayMoveController implements MoveEvent.Handler {
 
     setPointerOffsetX(mover.getStartX() - widget.getElement().getAbsoluteLeft());
     setPointerOffsetY(mover.getStartY() - widget.getElement().getAbsoluteTop());
-    
-    long maxMillis = TimeUtils.startOfDay(widget.getAppointment().getStart(), 1).getTime() 
-        - widget.getAppointment().getDuration();
+
+    long maxMillis = TimeUtils.startOfDay(widget.getItem().getStartTime(), 1).getTime()
+        - widget.getItem().getDuration();
     setMaxTop(CalendarUtils.getIntervalStartPixels(new DateTime(maxMillis), getSettings()));
-    
-    StyleUtils.setWidth(getAppointmentWidget(), getSourceWidth());
-    getAppointmentWidget().addStyleName(CalendarStyleManager.DRAG);
+
+    StyleUtils.setWidth(getItemWidget(), getSourceWidth());
+    getItemWidget().addStyleName(CalendarStyleManager.DRAG);
 
     Element ghost = Document.get().createDivElement();
     ghost.addClassName(CalendarStyleManager.POSITIONER);
@@ -390,20 +402,20 @@ public class DayMoveController implements MoveEvent.Handler {
   private void updatePosition() {
     int column = (getRelativeLeft() + getPointerOffsetX()) / getColumnWidth();
     column = BeeUtils.clamp(column, 0, getColumnCount() - 1);
-    
-    int y = Math.min((getRelativeTop() + getPointerOffsetY()) 
+
+    int y = Math.min((getRelativeTop() + getPointerOffsetY())
         / getSettings().getPixelsPerInterval() * getSettings().getPixelsPerInterval(), getMaxTop());
     int minutes = CalendarUtils.getMinutes(y, getSettings());
-    
-    if (getPositioner() != null 
+
+    if (getPositioner() != null
         && (getSelectedColumn() != column || getSelectedMinutes() != minutes)) {
       StyleUtils.setLeft(getPositioner(), column * (100 / getColumnCount()), CssUnit.PCT);
       StyleUtils.setTop(getPositioner(), y);
-      
+
       String text = CalendarUtils.renderRange(getRange(column, minutes));
       getPositioner().setInnerText(text);
     }
-    
+
     setSelectedColumn(column);
     setSelectedMinutes(minutes);
   }

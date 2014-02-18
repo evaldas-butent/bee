@@ -304,6 +304,22 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }
       });
     }
+
+    if (BeeUtils.same(COL_PERMIT_COMMENT, name) && widget instanceof InputBoolean) {
+      final InputBoolean pcib = (InputBoolean) widget;
+      pcib.addValueChangeHandler(new ValueChangeHandler<String>() {
+
+        @Override
+        public void onValueChange(ValueChangeEvent<String> event) {
+          boolean value = BeeUtils.toBoolean(event.getValue());
+          if (value) {
+            doClose();
+          } else {
+            doActivate();
+          }
+        }
+      });
+    }
   }
 
   @Override
@@ -348,6 +364,15 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (widget instanceof Panel) {
       createMarkPanel((Flow) widget, form, row, null, true);
     }
+
+    widget = form.getWidgetByName(COL_PERMIT_COMMENT);
+    if (widget instanceof InputBoolean) {
+      InputBoolean pcib = (InputBoolean) widget;
+      boolean closed =
+          BeeUtils.unbox(row.getInteger(form.getDataIndex(COL_STATUS))) == DiscussionStatus.CLOSED
+              .ordinal();
+      pcib.setValue(BeeUtils.toString(closed));
+    }
   }
 
   @Override
@@ -380,7 +405,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         BeeRow data = getResponseRow(DiscussionEvent.MODIFY.getCaption(), result, this);
 
         if (data != null) {
-          // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
         }
       }
@@ -434,7 +458,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           return;
         }
 
-        // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
         RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
         Widget fileWidget = form.getWidgetByName(PROP_FILES);

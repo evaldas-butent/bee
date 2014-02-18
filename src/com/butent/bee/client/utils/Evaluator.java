@@ -8,7 +8,6 @@ import com.google.gwt.core.client.JsDate;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
@@ -87,18 +86,6 @@ public final class Evaluator extends Calculation {
     }
 
     @Override
-    public Integer getInteger(String columnId) {
-      if (getLastRow() == null) {
-        return null;
-      }
-      int index = DataUtils.getColumnIndex(columnId, getDataColumns());
-      if (BeeConst.isUndef(index)) {
-        return null;
-      }
-      return getLastRow().getInteger(index);
-    }
-
-    @Override
     public String getLastCellValue() {
       return lastCellValue;
     }
@@ -119,18 +106,6 @@ public final class Evaluator extends Calculation {
     }
 
     @Override
-    public Long getLong(String columnId) {
-      if (getLastRow() == null) {
-        return null;
-      }
-      int index = DataUtils.getColumnIndex(columnId, getDataColumns());
-      if (BeeConst.isUndef(index)) {
-        return null;
-      }
-      return getLastRow().getLong(index);
-    }
-
-    @Override
     public double getRowId() {
       return rowId;
     }
@@ -148,18 +123,6 @@ public final class Evaluator extends Calculation {
     @Override
     public JsDate getRowVersion() {
       return rowVersion;
-    }
-
-    @Override
-    public String getString(String columnId) {
-      if (getLastRow() == null) {
-        return null;
-      }
-      int index = DataUtils.getColumnIndex(columnId, getDataColumns());
-      if (BeeConst.isUndef(index)) {
-        return null;
-      }
-      return getLastRow().getString(index);
     }
 
     @Override
@@ -262,8 +225,6 @@ public final class Evaluator extends Calculation {
 
     List<? extends IsColumn> getDataColumns();
 
-    Integer getInteger(String columnId);
-
     String getLastCellValue();
 
     String getLastNewValue();
@@ -272,8 +233,6 @@ public final class Evaluator extends Calculation {
 
     IsRow getLastRow();
 
-    Long getLong(String columnId);
-
     double getRowId();
 
     double getRowIndex();
@@ -281,8 +240,6 @@ public final class Evaluator extends Calculation {
     JavaScriptObject getRowValues();
 
     JsDate getRowVersion();
-
-    String getString(String columnId);
 
     void setCellNewValue(ValueType type, String newValue);
 
@@ -372,16 +329,87 @@ public final class Evaluator extends Calculation {
     return getInterpeter() != null;
   }
 
-  public void init(String colName, List<? extends IsColumn> dataColumns) {
-    Assert.notNull(dataColumns);
-    setParameters(new DefaultParameters(colName, dataColumns));
-  }
-
   public String replace(String src) {
     return replace(src, DEFAULT_REPLACE_PREFIX, DEFAULT_REPLACE_SUFFIX);
   }
 
-  public String replace(String src, String prefix, String suffix) {
+  public void setColIndex(int colIndex) {
+    if (getParameters() != null) {
+      getParameters().setColIndex(colIndex);
+    }
+  }
+
+  public void update(IsRow rowValue) {
+    if (rowValue == null || getParameters() == null) {
+      return;
+    }
+    getParameters().updateRow(rowValue);
+  }
+
+  public void update(IsRow rowValue, int rowIndex, int colIndex) {
+    if (getParameters() == null) {
+      return;
+    }
+    update(rowValue);
+    getParameters().setRowIndex(rowIndex);
+    getParameters().setColIndex(colIndex);
+  }
+
+  public void update(IsRow rowValue, int rowIndex, int colIndex, ValueType type, String value) {
+    if (getParameters() == null) {
+      return;
+    }
+    update(rowValue, rowIndex, colIndex);
+    getParameters().setCellValue(type, value);
+  }
+
+  public void update(IsRow rowValue, int rowIndex, int colIndex, ValueType type,
+      String oldValue, String newValue) {
+    if (getParameters() == null) {
+      return;
+    }
+    update(rowValue, rowIndex, colIndex);
+
+    getParameters().setCellValue(type, newValue);
+    getParameters().setCellOldValue(type, oldValue);
+    getParameters().setCellNewValue(type, newValue);
+  }
+
+  public void update(IsRow rowValue, ValueType type, String value) {
+    if (getParameters() == null) {
+      return;
+    }
+    update(rowValue);
+    getParameters().setCellValue(type, value);
+  }
+  
+  private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,
+      JsDate rowVersion, double rowIndex, String colName, double colIndex,
+      JavaScriptObject cell) /*-{
+    var result = fnc(row, rowId, rowVersion, rowIndex, colName, colIndex, cell);
+    if (result == null) {
+      return result;
+    }
+    if (result.getTime) {
+      return String(result.getTime());
+    }
+    return String(result);
+  }-*/;
+
+  private JavaScriptObject getInterpeter() {
+    return interpeter;
+  }
+
+  private Parameters getParameters() {
+    return parameters;
+  }
+
+  private void init(String colName, List<? extends IsColumn> dataColumns) {
+    Assert.notNull(dataColumns);
+    setParameters(new DefaultParameters(colName, dataColumns));
+  }
+
+  private String replace(String src, String prefix, String suffix) {
     if (BeeUtils.isEmpty(src) || getParameters() == null) {
       return src;
     }
@@ -434,78 +462,7 @@ public final class Evaluator extends Calculation {
     return result;
   }
 
-  public void setColIndex(int colIndex) {
-    if (getParameters() != null) {
-      getParameters().setColIndex(colIndex);
-    }
-  }
-
-  public void setParameters(Parameters parameters) {
+  private void setParameters(Parameters parameters) {
     this.parameters = parameters;
-  }
-
-  public void update(IsRow rowValue) {
-    if (rowValue == null || getParameters() == null) {
-      return;
-    }
-    getParameters().updateRow(rowValue);
-  }
-
-  public void update(IsRow rowValue, int rowIndex, int colIndex) {
-    if (getParameters() == null) {
-      return;
-    }
-    update(rowValue);
-    getParameters().setRowIndex(rowIndex);
-    getParameters().setColIndex(colIndex);
-  }
-  
-  public void update(IsRow rowValue, int rowIndex, int colIndex, ValueType type, String value) {
-    if (getParameters() == null) {
-      return;
-    }
-    update(rowValue, rowIndex, colIndex);
-    getParameters().setCellValue(type, value);
-  }
-
-  public void update(IsRow rowValue, int rowIndex, int colIndex, ValueType type,
-      String oldValue, String newValue) {
-    if (getParameters() == null) {
-      return;
-    }
-    update(rowValue, rowIndex, colIndex);
-
-    getParameters().setCellValue(type, newValue);
-    getParameters().setCellOldValue(type, oldValue);
-    getParameters().setCellNewValue(type, newValue);
-  }
-
-  public void update(IsRow rowValue, ValueType type, String value) {
-    if (getParameters() == null) {
-      return;
-    }
-    update(rowValue);
-    getParameters().setCellValue(type, value);
-  }
-
-  private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,
-      JsDate rowVersion, double rowIndex, String colName, double colIndex,
-      JavaScriptObject cell) /*-{
-    var result = fnc(row, rowId, rowVersion, rowIndex, colName, colIndex, cell);
-    if (result == null) {
-      return result;
-    }
-    if (result.getTime) {
-      return String(result.getTime());
-    }
-    return String(result);
-  }-*/;
-
-  private JavaScriptObject getInterpeter() {
-    return interpeter;
-  }
-
-  private Parameters getParameters() {
-    return parameters;
   }
 }

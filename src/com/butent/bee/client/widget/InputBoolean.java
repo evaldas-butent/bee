@@ -22,6 +22,7 @@ import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -31,7 +32,8 @@ import java.util.List;
  * Implements checkbox user interface component.
  */
 
-public class InputBoolean extends Composite implements Editor, HasValueChangeHandlers<String> {
+public class InputBoolean extends Composite implements Editor, HasValueChangeHandlers<String>,
+    HasCheckedness {
 
   private final BooleanWidget checkBox;
 
@@ -40,7 +42,7 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   private String options;
 
   private boolean handlesTabulation;
-  
+
   public InputBoolean(String label) {
     super();
 
@@ -58,7 +60,7 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
       }
     });
   }
-  
+
   @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
@@ -73,7 +75,7 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
@@ -93,7 +95,7 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getId() {
     return getCheckBox().getId();
@@ -117,7 +119,7 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   public String getOptions() {
     return options;
   }
-  
+
   @Override
   public int getTabIndex() {
     return getCheckBox().getTabIndex();
@@ -144,10 +146,15 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   }
 
   @Override
+  public boolean isChecked() {
+    return getCheckBox().isChecked();
+  }
+
+  @Override
   public boolean isEditing() {
     return false;
   }
-  
+
   @Override
   public boolean isEnabled() {
     return getCheckBox().isEnabled();
@@ -171,11 +178,16 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   public void setAccessKey(char key) {
     getCheckBox().setAccessKey(key);
   }
-  
+
+  @Override
+  public void setChecked(boolean checked) {
+    getCheckBox().setChecked(checked);
+  }
+
   @Override
   public void setEditing(boolean editing) {
   }
-  
+
   @Override
   public void setEnabled(boolean enabled) {
     getCheckBox().setEnabled(enabled);
@@ -235,7 +247,7 @@ public class InputBoolean extends Composite implements Editor, HasValueChangeHan
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return null;
   }
-  
+
   private BooleanWidget getCheckBox() {
     return checkBox;
   }

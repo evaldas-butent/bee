@@ -7,7 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -29,6 +29,8 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -47,7 +49,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -175,7 +176,7 @@ public final class TransportHandler {
       if (type == null) {
         return null;
       } else {
-        return ComparisonFilter.isEqual("Type", new LongValue(type));
+        return Filter.equals("Type", type);
       }
     }
 
@@ -358,8 +359,8 @@ public final class TransportHandler {
       } else {
         Value value = new LongValue(model);
 
-        return Filter.or(ComparisonFilter.isEqual("ParentModel", value),
-            ComparisonFilter.isEqual("Model", value));
+        return Filter.or(Filter.isEqual("ParentModel", value),
+            Filter.isEqual("Model", value));
       }
     }
 
@@ -398,7 +399,6 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
-    GridFactory.registerGridInterceptor(VIEW_TRIP_CARGO, new TripCargoGrid());
 
     ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
@@ -416,6 +416,9 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
+    
+    ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
+        ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
 
     TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);

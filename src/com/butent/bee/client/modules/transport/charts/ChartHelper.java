@@ -1087,7 +1087,7 @@ public final class ChartHelper {
           break;
 
         case 1:
-          s = BeeUtils.join(String.valueOf(JustDate.FIELD_SEPARATOR), date.getYear() % 100,
+          s = BeeUtils.join(String.valueOf(TimeUtils.DATE_FIELD_SEPARATOR), date.getYear() % 100,
               date.getMonth(), date.getDom());
           break;
 
@@ -1096,7 +1096,7 @@ public final class ChartHelper {
           break;
 
         case 3:
-          s = BeeUtils.join(String.valueOf(JustDate.FIELD_SEPARATOR),
+          s = BeeUtils.join(String.valueOf(TimeUtils.DATE_FIELD_SEPARATOR),
               date.getMonth(), date.getDom());
           break;
 

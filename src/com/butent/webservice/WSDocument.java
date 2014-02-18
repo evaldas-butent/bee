@@ -2,6 +2,7 @@ package com.butent.webservice;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -80,30 +81,30 @@ public class WSDocument {
 
     for (WSDocumentItem item : items) {
       sb.append("<row>")
-          .append(ButentWS.tag("apyv_id", documentId))
-          .append(ButentWS.tag("data", date))
-          .append(ButentWS.tag("operacija", operation))
-          .append(ButentWS.tag("sandelis", warehouse))
-          .append(ButentWS.tag("klientas", company))
-          .append(ButentWS.tag("tiekejas", supplier))
-          .append(ButentWS.tag("gavejas", customer))
-          .append(ButentWS.tag("moketojas", payer))
-          .append(ButentWS.tag("kitas_dok2", number))
-          .append(ButentWS.tag("dok_serija", invoicePrefix))
-          .append(ButentWS.tag("kitas_dok", invoiceNumber))
-          .append(ButentWS.tag("terminas", term))
-          .append(ButentWS.tag("valiuta", currency))
-          .append(ButentWS.tag("preke", item.itemId))
-          .append(ButentWS.tag("kiekis", item.quantity))
-          .append(ButentWS.tag("pastaba", item.note));
+          .append(XmlUtils.tag("apyv_id", documentId))
+          .append(XmlUtils.tag("data", date))
+          .append(XmlUtils.tag("operacija", operation))
+          .append(XmlUtils.tag("sandelis", warehouse))
+          .append(XmlUtils.tag("klientas", company))
+          .append(XmlUtils.tag("tiekejas", supplier))
+          .append(XmlUtils.tag("gavejas", customer))
+          .append(XmlUtils.tag("moketojas", payer))
+          .append(XmlUtils.tag("kitas_dok2", number))
+          .append(XmlUtils.tag("dok_serija", invoicePrefix))
+          .append(XmlUtils.tag("kitas_dok", invoiceNumber))
+          .append(XmlUtils.tag("terminas", term))
+          .append(XmlUtils.tag("valiuta", currency))
+          .append(XmlUtils.tag("preke", item.itemId))
+          .append(XmlUtils.tag("kiekis", item.quantity))
+          .append(XmlUtils.tag("pastaba", item.note));
 
       if (!BeeUtils.isEmpty(item.price)) {
-        sb.append(ButentWS.tag("kaina", item.price));
+        sb.append(XmlUtils.tag("kaina", item.price));
 
         if (!BeeUtils.isEmpty(item.vat)) {
-          sb.append(ButentWS.tag("pvm_stat", item.vatMode))
-              .append(ButentWS.tag("pvm", item.vat))
-              .append(ButentWS.tag("pvm_p_md", item.vatPercent));
+          sb.append(XmlUtils.tag("pvm_stat", item.vatMode))
+              .append(XmlUtils.tag("pvm", item.vat))
+              .append(XmlUtils.tag("pvm_p_md", item.vatPercent));
         }
       }
       sb.append("</row>");

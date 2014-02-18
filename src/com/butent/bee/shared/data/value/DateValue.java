@@ -13,13 +13,14 @@ import java.math.BigDecimal;
  * the interpretation of dates as year, month and day values.
  */
 public class DateValue extends Value {
+
   private static final DateValue NULL_VALUE = new DateValue(null);
 
   public static DateValue getNullValue() {
     return NULL_VALUE;
   }
 
-  private JustDate value;
+  private final JustDate value;
 
   public DateValue(int year, int month, int dayOfMonth) {
     this(new JustDate(year, month, dayOfMonth));

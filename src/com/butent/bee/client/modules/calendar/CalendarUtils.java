@@ -5,9 +5,9 @@ import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -19,143 +19,143 @@ import java.util.List;
 
 public final class CalendarUtils {
 
-  private static final DateTimeFormat DATE_TIME_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
-  private static final DateTimeFormat DATE_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-  private static final DateTimeFormat TIME_FORMAT =
-      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
+  public static List<CalendarItem> filterByAttendee(Collection<CalendarItem> input, long id) {
+    List<CalendarItem> result = Lists.newArrayList();
 
-  private static final DateTimeFormat MONTH_DAY = DateTimeFormat.getFormat("MM-dd");
-  private static final DateTimeFormat MONTH_DAY_TIME = DateTimeFormat.getFormat("MM-dd HH:mm");
-  
-  public static List<Appointment> filterByAttendee(Collection<Appointment> input, long id) {
-    List<Appointment> result = Lists.newArrayList();
-    for (Appointment appointment : input) {
-      if (appointment.getAttendees().contains(id)) {
-        result.add(appointment);
-      }
-    }
-    return result;
-  }
-
-  public static List<Appointment> filterByAttendees(Collection<Appointment> input,
-      Collection<Long> attIds, boolean separate) {
-    List<Appointment> result = Lists.newArrayList();
-
-    for (Appointment appointment : input) {
-      for (Long id : appointment.getAttendees()) {
-        if (attIds.contains(id)) {
-    
-          if (separate) {
-            Appointment copy = new Appointment(appointment.getRow(), id);
-            result.add(copy);
-          } else {
-            result.add(appointment);
-            break;
+    for (CalendarItem item : input) {
+      switch (item.getItemType()) {
+        case APPOINTMENT:
+          if (((Appointment) item).getAttendees().contains(id)) {
+            result.add(item);
           }
-        }
+          break;
+
+        case TASK:
+          break;
       }
     }
     return result;
   }
 
-  public static List<Appointment> filterByRange(Collection<Appointment> input, JustDate date,
+  public static List<CalendarItem> filterByAttendees(Collection<CalendarItem> input,
+      Collection<Long> attIds, boolean separate) {
+    List<CalendarItem> result = Lists.newArrayList();
+
+    for (CalendarItem item : input) {
+      switch (item.getItemType()) {
+        case APPOINTMENT:
+          Appointment appointment = (Appointment) item;
+
+          for (Long id : appointment.getAttendees()) {
+            if (attIds.contains(id)) {
+              if (separate) {
+                Appointment copy = new Appointment(appointment.getRow(), id);
+                result.add(copy);
+              } else {
+                result.add(appointment);
+                break;
+              }
+            }
+          }
+          break;
+
+        case TASK:
+          result.add(item);
+          break;
+      }
+    }
+    return result;
+  }
+
+  public static List<CalendarItem> filterByRange(Collection<CalendarItem> input, JustDate date,
       int days) {
-    List<Appointment> result = Lists.newArrayList();
+    List<CalendarItem> result = Lists.newArrayList();
+
     long min = TimeUtils.startOfDay(date).getTime();
     long max = TimeUtils.startOfDay(date, days).getTime();
 
-    for (Appointment appointment : input) {
-      if (intersects(appointment, min, max)) {
-        result.add(appointment);
+    for (CalendarItem item : input) {
+      if (intersects(item, min, max)) {
+        result.add(item);
       }
     }
     return result;
   }
-  
-  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
+
+  public static List<CalendarItem> filterMulti(Collection<CalendarItem> input, JustDate date,
       int days) {
-    List<Appointment> result = Lists.newArrayList();
+    List<CalendarItem> result = Lists.newArrayList();
+
     long min = TimeUtils.startOfDay(date).getTime();
     long max = TimeUtils.startOfDay(date, days).getTime();
 
-    for (Appointment appointment : input) {
-      if (intersects(appointment, min, max) && appointment.isMultiDay()) {
-        result.add(appointment);
+    for (CalendarItem item : input) {
+      if (intersects(item, min, max) && item.isMultiDay()) {
+        result.add(item);
       }
     }
     return result;
   }
 
-  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
+  public static List<CalendarItem> filterMulti(Collection<CalendarItem> input, JustDate date,
       int days, Collection<Long> attIds, boolean separate) {
-    List<Appointment> lst = filterMulti(input, date, days);
+    List<CalendarItem> lst = filterMulti(input, date, days);
     if (lst.isEmpty()) {
       return lst;
     }
     return filterByAttendees(lst, attIds, separate);
   }
 
-  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
+  public static List<CalendarItem> filterMulti(Collection<CalendarItem> input, JustDate date,
       int days, long id) {
-    List<Appointment> lst = filterMulti(input, date, days);
+    List<CalendarItem> lst = filterMulti(input, date, days);
     if (lst.isEmpty()) {
       return lst;
     }
     return filterByAttendee(lst, id);
   }
-  
-  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date) {
-    List<Appointment> result = Lists.newArrayList();
+
+  public static List<CalendarItem> filterSimple(Collection<CalendarItem> input, JustDate date) {
+    List<CalendarItem> result = Lists.newArrayList();
 
     long min = TimeUtils.startOfDay(date).getTime();
     long max = TimeUtils.startOfDay(date, 1).getTime();
 
-    for (Appointment appointment : input) {
-      if (appointment.getStartMillis() >= min && appointment.getEndMillis() <= max) {
-        result.add(appointment);
+    for (CalendarItem item : input) {
+      if (item.getStartMillis() >= min && item.getEndMillis() <= max) {
+        result.add(item);
       }
     }
     return result;
   }
 
-  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
+  public static List<CalendarItem> filterSimple(Collection<CalendarItem> input, JustDate date,
       Collection<Long> attIds, boolean separate) {
-    List<Appointment> lst = filterSimple(input, date);
+    List<CalendarItem> lst = filterSimple(input, date);
     if (lst.isEmpty()) {
       return lst;
     }
     return filterByAttendees(lst, attIds, separate);
   }
 
-  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
+  public static List<CalendarItem> filterSimple(Collection<CalendarItem> input, JustDate date,
       long id) {
-    List<Appointment> lst = filterSimple(input, date);
+    List<CalendarItem> lst = filterSimple(input, date);
     if (lst.isEmpty()) {
       return lst;
     }
     return filterByAttendee(lst, id);
   }
-  
-  public static AppointmentWidget findWidget(Collection<AppointmentWidget> widgets,
+
+  public static ItemWidget findWidget(Collection<ItemWidget> widgets,
       Element element) {
     if (widgets.isEmpty() || element == null) {
       return null;
     }
 
-    for (AppointmentWidget widget : widgets) {
+    for (ItemWidget widget : widgets) {
       if (widget.getElement().isOrHasChild(element)) {
         return widget;
-      }
-    }
-    return null;
-  }
-
-  public static AppointmentWidget getAppointmentWidget(Widget child) {
-    for (Widget widget = child; widget != null; widget = widget.getParent()) {
-      if (widget instanceof AppointmentWidget) {
-        return (AppointmentWidget) widget;
       }
     }
     return null;
@@ -170,15 +170,15 @@ public final class CalendarUtils {
     }
   }
 
-  public static int getEndHour(Collection<AppointmentWidget> widgets) {
+  public static int getEndHour(Collection<ItemWidget> widgets) {
     int result = BeeConst.UNDEF;
     if (widgets == null) {
       return result;
     }
 
-    for (AppointmentWidget widget : widgets) {
+    for (ItemWidget widget : widgets) {
       if (!widget.isMulti()) {
-        DateTime end = widget.getAppointment().getEnd();
+        DateTime end = widget.getItem().getEndTime();
         int hour = end.getHour();
         if (end.getMinute() > 0) {
           hour++;
@@ -197,7 +197,7 @@ public final class CalendarUtils {
   }
 
   public static int getEndPixels(CalendarSettings settings,
-      Collection<AppointmentWidget> widgets) {
+      Collection<ItemWidget> widgets) {
     Assert.notNull(settings);
 
     int hour = settings.getWorkingHourEnd();
@@ -215,11 +215,20 @@ public final class CalendarUtils {
   public static int getIntervalStartPixels(DateTime dt, CalendarSettings settings) {
     Assert.notNull(dt);
     Assert.notNull(settings);
-    
+
     int mpi = TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
-    
-    return dt.getHour() * settings.getHourHeight() 
+
+    return dt.getHour() * settings.getHourHeight()
         + dt.getMinute() / mpi * settings.getPixelsPerInterval();
+  }
+
+  public static ItemWidget getItemWidget(Widget child) {
+    for (Widget widget = child; widget != null; widget = widget.getParent()) {
+      if (widget instanceof ItemWidget) {
+        return (ItemWidget) widget;
+      }
+    }
+    return null;
   }
 
   public static int getMinutes(int y, CalendarSettings settings) {
@@ -237,16 +246,16 @@ public final class CalendarUtils {
 
     return now.getHour() * hourHeight + now.getMinute() * hourHeight / TimeUtils.MINUTES_PER_HOUR;
   }
-  
-  public static int getStartHour(Collection<AppointmentWidget> widgets) {
+
+  public static int getStartHour(Collection<ItemWidget> widgets) {
     int result = BeeConst.UNDEF;
     if (widgets == null) {
       return result;
     }
 
-    for (AppointmentWidget widget : widgets) {
+    for (ItemWidget widget : widgets) {
       if (!widget.isMulti()) {
-        int hour = widget.getAppointment().getStart().getHour();
+        int hour = widget.getItem().getStartTime().getHour();
         if (BeeConst.isUndef(result)) {
           result = hour;
         } else {
@@ -258,7 +267,7 @@ public final class CalendarUtils {
   }
 
   public static int getStartPixels(CalendarSettings settings,
-      Collection<AppointmentWidget> widgets) {
+      Collection<ItemWidget> widgets) {
     Assert.notNull(settings);
 
     int hour = settings.getScrollToHour();
@@ -279,49 +288,14 @@ public final class CalendarUtils {
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
 
-  public static String renderDateTime(DateTime dateTime) {
-    if (dateTime.getYear() == TimeUtils.today().getYear()) {
-      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
-        return MONTH_DAY_TIME.format(dateTime);
-      } else {
-        return MONTH_DAY.format(dateTime);
-      }
-
-    } else {
-      if (dateTime.getHour() > 0 || dateTime.getMinute() > 0) {
-        return DATE_TIME_FORMAT.format(dateTime);
-      } else {
-        return DATE_FORMAT.format(dateTime);
-      }
-    }
-  }
-  
-  public static String renderPeriod(DateTime start, DateTime end) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
-      }
-
-    } else if (end == null) {
-      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR;
-
-    } else if (TimeUtils.sameDate(start, end)) {
-      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR + TIME_FORMAT.format(end);
-
-    } else {
-      return renderDateTime(start) + TimeUtils.PERIOD_SEPARATOR + renderDateTime(end);
-    }
-  }
 
   public static String renderRange(Range<DateTime> range) {
-    return (range == null) ? BeeConst.STRING_EMPTY 
-        : renderPeriod(range.lowerEndpoint(), range.upperEndpoint()); 
+    return (range == null) ? BeeConst.STRING_EMPTY
+        : TimeUtils.renderPeriod(range.lowerEndpoint(), range.upperEndpoint(), true);
   }
-  
-  private static boolean intersects(Appointment appointment, long min, long max) {
-    return appointment.getStartMillis() < max && appointment.getEndMillis() > min;
+
+  private static boolean intersects(CalendarItem item, long min, long max) {
+    return item.getStartMillis() < max && item.getEndMillis() > min;
   }
 
   private CalendarUtils() {

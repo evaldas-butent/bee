@@ -6,7 +6,6 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
@@ -14,6 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -61,7 +61,7 @@ public final class CalendarLayoutManager {
     }
   }
 
-  public static List<AppointmentAdapter> doLayout(List<Appointment> appointments, int columnIndex,
+  public static List<ItemAdapter> doLayout(List<CalendarItem> items, int columnIndex,
       int columnCount, CalendarSettings settings) {
 
     int intervalsPerHour = settings.getIntervalsPerHour();
@@ -85,17 +85,17 @@ public final class CalendarLayoutManager {
       timeBlocks[i] = timeBlock;
     }
 
-    List<AppointmentAdapter> adapters = Lists.newArrayList();
+    List<ItemAdapter> adapters = Lists.newArrayList();
 
     int groupMaxColumn = 0;
     int groupStartIndex = -1;
     int groupEndIndex = -2;
 
-    for (Appointment appointment : appointments) {
+    for (CalendarItem item : items) {
       TimeBlock startBlock = null;
       TimeBlock endBlock = null;
 
-      AppointmentAdapter adapter = new AppointmentAdapter(appointment);
+      ItemAdapter adapter = new ItemAdapter(item);
       adapters.add(adapter);
 
       for (TimeBlock block : timeBlocks) {
@@ -114,7 +114,7 @@ public final class CalendarLayoutManager {
         }
       }
 
-      startBlock.getAppointments().add(adapter);
+      startBlock.getAdapters().add(adapter);
       adapter.getIntersectingBlocks().add(startBlock);
 
       int column = startBlock.getFirstAvailableColumn();
@@ -129,7 +129,7 @@ public final class CalendarLayoutManager {
         TimeBlock nextBlock = timeBlocks[i];
 
         if (nextBlock.intersectsWith(adapter)) {
-          nextBlock.getAppointments().add(adapter);
+          nextBlock.getAdapters().add(adapter);
           nextBlock.getOccupiedColumns().put(column, column);
           endBlock = nextBlock;
 
@@ -156,7 +156,7 @@ public final class CalendarLayoutManager {
 
     int columnWidth = 100 / columnCount;
 
-    for (AppointmentAdapter adapter : adapters) {
+    for (ItemAdapter adapter : adapters) {
       int subIndex = adapter.getColumnStart();
       int subCount = adapter.getIntersectingBlocks().get(0).getTotalColumns();
 
@@ -191,11 +191,11 @@ public final class CalendarLayoutManager {
     return adapters;
   }
 
-  public static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date, int days) {
+  public static int doMultiLayout(List<ItemAdapter> adapters, JustDate date, int days) {
     return doMultiLayout(adapters, date, days, 0, days);
   }
 
-  public static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date,
+  public static int doMultiLayout(List<ItemAdapter> adapters, JustDate date,
       int columnIndex, int columnCount) {
     return doMultiLayout(adapters, date, 1, columnIndex, columnCount);
   }
@@ -219,7 +219,7 @@ public final class CalendarLayoutManager {
     }
   }
 
-  private static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date, int days,
+  private static int doMultiLayout(List<ItemAdapter> adapters, JustDate date, int days,
       int columnIndex, int columnCount) {
     if (adapters.isEmpty()) {
       return 0;
@@ -236,14 +236,14 @@ public final class CalendarLayoutManager {
     int columnWidth = 100 / columnCount;
     double minuteWidth = (double) columnWidth / TimeUtils.MINUTES_PER_DAY;
 
-    for (AppointmentAdapter adapter : adapters) {
+    for (ItemAdapter adapter : adapters) {
       int columnStart = BeeConst.UNDEF;
       int columnSpan = 0;
 
-      Range<DateTime> appointmenRange = adapter.getAppointment().getRange();
+      Range<DateTime> itemRange = adapter.getItem().getRange();
 
       for (int i = 0; i < days; i++) {
-        if (BeeUtils.intersects(appointmenRange, dateRanges.get(i))) {
+        if (BeeUtils.intersects(itemRange, dateRanges.get(i))) {
           if (BeeConst.isUndef(columnStart)) {
             columnStart = i;
           }
@@ -252,22 +252,21 @@ public final class CalendarLayoutManager {
       }
 
       if (BeeConst.isUndef(columnStart) || columnSpan <= 0) {
-        logger.warning("cannot lay out multi day appointment", date, days,
-            adapter.getAppointment().getId());
+        logger.warning("cannot lay out multi day item", date, days, adapter.getItem().getId());
         continue;
       }
 
       adapter.setColumnStart(columnStart);
       adapter.setColumnSpan(columnSpan);
 
-      DateTime startDate = adapter.getAppointment().getStart();
-      DateTime endDate = adapter.getAppointment().getEnd();
+      DateTime startDate = adapter.getItem().getStartTime();
+      DateTime endDate = adapter.getItem().getEndTime();
 
       for (int r = 0; r < adapters.size(); r++) {
         boolean isRowOccupied = false;
 
         for (int c = columnStart; c < columnStart + columnSpan; c++) {
-          if (BeeUtils.intersects(slots.get(r, c), appointmenRange)) {
+          if (BeeUtils.intersects(slots.get(r, c), itemRange)) {
             isRowOccupied = true;
             break;
           }
@@ -275,7 +274,7 @@ public final class CalendarLayoutManager {
 
         if (!isRowOccupied) {
           for (int c = columnStart; c < columnStart + columnSpan; c++) {
-            Range<DateTime> range = appointmenRange.intersection(dateRanges.get(c));
+            Range<DateTime> range = itemRange.intersection(dateRanges.get(c));
 
             if (slots.contains(r, c)) {
               slots.put(r, c, range.span(slots.get(r, c)));

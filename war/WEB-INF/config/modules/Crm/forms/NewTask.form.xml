@@ -74,6 +74,9 @@
           <InputDate name="Reminder_Date" style="&dateStyle;" />
           <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
+        <cell colSpan="2" horizontalAlignment="left" style="padding-left: 2em;">
+          <CheckBox name="Mail" text="=crmMailTask" />
+        </cell>
       </row>
     </Table>
 
@@ -158,10 +161,10 @@
       </row>
 
       <row>
-        <Label text="=appointments" />
+        <Label text="=calAppointments" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
-          newRowEnabled="false" editPopup="true" style="&inp2x;" />
+          newRowEnabled="true" editPopup="true" style="&inp2x;" />
       </row>
 
       <row>

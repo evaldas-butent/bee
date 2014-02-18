@@ -20,7 +20,7 @@ public class LongValue extends Value {
     return NULL_VALUE;
   }
 
-  private Long value;
+  private final Long value;
 
   public LongValue(Long value) {
     this.value = value;

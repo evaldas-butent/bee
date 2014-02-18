@@ -5,13 +5,9 @@
   idName="AttendeeTypeID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="=calAttendeeName" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=name" />
     <Text name="Description" label="=calAppointmentTypeDescription" />
 
     <Enum name="Transparency" key="Transparency" label="=calTransparency" />
-    <Boolean name="Resource" label="=resource" />
-    
-    <String name="AttendeeCreator" precision="30" />
-    <String name="AttendeeEditor" precision="30" />
   </Fields>
 </Table>

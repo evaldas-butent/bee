@@ -142,6 +142,7 @@ public final class CrmConstants {
   public static final String SVC_GET_TASK_DATA = "get_task_data";
   public static final String SVC_GET_CHANGED_TASKS = "get_changed_tasks";
   public static final String SVC_ACCESS_TASK = "access_task";
+  public static final String SVC_EXTEND_TASK = "extend_task";
 
   public static final String SVC_TASKS_REPORTS_PREFIX = "get_tasks_reports_";
   public static final String SVC_TASKS_REPORTS_COMPANY_TIMES = SVC_TASKS_REPORTS_PREFIX
@@ -177,6 +178,7 @@ public final class CrmConstants {
 
   public static final String VAR_TASK_RELATIONS = Service.RPC_VAR_PREFIX + "task_relations";
   public static final String VAR_TASK_USERS = Service.RPC_VAR_PREFIX + "task_users";
+  public static final String VAR_TASK_PROPERTIES = Service.RPC_VAR_PREFIX + "task_properties";
 
   public static final String VAR_TASK_VISITED = Service.RPC_VAR_PREFIX + "task_visited";
 
@@ -203,6 +205,8 @@ public final class CrmConstants {
   public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String TBL_CRITERIA = "Criteria";
 
+  public static final String TBL_RECURRING_TASKS = "RecurringTasks";
+  
   public static final String TBL_RT_DATES = "RTDates";
   public static final String TBL_RT_FILES = "RTFiles";
   public static final String TBL_RT_EXECUTORS = "RTExecutors";
@@ -333,6 +337,7 @@ public final class CrmConstants {
   public static final String COL_RT_REMINDER = "Reminder";
   public static final String COL_RT_REMIND_BEFORE = "RemindBefore";
   public static final String COL_RT_REMIND_AT = "RemindAt";
+  public static final String COL_RT_COPY_BY_MAIL = "CopyByMail";
 
   public static final String COL_RTD_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTD_FROM = "DateFrom";
@@ -352,6 +357,8 @@ public final class CrmConstants {
   public static final String COL_RTOB_USER = "User";
   public static final String COL_RTOBGR_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTOBGR_GROUP = "Group";
+
+  public static final String COL_MAIL_ASSIGNED_TASKS = "MailAssignedTasks";
 
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
@@ -388,7 +395,11 @@ public final class CrmConstants {
 
   public static final String PROP_LAST_EVENT_ID = "LastEventId";
 
+  public static final String PROP_MAIL = "Mail";
+
   public static final String GRID_TASKS = "Tasks";
+  public static final String GRID_TODO_LIST = "TodoList";
+
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";

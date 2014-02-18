@@ -18,7 +18,7 @@ public class TextValue extends Value {
     return NULL_VALUE;
   }
 
-  private String value;
+  private final String value;
 
   public TextValue(String value) {
     this.value = value;

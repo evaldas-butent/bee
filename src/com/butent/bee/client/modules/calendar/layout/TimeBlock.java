@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class TimeBlock {
 
-  private final List<AppointmentAdapter> appointments = Lists.newArrayList();
+  private final List<ItemAdapter> adapters = Lists.newArrayList();
   private final Map<Integer, Integer> occupiedColumns = Maps.newHashMap();
 
   private int totalColumns = 1;
@@ -20,8 +20,8 @@ public class TimeBlock {
   private int top;
   private int bottom;
 
-  public List<AppointmentAdapter> getAppointments() {
-    return appointments;
+  public List<ItemAdapter> getAdapters() {
+    return adapters;
   }
 
   public int getBottom() {
@@ -63,7 +63,7 @@ public class TimeBlock {
     return totalColumns;
   }
 
-  public boolean intersectsWith(AppointmentAdapter appt) {
+  public boolean intersectsWith(ItemAdapter appt) {
     return intersectsWith(appt.getDayMinutesStart(), appt.getDayMinutesEnd());
   }
 
