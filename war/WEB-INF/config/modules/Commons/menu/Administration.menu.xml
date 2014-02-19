@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Administration" label="=administration" order="1000"
+name="Administration" label="=administration" order="1000" module="administration"
 >
   <Item name="Users" label="=users" service="grid" parameters="Users" />
-  <Item name="UserGroupSettings" label="=userGroups" service="grid" parameters="UserGroupSettings" />
+  <Item name="UserGroupSettings" label="=userGroups" service="grid"
+    parameters="UserGroupSettings" />
 
   <Item name="Roles" label="=roles" service="form" parameters="Roles" separator="true" />
+
+  <Item name="Modules" label="=modules" service="form" parameters="ModuleRights"
+    separator="true" />
+  <Item name="Menu" label="=menu" service="form" parameters="MenuRights" />
+
   <Item name="Objects" label="=objects" service="form" parameters="Objects" />
 
   <Item name="Parameters" label="=systemParameters" service="parameters" parameters="Commons"

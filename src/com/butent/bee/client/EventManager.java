@@ -37,7 +37,7 @@ import java.util.List;
  * creates handlers for events such as mouse and keyboard actions or server responses.
  */
 
-public class EventManager implements Module, FiresModificationEvents {
+public class EventManager implements FiresModificationEvents {
 
   private final EventBus priorBus;
   private final EventBus eventBus;
@@ -87,37 +87,6 @@ public class EventManager implements Module, FiresModificationEvents {
     if (locality == Locality.ENTANGLED && Endpoint.isOpen()) {
       Endpoint.send(new ModificationMessage(event));
     }
-  }
-
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
-  @Override
-  public void init() {
-    initEvents();
-  }
-
-  public void initEvents() {
-  }
-
-  @Override
-  public void onExit() {
   }
 
   public HandlerRegistration registerBookmarkHandler(BookmarkEvent.Handler handler, boolean prior) {
@@ -226,10 +195,6 @@ public class EventManager implements Module, FiresModificationEvents {
       this.exitRegistry.removeHandler();
       this.exitRegistry = null;
     }
-  }
-
-  @Override
-  public void start() {
   }
 
   private EventBus getBus(boolean prior) {

@@ -100,7 +100,7 @@ public class ScreenImpl implements Screen {
   public void addCommandItem(IdentifiableWidget widget) {
     Assert.notNull(widget);
     if (getCommandPanel() == null) {
-      logger.severe(getName(), "command panel not available");
+      logger.severe(NameUtils.getName(this), "command panel not available");
     } else {
       widget.asWidget().addStyleName("bee-MainCommandPanelItem");
       getCommandPanel().add(widget.asWidget());
@@ -189,29 +189,10 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public String getName() {
-    return NameUtils.getClassName(getClass());
-  }
-
-  @Override
   public List<IdentifiableWidget> getOpenWidgets() {
     return getWorkspace().getOpenWidgets();
   }
   
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return 0;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
   @Override
   public Split getScreenPanel() {
     return screenPanel;
@@ -238,10 +219,6 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public void notifyInfo(String... messages) {
     if (getNotification() != null) {
       getNotification().info(messages);
@@ -260,10 +237,6 @@ public class ScreenImpl implements Screen {
     if (getNotification() != null) {
       getNotification().warning(messages);
     }
-  }
-
-  @Override
-  public void onExit() {
   }
 
   @Override

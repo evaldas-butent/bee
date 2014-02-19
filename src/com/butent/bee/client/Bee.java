@@ -42,11 +42,7 @@ import java.util.Map;
 
 public class Bee implements EntryPoint {
 
-  private static BeeKeeper keeper;
-
   public static void exit() {
-    Bee.keeper.exit();
-
     ClientLogManager.close();
     BodyPanel.get().clear();
 
@@ -96,10 +92,8 @@ public class Bee implements EntryPoint {
       }
     }
 
-    Bee.keeper = new BeeKeeper();
-
-    Bee.keeper.init();
-    Bee.keeper.start();
+    BeeKeeper.init();
+    Global.init();
 
     if (GWT.isProdMode()) {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());

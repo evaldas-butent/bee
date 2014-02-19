@@ -191,6 +191,22 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="module">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="classifiers" />
+      <xs:enumeration value="contacts" />
+      <xs:enumeration value="calendar" />
+      <xs:enumeration value="documents" />
+      <xs:enumeration value="tasks" />
+      <xs:enumeration value="discussions" />
+      <xs:enumeration value="mail" />
+      <xs:enumeration value="e_commerce" />
+      <xs:enumeration value="trade" />
+      <xs:enumeration value="transport" />
+      <xs:enumeration value="administration" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="customProperties">
     <xs:anyAttribute processContents="lax" />
   </xs:complexType>

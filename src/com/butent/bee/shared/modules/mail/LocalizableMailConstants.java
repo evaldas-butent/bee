@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.mail;
 
 public interface LocalizableMailConstants {
 
+  String mail();
+
   String mails();
   
   String mailActionMoveToTrash();

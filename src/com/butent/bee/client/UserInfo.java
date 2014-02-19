@@ -4,7 +4,9 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -15,7 +17,7 @@ import java.util.List;
  * 
  */
 
-public class UserInfo implements Module, HasInfo {
+public class UserInfo implements HasInfo {
 
   private String sessionId;
   private UserData userData;
@@ -57,25 +59,6 @@ public class UserInfo implements Module, HasInfo {
       return null;
     }
     return userData.getLogin();
-  }
-
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
   }
 
   public String getProperty(String property) {
@@ -135,17 +118,14 @@ public class UserInfo implements Module, HasInfo {
     return userData.hasMenuRight(object, state);
   }
 
-  public boolean hasModuleRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasModuleRight(object, state);
+  public boolean isModuleVisible(Module module) {
+    return isLoggedIn() ? userData.isModuleVisible(module) : false;
   }
 
-  @Override
-  public void init() {
+  public boolean isModuleVisible(String moduleName) {
+    return isModuleVisible(EnumUtils.getEnumByName(Module.class, moduleName));
   }
-
+  
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
@@ -154,19 +134,11 @@ public class UserInfo implements Module, HasInfo {
     return userData != null;
   }
 
-  @Override
-  public void onExit() {
-  }
-
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 
   public void setUserData(UserData userData) {
     this.userData = userData;
-  }
-
-  @Override
-  public void start() {
   }
 }

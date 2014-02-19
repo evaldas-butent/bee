@@ -201,8 +201,7 @@ public class UiHolderBean {
   private Menu getVisibleMenu(String parent, Menu entry) {
     String ref = BeeUtils.join(".", parent, entry.getName());
 
-    if (usr.hasModuleRight(entry.getModuleName(), RightsState.VISIBLE)
-        && usr.hasMenuRight(ref, RightsState.VISIBLE)) {
+    if (usr.hasMenuRight(ref, RightsState.VISIBLE)) {
       List<Menu> items = null;
 
       if (entry instanceof MenuEntry) {

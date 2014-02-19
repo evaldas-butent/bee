@@ -325,7 +325,6 @@ public enum FormWidget {
   private static final String ATTR_STYLE_PREFIX = "stylePrefix";
 
   private static final String ATTR_TITLE = "title";
-  private static final String ATTR_VISIBLE = "visible";
   private static final String ATTR_DISABLABLE = "disablable";
 
   private static final String ATTR_INLINE = "inline";
@@ -475,7 +474,11 @@ public enum FormWidget {
       return null;
     }
 
-    if (BeeUtils.isFalse(XmlUtils.getAttributeBoolean(element, ATTR_VISIBLE))) {
+    if (BeeUtils.isFalse(XmlUtils.getAttributeBoolean(element, UiConstants.ATTR_VISIBLE))) {
+      return null;
+    }
+    String module = element.getAttribute(UiConstants.ATTR_MODULE);
+    if (!BeeUtils.isEmpty(module) && !BeeKeeper.getUser().isModuleVisible(module)) {
       return null;
     }
 

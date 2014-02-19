@@ -51,6 +51,9 @@ public final class UiConstants {
   
   public static final String ATTR_PROPERTY = "property";
   
+  public static final String ATTR_VISIBLE = "visible";
+  public static final String ATTR_MODULE = "module";
+  
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";

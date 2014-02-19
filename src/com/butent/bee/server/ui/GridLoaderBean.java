@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
@@ -120,7 +121,6 @@ public class GridLoaderBean {
   private static final String ATTR_AUTO_FIT = "autoFit";
 
   private static final String ATTR_SORTABLE = "sortable";
-  private static final String ATTR_VISIBLE = "visible";
 
   private static final String ATTR_REQUIRED = "required";
 
@@ -558,8 +558,11 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, ATTR_SORTABLE)) {
           dst.setSortable(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_VISIBLE)) {
+
+        } else if (BeeUtils.same(key, UiConstants.ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, UiConstants.ATTR_MODULE)) {
+          dst.setModule(EnumUtils.getEnumByName(Module.class, value));
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());

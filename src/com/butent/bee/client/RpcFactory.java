@@ -30,7 +30,7 @@ import java.util.Set;
  * 
  */
 
-public class RpcFactory implements Module {
+public class RpcFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(RpcFactory.class);
 
@@ -70,11 +70,6 @@ public class RpcFactory implements Module {
     return new ParameterList(svc);
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
   public String getOptions() {
     if (Global.isDebug()) {
       return CommUtils.OPTION_DEBUG;
@@ -92,20 +87,6 @@ public class RpcFactory implements Module {
       }
     }
     return result;
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
   }
 
   public AsyncCallback getReqCallBack() {
@@ -137,10 +118,6 @@ public class RpcFactory implements Module {
       }
     }
     return false;
-  }
-
-  @Override
-  public void init() {
   }
 
   public int invoke(String method) {
@@ -259,10 +236,6 @@ public class RpcFactory implements Module {
     return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
   }
   
-  @Override
-  public void onExit() {
-  }
-
   public int sendText(ParameterList params, String data, ResponseCallback callback) {
     return makePostRequest(params, ContentType.TEXT, data, callback);
   }
@@ -280,10 +253,6 @@ public class RpcFactory implements Module {
     if (info != null) {
       info.setUserData(data);
     }
-  }
-
-  @Override
-  public void start() {
   }
 
   private int makeRequest(RequestBuilder.Method meth, ParameterList params,

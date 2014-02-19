@@ -12,6 +12,8 @@ public interface LocalizableTradeConstants {
 
   String sellingPrice();
 
+  String trade();
+
   String trdAmount();
 
   String trdAmountWoVat();

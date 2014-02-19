@@ -34,6 +34,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -449,13 +450,9 @@ public class UserServiceBean {
     return false;
   }
 
-  public boolean hasModuleRight(String object, RightsState state) {
+  public boolean isModuleVisible(Module module) {
     UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().hasModuleRight(object, state);
-    }
-    return false;
+    return (info == null) ? false : info.getUserData().isModuleVisible(module);
   }
 
   @Lock(LockType.WRITE)

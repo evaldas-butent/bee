@@ -242,6 +242,9 @@ public final class CommonsConstants {
 
   public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
 
+  public static final String VIEW_ROLES = "Roles";
+  public static final String VIEW_RIGHTS = "Rights";
+  
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
@@ -411,6 +414,9 @@ public final class CommonsConstants {
   public static final String ALS_DEFAULT_COLOR_NAME = "DefaultColorName";
   public static final String ALS_DEFAULT_BACKGROUND = "DefaultBackground";
   public static final String ALS_DEFAULT_FOREGROUND = "DefaultForeground";
+
+  public static final String ALS_OBJECT_TYPE = "ObjectType";
+  public static final String ALS_OBJECT_NAME = "ObjectName";
   
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
