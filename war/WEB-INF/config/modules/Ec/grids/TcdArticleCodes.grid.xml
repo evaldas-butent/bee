@@ -5,7 +5,7 @@
   flexGrow="1" flexShrink="1" maxColumnWidth="200"
   >
   <g:columns>
-    <DataColumn name="SearchNr" />
+    <DataColumn name="SearchNr" readOnly="true" />
     <DataColumn name="CodeNr" />
     <RelColumn name="Brand" />
     <DataColumn name="OECode" maxWidth="80" />
