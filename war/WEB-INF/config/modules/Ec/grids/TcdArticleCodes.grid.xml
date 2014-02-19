@@ -6,7 +6,7 @@
   >
   <g:columns>
     <DataColumn name="SearchNr" readOnly="true" />
-    <DataColumn name="CodeNr" />
+    <DataColumn name="CodeNr" required="true" />
     <RelColumn name="Brand" />
     <DataColumn name="OECode" maxWidth="80" />
   </g:columns>
