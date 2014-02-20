@@ -30,8 +30,8 @@
         <InputText source="Code" />
         <Label text="=companyVATCode" style="&lbl1;" />
         <InputText source="VATCode" style="width: 120px;" upperCase="true" />
-        <Label text="=code" style="&lbl1;" />
-        <InputText source="ExchangeCode" style="width: 140px;" />
+        <Label text="=code" style="&lbl1;" module="TRANSPORT" />
+        <InputText source="ExchangeCode" style="width: 140px;" module="TRANSPORT" />
       </row>
       <row>
         <Label text="=priority" style="&lbl1;" />

@@ -36,6 +36,7 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -120,7 +121,8 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public void showInfo() {
-    Global.showInfo(getName(), Lists.newArrayList("Center Width " + getActivePanelWidth(),
+    Global.showInfo(NameUtils.getName(this),
+        Lists.newArrayList("Center Width " + getActivePanelWidth(),
         "Center Height " + getActivePanelHeight()));
   }
 

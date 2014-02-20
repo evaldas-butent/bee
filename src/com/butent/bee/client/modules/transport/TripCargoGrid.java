@@ -24,6 +24,7 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogBox;
@@ -59,10 +60,12 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
@@ -166,6 +169,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
     private final Map<String, String> fields = Maps.newLinkedHashMap();
     private Collection<String> template;
     private BeeRowSet cargoInfo;
+    private Collection<Long> selectedCargos;
 
     protected MessageDialog() {
       super(Localized.getConstants().message());
@@ -288,8 +292,9 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
           });
     }
 
-    public void setCargoInfo(BeeRowSet cargoInfo) {
-      this.cargoInfo = cargoInfo;
+    public void setCargoInfo(BeeRowSet cargo, Set<Long> selected) {
+      this.cargoInfo = cargo;
+      this.selectedCargos = selected;
       renderMessage();
     }
 
@@ -324,6 +329,9 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
         RegExp r = RegExp.compile("\\{\\w+\\}", "g");
 
         for (int i = 0; i < cargoInfo.getNumberOfRows(); i++) {
+          if (sb.length() > 0) {
+            sb.append("\n");
+          }
           for (String rowExpr : template) {
             SplitResult s = r.split(rowExpr);
 
@@ -372,7 +380,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
             }
             sb.append("\n");
           }
-          sb.append("\n");
         }
       }
       messagePanel.setValue(sb.toString());
@@ -409,7 +416,20 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
-          response.notify(BeeKeeper.getScreen());
+          response.notify(getGridView());
+
+          if (response.hasErrors()) {
+            return;
+          }
+          if (!BeeUtils.isEmpty(selectedCargos)) {
+            Queries.update(getViewName(), Filter.idIn(selectedCargos), COL_CARGO_MESSAGE_SENT,
+                Value.getValue(new DateTime()), new IntCallback() {
+                  @Override
+                  public void onSuccess(Integer result) {
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
+                  }
+                });
+          }
         }
       });
       close();
@@ -449,7 +469,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
   @Override
   public void onClick(ClickEvent arg) {
     Set<Long> cargos = Sets.newHashSet();
-    Set<Long> selected = Sets.newHashSet();
+    final Set<Long> selected = Sets.newHashSet();
 
     for (RowInfo rowInfo : getGridView().getSelectedRows(SelectedRows.ALL)) {
       selected.add(rowInfo.getId());
@@ -458,10 +478,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       if (BeeUtils.isEmpty(selected) || selected.contains(row.getId())) {
         cargos.add(row.getLong(getGridView().getDataIndex(COL_CARGO)));
       }
-    }
-    if (BeeUtils.isEmpty(cargos)) {
-      getGridView().notifyWarning(Localized.getConstants().noData());
-      return;
     }
     final MessageDialog dialog = new MessageDialog();
 
@@ -490,12 +506,21 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
     } else {
       dialog.setDrivers(ImmutableMap.of(Localized.getConstants().mobile(), ""));
     }
-    Queries.getRowSet(TBL_ORDER_CARGO, null, Filter.idIn(cargos), new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        dialog.setCargoInfo(result);
+    if (!BeeUtils.isEmpty(cargos)) {
+      if (BeeUtils.isEmpty(selected)) {
+        for (IsRow row : getGridView().getRowData()) {
+          selected.add(row.getId());
+        }
       }
-    });
+      Queries.getRowSet(TBL_ORDER_CARGO, null, Filter.idIn(cargos), new RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          dialog.setCargoInfo(result, selected);
+        }
+      });
+    } else {
+      dialog.setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO), null);
+    }
   }
 
   @Override

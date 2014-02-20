@@ -33,7 +33,7 @@ import java.util.Map;
  * creates and manages menu of the system using authorization and layout configuration.
  */
 
-public class MenuManager implements Module {
+public class MenuManager {
 
   public interface MenuCallback {
     void onSelection(String parameters);
@@ -77,31 +77,8 @@ public class MenuManager implements Module {
     return menuCallbacks.get(BeeUtils.normalize(service));
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return 20;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
   public String getRootLayout() {
     return getLayout(0);
-  }
-
-  @Override
-  public void init() {
   }
 
   public boolean loadMenu() {
@@ -114,10 +91,6 @@ public class MenuManager implements Module {
       }
     });
     return true;
-  }
-
-  @Override
-  public void onExit() {
   }
 
   public void registerMenuCallback(String service, MenuCallback callback) {
@@ -158,10 +131,6 @@ public class MenuManager implements Module {
       tree.addItem(item);
     }
     BeeKeeper.getScreen().updateActivePanel(tree);
-  }
-
-  @Override
-  public void start() {
   }
 
   private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {

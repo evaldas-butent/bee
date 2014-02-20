@@ -17,7 +17,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -170,7 +169,7 @@ public class UiHolderBean {
           }
         }
         if (menu == null || !(menu instanceof MenuEntry)) {
-          logger.severe("Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
+          logger.severe("Menu parent is not valid:", "Module:", xmlMenu.getModule(),
               "; Menu:", xmlMenu.getName(), "; Parent:", parent);
         } else {
           List<Menu> items = ((MenuEntry) menu).getItems();
@@ -201,8 +200,7 @@ public class UiHolderBean {
   private Menu getVisibleMenu(String parent, Menu entry) {
     String ref = BeeUtils.join(".", parent, entry.getName());
 
-    if (usr.hasModuleRight(entry.getModuleName(), RightsState.VISIBLE)
-        && usr.hasMenuRight(ref, RightsState.VISIBLE)) {
+    if (usr.isModuleVisible(entry.getModule()) && usr.isMenuVisible(ref)) {
       List<Menu> items = null;
 
       if (entry instanceof MenuEntry) {
@@ -267,7 +265,6 @@ public class UiHolderBean {
 
     boolean ok = xmlMenu != null;
     if (ok) {
-      xmlMenu.setModuleName(moduleName);
       register("menu", xmlMenu, menuCache, BeeUtils.join(".", xmlMenu.getParent(), menuName),
           moduleName);
     } else {

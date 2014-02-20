@@ -304,6 +304,7 @@ public final class EcConstants {
 
   public static final String TBL_TCD_ORPHANS = "TcdOrphans";
 
+  public static final String VIEW_ARTICLE_CODES = "TcdArticleCodes";
   public static final String VIEW_BANNERS = "EcBanners";
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
   public static final String VIEW_CATALOG = "EcCatalog";
@@ -538,6 +539,7 @@ public final class EcConstants {
 
   public static final String GRID_DISCOUNTS = "EcDiscounts";
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
+  public static final String GRID_ARTICLE_CODES = "TcdArticleCodes";
   public static final String GRID_ARTICLE_GRAPHICS = "TcdArticleGraphics";
   public static final String GRID_GROUP_CATEGORIES = "EcGroupCategories";
 

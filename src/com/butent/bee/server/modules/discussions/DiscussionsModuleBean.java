@@ -583,6 +583,11 @@ public class DiscussionsModuleBean implements BeeModule {
         BeeRow newRow = DataUtils.cloneRow(discussRow);
         DiscussionStatus status = DiscussionStatus.ACTIVE;
 
+        if (DiscussionStatus.in(discussRow.getInteger(discussData.getColumnIndex(COL_STATUS)),
+            DiscussionStatus.CLOSED)) {
+          status = DiscussionStatus.CLOSED;
+        }
+
         newRow.setValue(discussData.getColumnIndex(COL_STATUS), status.ordinal());
         discussData.clearRows();
         discussData.addRow(newRow);
@@ -812,7 +817,16 @@ public class DiscussionsModuleBean implements BeeModule {
                         SqlUtils.or(
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
                     SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
-                            )
+                            ),
+                SqlUtils.and(
+                            SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                                .currentTimeMillis()),
+                            SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                    )
                 ),
             SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
                         CommonsConstants.COL_USER,
@@ -833,16 +847,25 @@ public class DiscussionsModuleBean implements BeeModule {
       select.addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS),
           birthTopic), true, null), ALS_BIRTHDAY);
       select.addExpr(SqlUtils.sqlIf(SqlUtils.or(
-                        SqlUtils.and(
-                            SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
-                                .currentTimeMillis()),
-                            SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                                .currentTimeMillis())
-                            ),
-                        SqlUtils.or(
-                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
-                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
-                            )
+          SqlUtils.and(
+              SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                  .currentTimeMillis()),
+              SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                  .currentTimeMillis())
+              ),
+          SqlUtils.or(
+              SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+              SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+              ),
+          SqlUtils.and(
+              SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                  .currentTimeMillis()),
+              SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
+              ),
+          SqlUtils.and(
+              SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+              SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+              )
           ), true, null), ALS_BIRTHDAY_VALID);
 
       select.setWhere(SqlUtils.or(

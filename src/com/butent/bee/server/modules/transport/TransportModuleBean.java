@@ -39,6 +39,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.BeeConst;
 // import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -68,9 +69,10 @@ import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collection;
@@ -2042,8 +2044,8 @@ public class TransportModuleBean implements BeeModule {
     xml.append("</sms-messages>")
         .append("</sms-send>");
 
-    ResponseObject response = ResponseObject.info(Localized.getConstants().ok());
-    DataOutputStream wr = null;
+    ResponseObject response = ResponseObject.info(Localized.getConstants().messageSent());
+    BufferedWriter wr = null;
     BufferedReader in = null;
 
     try {
@@ -2051,12 +2053,11 @@ public class TransportModuleBean implements BeeModule {
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
       conn.setRequestMethod("POST");
-      conn.setRequestProperty("Accept", "text/xml");
       conn.setDoOutput(true);
 
-      wr = new DataOutputStream(conn.getOutputStream());
-      wr.writeBytes(xml.toString());
-      wr.flush();
+      wr = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(),
+          BeeConst.CHARSET_UTF8));
+      wr.write(xml.toString());
       wr.close();
 
       if (conn.getResponseCode() != HttpServletResponse.SC_OK) {

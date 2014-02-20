@@ -92,6 +92,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String address();
 
+  String administration();
+
   String allowPhotoSize();
 
   String amount();
@@ -103,7 +105,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String branch();
 
   String cancel();
-  
+
   String captionId();
 
   String changedValues();
@@ -119,6 +121,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String choosePrintingForm();
 
   String city();
+  
+  String classifiers(); 
 
   String clear();
 
@@ -371,6 +375,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String maxValue();
 
   String message();
+
+  String messageSent();
 
   String minValue();
 

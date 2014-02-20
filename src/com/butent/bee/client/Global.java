@@ -70,7 +70,7 @@ import java.util.Set;
  * initializes and contains system parameters, which are used globally in the whole system.
  */
 
-public class Global implements Module {
+public final class Global {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
 
@@ -521,15 +521,15 @@ public class Global implements Module {
     return debug;
   }
 
-  public static void messageBox(String caption, Icon icon, String message) {
-    messageBox(caption, icon, Lists.newArrayList(message),
-        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
-  }
-
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
         null, null, null, null, null);
+  }
+
+  public static void messageBox(String caption, Icon icon, String message) {
+    messageBox(caption, icon, Lists.newArrayList(message),
+        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
   }
 
   public static boolean nativeConfirm(String... lines) {
@@ -637,46 +637,23 @@ public class Global implements Module {
     msgBoxen.showTable(caption, table);
   }
 
-  public static void showModalWidget(Widget widget) {
-    showModalWidget(null, widget, null);
-  }
-
   public static void showModalWidget(String caption, Widget widget) {
     showModalWidget(caption, widget, null);
-  }
-
-  public static void showModalWidget(Widget widget, Element target) {
-    showModalWidget(null, widget, target);
   }
 
   public static void showModalWidget(String caption, Widget widget, Element target) {
     msgBoxen.showWidget(caption, widget, target);
   }
 
-  Global() {
+  public static void showModalWidget(Widget widget) {
+    showModalWidget(null, widget, null);
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
+  public static void showModalWidget(Widget widget, Element target) {
+    showModalWidget(null, widget, target);
   }
 
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return 20;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
-  @Override
-  public void init() {
+  static void init() {
     initCache();
     initImages();
     initFavorites();
@@ -685,27 +662,19 @@ public class Global implements Module {
     exportMethods();
   }
 
-  @Override
-  public void onExit() {
-  }
-
-  @Override
-  public void start() {
-  }
-
   // CHECKSTYLE:OFF
-  private native void exportMethods() /*-{
+  private static native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
   }-*/;
 
-  // CHECKSTYLE:ON
-
   private static void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache(), true);
   }
+
+  // CHECKSTYLE:ON
 
   private static void initFavorites() {
     BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);
@@ -718,5 +687,8 @@ public class Global implements Module {
 
   private static void initNewsAggregator() {
     BeeKeeper.getBus().registerDataHandler(getNewsAggregator(), true);
+  }
+
+  private Global() {
   }
 }

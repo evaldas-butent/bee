@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Discussions" label="=discussions" order="110"
+name="Discussions" label="=discussions" order="110" module="DISCUSSIONS"
 >
  <Item name="NewDiscussion" label="=discussNew" service="new" parameters="Discussions" />
  <Item name="ActiveDiscussions" label="=discussActive" service="discuss_list" parameters="active" separator="true"/>
