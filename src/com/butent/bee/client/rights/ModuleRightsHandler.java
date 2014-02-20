@@ -31,6 +31,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -55,7 +56,7 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
   }
 
   /**
-   * @param module
+   * @param module  
    */
   private static Widget createModuleToggle(Module module) {
     Toggle widget = new Toggle();
@@ -86,7 +87,7 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
   }
 
   /**
-   * @param roleId
+   * @param roleId  
    */
   private static Widget createRoleToggle(Long roleId) {
     Toggle widget = new Toggle();
@@ -95,8 +96,10 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
   }
 
   private final BiMap<Long, String> roles = HashBiMap.create();
-
   private final Multimap<Module, Long> hiddenModules = HashMultimap.create();
+  
+  private final HtmlTable table = new HtmlTable(STYLE_PREFIX + "table");
+  private Orientation roleOrientation = Orientation.HORIZONTAL;
 
   private ModuleRightsHandler() {
   }
@@ -131,7 +134,18 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
       Collections.sort(roleNames);
     }
 
-    HtmlTable table = new HtmlTable(STYLE_PREFIX + "table");
+    Toggle orientationToggle = new Toggle();
+    orientationToggle.addStyleName(STYLE_PREFIX + "orientation");
+    
+    orientationToggle.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        switchOrientation();
+      }
+    });
+    
+//    table.setWidget(0, 0, orientationToggle);
+    
     int row = 0;
     int col = 2;
 
@@ -178,7 +192,7 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
           roles.clear();
         }
 
-        for (BeeRow roleRow : roleData.getRows()) {
+        for (BeeRow roleRow : roleData) {
           roles.put(roleRow.getId(), DataUtils.getString(roleData, roleRow, COL_ROLE_NAME));
         }
 
@@ -198,7 +212,7 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
                   int nameIndex = rightsData.getColumnIndex(ALS_OBJECT_NAME);
                   int roleIndex = rightsData.getColumnIndex(COL_ROLE);
 
-                  for (BeeRow rightsRow : rightsData.getRows()) {
+                  for (BeeRow rightsRow : rightsData) {
                     String name = rightsRow.getString(nameIndex);
                     Module module = EnumUtils.getEnumByName(Module.class, name);
 
@@ -219,5 +233,44 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
 
   private Long getRoleId(String roleName) {
     return roles.inverse().get(roleName);
+  }
+  
+  private Orientation getRoleOrientation() {
+    return roleOrientation;
+  }
+
+  private void setRoleOrientation(Orientation roleOrientation) {
+    this.roleOrientation = roleOrientation;
+  }
+
+  private void switchOrientation() {
+    int rc = table.getRowCount();
+    int cc = table.getCellCount(0);
+    
+    int max = Math.max(rc, cc);
+    
+    for (int row = 0; row < max - 1; row++) {
+      for (int col = row + 1; col < max; col++) {
+        Widget w1 = (row < rc && col < cc) ? table.getWidget(row, col) : null;
+        if (w1 != null) {
+          table.remove(w1);
+        }
+
+        Widget w2 = (col < rc && row < cc) ? table.getWidget(col, row) : null;
+        if (w2 != null) {
+          table.remove(w2);
+        }
+        
+        if (w1 != null) {
+          table.setWidget(col, row, w1);
+        }
+        if (w2 != null) {
+          table.setWidget(row, col, w2);
+        }
+      }
+    }
+    
+    setRoleOrientation(getRoleOrientation().isVertical() 
+        ? Orientation.HORIZONTAL : Orientation.VERTICAL);
   }
 }

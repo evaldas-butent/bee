@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -56,7 +57,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
 
   @Override
   public void clearRows() {
-    getRows().clear();
+    rows.clear();
   }
 
   @Override
@@ -84,38 +85,38 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
 
   @Override
   public int getNumberOfRows() {
-    return (rows == null) ? 0 : getRows().getLength();
+    return (rows == null) ? 0 : rows.getLength();
   }
 
   @Override
   public StringRow getRow(int rowIndex) {
     assertRowIndex(rowIndex);
-    return getRows().get(rowIndex);
+    return rows.get(rowIndex);
   }
 
   @Override
-  public StringRowArray getRows() {
-    return rows;
+  public List<StringRow> getRows() {
+    return (rows == null) ? null : rows.getList();
   }
 
   @Override
   public String getString(int rowIndex, int colIndex) {
     assertRowIndex(rowIndex);
     assertColumnIndex(colIndex);
-    return getRows().get(rowIndex).getString(colIndex);
+    return rows.get(rowIndex).getString(colIndex);
   }
 
   @Override
   public void removeRow(int rowIndex) {
     assertRowIndex(rowIndex);
-    getRows().remove(rowIndex);
+    rows.remove(rowIndex);
   }
 
   @Override
   public void setValue(int rowIndex, int colIndex, String value) {
     assertRowIndex(rowIndex);
     assertColumnIndex(colIndex);
-    getRows().get(rowIndex).setValue(colIndex, value);
+    rows.get(rowIndex).setValue(colIndex, value);
   }
 
   @Override
@@ -138,7 +139,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
   @Override
   protected void insertRow(int rowIndex, StringRow row) {
     Assert.betweenInclusive(rowIndex, 0, getNumberOfRows());
-    getRows().insert(rowIndex, row);
+    rows.insert(rowIndex, row);
   }
 
   protected void setRows(StringRowArray rows) {
@@ -146,7 +147,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
   }
 
   private void sortRows(Comparator<StringRow> comparator) {
-    Pair<StringRow[], Integer> pair = getRows().getArray(new StringRow[0]);
+    Pair<StringRow[], Integer> pair = rows.getArray(new StringRow[0]);
     int len = pair.getB();
 
     StringRow[] arr;
@@ -158,6 +159,11 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
     }
 
     Arrays.sort(arr, comparator);
-    getRows().setValues(arr);
+    rows.setValues(arr);
+  }
+
+  @Override
+  public Iterator<StringRow> iterator() {
+    return rows.iterator();
   }
 }

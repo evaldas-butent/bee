@@ -39,7 +39,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   private final String upFace;
   private final String downFace;
 
-  private boolean down;
+  private boolean checked;
 
   private boolean enabled = true;
   private boolean nullable = true;
@@ -115,7 +115,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
 
   @Override
   public String getNormalizedValue() {
-    Boolean v = isDown();
+    Boolean v = isChecked();
     if (!v && isNullable()) {
       v = null;
     }
@@ -134,7 +134,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
 
   @Override
   public String getValue() {
-    return BooleanValue.pack(isDown());
+    return BooleanValue.pack(isChecked());
   }
 
   @Override
@@ -153,16 +153,12 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   }
 
   public void invert() {
-    setDown(!isDown());
+    setChecked(!isChecked());
   }
 
   @Override
   public boolean isChecked() {
-    return isDown();
-  }
-
-  public boolean isDown() {
-    return down;
+    return checked;
   }
 
   @Override
@@ -210,17 +206,13 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
 
   @Override
   public void setChecked(boolean checked) {
-    setDown(checked);
-  }
-
-  public void setDown(boolean down) {
-    if (down != isDown()) {
-      this.down = down;
+    if (checked != isChecked()) {
+      this.checked = checked;
 
       if (!Objects.equals(downFace, upFace)) {
-        getElement().setInnerHTML(down ? downFace : upFace);
+        getElement().setInnerHTML(checked ? downFace : upFace);
       }
-      setStyleDependentName("down", down);
+      setStyleDependentName("checked", checked);
     }
   }
 
@@ -270,7 +262,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
 
   @Override
   public void setValue(String value) {
-    setDown(BeeUtils.toBoolean(value));
+    setChecked(BeeUtils.toBoolean(value));
   }
 
   @Override
@@ -293,7 +285,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
     if (isEditing()) {
       fireEvent(new EditStopEvent(State.CHANGED));
     } else {
-      ValueChangeEvent.fire(this, BooleanValue.pack(isDown()));
+      ValueChangeEvent.fire(this, BooleanValue.pack(isChecked()));
     }
   }
 }

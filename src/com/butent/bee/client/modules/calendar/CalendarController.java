@@ -574,7 +574,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
     int dstIdx = srcIdx + (up ? -1 : 1);
 
-    List<BeeRow> rows = Lists.newArrayList(ucAttendees.getRows().getList());
+    List<BeeRow> rows = Lists.newArrayList(ucAttendees.getRows());
 
     int srcOrd = rows.get(srcIdx).getInteger(ordinalIndex);
     int dstOrd = rows.get(dstIdx).getInteger(ordinalIndex);

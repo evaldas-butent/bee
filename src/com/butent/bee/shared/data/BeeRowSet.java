@@ -198,7 +198,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
           break;
 
         case ROWS:
-          arr[i++] = getRows().getList();
+          arr[i++] = getRows();
           break;
 
         case PROPERTIES:

@@ -89,7 +89,7 @@ public final class CalendarKeeper {
 
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
         event.consume();
-        if (event.getRow() instanceof BeeRow) {
+        if (event.hasRow()) {
           ensureData(new Command() {
             @Override
             public void execute() {

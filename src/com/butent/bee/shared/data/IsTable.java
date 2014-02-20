@@ -1,7 +1,6 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
@@ -16,7 +15,8 @@ import java.util.List;
  * Determines method requirements for table structure implementing classes.
  */
 
-public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extends IsData {
+public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extends IsData,
+    Iterable<RowType> {
 
   int addColumn(ColType column);
 
@@ -39,19 +39,19 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void addWarning(DataWarning warning);
 
   void clearCell(int rowIndex, int colIndex);
-  
+
   void clearRows();
 
   void clearTableProperty(String key);
 
   void clearValue(int rowIndex, int colIndex);
-  
+
   boolean containsColumn(String columnId);
 
   boolean containsRow(long rowId);
 
   IsTable<RowType, ColType> copy();
-  
+
   IsTable<RowType, ColType> create();
 
   ColType createColumn(ValueType type, String label, String id);
@@ -67,12 +67,14 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   List<ColType> getColumns();
 
   RowType getRow(int rowIndex);
-  
+
   RowType getRowById(long rowId);
   
+  List<Long> getRowIds();
+
   int getRowIndex(long rowId);
 
-  Sequence<RowType> getRows();
+  List<RowType> getRows();
 
   List<DataWarning> getWarnings();
 
@@ -93,9 +95,9 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void removeColumns(int colIndex, int colCount);
 
   void removeRow(int rowIndex);
-  
+
   boolean removeRowById(long rowId);
-  
+
   void removeRows(int rowIndex, int rowCount);
 
   void setCell(int rowIndex, int colIndex, IsCell cell);
@@ -138,13 +140,13 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void setValue(int rowIndex, int colIndex, String value);
 
   void setValue(int rowIndex, int colIndex, Integer value);
-  
+
   void setValue(int rowIndex, int colIndex, Long value);
-  
+
   void setValue(int rowIndex, int colIndex, BigDecimal value);
-  
+
   void setValue(int rowIndex, int colIndex, JustDate value);
-  
+
   void setValue(int rowIndex, int colIndex, DateTime value);
 
   void setValue(int rowIndex, int colIndex, Value value);
@@ -152,6 +154,6 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void sort(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator);
 
   void sortByRowId(boolean ascending);
-  
-  boolean updateRow(RowType row);  
+
+  boolean updateRow(RowType row);
 }

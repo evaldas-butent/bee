@@ -236,6 +236,20 @@ public class SystemServiceBean {
         return null;
       }
 
+      if (files.size() > 1 && !FileNameUtils.hasSeparator(search)) {
+        List<File> nameMatch = Lists.newArrayList();
+        for (File fl : files) {
+          if (BeeUtils.same(fl.getName(), search)) {
+            nameMatch.add(fl);
+          }
+        }
+        
+        if (!nameMatch.isEmpty() && nameMatch.size() < files.size()) {
+          files.clear();
+          files.addAll(nameMatch);
+        }
+      }
+
       if (files.size() > 1) {
         Collections.sort(files);
 

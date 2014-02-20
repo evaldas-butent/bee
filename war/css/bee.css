@@ -579,7 +579,8 @@
   background-color: #fbfbfb;
 }
 
-.bee-CellGridBody:hover {
+.bee-CellGridBody:hover,
+.bee-CellGridBody.bee-CellGridActiveRow:hover {
   background-color: #e1e1e1;
   background-image: none;
 }
@@ -589,8 +590,8 @@
 }
 
 .bee-CellGridBody.bee-CellGridActiveRow.bee-CellGridActiveCell {
-  background-color: #c7e3f9;
-  outline: #c7e3f9 solid 2px;
+  background-color: #fffff0;  
+  outline: #80c4f9 solid 2px;
   outline-offset: -1px;
 }
 
@@ -789,7 +790,7 @@
   -ms-flex-align: center;
   margin-bottom: 5px;
 }
-.bee-RichTextToolbar-row .bee-Toggle-down {
+.bee-RichTextToolbar-row .bee-Toggle-checked {
   background-color: #faac58;
 }
 

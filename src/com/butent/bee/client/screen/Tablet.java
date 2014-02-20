@@ -72,12 +72,12 @@ public class Tablet extends Mobile {
     toggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        ClientLogManager.setPanelVisible(toggle.isDown());
+        ClientLogManager.setPanelVisible(toggle.isChecked());
       }
     });
 
     panel.addRightWidthTop(toggle, 3, 76, 1);
-    toggle.setDown(true);
+    toggle.setChecked(true);
     return 80;
   }
 

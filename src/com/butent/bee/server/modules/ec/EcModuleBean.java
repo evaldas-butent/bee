@@ -471,7 +471,7 @@ public class EcModuleBean implements BeeModule {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows().getList(), new Comparator<BeeRow>() {
+            Collections.sort(rowSet.getRows(), new Comparator<BeeRow>() {
               @Override
               public int compare(BeeRow row1, BeeRow row2) {
                 String name1 = row1.getString(fullNameIndex);

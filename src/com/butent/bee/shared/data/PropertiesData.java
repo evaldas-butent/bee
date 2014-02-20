@@ -47,7 +47,7 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
   public PropertiesData copy() {
     PropertiesData result = new PropertiesData();
     copyTableDescription(result);
-    result.setRows(getRows().getList());
+    result.setRows(getRows());
     return result;
   }
 

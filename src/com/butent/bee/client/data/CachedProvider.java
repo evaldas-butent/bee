@@ -326,7 +326,7 @@ public class CachedProvider extends Provider {
     if (getUserFilter() != null && isComplete()) {
       return viewRows;
     } else {
-      return getTable().getRows().getList();
+      return getTable().getRows();
     }
   }
 

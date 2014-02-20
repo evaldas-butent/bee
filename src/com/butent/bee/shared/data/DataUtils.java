@@ -387,7 +387,7 @@ public final class DataUtils {
   }
 
   public static List<Long> getDistinct(BeeRowSet rowSet, String columnId) {
-    return getDistinct(rowSet.getRows().getList(), rowSet.getColumnIndex(columnId));
+    return getDistinct(rowSet.getRows(), rowSet.getColumnIndex(columnId));
   }
 
   public static List<Long> getDistinct(Collection<? extends IsRow> rows, int index) {

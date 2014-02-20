@@ -636,7 +636,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     toggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        String updated = updateCronValue(cron.source, value, toggle.isDown());
+        String updated = updateCronValue(cron.source, value, toggle.isChecked());
         refreshErrors(cron, updated);
       }
     });
@@ -971,7 +971,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   private void setValue(Cron cron, int index, boolean selected) {
     Widget widget = toggleContainers.get(cron).getWidget(index);
     if (widget instanceof Toggle) {
-      ((Toggle) widget).setDown(selected);
+      ((Toggle) widget).setChecked(selected);
 
     }
   }

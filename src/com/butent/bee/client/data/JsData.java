@@ -41,10 +41,12 @@ public class JsData<C extends IsColumn> extends StringMatrix<C> {
     Assert.isPositive(rowSize);
     int rc = (data.length() - start) / rowSize;
 
-    setRows(new StringRowArray(new StringRow[rc]));
+    StringRow[] arr = new StringRow[rc];
     for (int i = 0; i < rc; i++) {
-      getRows().set(i, new StringRow(i + 1, new JsStringSequence(JsUtils.slice(data,
-          start + i * rowSize, start + (i + 1) * rowSize))));
+      arr[i] = new StringRow(i + 1, new JsStringSequence(JsUtils.slice(data,
+          start + i * rowSize, start + (i + 1) * rowSize)));
     }
+
+    setRows(new StringRowArray(arr));
   }
 }
