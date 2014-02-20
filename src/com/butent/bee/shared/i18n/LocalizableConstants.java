@@ -105,7 +105,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String branch();
 
   String cancel();
-  
+
   String captionId();
 
   String changedValues();
@@ -375,6 +375,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String maxValue();
 
   String message();
+
+  String messageSent();
 
   String minValue();
 

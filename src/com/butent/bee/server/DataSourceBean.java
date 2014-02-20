@@ -132,7 +132,7 @@ public class DataSourceBean {
           ds = (DataSource) InitialContext.doLookup("jdbc/" + nm);
         } catch (NamingException ex) {
           try {
-            ds = (DataSource) InitialContext.doLookup("java:jdbc/" + nm);
+            ds = (DataSource) InitialContext.doLookup("java:/jdbc/" + nm);
           } catch (NamingException ex2) {
             logger.error(ex);
             ds = null;

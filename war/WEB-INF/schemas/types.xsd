@@ -193,17 +193,17 @@
 
   <xs:simpleType name="module">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="classifiers" />
-      <xs:enumeration value="contacts" />
-      <xs:enumeration value="calendar" />
-      <xs:enumeration value="documents" />
-      <xs:enumeration value="tasks" />
-      <xs:enumeration value="discussions" />
-      <xs:enumeration value="mail" />
-      <xs:enumeration value="e_commerce" />
-      <xs:enumeration value="trade" />
-      <xs:enumeration value="transport" />
-      <xs:enumeration value="administration" />
+      <xs:enumeration value="CLASSIFIERS" />
+      <xs:enumeration value="CONTACTS" />
+      <xs:enumeration value="CALENDAR" />
+      <xs:enumeration value="DOCUMENTS" />
+      <xs:enumeration value="TASKS" />
+      <xs:enumeration value="DISCUSSIONS" />
+      <xs:enumeration value="MAIL" />
+      <xs:enumeration value="E_COMMERCE" />
+      <xs:enumeration value="TRADE" />
+      <xs:enumeration value="TRANSPORT" />
+      <xs:enumeration value="ADMINISTRATION" />
     </xs:restriction>
   </xs:simpleType>
 

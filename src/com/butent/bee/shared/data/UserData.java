@@ -260,8 +260,8 @@ public class UserData implements BeeSerializable, HasInfo {
     return hasRight(RightsObjectType.GRID, object, state);
   }
 
-  public boolean hasMenuRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.MENU, object, state);
+  public boolean isMenuVisible(String object) {
+    return hasRight(RightsObjectType.MENU, object, RightsState.VISIBLE);
   }
 
   public boolean isModuleVisible(Module module) {

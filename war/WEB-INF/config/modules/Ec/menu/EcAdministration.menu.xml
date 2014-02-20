@@ -26,6 +26,6 @@ name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separato
   <Item name="EcMailParameters" label="=ecMailParameters" service="grid"
     parameters="EcMailParameters" separator="true" />
 
-  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec" />
+  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec" module="ADMINISTRATION" />
 
 </Entry>

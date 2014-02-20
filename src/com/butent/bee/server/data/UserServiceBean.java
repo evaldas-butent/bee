@@ -242,7 +242,7 @@ public class UserServiceBean {
     UserInfo info = getUserInfo(getUserId(user));
     return info != null && Objects.equals(password, info.getPassword());
   }
-  
+
   public List<UserData> getAllUserData() {
     List<UserData> data = Lists.newArrayList();
     for (UserInfo userInfo : infoCache.values()) {
@@ -255,7 +255,7 @@ public class UserServiceBean {
     UserInfo userInfo = getUserInfo(userId);
     return (userInfo == null) ? null : userInfo.getCompanyPerson();
   }
-  
+
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notNull(p);
@@ -441,11 +441,11 @@ public class UserServiceBean {
     return false;
   }
 
-  public boolean hasMenuRight(String object, RightsState state) {
+  public boolean isMenuVisible(String object) {
     UserInfo info = getCurrentUserInfo();
 
     if (info != null) {
-      return info.getUserData().hasMenuRight(object, state);
+      return info.getUserData().isMenuVisible(object);
     }
     return false;
   }

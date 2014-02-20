@@ -25,7 +25,7 @@ public class UserInfo implements HasInfo {
   public Long getCompany() {
     return isLoggedIn() ? userData.getCompany() : null;
   }
-  
+
   public Filter getFilter(String column) {
     if (isLoggedIn() && !BeeUtils.isEmpty(column)) {
       return Filter.equals(column, getUserId());
@@ -111,11 +111,11 @@ public class UserInfo implements HasInfo {
     return userData.hasGridRight(object, state);
   }
 
-  public boolean hasMenuRight(String object, RightsState state) {
+  public boolean isMenuVisible(String object) {
     if (!isLoggedIn()) {
       return false;
     }
-    return userData.hasMenuRight(object, state);
+    return userData.isMenuVisible(object);
   }
 
   public boolean isModuleVisible(Module module) {
@@ -125,7 +125,7 @@ public class UserInfo implements HasInfo {
   public boolean isModuleVisible(String moduleName) {
     return isModuleVisible(EnumUtils.getEnumByName(Module.class, moduleName));
   }
-  
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }

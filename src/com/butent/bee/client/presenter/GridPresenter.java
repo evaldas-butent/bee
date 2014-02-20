@@ -136,11 +136,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           rowIds[i] = rowInfo.getId();
           i++;
         }
-      
+
         if (BeeUtils.isEmpty(getViewName())) {
           MultiDeleteEvent.forward(getDataProvider(), getViewName(), rows);
           afterMulti(rowIds);
-        
+
         } else {
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
@@ -326,9 +326,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
-    if (getGridView().hasNotifications()) {
-      return;
-    }
+
     if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(action, this)) {
       return;
     }
@@ -437,7 +435,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public boolean hasFilter() {
     return getDataProvider().hasFilter();
   }
-  
+
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
