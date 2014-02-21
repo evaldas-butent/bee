@@ -266,6 +266,18 @@ public final class DomUtils {
     return prefix.trim() + idCounter;
   }
 
+  public static boolean dataEquals(Element elem, String key, int value) {
+    return dataEquals(elem, key, Integer.toString(value));
+  }
+
+  public static boolean dataEquals(Element elem, String key, long value) {
+    return dataEquals(elem, key, Long.toString(value));
+  }
+  
+  public static boolean dataEquals(Element elem, String key, String value) {
+    return !BeeUtils.isEmpty(value) && BeeUtils.same(getDataProperty(elem, key), value);
+  }
+
   public static void enableChildren(HasWidgets parent, boolean enabled) {
     Assert.notNull(parent);
     for (Widget child : parent) {
@@ -1279,6 +1291,10 @@ public final class DomUtils {
     }
   }
 
+  public static boolean isInputElement(Element el) {
+    return (el != null) && el.getTagName().equalsIgnoreCase(Tags.INPUT);
+  }
+
   public static boolean isInView(Element el) {
     if (el == null || !UIObject.isVisible(el)) {
       return false;
@@ -1306,10 +1322,6 @@ public final class DomUtils {
 
   public static boolean isInView(UIObject obj) {
     return obj != null && isInView(obj.getElement());
-  }
-
-  public static boolean isInputElement(Element el) {
-    return (el != null) && el.getTagName().equalsIgnoreCase(Tags.INPUT);
   }
 
   public static boolean isLabelElement(Element el) {
@@ -1415,6 +1427,10 @@ public final class DomUtils {
     }
   }
 
+  public static void moveBy(String id, int dx, int dy) {
+    moveBy(getElement(id), dx, dy);
+  }
+
   public static void moveBy(Style st, int dx, int dy) {
     if (dx != 0) {
       StyleUtils.setLeft(st, StyleUtils.getLeft(st) + dx);
@@ -1422,10 +1438,6 @@ public final class DomUtils {
     if (dy != 0) {
       StyleUtils.setTop(st, StyleUtils.getTop(st) + dy);
     }
-  }
-
-  public static void moveBy(String id, int dx, int dy) {
-    moveBy(getElement(id), dx, dy);
   }
 
   public static void moveBy(UIObject obj, int dx, int dy) {
@@ -1525,6 +1537,10 @@ public final class DomUtils {
     }
   }
 
+  public static void resizeBy(String id, int dw, int dh) {
+    resizeBy(getElement(id), dw, dh);
+  }
+
   public static void resizeBy(Style st, int dw, int dh) {
     if (dw != 0) {
       StyleUtils.setWidth(st, StyleUtils.getWidth(st) + dw);
@@ -1532,10 +1548,6 @@ public final class DomUtils {
     if (dh != 0) {
       StyleUtils.setHeight(st, StyleUtils.getHeight(st) + dh);
     }
-  }
-
-  public static void resizeBy(String id, int dw, int dh) {
-    resizeBy(getElement(id), dw, dh);
   }
 
   public static void resizeBy(UIObject obj, int dw, int dh) {
@@ -1558,12 +1570,12 @@ public final class DomUtils {
     }
   }
 
-  public static void resizeHorizontalBy(Style st, int dw) {
-    resizeBy(st, dw, 0);
-  }
-
   public static void resizeHorizontalBy(String id, int dw) {
     resizeHorizontalBy(getElement(id), dw);
+  }
+
+  public static void resizeHorizontalBy(Style st, int dw) {
+    resizeBy(st, dw, 0);
   }
 
   public static void resizeHorizontalBy(UIObject obj, int dw) {
@@ -1586,12 +1598,12 @@ public final class DomUtils {
     }
   }
 
-  public static void resizeVerticalBy(Style st, int dh) {
-    resizeBy(st, 0, dh);
-  }
-
   public static void resizeVerticalBy(String id, int dh) {
     resizeVerticalBy(getElement(id), dh);
+  }
+
+  public static void resizeVerticalBy(Style st, int dh) {
+    resizeBy(st, 0, dh);
   }
 
   public static void resizeVerticalBy(UIObject obj, int dh) {
@@ -1657,8 +1669,23 @@ public final class DomUtils {
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Long.toString(idx));
   }
 
+  public static void setDataProperties(Element elem, Map<String, String> properties) {
+    Assert.notNull(elem);
+    Assert.notNull(properties);
+
+    for (Map.Entry<String, String> property : properties.entrySet()) {
+      if (!BeeUtils.isEmpty(property.getKey())) {
+        setDataProperty(elem, property.getKey(), property.getValue());
+      }
+    }
+  }
+
   public static void setDataProperty(Element elem, String key, int value) {
     setDataProperty(elem, key, Integer.toString(value));
+  }
+
+  public static void setDataProperty(Element elem, String key, long value) {
+    setDataProperty(elem, key, Long.toString(value));
   }
 
   public static void setDataProperty(Element elem, String key, String value) {
@@ -1669,17 +1696,6 @@ public final class DomUtils {
       elem.removeAttribute(Attributes.DATA_PREFIX + key.trim());
     } else {
       elem.setAttribute(Attributes.DATA_PREFIX + key.trim(), value);
-    }
-  }
-
-  public static void setDataProperties(Element elem, Map<String, String> properties) {
-    Assert.notNull(elem);
-    Assert.notNull(properties);
-
-    for (Map.Entry<String, String> property : properties.entrySet()) {
-      if (!BeeUtils.isEmpty(property.getKey())) {
-        setDataProperty(elem, property.getKey(), property.getValue());
-      }
     }
   }
 

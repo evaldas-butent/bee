@@ -117,6 +117,9 @@ public final class CommonsKeeper {
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
         UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
             COL_UG_GROUP, COL_UG_USER));
+    GridFactory.registerGridInterceptor(GRID_ROLE_USERS,
+        UniqueChildInterceptor.forUsers(Localized.getConstants().roleAddUsers(),
+            COL_ROLE, COL_USER));
 
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);

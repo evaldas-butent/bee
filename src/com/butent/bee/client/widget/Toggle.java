@@ -35,6 +35,9 @@ import elemental.js.dom.JsElement;
 
 public class Toggle extends CustomWidget implements Editor, HasValueChangeHandlers<String>,
     HasCheckedness {
+  
+  private static final String STYLE_SUFFIX_CHECKED = "checked";
+  private static final String STYLE_SUFFIX_UNCHECKED = "unchecked";
 
   private final String upFace;
   private final String downFace;
@@ -60,6 +63,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
 
   public Toggle(String upFace, String downFace, String styleName) {
     super(Document.get().createDivElement(), BeeUtils.notEmpty(styleName, "bee-Toggle"));
+    addStyleDependentName(STYLE_SUFFIX_UNCHECKED);
 
     this.upFace = upFace;
     this.downFace = downFace;
@@ -212,7 +216,9 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
       if (!Objects.equals(downFace, upFace)) {
         getElement().setInnerHTML(checked ? downFace : upFace);
       }
-      setStyleDependentName("checked", checked);
+
+      setStyleDependentName(STYLE_SUFFIX_CHECKED, checked);
+      setStyleDependentName(STYLE_SUFFIX_UNCHECKED, !checked);
     }
   }
 

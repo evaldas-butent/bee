@@ -3,9 +3,11 @@ package com.butent.bee.client.grid;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.GwtEvent;
@@ -185,9 +187,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
     protected void ensureColumnGroup() {
       if (columnGroup == null) {
-        columnGroup = DOM.createColGroup();
-        DOM.insertChild(tableElem, columnGroup, 0);
-        DOM.appendChild(columnGroup, DOM.createCol());
+        columnGroup = Document.get().createColGroupElement();
+        tableElem.insertFirst(columnGroup);
+        columnGroup.appendChild(Document.get().createColElement());
       }
     }
   }
@@ -252,12 +254,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
 
-  private static Element createRow() {
-    return DOM.createTR();
-  }
-
-  private final Element tableElem;
-  private final Element bodyElem;
+  private final TableElement tableElem;
+  private TableSectionElement bodyElem;
 
   private final ElementMapperImpl<Widget> widgetMap;
 
@@ -273,9 +271,10 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
 
   public HtmlTable() {
-    this.tableElem = DOM.createTable();
-    this.bodyElem = DOM.createTBody();
-    DOM.appendChild(tableElem, bodyElem);
+    this.tableElem = Document.get().createTableElement();
+    this.bodyElem = Document.get().createTBodyElement();
+    tableElem.appendChild(bodyElem);
+
     setElement(tableElem);
 
     this.widgetMap = new ElementMapperImpl<Widget>();
@@ -389,7 +388,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     if (beforeRow != getRowCount()) {
       checkRowBounds(beforeRow);
     }
-    Element tr = DOM.createTR();
+    Element tr = Document.get().createTRElement();
     DOM.insertChild(bodyElem, tr, beforeRow);
     return beforeRow;
   }
@@ -540,7 +539,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
       widgetMap.put(widget);
 
-      DOM.appendChild(td, widget.getElement());
+      td.appendChild(widget.getElement());
 
       adopt(widget);
     }
@@ -558,6 +557,45 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     if (row == 0) {
       getColumnFormatter().addStyleName(column, styleName + STYLE_SUFFIX_COL);
     }
+  }
+  
+  public void transpose() {
+    int rc = getRowCount();
+    if (rc <= 0 || rc == 1 && getCellCount(0) <= 1) {
+      return;
+    }
+    
+    TableSectionElement newBody = Document.get().createTBodyElement();
+    
+    for (int i = 0; i < rc; i++) {
+      for (int j = 0; j < getCellCount(i); j++) {
+        Element oldTd = getCellFormatter().getElement(i, j);
+        
+        Element child = oldTd.getFirstChildElement();
+        Widget widget = (child == null) ? null : widgetMap.get(child);
+        
+        Element newTd = oldTd.cloneNode(widget == null).cast();
+        if (widget != null) {
+          newTd.appendChild(child);
+        }
+        
+        NodeList<TableRowElement> rows = newBody.getRows();
+        TableRowElement tr;
+        if (rows == null || rows.getLength() <= j) {
+          tr = Document.get().createTRElement();
+          newBody.appendChild(tr);
+        } else {
+          tr = rows.getItem(j);
+        }
+        
+        tr.appendChild(newTd);
+      }
+    }
+    
+    tableElem.removeAllChildren();
+    tableElem.appendChild(newBody);
+    
+    this.bodyElem = newBody;
   }
 
   private void checkCellBounds(int row, int column) {
@@ -612,7 +650,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   private Widget getWidgetImpl(int row, int column) {
     Element td = cellFormatter.getElement(row, column);
-    Element child = DOM.getFirstChild(td);
+    Element child = td.getFirstChildElement();
 
     if (child == null) {
       return null;
@@ -630,7 +668,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       return false;
     }
 
-    Element maybeChild = DOM.getFirstChild(td);
+    Element maybeChild = td.getFirstChildElement();
     Widget widget = null;
     if (maybeChild != null) {
       widget = widgetMap.get(maybeChild);

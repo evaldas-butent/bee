@@ -505,6 +505,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String rightStateAmendable();
 
   String rightStateVisible();
+  
+  String roleAddUsers();
 
   String roomDeleteQuestion();
 

@@ -11,4 +11,8 @@ public enum Orientation implements HasCaption {
   public boolean isVertical() {
     return this == VERTICAL;
   }
+  
+  public Orientation invert() {
+    return isVertical() ? HORIZONTAL : VERTICAL;
+  }
 }

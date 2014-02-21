@@ -12,12 +12,17 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Consumer;
@@ -26,6 +31,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
@@ -45,6 +51,9 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
 
   private static final String STYLE_PREFIX = "bee-ModuleRights-";
 
+  private static final String DATA_KEY_ROLE = "rights-role";
+  private static final String DATA_KEY_MODULE = "rights-module";
+
   public static void register() {
     FormFactory.registerFormInterceptor("ModuleRights", new ModuleRightsHandler());
   }
@@ -55,53 +64,46 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
     return widget;
   }
 
-  /**
-   * @param module  
-   */
-  private static Widget createModuleToggle(Module module) {
-    Toggle widget = new Toggle();
-    widget.addStyleName(STYLE_PREFIX + "module-toggle");
-    return widget;
-  }
-
-  private static Widget createRightsToggle(boolean checked) {
-    Toggle widget = new Toggle();
-    widget.addStyleName(STYLE_PREFIX + "rights-toggle");
-
-    widget.setChecked(checked);
-
-    return widget;
-  }
-
-  private static Widget createRoleLabel(String roleName) {
+  private static Widget createRoleLabel(final long roleId, String roleName) {
     Label widget = new Label(roleName);
     widget.addStyleName(STYLE_PREFIX + "role-label");
 
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        RowEditor.openRow(VIEW_ROLES, roleId, true, null);
       }
     });
 
     return widget;
   }
 
-  /**
-   * @param roleId  
-   */
-  private static Widget createRoleToggle(Long roleId) {
-    Toggle widget = new Toggle();
-    widget.addStyleName(STYLE_PREFIX + "role-toggle");
-    return widget;
+  private static Toggle createToggle(FontAwesome up, FontAwesome down, String styleSuffix) {
+    Toggle toggle = new Toggle(String.valueOf(up.getCode()), String.valueOf(down.getCode()),
+        STYLE_PREFIX + styleSuffix);
+    StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
+    return toggle;
   }
 
   private final BiMap<Long, String> roles = HashBiMap.create();
+
   private final Multimap<Module, Long> hiddenModules = HashMultimap.create();
-  
-  private final HtmlTable table = new HtmlTable(STYLE_PREFIX + "table");
+
   private Orientation roleOrientation = Orientation.HORIZONTAL;
+  private Orientation columnLabelOrientation = Orientation.HORIZONTAL;
+
+  private final HtmlTable table;
+  private final FaLabel roleOrientationToggle;
+
+  private final Toggle columnLabelOrientationToggle;
 
   private ModuleRightsHandler() {
+    this.table = new HtmlTable(STYLE_PREFIX + "table");
+
+    this.roleOrientationToggle = new FaLabel(FontAwesome.EXCHANGE,
+        STYLE_PREFIX + "role-orientation");
+    this.columnLabelOrientationToggle = createToggle(FontAwesome.ELLIPSIS_H,
+        FontAwesome.ELLIPSIS_V, "column-label-orientation");
   }
 
   @Override
@@ -110,8 +112,9 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
       @Override
       public void accept(Boolean input) {
         if (BeeUtils.isTrue(input) && form.getRootWidget() instanceof HasIndexedWidgets) {
-          form.getRootWidget().addStyleName(STYLE_PREFIX + "panel");
-          createUi((HasIndexedWidgets) form.getRootWidget());
+          IdentifiableWidget panel = form.getRootWidget();
+          panel.addStyleName(STYLE_PREFIX + "panel");
+          createUi((HasIndexedWidgets) panel);
         }
       }
     });
@@ -122,9 +125,75 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
     return new ModuleRightsHandler();
   }
 
+  private void addColumnLabelOrientationToggle() {
+    table.setWidget(0, 1, columnLabelOrientationToggle);
+  }
+
+  private void addRoleOrientationToggle() {
+    table.setWidget(0, 0, roleOrientationToggle);
+  }
+
+  private Widget createModuleToggle(final Module module) {
+    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O, "module-toggle");
+    if (!hiddenModules.containsKey(module)) {
+      toggle.setChecked(true);
+    }
+
+    toggle.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean checked = ((Toggle) event.getSource()).isChecked();
+
+        List<Toggle> toggles = getToggles(module, null);
+        for (Toggle t : toggles) {
+          t.setChecked(checked);
+        }
+      }
+    });
+
+    return toggle;
+  }
+
+  private Widget createRightsToggle(Module module, long roleId) {
+    Toggle toggle = createToggle(FontAwesome.TIMES, FontAwesome.CHECK, "rights-toggle");
+    if (!hiddenModules.containsEntry(module, roleId)) {
+      toggle.setChecked(true);
+    }
+    
+    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_MODULE, module.ordinal());
+    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
+
+    return toggle;
+  }
+
+  private Widget createRoleToggle(final Long roleId) {
+    Toggle toggle = createToggle(FontAwesome.CIRCLE_O, FontAwesome.CHECK_CIRCLE_O, "role-toggle");
+    if (!hiddenModules.containsValue(roleId)) {
+      toggle.setChecked(true);
+    }
+
+    toggle.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean checked = ((Toggle) event.getSource()).isChecked();
+
+        List<Toggle> toggles = getToggles(null, roleId);
+        for (Toggle t : toggles) {
+          t.setChecked(checked);
+        }
+      }
+    });
+
+    return toggle;
+  }
+
   private void createUi(HasIndexedWidgets panel) {
     if (!panel.isEmpty()) {
       panel.clear();
+    }
+
+    if (!table.isEmpty()) {
+      table.clear();
     }
 
     List<String> roleNames = new ArrayList<>();
@@ -134,25 +203,33 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
       Collections.sort(roleNames);
     }
 
-    Toggle orientationToggle = new Toggle();
-    orientationToggle.addStyleName(STYLE_PREFIX + "orientation");
-    
-    orientationToggle.addClickHandler(new ClickHandler() {
+    roleOrientationToggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        switchOrientation();
+        switchRoleOrientation();
       }
     });
-    
-//    table.setWidget(0, 0, orientationToggle);
-    
+
+    table.addStyleName(getRoleOrientationStyleName());
+    addRoleOrientationToggle();
+
+    columnLabelOrientationToggle.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        switchColumnLabelOrientation();
+      }
+    });
+
+    table.addStyleName(getColumnLabelOrientationStyleName());
+    addColumnLabelOrientationToggle();
+
     int row = 0;
     int col = 2;
 
     for (String roleName : roleNames) {
       Long roleId = getRoleId(roleName);
 
-      table.setWidget(row, col, createRoleLabel(roleName));
+      table.setWidget(row, col, createRoleLabel(roleId, roleName));
       table.setWidget(row + 1, col, createRoleToggle(roleId));
       col++;
     }
@@ -167,15 +244,17 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
 
       for (String roleName : roleNames) {
         Long roleId = getRoleId(roleName);
-
-        boolean visible = !hiddenModules.containsEntry(module, roleId);
-        table.setWidget(row, col++, createRightsToggle(visible));
+        table.setWidget(row, col++, createRightsToggle(module, roleId));
       }
-      
+
       row++;
     }
-    
+
     panel.add(table);
+  }
+
+  private String getColumnLabelOrientationStyleName() {
+    return STYLE_PREFIX + "column-label-" + columnLabelOrientation.name().toLowerCase();
   }
 
   private void getData(final Consumer<Boolean> callback) {
@@ -234,43 +313,48 @@ public final class ModuleRightsHandler extends AbstractFormInterceptor {
   private Long getRoleId(String roleName) {
     return roles.inverse().get(roleName);
   }
-  
-  private Orientation getRoleOrientation() {
-    return roleOrientation;
+
+  private String getRoleOrientationStyleName() {
+    return STYLE_PREFIX + "role-" + roleOrientation.name().toLowerCase();
   }
 
-  private void setRoleOrientation(Orientation roleOrientation) {
-    this.roleOrientation = roleOrientation;
-  }
+  private List<Toggle> getToggles(Module module, Long roleId) {
+    List<Toggle> toggles = Lists.newArrayList();
 
-  private void switchOrientation() {
-    int rc = table.getRowCount();
-    int cc = table.getCellCount(0);
-    
-    int max = Math.max(rc, cc);
-    
-    for (int row = 0; row < max - 1; row++) {
-      for (int col = row + 1; col < max; col++) {
-        Widget w1 = (row < rc && col < cc) ? table.getWidget(row, col) : null;
-        if (w1 != null) {
-          table.remove(w1);
+    for (Widget widget : table) {
+      if (widget instanceof Toggle) {
+        if (module != null
+            && !DomUtils.dataEquals(widget.getElement(), DATA_KEY_MODULE, module.ordinal())) {
+          continue;
+        }
+        if (roleId != null && !DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
+          continue;
         }
 
-        Widget w2 = (col < rc && row < cc) ? table.getWidget(col, row) : null;
-        if (w2 != null) {
-          table.remove(w2);
-        }
-        
-        if (w1 != null) {
-          table.setWidget(col, row, w1);
-        }
-        if (w2 != null) {
-          table.setWidget(row, col, w2);
-        }
+        toggles.add((Toggle) widget);
       }
     }
-    
-    setRoleOrientation(getRoleOrientation().isVertical() 
-        ? Orientation.HORIZONTAL : Orientation.VERTICAL);
+
+    return toggles;
+  }
+
+  private void switchColumnLabelOrientation() {
+    table.removeStyleName(getColumnLabelOrientationStyleName());
+    this.columnLabelOrientation = columnLabelOrientation.invert();
+    table.addStyleName(getColumnLabelOrientationStyleName());
+  }
+
+  private void switchRoleOrientation() {
+    table.remove(roleOrientationToggle);
+    table.remove(columnLabelOrientationToggle);
+
+    table.transpose();
+
+    addRoleOrientationToggle();
+    addColumnLabelOrientationToggle();
+
+    table.removeStyleName(getRoleOrientationStyleName());
+    this.roleOrientation = roleOrientation.invert();
+    table.addStyleName(getRoleOrientationStyleName());
   }
 }
