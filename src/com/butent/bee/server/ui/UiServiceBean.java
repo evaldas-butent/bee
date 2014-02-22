@@ -59,6 +59,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -176,7 +177,7 @@ public class UiServiceBean {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
       response = insertRows(reqInfo);
-    
+
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
@@ -211,6 +212,17 @@ public class UiServiceBean {
       response = news.subscribe(reqInfo);
     } else if (BeeUtils.same(svc, Service.ACCESS)) {
       response = news.onAccess(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_RIGHTS)) {
+      response = usr.getRights(EnumUtils.getEnumByName(RightsObjectType.class,
+          reqInfo.getParameter(COL_OBJECT_TYPE)), EnumUtils.getEnumByName(RightsState.class,
+          reqInfo.getParameter(COL_STATE)));
+
+    } else if (BeeUtils.same(svc, Service.SET_RIGHTS)) {
+      response = usr.setRights(EnumUtils.getEnumByName(RightsObjectType.class,
+          reqInfo.getParameter(COL_OBJECT_TYPE)), EnumUtils.getEnumByName(RightsState.class,
+          reqInfo.getParameter(COL_STATE)),
+          Codec.beeDeserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
       response = importOsamaTiekejai(reqInfo);
@@ -1285,7 +1297,7 @@ public class UiServiceBean {
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.error(reqInfo.getService(), "row set is empty");
     }
-    
+
     int count = 0;
 
     for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
@@ -1293,7 +1305,7 @@ public class UiServiceBean {
       if (response.hasErrors()) {
         return response;
       }
-      
+
       count++;
     }
 

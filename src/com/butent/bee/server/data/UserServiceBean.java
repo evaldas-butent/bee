@@ -361,6 +361,27 @@ public class UserServiceBean {
     return Localizations.getPreferredMessages(getLanguage(userId));
   }
 
+  public ResponseObject getRights(RightsObjectType type, RightsState state) {
+    Assert.noNulls(type, state);
+
+    Map<String, String> objects = Maps.newHashMap();
+
+    if (rightsCache.containsKey(type)) {
+      for (String object : rightsCache.get(type).keySet()) {
+        Collection<Long> roles = rightsCache.get(type).get(object).get(state);
+
+        if (!BeeUtils.isEmpty(roles)) {
+          if (roles.contains(null)) {
+            objects.put(object, DataUtils.buildIdList(getRoles()));
+          } else {
+            objects.put(object, DataUtils.buildIdList(roles));
+          }
+        }
+      }
+    }
+    return ResponseObject.response(objects);
+  }
+
   public String getRoleName(Long roleId) {
     Assert.contains(roleCache, roleId);
     return roleCache.get(roleId);
@@ -650,6 +671,12 @@ public class UserServiceBean {
     } else {
       logger.severe("Logout attempt by an unauthorized user:", getCurrentUser());
     }
+  }
+
+  @Lock(LockType.WRITE)
+  public ResponseObject setRights(RightsObjectType type, RightsState state,
+      Map<String, String> objects) {
+    return ResponseObject.info("Maybe next time");
   }
 
   @Lock(LockType.WRITE)

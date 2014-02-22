@@ -402,7 +402,9 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       if (BeeUtils.isEmpty(phones)) {
         errors.add(Localized.getConstants().mobile());
       }
-      if (BeeUtils.isEmpty(messagePanel.getValue())) {
+      final String msg = messagePanel.getValue();
+
+      if (BeeUtils.isEmpty(msg)) {
         errors.add(Localized.getConstants().message());
       }
       if (!BeeUtils.isEmpty(errors)) {
@@ -411,7 +413,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       }
       ParameterList args = TransportHandler.createArgs(SVC_SEND_MESSAGE);
       args.addDataItem(COL_MOBILE, Codec.beeSerialize(phones));
-      args.addDataItem(COL_DESCRIPTION, messagePanel.getValue());
+      args.addDataItem(COL_DESCRIPTION, msg);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -422,8 +424,8 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
             return;
           }
           if (!BeeUtils.isEmpty(selectedCargos)) {
-            Queries.update(getViewName(), Filter.idIn(selectedCargos), COL_CARGO_MESSAGE_SENT,
-                Value.getValue(new DateTime()), new IntCallback() {
+            Queries.update(getViewName(), Filter.idIn(selectedCargos), COL_CARGO_MESSAGE,
+                Value.getValue(msg), new IntCallback() {
                   @Override
                   public void onSuccess(Integer result) {
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());

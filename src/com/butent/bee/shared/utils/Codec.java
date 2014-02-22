@@ -304,7 +304,13 @@ public final class Codec {
       sb.append(beeSerialize(((BeeSerializable) obj).serialize()));
 
     } else {
-      String s = obj.toString();
+      String s;
+
+      if (obj instanceof String) {
+        s = BeeUtils.trimRight((String) obj);
+      } else {
+        s = obj.toString();
+      }
       String l = BeeUtils.toString(s.length());
       sb.append(l.length()).append(l).append(s);
     }
