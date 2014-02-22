@@ -502,7 +502,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String responsiblePersons();
 
-  String rightStateAmendable();
+  String rightStateEditable();
 
   String rightStateVisible();
   

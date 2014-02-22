@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
@@ -12,6 +13,7 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -32,24 +34,47 @@ public final class CommonsConstants {
       new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_VALUE, true),
       new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
 
-  public enum RightsObjectType implements HasCaption {
-    EVENT("Įvykis", EnumSet.of(RightsState.VISIBLE)),
-    FORM("Forma", EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)),
-    GRID("Lentelė", EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)),
-    MENU("Meniu", EnumSet.of(RightsState.VISIBLE)),
-    MODULE("Modulis", EnumSet.of(RightsState.VISIBLE));
+  public enum RightsObjectType implements HasLocalizedCaption {
+    EVENT(EnumSet.of(RightsState.VISIBLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectEvent();
+      }
+    },
+    FORM(EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectForm();
+      }
+    },
+    GRID(EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectGrid();
+      }
+    },
+    MENU(EnumSet.of(RightsState.VISIBLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectMenu();
+      }
+    },
+    MODULE(EnumSet.of(RightsState.VISIBLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectModule();
+      }
+    };
 
-    private final String caption;
     private final Set<RightsState> registeredStates;
 
-    private RightsObjectType(String caption, Set<RightsState> states) {
-      this.caption = caption;
+    private RightsObjectType(Set<RightsState> states) {
       this.registeredStates = states;
     }
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
 
     public Set<RightsState> getRegisteredStates() {
@@ -57,21 +82,29 @@ public final class CommonsConstants {
     }
   }
 
-  public enum RightsState implements HasCaption {
-    VISIBLE("Matomas", true),
-    EDITABLE("Redaguojamas", true);
+  public enum RightsState implements HasLocalizedCaption {
+    VISIBLE(true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.rightStateVisible();
+      }
+    },
+    EDITABLE(true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.rightStateEditable();
+      }
+    };
 
-    private final String caption;
     private final boolean checked;
 
-    private RightsState(String caption, boolean checked) {
-      this.caption = caption;
+    private RightsState(boolean checked) {
       this.checked = checked;
     }
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
 
     public boolean isChecked() {

@@ -41,6 +41,95 @@ public class MenuManager {
 
   private static final BeeLogger logger = LogUtils.getLogger(MenuManager.class);
 
+  private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
+    String txt = Localized.maybeTranslate(item.getLabel());
+    String svc = null;
+    String opt = null;
+
+    if (item instanceof MenuItem) {
+      svc = ((MenuItem) item).getService();
+      opt = ((MenuItem) item).getParameters();
+    }
+    boolean sepBefore = item.hasSeparator();
+    boolean sepAfter = false;
+
+    if (rw instanceof MenuBar) {
+      MenuBar mb = (MenuBar) rw;
+      if (sepBefore && mb.getItemCount() > 0) {
+        mb.addSeparator(new MenuSeparator());
+      }
+
+      if (cw == null) {
+        mb.addItem(txt, new MenuCommand(svc, opt));
+      } else if (cw instanceof MenuBar) {
+        mb.addItem(txt, (MenuBar) cw);
+      }
+
+      if (sepAfter) {
+        mb.addSeparator(new MenuSeparator());
+      }
+
+    } else if (rw instanceof Tree) {
+      TreeItem it = new TreeItem(txt);
+
+      if (cw == null) {
+        it.setUserObject(new MenuCommand(svc, opt));
+      } else {
+        it.addItem(cw.asWidget());
+      }
+
+      ((Tree) rw).addItem(it);
+    }
+  }
+
+  private static IdentifiableWidget createWidget(String layout, int level) {
+    IdentifiableWidget w = null;
+
+    if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
+      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.LABEL);
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
+      w = new Tree();
+      ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT);
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
+      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.RADIO);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.RADIO);
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
+      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.BUTTON);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.BUTTON);
+
+    } else {
+      Assert.untouchable();
+    }
+
+    return w;
+  }
+
+  private static BAR_TYPE getBarType(boolean table) {
+    return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
+  }
+
+  private static void prepareWidget(IdentifiableWidget w) {
+    if (w instanceof MenuBar) {
+      ((MenuBar) w).prepare();
+    }
+  }
+
   private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
 
   private final List<Menu> roots = Lists.newArrayList();
@@ -79,6 +168,10 @@ public class MenuManager {
 
   public String getRootLayout() {
     return getLayout(0);
+  }
+
+  public List<Menu> getRoots() {
+    return roots;
   }
 
   public boolean loadMenu() {
@@ -131,47 +224,6 @@ public class MenuManager {
       tree.addItem(item);
     }
     BeeKeeper.getScreen().updateActivePanel(tree);
-  }
-
-  private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
-    String txt = Localized.maybeTranslate(item.getLabel());
-    String svc = null;
-    String opt = null;
-
-    if (item instanceof MenuItem) {
-      svc = ((MenuItem) item).getService();
-      opt = ((MenuItem) item).getParameters();
-    }
-    boolean sepBefore = item.hasSeparator();
-    boolean sepAfter = false;
-
-    if (rw instanceof MenuBar) {
-      MenuBar mb = (MenuBar) rw;
-      if (sepBefore && mb.getItemCount() > 0) {
-        mb.addSeparator(new MenuSeparator());
-      }
-
-      if (cw == null) {
-        mb.addItem(txt, new MenuCommand(svc, opt));
-      } else if (cw instanceof MenuBar) {
-        mb.addItem(txt, (MenuBar) cw);
-      }
-
-      if (sepAfter) {
-        mb.addSeparator(new MenuSeparator());
-      }
-
-    } else if (rw instanceof Tree) {
-      TreeItem it = new TreeItem(txt);
-
-      if (cw == null) {
-        it.setUserObject(new MenuCommand(svc, opt));
-      } else {
-        it.addItem(cw.asWidget());
-      }
-
-      ((Tree) rw).addItem(it);
-    }
   }
 
   private void collectMenuInfo(TreeItem treeItem, Menu menu) {
@@ -238,56 +290,8 @@ public class MenuManager {
     return rw;
   }
 
-  private static IdentifiableWidget createWidget(String layout, int level) {
-    IdentifiableWidget w = null;
-
-    if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
-      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
-      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.LABEL);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
-      w = new Tree();
-      ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
-      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.RADIO);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
-      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.RADIO);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
-      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.BUTTON);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
-      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.BUTTON);
-
-    } else {
-      Assert.untouchable();
-    }
-
-    return w;
-  }
-
-  private static BAR_TYPE getBarType(boolean table) {
-    return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
-  }
-
   private String getLayout(int idx) {
     Assert.isIndex(getLayouts(), idx);
     return getLayouts().get(idx);
-  }
-
-  private static void prepareWidget(IdentifiableWidget w) {
-    if (w instanceof MenuBar) {
-      ((MenuBar) w).prepare();
-    }
   }
 }

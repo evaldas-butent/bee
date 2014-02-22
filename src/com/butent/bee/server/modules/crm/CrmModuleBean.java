@@ -72,6 +72,7 @@ import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
@@ -132,33 +133,35 @@ public class CrmModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-
     List<SearchResult> result = Lists.newArrayList();
 
-    List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
-        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER, COL_NAME,
-            COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME, COL_DOCUMENT_PLACE_NAME,
-            COL_DOCUMENT_STATUS_NAME), query));
+    if (usr.isModuleVisible(Module.DOCUMENTS)) {
+      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
+          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER, COL_NAME,
+              COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME, COL_DOCUMENT_PLACE_NAME,
+              COL_DOCUMENT_STATUS_NAME), query));
+      result.addAll(docsSr);
+    }
 
-    List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-            CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
-            query));
+    if (usr.isModuleVisible(Module.TASKS)) {
+      List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
+          Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
+              CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+              query));
+      result.addAll(tasksSr);
 
-    List<SearchResult> taskDurationsSr = qs.getSearchResults(VIEW_TASK_DURATIONS,
-        Filter.anyContains(Sets.newHashSet(COL_DURATION_TYPE, COL_COMMENT,
-            CommonsConstants.ALS_COMPANY_NAME, COL_SUMMARY, ALS_PUBLISHER_FIRST_NAME,
-            ALS_PUBLISHER_LAST_NAME), query));
+      List<SearchResult> taskDurationsSr = qs.getSearchResults(VIEW_TASK_DURATIONS,
+          Filter.anyContains(Sets.newHashSet(COL_DURATION_TYPE, COL_COMMENT,
+              CommonsConstants.ALS_COMPANY_NAME, COL_SUMMARY, ALS_PUBLISHER_FIRST_NAME,
+              ALS_PUBLISHER_LAST_NAME), query));
+      result.addAll(taskDurationsSr);
 
-    List<SearchResult> taskTemplatesSr = qs.getSearchResults(VIEW_TASK_TEMPLATES,
-        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_SUMMARY, COL_DESCRIPTION,
-            CommonsConstants.ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME),
-            query));
-
-    result.addAll(docsSr);
-    result.addAll(tasksSr);
-    result.addAll(taskDurationsSr);
-    result.addAll(taskTemplatesSr);
+      List<SearchResult> taskTemplatesSr = qs.getSearchResults(VIEW_TASK_TEMPLATES,
+          Filter.anyContains(Sets.newHashSet(COL_NAME, COL_SUMMARY, COL_DESCRIPTION,
+              CommonsConstants.ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME),
+              query));
+      result.addAll(taskTemplatesSr);
+    }
 
     return result;
   }
@@ -491,7 +494,7 @@ public class CrmModuleBean implements BeeModule {
       row.setProperty(PROP_LAST_EVENT_ID, BeeUtils.toString(eventId));
     }
   }
-  
+
   @Schedule(hour = "5", persistent = false)
   private void checkTaskStatus() {
     logger.info("check task status timeout");
@@ -902,12 +905,12 @@ public class CrmModuleBean implements BeeModule {
     } else {
       eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
     }
-    
+
     Long userId = usr.getCurrentUserId();
     if (!DataUtils.isId(userId)) {
       return ResponseObject.error(reqInfo.getService(), "user id not available");
     }
-    
+
     BeeRowSet data = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.error(reqInfo.getService(), "task", taskId, "not found");
@@ -918,22 +921,22 @@ public class CrmModuleBean implements BeeModule {
     if (BeeUtils.isPositive(startMillis)) {
       row.preliminaryUpdate(data.getColumnIndex(COL_START_TIME), startMillis.toString());
     }
-    
+
     Long oldEnd = null;
     if (BeeUtils.isPositive(endMillis)) {
       int index = data.getColumnIndex(COL_FINISH_TIME);
       Long value = row.getLong(index);
-      
+
       if (value != null && !value.equals(endMillis)) {
         oldEnd = value;
       }
-      
+
       row.preliminaryUpdate(index, endMillis.toString());
     }
 
     long now = System.currentTimeMillis();
     Long eventId = null;
-    
+
     ResponseObject response = registerTaskEvent(taskId, userId, TaskEvent.EXTEND, reqInfo,
         eventNote, oldEnd, now);
     if (response.hasResponse(Long.class)) {
@@ -946,7 +949,7 @@ public class CrmModuleBean implements BeeModule {
     if (!response.hasErrors()) {
       Set<Long> users = Collections.emptySet();
       Set<String> relations = Collections.emptySet();
-      
+
       response = commitTaskData(data, users, false, relations, eventId);
     }
 
@@ -1789,7 +1792,7 @@ public class CrmModuleBean implements BeeModule {
 
     Set<Long> tasks = scheduleRecurringTasks(DateRange.day(TimeUtils.today()));
     logger.info("recurring task scheduler created", tasks.size(), "tasks");
-    
+
     if (!tasks.isEmpty()) {
       mailScheduledTasks(tasks);
     }
@@ -2322,7 +2325,7 @@ public class CrmModuleBean implements BeeModule {
     if (tasks.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
-    
+
     mailScheduledTasks(tasks);
 
     BeeRowSet result = qs.getViewData(VIEW_TASKS, Filter.idIn(tasks));

@@ -14,7 +14,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.rights.ModuleRightsHandler;
+import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -138,7 +138,7 @@ public final class CommonsKeeper {
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
     
-    ModuleRightsHandler.register();
+    RightsForm.register();
   }
 
   private CommonsKeeper() {

@@ -57,6 +57,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -136,28 +137,32 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-
-    List<SearchResult> companiesSr =
-        qs.getSearchResults(VIEW_COMPANIES,
-            Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
-                COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
-
-    List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
-        Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
-            COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
-
-    List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
-        Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
-
-    List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
-        Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
-            query));
-
     List<SearchResult> commonsSr = Lists.newArrayList();
-    commonsSr.addAll(companiesSr);
-    commonsSr.addAll(personsSr);
-    commonsSr.addAll(usersSr);
-    commonsSr.addAll(itemsSr);
+
+    if (usr.isModuleVisible(Module.CONTACTS)) {
+      List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
+          Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
+              COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+      commonsSr.addAll(companiesSr);
+
+      List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
+          Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
+              COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+      commonsSr.addAll(personsSr);
+    }
+
+    if (usr.isModuleVisible(Module.ADMINISTRATION)) {
+      List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
+          Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
+      commonsSr.addAll(usersSr);
+    }
+
+    if (usr.isModuleVisible(Module.TRADE)) {
+      List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
+          Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
+              query));
+      commonsSr.addAll(itemsSr);
+    }
 
     return commonsSr;
   }

@@ -673,6 +673,7 @@ public class UserServiceBean {
     }
   }
 
+  @SuppressWarnings("unused")
   @Lock(LockType.WRITE)
   public ResponseObject setRights(RightsObjectType type, RightsState state,
       Map<String, String> objects) {

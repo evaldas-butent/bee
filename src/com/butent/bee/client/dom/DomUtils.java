@@ -547,6 +547,10 @@ public final class DomUtils {
         : elem.getAttribute(Attributes.DATA_PREFIX + key.trim());
   }
 
+  public static Long getDataPropertyLong(Element elem, String key) {
+    return BeeUtils.toLongOrNull(getDataProperty(elem, key));
+  }
+
   public static String getDataRow(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }

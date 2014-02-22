@@ -76,6 +76,7 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.news.NewsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -408,15 +409,17 @@ public class CalendarModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> results = Lists.newArrayList();
 
-    Filter filter = Filter.or(
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, COL_APPOINTMENT_LOCATION,
-            ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
-        Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
+    if (usr.isModuleVisible(Module.CALENDAR)) {
+      Filter filter = Filter.or(
+          Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
+              COL_APPOINTMENT_LOCATION, ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
+          Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
-    List<BeeRow> appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
-    if (!BeeUtils.isEmpty(appointments)) {
-      for (BeeRow row : appointments) {
-        results.add(new SearchResult(VIEW_APPOINTMENTS, row));
+      List<BeeRow> appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
+      if (!BeeUtils.isEmpty(appointments)) {
+        for (BeeRow row : appointments) {
+          results.add(new SearchResult(VIEW_APPOINTMENTS, row));
+        }
       }
     }
     return results;
@@ -1059,9 +1062,9 @@ public class CalendarModuleBean implements BeeModule {
       appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
           DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
     }
-    
+
     long millis = System.currentTimeMillis();
-    
+
     List<BeeRow> appointments = getAppointments(appFilter, null);
     long appDuration = System.currentTimeMillis() - millis;
 
@@ -1630,15 +1633,15 @@ public class CalendarModuleBean implements BeeModule {
           .addFrom(source)
           .setWhere(SqlUtils.inList(source, COL_APPOINTMENT, appIds))
           .addOrder(source, COL_APPOINTMENT, field);
-      
+
       SimpleRowSet data = qs.getData(query);
-      
+
       if (!DataUtils.isEmpty(data)) {
         Multimap<Long, Long> children = ArrayListMultimap.create();
         for (SimpleRow childRow : data) {
           children.put(childRow.getLong(0), childRow.getLong(1));
         }
-        
+
         for (BeeRow row : rowSet) {
           if (children.containsKey(row.getId())) {
             row.setProperty(source, DataUtils.buildIdList(children.get(row.getId())));
