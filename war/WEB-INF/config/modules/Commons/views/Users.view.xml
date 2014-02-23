@@ -35,7 +35,9 @@
     <SimpleColumn name="Properties" />
   </Columns>
   <Order>
-    <OrderBy column="Login" />
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+    <OrderBy column="CompanyName" />
   </Order>
 </View>
  

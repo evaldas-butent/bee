@@ -827,7 +827,7 @@
 }
 
 .bee-DataSelector-menu .bee-MenuItem-selected {
-  font-weight: bolder;
+  text-shadow: 1px 0px 0px black;
 }
 .bee-DataSelector-item:hover {
   background-color: #eee;
@@ -2806,21 +2806,27 @@
   margin-top: 2ex;
   margin-left: 1em;
 }
-
-.bee-Rights-value-row:hover {
-  background-color: blanchedalmond;
-}
-
 .bee-Rights-table td {
   padding: 4px;
 }
+
 .bee-Rights-role-label-cell,
 .bee-Rights-role-toggle-cell,
 .bee-Rights-object-label-cell,
 .bee-Rights-object-toggle-cell,
 .bee-Rights-value-cell {
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
 }
+
+.bee-Rights-value-row:hover td {
+  border-top: 1px double #006;
+  border-bottom: 1px double #006;
+}
+.bee-Rights-hover {
+  border-left: 1px double #006;
+  border-right: 1px double #006;
+}
+
 .bee-Rights-table tr:first-child td {
   vertical-align: top;
 }
@@ -2849,6 +2855,13 @@
   white-space: nowrap;
 }
 
+.bee-Rights-value-row:hover .bee-Rights-role-label,
+.bee-Rights-value-row:hover .bee-Rights-object-label,
+.bee-Rights-hover .bee-Rights-role-label,
+.bee-Rights-hover .bee-Rights-object-label {
+  text-shadow: 1px 0px 0px black;
+}
+
 .bee-Rights-column-label-vertical.bee-Rights-role-horizontal .bee-Rights-role-label,
 .bee-Rights-column-label-vertical.bee-Rights-role-vertical .bee-Rights-object-label {
   display: inline;
@@ -2865,15 +2878,49 @@
   color: #444;
   cursor: pointer;
 }
+.bee-Rights-role-toggle:hover,
+.bee-Rights-object-toggle:hover {
+  transform: scale(1.5, 1.5);
+  -webkit-transform: scale(1.5, 1.5);
+}
 
 .bee-Rights-value-toggle {
   text-align: center;
   font-size: 12px;
   cursor: pointer;
 }
+.bee-Rights-value-toggle:hover {
+  transform: scale(1.5, 1.5);
+  -webkit-transform: scale(1.5, 1.5);
+}
 .bee-Rights-value-toggle-checked {
   color: green;
 }
 .bee-Rights-value-toggle-unchecked {
   color: red;
+}
+.bee-Rights-value-cell:hover {
+  background-color: white;
+}
+.bee-Rights-value-changed {
+  background-color: #ffb;
+}
+
+.bee-Rights-user-clear {
+  font-size: 16px;
+  cursor: pointer;
+}
+.bee-Rights-user-clear:hover {
+  color: red;
+}
+.bee-Rights-user-clear.bee-Rights-user-empty {
+  visibility: hidden;
+}
+.bee-Rights-user-selector {
+  width: 2em;
+  opacity: 0;
+}
+
+.bee-Rights-user-unchecked {
+  display: none;
 }

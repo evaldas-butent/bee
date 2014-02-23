@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -10,6 +11,15 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasMouseMoveHandlers;
+import com.google.gwt.event.dom.client.HasMouseOutHandlers;
+import com.google.gwt.event.dom.client.HasMouseOverHandlers;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
@@ -31,9 +41,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable {
+public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
+    HasMouseMoveHandlers, HasMouseOutHandlers, HasMouseOverHandlers {
 
   public class CellFormatter {
 
@@ -54,9 +66,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       return DomUtils.getColSpan(getElement(row, column));
     }
 
-    public Element getElement(int row, int column) {
+    public TableCellElement getElement(int row, int column) {
       checkCellBounds(row, column);
-      return getTd(bodyElem, row, column);
+      return getCell(bodyElem, row, column);
     }
 
     public int getRowSpan(int row, int column) {
@@ -132,8 +144,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       StyleUtils.setWordWrap(ensureElement(row, column), wrap);
     }
 
-    private native Element getTd(Element table, int row, int col) /*-{
-      return table.rows[row].cells[col];
+    private native TableCellElement getCell(Element table, int row, int column) /*-{
+      return table.rows[row].cells[column];
     }-*/;
   }
 
@@ -299,7 +311,22 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addDomHandler(handler, ClickEvent.getType());
   }
-  
+
+  @Override
+  public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
+    return addDomHandler(handler, MouseMoveEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addMouseOutHandler(MouseOutHandler handler) {
+    return addDomHandler(handler, MouseOutEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addMouseOverHandler(MouseOverHandler handler) {
+    return addDomHandler(handler, MouseOverEvent.getType());
+  }
+
   public void alignCenter(int row, int column) {
     getCellFormatter().setHorizontalAlignment(row, column, TextAlign.CENTER);
   }
@@ -327,6 +354,18 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   public CellFormatter getCellFormatter() {
     return cellFormatter;
+  }
+
+  public List<TableCellElement> getColumnCells(int column) {
+    Assert.nonNegative(column);
+    List<TableCellElement> cells = Lists.newArrayList();
+
+    for (int row = 0; row < getRowCount(); row++) {
+      if (getCellCount(row) > column) {
+        cells.add(getCellFormatter().getCell(tableElem, row, column));
+      }
+    }
+    return cells;
   }
 
   public ColumnFormatter getColumnFormatter() {
@@ -529,7 +568,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     setText(row, column, text);
     getCellFormatter().addStyleName(row, column, cellStyleName);
   }
-  
+
   public void setWidget(int row, int column, Widget widget) {
     prepareCell(row, column);
     if (widget != null) {
@@ -558,27 +597,27 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       getColumnFormatter().addStyleName(column, styleName + STYLE_SUFFIX_COL);
     }
   }
-  
+
   public void transpose() {
     int rc = getRowCount();
     if (rc <= 0 || rc == 1 && getCellCount(0) <= 1) {
       return;
     }
-    
+
     TableSectionElement newBody = Document.get().createTBodyElement();
-    
+
     for (int i = 0; i < rc; i++) {
       for (int j = 0; j < getCellCount(i); j++) {
         Element oldTd = getCellFormatter().getElement(i, j);
-        
+
         Element child = oldTd.getFirstChildElement();
         Widget widget = (child == null) ? null : widgetMap.get(child);
-        
+
         Element newTd = oldTd.cloneNode(widget == null).cast();
         if (widget != null) {
           newTd.appendChild(child);
         }
-        
+
         NodeList<TableRowElement> rows = newBody.getRows();
         TableRowElement tr;
         if (rows == null || rows.getLength() <= j) {
@@ -587,14 +626,14 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
         } else {
           tr = rows.getItem(j);
         }
-        
+
         tr.appendChild(newTd);
       }
     }
-    
+
     tableElem.removeAllChildren();
     tableElem.appendChild(newBody);
-    
+
     this.bodyElem = newBody;
   }
 

@@ -61,6 +61,10 @@ public final class Selectors {
     return attributeEquals(att, BeeUtils.toString(val));
   }
 
+  public static String attributeEquals(String att, long val) {
+    return attributeEquals(att, BeeUtils.toString(val));
+  }
+
   public static String attributeEquals(String att, String val) {
     return buildAttributeSelector(att, "=", val);
   }

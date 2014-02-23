@@ -204,10 +204,24 @@ public final class StyleUtils {
 
   private static String styleTransform;
 
+  public static int addClassName(Collection<? extends Element> elements, String className) {
+    Assert.notNull(elements);
+    Assert.notEmpty(className);
+
+    int cnt = 0;
+    for (Element el : elements) {
+      if (el != null) {
+        el.addClassName(className);
+        cnt++;
+      }
+    }
+    return cnt;
+  }
+
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
-
+    
     int cnt = nodes.getLength();
     for (int i = 0; i < cnt; i++) {
       nodes.getItem(i).addClassName(className);

@@ -542,6 +542,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  public static final char SHOW_SELECTOR = '*';
+
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
@@ -576,8 +578,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
-
-  private static final char SHOW_SELECTOR = '*';
 
   private final Callback callback = new Callback() {
     @Override

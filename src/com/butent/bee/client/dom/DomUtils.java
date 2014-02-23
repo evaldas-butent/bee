@@ -1278,6 +1278,10 @@ public final class DomUtils {
     return !container.iterator().hasNext();
   }
 
+  public static boolean isEmpty(NodeList<?> nodes) {
+    return nodes == null || nodes.getLength() <= 0;
+  }
+  
   public static boolean isEnabled(UIObject obj) {
     Assert.notNull(obj);
     if (obj instanceof HasEnabled) {
