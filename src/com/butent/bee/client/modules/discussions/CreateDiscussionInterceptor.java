@@ -14,6 +14,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
@@ -29,6 +30,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -42,6 +44,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -164,6 +167,33 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     boolean discussClosed =
         BeeUtils.toBoolean(((InputBoolean) getFormView().getWidgetByName(COL_PERMIT_COMMENT))
             .getValue());
+    
+    boolean isTopic =
+        DataUtils.isId(BeeUtils.toLongOrNull(((DataSelector) getFormView().getWidgetBySource(
+            COL_TOPIC)).getValue()));
+
+    if (isTopic) {
+
+      String validFromVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_FROM)).getValue();
+
+      String validToVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_TO)).getValue();
+
+      Long validFrom = null;
+      if (!BeeUtils.isEmpty(validFromVal)) {
+        validFrom = TimeUtils.parseTime(validFromVal);
+      }
+
+      Long validTo = null;
+      if (!BeeUtils.isEmpty(validToVal)) {
+        validTo = TimeUtils.parseTime(validToVal);
+      }
+
+      if (!validateDates(validFrom, validTo, event)) {
+        return;
+      }
+    }
 
     String description = ((Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
         .getValue();
@@ -183,11 +213,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       newRow.setProperty(PROP_MEMBERS, null);
     }
 
-    if (discussClosed) {
-      Data.setValue(VIEW_DISCUSSIONS, newRow, COL_STATUS, DiscussionStatus.CLOSED.ordinal());
-    }
-
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);
+
+    if (discussClosed) {
+      newRow.setValue(getFormView().getDataIndex(COL_STATUS), Integer
+          .valueOf(DiscussionStatus.CLOSED.ordinal()));
+    }
 
     BeeRowSet rowSet =
         DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
@@ -277,5 +308,52 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
       ((FileCollector) widget).clear();
     }
+  }
+
+  private static boolean validateDates(Long from, Long to,
+      final ReadyForInsertEvent event) {
+    long now = System.currentTimeMillis();
+
+    if (from == null && to == null) {
+      event.getCallback().onFailure(
+          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+              .enterDate()));
+      return false;
+    }
+
+    if (from == null && to != null) {
+      if (to.longValue() >= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateToShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to == null) {
+      if (from.longValue() <= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateFromShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to != null) {
+      if (from <= to) {
+        return true;
+      } else {
+        event.getCallback().onFailure(
+            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
+                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+        return false;
+      }
+    }
+
+    return true;
   }
 }

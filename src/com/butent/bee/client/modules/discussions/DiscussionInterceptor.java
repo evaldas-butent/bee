@@ -27,6 +27,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
@@ -63,6 +64,7 @@ import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -80,6 +82,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -395,6 +398,32 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     event.consume();
+
+    boolean isTopic =
+        DataUtils.isId(BeeUtils.toLongOrNull(((DataSelector) getFormView().getWidgetBySource(
+            COL_TOPIC)).getValue()));
+
+    if (isTopic) {
+      String validFromVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_FROM)).getValue();
+
+      String validToVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_TO)).getValue();
+
+      Long validFrom = null;
+      if (!BeeUtils.isEmpty(validFromVal)) {
+        validFrom = TimeUtils.parseTime(validFromVal);
+      }
+
+      Long validTo = null;
+      if (!BeeUtils.isEmpty(validToVal)) {
+        validTo = TimeUtils.parseTime(validToVal);
+      }
+
+      if (!validateDates(validFrom, validTo, event)) {
+        return;
+      }
+    }
 
     ParameterList params = createParams(DiscussionEvent.MODIFY, null);
 
@@ -1427,5 +1456,52 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
       });
     }
+  }
+
+  private static boolean validateDates(Long from, Long to,
+      final SaveChangesEvent event) {
+    long now = System.currentTimeMillis();
+
+    if (from == null && to == null) {
+      event.getCallback().onFailure(
+          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+              .enterDate()));
+      return false;
+    }
+
+    if (from == null && to != null) {
+      if (to.longValue() >= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateToShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to == null) {
+      if (from.longValue() <= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateFromShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to != null) {
+      if (from <= to) {
+        return true;
+      } else {
+        event.getCallback().onFailure(
+            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
+                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+        return false;
+      }
+    }
+
+    return true;
   }
 }

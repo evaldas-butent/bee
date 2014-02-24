@@ -146,7 +146,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @param other the {@code DateTime} to be compared
    * @return 0 the {@code DateTime} values of object are equals, more than 0 the {@code other}
-   *         values are greater, less than 0 the (@code other} values are lower.
+   *         values are greater, less than 0 the {@code other} values are lower.
    */
   @Override
   public int compareTo(DateTime other) {
