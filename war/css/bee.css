@@ -2905,6 +2905,9 @@
 .bee-Rights-value-changed {
   background-color: #ffb;
 }
+.bee-Rights-value-disabled {
+  visibility: hidden;
+}
 
 .bee-Rights-user-clear {
   font-size: 16px;
@@ -2936,4 +2939,14 @@
 }
 .bee-Rights-object-has-children {
   cursor: pointer;
+}
+
+.bee-Rights-object-open:before {
+  content: "\0025BC\0000A0";
+}
+.bee-Rights-object-closed:before {
+  content: "\0025BA\0000A0";
+}
+.bee-Rights-object-hidden {
+  display: none;
 }

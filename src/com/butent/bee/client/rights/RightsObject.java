@@ -3,6 +3,7 @@ package com.butent.bee.client.rights;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 
 class RightsObject implements HasCaption {
 
@@ -27,7 +28,7 @@ class RightsObject implements HasCaption {
     this.module = module;
 
     this.level = level;
-    this.parent = (parent == null) ? null : RightsUtils.normalizeName(parent);
+    this.parent = BeeUtils.isEmpty(parent) ? null : RightsUtils.normalizeName(parent);
   }
 
   @Override
@@ -53,6 +54,10 @@ class RightsObject implements HasCaption {
 
   boolean hasChildren() {
     return hasChildren;
+  }
+  
+  boolean hasParent() {
+    return parent != null;
   }
 
   void setHasChildren(boolean hasChildren) {

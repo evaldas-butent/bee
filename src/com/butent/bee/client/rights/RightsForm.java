@@ -103,6 +103,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String STYLE_VALUE_CELL = STYLE_PREFIX + "value-cell";
   private static final String STYLE_VALUE_ROW = STYLE_PREFIX + "value-row";
   private static final String STYLE_VALUE_CHANGED = STYLE_PREFIX + "value-changed";
+  private static final String STYLE_VALUE_DISABLED = STYLE_PREFIX + "value-disabled";
 
   private static final String STYLE_ROLE_ORIENTATION = STYLE_PREFIX + "role-orientation";
   private static final String STYLE_ROLE_ORIENTATION_CELL = STYLE_ROLE_ORIENTATION
@@ -126,7 +127,11 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String STYLE_OBJECT_LEVEL_PREFIX = STYLE_PREFIX + "object-level-";
   private static final String STYLE_OBJECT_HAS_CHILDREN = STYLE_PREFIX + "object-has-children";
   private static final String STYLE_OBJECT_LEAF = STYLE_PREFIX + "object-leaf";
-  
+
+  private static final String STYLE_OBJECT_OPEN = STYLE_PREFIX + "object-open";
+  private static final String STYLE_OBJECT_CLOSED = STYLE_PREFIX + "object-closed";
+  private static final String STYLE_OBJECT_HIDDEN = STYLE_PREFIX + "object-hidden";
+
   private static final String DATA_KEY_ROLE = "rights-role";
   private static final String DATA_KEY_OBJECT = "rights-object";
   private static final String DATA_KEY_TYPE = "rights-type";
@@ -154,29 +159,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   public static void register() {
     FormFactory.registerFormInterceptor("ModuleRights", new ModuleRightsHandler());
     FormFactory.registerFormInterceptor("MenuRights", new MenuRightsHandler());
-  }
-
-  private static Widget createObjectLabel(RightsObject object) {
-    Label widget = new Label(object.getCaption());
-    widget.addStyleName(STYLE_OBJECT_LABEL);
-    
-    widget.addStyleName(STYLE_OBJECT_LEVEL_PREFIX + object.getLevel());
-    widget.addStyleName(object.hasChildren() ? STYLE_OBJECT_HAS_CHILDREN : STYLE_OBJECT_LEAF);
-    
-    widget.setTitle(object.getName());
-
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_OBJECT, object.getName());
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL);
-    
-    if (object.hasChildren()) {
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-        }
-      });
-    }
-
-    return widget;
   }
 
   private static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
@@ -218,18 +200,18 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   private final BiMap<Long, String> roles = HashBiMap.create();
+
   private final List<RightsObject> objects = Lists.newArrayList();
 
   private final Multimap<String, Long> initialValues = HashMultimap.create();
   private final Multimap<String, Long> changes = HashMultimap.create();
 
   private Orientation roleOrientation = Orientation.HORIZONTAL;
-
   private Orientation columnLabelOrientation = Orientation.HORIZONTAL;
+
   private HtmlTable table;
 
   private FaLabel roleOrientationToggle;
-
   private Toggle columnLabelOrientationToggle;
 
   private Long userId;
@@ -404,6 +386,43 @@ public abstract class RightsForm extends AbstractFormInterceptor {
             }
           }
         });
+  }
+
+  private Widget createObjectLabel(RightsObject object) {
+    Label widget = new Label(object.getCaption());
+    widget.addStyleName(STYLE_OBJECT_LABEL);
+
+    widget.addStyleName(STYLE_OBJECT_LEVEL_PREFIX + object.getLevel());
+    widget.addStyleName(object.hasChildren() ? STYLE_OBJECT_HAS_CHILDREN : STYLE_OBJECT_LEAF);
+
+    widget.setTitle(object.getName());
+
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_OBJECT, object.getName());
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL);
+
+    if (object.hasChildren()) {
+      widget.addStyleName(STYLE_OBJECT_CLOSED);
+
+      widget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (event.getSource() instanceof Widget) {
+            Widget source = (Widget) event.getSource();
+            String objectName = getObjectName(source);
+            boolean wasOpen = source.getElement().hasClassName(STYLE_OBJECT_OPEN);
+
+            if (!BeeUtils.isEmpty(objectName)) {
+              source.setStyleName(STYLE_OBJECT_OPEN, !wasOpen);
+              source.setStyleName(STYLE_OBJECT_CLOSED, wasOpen);
+
+              setChildrenVisibility(objectName, !wasOpen);
+            }
+          }
+        }
+      });
+    }
+
+    return widget;
   }
 
   private Widget createObjectToggle(String name) {
@@ -596,6 +615,10 @@ public abstract class RightsForm extends AbstractFormInterceptor {
             STYLE_VALUE_CELL);
       }
 
+      if (object.hasParent()) {
+        StyleUtils.addClassName(table.getRowCells(row), STYLE_OBJECT_HIDDEN);
+      }
+
       table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
       row++;
     }
@@ -628,28 +651,57 @@ public abstract class RightsForm extends AbstractFormInterceptor {
         if (event.getSource() instanceof Toggle) {
           Toggle t = (Toggle) event.getSource();
 
-          String obj = getObjectName(t);
+          String name = getObjectName(t);
           Long role = getRoleId(t);
 
-          boolean isChanged = toggleValue(obj, role);
+          boolean isChanged = toggleValue(name, role);
           updateValueCell(t, isChanged);
 
-          Toggle objectToggle = getObjectToggle(obj);
+          Toggle objectToggle = getObjectToggle(name);
           Toggle roleToggle = getRoleToggle(role);
 
           if (t.isChecked()) {
-            objectToggle.setChecked(isObjectChecked(obj));
+            objectToggle.setChecked(isObjectChecked(name));
             roleToggle.setChecked(isRoleChecked(role));
 
           } else {
             objectToggle.setChecked(false);
             roleToggle.setChecked(false);
           }
+
+          RightsObject object = findObject(name);
+          if (object != null && object.hasChildren()) {
+            Set<String> childrenNames = Sets.newHashSet();
+            for (RightsObject ro : objects) {
+              if (object.getName().equals(ro.getParent())) {
+                childrenNames.add(ro.getName());
+              }
+            }
+            
+            for (Widget widget : table) {
+              if (DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
+                  && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, role)
+                  && childrenNames.contains(getObjectName(widget))) {
+                widget.setStyleName(STYLE_VALUE_DISABLED, !t.isChecked());
+              }
+            }
+          }
         }
       }
     });
 
     return toggle;
+  }
+
+  private RightsObject findObject(String objectName) {
+    for (RightsObject object : objects) {
+      if (object.getName().equals(objectName)) {
+        return object;
+      }
+    }
+
+    logger.severe("object", objectName, "not found");
+    return null;
   }
 
   private String getColumnLabelOrientationStyleName() {
@@ -681,11 +733,23 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return cells;
   }
 
+  private Widget getObjectLabel(String objectName) {
+    for (Widget widget : table) {
+      if (DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL)
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)) {
+        return widget;
+      }
+    }
+
+    logger.severe("object", objectName, "label not found");
+    return null;
+  }
+
   private Toggle getObjectToggle(String objectName) {
     for (Widget widget : table) {
       if (widget instanceof Toggle
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)) {
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)) {
         return (Toggle) widget;
       }
     }
@@ -726,8 +790,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private Toggle getRoleToggle(long roleId) {
     for (Widget widget : table) {
       if (widget instanceof Toggle
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_TOGGLE)) {
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_TOGGLE)
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
         return (Toggle) widget;
       }
     }
@@ -990,6 +1054,33 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
+  private void setChildrenVisibility(String parent, boolean visible) {
+    for (RightsObject object : objects) {
+      if (parent.equals(object.getParent())) {
+        List<TableCellElement> cells = getObjectCells(object.getName());
+
+        if (!cells.isEmpty()) {
+          if (visible) {
+            StyleUtils.removeClassName(cells, STYLE_OBJECT_HIDDEN);
+          } else {
+            StyleUtils.addClassName(cells, STYLE_OBJECT_HIDDEN);
+          }
+        }
+
+        if (!visible && object.hasChildren()) {
+          Widget labelWidget = getObjectLabel(object.getName());
+
+          if (labelWidget != null && labelWidget.getElement().hasClassName(STYLE_OBJECT_OPEN)) {
+            labelWidget.removeStyleName(STYLE_OBJECT_OPEN);
+            labelWidget.addStyleName(STYLE_OBJECT_CLOSED);
+
+            setChildrenVisibility(object.getName(), visible);
+          }
+        }
+      }
+    }
+  }
+
   private void setHoverColumn(int hoverColumn) {
     this.hoverColumn = hoverColumn;
   }
@@ -1046,8 +1137,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private void updateObjectValueToggles(String objectName, boolean checked) {
     for (Widget widget : table) {
       if (widget instanceof Toggle && ((Toggle) widget).isChecked() != checked
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)) {
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)) {
 
         ((Toggle) widget).setChecked(checked);
 
@@ -1060,8 +1151,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private void updateRoleValueToggles(long roleId, boolean checked) {
     for (Widget widget : table) {
       if (widget instanceof Toggle && ((Toggle) widget).isChecked() != checked
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)) {
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
 
         ((Toggle) widget).setChecked(checked);
 

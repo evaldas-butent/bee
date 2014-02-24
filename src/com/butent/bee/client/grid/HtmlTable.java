@@ -410,6 +410,19 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     return rowFormatter.getTr(bodyElem, row);
   }
 
+  public List<TableCellElement> getRowCells(int row) {
+    Assert.nonNegative(row);
+    List<TableCellElement> cells = Lists.newArrayList();
+
+    if (row < getRowCount()) {
+      int cc = getCellCount(row);
+      for (int column = 0; column < cc; column++) {
+        cells.add(getCellFormatter().getCell(tableElem, row, column));
+      }
+    }
+    return cells;
+  }
+
   public int getRowCount() {
     return getDOMRowCount(bodyElem);
   }
