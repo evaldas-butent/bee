@@ -2924,3 +2924,16 @@
 .bee-Rights-user-unchecked {
   display: none;
 }
+
+.bee-Rights-role-horizontal .bee-Rights-object-level-1 {
+  padding-left: 2em;
+}
+.bee-Rights-role-horizontal .bee-Rights-object-level-2 {
+  padding-left: 4em;
+}
+.bee-Rights-role-horizontal .bee-Rights-object-level-3 {
+  padding-left: 6em;
+}
+.bee-Rights-object-has-children {
+  cursor: pointer;
+}

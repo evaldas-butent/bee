@@ -123,6 +123,10 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   private static final String STYLE_HOVER = STYLE_PREFIX + "hover";
 
+  private static final String STYLE_OBJECT_LEVEL_PREFIX = STYLE_PREFIX + "object-level-";
+  private static final String STYLE_OBJECT_HAS_CHILDREN = STYLE_PREFIX + "object-has-children";
+  private static final String STYLE_OBJECT_LEAF = STYLE_PREFIX + "object-leaf";
+  
   private static final String DATA_KEY_ROLE = "rights-role";
   private static final String DATA_KEY_OBJECT = "rights-object";
   private static final String DATA_KEY_TYPE = "rights-type";
@@ -150,6 +154,29 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   public static void register() {
     FormFactory.registerFormInterceptor("ModuleRights", new ModuleRightsHandler());
     FormFactory.registerFormInterceptor("MenuRights", new MenuRightsHandler());
+  }
+
+  private static Widget createObjectLabel(RightsObject object) {
+    Label widget = new Label(object.getCaption());
+    widget.addStyleName(STYLE_OBJECT_LABEL);
+    
+    widget.addStyleName(STYLE_OBJECT_LEVEL_PREFIX + object.getLevel());
+    widget.addStyleName(object.hasChildren() ? STYLE_OBJECT_HAS_CHILDREN : STYLE_OBJECT_LEAF);
+    
+    widget.setTitle(object.getName());
+
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_OBJECT, object.getName());
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL);
+    
+    if (object.hasChildren()) {
+      widget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+        }
+      });
+    }
+
+    return widget;
   }
 
   private static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
@@ -189,17 +216,18 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       cellElement.removeClassName(STYLE_VALUE_CHANGED);
     }
   }
+
   private final BiMap<Long, String> roles = HashBiMap.create();
+  private final List<RightsObject> objects = Lists.newArrayList();
 
-  private final List<String> objectNames = Lists.newArrayList();
   private final Multimap<String, Long> initialValues = HashMultimap.create();
-
   private final Multimap<String, Long> changes = HashMultimap.create();
+
   private Orientation roleOrientation = Orientation.HORIZONTAL;
 
   private Orientation columnLabelOrientation = Orientation.HORIZONTAL;
-
   private HtmlTable table;
+
   private FaLabel roleOrientationToggle;
 
   private Toggle columnLabelOrientationToggle;
@@ -210,15 +238,18 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   @Override
   public void afterCreate(final FormView form) {
-    initObjects(new Consumer<List<String>>() {
+    initObjects(new Consumer<List<RightsObject>>() {
       @Override
-      public void accept(List<String> names) {
-        if (BeeUtils.isEmpty(names)) {
+      public void accept(List<RightsObject> typeObjects) {
+        if (BeeUtils.isEmpty(typeObjects)) {
           logger.severe(getObjectType(), "objects not available");
           return;
         }
 
-        objectNames.addAll(names);
+        if (!objects.isEmpty()) {
+          objects.clear();
+        }
+        objects.addAll(typeObjects);
 
         initData(new Consumer<Boolean>() {
           @Override
@@ -337,13 +368,11 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  protected abstract String getObjectCaption(String name);
-
   protected abstract RightsObjectType getObjectType();
 
   protected abstract RightsState getRightsState();
 
-  protected abstract void initObjects(Consumer<List<String>> consumer);
+  protected abstract void initObjects(Consumer<List<RightsObject>> consumer);
 
   private void addColumnLabelOrientationToggle() {
     table.setWidget(COLUMN_LABEL_ORIENTATION_ROW, COLUMN_LABEL_ORIENTATION_COL,
@@ -375,16 +404,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
             }
           }
         });
-  }
-
-  private Widget createObjectLabel(String objectName) {
-    Label widget = new Label(getObjectCaption(objectName));
-    widget.addStyleName(STYLE_OBJECT_LABEL);
-
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_OBJECT, objectName);
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL);
-
-    return widget;
   }
 
   private Widget createObjectToggle(String name) {
@@ -443,8 +462,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
         STYLE_ROLE_TOGGLE);
 
     boolean checked = true;
-    for (String objectName : objectNames) {
-      if (!initialValues.containsEntry(objectName, roleId)) {
+    for (RightsObject object : objects) {
+      if (!initialValues.containsEntry(object.getName(), roleId)) {
         checked = false;
         break;
       }
@@ -559,13 +578,15 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     int row = VALUE_START_ROW;
 
-    for (String objectName : objectNames) {
-      table.setWidget(row, LABEL_COL, createObjectLabel(objectName), STYLE_OBJECT_LABEL_CELL);
+    for (RightsObject object : objects) {
+      String objectName = object.getName();
+
+      table.setWidget(row, LABEL_COL, createObjectLabel(object), STYLE_OBJECT_LABEL_CELL);
       table.setWidget(row, MULTI_TOGGLE_COL, createObjectToggle(objectName),
           STYLE_OBJECT_TOGGLE_CELL);
 
       col = VALUE_START_COL;
-      String objectCaption = getObjectCaption(objectName);
+      String objectCaption = object.getCaption();
 
       for (String roleName : roleNames) {
         long roleId = getRoleId(roleName);
@@ -761,16 +782,16 @@ public abstract class RightsForm extends AbstractFormInterceptor {
                     Codec.beeDeserializeMap(response.getResponseAsString());
 
                 if (getRightsState().isChecked()) {
-                  for (String objectName : objectNames) {
+                  for (RightsObject object : objects) {
                     Set<Long> ids = Sets.newHashSet(roles.keySet());
-                    
-                    String name = BeeUtils.normalize(objectName);
+
+                    String name = BeeUtils.normalize(object.getName());
                     if (rights.containsKey(name)) {
                       ids.removeAll(DataUtils.parseIdSet(rights.get(name)));
                     }
 
                     if (!ids.isEmpty()) {
-                      initialValues.putAll(objectName, ids);
+                      initialValues.putAll(object.getName(), ids);
                     }
                   }
 
@@ -807,8 +828,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   private boolean isRoleChecked(long roleId) {
-    for (String objectName : objectNames) {
-      if (!isChecked(objectName, roleId)) {
+    for (RightsObject object : objects) {
+      if (!isChecked(object.getName(), roleId)) {
         return false;
       }
     }
@@ -825,7 +846,9 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       }
     }
 
-    for (String objectName : objectNames) {
+    for (RightsObject object : objects) {
+      String objectName = object.getName();
+
       boolean checked = false;
       for (Long roleId : userRoles) {
         if (isChecked(objectName, roleId)) {
@@ -848,24 +871,24 @@ public abstract class RightsForm extends AbstractFormInterceptor {
         BeeUtils.bracket(changes.size()));
     List<String> messages = Lists.newArrayList(message);
 
-    List<String> names = Lists.newArrayList();
-    for (String objectName : objectNames) {
-      if (changes.containsKey(objectName)) {
-        names.add(objectName);
+    List<RightsObject> changedObjects = Lists.newArrayList();
+    for (RightsObject object : objects) {
+      if (changes.containsKey(object.getName())) {
+        changedObjects.add(object);
       }
     }
 
     int limit = BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 200, 1000, 2, 10);
-    int count = (names.size() > limit * 3 / 2) ? limit : names.size();
+    int count = (changedObjects.size() > limit * 3 / 2) ? limit : changedObjects.size();
 
     for (int i = 0; i < count; i++) {
-      String objectName = names.get(i);
-      messages.add(BeeUtils.joinWords(getObjectCaption(objectName),
-          BeeUtils.bracket(changes.get(objectName).size())));
+      RightsObject object = changedObjects.get(i);
+      messages.add(BeeUtils.joinWords(object.getCaption(),
+          BeeUtils.bracket(changes.get(object.getName()).size())));
     }
 
-    if (count < names.size()) {
-      messages.add(BeeUtils.joinWords(BeeUtils.parenthesize(names.size() - count),
+    if (count < changedObjects.size()) {
+      messages.add(BeeUtils.joinWords(BeeUtils.parenthesize(changedObjects.size() - count),
           BeeConst.ELLIPSIS));
     }
 
