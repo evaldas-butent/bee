@@ -3,9 +3,6 @@ package com.butent.bee.shared.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -14,6 +11,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,11 +20,24 @@ import java.util.List;
 
 public class StringRow extends AbstractRow {
 
-  private Sequence<String> values;
+  private final List<String> values = new ArrayList<>();
 
-  public StringRow(long id, Sequence<String> values) {
+  public StringRow(long id, List<String> values) {
     super(id);
-    this.values = values;
+
+    if (values != null) {
+      this.values.addAll(values);
+    }
+  }
+
+  public StringRow(long id, String[] arr) {
+    super(id);
+    
+    if (arr != null) {
+      for (String value : arr) {
+        this.values.add(value);
+      }
+    }
   }
 
   @Override
@@ -43,7 +54,7 @@ public class StringRow extends AbstractRow {
 
   @Override
   public StringRow copy() {
-    StringRow result = new StringRow(getId(), values.copy());
+    StringRow result = new StringRow(getId(), values);
     result.setVersion(getVersion());
     result.setEditable(isEditable());
     copyProperties(result);
@@ -64,7 +75,7 @@ public class StringRow extends AbstractRow {
   @Override
   public List<IsCell> getCells() {
     List<IsCell> lst = Lists.newArrayList();
-    for (int i = 0; i < values.getLength(); i++) {
+    for (int i = 0; i < values.size(); i++) {
       lst.add(getCell(i));
     }
     return lst;
@@ -108,7 +119,7 @@ public class StringRow extends AbstractRow {
 
   @Override
   public int getNumberOfCells() {
-    return values.getLength();
+    return values.size();
   }
 
   @Override
@@ -117,26 +128,14 @@ public class StringRow extends AbstractRow {
     return values.get(index);
   }
 
-  public String[] getValueArray() {
-    Pair<String[], Integer> pair = getValues().getArray(BeeConst.EMPTY_STRING_ARRAY);
-    int len = pair.getB();
-    if (len == pair.getA().length) {
-      return pair.getA();
-    } else {
-      String[] arr = new String[len];
-      System.arraycopy(pair.getA(), 0, arr, 0, len);
-      return arr;
-    }
-  }
-
-  public Sequence<String> getValues() {
+  public List<String> getValues() {
     return values;
   }
 
   @Override
   public void insertCell(int index, IsCell cell) {
     Assert.betweenInclusive(index, 0, getNumberOfCells());
-    values.insert(index, cell.getValue().getString());
+    values.add(index, cell.getValue().getString());
   }
 
   @Override
@@ -238,8 +237,20 @@ public class StringRow extends AbstractRow {
     }
   }
 
-  public void setValues(Sequence<String> values) {
-    this.values = values;
+  public void setValues(List<String> values) {
+    BeeUtils.overwrite(this.values, values);
+  }
+
+  public void setValues(String[] arr) {
+    if (!values.isEmpty()) {
+      values.clear();
+    }
+
+    if (arr != null) {
+      for (String value : arr) {
+        values.add(value);
+      }
+    }
   }
 
   protected void assertIndex(int index) {

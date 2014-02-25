@@ -151,12 +151,12 @@ public final class BeeParameter implements BeeSerializable {
           defValue = val;
           break;
         case USER_VALUES:
-          for (Entry<String, String> entry : Codec.beeDeserializeMap(val).entrySet()) {
+          for (Entry<String, String> entry : Codec.deserializeMap(val).entrySet()) {
             userValues.put(BeeUtils.toLongOrNull(entry.getKey()), entry.getValue());
           }
           break;
         case DISPLAY_VALUES:
-          for (Entry<String, String> entry : Codec.beeDeserializeMap(val).entrySet()) {
+          for (Entry<String, String> entry : Codec.deserializeMap(val).entrySet()) {
             displayValues.put(BeeUtils.toLongOrNull(entry.getKey()), entry.getValue());
           }
           break;
@@ -424,7 +424,7 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case MAP:
-        val = Codec.beeDeserializeMap(expr);
+        val = Codec.deserializeMap(expr);
         break;
 
       case NUMBER:

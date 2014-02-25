@@ -222,7 +222,7 @@ public class UiServiceBean {
       response = usr.setRights(EnumUtils.getEnumByName(RightsObjectType.class,
           reqInfo.getParameter(COL_OBJECT_TYPE)), EnumUtils.getEnumByName(RightsState.class,
           reqInfo.getParameter(COL_STATE)),
-          Codec.beeDeserializeMap(reqInfo.getParameter(COL_OBJECT)));
+          Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
       response = importOsamaTiekejai(reqInfo);
@@ -664,7 +664,7 @@ public class UiServiceBean {
         }
       }
     }
-    return ResponseObject.response(info);
+    return ResponseObject.collection(info, ExtendedProperty.class);
   }
 
   private ResponseObject getValue(RequestInfo reqInfo) {
@@ -682,7 +682,7 @@ public class UiServiceBean {
           rowId);
     } else {
       String value = rowSet.getString(0, column);
-      return ResponseObject.response(value, String.class);
+      return ResponseObject.response(value);
     }
   }
 
@@ -740,7 +740,7 @@ public class UiServiceBean {
         PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getExtendedInfo());
       }
     }
-    return ResponseObject.response(info);
+    return ResponseObject.collection(info, ExtendedProperty.class);
   }
 
   private ResponseObject getViewSize(RequestInfo reqInfo) {

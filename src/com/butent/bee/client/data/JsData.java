@@ -2,7 +2,6 @@ package com.butent.bee.client.data;
 
 import com.google.gwt.core.client.JsArrayString;
 
-import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.StringRowArray;
 import com.butent.bee.shared.data.IsColumn;
@@ -39,12 +38,17 @@ public class JsData<C extends IsColumn> extends StringMatrix<C> {
 
   private void initData(JsArrayString data, int start, int rowSize) {
     Assert.isPositive(rowSize);
-    int rc = (data.length() - start) / rowSize;
 
+    int rc = (data.length() - start) / rowSize;
     StringRow[] arr = new StringRow[rc];
+    
     for (int i = 0; i < rc; i++) {
-      arr[i] = new StringRow(i + 1, new JsStringSequence(JsUtils.slice(data,
-          start + i * rowSize, start + (i + 1) * rowSize)));
+      String[] values = new String[rowSize];
+      for (int j = 0; j < rowSize; j++) {
+        values[j] = data.get(start + i * rowSize + j);
+      }
+    
+      arr[i] = new StringRow(i + 1, values);
     }
 
     setRows(new StringRowArray(arr));

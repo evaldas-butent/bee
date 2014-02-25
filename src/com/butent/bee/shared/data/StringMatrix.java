@@ -3,7 +3,6 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.StringRowArray;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -25,7 +24,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
     super(columnLabels);
     rows = new StringRowArray(new StringRow[data.size()]);
     for (int i = 0; i < data.size(); i++) {
-      rows.set(i, new StringRow(i + 1, new StringArray(data.get(i))));
+      rows.set(i, new StringRow(i + 1, data.get(i)));
     }
   }
 
@@ -33,7 +32,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
     super(columnLabels);
     rows = new StringRowArray(new StringRow[data.length]);
     for (int i = 0; i < data.length; i++) {
-      rows.set(i, new StringRow(i + 1, new StringArray(data[i])));
+      rows.set(i, new StringRow(i + 1, data[i]));
     }
   }
   
@@ -80,7 +79,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
 
   @Override
   public StringRow createRow(long id) {
-    return new StringRow(id, new StringArray(BeeConst.EMPTY_STRING_ARRAY));
+    return new StringRow(id, BeeConst.EMPTY_STRING_ARRAY);
   }
 
   @Override

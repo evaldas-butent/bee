@@ -733,7 +733,7 @@ public class TecDocBean {
     BeeRowSet data = (BeeRowSet) qs.doSql("EXPLAIN " + query.getQuery());
 
     for (BeeRow row : data.getRows()) {
-      logger.debug((Object[]) row.getValueArray());
+      logger.debug(row.getValues());
     }
   }
 

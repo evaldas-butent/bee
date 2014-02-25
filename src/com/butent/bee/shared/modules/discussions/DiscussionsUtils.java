@@ -83,7 +83,7 @@ public final class DiscussionsUtils {
       return Maps.newHashMap();
     }
 
-    Map<String, String> params = Codec.beeDeserializeMap(formRow.getProperty(PROP_PARAMETERS));
+    Map<String, String> params = Codec.deserializeMap(formRow.getProperty(PROP_PARAMETERS));
 
     return params;
   }

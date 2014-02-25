@@ -3,7 +3,6 @@ package com.butent.bee.server;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
@@ -18,6 +17,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.Paths;
@@ -29,6 +29,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
@@ -54,21 +55,20 @@ public class SystemServiceBean {
   @EJB
   FileStorageBean fs;
   
-  public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     Assert.notEmpty(svc);
-    Assert.notNull(buff);
-    ResponseObject response = null;
+    ResponseObject response;
 
     if (BeeUtils.same(svc, Service.GET_CLASS_INFO)) {
-      classInfo(reqInfo, buff);
+      response = classInfo(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_RESOURCE)) {
-      response = getResource(reqInfo, buff);
+      response = getResource(reqInfo);
     } else if (BeeUtils.same(svc, Service.SAVE_RESOURCE)) {
       response = saveResource(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_DIGEST)) {
-      getDigest(reqInfo, buff);
+      response = getDigest(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_FILES)) {
       response = getFiles();
@@ -78,18 +78,18 @@ public class SystemServiceBean {
     } else {
       String msg = BeeUtils.joinWords(svc, "system service not recognized");
       logger.warning(msg);
-      buff.addWarning(msg);
+      response = ResponseObject.warning(msg);
     }
+
     return response;
   }
 
-  private static void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static ResponseObject classInfo(RequestInfo reqInfo) {
     String cnm = reqInfo.getParameter(Service.VAR_CLASS_NAME);
     String pck = reqInfo.getParameter(Service.VAR_PACKAGE_LIST);
 
     if (BeeUtils.isEmpty(cnm)) {
-      buff.addSevere("Parameter", Service.VAR_CLASS_NAME, "not found");
-      return;
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_CLASS_NAME);
     }
 
     Set<Class<?>> classes;
@@ -100,19 +100,18 @@ public class SystemServiceBean {
     }
 
     if (BeeUtils.isEmpty(classes)) {
-      buff.addWarning("Class not found", cnm, pck);
-      return;
+      return ResponseObject.warning("Class not found", cnm, pck);
     }
     int c = classes.size();
-
-    buff.addExtendedPropertiesColumns();
-    buff.addExtended(new ExtendedProperty(cnm, pck, BeeUtils.bracket(c)));
+    
+    List<ExtendedProperty> result = Lists.newArrayList();
+    result.add(new ExtendedProperty(cnm, pck, BeeUtils.bracket(c)));
 
     int i = 0;
     if (c > 1) {
       for (Class<?> cls : classes) {
         i++;
-        buff.addExtended(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
+        result.add(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
       }
     }
 
@@ -120,24 +119,30 @@ public class SystemServiceBean {
     for (Class<?> cls : classes) {
       i++;
       if (c > 1) {
-        buff.addExtended(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
+        result.add(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
       }
-      buff.appendExtended(ClassUtils.getClassInfo(cls));
+      result.addAll(ClassUtils.getClassInfo(cls));
     }
+    
+    return ResponseObject.response(result);
   }
 
-  private static void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static ResponseObject getDigest(RequestInfo reqInfo) {
     String src = reqInfo.getContent();
 
     if (BeeUtils.length(src) <= 0) {
-      buff.addSevere("Source not found");
-      return;
+      return ResponseObject.error(reqInfo.getService(), "source not found");
     }
+    
+    ResponseObject response = new ResponseObject();
+    
     if (src.length() < 100) {
-      buff.addMessage(BeeConst.SERVER, src);
+      response.addInfo(BeeConst.SERVER, src);
     }
-    buff.addMessage(BeeConst.SERVER, "Source length", src.length());
-    buff.addMessage(BeeConst.SERVER, Codec.md5(src));
+    response.addInfo(BeeConst.SERVER, "source length", src.length());
+    response.addInfo(BeeConst.SERVER, Codec.md5(src));
+    
+    return response;
   }
   
   private ResponseObject getFiles() {
@@ -182,23 +187,25 @@ public class SystemServiceBean {
     return ResponseObject.response(flags);
   }
 
-  private static ResponseObject getResource(RequestInfo reqInfo, ResponseBuffer buff) {
+  private static ResponseObject getResource(RequestInfo reqInfo) {
     String mode = reqInfo.getParameter(0);
+
     if (BeeUtils.same(mode, "cs")) {
-      buff.addExtendedProperties(FileUtils.getCharsets());
-      return null;
+      return ResponseObject.collection(FileUtils.getCharsets(), ExtendedProperty.class);
     }
+    
     if (BeeUtils.same(mode, "fs")) {
-      buff.addProperties(PropertyUtils.createProperties("Path Separator",
-          File.pathSeparator, "Separator", File.separator));
-      buff.addProperties(FileUtils.getRootsInfo());
-      return null;
+      List<Property> properties = PropertyUtils.createProperties(
+          "Path Separator", File.pathSeparator, "Separator", File.separator);
+      properties.addAll(FileUtils.getRootsInfo());
+
+      return ResponseObject.collection(properties, Property.class);
     }
 
     String search = reqInfo.getParameter(1);
     if (BeeUtils.isEmpty(search)) {
-      buff.addSevere("resource name ( parameter", CommUtils.rpcParamName(1), ") not specified");
-      return null;
+      return ResponseObject.error(reqInfo.getService(), "resource name ( parameter",
+          CommUtils.rpcParamName(1), ") not specified");
     }
 
     File resFile = null;
@@ -232,8 +239,7 @@ public class SystemServiceBean {
 
       List<File> files = FileUtils.findFiles(search, roots, filters, defaultExtension, true, false);
       if (BeeUtils.isEmpty(files)) {
-        buff.addWarning("resource", search, "not found");
-        return null;
+        return ResponseObject.warning("resource", search, "not found");
       }
 
       if (files.size() > 1 && !FileNameUtils.hasSeparator(search)) {
@@ -252,24 +258,30 @@ public class SystemServiceBean {
 
       if (files.size() > 1) {
         Collections.sort(files);
-
-        buff.addColumn(new BeeColumn(ValueType.NUMBER, "Idx"));
-        buff.addColumn(new BeeColumn(ValueType.TEXT, "Name"));
-        buff.addColumn(new BeeColumn(ValueType.TEXT, "Path"));
-        buff.addColumn(new BeeColumn(ValueType.NUMBER, "Size"));
-        buff.addColumn(new BeeColumn(ValueType.DATE_TIME, "Modified"));
+        
+        BeeRowSet rowSet = new BeeRowSet(new BeeColumn(ValueType.NUMBER, "Idx"),
+            new BeeColumn(ValueType.TEXT, "Name"),
+            new BeeColumn(ValueType.TEXT, "Path"),
+            new BeeColumn(ValueType.NUMBER, "Size"),
+            new BeeColumn(ValueType.DATE_TIME, "Modified"));
 
         long totSize = 0;
         long lastMod = 0;
         long x;
         long y;
         int idx = 0;
+        
+        int rc = 0;
 
         for (File fl : files) {
           x = fl.isFile() ? fl.length() : 0;
           y = fl.lastModified();
-          buff.addRow(++idx, fl.getName(), fl.getPath(), x, y);
-
+          
+          List<String> values = Lists.newArrayList(String.valueOf(++idx),
+              fl.getName(), fl.getPath(), String.valueOf(x), String.valueOf(y));
+          
+          rowSet.addRow(rc++, 0, values);
+          
           if (x > 0) {
             totSize += x;
           }
@@ -277,57 +289,65 @@ public class SystemServiceBean {
             lastMod = Math.max(lastMod, y);
           }
         }
-        buff.addRow(0, mode, search, totSize, lastMod);
 
-        buff.addMessage(mode, search, "found", files.size(), "files");
-        return null;
+        List<String> totals = Lists.newArrayList(null, mode, search, String.valueOf(totSize),
+            String.valueOf(lastMod));
+        rowSet.addRow(rc++, 0, totals);
+        
+        ResponseObject response = ResponseObject.response(rowSet);
+        response.addInfo(mode, search, "found", files.size(), "files");
+        return response;
       }
+
       resFile = files.get(0);
     }
 
     Assert.notNull(resFile);
     String resPath = resFile.getPath();
     if (!resFile.exists()) {
-      buff.addWarning("file", resPath, "does not exist");
-      return null;
+      return ResponseObject.warning("file", resPath, "does not exist");
     }
-    buff.addMessage(mode, search, "found", resPath);
+    
+    ResponseObject response = ResponseObject.info(mode, search, "found", resPath);
 
     if (BeeUtils.inListSame(mode, "get", "src", "xml")) {
       if (!FileUtils.isInputFile(resFile)) {
-        buff.addWarning(resPath, "is not readable");
+        response.addWarning(resPath, "is not readable");
+
       } else if (!Config.isText(resFile)) {
-        buff.addWarning(resPath, "is not a text resource");
+        response.addWarning(resPath, "is not a text resource");
+      
       } else {
         Charset cs = FileUtils.normalizeCharset(reqInfo.getParameter(2));
-        buff.addMessage("charset", cs);
+        response.addInfo("charset", cs);
         String s = FileUtils.fileToString(resFile, cs);
 
         if (s == null || s.length() == 0) {
-          buff.addWarning(resPath, "no content found");
+          response.addWarning(resPath, "no content found");
 
         } else if (BeeUtils.same(mode, "xml")) {
-          return ResponseObject.response(s);
+          return response.setResponse(s);
 
         } else {
-          return ResponseObject.response(new Resource(resPath, s));
+          return response.setResponse(new Resource(resPath, s));
         }
       }
     }
 
-    buff.addProperties(FileUtils.getFileInfo(resFile));
+    List<Property> result = FileUtils.getFileInfo(resFile);
 
     if (resFile.isDirectory()) {
       String[] arr = FileUtils.getFiles(resFile);
       int n = ArrayUtils.length(arr);
 
       if (n > 0) {
-        buff.addProperties(PropertyUtils.createProperties("file", arr));
+        result.addAll(PropertyUtils.createProperties("file", arr));
       } else {
-        buff.addWarning("no files found");
+        response.addWarning("no files found");
       }
     }
-    return null;
+    
+    return response.setCollection(result, Property.class);
   }
 
   private static ResponseObject saveResource(RequestInfo reqInfo) {

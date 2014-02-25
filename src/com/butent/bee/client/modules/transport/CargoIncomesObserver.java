@@ -86,7 +86,7 @@ public final class CargoIncomesObserver implements RowInsertEvent.Handler, Handl
         if (response.hasErrors()) {
           return;
         }
-        Map<String, String> result = Codec.beeDeserializeMap(response.getResponseAsString());
+        Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
         double limit = BeeUtils.toDouble(result.get(CommonsConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
         double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));

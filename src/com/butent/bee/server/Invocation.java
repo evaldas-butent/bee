@@ -2,7 +2,6 @@ package com.butent.bee.server;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
@@ -13,6 +12,7 @@ import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -22,6 +22,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,24 +36,24 @@ import javax.ejb.Stateless;
 @Stateless
 public class Invocation {
 
-  public void configInfo(ResponseBuffer buff) {
-    buff.addExtendedProperties(Config.getInfo());
+  public ResponseObject configInfo() {
+    return ResponseObject.collection(Config.getInfo(), ExtendedProperty.class);
   }
 
-  public void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject connectionInfo(RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
-    buff.addExtendedProperties(reqInfo.getExtendedInfo());
+    return ResponseObject.collection(reqInfo.getExtendedInfo(), ExtendedProperty.class);
   }
 
-  public void loaderInfo(ResponseBuffer buff) {
+  public ResponseObject loaderInfo() {
     if (JvmUtils.getCvfFailure() == null) {
-      buff.addProperties(JvmUtils.getLoadedClasses());
+      return ResponseObject.collection(JvmUtils.getLoadedClasses(), Property.class);
     } else {
-      buff.addError(JvmUtils.getCvfFailure());
+      return ResponseObject.error(JvmUtils.getCvfFailure());
     }
   }
 
-  public void localeInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject localeInfo(RequestInfo reqInfo) {
     String mode = reqInfo.getContent();
 
     if (BeeUtils.length(mode) >= 2) {
@@ -61,7 +62,7 @@ public class Invocation {
       Map<String, String> constants = Localizations.getDictionary(Localizations.getDefaultLocale());
       for (String key : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
         String value = constants.get(key);
-        PropertyUtils.addProperty(lst, key, BeeUtils.notEmpty(value, BeeConst.NULL)); 
+        PropertyUtils.addProperty(lst, key, BeeUtils.notEmpty(value, BeeConst.NULL));
       }
 
       Map<Locale, File> avail = Localizations.getAvailableConstants();
@@ -69,7 +70,7 @@ public class Invocation {
       if (avail != null) {
         PropertyUtils.addProperty(lst, "Available Constants", avail.size());
         for (Map.Entry<Locale, File> entry : avail.entrySet()) {
-          PropertyUtils.addProperty(lst, 
+          PropertyUtils.addProperty(lst,
               BeeUtils.joinWords(++idx, I18nUtils.toString(entry.getKey())), entry.getValue());
         }
       }
@@ -99,38 +100,40 @@ public class Invocation {
         PropertyUtils.addProperty(lst,
             BeeUtils.progress(++idx, locales.size()), I18nUtils.toString(z));
       }
-      buff.addProperties(lst);
+
+      return ResponseObject.collection(lst, Property.class);
 
     } else if (BeeUtils.containsSame(mode, "x")) {
-      buff.addExtendedProperties(I18nUtils.getExtendedInfo());
+      return ResponseObject.collection(I18nUtils.getExtendedInfo(), ExtendedProperty.class);
 
     } else {
-      buff.addProperties(I18nUtils.getInfo());
+      return ResponseObject.collection(I18nUtils.getInfo(), Property.class);
     }
   }
 
-  public void stringInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject stringInfo(RequestInfo reqInfo) {
     String data = reqInfo.getContent();
     if (BeeUtils.length(data) <= 0) {
-      buff.addSevere("Request data not found");
-      return;
+      return ResponseObject.error(reqInfo.getService(), "Request data not found");
     }
 
-    buff.addText(data);
-
     byte[] arr = Codec.toBytes(data);
+    
+    Map<String, String> result = new HashMap<>();
 
-    buff.addDebug("length", data.length());
-    buff.addDebug("adler32.z", Checksum.adler32(arr));
-    buff.addDebug("crc32.z", Checksum.crc32(arr));
+    result.put("input", data);
 
-    buff.addDebug("adler32", Codec.adler32(arr));
-    buff.addDebug("crc16", Codec.crc16(arr));
-    buff.addDebug("crc32", Codec.crc32(arr));
-    buff.addDebug("crc32d", Codec.crc32Direct(arr));
+    result.put("adler32.z", Checksum.adler32(arr));
+    result.put("crc32.z", Checksum.crc32(arr));
+    result.put("adler32", Codec.adler32(arr));
+    result.put("crc16", Codec.crc16(arr));
+    result.put("crc32", Codec.crc32(arr));
+    result.put("crc32d", Codec.crc32Direct(arr));
+
+    return ResponseObject.response(result);
   }
 
-  public void systemInfo(ResponseBuffer buff) {
+  public ResponseObject systemInfo() {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     lst.addAll(SystemInfo.getSysInfo());
@@ -157,10 +160,10 @@ public class Invocation {
     PropertyUtils.appendChildrenToExtended(lst, "[xslt] Output Keys",
         XmlUtils.getOutputKeysInfo());
 
-    buff.addExtendedProperties(lst);
+    return ResponseObject.collection(lst, ExtendedProperty.class);
   }
 
-  public void vmInfo(ResponseBuffer buff) {
+  public ResponseObject vmInfo() {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     PropertyUtils.appendChildrenToExtended(lst, "Class Loading", MxUtils.getClassLoadingInfo());
@@ -178,6 +181,6 @@ public class Invocation {
 
     lst.addAll(MxUtils.getThreadsInfo());
 
-    buff.addExtendedProperties(lst);
+    return ResponseObject.collection(lst, ExtendedProperty.class);
   }
 }

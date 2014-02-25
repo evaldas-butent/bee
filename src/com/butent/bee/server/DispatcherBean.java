@@ -2,7 +2,6 @@ package com.butent.bee.server;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -183,8 +182,8 @@ public class DispatcherBean {
     userService.logout(userId, historyId);
   }
 
-  public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
-    ResponseObject response = null;
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
+    ResponseObject response;
 
     if (moduleHolder.hasModule(svc)) {
       response = moduleHolder.doModule(reqInfo);
@@ -193,19 +192,19 @@ public class DispatcherBean {
       response = uiService.doService(reqInfo);
 
     } else if (Service.isDbService(svc)) {
-      dataService.doService(svc, reqInfo, buff);
+      response = dataService.doService(svc, reqInfo);
 
     } else if (Service.isSysService(svc)) {
-      response = systemService.doService(svc, reqInfo, buff);
+      response = systemService.doService(svc, reqInfo);
 
     } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
       response = uiHolder.getMenu();
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-      buff.addLine(buff.now(), BeeConst.whereAmI());
+      response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
 
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
+      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords(svc, "service not recognized");

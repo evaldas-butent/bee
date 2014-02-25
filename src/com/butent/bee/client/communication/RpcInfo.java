@@ -48,8 +48,6 @@ public class RpcInfo {
 
   public static final String COL_RESP_TYPE = "Response Type";
   public static final String COL_RESP_DATA = "Response Data";
-  public static final String COL_RESP_ROWS = "Response Rows";
-  public static final String COL_RESP_COLS = "Response Columns";
   public static final String COL_RESP_SIZE = "Response Size";
 
   public static final String COL_RESP_MSG_CNT = "Response Msg Cnt";
@@ -58,8 +56,6 @@ public class RpcInfo {
   public static final String COL_RESP_INFO = "Response Info";
 
   public static final String COL_ERR_MSG = "Error Msg";
-
-  public static final String COL_USR_DATA = "User Data";
 
   private int id;
   private String service;
@@ -83,8 +79,6 @@ public class RpcInfo {
 
   private ContentType respType;
   private String respData;
-  private int respRows = BeeConst.UNDEF;
-  private int respCols = BeeConst.UNDEF;
   private int respSize = BeeConst.UNDEF;
 
   private int respMsgCnt = BeeConst.UNDEF;
@@ -92,7 +86,6 @@ public class RpcInfo {
 
   private String errMsg;
 
-  private Object userData;
   private ResponseCallback respCallback;
 
   public RpcInfo(RequestBuilder.Method method, String service,
@@ -130,8 +123,7 @@ public class RpcInfo {
     return duration.finish();
   }
 
-  public int end(ContentType ctp, String data, int size, int rows,
-      int cols, int msgCnt, Collection<ResponseMessage> messages) {
+  public int end(ContentType ctp, String data, int size, Collection<ResponseMessage> messages) {
     int r = done();
     setState(State.CLOSED);
 
@@ -141,17 +133,9 @@ public class RpcInfo {
     if (!BeeConst.isUndef(size)) {
       setRespSize(size);
     }
-    if (!BeeConst.isUndef(rows)) {
-      setRespRows(rows);
-    }
-    if (!BeeConst.isUndef(cols)) {
-      setRespCols(cols);
-    }
 
-    if (!BeeConst.isUndef(msgCnt)) {
-      setRespMsgCnt(msgCnt);
-    }
-    if (messages != null) {
+    if (!BeeUtils.isEmpty(messages)) {
+      setRespMsgCnt(messages.size());
       setRespMessages(messages);
     }
 
@@ -256,10 +240,6 @@ public class RpcInfo {
     return respCallback;
   }
 
-  public int getRespCols() {
-    return respCols;
-  }
-
   public String getRespData() {
     return respData;
   }
@@ -282,10 +262,6 @@ public class RpcInfo {
 
   public Response getResponse() {
     return response;
-  }
-
-  public int getRespRows() {
-    return respRows;
   }
 
   public int getRespSize() {
@@ -341,10 +317,6 @@ public class RpcInfo {
 
   public String getTimeoutString() {
     return duration.getTimeoutAsTime();
-  }
-
-  public Object getUserData() {
-    return userData;
   }
 
   public boolean isCanceled() {
@@ -407,10 +379,6 @@ public class RpcInfo {
     this.respCallback = respCallback;
   }
 
-  public void setRespCols(int respCols) {
-    this.respCols = respCols;
-  }
-
   public void setRespData(String respData) {
     this.respData = BeeUtils.clip(respData, MAX_DATA_LEN);
   }
@@ -429,10 +397,6 @@ public class RpcInfo {
 
   public void setResponse(Response response) {
     this.response = response;
-  }
-
-  public void setRespRows(int respRows) {
-    this.respRows = respRows;
   }
 
   public void setRespSize(int respSize) {
@@ -455,9 +419,5 @@ public class RpcInfo {
 
   public void setTimeout(int timeout) {
     duration.setTimeout(timeout);
-  }
-
-  public void setUserData(Object userData) {
-    this.userData = userData;
   }
 }

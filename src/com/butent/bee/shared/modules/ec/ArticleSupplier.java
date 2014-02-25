@@ -81,7 +81,7 @@ public class ArticleSupplier implements BeeSerializable {
           
         case REMAINDERS:
           remainders.clear();
-          remainders.putAll(Codec.beeDeserializeMap(value));
+          remainders.putAll(Codec.deserializeMap(value));
           break;
       }
     }

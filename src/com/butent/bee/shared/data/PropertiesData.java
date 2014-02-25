@@ -2,7 +2,7 @@ package com.butent.bee.shared.data;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.shared.ListSequence;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.Property;
 
@@ -63,11 +63,11 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
 
   @Override
   public StringRow createRow(long id) {
-    return new StringRow(id, new ListSequence<String>());
+    return new StringRow(id, BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
   }
   
   private void addRow(long id, String name, String value) {
-    ListSequence<String> values = new ListSequence<String>(Lists.newArrayList(name, value));
+    List<String> values = Lists.newArrayList(name, value);
     StringRow row = new StringRow(id, values);
     addRow(row);
   }

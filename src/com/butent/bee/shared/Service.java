@@ -97,18 +97,12 @@ public final class Service {
   public static final String RPC_VAR_SVC = RPC_VAR_SYS_PREFIX + "svc";
   public static final String RPC_VAR_QID = RPC_VAR_SYS_PREFIX + "qid";
   public static final String RPC_VAR_SID = RPC_VAR_SYS_PREFIX + "sid";
-  public static final String RPC_VAR_SEP = RPC_VAR_SYS_PREFIX + "sep";
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
-  public static final String RPC_VAR_RESP = RPC_VAR_SYS_PREFIX + "ro";
 
-  public static final String RPC_VAR_CNT = RPC_VAR_SYS_PREFIX + "cnt";
-  public static final String RPC_VAR_COLS = RPC_VAR_SYS_PREFIX + "c_c";
-  public static final String RPC_VAR_ROWS = RPC_VAR_SYS_PREFIX + "r_c";
   public static final String RPC_VAR_CTP = RPC_VAR_SYS_PREFIX + "ctp";
   public static final String RPC_VAR_URI = RPC_VAR_SYS_PREFIX + "uri";
   public static final String RPC_VAR_MD5 = RPC_VAR_SYS_PREFIX + "md5";
 
-  public static final String RPC_VAR_MSG_CNT = RPC_VAR_SYS_PREFIX + "m_c";
   public static final String RPC_VAR_MSG = RPC_VAR_SYS_PREFIX + "msg";
   public static final String RPC_VAR_PRM_CNT = RPC_VAR_SYS_PREFIX + "p_c";
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";

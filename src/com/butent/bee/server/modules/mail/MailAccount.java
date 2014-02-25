@@ -93,7 +93,7 @@ public class MailAccount {
       storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD))
           ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
       storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
-      storeProperties = Codec.beeDeserializeMap(data.getValue(COL_STORE_PROPERTIES));
+      storeProperties = Codec.deserializeMap(data.getValue(COL_STORE_PROPERTIES));
 
       transportHost = data.getValue(COL_TRANSPORT_SERVER);
       transportPort = data.getInt(COL_TRANSPORT_PORT);
@@ -102,7 +102,7 @@ public class MailAccount {
       transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD))
           ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
       transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
-      transportProperties = Codec.beeDeserializeMap(data.getValue(COL_TRANSPORT_PROPERTIES));
+      transportProperties = Codec.deserializeMap(data.getValue(COL_TRANSPORT_PROPERTIES));
 
       accountId = data.getLong(COL_ACCOUNT);
       addressId = data.getLong(CommonsConstants.COL_ADDRESS);

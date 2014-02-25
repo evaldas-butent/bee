@@ -1,13 +1,16 @@
 package com.butent.bee.server.data;
 
-import com.butent.bee.server.communication.ResponseBuffer;
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -41,43 +44,56 @@ public class ResultSetBean {
     }
   }
 
-  public void rsMdToResponse(ResultSet rs, ResponseBuffer buff, boolean debug) {
-    Assert.noNulls(rs, buff);
-    DateTime start = new DateTime();
-
-    for (int i = 0; i < metaCols.length; i++) {
-      buff.addColumn(metaCols[i]);
-    }
-    if (debug) {
-      buff.addColumn(new BeeColumn(start.toTimeString()));
-    }
+  public ResponseObject getMetaData(ResultSet rs) {
+    Assert.notNull(rs);
+    
+    ResponseObject response = new ResponseObject();
+    BeeRowSet result = new BeeRowSet(metaCols);
 
     try {
       ResultSetMetaData rsmd = rs.getMetaData();
       for (int i = 1; i <= rsmd.getColumnCount(); i++) {
         int sqlType = rsmd.getColumnType(i);
+        ValueType valueType = JdbcUtils.sqlTypeToValueType(sqlType);
 
-        buff.addRow(i, rsmd.getColumnName(i), rsmd.getColumnLabel(i),
-            rsmd.getSchemaName(i), rsmd.getCatalogName(i), rsmd.getTableName(i),
-            rsmd.getColumnClassName(i), sqlType, rsmd.getColumnTypeName(i),
-            JdbcUtils.sqlTypeToValueType(sqlType),
-            rsmd.getPrecision(i), rsmd.getScale(i), rsmd.isNullable(i),
-            rsmd.getColumnDisplaySize(i), rsmd.isSigned(i), rsmd.isAutoIncrement(i),
-            rsmd.isCaseSensitive(i), rsmd.isCurrency(i), rsmd.isSearchable(i),
-            rsmd.isReadOnly(i), rsmd.isWritable(i), rsmd.isDefinitelyWritable(i));
-        if (debug) {
-          buff.add(new DateTime().toTimeString());
-        }
+        List<String> values = Lists.newArrayList(String.valueOf(i),
+            rsmd.getColumnName(i),
+            rsmd.getColumnLabel(i),
+            rsmd.getSchemaName(i),
+            rsmd.getCatalogName(i),
+            rsmd.getTableName(i),
+            rsmd.getColumnClassName(i),
+            String.valueOf(sqlType),
+            rsmd.getColumnTypeName(i),
+            (valueType == null) ? null : valueType.name(),
+            String.valueOf(rsmd.getPrecision(i)),
+            String.valueOf(rsmd.getScale(i)),
+            String.valueOf(rsmd.isNullable(i)),
+            String.valueOf(rsmd.getColumnDisplaySize(i)),
+            String.valueOf(rsmd.isSigned(i)),
+            String.valueOf(rsmd.isAutoIncrement(i)),
+            String.valueOf(rsmd.isCaseSensitive(i)),
+            String.valueOf(rsmd.isCurrency(i)),
+            String.valueOf(rsmd.isSearchable(i)),
+            String.valueOf(rsmd.isReadOnly(i)),
+            String.valueOf(rsmd.isWritable(i)),
+            String.valueOf(rsmd.isDefinitelyWritable(i)));
+        
+        result.addRow(i, 0, values);
       }
+
     } catch (SQLException ex) {
       logger.error(ex);
-      buff.addError(ex);
+      response.addError(ex);
     }
+    
+    return response.setResponse(result);
   }
 
-  public void rsToResponse(ResultSet rs, ResponseBuffer buff, boolean debug) {
-    Assert.noNulls(rs, buff);
-    DateTime start = new DateTime();
+  public ResponseObject read(ResultSet rs) {
+    Assert.notNull(rs);
+
+    ResponseObject response = new ResponseObject();
 
     List<BeeColumn> columns;
     int c;
@@ -87,34 +103,35 @@ public class ResultSetBean {
       c = columns.size();
     } catch (JdbcException ex) {
       logger.error(ex);
-      buff.addError(ex);
+      response.addError(ex);
       columns = null;
       c = 0;
     }
 
     if (c <= 0) {
-      buff.addSevere("Cannot get result set meta data");
-      return;
+      response.addError("Cannot get result set meta data");
+      return response;
     }
 
-    buff.addColumns(columns);
-    if (debug) {
-      buff.addColumn(new BeeColumn(start.toTimeString()));
-    }
+    BeeRowSet result = new BeeRowSet(columns);
 
     try {
+      int cnt = 0;
+      
       while (rs.next()) {
+        String[] values = new String[c];
         for (int i = 0; i < c; i++) {
-          buff.add(rs.getString(i + 1));
+          values[i] = rs.getString(i + 1);
         }
-        if (debug) {
-          buff.add(new DateTime().toTimeString());
-        }
+        
+        result.addRow(++cnt, 0, values);
       }
+
     } catch (SQLException ex) {
       logger.error(ex);
-      buff.addError(ex);
-      buff.clearData();
+      response.addError(ex);
     }
+    
+    return response.setResponse(result);
   }
 }

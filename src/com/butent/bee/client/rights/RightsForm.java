@@ -843,7 +843,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
               if (response.hasResponse()) {
                 Map<String, String> rights =
-                    Codec.beeDeserializeMap(response.getResponseAsString());
+                    Codec.deserializeMap(response.getResponseAsString());
 
                 if (getRightsState().isChecked()) {
                   for (RightsObject object : objects) {

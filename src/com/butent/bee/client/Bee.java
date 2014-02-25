@@ -113,7 +113,7 @@ public class Bee implements EntryPoint {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        load(Codec.beeDeserializeMap((String) response.getResponse()));
+        load(Codec.deserializeMap((String) response.getResponse()));
         start();
       }
     });
@@ -145,7 +145,7 @@ public class Bee implements EntryPoint {
             break;
 
           case DICTIONARY:
-            Localized.setDictionary(Codec.beeDeserializeMap(serialized));
+            Localized.setDictionary(Codec.deserializeMap(serialized));
             break;
 
           case DECORATORS:
