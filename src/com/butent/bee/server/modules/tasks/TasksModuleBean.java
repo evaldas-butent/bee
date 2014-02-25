@@ -66,9 +66,9 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
 import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TasksUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -131,14 +131,6 @@ public class TasksModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.DOCUMENTS))) {
-      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
-          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER, COL_NAME,
-              COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME, COL_DOCUMENT_PLACE_NAME,
-              COL_DOCUMENT_STATUS_NAME), query));
-      result.addAll(docsSr);
-    }
-
     if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.TASKS))) {
       List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
           Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
@@ -194,9 +186,6 @@ public class TasksModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_REQUEST_FILES)) {
       response = getRequestFiles(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REQUEST)));
 
-    } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
-      response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
-
     } else if (BeeUtils.same(svc, SVC_RT_GET_SCHEDULING_DATA)) {
       response = getSchedulingData(reqInfo);
 
@@ -240,7 +229,11 @@ public class TasksModuleBean implements BeeModule {
         if (event.isBefore()) {
           return;
         }
-        if (BeeUtils.same(event.getTargetName(), VIEW_TASKS)) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_RT_FILES)) {
+          ExtensionIcons.setIcons(event.getRowset(), CommonsConstants.ALS_FILE_NAME,
+              CommonsConstants.PROP_ICON);
+
+        } else if (BeeUtils.same(event.getTargetName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
@@ -307,43 +300,9 @@ public class TasksModuleBean implements BeeModule {
               }
             }
           }
-
-        } else if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENT_FILES, VIEW_RT_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), CommonsConstants.ALS_FILE_NAME,
-              CommonsConstants.PROP_ICON);
-
-        } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TEMPLATES)) {
-          Map<Long, IsRow> indexedRows = Maps.newHashMap();
-          BeeRowSet rowSet = event.getRowset();
-          int idx = rowSet.getColumnIndex(COL_DOCUMENT_DATA);
-
-          for (BeeRow row : rowSet.getRows()) {
-            Long id = row.getLong(idx);
-
-            if (DataUtils.isId(id)) {
-              indexedRows.put(id, row);
-            }
-          }
-          if (!indexedRows.isEmpty()) {
-            BeeView view = sys.getView(VIEW_MAIN_CRITERIA);
-            SqlSelect query = view.getQuery();
-
-            query.setWhere(SqlUtils.and(query.getWhere(),
-                SqlUtils.inList(view.getSourceAlias(), COL_DOCUMENT_DATA, indexedRows.keySet())));
-
-            for (SimpleRow row : qs.getData(query)) {
-              IsRow r = indexedRows.get(row.getLong(COL_DOCUMENT_DATA));
-
-              if (r != null) {
-                r.setProperty(COL_CRITERION_NAME + row.getValue(COL_CRITERION_NAME),
-                    row.getValue(COL_CRITERION_VALUE));
-              }
-            }
-          }
         }
       }
     });
-
     TaskUsageQueryProvider usageQueryProvider = new TaskUsageQueryProvider();
 
     news.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);
@@ -554,50 +513,6 @@ public class TasksModuleBean implements BeeModule {
     }
 
     return response;
-  }
-
-  private ResponseObject copyDocumentData(Long data) {
-    Assert.state(DataUtils.isId(data));
-
-    Long dataId = qs.insertData(new SqlInsert(TBL_DOCUMENT_DATA)
-        .addConstant(COL_DOCUMENT_CONTENT, qs.getValue(new SqlSelect()
-            .addFields(TBL_DOCUMENT_DATA, COL_DOCUMENT_CONTENT)
-            .addFrom(TBL_DOCUMENT_DATA)
-            .setWhere(sys.idEquals(TBL_DOCUMENT_DATA, data)))));
-
-    SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addField(TBL_CRITERIA_GROUPS, sys.getIdName(TBL_CRITERIA_GROUPS), COL_CRITERIA_GROUP)
-        .addField(TBL_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL,
-            COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL)
-        .addFields(TBL_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
-        .addFields(TBL_CRITERIA, COL_CRITERIA_ORDINAL, COL_CRITERION_NAME, COL_CRITERION_VALUE)
-        .addFrom(TBL_CRITERIA_GROUPS)
-        .addFromLeft(TBL_CRITERIA,
-            sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
-        .setWhere(SqlUtils.equals(TBL_CRITERIA_GROUPS, COL_DOCUMENT_DATA, data)));
-
-    Map<Long, Long> groups = Maps.newHashMap();
-
-    for (SimpleRow row : rs) {
-      long groupId = row.getLong(COL_CRITERIA_GROUP);
-      String criterion = row.getValue(COL_CRITERION_NAME);
-
-      if (!groups.containsKey(groupId)) {
-        groups.put(groupId, qs.insertData(new SqlInsert(TBL_CRITERIA_GROUPS)
-            .addConstant(COL_DOCUMENT_DATA, dataId)
-            .addConstant(COL_CRITERIA_ORDINAL,
-                row.getValue(COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL))
-            .addConstant(COL_CRITERIA_GROUP_NAME, row.getValue(COL_CRITERIA_GROUP_NAME))));
-      }
-      if (!BeeUtils.isEmpty(criterion)) {
-        qs.insertData(new SqlInsert(TBL_CRITERIA)
-            .addConstant(COL_CRITERIA_GROUP, groups.get(groupId))
-            .addConstant(COL_CRITERIA_ORDINAL, row.getValue(COL_CRITERIA_ORDINAL))
-            .addConstant(COL_CRITERION_NAME, criterion)
-            .addConstant(COL_CRITERION_VALUE, row.getValue(COL_CRITERION_VALUE)));
-      }
-    }
-    return ResponseObject.response(dataId);
   }
 
   private ResponseObject copyRecurringTask(RequestInfo reqInfo) {

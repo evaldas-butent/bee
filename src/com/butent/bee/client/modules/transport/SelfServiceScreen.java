@@ -36,7 +36,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
 
@@ -100,7 +100,7 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
     GridFactory.hideColumn(VIEW_CARGO_CREDIT_INVOICES, "Select");
 
-    FormFactory.hideWidget(TasksConstants.FORM_DOCUMENT, "DocumentRelations");
+    FormFactory.hideWidget(DocumentsConstants.FORM_DOCUMENT, "DocumentRelations");
 
     addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
         new ClickHandler() {
@@ -206,7 +206,7 @@ public class SelfServiceScreen extends ScreenImpl {
   protected void onUserSignatureClick(long userId) {
     PasswordService.change();
   }
-  
+
   private void openGrid(String gridName, boolean intercept, Filter filter) {
     GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
     openGrid(gridName, intercept, gridOptions);

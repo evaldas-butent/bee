@@ -4,8 +4,6 @@ public interface LocalizableTasksConstants {
 
   String creditLimit();
 
-  String criteriaGroups();
-
   String crmActionComment();
 
   String crmActionFinish();
@@ -49,9 +47,9 @@ public interface LocalizableTasksConstants {
   String crmFinishDateMustBeGreaterThanStart();
 
   String crmFinishTimeMustBeGreaterThanStart();
-  
+
   String crmMailTaskSubject();
-  
+
   String crmNewRecurringTask();
 
   String crmNewRequest();
@@ -103,7 +101,7 @@ public interface LocalizableTasksConstants {
   String crmTaskConfirmDate();
 
   String crmTaskCopyQuestion();
-  
+
   String crmTaskDescription();
 
   String crmTaskDeleteCanManager();
@@ -192,18 +190,6 @@ public interface LocalizableTasksConstants {
 
   String crmTodoList();
 
-  String documentContentIsEmpty();
-
-  String documentFileExists();
-
-  String documentItems();
-
-  String documentName();
-
-  String documentNew();
-
-  String documents();
-
   String hideZeroTimes();
 
   String hoursByCompanies();
@@ -212,17 +198,11 @@ public interface LocalizableTasksConstants {
 
   String hoursByUsers();
 
-  String mainCriteria();
-
-  String newDocumentTemplate();
-
   String requestFinish();
 
   String requestFinishing();
 
   String requestFinishToTask();
-
-  String selectDocumentTemplate();
 
   String specifyResult();
 
@@ -257,6 +237,4 @@ public interface LocalizableTasksConstants {
   String taskTemplate();
 
   String taskTheme();
-
-  String templateName();
 }

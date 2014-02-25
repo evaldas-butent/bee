@@ -1,10 +1,10 @@
-package com.butent.bee.client.modules.tasks;
+package com.butent.bee.client.modules.documents;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentsConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;

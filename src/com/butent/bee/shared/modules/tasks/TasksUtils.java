@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -36,12 +37,12 @@ public final class TasksUtils {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label,
         BeeUtils.joinWords(Localized.getConstants().crmDeleted().toLowerCase(), value));
   }
-  
+
   public static String getInsertNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils
         .joinWords(Localized.getConstants().crmAdded().toLowerCase(), value));
   }
-  
+
   public static Set<String> getRelationPropertyNames() {
     return ensureTaskPropertyToRelation().keySet();
   }
@@ -85,7 +86,7 @@ public final class TasksUtils {
 
     return result;
   }
-  
+
   public static List<Long> getTaskUsers(IsRow row, List<BeeColumn> columns) {
     List<Long> users = Lists.newArrayList();
 
@@ -111,7 +112,7 @@ public final class TasksUtils {
   public static String getUpdateNote(String label, String oldValue, String newValue) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils.join(" -> ", oldValue, newValue));
   }
-  
+
   public static boolean isScheduled(DateTime start) {
     return start != null && TimeUtils.dayDiff(TimeUtils.today(), start) > 0;
   }
@@ -137,7 +138,7 @@ public final class TasksUtils {
     if (taskPropertyToRelation.isEmpty()) {
       taskPropertyToRelation.put(PROP_COMPANIES, COL_COMPANY);
       taskPropertyToRelation.put(PROP_PERSONS, COL_PERSON);
-      taskPropertyToRelation.put(PROP_DOCUMENTS, COL_DOCUMENT);
+      taskPropertyToRelation.put(PROP_DOCUMENTS, DocumentsConstants.COL_DOCUMENT);
       taskPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
       taskPropertyToRelation.put(PROP_DISCUSSIONS, DiscussionsConstants.COL_DISCUSSION);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);

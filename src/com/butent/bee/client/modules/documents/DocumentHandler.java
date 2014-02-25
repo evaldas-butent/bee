@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.tasks;
+package com.butent.bee.client.modules.documents;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -7,8 +7,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.documents.DocumentsConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -59,6 +59,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -145,7 +146,7 @@ public final class DocumentHandler {
           if (category != null) {
             newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY), category.getId());
             newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY_NAME),
-                ((DocumentGridHandler) gcb).getCategoryValue(category, COL_NAME));
+                ((DocumentGridHandler) gcb).getCategoryValue(category, COL_DOCUMENT_NAME));
           }
         }
       }
@@ -259,7 +260,7 @@ public final class DocumentHandler {
 
       if (BeeUtils.same(columnName, COL_FILE)) {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
-            DataUtils.getColumnIndex(COL_CAPTION, dataColumns),
+            DataUtils.getColumnIndex(COL_FILE_CAPTION, dataColumns),
             DataUtils.getColumnIndex(CommonsConstants.ALS_FILE_NAME, dataColumns));
 
       } else {
@@ -432,7 +433,7 @@ public final class DocumentHandler {
     if (!DataUtils.isId(dataId)) {
       callback.onSuccess(dataId);
     } else {
-      ParameterList args = TasksKeeper.createArgs(SVC_COPY_DOCUMENT_DATA);
+      ParameterList args = createArgs(SVC_COPY_DOCUMENT_DATA);
       args.addDataItem(COL_DOCUMENT_DATA, dataId);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -446,6 +447,12 @@ public final class DocumentHandler {
         }
       });
     }
+  }
+
+  static ParameterList createArgs(String method) {
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.DOCUMENTS.getName());
+    args.addQueryItem(CommonsConstants.SERVICE, method);
+    return args;
   }
 
   private static void sendFiles(final Long docId, Collection<NewFileInfo> files,
@@ -469,7 +476,7 @@ public final class DocumentHandler {
               BeeUtils.nvl(fileInfo.getFileDate(), fileInfo.getLastModified()));
           Data.setValue(viewName, row, COL_FILE_VERSION, fileInfo.getFileVersion());
 
-          Data.setValue(viewName, row, COL_CAPTION,
+          Data.setValue(viewName, row, COL_FILE_CAPTION,
               BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
           Data.setValue(viewName, row, COL_DESCRIPTION, fileInfo.getDescription());
 

@@ -10,6 +10,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.tasks.TasksConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -93,8 +94,8 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  DOCUMENTS(RightsUtils.buildModuleName(Module.DOCUMENTS), TasksConstants.TBL_DOCUMENTS,
-      TasksConstants.VIEW_DOCUMENTS, TasksConstants.COL_DOCUMENT_NAME) {
+  DOCUMENTS(RightsUtils.buildModuleName(Module.DOCUMENTS), DocumentsConstants.TBL_DOCUMENTS,
+      DocumentsConstants.VIEW_DOCUMENTS, DocumentsConstants.COL_DOCUMENT_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedDocuments();

@@ -148,7 +148,6 @@ public final class TasksConstants {
   public static final String SVC_TASKS_REPORTS_USERS_HOURS = SVC_TASKS_REPORTS_PREFIX
       + "users_hours";
 
-  public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
   public static final String SVC_GET_REQUEST_FILES = "get_request_files";
 
   public static final String SVC_RT_GET_SCHEDULING_DATA = "rt_get_scheduling_data";
@@ -193,15 +192,6 @@ public final class TasksConstants {
 
   public static final String TBL_EVENT_DURATIONS = "EventDurations";
 
-  public static final String TBL_DOCUMENT_CATEGORIES = "DocumentTree";
-  public static final String TBL_DOCUMENTS = "Documents";
-  public static final String TBL_DOCUMENT_FILES = "DocumentFiles";
-  public static final String TBL_DOCUMENT_ITEMS = "DocumentItems";
-  public static final String TBL_DOCUMENT_TEMPLATES = "DocumentTemplates";
-  public static final String TBL_DOCUMENT_DATA = "DocumentData";
-  public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
-  public static final String TBL_CRITERIA = "Criteria";
-
   public static final String TBL_RECURRING_TASKS = "RecurringTasks";
 
   public static final String TBL_RT_DATES = "RTDates";
@@ -224,10 +214,6 @@ public final class TasksConstants {
   public static final String VIEW_RT_DATES = "RTDates";
   public static final String VIEW_RT_FILES = "RTFiles";
 
-  public static final String VIEW_DOCUMENTS = "Documents";
-
-  public static final String VIEW_MAIN_CRITERIA = "MainCriteria";
-
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -249,25 +235,10 @@ public final class TasksConstants {
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
 
-  public static final String COL_DOCUMENT = "Document";
-  public static final String COL_DOCUMENT_NAME = "Name";
-  public static final String COL_DOCUMENT_DATE = "DocumentDate";
-  public static final String COL_DOCUMENT_COUNT = "DocumentCount";
-  public static final String COL_DOCUMENT_CATEGORY = "Category";
-  public static final String COL_DOCUMENT_CATEGORY_NAME = "CategoryName";
-  public static final String COL_DOCUMENT_TYPE = "Type";
-  public static final String COL_DOCUMENT_TYPE_NAME = "TypeName";
-  public static final String COL_DOCUMENT_PLACE = "Place";
-  public static final String COL_DOCUMENT_PLACE_NAME = "PlaceName";
-  public static final String COL_DOCUMENT_STATUS = "Status";
-  public static final String COL_DOCUMENT_STATUS_NAME = "StatusName";
-
   public static final String COL_FILE = "File";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
-  public static final String COL_NUMBER = "Number";
-  public static final String COL_REGISTRATION_NUMBER = "RegistrationNumber";
   public static final String COL_EXPIRES = "Expires";
 
   public static final String COL_COMPANY = "Company";
@@ -307,16 +278,6 @@ public final class TasksConstants {
   public static final String COL_REQUEST_MANAGER = "Manager";
   public static final String COL_REQUEST_RESULT = "Result";
   public static final String COL_REQUEST_FINISHED = "Finished";
-
-  public static final String COL_DOCUMENT_TEMPLATE = "Template";
-  public static final String COL_DOCUMENT_TEMPLATE_NAME = "Name";
-  public static final String COL_DOCUMENT_DATA = "Data";
-  public static final String COL_DOCUMENT_CONTENT = "Content";
-  public static final String COL_CRITERIA_GROUP = "Group";
-  public static final String COL_CRITERIA_GROUP_NAME = "Name";
-  public static final String COL_CRITERION_NAME = "Criterion";
-  public static final String COL_CRITERION_VALUE = "Value";
-  public static final String COL_CRITERIA_ORDINAL = "Ordinal";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
 
@@ -413,8 +374,6 @@ public final class TasksConstants {
 
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
-
-  public static final String FORM_DOCUMENT = "Document";
 
   public static final String CRM_STYLE_PREFIX = "bee-crm-";
 

@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.tasks;
+package com.butent.bee.client.modules.documents;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
@@ -21,7 +21,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -202,7 +202,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       List<String> descr = Lists.newArrayList();
 
       for (BeeColumn col : Data.getColumns(CommonsConstants.TBL_COMPANIES)) {
-        descr.add("{" + COL_COMPANY + col.getId() + "}");
+        descr.add("{" + CommonsConstants.COL_COMPANY + col.getId() + "}");
       }
       JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
       JsUtils.setProperty(template, "content",
@@ -222,7 +222,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       descr.clear();
 
       for (BeeColumn col : Data.getColumns(CommonsConstants.TBL_PERSONS)) {
-        descr.add("{" + COL_PERSON + col.getId() + "}");
+        descr.add("{" + CommonsConstants.COL_PERSON + col.getId() + "}");
       }
       JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
       JsUtils.setProperty(template, "content",
@@ -269,8 +269,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     private native void initEditor(JavaScriptObject object, TinyEditor ed) /*-{
       object.init_instance_callback = function(editor) {
-        ed.@com.butent.bee.client.modules.tasks.DocumentDataForm.TinyEditor::tiny = editor;
-        ed.@com.butent.bee.client.modules.tasks.DocumentDataForm.TinyEditor::doDefered()();
+        ed.@com.butent.bee.client.modules.documents.DocumentDataForm.TinyEditor::tiny = editor;
+        ed.@com.butent.bee.client.modules.documents.DocumentDataForm.TinyEditor::doDefered()();
       };
       $wnd.tinymce.init(object);
     }-*/;
