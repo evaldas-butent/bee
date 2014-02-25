@@ -56,6 +56,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -381,8 +382,8 @@ public final class TransportHandler {
   }
 
   public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(TRANSPORT_MODULE);
-    args.addQueryItem(TRANSPORT_METHOD, name);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
+    args.addQueryItem(CommonsConstants.SERVICE, name);
     return args;
   }
 
@@ -416,7 +417,7 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
-    
+
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
 

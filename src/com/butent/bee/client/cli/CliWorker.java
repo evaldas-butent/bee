@@ -103,8 +103,8 @@ import com.butent.bee.client.maps.MapWidget;
 import com.butent.bee.client.maps.Marker;
 import com.butent.bee.client.maps.MarkerOptions;
 import com.butent.bee.client.modules.commons.CommonsKeeper;
-import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
+import com.butent.bee.client.modules.tasks.TasksKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -2028,7 +2028,7 @@ public final class CliWorker {
       DateRange range = (until == null) ? DateRange.day(from) : DateRange.closed(from, until);
       logger.debug("schedule tasks", range);
       
-      CrmKeeper.scheduleTasks(range);
+      TasksKeeper.scheduleTasks(range);
     }
   }
 

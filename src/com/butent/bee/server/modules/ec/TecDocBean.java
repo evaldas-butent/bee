@@ -35,6 +35,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -173,8 +174,8 @@ public class TecDocBean {
 
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        BeeParameter.createNumber(EC_MODULE, PRM_BUTENT_INTERVAL, false, null),
-        BeeParameter.createNumber(EC_MODULE, PRM_MOTONET_INTERVAL, false, null));
+        BeeParameter.createNumber(Module.E_COMMERCE.getName(), PRM_BUTENT_INTERVAL, false, null),
+        BeeParameter.createNumber(Module.E_COMMERCE.getName(), PRM_MOTONET_INTERVAL, false, null));
   }
 
   public void initTimers() {

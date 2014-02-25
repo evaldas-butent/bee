@@ -1,11 +1,11 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -35,7 +35,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -157,7 +157,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
 
-    ParameterList args = CrmKeeper.createTaskRequestParameters(TaskEvent.CREATE);
+    ParameterList args = TasksKeeper.createTaskRequestParameters(TaskEvent.CREATE);
     args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.discussions;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.COL_USER;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.Global;
@@ -83,8 +82,8 @@ final class DiscussionsList {
         Filter isMember =
             Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
                 Filter.and(Filter.isEqual(COL_USER, userId),
-                Filter.isEqual(COL_MEMBER, BooleanValue.TRUE)));
-        
+                    Filter.isEqual(COL_MEMBER, BooleanValue.TRUE)));
+
         Filter isStarred =
             Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
                 Filter.and(Filter.notNull(COL_STAR),

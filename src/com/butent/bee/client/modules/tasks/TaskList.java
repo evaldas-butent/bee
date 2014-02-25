@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -62,8 +62,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.crm.CrmUtils;
-import com.butent.bee.shared.modules.crm.TaskType;
+import com.butent.bee.shared.modules.tasks.TasksUtils;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -133,7 +133,7 @@ final class TaskList {
                 return;
               }
 
-              ParameterList params = CrmKeeper.createArgs(SVC_GET_TASK_DATA);
+              ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
               params.addQueryItem(VAR_TASK_ID, presenter.getActiveRow().getId());
               params.addQueryItem(VAR_TASK_PROPERTIES, PROP_OBSERVERS);
               params.addQueryItem(VAR_TASK_RELATIONS, 1);
@@ -361,7 +361,7 @@ final class TaskList {
         }
       }
 
-      for (String propName : CrmUtils.getRelationPropertyNames()) {
+      for (String propName : TasksUtils.getRelationPropertyNames()) {
         String propValue = oldRow.getProperty(propName);
         if (!BeeUtils.isEmpty(propValue)) {
           newRow.setProperty(propName, propValue);
@@ -418,7 +418,7 @@ final class TaskList {
         }
       }
 
-      for (String propName : CrmUtils.getRelationPropertyNames()) {
+      for (String propName : TasksUtils.getRelationPropertyNames()) {
         String propValue = oldRow.getProperty(propName);
         if (!BeeUtils.isEmpty(propValue)) {
           newRow.setProperty(propName, propValue);

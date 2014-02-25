@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
@@ -21,7 +21,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -269,8 +269,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     private native void initEditor(JavaScriptObject object, TinyEditor ed) /*-{
       object.init_instance_callback = function(editor) {
-        ed.@com.butent.bee.client.modules.crm.DocumentDataForm.TinyEditor::tiny = editor;
-        ed.@com.butent.bee.client.modules.crm.DocumentDataForm.TinyEditor::doDefered()();
+        ed.@com.butent.bee.client.modules.tasks.DocumentDataForm.TinyEditor::tiny = editor;
+        ed.@com.butent.bee.client.modules.tasks.DocumentDataForm.TinyEditor::doDefered()();
       };
       $wnd.tinymce.init(object);
     }-*/;

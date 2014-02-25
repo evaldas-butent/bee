@@ -88,7 +88,7 @@ public final class CommonsKeeper {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(COMMONS_METHOD, name);
+    args.addQueryItem(SERVICE, name);
     return args;
   }
 
@@ -137,7 +137,7 @@ public final class CommonsKeeper {
     SelectorEvent.register(new CommonsSelectorHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
-    
+
     RightsForm.register();
   }
 

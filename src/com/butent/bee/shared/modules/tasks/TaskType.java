@@ -1,6 +1,6 @@
-package com.butent.bee.shared.modules.crm;
+package com.butent.bee.shared.modules.tasks;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;

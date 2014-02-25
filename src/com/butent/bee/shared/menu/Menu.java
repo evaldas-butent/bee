@@ -2,10 +2,8 @@ package com.butent.bee.shared.menu;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -50,7 +48,7 @@ public abstract class Menu implements BeeSerializable {
             menu.order = BeeUtils.toIntOrNull(value);
             break;
           case MODULE:
-            menu.module = EnumUtils.getEnumByName(Module.class, value);
+            menu.module = value;
             break;
         }
       }
@@ -85,13 +83,13 @@ public abstract class Menu implements BeeSerializable {
   @XmlAttribute
   private String parent;
   @XmlAttribute
-  private Module module;
+  private String module;
 
   public String getLabel() {
     return label;
   }
 
-  public Module getModule() {
+  public String getModule() {
     return module;
   }
 

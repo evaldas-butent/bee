@@ -1,6 +1,6 @@
-package com.butent.bee.server.modules.crm;
+package com.butent.bee.server.modules.tasks;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;

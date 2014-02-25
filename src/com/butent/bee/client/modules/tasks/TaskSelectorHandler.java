@@ -1,8 +1,8 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;

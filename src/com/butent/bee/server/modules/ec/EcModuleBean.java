@@ -104,6 +104,7 @@ import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -226,11 +227,6 @@ public class EcModuleBean implements BeeModule {
   NewsBean news;
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(COMMONS_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     return null;
   }
@@ -240,7 +236,7 @@ public class EcModuleBean implements BeeModule {
     long startMillis = System.currentTimeMillis();
 
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(EC_METHOD);
+    String svc = reqInfo.getParameter(SERVICE);
 
     String query = null;
     Long article = null;
@@ -392,13 +388,13 @@ public class EcModuleBean implements BeeModule {
   }
 
   @Override
-  public String getName() {
-    return EC_MODULE;
+  public Module getModule() {
+    return Module.E_COMMERCE;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override

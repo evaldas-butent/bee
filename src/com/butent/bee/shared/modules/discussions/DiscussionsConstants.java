@@ -94,9 +94,6 @@ public final class DiscussionsConstants {
     EnumUtils.register(DiscussionStatus.class);
   }
 
-  public static final String DISCUSSIONS_MODULE = "Discussions";
-
-  public static final String DISCUSSIONS_METHOD = DISCUSSIONS_MODULE + "Method";
   public static final String DISCUSSIONS_PREFIX = "discuss_";
   public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
   public static final String STYLE_SHEET = "discuss";
@@ -142,6 +139,7 @@ public final class DiscussionsConstants {
   public static final String COL_REASON = "Reason";
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
+  public static final String COL_USER = "User";
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_TOPIC = "Topic";
   public static final String COL_VISIBLE = "Visible";

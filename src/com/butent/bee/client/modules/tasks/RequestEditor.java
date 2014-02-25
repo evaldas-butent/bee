@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -30,7 +30,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
-import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.tasks.TasksConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -65,10 +65,9 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     if (edited) {
       boolean finished =
-          activeRow.getDateTime(form.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)) != null;
-      boolean registred =
-          (!finished)
-              && (activeRow.getDateTime(form.getDataIndex(CrmConstants.COL_REQUEST_DATE)) != null);
+          activeRow.getDateTime(form.getDataIndex(TasksConstants.COL_REQUEST_FINISHED)) != null;
+      boolean registred = (!finished)
+          && (activeRow.getDateTime(form.getDataIndex(TasksConstants.COL_REQUEST_DATE)) != null);
 
       if (registred) {
         Button btnFinish = new Button(Localized.getConstants().requestFinish());
@@ -109,7 +108,7 @@ public class RequestEditor extends AbstractFormInterceptor {
     if (fileWidget instanceof FileGroup) {
       ((FileGroup) fileWidget).clear();
 
-      ParameterList params = CrmKeeper.createArgs(SVC_GET_REQUEST_FILES);
+      ParameterList params = TasksKeeper.createArgs(SVC_GET_REQUEST_FILES);
       params.addDataItem(COL_REQUEST, row.getId());
 
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -149,15 +148,15 @@ public class RequestEditor extends AbstractFormInterceptor {
       @Override
       public void onSuccess(String value) {
         List<BeeColumn> columns = Lists.newArrayList(DataUtils
-            .getColumn(CrmConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
+            .getColumn(TasksConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
 
         List<String> oldValues = Lists.newArrayList(activeRow
-            .getString(form.getDataIndex(CrmConstants.COL_REQUEST_FINISHED)));
+            .getString(form.getDataIndex(TasksConstants.COL_REQUEST_FINISHED)));
 
         List<String> newValues = Lists.newArrayList(BeeUtils.toString(new DateTime().getTime()));
 
-        columns.add(DataUtils.getColumn(CrmConstants.COL_REQUEST_RESULT, form.getDataColumns()));
-        oldValues.add(activeRow.getString(form.getDataIndex(CrmConstants.COL_REQUEST_RESULT)));
+        columns.add(DataUtils.getColumn(TasksConstants.COL_REQUEST_RESULT, form.getDataColumns()));
+        oldValues.add(activeRow.getString(form.getDataIndex(TasksConstants.COL_REQUEST_RESULT)));
         newValues.add(value);
 
         Queries.update(form.getViewName(), activeRow.getId(), activeRow.getId(),
@@ -167,6 +166,6 @@ public class RequestEditor extends AbstractFormInterceptor {
   }
 
   private void toTaskAndFinish() {
-    // TODO: 
+    // TODO:
   }
 }

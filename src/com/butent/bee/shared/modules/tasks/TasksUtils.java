@@ -1,10 +1,10 @@
-package com.butent.bee.shared.modules.crm;
+package com.butent.bee.shared.modules.tasks;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -26,7 +26,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.List;
 import java.util.Set;
 
-public final class CrmUtils {
+public final class TasksUtils {
 
   private static final String NOTE_LABEL_SEPARATOR = ": ";
 
@@ -145,6 +145,6 @@ public final class CrmUtils {
     return taskPropertyToRelation;
   }
 
-  private CrmUtils() {
+  private TasksUtils() {
   }
 }

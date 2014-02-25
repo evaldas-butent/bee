@@ -1,8 +1,8 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -46,7 +46,7 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
                 }
                 long rtId = presenter.getActiveRow().getId();
 
-                ParameterList params = CrmKeeper.createArgs(SVC_RT_COPY);
+                ParameterList params = TasksKeeper.createArgs(SVC_RT_COPY);
                 params.addQueryItem(VAR_RT_ID, rtId);
 
                 BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {

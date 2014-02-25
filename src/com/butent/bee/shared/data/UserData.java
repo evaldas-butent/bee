@@ -13,7 +13,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -264,12 +263,8 @@ public class UserData implements BeeSerializable, HasInfo {
     return hasRight(RightsObjectType.MENU, object, RightsState.VISIBLE);
   }
 
-  public boolean isModuleVisible(Module module) {
-    if (module == null) {
-      return true;
-    } else {
-      return hasRight(RightsObjectType.MODULE, module.name(), RightsState.VISIBLE);
-    }
+  public boolean isModuleVisible(String object) {
+    return hasRight(RightsObjectType.MODULE, object, RightsState.VISIBLE);
   }
 
   @Override

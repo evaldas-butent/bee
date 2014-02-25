@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -7,7 +7,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
 import com.butent.bee.client.BeeKeeper;
@@ -432,7 +432,7 @@ public final class DocumentHandler {
     if (!DataUtils.isId(dataId)) {
       callback.onSuccess(dataId);
     } else {
-      ParameterList args = CrmKeeper.createArgs(SVC_COPY_DOCUMENT_DATA);
+      ParameterList args = TasksKeeper.createArgs(SVC_COPY_DOCUMENT_DATA);
       args.addDataItem(COL_DOCUMENT_DATA, dataId);
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

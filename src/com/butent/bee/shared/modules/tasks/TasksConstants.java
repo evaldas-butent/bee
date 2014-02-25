@@ -1,4 +1,4 @@
-package com.butent.bee.shared.modules.crm;
+package com.butent.bee.shared.modules.tasks;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -7,7 +7,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
-public final class CrmConstants {
+public final class TasksConstants {
 
   public enum TaskEvent implements HasCaption {
     CREATE(Localized.getConstants().crmTaskEventCreated(), null),
@@ -134,9 +134,6 @@ public final class CrmConstants {
     EnumUtils.register(TaskStatus.class);
   }
 
-  public static final String CRM_MODULE = "Crm";
-  public static final String CRM_METHOD = CRM_MODULE + "Method";
-
   public static final String CRM_TASK_PREFIX = "task_";
 
   public static final String SVC_GET_TASK_DATA = "get_task_data";
@@ -206,7 +203,7 @@ public final class CrmConstants {
   public static final String TBL_CRITERIA = "Criteria";
 
   public static final String TBL_RECURRING_TASKS = "RecurringTasks";
-  
+
   public static final String TBL_RT_DATES = "RTDates";
   public static final String TBL_RT_FILES = "RTFiles";
   public static final String TBL_RT_EXECUTORS = "RTExecutors";
@@ -426,6 +423,6 @@ public final class CrmConstants {
   public static final String FILTER_TASKS_NEW = "tasks_new";
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
-  private CrmConstants() {
+  private TasksConstants() {
   }
 }

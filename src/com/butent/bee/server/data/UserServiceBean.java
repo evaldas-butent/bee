@@ -15,10 +15,12 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -34,7 +36,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -48,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -471,7 +473,7 @@ public class UserServiceBean {
     return false;
   }
 
-  public boolean isModuleVisible(Module module) {
+  public boolean isModuleVisible(String module) {
     UserInfo info = getCurrentUserInfo();
     return (info == null) ? false : info.getUserData().isModuleVisible(module);
   }
@@ -599,7 +601,7 @@ public class UserServiceBean {
   }
 
   public boolean isRightsTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_OBJECTS, TBL_RIGHTS);
+    return false; // BeeUtils.inList(tblName, TBL_OBJECTS, TBL_RIGHTS);
   }
 
   public boolean isRoleTable(String tblName) {
@@ -673,11 +675,103 @@ public class UserServiceBean {
     }
   }
 
-  @SuppressWarnings("unused")
   @Lock(LockType.WRITE)
   public ResponseObject setRights(RightsObjectType type, RightsState state,
-      Map<String, String> objects) {
-    return ResponseObject.info("Maybe next time");
+      Map<String, String> changes) {
+
+    Assert.noNulls(type, state);
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
+        .addFields(TBL_RIGHTS, COL_OBJECT, COL_ROLE)
+        .addField(TBL_RIGHTS, sys.getIdName(TBL_RIGHTS), "ID")
+        .addFrom(TBL_OBJECTS)
+        .addFromLeft(TBL_RIGHTS, SqlUtils.and(sys.joinTables(TBL_OBJECTS, TBL_RIGHTS, COL_OBJECT),
+            SqlUtils.equals(TBL_RIGHTS, COL_STATE, state.ordinal())))
+        .setWhere(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal())));
+
+    Map<String, Map<Long, Long>> objects = Maps.newHashMap();
+
+    for (SimpleRow row : rs) {
+      String object = row.getValue(COL_OBJECT_NAME);
+      Map<Long, Long> rights = objects.get(object);
+
+      if (rights == null) {
+        rights = Maps.newHashMap();
+        objects.put(object, rights);
+      }
+      Long id = row.getLong("ID");
+
+      if (DataUtils.isId(id)) {
+        rights.put(row.getLong(COL_ROLE), id);
+      }
+    }
+    if (!BeeUtils.isEmpty(changes)) {
+      for (String object : changes.keySet()) {
+        Map<Long, Long> rights = objects.get(object);
+
+        if (rights == null) {
+          rights = Maps.newHashMap();
+          objects.put(object, rights);
+        }
+        for (Long id : DataUtils.parseIdSet(changes.get(object))) {
+          Long x = rights.get(id);
+
+          if (DataUtils.isId(x)) {
+            x *= -1;
+          }
+          rights.put(id, x);
+        }
+      }
+    }
+    Set<Long> del = Sets.newHashSet();
+    Multimap<String, Long> ins = HashMultimap.create();
+
+    for (String object : objects.keySet()) {
+      for (Entry<Long, Long> entry : objects.get(object).entrySet()) {
+        if (DataUtils.isId(entry.getValue())) {
+          del.add(entry.getValue());
+        } else if (entry.getValue() == null) {
+          ins.put(object, entry.getKey());
+        }
+      }
+    }
+    int allRoles = getRoles().size();
+    int i = 0;
+    int a = 0;
+
+    for (String object : ins.keySet()) {
+      Collection<Long> roles = ins.get(object);
+      Long objId = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+      if (!DataUtils.isId(objId)) {
+        objId = qs.insertData(new SqlInsert(TBL_OBJECTS)
+            .addConstant(COL_OBJECT_TYPE, type.ordinal())
+            .addConstant(COL_OBJECT_NAME, object));
+      }
+      if (roles.size() == allRoles) {
+        a++;
+        qs.insertData(new SqlInsert(TBL_RIGHTS)
+            .addConstant(COL_OBJECT, objId)
+            .addConstant(COL_STATE, state.ordinal()));
+      } else {
+        for (Long role : roles) {
+          i++;
+          qs.insertData(new SqlInsert(TBL_RIGHTS)
+              .addConstant(COL_OBJECT, objId)
+              .addConstant(COL_ROLE, role)
+              .addConstant(COL_STATE, state.ordinal()));
+        }
+      }
+    }
+    if (!BeeUtils.isEmpty(del)) {
+      qs.updateData(new SqlDelete(TBL_RIGHTS)
+          .setWhere(sys.idInList(TBL_RIGHTS, del)));
+    }
+    initRights();
+    Endpoint.updateUserData(getAllUserData());
+
+    return ResponseObject.info("Inserted:", i, "All row:", a);
   }
 
   @Lock(LockType.WRITE)

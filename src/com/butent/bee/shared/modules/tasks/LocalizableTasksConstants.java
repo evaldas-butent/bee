@@ -1,6 +1,6 @@
-package com.butent.bee.shared.modules.crm;
+package com.butent.bee.shared.modules.tasks;
 
-public interface LocalizableCrmConstants {
+public interface LocalizableTasksConstants {
 
   String creditLimit();
 

@@ -358,9 +358,6 @@ public final class TransportConstants {
     EnumUtils.register(ImportType.class);
   }
 
-  public static final String TRANSPORT_MODULE = "Transport";
-  public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
-
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
   public static final String SVC_GET_PROFIT = "GetProfit";

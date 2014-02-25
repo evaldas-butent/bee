@@ -7,6 +7,8 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -35,7 +37,15 @@ final class ModuleRightsHandler extends RightsForm {
   protected void initObjects(Consumer<List<RightsObject>> consumer) {
     List<RightsObject> result = Lists.newArrayList();
     for (Module module : Module.values()) {
-      result.add(new RightsObject(BeeUtils.proper(module.name()), module.getCaption(), module));
+      if (BeeUtils.isEmpty(module.getSubModules())) {
+        result.add(new RightsObject(module.getName(), module.getCaption(),
+            RightsUtils.buildModuleName(module)));
+      } else {
+        for (SubModule subModule : module.getSubModules()) {
+          result.add(new RightsObject(subModule.getName(), subModule.getCaption(),
+              RightsUtils.buildModuleName(module, subModule), 1, module.getName()));
+        }
+      }
     }
     consumer.accept(result);
   }

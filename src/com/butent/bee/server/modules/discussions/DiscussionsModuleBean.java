@@ -50,6 +50,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants.Discussion
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -103,15 +104,10 @@ public class DiscussionsModuleBean implements BeeModule {
   TimerService timerService;
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.DISCUSSIONS)) {
+    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.DISCUSSIONS))) {
       result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
           Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
               ALS_OWNER_LAST_NAME), query)));
@@ -124,7 +120,7 @@ public class DiscussionsModuleBean implements BeeModule {
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    String svc = reqInfo.getParameter(DISCUSSIONS_METHOD);
+    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     if (BeeUtils.isPrefix(svc, DISCUSSIONS_PREFIX)) {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
@@ -145,28 +141,28 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
+    String module = getModule().getName();
+
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_DISCUSS_ADMIN, false, ""),
-        BeeParameter.createBoolean(DISCUSSIONS_MODULE, PRM_ALLOW_DELETE_OWN_COMMENTS, false, null),
-        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false,
-            null),
-        BeeParameter.createText(DISCUSSIONS_MODULE, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
-        BeeParameter.createNumber(DISCUSSIONS_MODULE, PRM_MAX_UPLOAD_FILE_SIZE, false, null),
-        BeeParameter.createRelation(DISCUSSIONS_MODULE, PRM_DISCUSS_BIRTHDAYS, false,
-            TBL_ADS_TOPICS, COL_NAME)
+        BeeParameter.createText(module, PRM_DISCUSS_ADMIN, false, ""),
+        BeeParameter.createBoolean(module, PRM_ALLOW_DELETE_OWN_COMMENTS, false, null),
+        BeeParameter.createNumber(module, PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false, null),
+        BeeParameter.createText(module, PRM_FORBIDDEN_FILES_EXTENTIONS, false, ""),
+        BeeParameter.createNumber(module, PRM_MAX_UPLOAD_FILE_SIZE, false, null),
+        BeeParameter.createRelation(module, PRM_DISCUSS_BIRTHDAYS, false, TBL_ADS_TOPICS, COL_NAME)
         );
 
     return params;
   }
 
   @Override
-  public String getName() {
-    return DISCUSSIONS_MODULE;
+  public Module getModule() {
+    return Module.DISCUSSIONS;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override
@@ -376,7 +372,7 @@ public class DiscussionsModuleBean implements BeeModule {
       row.setProperty(PROP_MARK_TYPES, rs.serialize());
     }
 
-    Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(DISCUSSIONS_MODULE);
+    Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(getModule().getName());
     if (!discussModuleParams.isEmpty()) {
       Map<String, String> paramsMap = Maps.newHashMap();
 

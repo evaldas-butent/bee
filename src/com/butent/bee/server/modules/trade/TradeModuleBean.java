@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 
@@ -32,6 +31,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -74,11 +74,6 @@ public class TradeModuleBean implements BeeModule {
   UserServiceBean usr;
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(COMMONS_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     return null;
   }
@@ -86,7 +81,7 @@ public class TradeModuleBean implements BeeModule {
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(TRADE_METHOD);
+    String svc = reqInfo.getParameter(SERVICE);
 
     if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo.getParameter("view_name"),
@@ -176,13 +171,13 @@ public class TradeModuleBean implements BeeModule {
   }
 
   @Override
-  public String getName() {
-    return TRADE_MODULE;
+  public Module getModule() {
+    return Module.TRADE;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override

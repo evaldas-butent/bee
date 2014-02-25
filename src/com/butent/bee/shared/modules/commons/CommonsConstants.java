@@ -120,7 +120,7 @@ public final class CommonsConstants {
       return this.name().toLowerCase();
     }
   }
-  
+
   public enum UserGroupVisibility implements HasCaption {
     PRIVATE(Localized.getConstants().userGroupPrivate()),
     PUBLIC(Localized.getConstants().userGroupPublic());
@@ -151,8 +151,9 @@ public final class CommonsConstants {
     EnumUtils.register(WorkdayTransition.class);
   }
 
+  public static final String SERVICE = "Service";
+
   public static final String COMMONS_MODULE = "Commons";
-  public static final String COMMONS_METHOD = COMMONS_MODULE + "Method";
 
   public static final String COMMONS_PARAMETERS_PREFIX = "parameters_";
 
@@ -278,7 +279,7 @@ public final class CommonsConstants {
   public static final String VIEW_ROLES = "Roles";
   public static final String VIEW_RIGHTS = "Rights";
   public static final String VIEW_USER_ROLES = "UserRoles";
-  
+
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
@@ -288,7 +289,7 @@ public final class CommonsConstants {
   public static final String GRID_COLORS = "Colors";
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
-  
+
   public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
@@ -319,7 +320,7 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_USER_COMPANY = "Company";
   public static final String COL_COMPANY_USER_USER = "User";
   public static final String COL_COMPANY_USER_RESPONSIBILITY = "Responsibility";
-  
+
   public static final String COL_PERSON = "Person";
 
   public static final String COL_POSITION = "Position";
@@ -430,7 +431,7 @@ public final class CommonsConstants {
 
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";
-  
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
@@ -453,7 +454,7 @@ public final class CommonsConstants {
 
   public static final String ALS_OBJECT_TYPE = "ObjectType";
   public static final String ALS_OBJECT_NAME = "ObjectName";
-  
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 

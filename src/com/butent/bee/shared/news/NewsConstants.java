@@ -7,9 +7,9 @@ import com.google.common.collect.Multimap;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.tasks.TasksConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -113,7 +113,7 @@ public final class NewsConstants {
     usageTables.put(CommonsConstants.TBL_PERSONS, "PersonUsage");
     usageTables.put(CommonsConstants.TBL_ITEMS, "ItemUsage");
 
-    usageTables.put(CrmConstants.TBL_DOCUMENTS, "DocumentUsage");
+    usageTables.put(TasksConstants.TBL_DOCUMENTS, "DocumentUsage");
 
     usageTables.put(CalendarConstants.TBL_APPOINTMENT_ATTENDEES, "AppAttUsage");
     usageTables.put(CalendarConstants.TBL_APPOINTMENTS, "AppointmentUsage");

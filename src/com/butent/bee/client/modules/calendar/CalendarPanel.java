@@ -81,7 +81,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.tasks.TasksConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -168,7 +168,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
             CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
             break;
           case TASK:
-            RowEditor.openRow(CrmConstants.VIEW_TASKS, item.getId(), true, null);
+            RowEditor.openRow(TasksConstants.VIEW_TASKS, item.getId(), true, null);
             break;
         }
       }
@@ -424,7 +424,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
-    if (event.hasView(VIEW_APPOINTMENTS) || event.hasView(CrmConstants.VIEW_TASKS)) {
+    if (event.hasView(VIEW_APPOINTMENTS) || event.hasView(TasksConstants.VIEW_TASKS)) {
       ItemType type = event.hasView(VIEW_APPOINTMENTS) ? ItemType.APPOINTMENT : ItemType.TASK;
 
       boolean removed = false;
@@ -490,7 +490,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   @Override
   public void onRowDelete(RowDeleteEvent event) {
-    if (event.hasView(VIEW_APPOINTMENTS) || event.hasView(CrmConstants.VIEW_TASKS)) {
+    if (event.hasView(VIEW_APPOINTMENTS) || event.hasView(TasksConstants.VIEW_TASKS)) {
       ItemType type = event.hasView(VIEW_APPOINTMENTS) ? ItemType.APPOINTMENT : ItemType.TASK;
       boolean removed = calendar.removeItem(type, event.getRowId(), false);
 
@@ -686,7 +686,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         return true;
       }
 
-    } else if (event.hasView(CrmConstants.VIEW_TASKS)) {
+    } else if (event.hasView(TasksConstants.VIEW_TASKS)) {
       return CalendarKeeper.showsTasks(getCalendarId());
 
     } else {
@@ -793,8 +793,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         return;
       }
 
-      GridFactory.createGrid(CrmConstants.GRID_TODO_LIST, TODO_LIST_SUPPLIER_KEY,
-          GridFactory.getGridInterceptor(CrmConstants.GRID_TODO_LIST),
+      GridFactory.createGrid(TasksConstants.GRID_TODO_LIST, TODO_LIST_SUPPLIER_KEY,
+          GridFactory.getGridInterceptor(TasksConstants.GRID_TODO_LIST),
           EnumSet.of(UiOption.EMBEDDED), null, new PresenterCallback() {
             @Override
             public void onCreate(Presenter presenter) {

@@ -11,8 +11,10 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 
 public final class DiscussionsKeeper {
 
@@ -40,8 +42,8 @@ public final class DiscussionsKeeper {
   }
 
   static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(DISCUSSIONS_MODULE);
-    args.addQueryItem(DISCUSSIONS_METHOD, method);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.DISCUSSIONS.getName());
+    args.addQueryItem(CommonsConstants.SERVICE, method);
     return args;
   }
 
@@ -60,7 +62,6 @@ public final class DiscussionsKeeper {
 
     return consumer;
   }
-
 
   private DiscussionsKeeper() {
 

@@ -1,4 +1,4 @@
-package com.butent.bee.server.modules.crm;
+package com.butent.bee.server.modules.tasks;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
@@ -9,7 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -65,14 +65,15 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
-import com.butent.bee.shared.modules.crm.CrmUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.tasks.TasksUtils;
+import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
@@ -102,9 +103,9 @@ import javax.ejb.Timer;
 
 @Stateless
 @LocalBean
-public class CrmModuleBean implements BeeModule {
+public class TasksModuleBean implements BeeModule {
 
-  private static BeeLogger logger = LogUtils.getLogger(CrmModuleBean.class);
+  private static BeeLogger logger = LogUtils.getLogger(TasksModuleBean.class);
 
   @EJB
   SystemBean sys;
@@ -127,15 +128,10 @@ public class CrmModuleBean implements BeeModule {
   EJBContext ctx;
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.DOCUMENTS)) {
+    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.DOCUMENTS))) {
       List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER, COL_NAME,
               COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME, COL_DOCUMENT_PLACE_NAME,
@@ -143,7 +139,7 @@ public class CrmModuleBean implements BeeModule {
       result.addAll(docsSr);
     }
 
-    if (usr.isModuleVisible(Module.TASKS)) {
+    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.TASKS))) {
       List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
           Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
               CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
@@ -169,7 +165,7 @@ public class CrmModuleBean implements BeeModule {
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CRM_METHOD);
+    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
       response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqInfo);
@@ -227,13 +223,13 @@ public class CrmModuleBean implements BeeModule {
   }
 
   @Override
-  public String getName() {
-    return CRM_MODULE;
+  public Module getModule() {
+    return Module.TASKS;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override
@@ -511,7 +507,7 @@ public class CrmModuleBean implements BeeModule {
 
     List<Long> newUsers;
     if (checkUsers) {
-      newUsers = CrmUtils.getTaskUsers(row, data.getColumns());
+      newUsers = TasksUtils.getTaskUsers(row, data.getColumns());
       if (!BeeUtils.sameElements(oldUsers, newUsers)) {
         updateTaskUsers(row.getId(), oldUsers, newUsers);
       }
@@ -653,7 +649,7 @@ public class CrmModuleBean implements BeeModule {
     List<RowChildren> children = Lists.newArrayList();
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String relation = CrmUtils.translateTaskPropertyToRelation(entry.getKey());
+      String relation = TasksUtils.translateTaskPropertyToRelation(entry.getKey());
 
       if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
         children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, null,
@@ -703,7 +699,7 @@ public class CrmModuleBean implements BeeModule {
       newRow.setValue(data.getColumnIndex(COL_EXECUTOR), executor);
 
       TaskStatus status;
-      if (CrmUtils.isScheduled(start)) {
+      if (TasksUtils.isScheduled(start)) {
         status = TaskStatus.SCHEDULED;
       } else {
         status = (executor == owner) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
@@ -1197,12 +1193,12 @@ public class CrmModuleBean implements BeeModule {
   private Multimap<String, Long> getRelations(String filterColumn, long filterValue) {
     Multimap<String, Long> res = HashMultimap.create();
 
-    for (String relation : CrmUtils.getRelations()) {
+    for (String relation : TasksUtils.getRelations()) {
       Long[] ids = qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, filterColumn, filterValue,
           relation);
 
       if (ids != null && ids.length > 0) {
-        String property = CrmUtils.translateRelationToTaskProperty(relation);
+        String property = TasksUtils.translateRelationToTaskProperty(relation);
 
         for (Long id : ids) {
           res.put(property, id);
@@ -1955,7 +1951,7 @@ public class CrmModuleBean implements BeeModule {
           Filter.equals(COL_RTD_RECURRING_TASK, rtId));
 
       if (!DataUtils.isEmpty(rtDates)) {
-        List<ScheduleDateRange> scheduleDateRanges = CrmUtils.getScheduleDateRanges(rtDates);
+        List<ScheduleDateRange> scheduleDateRanges = TasksUtils.getScheduleDateRanges(rtDates);
 
         for (ScheduleDateRange sdr : scheduleDateRanges) {
           builder.rangeMode(sdr.getRange(), sdr.getMode());
@@ -2412,7 +2408,7 @@ public class CrmModuleBean implements BeeModule {
     List<RowChildren> children = Lists.newArrayList();
 
     for (String property : updatedRelations) {
-      String relation = CrmUtils.translateTaskPropertyToRelation(property);
+      String relation = TasksUtils.translateTaskPropertyToRelation(property);
 
       if (!BeeUtils.isEmpty(relation)) {
         children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, taskId,

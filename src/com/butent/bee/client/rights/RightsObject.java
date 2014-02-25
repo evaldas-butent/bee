@@ -1,6 +1,5 @@
 package com.butent.bee.client.rights;
 
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -10,18 +9,18 @@ class RightsObject implements HasCaption {
   private final String name;
   private final String caption;
 
-  private final Module module;
+  private final String module;
 
   private final int level;
   private final String parent;
-  
+
   private boolean hasChildren;
 
-  RightsObject(String name, String caption, Module module) {
+  RightsObject(String name, String caption, String module) {
     this(name, caption, module, 0, null);
   }
 
-  RightsObject(String name, String caption, Module module, int level, String parent) {
+  RightsObject(String name, String caption, String module, int level, String parent) {
     this.name = RightsUtils.buildName(parent, name);
     this.caption = caption;
 
@@ -40,7 +39,7 @@ class RightsObject implements HasCaption {
     return level;
   }
 
-  Module getModule() {
+  String getModule() {
     return module;
   }
 

@@ -1,10 +1,10 @@
-package com.butent.bee.client.modules.crm;
+package com.butent.bee.client.modules.tasks;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
-import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -30,10 +30,11 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
-import com.butent.bee.shared.modules.crm.CrmUtils;
+import com.butent.bee.shared.modules.tasks.TasksUtils;
+import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -43,7 +44,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
-public final class CrmKeeper {
+public final class TasksKeeper {
 
   private static final String COMPANY_TIMES_REPORT = "companytimes";
   private static final String TYPE_HOURS_REPORT = "typehours";
@@ -125,31 +126,31 @@ public final class CrmKeeper {
             }
 
             List<String> notes = Lists.newArrayList();
-            
+
             ParameterList params = createArgs(SVC_EXTEND_TASK);
             params.addQueryItem(VAR_TASK_ID, taskId);
 
             if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
               params.addQueryItem(COL_START_TIME, newStart.getTime());
-              notes.add(CrmUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
+              notes.add(TasksUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
                   TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
             }
 
             if (!Objects.equal(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
-              notes.add(CrmUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
+              notes.add(TasksUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
                   TimeUtils.renderCompact(oldEnd), TimeUtils.renderCompact(newEnd)));
             }
-            
+
             String comment = dialog.getComment(cid);
             if (!BeeUtils.isEmpty(comment)) {
               params.addDataItem(VAR_TASK_COMMENT, comment);
             }
-            
+
             if (!notes.isEmpty()) {
               params.addDataItem(VAR_TASK_NOTES, Codec.beeSerialize(notes));
             }
-            
+
             BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
@@ -263,8 +264,8 @@ public final class CrmKeeper {
   }
 
   static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(CRM_MODULE);
-    args.addQueryItem(CRM_METHOD, method);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TASKS.getName());
+    args.addQueryItem(CommonsConstants.SERVICE, method);
     return args;
   }
 
@@ -272,6 +273,6 @@ public final class CrmKeeper {
     return createArgs(CRM_TASK_PREFIX + event.name());
   }
 
-  private CrmKeeper() {
+  private TasksKeeper() {
   }
 }
