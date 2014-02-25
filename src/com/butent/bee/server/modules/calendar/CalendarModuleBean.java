@@ -423,9 +423,8 @@ public class CalendarModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     if (BeeUtils.same(svc, SVC_GET_USER_CALENDAR)) {
       response = getUserCalendar(reqInfo);

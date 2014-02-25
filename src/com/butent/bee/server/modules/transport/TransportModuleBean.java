@@ -136,13 +136,12 @@ public class TransportModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(SERVICE);
 
     if (BeeUtils.same(svc, SVC_GET_BEFORE)) {
-      long vehicle = BeeUtils.toLong(reqInfo.getParameter("Vehicle"));
-      long date = BeeUtils.toLong(reqInfo.getParameter("Date"));
+      long vehicle = BeeUtils.toLong(reqInfo.getParameter(COL_VEHICLE));
+      long date = BeeUtils.toLong(reqInfo.getParameter(COL_DATE));
 
       response = getTripBeforeData(vehicle, date);
     } else if (BeeUtils.same(svc, SVC_GET_UNASSIGNED_CARGOS)) {

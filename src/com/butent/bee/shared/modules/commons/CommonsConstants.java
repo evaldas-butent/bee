@@ -151,7 +151,7 @@ public final class CommonsConstants {
     EnumUtils.register(WorkdayTransition.class);
   }
 
-  public static final String SERVICE = "Service";
+  public static final String METHOD = "Service";
 
   public static final String COMMONS_MODULE = "Commons";
 

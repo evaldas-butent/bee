@@ -37,7 +37,6 @@ import javax.naming.NamingException;
 public class ModuleHolderBean {
 
   private static final String PROPERTY_MODULES = "Modules";
-  private static final String MODULE_BEAN_PREFIX = "ModuleBean";
 
   private enum TABLE_ACTIVATION_MODE {
     DELAYED, FORCED
@@ -54,7 +53,9 @@ public class ModuleHolderBean {
 
   public ResponseObject doModule(RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
-    return getModule(reqInfo.getService()).doService(reqInfo);
+
+    return getModule(reqInfo.getService())
+        .doService(reqInfo.getParameter(CommonsConstants.METHOD), reqInfo);
   }
 
   public List<SearchResult> doSearch(String query) {
@@ -137,7 +138,7 @@ public class ModuleHolderBean {
     for (String moduleName : mods) {
       try {
         BeeModule module = (BeeModule) InitialContext.doLookup("java:module/"
-            + moduleName + MODULE_BEAN_PREFIX);
+            + moduleName + "ModuleBean");
 
         if (hasModule(moduleName)) {
           logger.severe("Dublicate module name:", BeeUtils.bracket(moduleName));

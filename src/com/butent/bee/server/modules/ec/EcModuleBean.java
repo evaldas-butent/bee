@@ -232,11 +232,10 @@ public class EcModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     long startMillis = System.currentTimeMillis();
 
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(SERVICE);
 
     String query = null;
     Long article = null;
@@ -389,7 +388,7 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public Module getModule() {
-    return Module.E_COMMERCE;
+    return Module.ECOMMERCE;
   }
 
   @Override

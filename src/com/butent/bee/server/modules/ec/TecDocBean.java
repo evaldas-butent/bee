@@ -174,8 +174,8 @@ public class TecDocBean {
 
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        BeeParameter.createNumber(Module.E_COMMERCE.getName(), PRM_BUTENT_INTERVAL, false, null),
-        BeeParameter.createNumber(Module.E_COMMERCE.getName(), PRM_MOTONET_INTERVAL, false, null));
+        BeeParameter.createNumber(Module.ECOMMERCE.getName(), PRM_BUTENT_INTERVAL, false, null),
+        BeeParameter.createNumber(Module.ECOMMERCE.getName(), PRM_MOTONET_INTERVAL, false, null));
   }
 
   public void initTimers() {

@@ -88,7 +88,7 @@ public final class CommonsKeeper {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(SERVICE, name);
+    args.addQueryItem(METHOD, name);
     return args;
   }
 

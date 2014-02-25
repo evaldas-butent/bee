@@ -38,13 +38,13 @@ public enum Module implements HasLocalizedCaption {
       return constants.discussions();
     }
   },
-  MAIL(null) {
+  MAIL(EnumSet.of(SubModule.ADMINISTRATION)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.mail();
     }
   },
-  E_COMMERCE(null) {
+  ECOMMERCE(EnumSet.of(SubModule.ADMINISTRATION)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.ecModule();
@@ -61,7 +61,7 @@ public enum Module implements HasLocalizedCaption {
       return constants.trade();
     }
   },
-  TRANSPORT(null) {
+  TRANSPORT(EnumSet.of(SubModule.ADMINISTRATION)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.transport();

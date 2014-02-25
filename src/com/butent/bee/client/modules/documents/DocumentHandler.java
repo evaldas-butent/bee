@@ -451,7 +451,7 @@ public final class DocumentHandler {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.DOCUMENTS.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, method);
+    args.addQueryItem(CommonsConstants.METHOD, method);
     return args;
   }
 

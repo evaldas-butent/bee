@@ -13,7 +13,7 @@ public interface BeeModule {
 
   List<SearchResult> doSearch(String query);
 
-  ResponseObject doService(RequestInfo reqInfo);
+  ResponseObject doService(String svc, RequestInfo reqInfo);
 
   Collection<BeeParameter> getDefaultParameters();
 

@@ -155,9 +155,8 @@ public class TasksModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
       response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqInfo);

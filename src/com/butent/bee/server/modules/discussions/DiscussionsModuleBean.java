@@ -117,10 +117,8 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-
-    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     if (BeeUtils.isPrefix(svc, DISCUSSIONS_PREFIX)) {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);

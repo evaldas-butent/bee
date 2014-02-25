@@ -165,9 +165,8 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(SERVICE);
 
     if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
       response = prm.doService(svc, reqInfo);
@@ -249,14 +248,6 @@ public class CommonsModuleBean implements BeeModule {
       public void refreshIpFilterCache(TableModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
           sys.initIpFilters();
-        }
-      }
-
-      @Subscribe
-      public void refreshRightsCache(TableModifyEvent event) {
-        if (usr.isRightsTable(event.getTargetName()) && event.isAfter()) {
-          usr.initRights();
-          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 

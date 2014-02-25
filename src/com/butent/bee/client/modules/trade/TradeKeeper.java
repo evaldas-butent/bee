@@ -11,7 +11,7 @@ public final class TradeKeeper {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRADE.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, name);
+    args.addQueryItem(CommonsConstants.METHOD, name);
     return args;
   }
 

@@ -37,10 +37,10 @@ final class ModuleRightsHandler extends RightsForm {
   protected void initObjects(Consumer<List<RightsObject>> consumer) {
     List<RightsObject> result = Lists.newArrayList();
     for (Module module : Module.values()) {
-      if (BeeUtils.isEmpty(module.getSubModules())) {
-        result.add(new RightsObject(module.getName(), module.getCaption(),
-            RightsUtils.buildModuleName(module)));
-      } else {
+      result.add(new RightsObject(module.getName(), module.getCaption(),
+          RightsUtils.buildModuleName(module)));
+
+      if (!BeeUtils.isEmpty(module.getSubModules())) {
         for (SubModule subModule : module.getSubModules()) {
           result.add(new RightsObject(subModule.getName(), subModule.getCaption(),
               RightsUtils.buildModuleName(module, subModule), 1, module.getName()));

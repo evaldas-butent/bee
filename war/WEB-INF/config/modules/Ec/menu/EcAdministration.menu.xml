@@ -2,6 +2,7 @@
 <Entry xmlns="http://www.butent.com/menu"
 
 name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separator="true"
+module="Ecommerce.Administration"
 >
 
   <Item name="EcClients" label="=ecClients" service="ensure_categories_and_open_grid"
@@ -26,6 +27,6 @@ name="EcAdministration" label="=ecAdministration" order="7" parent="Ec" separato
   <Item name="EcMailParameters" label="=ecMailParameters" service="grid"
     parameters="EcMailParameters" separator="true" />
 
-  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec" module="ADMINISTRATION" />
+  <Item name="Parameters" label="=ecParameters" service="parameters" parameters="Ec" module="Administration" />
 
 </Entry>

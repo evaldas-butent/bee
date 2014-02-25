@@ -118,7 +118,7 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  EC_CLIENTS_MY(RightsUtils.buildModuleName(Module.E_COMMERCE), EcConstants.TBL_CLIENTS,
+  EC_CLIENTS_MY(RightsUtils.buildModuleName(Module.ECOMMERCE), EcConstants.TBL_CLIENTS,
       EcConstants.VIEW_CLIENTS, Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
       Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
     @Override
@@ -127,7 +127,7 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  EC_CLIENTS_ALL(RightsUtils.buildModuleName(Module.E_COMMERCE), EcConstants.TBL_CLIENTS,
+  EC_CLIENTS_ALL(RightsUtils.buildModuleName(Module.ECOMMERCE), EcConstants.TBL_CLIENTS,
       EcConstants.VIEW_CLIENTS, Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
       Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
     @Override
@@ -136,7 +136,7 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  EC_ORDERS_MY(RightsUtils.buildModuleName(Module.E_COMMERCE), EcConstants.TBL_ORDERS,
+  EC_ORDERS_MY(RightsUtils.buildModuleName(Module.ECOMMERCE), EcConstants.TBL_ORDERS,
       EcConstants.VIEW_ORDERS, Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
       Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
     @Override
@@ -145,7 +145,7 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  EC_ORDERS_ALL(RightsUtils.buildModuleName(Module.E_COMMERCE), EcConstants.TBL_ORDERS,
+  EC_ORDERS_ALL(RightsUtils.buildModuleName(Module.ECOMMERCE), EcConstants.TBL_ORDERS,
       EcConstants.VIEW_ORDERS, Lists.newArrayList(EcConstants.ALS_ORDER_CLIENT_COMPANY_NAME),
       Lists.newArrayList(EcConstants.COL_ORDER_DATE, EcConstants.COL_ORDER_STATUS)) {
     @Override
@@ -154,7 +154,7 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  EC_REGISTRATIONS(RightsUtils.buildModuleName(Module.E_COMMERCE), EcConstants.TBL_REGISTRATIONS,
+  EC_REGISTRATIONS(RightsUtils.buildModuleName(Module.ECOMMERCE), EcConstants.TBL_REGISTRATIONS,
       EcConstants.VIEW_REGISTRATIONS, Lists.newArrayList(EcConstants.COL_REGISTRATION_FIRST_NAME,
           EcConstants.COL_REGISTRATION_LAST_NAME),
       Lists.newArrayList(EcConstants.COL_REGISTRATION_COMPANY_NAME)) {

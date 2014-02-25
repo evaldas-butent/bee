@@ -266,7 +266,7 @@ public final class TasksKeeper {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TASKS.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, method);
+    args.addQueryItem(CommonsConstants.METHOD, method);
     return args;
   }
 

@@ -124,9 +124,8 @@ public class MailModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     try {
       if (BeeUtils.same(svc, SVC_RESTART_PROXY)) {

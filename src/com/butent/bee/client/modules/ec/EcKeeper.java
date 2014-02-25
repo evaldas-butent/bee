@@ -157,8 +157,8 @@ public final class EcKeeper {
   }
 
   public static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.E_COMMERCE.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, method);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.ECOMMERCE.getName());
+    args.addQueryItem(CommonsConstants.METHOD, method);
     return args;
   }
 

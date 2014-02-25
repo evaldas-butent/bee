@@ -677,7 +677,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
                 childrenNames.add(ro.getName());
               }
             }
-            
+
             for (Widget widget : table) {
               if (DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
                   && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, role)
@@ -849,9 +849,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
                   for (RightsObject object : objects) {
                     Set<Long> ids = Sets.newHashSet(roles.keySet());
 
-                    String name = BeeUtils.normalize(object.getName());
-                    if (rights.containsKey(name)) {
-                      ids.removeAll(DataUtils.parseIdSet(rights.get(name)));
+                    if (rights.containsKey(object.getName())) {
+                      ids.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
                     }
 
                     if (!ids.isEmpty()) {

@@ -383,7 +383,7 @@ public final class TransportHandler {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, name);
+    args.addQueryItem(CommonsConstants.METHOD, name);
     return args;
   }
 

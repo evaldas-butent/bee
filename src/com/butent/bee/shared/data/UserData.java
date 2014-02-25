@@ -375,7 +375,7 @@ public class UserData implements BeeSerializable, HasInfo {
       Multimap<RightsObjectType, String> stateObjects = rights.get(state);
 
       if (stateObjects.containsKey(type)) {
-        checked = stateObjects.get(type).contains(BeeUtils.normalize(object)) != checked;
+        checked = stateObjects.get(type).contains(object) != checked;
       }
     }
     return checked;

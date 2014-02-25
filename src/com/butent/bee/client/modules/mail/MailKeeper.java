@@ -136,7 +136,7 @@ public final class MailKeeper {
 
   static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.MAIL.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, name);
+    args.addQueryItem(CommonsConstants.METHOD, name);
     return args;
   }
 

@@ -332,7 +332,7 @@ public final class CalendarKeeper {
 
   static ParameterList createRequestParameters(String service) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Module.CALENDAR.getName());
-    params.addQueryItem(CommonsConstants.SERVICE, service);
+    params.addQueryItem(CommonsConstants.METHOD, service);
     return params;
   }
 

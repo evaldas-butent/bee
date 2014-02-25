@@ -73,9 +73,8 @@ public class DocumentsModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CommonsConstants.SERVICE);
 
     if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));

@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -224,24 +223,31 @@ public class UserServiceBean {
       Maps.newHashMap();
 
   @Lock(LockType.WRITE)
-  public boolean authenticateUser(String user, String password) {
+  public boolean authenticateUser(String name, String password) {
     if (BeeUtils.isEmpty(userCache)) {
       long company = qs.insertData(new SqlInsert(TBL_COMPANIES)
-          .addConstant(COL_COMPANY_NAME, user));
+          .addConstant(COL_COMPANY_NAME, name));
 
       long person = qs.insertData(new SqlInsert(TBL_PERSONS)
-          .addConstant(COL_FIRST_NAME, user));
+          .addConstant(COL_FIRST_NAME, name));
 
       long companyPerson = qs.insertData(new SqlInsert(TBL_COMPANY_PERSONS)
           .addConstant(COL_COMPANY, company)
           .addConstant(COL_PERSON, person));
 
-      qs.insertData(new SqlInsert(TBL_USERS)
-          .addConstant(COL_LOGIN, user)
+      long user = qs.insertData(new SqlInsert(TBL_USERS)
+          .addConstant(COL_LOGIN, name)
           .addConstant(COL_PASSWORD, password)
           .addConstant(COL_COMPANY_PERSON, companyPerson));
+
+      long role = qs.insertData(new SqlInsert(TBL_ROLES)
+          .addConstant(COL_ROLE_NAME, name));
+
+      qs.insertData(new SqlInsert(TBL_USER_ROLES)
+          .addConstant(COL_USER, user)
+          .addConstant(COL_ROLE, role));
     }
-    UserInfo info = getUserInfo(getUserId(user));
+    UserInfo info = getUserInfo(getUserId(name));
     return info != null && Objects.equals(password, info.getPassword());
   }
 
@@ -373,11 +379,7 @@ public class UserServiceBean {
         Collection<Long> roles = rightsCache.get(type).get(object).get(state);
 
         if (!BeeUtils.isEmpty(roles)) {
-          if (roles.contains(null)) {
-            objects.put(object, DataUtils.buildIdList(getRoles()));
-          } else {
-            objects.put(object, DataUtils.buildIdList(roles));
-          }
+          objects.put(object, DataUtils.buildIdList(roles));
         }
       }
     }
@@ -510,7 +512,7 @@ public class UserServiceBean {
         }
         for (int i = 0; i < res.getNumberOfRows(); i++) {
           RightsState state = EnumUtils.getEnumByIndex(RightsState.class, res.getInt(i, COL_STATE));
-          String objectName = BeeUtils.normalize(res.getValue(i, COL_OBJECT_NAME));
+          String objectName = res.getValue(i, COL_OBJECT_NAME);
           Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
 
           if (objectStates == null) {
@@ -600,10 +602,6 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
-  public boolean isRightsTable(String tblName) {
-    return false; // BeeUtils.inList(tblName, TBL_OBJECTS, TBL_RIGHTS);
-  }
-
   public boolean isRoleTable(String tblName) {
     return BeeUtils.inList(tblName, TBL_ROLES, TBL_USER_ROLES);
   }
@@ -680,98 +678,76 @@ public class UserServiceBean {
       Map<String, String> changes) {
 
     Assert.noNulls(type, state);
+    int cnt = 0;
 
-    SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
-        .addFields(TBL_RIGHTS, COL_OBJECT, COL_ROLE)
-        .addField(TBL_RIGHTS, sys.getIdName(TBL_RIGHTS), "ID")
-        .addFrom(TBL_OBJECTS)
-        .addFromLeft(TBL_RIGHTS, SqlUtils.and(sys.joinTables(TBL_OBJECTS, TBL_RIGHTS, COL_OBJECT),
-            SqlUtils.equals(TBL_RIGHTS, COL_STATE, state.ordinal())))
-        .setWhere(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal())));
-
-    Map<String, Map<Long, Long>> objects = Maps.newHashMap();
-
-    for (SimpleRow row : rs) {
-      String object = row.getValue(COL_OBJECT_NAME);
-      Map<Long, Long> rights = objects.get(object);
-
-      if (rights == null) {
-        rights = Maps.newHashMap();
-        objects.put(object, rights);
-      }
-      Long id = row.getLong("ID");
-
-      if (DataUtils.isId(id)) {
-        rights.put(row.getLong(COL_ROLE), id);
-      }
-    }
     if (!BeeUtils.isEmpty(changes)) {
+      Map<String, Multimap<RightsState, Long>> objects = rightsCache.get(type);
+
+      if (objects == null) {
+        objects = Maps.newHashMap();
+        rightsCache.put(type, objects);
+      }
+      Multimap<String, Long> plus = HashMultimap.create();
+      Multimap<String, Long> minus = HashMultimap.create();
+
       for (String object : changes.keySet()) {
-        Map<Long, Long> rights = objects.get(object);
+        Multimap<RightsState, Long> obInfo = objects.get(object);
 
-        if (rights == null) {
-          rights = Maps.newHashMap();
-          objects.put(object, rights);
+        if (obInfo == null) {
+          obInfo = HashMultimap.create();
+          objects.put(object, obInfo);
         }
-        for (Long id : DataUtils.parseIdSet(changes.get(object))) {
-          Long x = rights.get(id);
-
-          if (DataUtils.isId(x)) {
-            x *= -1;
+        for (Long role : DataUtils.parseIdSet(changes.get(object))) {
+          if (obInfo.containsEntry(state, role)) {
+            minus.put(object, role);
+            obInfo.remove(state, role);
+          } else {
+            plus.put(object, role);
+            obInfo.put(state, role);
           }
-          rights.put(id, x);
         }
       }
-    }
-    Set<Long> del = Sets.newHashSet();
-    Multimap<String, Long> ins = HashMultimap.create();
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
+          .addField(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), COL_OBJECT)
+          .addFrom(TBL_OBJECTS)
+          .setWhere(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal())));
 
-    for (String object : objects.keySet()) {
-      for (Entry<Long, Long> entry : objects.get(object).entrySet()) {
-        if (DataUtils.isId(entry.getValue())) {
-          del.add(entry.getValue());
-        } else if (entry.getValue() == null) {
-          ins.put(object, entry.getKey());
+      HasConditions wh = SqlUtils.or();
+
+      for (String object : minus.keySet()) {
+        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+        if (DataUtils.isId(id)) {
+          wh.add(SqlUtils.and(SqlUtils.equals(TBL_RIGHTS,
+              COL_OBJECT, id, COL_STATE, state.ordinal()),
+              SqlUtils.inList(TBL_RIGHTS, COL_ROLE, minus.get(object))));
         }
       }
-    }
-    int allRoles = getRoles().size();
-    int i = 0;
-    int a = 0;
-
-    for (String object : ins.keySet()) {
-      Collection<Long> roles = ins.get(object);
-      Long objId = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
-
-      if (!DataUtils.isId(objId)) {
-        objId = qs.insertData(new SqlInsert(TBL_OBJECTS)
-            .addConstant(COL_OBJECT_TYPE, type.ordinal())
-            .addConstant(COL_OBJECT_NAME, object));
+      if (!wh.isEmpty()) {
+        cnt += qs.updateData(new SqlDelete(TBL_RIGHTS)
+            .setWhere(wh));
       }
-      if (roles.size() == allRoles) {
-        a++;
-        qs.insertData(new SqlInsert(TBL_RIGHTS)
-            .addConstant(COL_OBJECT, objId)
-            .addConstant(COL_STATE, state.ordinal()));
-      } else {
-        for (Long role : roles) {
-          i++;
+      for (String object : plus.keySet()) {
+        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+        if (!DataUtils.isId(id)) {
+          id = qs.insertData(new SqlInsert(TBL_OBJECTS)
+              .addConstant(COL_OBJECT_TYPE, type.ordinal())
+              .addConstant(COL_OBJECT_NAME, object));
+        }
+        for (Long role : plus.get(object)) {
           qs.insertData(new SqlInsert(TBL_RIGHTS)
-              .addConstant(COL_OBJECT, objId)
-              .addConstant(COL_ROLE, role)
-              .addConstant(COL_STATE, state.ordinal()));
+              .addConstant(COL_OBJECT, id)
+              .addConstant(COL_STATE, state.ordinal())
+              .addConstant(COL_ROLE, role));
+          cnt++;
         }
       }
     }
-    if (!BeeUtils.isEmpty(del)) {
-      qs.updateData(new SqlDelete(TBL_RIGHTS)
-          .setWhere(sys.idInList(TBL_RIGHTS, del)));
-    }
-    initRights();
     Endpoint.updateUserData(getAllUserData());
 
-    return ResponseObject.info("Inserted:", i, "All row:", a);
+    return ResponseObject.response(cnt);
   }
 
   @Lock(LockType.WRITE)
@@ -839,21 +815,17 @@ public class UserServiceBean {
     Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(type);
 
     if (rightsObjects != null) {
-      Multimap<RightsState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
+      Multimap<RightsState, Long> objectStates = rightsObjects.get(object);
 
       if (objectStates != null && objectStates.containsKey(state)) {
         Collection<Long> roles = objectStates.get(state);
         boolean ok = checked;
 
-        if (roles.contains(null)) {
-          ok = !checked;
-        } else {
-          for (long role : getUserRoles(userId)) {
-            ok = checked != roles.contains(role);
+        for (long role : getUserRoles(userId)) {
+          ok = checked != roles.contains(role);
 
-            if (ok) {
-              break;
-            }
+          if (ok) {
+            break;
           }
         }
         checked = ok;

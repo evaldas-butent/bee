@@ -43,7 +43,7 @@ public final class DiscussionsKeeper {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.DISCUSSIONS.getName());
-    args.addQueryItem(CommonsConstants.SERVICE, method);
+    args.addQueryItem(CommonsConstants.METHOD, method);
     return args;
   }
 
