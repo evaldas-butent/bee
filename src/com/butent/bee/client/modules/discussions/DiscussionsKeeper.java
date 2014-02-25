@@ -3,10 +3,16 @@ package com.butent.bee.client.modules.discussions;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.news.Feed;
 
 public final class DiscussionsKeeper {
 
@@ -28,6 +34,9 @@ public final class DiscussionsKeeper {
 
     /* Row handlers */
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.ANNOUNCEMENTS,
+        getAnnouncementsFilterHandler());
   }
 
   static ParameterList createArgs(String method) {
@@ -38,6 +47,18 @@ public final class DiscussionsKeeper {
 
   static ParameterList createDiscussionRpcParameters(DiscussionEvent event) {
     return createArgs(DISCUSSIONS_PREFIX + event.name());
+  }
+
+  static Consumer<GridOptions> getAnnouncementsFilterHandler() {
+    Consumer<GridOptions> consumer = new Consumer<GridOptions>() {
+
+      @Override
+      public void accept(GridOptions input) {
+        GridFactory.openGrid(GRID_DISCUSSIONS, new DiscussionsGridHandler(ListType.ALL), input);
+      }
+    };
+
+    return consumer;
   }
 
 

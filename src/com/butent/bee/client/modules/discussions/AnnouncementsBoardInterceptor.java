@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.discussions;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
@@ -29,6 +31,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.JustDate;
@@ -36,12 +43,17 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
+import java.util.Collection;
+
+class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
+    RowInsertEvent.Handler, HandlesUpdateEvents, DataChangeEvent.Handler {
   private static final String WIDGET_ADS_CONTENT = "AdsContent";
   private static final String STYLE_PREFIX = "bee-discuss-adsFormContent-";
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";
+
+  private final Collection<HandlerRegistration> registry = Lists.newArrayList();
 
   @Override
   public FormInterceptor getInstance() {
@@ -59,8 +71,54 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onLoad(FormView form) {   
+    registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+    registry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerDataChangeHandler(this, false));
+    super.onLoad(form);
+  }
+
+  @Override
   public void onStart(FormView form) {
     renderContent(form);
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    for (HandlerRegistration entry : registry) {
+      if (entry != null) {
+        entry.removeHandler();
+      }
+    }
+    super.onUnload(form);
   }
 
   private static void renderContent(FormView form) {
@@ -181,7 +239,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
       adsTable.setWidget(row, 1, moreButton);
 
       adsTable.getRow(row).addClassName(STYLE_PREFIX + STYLE_ACTION);
-      // adsTable.getCellFormatter().setColSpan(row, 0, 2);
 
       row++;
     }

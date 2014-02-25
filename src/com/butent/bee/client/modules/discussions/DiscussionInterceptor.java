@@ -38,6 +38,8 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
@@ -268,6 +270,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_CHATTER = "-chatter";
 
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
+  private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
 
   private static final int INITIAL_COMMENT_ROW_PADDING_LEFT = 0;
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = 5;
@@ -323,6 +326,22 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }
       });
     }
+
+    if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
+      final DataSelector tds = (DataSelector) widget;
+      Handler selHandler = new Handler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+          if (label != null) {
+            label.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
+          }
+        }
+      };
+
+      tds.addSelectorHandler(selHandler);
+    }
   }
 
   @Override
@@ -375,6 +394,15 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           BeeUtils.unbox(row.getInteger(form.getDataIndex(COL_STATUS))) == DiscussionStatus.CLOSED
               .ordinal();
       pcib.setValue(BeeUtils.toString(closed));
+    }
+
+    widget = form.getWidgetBySource(COL_TOPIC);
+    if (widget instanceof DataSelector) {
+      DataSelector tds = (DataSelector) widget;
+      Label lbl = (Label) form.getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+      if (lbl != null) {
+        lbl.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
+      }
     }
   }
 

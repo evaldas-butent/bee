@@ -19,6 +19,8 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -57,6 +59,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_DESCRIPTION = "Description";
   private static final String WIDGET_FILES = "Files";
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
+  private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
 
   CreateDiscussionInterceptor() {
     super();
@@ -148,6 +151,22 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           }
         }
       });
+    }
+    
+    if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
+      final DataSelector tds = (DataSelector) widget;
+      Handler selHandler = new Handler() {
+        
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+          if (label != null) {
+            label.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
+          }
+        }
+      };
+      
+      tds.addSelectorHandler(selHandler);
     }
   }
 

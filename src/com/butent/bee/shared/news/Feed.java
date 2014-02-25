@@ -267,6 +267,17 @@ public enum Feed implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.discussions();
     }
+  },
+
+  ANNOUNCEMENTS(Module.DISCUSSIONS, DiscussionsConstants.TBL_DISCUSSIONS,
+      DiscussionsConstants.VIEW_DISCUSSIONS,
+      Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.announcements();
+    }
+
   };
 
   private static final String SEPARATOR = BeeConst.STRING_COMMA;

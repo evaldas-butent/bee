@@ -149,7 +149,7 @@
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal">
-          <Label text="=displayInBoard" style="&lbl1; min-width:150px;" />
+          <Label name="DisplayInBoard" text="=displayInBoard" style="&lbl1; min-width:150px;" />
           <Label text="=dateFromShort"
             style="text-transform: lowercase; margin-right:4px" />
           <InputDateTime source="VisibleFrom"
@@ -168,8 +168,6 @@
         </FlowPanel>
       </FlowPanel>
     </Disclosure>
-
-
 
     <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container"
       style="&commentsPanel;" />

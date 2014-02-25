@@ -329,7 +329,7 @@ public class DiscussionsModuleBean implements BeeModule {
     });
 
     news.registerUsageQueryProvider(Feed.DISCUSSIONS, new DiscussionsUsageQueryProvider());
-
+    news.registerUsageQueryProvider(Feed.ANNOUNCEMENTS, new AnnouncementsUsageQueryProvider());
   }
 
   private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,

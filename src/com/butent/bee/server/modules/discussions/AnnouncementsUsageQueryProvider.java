@@ -11,12 +11,23 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.time.DateTime;
 
-public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
+public class AnnouncementsUsageQueryProvider implements UsageQueryProvider {
 
   @Override
   public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
       DateTime startDate) {
+    DateTime nowStart = new DateTime();
+    nowStart.setHour(0);
+    nowStart.setMinute(0);
+    nowStart.setSecond(0);
+    nowStart.setMillis(0);
     
+    DateTime nowFinish = new DateTime();
+    nowFinish.setHour(23);
+    nowFinish.setMinute(59);
+    nowFinish.setSecond(59);
+    nowFinish.setMillis(999);
+
     SqlSelect select = new SqlSelect()
     .addFields(TBL_DISCUSSIONS_USAGE, COL_DISCUSSION)
         .addMax(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
@@ -38,7 +49,28 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.and(
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, userId),
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true))),
-            SqlUtils.isNull(TBL_DISCUSSIONS, COL_TOPIC)
+            SqlUtils.notNull(TBL_DISCUSSIONS, COL_TOPIC),
+            SqlUtils.or(
+                SqlUtils.and(
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                        .currentTimeMillis()),
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis())
+                    ),
+                SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis()),
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                    )
+                )
             ));
         
     return select;
@@ -48,6 +80,18 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
   public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
       DateTime startDate) {
     
+    DateTime nowStart = new DateTime();
+    nowStart.setHour(0);
+    nowStart.setMinute(0);
+    nowStart.setSecond(0);
+    nowStart.setMillis(0);
+
+    DateTime nowFinish = new DateTime();
+    nowFinish.setHour(23);
+    nowFinish.setMinute(59);
+    nowFinish.setSecond(59);
+    nowFinish.setMillis(999);
+
     SqlSelect select = new SqlSelect()
     .addFields(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)
         .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, NewsConstants.COL_USAGE_UPDATE)
@@ -70,7 +114,28 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.and(
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, userId),
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true))),
-                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_TOPIC)
+            SqlUtils.notNull(TBL_DISCUSSIONS, COL_TOPIC),
+            SqlUtils.or(
+                SqlUtils.and(
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                        .currentTimeMillis()),
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis())
+                    ),
+                SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis()),
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                    )
+                )
             ));
     
     
@@ -92,7 +157,28 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.and(
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, userId),
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true))),
-            SqlUtils.isNull(TBL_DISCUSSIONS, COL_TOPIC)
+            SqlUtils.notNull(TBL_DISCUSSIONS, COL_TOPIC),
+            SqlUtils.or(
+                SqlUtils.and(
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
+                        .currentTimeMillis()),
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis())
+                    ),
+                SqlUtils.or(
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
+                    SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
+                        .currentTimeMillis()),
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
+                    ),
+                SqlUtils.and(
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
+                    SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
+                    )
+                )
             ));
     
     select.setUnionAllMode(true).addUnion(select2);
