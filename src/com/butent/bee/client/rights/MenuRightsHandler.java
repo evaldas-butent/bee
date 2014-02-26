@@ -13,7 +13,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 
 import java.util.List;
 
-final class MenuRightsHandler extends RightsForm {
+final class MenuRightsHandler extends MultiRoleForm {
 
   MenuRightsHandler() {
   }

@@ -1,12 +1,7 @@
 package com.butent.bee.client.rights;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
@@ -19,23 +14,13 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
@@ -43,56 +28,32 @@ import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.Orientation;
-import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 public abstract class RightsForm extends AbstractFormInterceptor {
 
   private static BeeLogger logger = LogUtils.getLogger(RightsForm.class);
 
-  private static final String STYLE_PREFIX = "bee-Rights-";
+  protected static final String STYLE_PREFIX = "bee-Rights-";
+  protected static final String STYLE_SUFFIX_CELL = "-cell";
 
   private static final String STYLE_PANEL = STYLE_PREFIX + "panel";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
-
-  private static final String STYLE_SUFFIX_CELL = "-cell";
-
-  private static final String STYLE_ROLE_LABEL = STYLE_PREFIX + "role-label";
-  private static final String STYLE_ROLE_LABEL_CELL = STYLE_ROLE_LABEL + STYLE_SUFFIX_CELL;
-  private static final String STYLE_ROLE_TOGGLE = STYLE_PREFIX + "role-toggle";
-  private static final String STYLE_ROLE_TOGGLE_CELL = STYLE_ROLE_TOGGLE + STYLE_SUFFIX_CELL;
 
   private static final String STYLE_OBJECT_LABEL = STYLE_PREFIX + "object-label";
   private static final String STYLE_OBJECT_LABEL_CELL = STYLE_OBJECT_LABEL + STYLE_SUFFIX_CELL;
@@ -104,20 +65,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String STYLE_VALUE_ROW = STYLE_PREFIX + "value-row";
   private static final String STYLE_VALUE_CHANGED = STYLE_PREFIX + "value-changed";
   private static final String STYLE_VALUE_DISABLED = STYLE_PREFIX + "value-disabled";
-
-  private static final String STYLE_ROLE_ORIENTATION = STYLE_PREFIX + "role-orientation";
-  private static final String STYLE_ROLE_ORIENTATION_CELL = STYLE_ROLE_ORIENTATION
-      + STYLE_SUFFIX_CELL;
-  private static final String STYLE_COLUMN_LABEL_ORIENTATION = STYLE_PREFIX
-      + "column-label-orientation";
-  private static final String STYLE_COLUMN_LABEL_ORIENTATION_CELL =
-      STYLE_COLUMN_LABEL_ORIENTATION + STYLE_SUFFIX_CELL;
-
-  private static final String STYLE_USER_COMMAND = STYLE_PREFIX + "user-command";
-  private static final String STYLE_USER_CLEAR = STYLE_PREFIX + "user-clear";
-  private static final String STYLE_USER_SELECTOR = STYLE_PREFIX + "user-selector";
-  private static final String STYLE_USER_EMPTY = STYLE_PREFIX + "user-empty";
-  private static final String STYLE_USER_NOT_EMPTY = STYLE_PREFIX + "user-not-empty";
 
   private static final String STYLE_FILTER_NOT_MATCHED = STYLE_PREFIX + "filter-not-matched";
 
@@ -131,62 +78,57 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String STYLE_OBJECT_CLOSED = STYLE_PREFIX + "object-closed";
   private static final String STYLE_OBJECT_HIDDEN = STYLE_PREFIX + "object-hidden";
 
-  private static final String DATA_KEY_ROLE = "rights-role";
-  private static final String DATA_KEY_OBJECT = "rights-object";
-  private static final String DATA_KEY_TYPE = "rights-type";
-
-  private static final String DATA_TYPE_ROLE_LABEL = "rl";
-  private static final String DATA_TYPE_ROLE_TOGGLE = "rt";
   private static final String DATA_TYPE_OBJECT_LABEL = "ol";
   private static final String DATA_TYPE_OBJECT_TOGGLE = "ot";
   private static final String DATA_TYPE_VALUE = "v";
 
-  private static final int ROLE_ORIENTATION_ROW = 0;
-  private static final int ROLE_ORIENTATION_COL = 0;
-
-  private static final int COLUMN_LABEL_ORIENTATION_ROW = 0;
-  private static final int COLUMN_LABEL_ORIENTATION_COL = 1;
+  private static final String DATA_KEY_TYPE = "rights-type";
+  private static final String DATA_KEY_OBJECT = "rights-object";
 
   private static final int LABEL_ROW = 0;
   private static final int MULTI_TOGGLE_ROW = 1;
   private static final int LABEL_COL = 0;
   private static final int MULTI_TOGGLE_COL = 1;
 
-  private static final int VALUE_START_ROW = 2;
-  private static final int VALUE_START_COL = 2;
+  protected static final int VALUE_START_ROW = 2;
+  protected static final int VALUE_START_COL = 2;
 
   public static void register() {
     FormFactory.registerFormInterceptor("ModuleRights", new ModuleRightsHandler());
     FormFactory.registerFormInterceptor("MenuRights", new MenuRightsHandler());
   }
 
-  private static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
+  protected static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
     Toggle toggle = new Toggle(String.valueOf(up.getCode()), String.valueOf(down.getCode()),
         styleName);
     StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
     return toggle;
   }
 
-  private static void doClose(Presenter presenter) {
-    BeeKeeper.getScreen().closeWidget(presenter.getMainView());
+  protected static Toggle createValueToggle(String objectName) {
+    Toggle toggle = createToggle(FontAwesome.TIMES, FontAwesome.CHECK, STYLE_VALUE_TOGGLE);
+
+    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
+    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);
+
+    return toggle;
   }
 
-  private static String getObjectName(Widget widget) {
+  protected static void enableValueWidet(Widget widget, boolean enabled) {
+    widget.setStyleName(STYLE_VALUE_DISABLED, !enabled);
+  }
+
+  protected static String getObjectName(Widget widget) {
     return DomUtils.getDataProperty(widget.getElement(), DATA_KEY_OBJECT);
   }
 
-  private static Long getRoleId(Widget widget) {
-    return DomUtils.getDataPropertyLong(widget.getElement(), DATA_KEY_ROLE);
-  }
-
-  private static void removeClassName(UIObject root, String className) {
-    NodeList<Element> nodes = Selectors.getNodes(root, Selectors.classSelector(className));
-    if (!DomUtils.isEmpty(nodes)) {
-      StyleUtils.removeClassName(nodes, className);
+  protected static void setNotMatched(Collection<? extends Element> elements) {
+    if (!BeeUtils.isEmpty(elements)) {
+      StyleUtils.addClassName(elements, STYLE_FILTER_NOT_MATCHED);
     }
   }
 
-  private static void updateValueCell(Widget widget, boolean isChanged) {
+  protected static void updateValueCell(Widget widget, boolean isChanged) {
     TableCellElement cellElement = DomUtils.getParentCell(widget, false);
 
     if (cellElement == null) {
@@ -198,22 +140,20 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  private final BiMap<Long, String> roles = HashBiMap.create();
+  private static void doClose(Presenter presenter) {
+    BeeKeeper.getScreen().closeWidget(presenter.getMainView());
+  }
 
-  private final List<RightsObject> objects = Lists.newArrayList();
+  private static void removeClassName(UIObject root, String className) {
+    NodeList<Element> nodes = Selectors.getNodes(root, Selectors.classSelector(className));
+    if (!DomUtils.isEmpty(nodes)) {
+      StyleUtils.removeClassName(nodes, className);
+    }
+  }
 
-  private final Multimap<String, Long> initialValues = HashMultimap.create();
-  private final Multimap<String, Long> changes = HashMultimap.create();
-
-  private Orientation roleOrientation = Orientation.HORIZONTAL;
-  private Orientation columnLabelOrientation = Orientation.HORIZONTAL;
+  private List<RightsObject> objects = Lists.newArrayList();
 
   private HtmlTable table;
-
-  private FaLabel roleOrientationToggle;
-  private Toggle columnLabelOrientationToggle;
-
-  private Long userId;
 
   private int hoverColumn = BeeConst.UNDEF;
 
@@ -250,11 +190,11 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   public boolean beforeAction(Action action, Presenter presenter) {
     switch (action) {
       case CLOSE:
-        if (changes.isEmpty()) {
-          return true;
-        } else {
+        if (hasChanges()) {
           onClose(presenter);
           return false;
+        } else {
+          return true;
         }
 
       case SAVE:
@@ -266,123 +206,164 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  @Override
-  public void onShow(Presenter presenter) {
-    HeaderView header = presenter.getHeader();
+  protected void addColumnLabel(int col, Widget widget, String cellStyleName) {
+    table.setWidget(LABEL_ROW, col, widget, cellStyleName);
+  }
 
-    if (header != null && !header.hasCommands()) {
-      List<String> columns = Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME);
-      Relation relation = Relation.create(VIEW_USERS, columns);
+  protected void addColumnToggle(int col, Widget widget, String cellStyleName) {
+    table.setWidget(MULTI_TOGGLE_ROW, col, widget, cellStyleName);
+  }
 
-      relation.disableEdit();
-      relation.disableNewRow();
+  protected void addObjectLabel(int row, RightsObject object) {
+    table.setWidget(row, LABEL_COL, createObjectLabel(object), STYLE_OBJECT_LABEL_CELL);
+  }
 
-      final DataSelector userSelector = new DataSelector(relation, true);
-      userSelector.setEditing(true);
-      userSelector.addStyleName(STYLE_USER_SELECTOR);
+  protected void addObjectToggle(int row, RightsObject object) {
+    table.setWidget(row, MULTI_TOGGLE_COL, createObjectToggle(object.getName()),
+        STYLE_OBJECT_TOGGLE_CELL);
+  }
 
-      final Button userCommand = new Button(Localized.getConstants().user());
-      userCommand.addStyleName(STYLE_USER_COMMAND);
-      userCommand.addStyleName(STYLE_USER_EMPTY);
+  protected void addValueToggle(int row, int col, Widget widget) {
+    table.setWidget(row, col, widget, STYLE_VALUE_CELL);
+  }
 
-      final CustomDiv userClear = new CustomDiv(STYLE_USER_CLEAR);
-      userClear.addStyleName(STYLE_USER_EMPTY);
-      userClear.setText(String.valueOf(BeeConst.CHAR_TIMES));
-
-      userSelector.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isChanged()) {
-            long value = event.getValue();
-
-            if (DataUtils.isId(value) && !Objects.equals(value, getUserId())) {
-              setUserId(value);
-              userCommand.setHtml(Global.getUsers().getSignature(value));
-
-              userCommand.removeStyleName(STYLE_USER_EMPTY);
-              userCommand.addStyleName(STYLE_USER_NOT_EMPTY);
-
-              userClear.removeStyleName(STYLE_USER_EMPTY);
-              userClear.addStyleName(STYLE_USER_NOT_EMPTY);
-
-              removeClassName(table, STYLE_FILTER_NOT_MATCHED);
-
-              checkUserRights();
-            }
-          }
-        }
-      });
-
-      userCommand.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          userSelector.clearValue();
-          userSelector.setFocus(true);
-
-          userSelector.startEdit(null, DataSelector.SHOW_SELECTOR, null, null);
-        }
-      });
-
-      userClear.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (getUserId() != null) {
-            setUserId(null);
-
-            userCommand.setHtml(Localized.getConstants().user());
-            userCommand.removeStyleName(STYLE_USER_NOT_EMPTY);
-            userCommand.addStyleName(STYLE_USER_EMPTY);
-
-            userClear.removeStyleName(STYLE_USER_NOT_EMPTY);
-            userClear.addStyleName(STYLE_USER_EMPTY);
-
-            removeClassName(table, STYLE_FILTER_NOT_MATCHED);
-          }
-        }
-      });
-
-      header.addCommandItem(userCommand);
-      header.addCommandItem(userClear);
-      header.addCommandItem(userSelector);
+  protected void afterCreateValueRow(int row, RightsObject object) {
+    if (object.hasParent()) {
+      StyleUtils.addClassName(table.getRowCells(row), STYLE_OBJECT_HIDDEN);
     }
+    table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
+  }
+
+  protected void debug(Object... messages) {
+    logger.debug(messages);
+  }
+
+  protected RightsObject findObject(String objectName) {
+    for (RightsObject object : objects) {
+      if (object.getName().equals(objectName)) {
+        return object;
+      }
+    }
+
+    logger.severe("object", objectName, "not found");
+    return null;
+  }
+
+  protected abstract Multimap<String, ?> getChanges();
+
+  protected List<TableCellElement> getObjectCells(String objectName) {
+    List<TableCellElement> cells = Lists.newArrayList();
+
+    NodeList<Element> nodes = Selectors.getNodes(table,
+        Selectors.attributeEquals(Attributes.DATA_PREFIX + DATA_KEY_OBJECT, objectName));
+
+    if (DomUtils.isEmpty(nodes)) {
+      logger.warning("object", objectName, "nodes nof found");
+
+    } else {
+      for (int i = 0; i < nodes.getLength(); i++) {
+        TableCellElement cell = DomUtils.getParentCell(nodes.getItem(i), true);
+        if (cell != null) {
+          cells.add(cell);
+        }
+      }
+    }
+
+    return cells;
+  }
+
+  protected List<RightsObject> getObjects() {
+    return objects;
+  }
+
+  protected Toggle getObjectToggle(String objectName) {
+    for (Widget widget : table) {
+      if (widget instanceof Toggle
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)) {
+        return (Toggle) widget;
+      }
+    }
+
+    logger.severe("object", objectName, "toggle not found");
+    return null;
+  }
+
+  protected List<Toggle> getObjectToggles() {
+    List<Toggle> toggles = Lists.newArrayList();
+
+    for (Widget widget : table) {
+      if (widget instanceof Toggle
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)) {
+        toggles.add((Toggle) widget);
+      }
+    }
+
+    return toggles;
   }
 
   protected abstract RightsObjectType getObjectType();
 
-  protected abstract RightsState getRightsState();
+  protected HtmlTable getTable() {
+    return table;
+  }
+
+  protected abstract boolean hasChanges();
+
+  protected boolean hasObject(Widget widget, String objectName) {
+    return DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName);
+  }
+
+  protected abstract void initData(final Consumer<Boolean> callback);
 
   protected abstract void initObjects(Consumer<List<RightsObject>> consumer);
 
-  private void addColumnLabelOrientationToggle() {
-    table.setWidget(COLUMN_LABEL_ORIENTATION_ROW, COLUMN_LABEL_ORIENTATION_COL,
-        columnLabelOrientationToggle, STYLE_COLUMN_LABEL_ORIENTATION_CELL);
+  protected boolean isDataType(Widget widget, String type) {
+    return DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, type);
   }
 
-  private void addRoleOrientationToggle() {
-    table.setWidget(ROLE_ORIENTATION_ROW, ROLE_ORIENTATION_COL, roleOrientationToggle,
-        STYLE_ROLE_ORIENTATION_CELL);
+  protected abstract boolean isObjectChecked(String objectName);
+
+  protected boolean isValueWidget(Widget widget) {
+    return DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
   }
 
-  private void checkUserRights() {
-    Queries.getRowSet(VIEW_USER_ROLES, Lists.newArrayList(COL_ROLE),
-        Filter.equals(COL_USER, getUserId()), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (DataUtils.isEmpty(result)) {
-              BeeKeeper.getScreen().notifyWarning("user has no roles");
+  protected void markValueRows() {
+    for (int row = VALUE_START_ROW; row < table.getRowCount(); row++) {
+      table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
+    }
+  }
 
-            } else {
-              int index = result.getColumnIndex(COL_ROLE);
+  protected void onClearChanges() {
+    removeClassName(table, STYLE_VALUE_CHANGED);
+  }
 
-              Set<Long> userRoles = Sets.newHashSet();
-              for (BeeRow row : result) {
-                userRoles.add(row.getLong(index));
-              }
+  protected abstract void onObjectToggle(boolean checked);
 
-              markUserValues(userRoles);
-            }
-          }
-        });
+  protected abstract void populateTable();
+
+  protected void resetFilter() {
+    removeClassName(table, STYLE_FILTER_NOT_MATCHED);
+  }
+
+  protected abstract void save(final Consumer<Boolean> callback);
+
+  protected void setDataType(Widget widget, String type) {
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, type);
+  }
+
+  protected void setObjects(List<RightsObject> objects) {
+    this.objects = objects;
+  }
+
+  protected void severe(Object... messages) {
+    logger.severe(messages);
+  }
+
+  protected abstract void updateObjectValueToggles(String objectName, boolean checked);
+
+  protected void warning(Object... messages) {
+    logger.warning(messages);
   }
 
   private Widget createObjectLabel(RightsObject object) {
@@ -426,7 +407,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
         STYLE_OBJECT_TOGGLE);
 
-    if (initialValues.containsKey(name) && initialValues.get(name).containsAll(roles.keySet())) {
+    if (isObjectChecked(name)) {
       toggle.setChecked(true);
     }
 
@@ -440,82 +421,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
           Toggle ot = (Toggle) event.getSource();
           updateObjectValueToggles(getObjectName(ot), ot.isChecked());
 
-          List<Toggle> roleToggles = getRoleToggles();
-          for (Toggle rt : roleToggles) {
-            if (ot.isChecked()) {
-              rt.setChecked(isRoleChecked(getRoleId(rt)));
-            } else if (rt.isChecked()) {
-              rt.setChecked(false);
-            }
-          }
-        }
-      }
-    });
-
-    return toggle;
-  }
-
-  private Widget createRoleLabel(final long roleId, String roleName) {
-    final Label widget = new Label(roleName);
-    widget.addStyleName(STYLE_ROLE_LABEL);
-
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_ROLE, roleId);
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_LABEL);
-
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        RowEditor.openRow(VIEW_ROLES, roleId, true, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            String name = Data.getString(VIEW_ROLES, result, COL_ROLE_NAME);
-
-            if (!BeeUtils.equalsTrimRight(name, roles.get(roleId))) {
-              roles.put(roleId, name);
-              widget.setHtml(name);
-            }
-          }
-        });
-      }
-    });
-
-    return widget;
-  }
-
-  private Widget createRoleToggle(final long roleId) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_ROLE_TOGGLE);
-
-    boolean checked = true;
-    for (RightsObject object : objects) {
-      if (!initialValues.containsEntry(object.getName(), roleId)) {
-        checked = false;
-        break;
-      }
-    }
-
-    if (checked) {
-      toggle.setChecked(true);
-    }
-
-    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
-    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_TOGGLE);
-
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle rt = (Toggle) event.getSource();
-          updateRoleValueToggles(getRoleId(rt), rt.isChecked());
-
-          List<Toggle> objectToggles = getObjectToggles();
-          for (Toggle ot : objectToggles) {
-            if (rt.isChecked()) {
-              ot.setChecked(isObjectChecked(getObjectName(ot)));
-            } else if (ot.isChecked()) {
-              ot.setChecked(false);
-            }
-          }
+          onObjectToggle(ot.isChecked());
         }
       }
     });
@@ -562,221 +468,13 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       table.clear();
     }
 
-    List<String> roleNames = new ArrayList<>();
-
-    roleNames.addAll(roles.values());
-    if (roleNames.size() > 1) {
-      Collections.sort(roleNames);
-    }
-
-    if (roleOrientationToggle == null) {
-      this.roleOrientationToggle = new FaLabel(FontAwesome.EXCHANGE, STYLE_ROLE_ORIENTATION);
-
-      roleOrientationToggle.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          switchRoleOrientation();
-        }
-      });
-    }
-
-    addRoleOrientationToggle();
-
-    if (columnLabelOrientationToggle == null) {
-      this.columnLabelOrientationToggle = createToggle(FontAwesome.ELLIPSIS_H,
-          FontAwesome.ELLIPSIS_V, STYLE_COLUMN_LABEL_ORIENTATION);
-
-      if (columnLabelOrientation.isVertical()) {
-        columnLabelOrientationToggle.setChecked(true);
-      }
-
-      columnLabelOrientationToggle.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          switchColumnLabelOrientation();
-        }
-      });
-    }
-
-    addColumnLabelOrientationToggle();
-
-    int col = VALUE_START_COL;
-
-    for (String roleName : roleNames) {
-      long roleId = getRoleId(roleName);
-
-      table.setWidget(LABEL_ROW, col, createRoleLabel(roleId, roleName), STYLE_ROLE_LABEL_CELL);
-      table.setWidget(MULTI_TOGGLE_ROW, col, createRoleToggle(roleId), STYLE_ROLE_TOGGLE_CELL);
-      col++;
-    }
-
-    int row = VALUE_START_ROW;
-
-    for (RightsObject object : objects) {
-      String objectName = object.getName();
-
-      table.setWidget(row, LABEL_COL, createObjectLabel(object), STYLE_OBJECT_LABEL_CELL);
-      table.setWidget(row, MULTI_TOGGLE_COL, createObjectToggle(objectName),
-          STYLE_OBJECT_TOGGLE_CELL);
-
-      col = VALUE_START_COL;
-      String objectCaption = object.getCaption();
-
-      for (String roleName : roleNames) {
-        long roleId = getRoleId(roleName);
-        String title = BeeUtils.joinWords(objectCaption, roleName);
-
-        table.setWidget(row, col++, createValueToggle(objectName, roleId, title),
-            STYLE_VALUE_CELL);
-      }
-
-      if (object.hasParent()) {
-        StyleUtils.addClassName(table.getRowCells(row), STYLE_OBJECT_HIDDEN);
-      }
-
-      table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
-      row++;
-    }
-
-    for (RightsObject object : objects) {
-      if (object.hasChildren()) {
-        for (Long roleId : roles.keySet()) {
-          if (!isChecked(object.getName(), roleId)) {
-            enableChildren(object, roleId, false);
-          }
-        }
-      }
-    }
-
-    if (roleOrientation.isVertical()) {
-      transposeTable();
-    }
-
-    table.addStyleName(getRoleOrientationStyleName());
-    table.addStyleName(getColumnLabelOrientationStyleName());
+    populateTable();
 
     panel.add(table);
   }
 
-  private Widget createValueToggle(String objectName, long roleId, String title) {
-    Toggle toggle = createToggle(FontAwesome.TIMES, FontAwesome.CHECK, STYLE_VALUE_TOGGLE);
-    toggle.setTitle(title);
-
-    if (initialValues.containsEntry(objectName, roleId)) {
-      toggle.setChecked(true);
-    }
-
-    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);
-    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
-    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
-
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle t = (Toggle) event.getSource();
-
-          String name = getObjectName(t);
-          Long role = getRoleId(t);
-
-          boolean isChanged = toggleValue(name, role);
-          updateValueCell(t, isChanged);
-
-          Toggle objectToggle = getObjectToggle(name);
-          Toggle roleToggle = getRoleToggle(role);
-
-          if (t.isChecked()) {
-            objectToggle.setChecked(isObjectChecked(name));
-            roleToggle.setChecked(isRoleChecked(role));
-
-          } else {
-            objectToggle.setChecked(false);
-            roleToggle.setChecked(false);
-          }
-
-          RightsObject object = findObject(name);
-          if (object != null && object.hasChildren()) {
-            enableChildren(object, role, t.isChecked());
-          }
-        }
-      }
-    });
-
-    return toggle;
-  }
-
-  private void enableChildren(RightsObject object, Long roleId, boolean enabled) {
-    List<RightsObject> children = Lists.newArrayList();
-
-    for (RightsObject ro : objects) {
-      if (object.getName().equals(ro.getParent())) {
-        children.add(ro);
-      }
-    }
-
-    if (children.isEmpty()) {
-      logger.warning("object", object.getName(), "children not found");
-
-    } else {
-      for (Widget widget : table) {
-        if (DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
-            && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
-
-          String childName = getObjectName(widget);
-          for (RightsObject child : children) {
-            if (child.getName().equals(childName)) {
-              widget.setStyleName(STYLE_VALUE_DISABLED, !enabled);
-
-              if (child.hasChildren()) {
-                boolean childEnabled = enabled
-                    && widget instanceof Toggle && ((Toggle) widget).isChecked();
-                enableChildren(child, roleId, childEnabled);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private RightsObject findObject(String objectName) {
-    for (RightsObject object : objects) {
-      if (object.getName().equals(objectName)) {
-        return object;
-      }
-    }
-
-    logger.severe("object", objectName, "not found");
-    return null;
-  }
-
-  private String getColumnLabelOrientationStyleName() {
-    return STYLE_PREFIX + "column-label-" + columnLabelOrientation.name().toLowerCase();
-  }
-
   private int getHoverColumn() {
     return hoverColumn;
-  }
-
-  private List<TableCellElement> getObjectCells(String objectName) {
-    List<TableCellElement> cells = Lists.newArrayList();
-
-    NodeList<Element> nodes = Selectors.getNodes(table,
-        Selectors.attributeEquals(Attributes.DATA_PREFIX + DATA_KEY_OBJECT, objectName));
-
-    if (DomUtils.isEmpty(nodes)) {
-      logger.warning("object", objectName, "nodes nof found");
-
-    } else {
-      for (int i = 0; i < nodes.getLength(); i++) {
-        TableCellElement cell = DomUtils.getParentCell(nodes.getItem(i), true);
-        if (cell != null) {
-          cells.add(cell);
-        }
-      }
-    }
-
-    return cells;
   }
 
   private Widget getObjectLabel(String objectName) {
@@ -791,224 +489,14 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return null;
   }
 
-  private Toggle getObjectToggle(String objectName) {
-    for (Widget widget : table) {
-      if (widget instanceof Toggle
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)) {
-        return (Toggle) widget;
-      }
-    }
-
-    logger.severe("object", objectName, "toggle not found");
-    return null;
-  }
-
-  private List<Toggle> getObjectToggles() {
-    List<Toggle> toggles = Lists.newArrayList();
-
-    for (Widget widget : table) {
-      if (widget instanceof Toggle
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)) {
-        toggles.add((Toggle) widget);
-      }
-    }
-
-    return toggles;
-  }
-
-  private List<TableCellElement> getRoleCells(Long roleId) {
-    List<TableCellElement> cells = Lists.newArrayList();
-
-    NodeList<Element> nodes = Selectors.getNodes(table,
-        Selectors.attributeEquals(Attributes.DATA_PREFIX + DATA_KEY_ROLE, roleId));
-
-    if (DomUtils.isEmpty(nodes)) {
-      logger.warning("role", roleId, "nodes nof found");
-
-    } else {
-      for (int i = 0; i < nodes.getLength(); i++) {
-        TableCellElement cell = DomUtils.getParentCell(nodes.getItem(i), true);
-        if (cell != null) {
-          cells.add(cell);
-        }
-      }
-    }
-
-    return cells;
-  }
-
-  private Long getRoleId(String roleName) {
-    return roles.inverse().get(roleName);
-  }
-
-  private String getRoleOrientationStyleName() {
-    return STYLE_PREFIX + "role-" + roleOrientation.name().toLowerCase();
-  }
-
-  private Toggle getRoleToggle(long roleId) {
-    for (Widget widget : table) {
-      if (widget instanceof Toggle
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_TOGGLE)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
-        return (Toggle) widget;
-      }
-    }
-
-    logger.severe("role", roleId, "toggle not found");
-    return null;
-  }
-
-  private List<Toggle> getRoleToggles() {
-    List<Toggle> toggles = Lists.newArrayList();
-
-    for (Widget widget : table) {
-      if (widget instanceof Toggle
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_TOGGLE)) {
-        toggles.add((Toggle) widget);
-      }
-    }
-
-    return toggles;
-  }
-
-  private Long getUserId() {
-    return userId;
-  }
-
-  private void initData(final Consumer<Boolean> callback) {
-    Queries.getRowSet(VIEW_ROLES, Lists.newArrayList(COL_ROLE_NAME), new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet roleData) {
-        if (DataUtils.isEmpty(roleData)) {
-          logger.severe("roles not available");
-          callback.accept(false);
-          return;
-        }
-
-        if (!roles.isEmpty()) {
-          roles.clear();
-        }
-
-        for (BeeRow roleRow : roleData) {
-          roles.put(roleRow.getId(), DataUtils.getString(roleData, roleRow, COL_ROLE_NAME));
-        }
-
-        ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RIGHTS);
-        params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
-        params.addQueryItem(COL_STATE, getRightsState().name());
-
-        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (response.hasErrors()) {
-              response.notify(BeeKeeper.getScreen());
-              callback.accept(false);
-
-            } else {
-              if (!initialValues.isEmpty()) {
-                initialValues.clear();
-              }
-              if (!changes.isEmpty()) {
-                changes.clear();
-              }
-
-              if (response.hasResponse()) {
-                Map<String, String> rights =
-                    Codec.deserializeMap(response.getResponseAsString());
-
-                if (getRightsState().isChecked()) {
-                  for (RightsObject object : objects) {
-                    Set<Long> ids = Sets.newHashSet(roles.keySet());
-
-                    if (rights.containsKey(object.getName())) {
-                      ids.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
-                    }
-
-                    if (!ids.isEmpty()) {
-                      initialValues.putAll(object.getName(), ids);
-                    }
-                  }
-
-                } else if (!rights.isEmpty()) {
-                  for (Map.Entry<String, String> entry : rights.entrySet()) {
-                    Set<Long> ids = DataUtils.parseIdSet(entry.getValue());
-                    for (Long id : ids) {
-                      initialValues.put(entry.getKey(), id);
-                    }
-                  }
-                }
-              }
-
-              callback.accept(true);
-            }
-          }
-        });
-      }
-    });
-  }
-
-  private boolean isChecked(String objectName, long roleId) {
-    return initialValues.containsEntry(objectName, roleId)
-        != changes.containsEntry(objectName, roleId);
-  }
-
-  private boolean isObjectChecked(String objectName) {
-    for (Long roleId : roles.keySet()) {
-      if (!isChecked(objectName, roleId)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean isRoleChecked(long roleId) {
-    for (RightsObject object : objects) {
-      if (!isChecked(object.getName(), roleId)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private void markUserValues(Set<Long> userRoles) {
-    for (Long roleId : roles.keySet()) {
-      if (!userRoles.contains(roleId)) {
-        List<TableCellElement> cells = getRoleCells(roleId);
-        if (!cells.isEmpty()) {
-          StyleUtils.addClassName(cells, STYLE_FILTER_NOT_MATCHED);
-        }
-      }
-    }
-
-    for (RightsObject object : objects) {
-      String objectName = object.getName();
-
-      boolean checked = false;
-      for (Long roleId : userRoles) {
-        if (isChecked(objectName, roleId)) {
-          checked = true;
-          break;
-        }
-      }
-
-      if (!checked) {
-        List<TableCellElement> cells = getObjectCells(objectName);
-        if (!cells.isEmpty()) {
-          StyleUtils.addClassName(cells, STYLE_FILTER_NOT_MATCHED);
-        }
-      }
-    }
-  }
-
   private void onClose(final Presenter presenter) {
     String message = BeeUtils.joinWords(Localized.getConstants().changedValues(),
-        BeeUtils.bracket(changes.size()));
+        BeeUtils.bracket(getChanges().size()));
     List<String> messages = Lists.newArrayList(message);
 
     List<RightsObject> changedObjects = Lists.newArrayList();
     for (RightsObject object : objects) {
-      if (changes.containsKey(object.getName())) {
+      if (getChanges().containsKey(object.getName())) {
         changedObjects.add(object);
       }
     }
@@ -1019,7 +507,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     for (int i = 0; i < count; i++) {
       RightsObject object = changedObjects.get(i);
       messages.add(BeeUtils.joinWords(object.getCaption(),
-          BeeUtils.bracket(changes.get(object.getName()).size())));
+          BeeUtils.bracket(getChanges().get(object.getName()).size())));
     }
 
     if (count < changedObjects.size()) {
@@ -1069,62 +557,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  private void save(final Consumer<Boolean> callback) {
-    if (changes.isEmpty()) {
-      BeeKeeper.getScreen().notifyInfo("no changes");
-      if (callback != null) {
-        callback.accept(false);
-      }
-
-    } else {
-      ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_RIGHTS);
-      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
-      params.addQueryItem(COL_STATE, getRightsState().name());
-
-      Map<String, String> diff = Maps.newHashMap();
-      for (String objectName : changes.keySet()) {
-        diff.put(objectName, DataUtils.buildIdList(changes.get(objectName)));
-      }
-      params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
-
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasErrors()) {
-            response.notify(BeeKeeper.getScreen());
-            if (callback != null) {
-              callback.accept(false);
-            }
-
-          } else {
-            int size = changes.size();
-
-            for (Map.Entry<String, Long> entry : changes.entries()) {
-              if (initialValues.containsEntry(entry.getKey(), entry.getValue())) {
-                initialValues.remove(entry.getKey(), entry.getValue());
-              } else {
-                initialValues.put(entry.getKey(), entry.getValue());
-              }
-            }
-
-            changes.clear();
-
-            removeClassName(table, STYLE_VALUE_CHANGED);
-
-            String message = BeeUtils.joinWords(getObjectType(), getRightsState(),
-                "saved", size, "changes");
-            logger.debug(message);
-            BeeKeeper.getScreen().notifyInfo(message);
-
-            if (callback != null) {
-              callback.accept(true);
-            }
-          }
-        }
-      });
-    }
-  }
-
   private void setChildrenVisibility(String parent, boolean visible) {
     for (RightsObject object : objects) {
       if (parent.equals(object.getParent())) {
@@ -1154,123 +586,5 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   private void setHoverColumn(int hoverColumn) {
     this.hoverColumn = hoverColumn;
-  }
-
-  private void setUserId(Long userId) {
-    this.userId = userId;
-  }
-
-  private void switchColumnLabelOrientation() {
-    table.removeStyleName(getColumnLabelOrientationStyleName());
-    this.columnLabelOrientation = columnLabelOrientation.invert();
-    table.addStyleName(getColumnLabelOrientationStyleName());
-  }
-
-  private void switchRoleOrientation() {
-    transposeTable();
-
-    table.removeStyleName(getRoleOrientationStyleName());
-    this.roleOrientation = roleOrientation.invert();
-    table.addStyleName(getRoleOrientationStyleName());
-  }
-
-  private boolean toggleValue(String objectName, Long roleId) {
-    if (BeeUtils.isEmpty(objectName)) {
-      logger.severe("toggle value: object name not specified");
-      return false;
-    } else if (roleId == null) {
-      logger.severe("toggle value: role id not specified");
-      return false;
-
-    } else if (changes.containsEntry(objectName, roleId)) {
-      changes.remove(objectName, roleId);
-      return false;
-    } else {
-      changes.put(objectName, roleId);
-      return true;
-    }
-  }
-
-  private void transposeTable() {
-    table.remove(roleOrientationToggle);
-    table.remove(columnLabelOrientationToggle);
-
-    table.transpose();
-
-    addRoleOrientationToggle();
-    addColumnLabelOrientationToggle();
-
-    for (int row = VALUE_START_ROW; row < table.getRowCount(); row++) {
-      table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
-    }
-  }
-
-  private void updateObjectValueToggles(String objectName, boolean checked) {
-    for (Widget widget : table) {
-      if (widget instanceof Toggle && ((Toggle) widget).isChecked() != checked
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName)) {
-
-        ((Toggle) widget).setChecked(checked);
-
-        boolean isChanged = toggleValue(objectName, getRoleId(widget));
-        updateValueCell(widget, isChanged);
-      }
-    }
-    
-    RightsObject object = findObject(objectName);
-    if (object != null && object.hasChildren()) {
-      for (Long roleId : roles.keySet()) {
-        if (checked && object.hasParent()) {
-          boolean value = checked;
-          
-          String parentName = object.getParent();
-          while (!BeeUtils.isEmpty(parentName)) {
-            if (!isChecked(parentName, roleId)) {
-              value = false;
-              break;
-            }
-            
-            RightsObject parent = findObject(parentName);
-            if (parent != null && parent.hasParent()) {
-              parentName = parent.getParent();
-            } else {
-              break;
-            }
-          }
-
-          enableChildren(object, roleId, value);
-          
-        } else {
-          enableChildren(object, roleId, checked);
-        }
-      }
-    }
-  }
-
-  private void updateRoleValueToggles(long roleId, boolean checked) {
-    for (Widget widget : table) {
-      if (widget instanceof Toggle && ((Toggle) widget).isChecked() != checked
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
-          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
-
-        ((Toggle) widget).setChecked(checked);
-
-        boolean isChanged = toggleValue(getObjectName(widget), roleId);
-        updateValueCell(widget, isChanged);
-
-        if (checked) {
-          widget.removeStyleName(STYLE_VALUE_DISABLED);
-        }
-      }
-    }
-
-    if (!checked) {
-      for (RightsObject object : objects) {
-        if (object.hasChildren() && !object.hasParent()) {
-          enableChildren(object, roleId, checked);
-        }
-      }
-    }
   }
 }

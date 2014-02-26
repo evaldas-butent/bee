@@ -12,7 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-final class ModuleRightsHandler extends RightsForm {
+final class ModuleRightsHandler extends MultiRoleForm {
 
   ModuleRightsHandler() {
   }
