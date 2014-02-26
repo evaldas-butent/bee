@@ -2878,20 +2878,15 @@
   color: #444;
   cursor: pointer;
 }
-.bee-Rights-role-toggle:hover,
-.bee-Rights-object-toggle:hover {
-  transform: scale(1.5, 1.5);
-  -webkit-transform: scale(1.5, 1.5);
+.bee-Rights-role-toggle-cell:hover,
+.bee-Rights-object-toggle-cell:hover {
+  background-color: white;
 }
 
 .bee-Rights-value-toggle {
   text-align: center;
   font-size: 12px;
   cursor: pointer;
-}
-.bee-Rights-value-toggle:hover {
-  transform: scale(1.5, 1.5);
-  -webkit-transform: scale(1.5, 1.5);
 }
 .bee-Rights-value-toggle-checked {
   color: green;
@@ -2924,7 +2919,7 @@
   opacity: 0;
 }
 
-.bee-Rights-user-unchecked {
+.bee-Rights-filter-not-matched {
   display: none;
 }
 

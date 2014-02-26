@@ -119,8 +119,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String STYLE_USER_EMPTY = STYLE_PREFIX + "user-empty";
   private static final String STYLE_USER_NOT_EMPTY = STYLE_PREFIX + "user-not-empty";
 
-  private static final String STYLE_USER_CHECKED = STYLE_PREFIX + "user-checked";
-  private static final String STYLE_USER_UNCHECKED = STYLE_PREFIX + "user-unchecked";
+  private static final String STYLE_FILTER_NOT_MATCHED = STYLE_PREFIX + "filter-not-matched";
 
   private static final String STYLE_HOVER = STYLE_PREFIX + "hover";
 
@@ -306,8 +305,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
               userClear.removeStyleName(STYLE_USER_EMPTY);
               userClear.addStyleName(STYLE_USER_NOT_EMPTY);
 
-              removeClassName(table, STYLE_USER_CHECKED);
-              removeClassName(table, STYLE_USER_UNCHECKED);
+              removeClassName(table, STYLE_FILTER_NOT_MATCHED);
 
               checkUserRights();
             }
@@ -338,8 +336,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
             userClear.removeStyleName(STYLE_USER_NOT_EMPTY);
             userClear.addStyleName(STYLE_USER_EMPTY);
 
-            removeClassName(table, STYLE_USER_CHECKED);
-            removeClassName(table, STYLE_USER_UNCHECKED);
+            removeClassName(table, STYLE_FILTER_NOT_MATCHED);
           }
         }
       });
@@ -440,8 +437,17 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       @Override
       public void onClick(ClickEvent event) {
         if (event.getSource() instanceof Toggle) {
-          Toggle t = (Toggle) event.getSource();
-          updateObjectValueToggles(getObjectName(t), t.isChecked());
+          Toggle ot = (Toggle) event.getSource();
+          updateObjectValueToggles(getObjectName(ot), ot.isChecked());
+
+          List<Toggle> roleToggles = getRoleToggles();
+          for (Toggle rt : roleToggles) {
+            if (ot.isChecked()) {
+              rt.setChecked(isRoleChecked(getRoleId(rt)));
+            } else if (rt.isChecked()) {
+              rt.setChecked(false);
+            }
+          }
         }
       }
     });
@@ -499,8 +505,17 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       @Override
       public void onClick(ClickEvent event) {
         if (event.getSource() instanceof Toggle) {
-          Toggle t = (Toggle) event.getSource();
-          updateRoleValueToggles(getRoleId(t), t.isChecked());
+          Toggle rt = (Toggle) event.getSource();
+          updateRoleValueToggles(getRoleId(rt), rt.isChecked());
+
+          List<Toggle> objectToggles = getObjectToggles();
+          for (Toggle ot : objectToggles) {
+            if (rt.isChecked()) {
+              ot.setChecked(isObjectChecked(getObjectName(ot)));
+            } else if (ot.isChecked()) {
+              ot.setChecked(false);
+            }
+          }
         }
       }
     });
@@ -529,7 +544,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
                 onColumnHover(col);
               }
 
-            } else if (DomUtils.idEquals(el, table.getId())) {
+            } else if (table.getId().equals(el.getId())) {
               break;
             }
           }
@@ -623,6 +638,16 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       row++;
     }
 
+    for (RightsObject object : objects) {
+      if (object.hasChildren()) {
+        for (Long roleId : roles.keySet()) {
+          if (!isChecked(object.getName(), roleId)) {
+            enableChildren(object, roleId, false);
+          }
+        }
+      }
+    }
+
     if (roleOrientation.isVertical()) {
       transposeTable();
     }
@@ -671,26 +696,47 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
           RightsObject object = findObject(name);
           if (object != null && object.hasChildren()) {
-            Set<String> childrenNames = Sets.newHashSet();
-            for (RightsObject ro : objects) {
-              if (object.getName().equals(ro.getParent())) {
-                childrenNames.add(ro.getName());
-              }
-            }
-
-            for (Widget widget : table) {
-              if (DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
-                  && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, role)
-                  && childrenNames.contains(getObjectName(widget))) {
-                widget.setStyleName(STYLE_VALUE_DISABLED, !t.isChecked());
-              }
-            }
+            enableChildren(object, role, t.isChecked());
           }
         }
       }
     });
 
     return toggle;
+  }
+
+  private void enableChildren(RightsObject object, Long roleId, boolean enabled) {
+    List<RightsObject> children = Lists.newArrayList();
+
+    for (RightsObject ro : objects) {
+      if (object.getName().equals(ro.getParent())) {
+        children.add(ro);
+      }
+    }
+
+    if (children.isEmpty()) {
+      logger.warning("object", object.getName(), "children not found");
+
+    } else {
+      for (Widget widget : table) {
+        if (DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE)
+            && DomUtils.dataEquals(widget.getElement(), DATA_KEY_ROLE, roleId)) {
+
+          String childName = getObjectName(widget);
+          for (RightsObject child : children) {
+            if (child.getName().equals(childName)) {
+              widget.setStyleName(STYLE_VALUE_DISABLED, !enabled);
+
+              if (child.hasChildren()) {
+                boolean childEnabled = enabled
+                    && widget instanceof Toggle && ((Toggle) widget).isChecked();
+                enableChildren(child, roleId, childEnabled);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   private RightsObject findObject(String objectName) {
@@ -758,6 +804,19 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return null;
   }
 
+  private List<Toggle> getObjectToggles() {
+    List<Toggle> toggles = Lists.newArrayList();
+
+    for (Widget widget : table) {
+      if (widget instanceof Toggle
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE)) {
+        toggles.add((Toggle) widget);
+      }
+    }
+
+    return toggles;
+  }
+
   private List<TableCellElement> getRoleCells(Long roleId) {
     List<TableCellElement> cells = Lists.newArrayList();
 
@@ -798,6 +857,19 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     logger.severe("role", roleId, "toggle not found");
     return null;
+  }
+
+  private List<Toggle> getRoleToggles() {
+    List<Toggle> toggles = Lists.newArrayList();
+
+    for (Widget widget : table) {
+      if (widget instanceof Toggle
+          && DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_ROLE_TOGGLE)) {
+        toggles.add((Toggle) widget);
+      }
+    }
+
+    return toggles;
   }
 
   private Long getUserId() {
@@ -904,7 +976,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       if (!userRoles.contains(roleId)) {
         List<TableCellElement> cells = getRoleCells(roleId);
         if (!cells.isEmpty()) {
-          StyleUtils.addClassName(cells, STYLE_USER_UNCHECKED);
+          StyleUtils.addClassName(cells, STYLE_FILTER_NOT_MATCHED);
         }
       }
     }
@@ -923,7 +995,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
       if (!checked) {
         List<TableCellElement> cells = getObjectCells(objectName);
         if (!cells.isEmpty()) {
-          StyleUtils.addClassName(cells, STYLE_USER_UNCHECKED);
+          StyleUtils.addClassName(cells, STYLE_FILTER_NOT_MATCHED);
         }
       }
     }
@@ -1145,6 +1217,35 @@ public abstract class RightsForm extends AbstractFormInterceptor {
         updateValueCell(widget, isChanged);
       }
     }
+    
+    RightsObject object = findObject(objectName);
+    if (object != null && object.hasChildren()) {
+      for (Long roleId : roles.keySet()) {
+        if (checked && object.hasParent()) {
+          boolean value = checked;
+          
+          String parentName = object.getParent();
+          while (!BeeUtils.isEmpty(parentName)) {
+            if (!isChecked(parentName, roleId)) {
+              value = false;
+              break;
+            }
+            
+            RightsObject parent = findObject(parentName);
+            if (parent != null && parent.hasParent()) {
+              parentName = parent.getParent();
+            } else {
+              break;
+            }
+          }
+
+          enableChildren(object, roleId, value);
+          
+        } else {
+          enableChildren(object, roleId, checked);
+        }
+      }
+    }
   }
 
   private void updateRoleValueToggles(long roleId, boolean checked) {
@@ -1157,6 +1258,18 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
         boolean isChanged = toggleValue(getObjectName(widget), roleId);
         updateValueCell(widget, isChanged);
+
+        if (checked) {
+          widget.removeStyleName(STYLE_VALUE_DISABLED);
+        }
+      }
+    }
+
+    if (!checked) {
+      for (RightsObject object : objects) {
+        if (object.hasChildren() && !object.hasParent()) {
+          enableChildren(object, roleId, checked);
+        }
       }
     }
   }
