@@ -58,7 +58,6 @@ import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -126,7 +125,7 @@ public class TransportModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.TRANSPORT))) {
+    if (usr.isModuleVisible(Module.TRANSPORT.getName())) {
       result.addAll(qs.getSearchResults(VIEW_VEHICLES,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
               COL_OWNER_NAME), query)));

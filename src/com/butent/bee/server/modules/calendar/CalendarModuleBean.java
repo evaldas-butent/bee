@@ -78,7 +78,6 @@ import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -406,7 +405,7 @@ public class CalendarModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> results = Lists.newArrayList();
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.CALENDAR))) {
+    if (usr.isModuleVisible(Module.CALENDAR.getName())) {
       Filter filter = Filter.or(
           Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
               COL_APPOINTMENT_LOCATION, ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),

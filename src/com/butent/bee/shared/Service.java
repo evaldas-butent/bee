@@ -8,6 +8,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public final class Service {
 
+  public static final String PROPERTY_MODULES = "Modules";
+
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";

@@ -397,7 +397,7 @@ public class UiServiceBean {
       buildDbList(root, tables, true);
     }
     for (String tableName : tables) {
-      XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModuleName(), tableName);
+      XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModule(), tableName);
 
       if (xmlTable != null) {
         Collection<XmlField> fields = Lists.newArrayList();

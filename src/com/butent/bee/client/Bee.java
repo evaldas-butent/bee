@@ -29,6 +29,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -56,7 +57,7 @@ public class Bee implements EntryPoint {
           for (RpcInfo info : pendingRequests) {
             info.cancel();
           }
-          
+
           logout();
         }
       };
@@ -130,6 +131,8 @@ public class Bee implements EntryPoint {
     UserData userData = UserData.restore(data.get(Service.VAR_USER));
     BeeKeeper.getUser().setUserData(userData);
     BeeKeeper.getScreen().updateUserData(userData);
+
+    Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
 
     for (UserInterface.Component component : UserInterface.Component.values()) {
       String serialized = data.get(component.key());

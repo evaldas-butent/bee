@@ -399,7 +399,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     column.setEnumKey(info.getEnumKey());
   }
 
-  private final String moduleName;
+  private final String module;
   private final String name;
   private final BeeTable source;
   private final String sourceAlias;
@@ -425,9 +425,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private Order order;
 
-  BeeView(String moduleName, XmlView xmlView, Map<String, BeeTable> tables) {
+  BeeView(String module, XmlView xmlView, Map<String, BeeTable> tables) {
     Assert.notNull(xmlView);
-    this.moduleName = moduleName;
+    this.module = BeeUtils.notEmpty(xmlView.module, module);
     this.name = xmlView.name;
     Assert.notEmpty(name);
 
@@ -627,7 +627,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
-    PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
+    PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
         "Filter", getFilter(), "Read Only", isReadOnly(), "Caption", getCaption(),
@@ -668,8 +668,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   @Override
-  public String getModuleName() {
-    return moduleName;
+  public String getModule() {
+    return module;
   }
 
   @Override

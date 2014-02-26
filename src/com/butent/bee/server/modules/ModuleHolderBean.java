@@ -9,6 +9,7 @@ import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -35,8 +36,6 @@ import javax.naming.NamingException;
 @Singleton
 @Lock(LockType.READ)
 public class ModuleHolderBean {
-
-  private static final String PROPERTY_MODULES = "Modules";
 
   private enum TABLE_ACTIVATION_MODE {
     DELAYED, FORCED
@@ -84,8 +83,8 @@ public class ModuleHolderBean {
     String resource = ArrayUtils.join("/", resources);
 
     if (!BeeUtils.isEmpty(moduleName)) {
-      resource = BeeUtils.join("/",
-          BeeUtils.normalize(PROPERTY_MODULES), getModule(moduleName).getResourcePath(), resource);
+      resource = BeeUtils.join("/", BeeUtils.normalize(Service.PROPERTY_MODULES),
+          getModule(moduleName).getResourcePath(), resource);
     }
     return resource;
   }
@@ -106,7 +105,7 @@ public class ModuleHolderBean {
         for (String tblName : sys.getTableNames()) {
           BeeTable table = sys.getTable(tblName);
 
-          if (BeeUtils.same(table.getModuleName(), mod)) {
+          if (BeeUtils.same(table.getModule(), mod)) {
             if (mode == TABLE_ACTIVATION_MODE.FORCED) {
               sys.rebuildTable(tblName);
             } else {
@@ -126,6 +125,8 @@ public class ModuleHolderBean {
 
   @PostConstruct
   private void init() {
+    Module.setEnabledModules(Config.getProperty(Service.PROPERTY_MODULES));
+
     List<String> mods = Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
 
     for (Module modul : Module.values()) {

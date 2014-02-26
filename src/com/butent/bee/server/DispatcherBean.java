@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -69,6 +70,7 @@ public class DispatcherBean {
       return response;
     }
     data.put(Service.VAR_USER, userData.getResponse());
+    data.put(Service.PROPERTY_MODULES, BeeUtils.joinItems(Module.getEnabledModules()));
 
     UserInterface userInterface = null;
 
@@ -81,7 +83,7 @@ public class DispatcherBean {
     }
 
     Collection<Component> components = UserInterface.normalize(userInterface).getComponents();
-    
+
     Collection<Component> requiredComponents = UserInterface.getRequiredComponents();
     if (!BeeUtils.isEmpty(requiredComponents)) {
       if (components == null) {
@@ -107,7 +109,7 @@ public class DispatcherBean {
               }
             }
             break;
-            
+
           case DATA_INFO:
             data.put(component.key(), system.getDataInfo());
             break;
@@ -157,7 +159,7 @@ public class DispatcherBean {
               }
             }
             break;
-            
+
           case NEWS:
             ResponseObject newsData = news.getNews();
             if (newsData != null) {

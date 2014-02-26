@@ -919,7 +919,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   static final String CHECK_PREFIX = "CK_";
   static final String TRIGGER_PREFIX = "TR_";
 
-  private final String moduleName;
+  private final String module;
   private final String name;
   private final int idChunk;
   private final String idName;
@@ -948,7 +948,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     Assert.notEmpty(xmlTable.versionName);
     Assert.state(!BeeUtils.same(xmlTable.idName, xmlTable.versionName));
 
-    this.moduleName = moduleName;
+    this.module = moduleName;
     this.name = xmlTable.name;
     this.idChunk = xmlTable.idChunk;
     this.idName = xmlTable.idName;
@@ -1021,7 +1021,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
-    PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
+    PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Id Chunk", getIdChunk(), "Id Name", getIdName(), "Version Name", getVersionName(),
         "Active", isActive(), "Auditable", isAuditable(),
         "Records visible", areRecordsVisible(), "Records editable", areRecordsEditable());
@@ -1128,7 +1128,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public int getFieldCount() {
     return fields.size();
   }
-  
+
   public Collection<String> getFieldNames() {
     List<String> names = Lists.newArrayList();
     for (BeeField field : fields.values()) {
@@ -1169,8 +1169,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   @Override
-  public String getModuleName() {
-    return moduleName;
+  public String getModule() {
+    return module;
   }
 
   @Override

@@ -58,7 +58,6 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -136,7 +135,7 @@ public class CommonsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> commonsSr = Lists.newArrayList();
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.CLASSIFIERS, SubModule.CONTACTS))) {
+    if (usr.isModuleVisible(Module.CLASSIFIERS.getName(SubModule.CONTACTS))) {
       List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
           Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
               COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
@@ -148,13 +147,13 @@ public class CommonsModuleBean implements BeeModule {
       commonsSr.addAll(personsSr);
     }
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.ADMINISTRATION))) {
+    if (usr.isModuleVisible(Module.ADMINISTRATION.getName())) {
       List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
           Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
       commonsSr.addAll(usersSr);
     }
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.TRADE))) {
+    if (usr.isModuleVisible(Module.TRADE.getName())) {
       List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
           Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
               query));

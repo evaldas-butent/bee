@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -744,6 +745,10 @@ public class UserServiceBean {
           cnt++;
         }
       }
+    }
+    for (Entry<String, UserInfo> entry : infoCache.entrySet()) {
+      entry.getValue().getUserData()
+          .setRights(getUserRights(userCache.inverse().get(entry.getKey())));
     }
     Endpoint.updateUserData(getAllUserData());
 

@@ -73,7 +73,6 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
@@ -131,7 +130,7 @@ public class TasksModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.TASKS))) {
+    if (usr.isModuleVisible(Module.TASKS.getName())) {
       List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
           Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
               CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),

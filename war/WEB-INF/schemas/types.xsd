@@ -196,7 +196,6 @@
       <xs:enumeration value="Classifiers" />
       <xs:enumeration value="Classifiers.Contacts" />
       <xs:enumeration value="Calendar" />
-      <xs:enumeration value="Calendar.Administration" />
       <xs:enumeration value="Documents" />
       <xs:enumeration value="Tasks" />
       <xs:enumeration value="Discussions" />

@@ -9,7 +9,7 @@ public enum SubModule implements HasLocalizedCaption {
   ADMINISTRATION {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return null;
+      return constants.administration();
     }
   },
   CONTACTS {

@@ -34,7 +34,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -62,7 +61,7 @@ public class DocumentsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(RightsUtils.buildModuleName(Module.DOCUMENTS))) {
+    if (usr.isModuleVisible(Module.DOCUMENTS.getName())) {
       List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
               COL_DOCUMENT_NAME, COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME,
