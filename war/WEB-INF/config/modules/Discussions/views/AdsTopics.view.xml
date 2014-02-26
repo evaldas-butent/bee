@@ -6,6 +6,7 @@
   newRowForm="AdTopic"
   >
   <Columns>
+
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Name" />
     <SimpleColumn name="Visible" />   

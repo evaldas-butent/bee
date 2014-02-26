@@ -203,11 +203,12 @@
 }
 
 .bee-discuss-adsFormContent {
-  background-color: white;
+  /*background-color: white;*/
   margin-left: 1em;
   word-wrap: normal;
   margin: 1ex;
   width: 95%;
+  border-spacing: 0px;
 }
 
 .bee-discuss-adsFormContent-TopicName {
@@ -238,14 +239,19 @@
 }
 
 .bee-discuss-adsFormContent-Created {
- /* min-width: 200px;*/
+ 
 }
 
 .bee-discuss-adsFormContent-Subject {
   font-weight: bolder;
- /* width: 100%;*/
   vertical-align: top;
   padding-left: 1ex;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right:  1px solid #ccc;
+  background-color: white;
+  position: relative;
+  top: 1ex;
 }
 
 .bee-discuss-adsFormContent-Owner {
@@ -254,12 +260,24 @@
 }
 
 .bee-discuss-adsFormContent-Description {
- /* width: 100%;*/
   vertical-align: top;
   padding: 1ex;
   max-height: 370px;
-  display: inline-block;
+  display: block;
   overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 6em;
+  border-bottom: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right:  1px solid #ccc;
+  background-color: white;
+  position: relative;
+  top: 1ex;
+  box-shadow: 5px 3px 5px #ccc;
+}
+
+.bee-discuss-adsFormContent-NewAnnouncement {
+ background-color: #ffffcc;
 }
 
 .bee-discuss-adsFormContent-Owner-Photo {
@@ -318,4 +336,22 @@
   line-height: 5px;
   letter-spacing: 2px;
   background: white;
+  margin-right: 25%;
+  margin-top: 1ex;
+}
+
+.bee-discuss-adsFormContent-chatBalloon{
+ width: 0px;
+ height: 0px;
+ position: absolute;
+ left: -2ex;
+ top: 3em;
+ border-top: 15px solid transparent;
+ border-bottom: 15px solid transparent;
+ border-right: 15px solid white;
+ z-index: 1;
+}
+
+.bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon {
+  border-right: 15px solid #ffffCC;
 }

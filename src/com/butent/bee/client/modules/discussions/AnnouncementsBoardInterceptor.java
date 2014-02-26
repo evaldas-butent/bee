@@ -52,6 +52,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";
+  private static final String STYLE_CHAT_BALLOON = "chatBalloon";
 
   private final Collection<HandlerRegistration> registry = Lists.newArrayList();
 
@@ -149,26 +150,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         }
 
         SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
-        boolean publishedBirths = false;
-
         for (String[] rsRow : rs.getRows()) {
 
           if (rs.hasColumn(ALS_BIRTHDAY)) {
-            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
-                && BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
-              if (!publishedBirths) {
-                renderBirthdaySection(rsRow, rs, adsTable);
-                publishedBirths = true;
-              }
-            } else if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
-                && !BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
-              if (!publishedBirths) {
-                renderBirthdaySection(rsRow, rs, adsTable);
-                publishedBirths = true;
-              }
-              if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY_VALID)])) {
-                renderAnnoucementsSection(rsRow, rs, adsTable);
-              }
+            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])) {
+              renderBirthdaySection(rsRow, rs, adsTable);
             } else {
               renderAnnoucementsSection(rsRow, rs, adsTable);
             }
@@ -198,17 +184,21 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     String attachment = "";
 
-    if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_FILE)])) {
-      int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_FILE)]);
+    if (rs.hasColumn(COL_FILE)) {
+      if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_FILE)])) {
+        int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_FILE)]);
 
-      if (BeeUtils.isPositive(fileCount)) {
-        attachment = (new Image(Global.getImages().attachment())).toString();
+        if (BeeUtils.isPositive(fileCount)) {
+          attachment = (new Image(Global.getImages().attachment())).toString();
+        }
       }
     }
+    
+    CustomDiv div = new CustomDiv(STYLE_PREFIX + STYLE_CHAT_BALLOON);
 
-    adsTable.setHtml(row, 1, attachment + rsRow[rs.getColumnIndex(COL_SUBJECT)], STYLE_PREFIX
-        + COL_SUBJECT);
-
+    int subjectRow = row;
+    adsTable.setHtml(row, 1, div.toString() + attachment + rsRow[rs.getColumnIndex(COL_SUBJECT)],
+        STYLE_PREFIX + COL_SUBJECT);
 
     row++;
     adsTable.setHtml(row, 0, renderPhotoAndAuthor(rsRow, rs, STYLE_PREFIX + COL_OWNER
@@ -218,6 +208,14 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     adsTable.setHtml(row, 1, rsRow[rs.getColumnIndex(COL_DESCRIPTION)], STYLE_PREFIX
         + COL_DESCRIPTION);
+
+    if (rs.hasColumn(ALS_NEW_ANNOUCEMENT)) {
+      boolean isNew = BeeUtils.toBoolean(rsRow[rs.getColumnIndex(ALS_NEW_ANNOUCEMENT)]);
+      if (isNew) {
+        adsTable.getCellFormatter().addStyleName(row, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
+        adsTable.getCellFormatter().addStyleName(subjectRow, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
+      }
+    }
 
     row++;
     

@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.io.StoredFile;
@@ -49,6 +50,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants.Discussion
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -775,6 +777,7 @@ public class DiscussionsModuleBean implements BeeModule {
     SqlSelect select = new SqlSelect()
         .addField(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS), COL_DISCUSSION)
         .addField(TBL_ADS_TOPICS, COL_NAME, ALS_TOPIC_NAME)
+        .addField(TBL_ADS_TOPICS, COL_ORDINAL, COL_ORDINAL)
         .addField(TBL_DISCUSSIONS, COL_CREATED, COL_CREATED)
         .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
         .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
@@ -785,9 +788,19 @@ public class DiscussionsModuleBean implements BeeModule {
             CommonsConstants.COL_LAST_NAME)
         .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_PHOTO,
             CommonsConstants.COL_PHOTO)
-        .addCountDistinct(TBL_DISCUSSIONS_FILES, COL_FILE, COL_FILE)
-        .addFrom(TBL_ADS_TOPICS)
-        .addFromLeft(TBL_DISCUSSIONS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
+        .addCount(TBL_DISCUSSIONS_FILES, COL_FILE, COL_FILE)
+        .addExpr(
+            SqlUtils.sqlIf(
+                SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
+                , true, null), ALS_NEW_ANNOUCEMENT)
+        .addEmptyField(ALS_BIRTHDAY, SqlDataType.BOOLEAN, 1, 0, false)
+        .addFrom(TBL_DISCUSSIONS)
+        .addFromInner(TBL_ADS_TOPICS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
+        .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
+                        COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
+                            .getIdName(TBL_DISCUSSIONS))),
+                    SqlUtils.equals(TBL_DISCUSSIONS_USAGE, CommonsConstants.COL_USER, usr
+                        .getCurrentUserId())))
         .addFromLeft(CommonsConstants.TBL_USERS,
             sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
         .addFromLeft(
@@ -837,42 +850,43 @@ public class DiscussionsModuleBean implements BeeModule {
         .addOrder(TBL_ADS_TOPICS, COL_ORDINAL)
         .addOrderDesc(TBL_DISCUSSIONS, COL_CREATED)
         .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
-        .addGroup(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS))
+        .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL)
+        .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
         .addGroup(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
             CommonsConstants.COL_LAST_NAME, CommonsConstants.COL_PHOTO);
+    // logger.info(select.getQuery());
+    SimpleRowSet rs = qs.getData(select);
 
     if (DataUtils.isId(birthTopic)) {
-      select.addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS),
-          birthTopic), true, null), ALS_BIRTHDAY);
-      select.addExpr(SqlUtils.sqlIf(SqlUtils.or(
-          SqlUtils.and(
-              SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, System
-                  .currentTimeMillis()),
-              SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                  .currentTimeMillis())
-              ),
-          SqlUtils.or(
-              SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowStart),
-              SqlUtils.equals(TBL_DISCUSSIONS, COL_VISIBLE_FROM, nowStart)
-              ),
-          SqlUtils.and(
-              SqlUtils.lessEqual(TBL_DISCUSSIONS, COL_VISIBLE_FROM, System
-                  .currentTimeMillis()),
-              SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_TO)
-              ),
-          SqlUtils.and(
-              SqlUtils.isNull(TBL_DISCUSSIONS, COL_VISIBLE_FROM),
-              SqlUtils.moreEqual(TBL_DISCUSSIONS, COL_VISIBLE_TO, nowFinish)
-              )
-          ), true, null), ALS_BIRTHDAY_VALID);
+      BeeRowSet topicRows =
+          qs.getViewData(VIEW_ADS_TOPICS, Filter.and(Filter.compareId(birthTopic), Filter
+              .isNot(Filter.isNull(COL_VISIBLE))));
+      
+      if (!topicRows.isEmpty()) {
+        BeeRow tRow = topicRows.getRow(topicRows.getNumberOfRows() - 1);
+        Integer ordinal =
+            tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
 
-      select.setWhere(SqlUtils.or(
-          select.getWhere(),
-          SqlUtils.equals(TBL_ADS_TOPICS, sys.getIdName(TBL_ADS_TOPICS), birthTopic)
-          ));
+        String[] topicData = new String[rs.getNumberOfColumns()];
+        topicData[rs.getColumnIndex(ALS_TOPIC_NAME)] =
+            tRow.getString(topicRows.getColumnIndex(COL_NAME));
+        topicData[rs.getColumnIndex(COL_ORDINAL)] =
+            tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
+        topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
+        
+        int placeId = rs.getNumberOfColumns() - 1;
+        for (int i = 0; i < rs.getNumberOfRows(); i++) {
+          Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
+          if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
+            if (i <= placeId) {
+              placeId = i;
+            }
+          }
+        }
+
+        rs.getRows().add(placeId, topicData);
+      }
     }
-
-    SimpleRowSet rs = qs.getData(select);
 
     if (!rs.isEmpty()) {
       ResponseObject resp = ResponseObject.response(rs);

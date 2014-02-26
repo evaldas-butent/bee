@@ -106,6 +106,7 @@ public final class DiscussionsConstants {
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
   public static final String ALS_TOPIC_NAME = "TopicName";
+  public static final String ALS_NEW_ANNOUCEMENT = "NewAnnouncement";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
@@ -224,6 +225,7 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String VIEW_DISCUSSIONS_USERS = "DiscussionsUsers";
   public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
+  public static final String VIEW_ADS_TOPICS = "AdsTopics";
 
   public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
   public static final int DEFAULT_BIRTHDAYS_DAYS_RANGE = 6;
