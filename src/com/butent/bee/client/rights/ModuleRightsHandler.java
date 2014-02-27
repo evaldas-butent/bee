@@ -29,7 +29,7 @@ final class ModuleRightsHandler extends MultiRoleForm {
 
   @Override
   protected RightsState getRightsState() {
-    return RightsState.VISIBLE;
+    return RightsState.VIEW;
   }
 
   @Override

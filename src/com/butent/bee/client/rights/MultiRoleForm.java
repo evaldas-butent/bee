@@ -222,7 +222,6 @@ abstract class MultiRoleForm extends RightsForm {
 
         ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RIGHTS);
         params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
-        params.addQueryItem(COL_STATE, getRightsState().name());
 
         BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
           @Override
@@ -243,12 +242,15 @@ abstract class MultiRoleForm extends RightsForm {
                 Map<String, String> rights =
                     Codec.deserializeMap(response.getResponseAsString());
 
+                String stateIdx = BeeUtils.toString(RightsState.VIEW.ordinal());
+
                 if (getRightsState().isChecked()) {
                   for (RightsObject object : getObjects()) {
                     Set<Long> ids = Sets.newHashSet(roles.keySet());
 
                     if (rights.containsKey(object.getName())) {
-                      ids.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
+                      ids.removeAll(DataUtils.parseIdSet(Codec
+                          .deserializeMap(rights.get(object.getName())).get(stateIdx)));
                     }
 
                     if (!ids.isEmpty()) {
@@ -258,7 +260,8 @@ abstract class MultiRoleForm extends RightsForm {
 
                 } else if (!rights.isEmpty()) {
                   for (Map.Entry<String, String> entry : rights.entrySet()) {
-                    Set<Long> ids = DataUtils.parseIdSet(entry.getValue());
+                    Set<Long> ids = DataUtils
+                        .parseIdSet(Codec.deserializeMap(entry.getValue()).get(stateIdx));
                     for (Long id : ids) {
                       initialValues.put(entry.getKey(), id);
                     }

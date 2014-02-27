@@ -17,6 +17,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -198,7 +199,7 @@ public class UiHolderBean {
   }
 
   private Menu getVisibleMenu(String parent, Menu entry) {
-    String ref = BeeUtils.join(".", parent, entry.getName());
+    String ref = RightsUtils.JOINER.join(parent, entry.getName());
 
     if (usr.isModuleVisible(entry.getModule()) && usr.isMenuVisible(ref)) {
       List<Menu> items = null;

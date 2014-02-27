@@ -88,6 +88,13 @@ public class UserInfo implements HasInfo {
     return userData.getUserSign();
   }
 
+  public boolean hasDataRight(String object, RightsState state) {
+    if (!isLoggedIn()) {
+      return false;
+    }
+    return userData.hasDataRight(object, state);
+  }
+
   public boolean hasEventRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
@@ -100,13 +107,6 @@ public class UserInfo implements HasInfo {
       return false;
     }
     return userData.hasFormRight(object, state);
-  }
-
-  public boolean hasGridRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasGridRight(object, state);
   }
 
   public boolean isMenuVisible(String object) {

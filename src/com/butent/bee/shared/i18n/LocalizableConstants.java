@@ -422,9 +422,9 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String number();
 
-  String objectEvent();
+  String objectData();
 
-  String objectGrid();
+  String objectEvent();
 
   String objectForm();
 
@@ -504,9 +504,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String responsiblePersons();
 
-  String rightStateEditable();
+  String rightStateCreate();
 
-  String rightStateVisible();
+  String rightStateDelete();
+
+  String rightStateEdit();
+
+  String rightStateView();
 
   String roleAddUsers();
 

@@ -215,8 +215,7 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(svc, Service.GET_RIGHTS)) {
       response = usr.getRights(EnumUtils.getEnumByName(RightsObjectType.class,
-          reqInfo.getParameter(COL_OBJECT_TYPE)), EnumUtils.getEnumByName(RightsState.class,
-          reqInfo.getParameter(COL_STATE)));
+          reqInfo.getParameter(COL_OBJECT_TYPE)));
 
     } else if (BeeUtils.same(svc, Service.SET_RIGHTS)) {
       response = usr.setRights(EnumUtils.getEnumByName(RightsObjectType.class,

@@ -201,8 +201,8 @@
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="Mail" />
       <xs:enumeration value="Mail.Administration" />
-      <xs:enumeration value="Ecommerce" />
-      <xs:enumeration value="Ecommerce.Administration" />
+      <xs:enumeration value="Ec" />
+      <xs:enumeration value="Ec.Administration" />
       <xs:enumeration value="Trade" />
       <xs:enumeration value="Transport" />
       <xs:enumeration value="Transport.Administration" />
