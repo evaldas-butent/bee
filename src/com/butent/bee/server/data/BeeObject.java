@@ -2,7 +2,7 @@ package com.butent.bee.server.data;
 
 public interface BeeObject {
 
-  String getModuleName();
+  String getModule();
 
   String getName();
 }

@@ -43,7 +43,7 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
   public ExtendedPropertiesData copy() {
     ExtendedPropertiesData result = new ExtendedPropertiesData();
     copyTableDescription(result);
-    result.setRows(getRows().getList());
+    result.setRows(getRows());
     return result;
   }
 

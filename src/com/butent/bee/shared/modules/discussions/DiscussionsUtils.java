@@ -16,7 +16,8 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.documents.DocumentsConstants;
+import com.butent.bee.shared.modules.tasks.TasksConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -77,12 +78,12 @@ public final class DiscussionsUtils {
     if (formRow == null) {
       return Maps.newHashMap();
     }
-    
+
     if (BeeUtils.isEmpty(formRow.getProperty(PROP_PARAMETERS))) {
       return Maps.newHashMap();
     }
 
-    Map<String, String> params = Codec.beeDeserializeMap(formRow.getProperty(PROP_PARAMETERS));
+    Map<String, String> params = Codec.deserializeMap(formRow.getProperty(PROP_PARAMETERS));
 
     return params;
   }
@@ -105,7 +106,7 @@ public final class DiscussionsUtils {
 
     return result;
   }
-  
+
   public static SimpleRowSet getMarkData(IsRow formRow) {
     if (formRow == null) {
       return null;
@@ -145,7 +146,7 @@ public final class DiscussionsUtils {
     if (formRow == null) {
       return null;
     }
-    
+
     if (BeeUtils.isEmpty(formRow.getProperty(PROP_MARK_TYPES))) {
       return null;
     }
@@ -242,8 +243,8 @@ public final class DiscussionsUtils {
       discussionPropertyToRelation.put(PROP_COMPANIES, CommonsConstants.COL_COMPANY);
       discussionPropertyToRelation.put(PROP_PERSONS, CommonsConstants.COL_PERSON);
       discussionPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
-      discussionPropertyToRelation.put(PROP_TASKS, CrmConstants.COL_TASK);
-      discussionPropertyToRelation.put(PROP_DOCUMENTS, CrmConstants.COL_DOCUMENT);
+      discussionPropertyToRelation.put(PROP_TASKS, TasksConstants.COL_TASK);
+      discussionPropertyToRelation.put(PROP_DOCUMENTS, DocumentsConstants.COL_DOCUMENT);
     }
 
     return discussionPropertyToRelation;

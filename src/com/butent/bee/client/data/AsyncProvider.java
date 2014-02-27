@@ -689,20 +689,20 @@ public class AsyncProvider extends Provider {
       rows = Lists.newArrayList();
 
     } else if (displayLimit <= 0) {
-      rows = data.getRows().getList();
+      rows = data.getRows();
 
     } else if (queryOffset >= displayOffset) {
       if (displayLimit < rowCount) {
-        rows = data.getRows().getList().subList(0, displayLimit);
+        rows = data.getRows().subList(0, displayLimit);
       } else {
-        rows = data.getRows().getList();
+        rows = data.getRows();
       }
 
     } else {
       int fromIndex = displayOffset - queryOffset;
       if (fromIndex < rowCount) {
         int toIndex = Math.min(rowCount, fromIndex + displayLimit);
-        rows = data.getRows().getList().subList(fromIndex, toIndex);
+        rows = data.getRows().subList(fromIndex, toIndex);
       } else {
         rows = Lists.newArrayList();
       }

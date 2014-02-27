@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -42,22 +41,23 @@ public class BeeRow extends StringRow implements BeeSerializable {
     setVersion(version);
   }
 
-  public BeeRow(long id, long version, List<String> data) {
-    this(id, version, ArrayUtils.toArray(data));
+  public BeeRow(long id, long version, List<String> values) {
+    super(id, values);
+    setVersion(version);
   }
 
   public BeeRow(long id, long version, String[] row) {
-    super(id, new StringArray(row));
+    super(id, row);
     setVersion(version);
   }
 
   public BeeRow(long id, String[] row) {
-    super(id, new StringArray(row));
+    super(id, row);
   }
 
   @Override
   public BeeRow copy() {
-    BeeRow result = new BeeRow(getId(), getVersion(), ArrayUtils.copyOf(getValueArray()));
+    BeeRow result = new BeeRow(getId(), getVersion(), getValues());
     result.setEditable(isEditable());
     copyProperties(result);
     return result;
@@ -87,11 +87,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
 
         case VALUES:
-          String[] vals = Codec.beeDeserializeCollection(value);
-
-          if (!ArrayUtils.isEmpty(vals)) {
-            setValues(new StringArray(vals));
-          }
+          setValues(Codec.beeDeserializeCollection(value));
           break;
 
         case SHADOW:
@@ -161,7 +157,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
 
         case VALUES:
-          arr[i++] = getValueArray();
+          arr[i++] = getValues();
           break;
 
         case SHADOW:

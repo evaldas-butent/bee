@@ -358,9 +358,6 @@ public final class TransportConstants {
     EnumUtils.register(ImportType.class);
   }
 
-  public static final String TRANSPORT_MODULE = "Transport";
-  public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
-
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
   public static final String SVC_GET_PROFIT = "GetProfit";
@@ -509,7 +506,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_DESCRIPTION = "Description";
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
-  public static final String COL_CARGO_MESSAGE_SENT = "MessageSent";
+  public static final String COL_CARGO_MESSAGE = "Message";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";

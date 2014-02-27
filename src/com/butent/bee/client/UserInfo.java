@@ -4,9 +4,7 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -118,12 +116,8 @@ public class UserInfo implements HasInfo {
     return userData.isMenuVisible(object);
   }
 
-  public boolean isModuleVisible(Module module) {
-    return isLoggedIn() ? userData.isModuleVisible(module) : false;
-  }
-
-  public boolean isModuleVisible(String moduleName) {
-    return isModuleVisible(EnumUtils.getEnumByName(Module.class, moduleName));
+  public boolean isModuleVisible(String object) {
+    return isLoggedIn() ? userData.isModuleVisible(object) : false;
   }
 
   public boolean is(Long id) {

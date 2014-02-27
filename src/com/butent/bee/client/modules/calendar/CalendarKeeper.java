@@ -53,6 +53,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -89,7 +90,7 @@ public final class CalendarKeeper {
 
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
         event.consume();
-        if (event.getRow() instanceof BeeRow) {
+        if (event.hasRow()) {
           ensureData(new Command() {
             @Override
             public void execute() {
@@ -216,12 +217,12 @@ public final class CalendarKeeper {
         Localized.getConstants().calAddParameters(), COL_APPOINTMENT, COL_APPOINTMENT_PROPERTY,
         VIEW_EXTENDED_PROPERTIES, Lists.newArrayList(COL_PROPERTY_NAME),
         Lists.newArrayList(COL_PROPERTY_NAME, ALS_PROPERTY_GROUP_NAME)));
-    
+
     ConditionalStyle.registerGridColumnStyleProvider(GRID_APPOINTMENTS,
         CommonsConstants.ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_APPOINTMENTS));
     ConditionalStyle.registerGridColumnStyleProvider(GRID_ATTENDEES,
         CommonsConstants.ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_ATTENDEES));
-    
+
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_CALENDAR_EXECUTORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
         CommonsConstants.COL_BACKGROUND, styleProvider);
@@ -330,8 +331,8 @@ public final class CalendarKeeper {
   }
 
   static ParameterList createRequestParameters(String service) {
-    ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
-    params.addQueryItem(CALENDAR_METHOD, service);
+    ParameterList params = BeeKeeper.getRpc().createParameters(Module.CALENDAR.getName());
+    params.addQueryItem(CommonsConstants.METHOD, service);
     return params;
   }
 
@@ -611,13 +612,13 @@ public final class CalendarKeeper {
       BeeKeeper.getRpc().makeRequest(params);
     }
   }
-  
+
   static boolean showsTasks(long calendarId) {
     Boolean value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_ASSIGNED_TASKS);
     if (BeeUtils.isTrue(value)) {
       return true;
     }
-    
+
     value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_DELEGATED_TASKS);
     if (BeeUtils.isTrue(value)) {
       return true;
@@ -627,9 +628,9 @@ public final class CalendarKeeper {
     if (BeeUtils.isTrue(value)) {
       return true;
     }
-    
+
     Filter filter = Filter.equals(COL_CALENDAR, calendarId);
-    return CACHE.contains(VIEW_CALENDAR_EXECUTORS, filter) 
+    return CACHE.contains(VIEW_CALENDAR_EXECUTORS, filter)
         || CACHE.contains(VIEW_CAL_EXECUTOR_GROUPS, filter);
   }
 
@@ -855,7 +856,7 @@ public final class CalendarKeeper {
 
           List<String> colNames = Lists.newArrayList(COL_MULTIDAY_LAYOUT,
               COL_MULTIDAY_TASK_LAYOUT, COL_WORKING_HOUR_START, COL_WORKING_HOUR_END);
-          
+
           for (String colName : colNames) {
             int index = rowSet.getColumnIndex(colName);
             if (!Objects.equals(oldRow.getString(index), newRow.getString(index))) {

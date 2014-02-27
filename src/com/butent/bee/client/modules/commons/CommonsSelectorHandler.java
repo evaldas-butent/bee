@@ -176,7 +176,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
         if (rowSet.isEmpty()) {
           rowSet.addRows(companyRows);
         } else {
-          companyRows.addAll(rowSet.getRows().getList());
+          companyRows.addAll(rowSet.getRows());
           rowSet.setRows(companyRows);
         }
       }

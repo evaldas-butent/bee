@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.discussions;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
@@ -29,6 +31,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.JustDate;
@@ -36,12 +43,18 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
+import java.util.Collection;
+
+class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
+    RowInsertEvent.Handler, HandlesUpdateEvents, DataChangeEvent.Handler {
   private static final String WIDGET_ADS_CONTENT = "AdsContent";
   private static final String STYLE_PREFIX = "bee-discuss-adsFormContent-";
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";
+  private static final String STYLE_CHAT_BALLOON = "chatBalloon";
+
+  private final Collection<HandlerRegistration> registry = Lists.newArrayList();
 
   @Override
   public FormInterceptor getInstance() {
@@ -59,8 +72,54 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onLoad(FormView form) {   
+    registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+    registry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
+    registry.add(BeeKeeper.getBus().registerDataChangeHandler(this, false));
+    super.onLoad(form);
+  }
+
+  @Override
   public void onStart(FormView form) {
     renderContent(form);
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (event.hasView(VIEW_DISCUSSIONS)) {
+      renderContent(getFormView());
+    }
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    for (HandlerRegistration entry : registry) {
+      if (entry != null) {
+        entry.removeHandler();
+      }
+    }
+    super.onUnload(form);
   }
 
   private static void renderContent(FormView form) {
@@ -91,26 +150,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
         }
 
         SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
-        boolean publishedBirths = false;
-
         for (String[] rsRow : rs.getRows()) {
 
           if (rs.hasColumn(ALS_BIRTHDAY)) {
-            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
-                && BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
-              if (!publishedBirths) {
-                renderBirthdaySection(rsRow, rs, adsTable);
-                publishedBirths = true;
-              }
-            } else if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])
-                && !BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_SUBJECT)])) {
-              if (!publishedBirths) {
-                renderBirthdaySection(rsRow, rs, adsTable);
-                publishedBirths = true;
-              }
-              if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY_VALID)])) {
-                renderAnnoucementsSection(rsRow, rs, adsTable);
-              }
+            if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(ALS_BIRTHDAY)])) {
+              renderBirthdaySection(rsRow, rs, adsTable);
             } else {
               renderAnnoucementsSection(rsRow, rs, adsTable);
             }
@@ -140,17 +184,21 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
 
     String attachment = "";
 
-    if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_FILE)])) {
-      int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_FILE)]);
+    if (rs.hasColumn(COL_FILE)) {
+      if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_FILE)])) {
+        int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_FILE)]);
 
-      if (BeeUtils.isPositive(fileCount)) {
-        attachment = (new Image(Global.getImages().attachment())).toString();
+        if (BeeUtils.isPositive(fileCount)) {
+          attachment = (new Image(Global.getImages().attachment())).toString();
+        }
       }
     }
+    
+    CustomDiv div = new CustomDiv(STYLE_PREFIX + STYLE_CHAT_BALLOON);
 
-    adsTable.setHtml(row, 1, attachment + rsRow[rs.getColumnIndex(COL_SUBJECT)], STYLE_PREFIX
-        + COL_SUBJECT);
-
+    int subjectRow = row;
+    adsTable.setHtml(row, 1, div.toString() + attachment + rsRow[rs.getColumnIndex(COL_SUBJECT)],
+        STYLE_PREFIX + COL_SUBJECT);
 
     row++;
     adsTable.setHtml(row, 0, renderPhotoAndAuthor(rsRow, rs, STYLE_PREFIX + COL_OWNER
@@ -160,6 +208,14 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
 
     adsTable.setHtml(row, 1, rsRow[rs.getColumnIndex(COL_DESCRIPTION)], STYLE_PREFIX
         + COL_DESCRIPTION);
+
+    if (rs.hasColumn(ALS_NEW_ANNOUCEMENT)) {
+      boolean isNew = BeeUtils.toBoolean(rsRow[rs.getColumnIndex(ALS_NEW_ANNOUCEMENT)]);
+      if (isNew) {
+        adsTable.getCellFormatter().addStyleName(row, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
+        adsTable.getCellFormatter().addStyleName(subjectRow, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
+      }
+    }
 
     row++;
     
@@ -181,7 +237,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor {
       adsTable.setWidget(row, 1, moreButton);
 
       adsTable.getRow(row).addClassName(STYLE_PREFIX + STYLE_ACTION);
-      // adsTable.getCellFormatter().setColSpan(row, 0, 2);
 
       row++;
     }

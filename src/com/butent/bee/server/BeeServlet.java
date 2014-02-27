@@ -2,7 +2,6 @@ package com.butent.bee.server;
 
 import com.google.common.net.HttpHeaders;
 
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -52,10 +51,8 @@ public class BeeServlet extends LoginServlet {
     RequestInfo reqInfo = new RequestInfo(req);
 
     String meth = reqInfo.getMethod();
-
     String rid = reqInfo.getId();
     String svc = reqInfo.getService();
-    String sep = reqInfo.getSeparator();
 
     boolean debug = reqInfo.isDebug();
 
@@ -73,9 +70,6 @@ public class BeeServlet extends LoginServlet {
         logger.info(reqInfo.getContent());
       }
     }
-
-    ResponseObject response = null;
-    ResponseBuffer buff = new ResponseBuffer(sep);
 
     String reqSid = reqInfo.getParameter(Service.RPC_VAR_SID);
 
@@ -96,6 +90,8 @@ public class BeeServlet extends LoginServlet {
       doLogout = true;
       logger.severe("session id:", "request =", reqSid, "current =", sessionId);
     }
+
+    ResponseObject response;
 
     if (doLogin) {
       try {
@@ -133,7 +129,7 @@ public class BeeServlet extends LoginServlet {
 
     } else {
       try {
-        response = dispatcher.doService(svc, reqInfo, buff);
+        response = dispatcher.doService(svc, reqInfo);
       } catch (EJBException ex) {
         response = ResponseObject.error(ex);
       }
@@ -145,76 +141,20 @@ public class BeeServlet extends LoginServlet {
     resp.setHeader(HttpHeaders.PRAGMA, "no-cache");
     resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
 
+    ContentType ctp = CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
+    
+    resp.setContentType(CommUtils.getMediaType(ctp));
+    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
+    resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
+
     String s;
-
     if (response != null) {
-      resp.setHeader(Service.RPC_VAR_RESP, "1");
-
-      ContentType ctp = CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
-
-      resp.setContentType(CommUtils.getMediaType(ctp));
-      resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
-      resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
-
       s = CommUtils.prepareContent(ctp, Codec.beeSerialize(response));
-
-      logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, resp.getContentType(),
-          s.length());
-
     } else {
-      int respLen = buff.getSize();
-      int mc = buff.getMessageCount();
-
-      int cnt = buff.getCount();
-      int cc = buff.getColumnCount();
-
-      ContentType ctp = buff.getContentType();
-      if (ctp == null) {
-        ctp = (cc > 0) ? ContentType.TABLE : CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
-      }
-
-      if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
-        resp.setHeader(Service.RPC_VAR_SEP, buff.getHexSeparator());
-      }
-
-      if (cnt > 0) {
-        resp.setIntHeader(Service.RPC_VAR_CNT, cnt);
-      }
-      if (cc > 0) {
-        resp.setIntHeader(Service.RPC_VAR_COLS, cc);
-      }
-
-      if (mc > 0) {
-        resp.setIntHeader(Service.RPC_VAR_MSG_CNT, mc);
-        for (int i = 0; i < mc; i++) {
-          resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
-        }
-      }
-
-      resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
-
-      String mt = BeeUtils.notEmpty(buff.getMediaType(), CommUtils.getMediaType(ctp));
-      if (!BeeUtils.isEmpty(mt)) {
-        resp.setContentType(mt);
-      }
-
-      String ce = BeeUtils.notEmpty(buff.getCharacterEncoding(),
-          CommUtils.getCharacterEncoding(ctp));
-      if (!BeeUtils.isEmpty(ce)) {
-        resp.setCharacterEncoding(ce);
-      }
-
-      if (respLen > 0) {
-        s = CommUtils.prepareContent(ctp, buff.getString());
-
-      } else if (mc > 0) {
-        s = "Messages " + BeeUtils.bracket(mc);
-      } else {
-        s = BeeConst.EMPTY;
-      }
-      logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, resp.getContentType(),
-          cnt, cc, mc, s.length());
+      s = BeeConst.STRING_EMPTY;
     }
+
+    logger.info(">", rid, TimeUtils.elapsedSeconds(start), ctp, s.length());
 
     try {
       PrintWriter out = resp.getWriter();

@@ -206,7 +206,7 @@ public final class CommonsUtils {
 
         Map<String, Pair<String, String>> info = Maps.newHashMap();
         for (Map.Entry<String, String> entry
-        : Codec.beeDeserializeMap(response.getResponseAsString()).entrySet()) {
+        : Codec.deserializeMap(response.getResponseAsString()).entrySet()) {
           info.put(entry.getKey(), Pair.restore(entry.getValue()));
         }
         Flow flow = new Flow();

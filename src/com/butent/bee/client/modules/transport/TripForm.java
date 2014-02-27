@@ -48,10 +48,10 @@ public class TripForm extends AbstractFormInterceptor {
               final IsRow row = cv.getRow();
 
               ParameterList args = TransportHandler.createArgs(SVC_GET_BEFORE);
-              args.addDataItem("Vehicle", id);
+              args.addDataItem(COL_VEHICLE, id);
 
               if (!row.isNull(dateIndex)) {
-                args.addDataItem("Date", row.getString(dateIndex));
+                args.addDataItem(COL_DATE, row.getString(dateIndex));
               }
               BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
                 @Override

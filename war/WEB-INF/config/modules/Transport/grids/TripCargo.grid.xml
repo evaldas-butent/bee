@@ -31,6 +31,6 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </PropColumn>
-    <DataColumn name="MessageSent" />
+    <DataColumn name="Message" readOnly="true" />
   </g:columns>
 </g:Grid>

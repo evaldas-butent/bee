@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="Object" relation="Objects" notNull="true" cascade="DELETE" label="=object"/>
-    <Relation name="Role" relation="Roles" cascade="DELETE" label="=role"/>
+    <Relation name="Role" relation="Roles" notNull="true" cascade="DELETE" label="=role"/>
     <Enum name="State" key="RightsState" notNull="true" label="=roleState" />
   </Fields>
 

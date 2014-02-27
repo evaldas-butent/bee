@@ -14,10 +14,13 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -29,6 +32,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -42,6 +46,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -54,6 +59,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_DESCRIPTION = "Description";
   private static final String WIDGET_FILES = "Files";
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
+  private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
 
   CreateDiscussionInterceptor() {
     super();
@@ -146,6 +152,22 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         }
       });
     }
+    
+    if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
+      final DataSelector tds = (DataSelector) widget;
+      Handler selHandler = new Handler() {
+        
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+          if (label != null) {
+            label.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
+          }
+        }
+      };
+      
+      tds.addSelectorHandler(selHandler);
+    }
   }
 
   @Override
@@ -164,6 +186,33 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     boolean discussClosed =
         BeeUtils.toBoolean(((InputBoolean) getFormView().getWidgetByName(COL_PERMIT_COMMENT))
             .getValue());
+    
+    boolean isTopic =
+        DataUtils.isId(BeeUtils.toLongOrNull(((DataSelector) getFormView().getWidgetBySource(
+            COL_TOPIC)).getValue()));
+
+    if (isTopic) {
+
+      String validFromVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_FROM)).getValue();
+
+      String validToVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_TO)).getValue();
+
+      Long validFrom = null;
+      if (!BeeUtils.isEmpty(validFromVal)) {
+        validFrom = TimeUtils.parseTime(validFromVal);
+      }
+
+      Long validTo = null;
+      if (!BeeUtils.isEmpty(validToVal)) {
+        validTo = TimeUtils.parseTime(validToVal);
+      }
+
+      if (!validateDates(validFrom, validTo, event)) {
+        return;
+      }
+    }
 
     String description = ((Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
         .getValue();
@@ -183,11 +232,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       newRow.setProperty(PROP_MEMBERS, null);
     }
 
-    if (discussClosed) {
-      Data.setValue(VIEW_DISCUSSIONS, newRow, COL_STATUS, DiscussionStatus.CLOSED.ordinal());
-    }
-
     newRow.setValue(getFormView().getDataIndex(COL_ACCESSIBILITY), discussPublic);
+
+    if (discussClosed) {
+      newRow.setValue(getFormView().getDataIndex(COL_STATUS), Integer
+          .valueOf(DiscussionStatus.CLOSED.ordinal()));
+    }
 
     BeeRowSet rowSet =
         DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
@@ -277,5 +327,52 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
       ((FileCollector) widget).clear();
     }
+  }
+
+  private static boolean validateDates(Long from, Long to,
+      final ReadyForInsertEvent event) {
+    long now = System.currentTimeMillis();
+
+    if (from == null && to == null) {
+      event.getCallback().onFailure(
+          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+              .enterDate()));
+      return false;
+    }
+
+    if (from == null && to != null) {
+      if (to.longValue() >= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateToShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to == null) {
+      if (from.longValue() <= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateFromShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to != null) {
+      if (from <= to) {
+        return true;
+      } else {
+        event.getCallback().onFailure(
+            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
+                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+        return false;
+      }
+    }
+
+    return true;
   }
 }

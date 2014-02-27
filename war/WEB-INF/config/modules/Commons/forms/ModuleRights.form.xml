@@ -2,7 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="ModuleRights" caption="=modules"
+  name="ModuleRights" caption="=modules" enabledActions="save"
   >
   <FlowPanel>
   </FlowPanel>

@@ -29,6 +29,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -56,7 +57,7 @@ public class Bee implements EntryPoint {
           for (RpcInfo info : pendingRequests) {
             info.cancel();
           }
-          
+
           logout();
         }
       };
@@ -113,7 +114,7 @@ public class Bee implements EntryPoint {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        load(Codec.beeDeserializeMap((String) response.getResponse()));
+        load(Codec.deserializeMap((String) response.getResponse()));
         start();
       }
     });
@@ -131,6 +132,8 @@ public class Bee implements EntryPoint {
     BeeKeeper.getUser().setUserData(userData);
     BeeKeeper.getScreen().updateUserData(userData);
 
+    Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
+
     for (UserInterface.Component component : UserInterface.Component.values()) {
       String serialized = data.get(component.key());
 
@@ -145,7 +148,7 @@ public class Bee implements EntryPoint {
             break;
 
           case DICTIONARY:
-            Localized.setDictionary(Codec.beeDeserializeMap(serialized));
+            Localized.setDictionary(Codec.deserializeMap(serialized));
             break;
 
           case DECORATORS:

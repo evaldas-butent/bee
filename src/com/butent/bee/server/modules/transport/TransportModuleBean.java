@@ -57,6 +57,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 // import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -121,24 +122,25 @@ public class TransportModuleBean implements BeeModule {
   TimerService timerService;
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(COMMONS_MODULE, TRADE_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(VIEW_VEHICLES, Filter.anyContains(Sets.newHashSet(COL_NUMBER,
-        COL_PARENT_MODEL_NAME, COL_MODEL_NAME, COL_OWNER_NAME), query));
+    List<SearchResult> result = Lists.newArrayList();
+
+    if (usr.isModuleVisible(Module.TRANSPORT.getName())) {
+      result.addAll(qs.getSearchResults(VIEW_VEHICLES,
+          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
+              COL_OWNER_NAME), query)));
+    }
+
+    return result;
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(TRANSPORT_METHOD);
 
     if (BeeUtils.same(svc, SVC_GET_BEFORE)) {
-      long vehicle = BeeUtils.toLong(reqInfo.getParameter("Vehicle"));
-      long date = BeeUtils.toLong(reqInfo.getParameter("Date"));
+      long vehicle = BeeUtils.toLong(reqInfo.getParameter(COL_VEHICLE));
+      long date = BeeUtils.toLong(reqInfo.getParameter(COL_DATE));
 
       response = getTripBeforeData(vehicle, date);
     } else if (BeeUtils.same(svc, SVC_GET_UNASSIGNED_CARGOS)) {
@@ -241,25 +243,27 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
+    String module = getModule().getName();
+
     return Lists.newArrayList(
-        BeeParameter.createCollection(TRANSPORT_MODULE, PRM_MESSAGE_TEMPLATE, true, null),
-        BeeParameter.createText(TRANSPORT_MODULE, "ERPCreditOperation", false, null),
-        BeeParameter.createNumber(TRANSPORT_MODULE, PRM_ERP_REFRESH_INTERVAL, false, null),
-        BeeParameter.createText(TRANSPORT_MODULE, "SmsServiceAddress", false, null),
-        BeeParameter.createText(TRANSPORT_MODULE, "SmsUserName", false, null),
-        BeeParameter.createText(TRANSPORT_MODULE, "SmsPassword", false, null),
-        BeeParameter.createText(TRANSPORT_MODULE, "SmsServiceId", false, null),
-        BeeParameter.createText(TRANSPORT_MODULE, "SmsDisplayText", false, null));
+        BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
+        BeeParameter.createText(module, "ERPCreditOperation", false, null),
+        BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL, false, null),
+        BeeParameter.createText(module, "SmsServiceAddress", false, null),
+        BeeParameter.createText(module, "SmsUserName", false, null),
+        BeeParameter.createText(module, "SmsPassword", false, null),
+        BeeParameter.createText(module, "SmsServiceId", false, null),
+        BeeParameter.createText(module, "SmsDisplayText", false, null));
   }
 
   @Override
-  public String getName() {
-    return TRANSPORT_MODULE;
+  public Module getModule() {
+    return Module.TRANSPORT;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override

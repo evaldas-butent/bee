@@ -61,7 +61,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), NewsConstants.VIEW_USER_FEEDS);
         }
       }
-    });    
+    });
   }
 
   private final Long userId;
@@ -80,20 +80,23 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
     int dataIndex = getDataIndex(NewsConstants.COL_UF_FEED);
 
     List<Feed> feeds = Lists.newArrayList();
-    for (Feed feed : Feed.values()) {
-      boolean used = false;
 
-      if (!BeeUtils.isEmpty(data)) {
-        for (IsRow row : data) {
-          if (BeeUtils.same(feed.name(), row.getString(dataIndex))) {
-            used = true;
-            break;
+    for (Feed feed : Feed.values()) {
+      if (BeeKeeper.getUser().isModuleVisible(feed.getModule())) {
+        boolean used = false;
+
+        if (!BeeUtils.isEmpty(data)) {
+          for (IsRow row : data) {
+            if (BeeUtils.same(feed.name(), row.getString(dataIndex))) {
+              used = true;
+              break;
+            }
           }
         }
-      }
 
-      if (!used) {
-        feeds.add(feed);
+        if (!used) {
+          feeds.add(feed);
+        }
       }
     }
 

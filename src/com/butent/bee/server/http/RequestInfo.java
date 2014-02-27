@@ -51,8 +51,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   private String service;
 
-  private String separator;
-
   private String options;
 
   private ContentType contentType;
@@ -263,10 +261,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return request;
   }
 
-  public String getSeparator() {
-    return separator;
-  }
-
   public String getService() {
     return service;
   }
@@ -379,10 +373,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.options = options;
   }
 
-  public void setSeparator(String separator) {
-    this.separator = separator;
-  }
-
   public void setService(String svc) {
     this.service = svc;
   }
@@ -391,7 +381,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   public String toString() {
     return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR,
         BeeUtils.joinOptions("counter", BeeUtils.toString(counter), "method", method, "id", id,
-            "service", service, "sep", separator, "opt", options), headers, params);
+            "service", service, "opt", options), headers, params);
   }
 
   private void setRpcInfo(String nm, String v) {
@@ -403,8 +393,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       id = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_SVC)) {
       service = v;
-    } else if (BeeUtils.same(nm, Service.RPC_VAR_SEP)) {
-      separator = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_OPT)) {
       options = v;
     } else if (BeeUtils.same(nm, Service.RPC_VAR_CTP)) {

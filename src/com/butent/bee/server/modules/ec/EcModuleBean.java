@@ -104,6 +104,7 @@ import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -226,21 +227,15 @@ public class EcModuleBean implements BeeModule {
   NewsBean news;
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(COMMONS_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     return null;
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     long startMillis = System.currentTimeMillis();
 
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(EC_METHOD);
 
     String query = null;
     Long article = null;
@@ -392,13 +387,13 @@ public class EcModuleBean implements BeeModule {
   }
 
   @Override
-  public String getName() {
-    return EC_MODULE;
+  public Module getModule() {
+    return Module.ECOMMERCE;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override
@@ -471,7 +466,7 @@ public class EcModuleBean implements BeeModule {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows().getList(), new Comparator<BeeRow>() {
+            Collections.sort(rowSet.getRows(), new Comparator<BeeRow>() {
               @Override
               public int compare(BeeRow row1, BeeRow row2) {
                 String name1 = row1.getString(fullNameIndex);

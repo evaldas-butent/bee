@@ -58,17 +58,17 @@ public final class CalendarConstants {
       return getCaption(Localized.getConstants());
     }
   }
-  
+
   public enum ItemType {
     APPOINTMENT, TASK
   }
-  
+
   public enum MultidayLayout implements HasCaption {
     HORIZONTAL(Localized.getConstants().calMultidayLayoutHorizontal()),
     VERTICAL(Localized.getConstants().calMultidayLayoutVertical()),
     WORKING_HOURS(Localized.getConstants().calMultidayLayoutWorkingHours()),
     LAST_DAY(Localized.getConstants().calMultidayLayoutLastDay());
-    
+
     private final String caption;
 
     private MultidayLayout(String caption) {
@@ -188,9 +188,6 @@ public final class CalendarConstants {
     EnumUtils.register(CalendarVisibility.class);
   }
 
-  public static final String CALENDAR_MODULE = "Calendar";
-  public static final String CALENDAR_METHOD = CALENDAR_MODULE + "Method";
-
   public static final String SVC_GET_USER_CALENDAR = "get_user_calendar";
   public static final String SVC_CREATE_APPOINTMENT = "create_appointment";
   public static final String SVC_UPDATE_APPOINTMENT = "update_appointment";
@@ -228,7 +225,7 @@ public final class CalendarConstants {
 
   public static final String TBL_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String TBL_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
-  
+
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_USER_CAL_ATTENDEES = "UserCalAttendees";
@@ -266,7 +263,7 @@ public final class CalendarConstants {
   public static final String GRID_APPOINTMENT_PROPS = "AppointmentProps";
 
   public static final String GRID_ATTENDEES = "Attendees";
-  
+
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
 
   public static final String DEFAULT_NEW_APPOINTMENT_FORM = "SimpleAppointment";
@@ -306,11 +303,11 @@ public final class CalendarConstants {
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
 
   public static final String COL_APPOINTMENT_TYPE_NAME = "Name";
-  
+
   public static final String COL_ATTENDEE = "Attendee";
   public static final String COL_ATTENDEE_NAME = "Name";
   public static final String COL_ATTENDEE_TYPE = "AttendeeType";
-  
+
   public static final String ALS_ATTENDEE_NAME = "AttendeeName";
   public static final String ALS_ATTENDEE_ORDINAL = "AttendeeOrdinal";
   public static final String ALS_ATTENDEE_COLOR = "AttendeeColor";
@@ -406,7 +403,7 @@ public final class CalendarConstants {
   public static final String COL_ASSIGNED_TASKS_BACKGROUND = "AssignedTasksBackground";
   public static final String COL_ASSIGNED_TASKS_FOREGROUND = "AssignedTasksForeground";
   public static final String COL_ASSIGNED_TASKS_STYLE = "AssignedTasksStyle";
-  
+
   public static final String COL_DELEGATED_TASKS = "DelegatedTasks";
   public static final String COL_DELEGATED_TASKS_BACKGROUND = "DelegatedTasksBackground";
   public static final String COL_DELEGATED_TASKS_FOREGROUND = "DelegatedTasksForeground";
@@ -421,13 +418,13 @@ public final class CalendarConstants {
   public static final String COL_EXECUTOR_GROUP = "Group";
 
   public static final String COL_APPOINTMENT_OWNER = "Owner";
-  
+
   public static final Map<String, String> APPOINTMENT_CHILDREN =
       ImmutableMap.of(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE,
           TBL_APPOINTMENT_OWNERS, COL_APPOINTMENT_OWNER,
           TBL_APPOINTMENT_PROPS, COL_APPOINTMENT_PROPERTY,
           TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE);
-  
+
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 

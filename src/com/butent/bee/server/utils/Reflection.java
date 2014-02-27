@@ -1,12 +1,14 @@
 package com.butent.bee.server.utils;
 
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,50 +18,62 @@ import java.lang.reflect.Method;
  */
 
 public final class Reflection {
+
   private static BeeLogger logger = LogUtils.getLogger(Reflection.class);
 
-  public static void invoke(Object obj, String methodName, RequestInfo req, ResponseBuffer resp) {
+  public static ResponseObject invoke(Object obj, String methodName, RequestInfo req) {
     Assert.notNull(obj);
     if (BeeUtils.isEmpty(methodName)) {
-      resp.addSevere("method name not specified");
-      return;
+      return ResponseObject.error("method name not specified");
     }
 
     Method method = findMethod(obj.getClass(), methodName);
-
     if (method == null) {
-      resp.addSevere("method", methodName, "not found");
-      return;
+      return ResponseObject.error("method", methodName, "not found");
     }
+
     if (!method.isAccessible()) {
       method.setAccessible(true);
     }
-    doMethod(obj, method, req, resp);
+    
+    return doMethod(obj, method, req);
   }
 
-  private static void doMethod(Object obj, Method method, RequestInfo req, ResponseBuffer resp) {
+  private static ResponseObject doMethod(Object obj, Method method, RequestInfo req) {
     Class<?>[] parameterTypes = method.getParameterTypes();
     boolean hasReq = ArrayUtils.contains(parameterTypes, RequestInfo.class);
-    boolean hasResp = ArrayUtils.contains(parameterTypes, ResponseBuffer.class);
+    
+    ResponseObject response;
 
     try {
-      if (hasReq && hasResp) {
-        method.invoke(obj, req, resp);
-      } else if (hasReq) {
-        method.invoke(obj, req);
-      } else if (hasResp) {
-        method.invoke(obj, resp);
+      Object result;
+      if (hasReq) {
+        result = method.invoke(obj, req);
       } else {
-        method.invoke(obj);
+        result = method.invoke(obj);
+      }
+      
+      if (result instanceof ResponseObject) {
+        response = (ResponseObject) result;
+      } else {
+        response = ResponseObject.error(method, "returned",
+            (result == null) ? BeeConst.NULL : NameUtils.getName(result));
       }
 
     } catch (IllegalArgumentException ex) {
       logger.error(ex, method);
+      response = ResponseObject.error(method, ex);
+
     } catch (IllegalAccessException ex) {
       logger.error(ex, method);
+      response = ResponseObject.error(method, ex);
+    
     } catch (InvocationTargetException ex) {
       logger.error(ex, method);
+      response = ResponseObject.error(method, ex);
     }
+    
+    return response;
   }
 
   private static Method findMethod(Class<?> cls, String name) {

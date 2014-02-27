@@ -29,10 +29,14 @@ public class ResponseObject implements BeeSerializable {
     MESSAGES, RESPONSE_TYPE, ARRAY_TYPE, RESPONSE
   }
 
+  public static <T> ResponseObject collection(Collection<T> response, Class<T> clazz) {
+    return new ResponseObject().setCollection(response, clazz);
+  }
+
   public static ResponseObject emptyResponse() {
     return new ResponseObject();
   }
-  
+
   public static ResponseObject error(Object... err) {
     return new ResponseObject().addError(err);
   }
@@ -77,6 +81,11 @@ public class ResponseObject implements BeeSerializable {
   private boolean isArrayType;
   
   private int size;
+
+  public ResponseObject addDebug(Object... obj) {
+    messages.add(new ResponseMessage(LogLevel.DEBUG, ArrayUtils.joinWords(obj)));
+    return this;
+  }
 
   public ResponseObject addError(Object... err) {
     messages.add(new ResponseMessage(LogLevel.ERROR, ArrayUtils.joinWords(err)));
@@ -340,6 +349,16 @@ public class ResponseObject implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
+  public <T> ResponseObject setCollection(Collection<T> rsp, Class<T> clazz) {
+    Assert.notNull(clazz);
+
+    this.response = rsp;
+    this.type = NameUtils.getClassName(clazz);
+    this.isArrayType = true;
+
+    return this;
+  }
+  
   public ResponseObject setResponse(Object rsp) {
     if (rsp != null) {
       setType(rsp.getClass());
@@ -393,6 +412,7 @@ public class ResponseObject implements BeeSerializable {
     } else {
       cls = clazz;
     }
+
     this.type = NameUtils.getClassName(cls);
     return this;
   }

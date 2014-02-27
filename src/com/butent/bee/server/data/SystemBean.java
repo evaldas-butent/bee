@@ -1070,7 +1070,7 @@ public class SystemBean {
     xmlView.source = tblName;
     xmlView.columns = columns;
 
-    return new BeeView(getTable(tblName).getModuleName(), xmlView, tableCache);
+    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache);
   }
 
   private Collection<BeeTable> getTables() {
@@ -1532,12 +1532,12 @@ public class SystemBean {
     if (object != null) {
       String name = NameUtils.getClassName(object.getClass());
       String objectName = object.getName();
-      String moduleName = BeeUtils.parenthesize(object.getModuleName());
+      String moduleName = BeeUtils.parenthesize(object.getModule());
       T existingObject = cache.get(BeeUtils.normalize(objectName));
 
       if (existingObject != null) {
         logger.warning(moduleName, "Dublicate", name, "name:",
-            BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModuleName()));
+            BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModule()));
       } else {
         cache.put(BeeUtils.normalize(objectName), object);
       }

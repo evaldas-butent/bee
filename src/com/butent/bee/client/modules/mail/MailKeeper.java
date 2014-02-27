@@ -25,7 +25,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -133,8 +135,8 @@ public final class MailKeeper {
   }
 
   static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(MAIL_MODULE);
-    args.addQueryItem(MAIL_METHOD, name);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.MAIL.getName());
+    args.addQueryItem(CommonsConstants.METHOD, name);
     return args;
   }
 

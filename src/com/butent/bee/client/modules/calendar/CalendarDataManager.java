@@ -201,7 +201,7 @@ public class CalendarDataManager {
         items.clear();
 
         if (!response.isEmpty()) {
-          Map<String, String> data = Codec.beeDeserializeMap(response.getResponseAsString());
+          Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
 
           for (Map.Entry<String, String> entry : data.entrySet()) {
             ItemType type = EnumUtils.getEnumByName(ItemType.class, entry.getKey());

@@ -37,6 +37,7 @@ import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -118,19 +119,13 @@ public class MailModuleBean implements BeeModule {
   }
 
   @Override
-  public Collection<String> dependsOn() {
-    return null;
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     return null;
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(MAIL_METHOD);
 
     try {
       if (BeeUtils.same(svc, SVC_RESTART_PROXY)) {
@@ -348,27 +343,29 @@ public class MailModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
+    String module = getModule().getName();
+
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createRelation(MAIL_MODULE, PRM_DEFAULT_ACCOUNT, false,
+        BeeParameter.createRelation(module, PRM_DEFAULT_ACCOUNT, false,
             TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION),
-        BeeParameter.createText(MAIL_MODULE, "POP3Server", false, null),
-        BeeParameter.createNumber(MAIL_MODULE, "POP3ServerPort", false, null),
-        BeeParameter.createNumber(MAIL_MODULE, "POP3BindPort", false, null),
-        BeeParameter.createText(MAIL_MODULE, "SMTPServer", false, null),
-        BeeParameter.createNumber(MAIL_MODULE, "SMTPServerPort", false, null),
-        BeeParameter.createNumber(MAIL_MODULE, "SMTPBindPort", false, null));
+        BeeParameter.createText(module, "POP3Server", false, null),
+        BeeParameter.createNumber(module, "POP3ServerPort", false, null),
+        BeeParameter.createNumber(module, "POP3BindPort", false, null),
+        BeeParameter.createText(module, "SMTPServer", false, null),
+        BeeParameter.createNumber(module, "SMTPServerPort", false, null),
+        BeeParameter.createNumber(module, "SMTPBindPort", false, null));
 
     return params;
   }
 
   @Override
-  public String getName() {
-    return MAIL_MODULE;
+  public Module getModule() {
+    return Module.MAIL;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override

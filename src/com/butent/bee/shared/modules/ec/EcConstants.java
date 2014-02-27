@@ -172,9 +172,6 @@ public final class EcConstants {
     EnumUtils.register(EcSupplier.class);
   }
 
-  public static final String EC_MODULE = "Ec";
-  public static final String EC_METHOD = EC_MODULE + "Method";
-
   public static final String SVC_GET_PROMO = "getPromo";
 
   public static final String SVC_FINANCIAL_INFORMATION = "financialInformation";
@@ -566,7 +563,7 @@ public final class EcConstants {
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
 
   public static final String NAME_PREFIX = "ec-";
-  
+
   private EcConstants() {
   }
 }

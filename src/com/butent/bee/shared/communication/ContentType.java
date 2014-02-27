@@ -5,5 +5,5 @@ package com.butent.bee.shared.communication;
  */
 
 public enum ContentType {
-  TEXT, XML, HTML, TABLE, IMAGE, RESOURCE, BINARY, ZIP, UNKNOWN;
+  TEXT, XML, HTML, IMAGE, RESOURCE, BINARY, ZIP, UNKNOWN;
 }

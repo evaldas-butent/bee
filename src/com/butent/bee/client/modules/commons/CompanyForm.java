@@ -52,7 +52,7 @@ public class CompanyForm extends AbstractFormInterceptor {
           if (response.hasErrors()) {
             return;
           }
-          Map<String, String> result = Codec.beeDeserializeMap(response.getResponseAsString());
+          Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
 
           if (!BeeUtils.isEmpty(result)) {
             HtmlTable table = new HtmlTable();

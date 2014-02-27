@@ -1169,7 +1169,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   public void initData(int rowCount, BeeRowSet rowSet) {
     getGrid().setRowCount(rowCount, false);
     if (rowSet != null && !rowSet.isEmpty()) {
-      getGrid().setRowData(rowSet.getRows().getList(), false);
+      getGrid().setRowData(rowSet.getRows(), false);
     }
   }
 

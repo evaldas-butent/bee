@@ -511,7 +511,7 @@ public final class GridFactory {
     grid.setReadOnly(true);
 
     grid.estimateHeaderWidths(true);
-    grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
+    grid.estimateColumnWidths(table.getRows(), 0, Math.min(r, 50));
 
     grid.setDefaultFlexibility(new Flexibility(1, -1, true));
     int distrWidth = containerWidth;
@@ -521,7 +521,7 @@ public final class GridFactory {
     grid.doFlexLayout(distrWidth);
 
     grid.setRowCount(r, false);
-    grid.setRowData(table.getRows().getList(), true);
+    grid.setRowData(table.getRows(), true);
 
     return grid;
   }

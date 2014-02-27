@@ -393,12 +393,12 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   }
 
   public void updateStatus() {
-    bold.setDown(formatter.isBold());
-    italic.setDown(formatter.isItalic());
-    underline.setDown(formatter.isUnderlined());
-    subscript.setDown(formatter.isSubscript());
-    superscript.setDown(formatter.isSuperscript());
-    strikethrough.setDown(formatter.isStrikethrough());
+    bold.setChecked(formatter.isBold());
+    italic.setChecked(formatter.isItalic());
+    underline.setChecked(formatter.isUnderlined());
+    subscript.setChecked(formatter.isSubscript());
+    superscript.setChecked(formatter.isSuperscript());
+    strikethrough.setChecked(formatter.isStrikethrough());
   }
 
   private Image createButton(ImageResource img, String tip) {

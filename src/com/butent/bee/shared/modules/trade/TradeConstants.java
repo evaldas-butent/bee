@@ -2,9 +2,6 @@ package com.butent.bee.shared.modules.trade;
 
 public final class TradeConstants {
 
-  public static final String TRADE_MODULE = "Trade";
-  public static final String TRADE_METHOD = TRADE_MODULE + "Method";
-
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_CREDIT_INFO = "CreditInfo";
 

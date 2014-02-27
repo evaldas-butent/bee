@@ -37,6 +37,10 @@ public class Property implements Comparable<Property>, BeeSerializable {
     this.value = value;
   }
 
+  public Property(String name, int value) {
+    this(name, String.valueOf(value));
+  }
+
   protected Property() {
   }
 

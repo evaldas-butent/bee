@@ -37,7 +37,8 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.equals(TBL_DISCUSSIONS, COL_ACCESSIBILITY, true),
                 SqlUtils.and(
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, userId),
-                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true)))
+                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true))),
+            SqlUtils.isNull(TBL_DISCUSSIONS, COL_TOPIC)
             ));
         
     return select;
@@ -68,7 +69,8 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.equals(TBL_DISCUSSIONS, COL_ACCESSIBILITY, true),
                 SqlUtils.and(
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, userId),
-                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true)))
+                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true))),
+                    SqlUtils.isNull(TBL_DISCUSSIONS, COL_TOPIC)
             ));
     
     
@@ -89,7 +91,8 @@ public class DiscussionsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.equals(TBL_DISCUSSIONS, COL_ACCESSIBILITY, true),
                 SqlUtils.and(
                     SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, userId),
-                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true)))
+                    SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_MEMBER, true))),
+            SqlUtils.isNull(TBL_DISCUSSIONS, COL_TOPIC)
             ));
     
     select.setUnionAllMode(true).addUnion(select2);

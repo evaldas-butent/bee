@@ -83,7 +83,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
                 BeeUtils.parenthesize(BeeUtils.same(name, COL_TRANSPORT_PROPERTIES)
                     ? Protocol.SMTP.name() : row.getString(getDataIndex(COL_STORE_TYPE)))),
                 Localized.getConstants().property(), Localized.getConstants().value(),
-                Codec.beeDeserializeMap(row.getString(index)),
+                Codec.deserializeMap(row.getString(index)),
                 new Consumer<Map<String, String>>() {
                   @Override
                   public void accept(Map<String, String> input) {

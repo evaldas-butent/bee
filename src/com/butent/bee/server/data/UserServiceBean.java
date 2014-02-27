@@ -15,10 +15,12 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -34,7 +36,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -48,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -222,24 +224,31 @@ public class UserServiceBean {
       Maps.newHashMap();
 
   @Lock(LockType.WRITE)
-  public boolean authenticateUser(String user, String password) {
+  public boolean authenticateUser(String name, String password) {
     if (BeeUtils.isEmpty(userCache)) {
       long company = qs.insertData(new SqlInsert(TBL_COMPANIES)
-          .addConstant(COL_COMPANY_NAME, user));
+          .addConstant(COL_COMPANY_NAME, name));
 
       long person = qs.insertData(new SqlInsert(TBL_PERSONS)
-          .addConstant(COL_FIRST_NAME, user));
+          .addConstant(COL_FIRST_NAME, name));
 
       long companyPerson = qs.insertData(new SqlInsert(TBL_COMPANY_PERSONS)
           .addConstant(COL_COMPANY, company)
           .addConstant(COL_PERSON, person));
 
-      qs.insertData(new SqlInsert(TBL_USERS)
-          .addConstant(COL_LOGIN, user)
+      long user = qs.insertData(new SqlInsert(TBL_USERS)
+          .addConstant(COL_LOGIN, name)
           .addConstant(COL_PASSWORD, password)
           .addConstant(COL_COMPANY_PERSON, companyPerson));
+
+      long role = qs.insertData(new SqlInsert(TBL_ROLES)
+          .addConstant(COL_ROLE_NAME, name));
+
+      qs.insertData(new SqlInsert(TBL_USER_ROLES)
+          .addConstant(COL_USER, user)
+          .addConstant(COL_ROLE, role));
     }
-    UserInfo info = getUserInfo(getUserId(user));
+    UserInfo info = getUserInfo(getUserId(name));
     return info != null && Objects.equals(password, info.getPassword());
   }
 
@@ -361,6 +370,23 @@ public class UserServiceBean {
     return Localizations.getPreferredMessages(getLanguage(userId));
   }
 
+  public ResponseObject getRights(RightsObjectType type, RightsState state) {
+    Assert.noNulls(type, state);
+
+    Map<String, String> objects = Maps.newHashMap();
+
+    if (rightsCache.containsKey(type)) {
+      for (String object : rightsCache.get(type).keySet()) {
+        Collection<Long> roles = rightsCache.get(type).get(object).get(state);
+
+        if (!BeeUtils.isEmpty(roles)) {
+          objects.put(object, DataUtils.buildIdList(roles));
+        }
+      }
+    }
+    return ResponseObject.response(objects);
+  }
+
   public String getRoleName(Long roleId) {
     Assert.contains(roleCache, roleId);
     return roleCache.get(roleId);
@@ -450,7 +476,7 @@ public class UserServiceBean {
     return false;
   }
 
-  public boolean isModuleVisible(Module module) {
+  public boolean isModuleVisible(String module) {
     UserInfo info = getCurrentUserInfo();
     return (info == null) ? false : info.getUserData().isModuleVisible(module);
   }
@@ -487,7 +513,7 @@ public class UserServiceBean {
         }
         for (int i = 0; i < res.getNumberOfRows(); i++) {
           RightsState state = EnumUtils.getEnumByIndex(RightsState.class, res.getInt(i, COL_STATE));
-          String objectName = BeeUtils.normalize(res.getValue(i, COL_OBJECT_NAME));
+          String objectName = res.getValue(i, COL_OBJECT_NAME);
           Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
 
           if (objectStates == null) {
@@ -577,10 +603,6 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
-  public boolean isRightsTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_OBJECTS, TBL_RIGHTS);
-  }
-
   public boolean isRoleTable(String tblName) {
     return BeeUtils.inList(tblName, TBL_ROLES, TBL_USER_ROLES);
   }
@@ -653,6 +675,87 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
+  public ResponseObject setRights(RightsObjectType type, RightsState state,
+      Map<String, String> changes) {
+
+    Assert.noNulls(type, state);
+    int cnt = 0;
+
+    if (!BeeUtils.isEmpty(changes)) {
+      Map<String, Multimap<RightsState, Long>> objects = rightsCache.get(type);
+
+      if (objects == null) {
+        objects = Maps.newHashMap();
+        rightsCache.put(type, objects);
+      }
+      Multimap<String, Long> plus = HashMultimap.create();
+      Multimap<String, Long> minus = HashMultimap.create();
+
+      for (String object : changes.keySet()) {
+        Multimap<RightsState, Long> obInfo = objects.get(object);
+
+        if (obInfo == null) {
+          obInfo = HashMultimap.create();
+          objects.put(object, obInfo);
+        }
+        for (Long role : DataUtils.parseIdSet(changes.get(object))) {
+          if (obInfo.containsEntry(state, role)) {
+            minus.put(object, role);
+            obInfo.remove(state, role);
+          } else {
+            plus.put(object, role);
+            obInfo.put(state, role);
+          }
+        }
+      }
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
+          .addField(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), COL_OBJECT)
+          .addFrom(TBL_OBJECTS)
+          .setWhere(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal())));
+
+      HasConditions wh = SqlUtils.or();
+
+      for (String object : minus.keySet()) {
+        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+        if (DataUtils.isId(id)) {
+          wh.add(SqlUtils.and(SqlUtils.equals(TBL_RIGHTS,
+              COL_OBJECT, id, COL_STATE, state.ordinal()),
+              SqlUtils.inList(TBL_RIGHTS, COL_ROLE, minus.get(object))));
+        }
+      }
+      if (!wh.isEmpty()) {
+        cnt += qs.updateData(new SqlDelete(TBL_RIGHTS)
+            .setWhere(wh));
+      }
+      for (String object : plus.keySet()) {
+        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+        if (!DataUtils.isId(id)) {
+          id = qs.insertData(new SqlInsert(TBL_OBJECTS)
+              .addConstant(COL_OBJECT_TYPE, type.ordinal())
+              .addConstant(COL_OBJECT_NAME, object));
+        }
+        for (Long role : plus.get(object)) {
+          qs.insertData(new SqlInsert(TBL_RIGHTS)
+              .addConstant(COL_OBJECT, id)
+              .addConstant(COL_STATE, state.ordinal())
+              .addConstant(COL_ROLE, role));
+          cnt++;
+        }
+      }
+    }
+    for (Entry<String, UserInfo> entry : infoCache.entrySet()) {
+      entry.getValue().getUserData()
+          .setRights(getUserRights(userCache.inverse().get(entry.getKey())));
+    }
+    Endpoint.updateUserData(getAllUserData());
+
+    return ResponseObject.response(cnt);
+  }
+
+  @Lock(LockType.WRITE)
   public boolean updateUserLocale(String user, SupportedLocale locale) {
     if (!isUser(user) || locale == null) {
       return false;
@@ -717,21 +820,17 @@ public class UserServiceBean {
     Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(type);
 
     if (rightsObjects != null) {
-      Multimap<RightsState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
+      Multimap<RightsState, Long> objectStates = rightsObjects.get(object);
 
       if (objectStates != null && objectStates.containsKey(state)) {
         Collection<Long> roles = objectStates.get(state);
         boolean ok = checked;
 
-        if (roles.contains(null)) {
-          ok = !checked;
-        } else {
-          for (long role : getUserRoles(userId)) {
-            ok = checked != roles.contains(role);
+        for (long role : getUserRoles(userId)) {
+          ok = checked != roles.contains(role);
 
-            if (ok) {
-              break;
-            }
+          if (ok) {
+            break;
           }
         }
         checked = ok;

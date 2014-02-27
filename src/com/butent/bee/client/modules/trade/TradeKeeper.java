@@ -4,12 +4,14 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.rights.Module;
 
 public final class TradeKeeper {
 
   public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(TRADE_MODULE);
-    args.addQueryItem(TRADE_METHOD, name);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRADE.getName());
+    args.addQueryItem(CommonsConstants.METHOD, name);
     return args;
   }
 

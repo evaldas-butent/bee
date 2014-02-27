@@ -17,8 +17,6 @@ import java.util.Map;
 
 public final class CommUtils {
 
-  public static final char DEFAULT_INFORMATION_SEPARATOR = '\u001d';
-
   public static final String QUERY_STRING_SEPARATOR = "?";
   public static final String QUERY_STRING_PAIR_SEPARATOR = "&";
   public static final String QUERY_STRING_VALUE_SEPARATOR = "=";
@@ -171,10 +169,6 @@ public final class CommUtils {
     } else {
       return data;
     }
-  }
-
-  public static String rpcMessageName(int i) {
-    return Service.RPC_VAR_MSG + i;
   }
 
   public static String rpcParamName(int i) {

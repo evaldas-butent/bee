@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
@@ -12,6 +13,7 @@ import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -32,24 +34,47 @@ public final class CommonsConstants {
       new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_VALUE, true),
       new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
 
-  public enum RightsObjectType implements HasCaption {
-    EVENT("Įvykis", EnumSet.of(RightsState.VISIBLE)),
-    FORM("Forma", EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)),
-    GRID("Lentelė", EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)),
-    MENU("Meniu", EnumSet.of(RightsState.VISIBLE)),
-    MODULE("Modulis", EnumSet.of(RightsState.VISIBLE));
+  public enum RightsObjectType implements HasLocalizedCaption {
+    EVENT(EnumSet.of(RightsState.VISIBLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectEvent();
+      }
+    },
+    FORM(EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectForm();
+      }
+    },
+    GRID(EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectGrid();
+      }
+    },
+    MENU(EnumSet.of(RightsState.VISIBLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectMenu();
+      }
+    },
+    MODULE(EnumSet.of(RightsState.VISIBLE)) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.objectModule();
+      }
+    };
 
-    private final String caption;
     private final Set<RightsState> registeredStates;
 
-    private RightsObjectType(String caption, Set<RightsState> states) {
-      this.caption = caption;
+    private RightsObjectType(Set<RightsState> states) {
       this.registeredStates = states;
     }
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
 
     public Set<RightsState> getRegisteredStates() {
@@ -57,21 +82,29 @@ public final class CommonsConstants {
     }
   }
 
-  public enum RightsState implements HasCaption {
-    VISIBLE("Matomas", true),
-    EDITABLE("Redaguojamas", true);
+  public enum RightsState implements HasLocalizedCaption {
+    VISIBLE(true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.rightStateVisible();
+      }
+    },
+    EDITABLE(true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.rightStateEditable();
+      }
+    };
 
-    private final String caption;
     private final boolean checked;
 
-    private RightsState(String caption, boolean checked) {
-      this.caption = caption;
+    private RightsState(boolean checked) {
       this.checked = checked;
     }
 
     @Override
     public String getCaption() {
-      return caption;
+      return getCaption(Localized.getConstants());
     }
 
     public boolean isChecked() {
@@ -87,7 +120,7 @@ public final class CommonsConstants {
       return this.name().toLowerCase();
     }
   }
-  
+
   public enum UserGroupVisibility implements HasCaption {
     PRIVATE(Localized.getConstants().userGroupPrivate()),
     PUBLIC(Localized.getConstants().userGroupPublic());
@@ -118,8 +151,9 @@ public final class CommonsConstants {
     EnumUtils.register(WorkdayTransition.class);
   }
 
+  public static final String METHOD = "Service";
+
   public static final String COMMONS_MODULE = "Commons";
-  public static final String COMMONS_METHOD = COMMONS_MODULE + "Method";
 
   public static final String COMMONS_PARAMETERS_PREFIX = "parameters_";
 
@@ -244,15 +278,18 @@ public final class CommonsConstants {
 
   public static final String VIEW_ROLES = "Roles";
   public static final String VIEW_RIGHTS = "Rights";
-  
+  public static final String VIEW_USER_ROLES = "UserRoles";
+
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
+  public static final String GRID_ROLE_USERS = "RoleUsers";
+
   public static final String GRID_COLORS = "Colors";
   public static final String GRID_THEMES = "Themes";
   public static final String GRID_THEME_COLORS = "ThemeColors";
-  
+
   public static final String COL_RELATION = "Relation";
 
   public static final String COL_LOGIN = "Login";
@@ -283,7 +320,7 @@ public final class CommonsConstants {
   public static final String COL_COMPANY_USER_COMPANY = "Company";
   public static final String COL_COMPANY_USER_USER = "User";
   public static final String COL_COMPANY_USER_RESPONSIBILITY = "Responsibility";
-  
+
   public static final String COL_PERSON = "Person";
 
   public static final String COL_POSITION = "Position";
@@ -394,7 +431,7 @@ public final class CommonsConstants {
 
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";
-  
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "ComapnyType";
@@ -417,7 +454,7 @@ public final class CommonsConstants {
 
   public static final String ALS_OBJECT_TYPE = "ObjectType";
   public static final String ALS_OBJECT_NAME = "ObjectName";
-  
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_PERSON = "Person";
 

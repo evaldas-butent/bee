@@ -7,8 +7,8 @@ import com.google.common.collect.Multimap;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -31,9 +31,9 @@ public final class NewsConstants {
   public static final String COL_USAGE_USER = "User";
   public static final String COL_USAGE_ACCESS = "Access";
   public static final String COL_USAGE_UPDATE = "Update";
-  
+
   public static final String GRID_USER_FEEDS = "UserFeeds";
-  
+
   private static final Map<String, String> usageTables = Maps.newHashMap();
   private static final Multimap<String, String> observedColumns = HashMultimap.create();
 
@@ -41,7 +41,7 @@ public final class NewsConstants {
     initUsageTables();
     initObservedColumns();
   }
-  
+
   public static boolean anyObserved(String table, List<? extends IsColumn> columns) {
     if (hasObservedColumns(table) && !BeeUtils.isEmpty(columns)) {
       for (IsColumn column : columns) {
@@ -64,7 +64,6 @@ public final class NewsConstants {
   public static boolean hasUsageTable(String table) {
     return (table == null) ? false : usageTables.containsKey(table);
   }
-
 
   private static void initObservedColumns() {
     observedColumns.put(CommonsConstants.TBL_COMPANY_USERS,
@@ -104,7 +103,7 @@ public final class NewsConstants {
 
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
-    
+
   }
 
   private static void initUsageTables() {
@@ -113,7 +112,7 @@ public final class NewsConstants {
     usageTables.put(CommonsConstants.TBL_PERSONS, "PersonUsage");
     usageTables.put(CommonsConstants.TBL_ITEMS, "ItemUsage");
 
-    usageTables.put(CrmConstants.TBL_DOCUMENTS, "DocumentUsage");
+    usageTables.put(DocumentsConstants.TBL_DOCUMENTS, "DocumentUsage");
 
     usageTables.put(CalendarConstants.TBL_APPOINTMENT_ATTENDEES, "AppAttUsage");
     usageTables.put(CalendarConstants.TBL_APPOINTMENTS, "AppointmentUsage");

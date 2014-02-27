@@ -14,6 +14,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -264,12 +265,9 @@ public class UserData implements BeeSerializable, HasInfo {
     return hasRight(RightsObjectType.MENU, object, RightsState.VISIBLE);
   }
 
-  public boolean isModuleVisible(Module module) {
-    if (module == null) {
-      return true;
-    } else {
-      return hasRight(RightsObjectType.MODULE, module.name(), RightsState.VISIBLE);
-    }
+  public boolean isModuleVisible(String object) {
+    return Module.isEnabled(object)
+        && hasRight(RightsObjectType.MODULE, object, RightsState.VISIBLE);
   }
 
   @Override
@@ -376,11 +374,21 @@ public class UserData implements BeeSerializable, HasInfo {
     }
     boolean checked = state.isChecked();
 
-    if (!BeeUtils.isEmpty(rights)) {
-      Multimap<RightsObjectType, String> stateObjects = rights.get(state);
+    if (!BeeUtils.isEmpty(rights) && rights.containsKey(state)) {
+      Collection<String> objects = rights.get(state).get(type);
 
-      if (stateObjects.containsKey(type)) {
-        checked = stateObjects.get(type).contains(BeeUtils.normalize(object)) != checked;
+      if (!BeeUtils.isEmpty(objects)) {
+        String obj = null;
+        checked = true;
+
+        for (String part : RightsUtils.SPLITTER.split(object)) {
+          obj = RightsUtils.JOINER.join(obj, part);
+
+          if (objects.contains(obj) == state.isChecked()) {
+            checked = false;
+            break;
+          }
+        }
       }
     }
     return checked;

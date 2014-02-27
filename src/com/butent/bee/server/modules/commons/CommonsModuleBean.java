@@ -57,6 +57,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -130,42 +132,40 @@ public class CommonsModuleBean implements BeeModule {
   EJBContext ctx;
 
   @Override
-  public Collection<String> dependsOn() {
-    return null;
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
-
-    List<SearchResult> companiesSr =
-        qs.getSearchResults(VIEW_COMPANIES,
-            Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
-                COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
-
-    List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
-        Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
-            COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
-
-    List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
-        Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
-
-    List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
-        Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
-            query));
-
     List<SearchResult> commonsSr = Lists.newArrayList();
-    commonsSr.addAll(companiesSr);
-    commonsSr.addAll(personsSr);
-    commonsSr.addAll(usersSr);
-    commonsSr.addAll(itemsSr);
+
+    if (usr.isModuleVisible(Module.CLASSIFIERS.getName(SubModule.CONTACTS))) {
+      List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
+          Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
+              COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+      commonsSr.addAll(companiesSr);
+
+      List<SearchResult> personsSr = qs.getSearchResults(VIEW_PERSONS,
+          Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
+              COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+      commonsSr.addAll(personsSr);
+    }
+
+    if (usr.isModuleVisible(Module.ADMINISTRATION.getName())) {
+      List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
+          Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
+      commonsSr.addAll(usersSr);
+    }
+
+    if (usr.isModuleVisible(Module.TRADE.getName())) {
+      List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
+          Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
+              query));
+      commonsSr.addAll(itemsSr);
+    }
 
     return commonsSr;
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(COMMONS_METHOD);
 
     if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
       response = prm.doService(svc, reqInfo);
@@ -229,13 +229,13 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   @Override
-  public String getName() {
-    return COMMONS_MODULE;
+  public Module getModule() {
+    return null;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return COMMONS_MODULE;
   }
 
   @Override
@@ -247,14 +247,6 @@ public class CommonsModuleBean implements BeeModule {
       public void refreshIpFilterCache(TableModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
           sys.initIpFilters();
-        }
-      }
-
-      @Subscribe
-      public void refreshRightsCache(TableModifyEvent event) {
-        if (usr.isRightsTable(event.getTargetName()) && event.isAfter()) {
-          usr.initRights();
-          Endpoint.updateUserData(usr.getAllUserData());
         }
       }
 

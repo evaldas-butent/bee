@@ -239,7 +239,7 @@
   border-radius: 3px;
   cursor: pointer;
 }
-.bee-crm-rt-value-toggle-down {
+.bee-crm-rt-value-toggle-checked {
   background-color: #bfb;
 }
 .bee-crm-rt-value-toggle:hover {

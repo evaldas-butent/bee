@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Administration" label="=administration" order="1000" module="ADMINISTRATION"
+name="Administration" label="=administration" order="1000" module="Administration"
 >
   <Item name="Users" label="=users" service="grid" parameters="Users" />
   <Item name="UserGroupSettings" label="=userGroups" service="grid"

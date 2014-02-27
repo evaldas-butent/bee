@@ -349,7 +349,7 @@ class EcData {
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
 
-          Map<String, String> map = Codec.beeDeserializeMap(response.getResponseAsString());
+          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
           if (!map.isEmpty()) {
             clientInfo.clear();
             clientInfo.putAll(map);
@@ -377,7 +377,7 @@ class EcData {
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
 
-          Map<String, String> map = Codec.beeDeserializeMap(response.getResponseAsString());
+          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
           if (!map.isEmpty()) {
             configuration.clear();
             configuration.putAll(map);

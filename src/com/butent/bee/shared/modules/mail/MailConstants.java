@@ -44,9 +44,6 @@ public final class MailConstants {
     }
   }
 
-  public static final String MAIL_MODULE = "Mail";
-  public static final String MAIL_METHOD = MAIL_MODULE + "Method";
-
   public static final String SVC_RESTART_PROXY = "restart_proxy";
   public static final String SVC_GET_ACCOUNTS = "get_accounts";
   public static final String SVC_GET_FOLDERS = "get_folders";

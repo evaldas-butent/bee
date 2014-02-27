@@ -14,7 +14,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.rights.ModuleRightsHandler;
+import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
@@ -88,7 +88,7 @@ public final class CommonsKeeper {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
-    args.addQueryItem(COMMONS_METHOD, name);
+    args.addQueryItem(METHOD, name);
     return args;
   }
 
@@ -117,6 +117,9 @@ public final class CommonsKeeper {
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
         UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
             COL_UG_GROUP, COL_UG_USER));
+    GridFactory.registerGridInterceptor(GRID_ROLE_USERS,
+        UniqueChildInterceptor.forUsers(Localized.getConstants().roleAddUsers(),
+            COL_ROLE, COL_USER));
 
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);
@@ -134,8 +137,8 @@ public final class CommonsKeeper {
     SelectorEvent.register(new CommonsSelectorHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
-    
-    ModuleRightsHandler.register();
+
+    RightsForm.register();
   }
 
   private CommonsKeeper() {
