@@ -274,6 +274,7 @@
   position: relative;
   top: 1ex;
   box-shadow: 5px 3px 5px #ccc;
+  margin-bottom: 1em;
 }
 
 .bee-discuss-adsFormContent-NewAnnouncement {
@@ -338,9 +339,11 @@
   background: white;
   margin-right: 25%;
   margin-top: 1ex;
+  position: relative;
+  top: -2ex;
 }
 
-.bee-discuss-adsFormContent-chatBalloon{
+.bee-discuss-adsFormContent-chatBalloon {
  width: 0px;
  height: 0px;
  position: absolute;
@@ -348,10 +351,23 @@
  top: 3em;
  border-top: 15px solid transparent;
  border-bottom: 15px solid transparent;
- border-right: 15px solid white;
+ border-right: 15px solid #ccc;
  z-index: 1;
 }
 
-.bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon {
-  border-right: 15px solid #ffffCC;
+.bee-discuss-adsFormContent-chatBalloon:after {
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  left: 1px;
+  top: -2ex;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-right: 14px solid white;
+  z-index: 0;
+  content: '';
+ }
+
+.bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon:after {
+  border-right: 14px solid #ffffCC;
 }
