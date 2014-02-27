@@ -1179,7 +1179,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   public EnumSet<RightsState> getStates() {
-    return EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE);
+    return EnumSet.of(RightsState.VIEW, RightsState.EDIT);
   }
 
   @Override

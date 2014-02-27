@@ -30,7 +30,7 @@ final class MenuRightsHandler extends MultiRoleForm {
 
   @Override
   protected RightsState getRightsState() {
-    return RightsState.VISIBLE;
+    return RightsState.VIEW;
   }
 
   @Override

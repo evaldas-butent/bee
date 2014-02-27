@@ -35,31 +35,31 @@ public final class CommonsConstants {
       new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
 
   public enum RightsObjectType implements HasLocalizedCaption {
-    EVENT(EnumSet.of(RightsState.VISIBLE)) {
+    EVENT(EnumSet.of(RightsState.VIEW)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.objectEvent();
       }
     },
-    FORM(EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)) {
+    FORM(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.objectForm();
       }
     },
-    GRID(EnumSet.of(RightsState.VISIBLE, RightsState.EDITABLE)) {
+    DATA(EnumSet.allOf(RightsState.class)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.objectGrid();
+        return constants.objectData();
       }
     },
-    MENU(EnumSet.of(RightsState.VISIBLE)) {
+    MENU(EnumSet.of(RightsState.VIEW)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.objectMenu();
       }
     },
-    MODULE(EnumSet.of(RightsState.VISIBLE)) {
+    MODULE(EnumSet.of(RightsState.VIEW)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.objectModule();
@@ -83,16 +83,28 @@ public final class CommonsConstants {
   }
 
   public enum RightsState implements HasLocalizedCaption {
-    VISIBLE(true) {
+    VIEW(true) {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateVisible();
+        return constants.rightStateView();
       }
     },
-    EDITABLE(true) {
+    CREATE(true) {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateEditable();
+        return constants.rightStateCreate();
+      }
+    },
+    EDIT(true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.rightStateEdit();
+      }
+    },
+    DELETE(true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.rightStateDelete();
       }
     };
 

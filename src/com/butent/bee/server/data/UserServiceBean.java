@@ -1,12 +1,14 @@
 package com.butent.bee.server.data;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
@@ -14,7 +16,6 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -220,8 +221,8 @@ public class UserServiceBean {
   private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
 
-  private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache =
-      Maps.newHashMap();
+  private final Table<RightsObjectType, String, Multimap<RightsState, Long>> rightsCache =
+      HashBasedTable.create();
 
   @Lock(LockType.WRITE)
   public boolean authenticateUser(String name, String password) {
@@ -370,21 +371,20 @@ public class UserServiceBean {
     return Localizations.getPreferredMessages(getLanguage(userId));
   }
 
-  public ResponseObject getRights(RightsObjectType type, RightsState state) {
-    Assert.noNulls(type, state);
+  public ResponseObject getRights(RightsObjectType type) {
+    Assert.notNull(type);
+    Table<String, Integer, String> matrix = HashBasedTable.create();
 
-    Map<String, String> objects = Maps.newHashMap();
+    if (rightsCache.containsRow(type)) {
+      for (String object : rightsCache.row(type).keySet()) {
+        Multimap<RightsState, Long> states = rightsCache.get(type, object);
 
-    if (rightsCache.containsKey(type)) {
-      for (String object : rightsCache.get(type).keySet()) {
-        Collection<Long> roles = rightsCache.get(type).get(object).get(state);
-
-        if (!BeeUtils.isEmpty(roles)) {
-          objects.put(object, DataUtils.buildIdList(roles));
+        for (RightsState state : states.keySet()) {
+          matrix.put(object, state.ordinal(), DataUtils.buildIdList(states.get(state)));
         }
       }
     }
-    return ResponseObject.response(objects);
+    return ResponseObject.response(matrix.rowMap());
   }
 
   public String getRoleName(Long roleId) {
@@ -440,6 +440,15 @@ public class UserServiceBean {
     return null;
   }
 
+  public boolean hasDataRight(String object, RightsState state) {
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().hasDataRight(object, state);
+    }
+    return false;
+  }
+
   public boolean hasEventRight(String object, RightsState state) {
     UserInfo info = getCurrentUserInfo();
 
@@ -454,15 +463,6 @@ public class UserServiceBean {
 
     if (info != null) {
       return info.getUserData().hasFormRight(object, state);
-    }
-    return false;
-  }
-
-  public boolean hasGridRight(String object, RightsState state) {
-    UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().hasGridRight(object, state);
     }
     return false;
   }
@@ -491,36 +491,30 @@ public class UserServiceBean {
         .addFrom(TBL_OBJECTS)
         .addFromInner(TBL_RIGHTS, sys.joinTables(TBL_OBJECTS, TBL_RIGHTS, COL_OBJECT));
 
-    for (RightsObjectType tp : RightsObjectType.values()) {
-      if (BeeUtils.isEmpty(tp.getRegisteredStates())) {
+    for (RightsObjectType type : RightsObjectType.values()) {
+      if (BeeUtils.isEmpty(type.getRegisteredStates())) {
         continue;
       }
-      HasConditions cl = SqlUtils.or();
-      IsCondition wh =
-          SqlUtils.and(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, tp.ordinal()), cl);
+      List<Integer> stateIds = Lists.newArrayList();
 
-      for (RightsState state : tp.getRegisteredStates()) {
-        cl.add(SqlUtils.equals(TBL_RIGHTS, COL_STATE, state.ordinal()));
+      for (RightsState state : type.getRegisteredStates()) {
+        stateIds.add(state.ordinal());
       }
-      SimpleRowSet res = qs.getData(ss.setWhere(wh));
+      SimpleRowSet res = qs.getData(ss.setWhere(SqlUtils.and(SqlUtils
+          .equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal()),
+          SqlUtils.inList(TBL_RIGHTS, COL_STATE, stateIds))));
 
       if (res.getNumberOfRows() > 0) {
-        Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(tp);
+        for (SimpleRow row : res) {
+          String object = row.getValue(COL_OBJECT_NAME);
+          Multimap<RightsState, Long> states = rightsCache.get(type, object);
 
-        if (rightsObjects == null) {
-          rightsObjects = Maps.newHashMap();
-          rightsCache.put(tp, rightsObjects);
-        }
-        for (int i = 0; i < res.getNumberOfRows(); i++) {
-          RightsState state = EnumUtils.getEnumByIndex(RightsState.class, res.getInt(i, COL_STATE));
-          String objectName = res.getValue(i, COL_OBJECT_NAME);
-          Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
-
-          if (objectStates == null) {
-            objectStates = HashMultimap.create();
-            rightsObjects.put(objectName, objectStates);
+          if (states == null) {
+            states = HashMultimap.create();
+            rightsCache.put(type, object, states);
           }
-          objectStates.put(state, res.getLong(i, COL_ROLE));
+          states.put(EnumUtils.getEnumByIndex(RightsState.class, row.getInt(COL_STATE)),
+              row.getLong(COL_ROLE));
         }
       }
     }
@@ -682,21 +676,15 @@ public class UserServiceBean {
     int cnt = 0;
 
     if (!BeeUtils.isEmpty(changes)) {
-      Map<String, Multimap<RightsState, Long>> objects = rightsCache.get(type);
-
-      if (objects == null) {
-        objects = Maps.newHashMap();
-        rightsCache.put(type, objects);
-      }
       Multimap<String, Long> plus = HashMultimap.create();
       Multimap<String, Long> minus = HashMultimap.create();
 
       for (String object : changes.keySet()) {
-        Multimap<RightsState, Long> obInfo = objects.get(object);
+        Multimap<RightsState, Long> obInfo = rightsCache.get(type, object);
 
         if (obInfo == null) {
           obInfo = HashMultimap.create();
-          objects.put(object, obInfo);
+          rightsCache.put(type, object, obInfo);
         }
         for (Long role : DataUtils.parseIdSet(changes.get(object))) {
           if (obInfo.containsEntry(state, role)) {
@@ -789,53 +777,37 @@ public class UserServiceBean {
     return infoCache.get(getUserName(userId));
   }
 
-  private Map<RightsState, Multimap<RightsObjectType, String>> getUserRights(long userId) {
-    Map<RightsState, Multimap<RightsObjectType, String>> rights = Maps.newHashMap();
+  private Table<RightsState, RightsObjectType, Set<String>> getUserRights(long userId) {
+    Table<RightsState, RightsObjectType, Set<String>> rights = HashBasedTable.create();
+    long[] userRoles = getUserRoles(userId);
 
-    for (RightsState state : RightsState.values()) {
-      Multimap<RightsObjectType, String> members = HashMultimap.create();
-      rights.put(state, members);
+    for (RightsObjectType type : rightsCache.rowKeySet()) {
+      Map<String, Multimap<RightsState, Long>> row = rightsCache.row(type);
 
-      for (RightsObjectType type : rightsCache.keySet()) {
-        Set<String> objects = rightsCache.get(type).keySet();
+      for (String object : row.keySet()) {
+        Multimap<RightsState, Long> states = row.get(object);
 
-        for (String object : objects) {
-          if (hasRight(userId, type, object, state) != state.isChecked()) {
-            members.put(type, object);
+        for (RightsState state : states.keySet()) {
+          boolean checked = state.isChecked();
+
+          for (Long role : userRoles) {
+            if (states.containsEntry(state, role) != checked) {
+              checked = !checked;
+              break;
+            }
+          }
+          if (checked) {
+            Set<String> objects = rights.get(state, type);
+
+            if (objects == null) {
+              objects = Sets.newHashSet();
+              rights.put(state, type, objects);
+            }
+            objects.add(object);
           }
         }
       }
     }
     return rights;
-  }
-
-  private boolean hasRight(Long userId, RightsObjectType type, String object, RightsState state) {
-    Assert.notEmpty(object);
-
-    if (state == null) {
-      return false;
-    }
-    boolean checked = state.isChecked();
-
-    Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(type);
-
-    if (rightsObjects != null) {
-      Multimap<RightsState, Long> objectStates = rightsObjects.get(object);
-
-      if (objectStates != null && objectStates.containsKey(state)) {
-        Collection<Long> roles = objectStates.get(state);
-        boolean ok = checked;
-
-        for (long role : getUserRoles(userId)) {
-          ok = checked != roles.contains(role);
-
-          if (ok) {
-            break;
-          }
-        }
-        checked = ok;
-      }
-    }
-    return checked;
   }
 }

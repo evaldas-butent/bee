@@ -220,7 +220,7 @@ public class SystemBean {
   public void filterVisibleState(SqlSelect query, String tblName, String tblAlias) {
     BeeTable table = getTable(tblName);
 
-    table.verifyState(query, tblAlias, RightsState.VISIBLE, table.areRecordsVisible(),
+    table.verifyState(query, tblAlias, RightsState.VIEW, table.areRecordsVisible(),
         usr.getUserRoles(usr.getCurrentUserId()));
   }
 

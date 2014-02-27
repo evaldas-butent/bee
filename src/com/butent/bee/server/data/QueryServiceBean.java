@@ -112,7 +112,7 @@ public class QueryServiceBean {
     public abstract T processUpdateCount(int updateCount);
   }
 
-  private static final String EDITABLE_STATE_COLUMN = RightsState.EDITABLE.name();
+  private static final String EDITABLE_STATE_COLUMN = RightsState.EDIT.name();
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
@@ -498,7 +498,7 @@ public class QueryServiceBean {
 
   public List<Long> getLongList(IsQuery query) {
     List<Long> result = Lists.newArrayList();
-    
+
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
       for (Long value : arr) {
@@ -633,10 +633,10 @@ public class QueryServiceBean {
     sys.filterVisibleState(query, tableName, tableAlias);
 
     BeeTable table = sys.getTable(tableName);
-    String stateAlias = table.joinState(query, tableAlias, RightsState.EDITABLE);
+    String stateAlias = table.joinState(query, tableAlias, RightsState.EDIT);
 
     if (!BeeUtils.isEmpty(stateAlias)) {
-      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDITABLE,
+      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDIT,
           table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
           EDITABLE_STATE_COLUMN);
     }
