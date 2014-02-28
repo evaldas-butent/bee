@@ -30,6 +30,7 @@ import com.butent.bee.client.modules.calendar.layout.DayLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.MonthLayoutDescription;
 import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
@@ -283,7 +284,18 @@ public class MonthView extends CalendarView {
 
     for (int i = 1; i <= requiredRows; i++) {
       for (int j = 0; j < TimeUtils.DAYS_PER_WEEK; j++) {
-        buildCell(i, j, BeeUtils.toString(tmpDate.getDom()), tmpDate.equals(today),
+        String dayCaption = BeeUtils.toString(tmpDate.getDom());
+
+        if (j == 0) {
+          CustomDiv woyDiv = new CustomDiv(CalendarStyleManager.MONTH_CELL_LABEL);
+          woyDiv.addStyleName(CalendarStyleManager.DAY_CELL);
+          woyDiv.setText(BeeUtils.joinWords(BeeUtils.toString(TimeUtils.weekOfYear(tmpDate)),
+              Localized.getConstants().unitWeekShort()));
+          dayCaption = woyDiv.toString();
+          dayCaption += BeeUtils.toString(tmpDate.getDom());
+        }
+
+        buildCell(i, j, dayCaption, tmpDate.equals(today),
             tmpDate.getMonth() == month);
         TimeUtils.moveOneDayForward(tmpDate);
       }
