@@ -1,10 +1,12 @@
 package com.butent.bee.client.rights;
 
+import com.google.common.collect.ComparisonChain;
+
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class RightsObject implements HasCaption {
+class RightsObject implements HasCaption, Comparable<RightsObject> {
 
   private final String name;
   private final String caption;
@@ -31,6 +33,16 @@ class RightsObject implements HasCaption {
   }
 
   @Override
+  public int compareTo(RightsObject other) {
+    return ComparisonChain.start()
+//        .compare(parent, other.parent, Ordering.natural().nullsFirst())
+//        .compare(hasChildren, other.hasChildren)
+//        .compare(caption, other.caption, Ordering.natural().nullsFirst())
+        .compare(name, other.name)
+        .result();
+  }
+
+  @Override
   public String getCaption() {
     return caption;
   }
@@ -54,7 +66,7 @@ class RightsObject implements HasCaption {
   boolean hasChildren() {
     return hasChildren;
   }
-  
+
   boolean hasParent() {
     return parent != null;
   }

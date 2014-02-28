@@ -90,7 +90,8 @@ public final class Service {
   public static final String SUBSCRIBE_TO_FEEDS = DATA_SERVICE_PREFIX + "subscribe_to_feeds";
   public static final String ACCESS = DATA_SERVICE_PREFIX + "access";
 
-  public static final String GET_RIGHTS = DATA_SERVICE_PREFIX + "get_rights";
+  public static final String GET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "get_state_rights";
+  public static final String GET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "get_role_rights";
   public static final String SET_RIGHTS = DATA_SERVICE_PREFIX + "set_rights";
 
   public static final String RPC_VAR_PREFIX = "bee_";

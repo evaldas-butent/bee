@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  xmlns:xpr="http://www.butent.com/expression"
-  name="CompanyUsers"
-  source="CompanyUsers"
-  caption="=responsibilities"
-  newRowCaption="=newResponsibility"
+  name="CompanyUsers" source="CompanyUsers" module="Classifiers.Contacts"
+  caption="=responsibilities" newRowCaption="=newResponsibility"
   >
   <Columns>
     <SimpleColumn name="Company" />

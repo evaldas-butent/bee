@@ -6,12 +6,14 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -102,6 +104,37 @@ public enum Module implements HasLocalizedCaption {
       }
     }
     return true;
+  }
+  
+  public static Pair<Module, SubModule> parse(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+    }
+    
+    Module module = null;
+    SubModule subModule = null;
+    
+    List<String> parts = RightsUtils.SPLITTER.splitToList(input);
+
+    if (parts.size() > 0) {
+      String moduleName = parts.get(0);
+      for (Module m : values()) {
+        if (BeeUtils.same(m.getName(), moduleName)) {
+          module = m;
+          break;
+        }
+      }
+      
+      if (parts.size() > 1) {
+        subModule = SubModule.parse(parts.get(1));
+      }
+    }
+    
+    if (module == null) {
+      return null;
+    } else {
+      return Pair.of(module, subModule);
+    }
   }
 
   public static void setEnabledModules(String moduleList) {

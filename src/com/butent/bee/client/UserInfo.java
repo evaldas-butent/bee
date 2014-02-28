@@ -95,18 +95,18 @@ public class UserInfo implements HasInfo {
     return userData.hasDataRight(object, state);
   }
 
-  public boolean hasEventRight(String object, RightsState state) {
+  public boolean hasFieldRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
     }
-    return userData.hasEventRight(object, state);
+    return userData.hasFieldRight(object, state);
   }
 
-  public boolean hasFormRight(String object, RightsState state) {
+  public boolean hasWidgetRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
     }
-    return userData.hasFormRight(object, state);
+    return userData.hasWidgetRight(object, state);
   }
 
   public boolean isMenuVisible(String object) {

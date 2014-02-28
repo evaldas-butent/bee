@@ -424,13 +424,13 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String objectData();
 
-  String objectEvent();
-
-  String objectForm();
+  String objectField();
 
   String objectMenu();
 
   String objectModule();
+
+  String objectWidget();
 
   String ok();
 
@@ -551,6 +551,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String selectAtLeastOneRow();
+  
+  String selectRole();
 
   String send();
 

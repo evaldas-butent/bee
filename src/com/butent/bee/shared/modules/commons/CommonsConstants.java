@@ -35,16 +35,16 @@ public final class CommonsConstants {
       new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
 
   public enum RightsObjectType implements HasLocalizedCaption {
-    EVENT(EnumSet.of(RightsState.VIEW)) {
+    FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.objectEvent();
+        return constants.objectField();
       }
     },
-    FORM(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
+    WIDGET(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.objectForm();
+        return constants.objectWidget();
       }
     },
     DATA(EnumSet.allOf(RightsState.class)) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Warehouses" source="Warehouses" caption="=warehouses"
+  name="Warehouses" source="Warehouses" caption="=warehouses" module="Classifiers"
   editForm="Warehouse" newRowForm="Warehouse" newRowCaption="=newWarehouse"
   >
   <Columns>

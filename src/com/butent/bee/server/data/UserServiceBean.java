@@ -371,29 +371,77 @@ public class UserServiceBean {
     return Localizations.getPreferredMessages(getLanguage(userId));
   }
 
-  public ResponseObject getRights(RightsObjectType type) {
-    Assert.notNull(type);
-    Table<String, Integer, String> matrix = HashBasedTable.create();
-
-    if (rightsCache.containsRow(type)) {
-      for (String object : rightsCache.row(type).keySet()) {
-        Multimap<RightsState, Long> states = rightsCache.get(type, object);
-
-        for (RightsState state : states.keySet()) {
-          matrix.put(object, state.ordinal(), DataUtils.buildIdList(states.get(state)));
-        }
-      }
-    }
-    return ResponseObject.response(matrix.rowMap());
-  }
-
   public String getRoleName(Long roleId) {
     Assert.contains(roleCache, roleId);
     return roleCache.get(roleId);
   }
 
+  public ResponseObject getRoleRights(RightsObjectType type, Long roleId) {
+    Assert.notNull(type);
+    Assert.notNull(roleId);
+    
+    Multimap<String, RightsState> objectStates = HashMultimap.create();
+    
+    if (rightsCache.containsRow(type)) {
+      for (String object : rightsCache.row(type).keySet()) {
+        Multimap<RightsState, Long> stateRoles = rightsCache.get(type, object);
+        
+        if (stateRoles.containsValue(roleId)) {
+          for (RightsState state : stateRoles.keySet()) {
+            if (stateRoles.containsEntry(state, roleId)) {
+              objectStates.put(object, state);
+            }
+          }
+        }
+      }
+    }
+    
+    if (objectStates.isEmpty()) {
+      return ResponseObject.emptyResponse();
+      
+    } else {
+      Map<String, String> result = Maps.newHashMap();
+      
+      for (String object : objectStates.keySet()) {
+        result.put(object, EnumUtils.buildIndexList(objectStates.get(object)));
+      }
+      
+      return ResponseObject.response(result);
+    }
+  }
+
   public Set<Long> getRoles() {
     return roleCache.keySet();
+  }
+
+  public ResponseObject getStateRights(RightsObjectType type, RightsState state) {
+    Assert.notNull(type);
+    Assert.notNull(state);
+
+    Multimap<String, Long> objectRoles = HashMultimap.create();
+
+    if (rightsCache.containsRow(type)) {
+      for (String object : rightsCache.row(type).keySet()) {
+        Multimap<RightsState, Long> states = rightsCache.get(type, object);
+        
+        if (states.containsKey(state)) {
+          objectRoles.putAll(object, states.get(state));
+        }
+      }
+    }
+    
+    if (objectRoles.isEmpty()) {
+      return ResponseObject.emptyResponse();
+
+    } else {
+      Map<String, String> result = Maps.newHashMap();
+      
+      for (String object : objectRoles.keySet()) {
+        result.put(object, DataUtils.buildIdList(objectRoles.get(object)));
+      }
+    
+      return ResponseObject.response(result);
+    }
   }
 
   public Long getUserId(String user) {
@@ -449,36 +497,22 @@ public class UserServiceBean {
     return false;
   }
 
-  public boolean hasEventRight(String object, RightsState state) {
+  public boolean hasFieldRight(String object, RightsState state) {
     UserInfo info = getCurrentUserInfo();
 
     if (info != null) {
-      return info.getUserData().hasEventRight(object, state);
+      return info.getUserData().hasFieldRight(object, state);
     }
     return false;
   }
 
-  public boolean hasFormRight(String object, RightsState state) {
+  public boolean hasWidgetRight(String object, RightsState state) {
     UserInfo info = getCurrentUserInfo();
 
     if (info != null) {
-      return info.getUserData().hasFormRight(object, state);
+      return info.getUserData().hasWidgetRight(object, state);
     }
     return false;
-  }
-
-  public boolean isMenuVisible(String object) {
-    UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().isMenuVisible(object);
-    }
-    return false;
-  }
-
-  public boolean isModuleVisible(String module) {
-    UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isModuleVisible(module);
   }
 
   @Lock(LockType.WRITE)
@@ -595,6 +629,20 @@ public class UserServiceBean {
   public Boolean isBlocked(String user) {
     UserInfo userInfo = getUserInfo(getUserId(user));
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
+  }
+
+  public boolean isMenuVisible(String object) {
+    UserInfo info = getCurrentUserInfo();
+
+    if (info != null) {
+      return info.getUserData().isMenuVisible(object);
+    }
+    return false;
+  }
+
+  public boolean isModuleVisible(String module) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isModuleVisible(module);
   }
 
   public boolean isRoleTable(String tblName) {

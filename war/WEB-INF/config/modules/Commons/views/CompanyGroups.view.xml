@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CompanyGroups"
-  source="CompanyGroups"
-  caption="=clientsGroups"
-  newRowCaption="=newClientsGroups"
+  name="CompanyGroups" source="CompanyGroups" module="Classifiers.Contacts"
+  caption="=clientsGroups" newRowCaption="=newClientsGroups"
   >
   <Columns>
     <SimpleColumn name="Name" />

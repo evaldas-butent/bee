@@ -2812,6 +2812,8 @@
 
 .bee-Rights-role-label-cell,
 .bee-Rights-role-toggle-cell,
+.bee-Rights-state-label-cell,
+.bee-Rights-state-toggle-cell,
 .bee-Rights-object-label-cell,
 .bee-Rights-object-toggle-cell,
 .bee-Rights-value-cell {
@@ -2851,6 +2853,7 @@
   white-space: nowrap;
   cursor: pointer;
 }
+.bee-Rights-state-label,
 .bee-Rights-object-label {
   white-space: nowrap;
 }
@@ -2858,6 +2861,7 @@
 .bee-Rights-value-row:hover .bee-Rights-role-label,
 .bee-Rights-value-row:hover .bee-Rights-object-label,
 .bee-Rights-hover .bee-Rights-role-label,
+.bee-Rights-hover .bee-Rights-state-label,
 .bee-Rights-hover .bee-Rights-object-label {
   text-shadow: 1px 0px 0px black;
 }
@@ -2872,6 +2876,7 @@
 }
 
 .bee-Rights-role-toggle,
+.bee-Rights-state-toggle,
 .bee-Rights-object-toggle {
   text-align: center;
   font-size: 14px;
@@ -2879,6 +2884,7 @@
   cursor: pointer;
 }
 .bee-Rights-role-toggle-cell:hover,
+.bee-Rights-state-toggle-cell:hover,
 .bee-Rights-object-toggle-cell:hover {
   background-color: white;
 }
@@ -2914,7 +2920,8 @@
 .bee-Rights-user-clear.bee-Rights-user-empty {
   visibility: hidden;
 }
-.bee-Rights-user-selector {
+.bee-Rights-user-selector,
+.bee-Rights-role-selector {
   width: 2em;
   opacity: 0;
 }
@@ -2923,13 +2930,16 @@
   display: none;
 }
 
-.bee-Rights-role-horizontal .bee-Rights-object-level-1 {
+.bee-Rights-role-horizontal .bee-Rights-object-level-1,
+.bee-Rights-multi-state .bee-Rights-object-level-1 {
   padding-left: 2em;
 }
-.bee-Rights-role-horizontal .bee-Rights-object-level-2 {
+.bee-Rights-role-horizontal .bee-Rights-object-level-2,
+.bee-Rights-multi-state .bee-Rights-object-level-2 {
   padding-left: 4em;
 }
-.bee-Rights-role-horizontal .bee-Rights-object-level-3 {
+.bee-Rights-role-horizontal .bee-Rights-object-level-3,
+.bee-Rights-multi-state .bee-Rights-object-level-3 {
   padding-left: 6em;
 }
 .bee-Rights-object-has-children {

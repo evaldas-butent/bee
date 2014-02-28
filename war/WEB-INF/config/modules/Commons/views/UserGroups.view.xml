@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserGroups" source="UserGroups" 
+  name="UserGroups" source="UserGroups" module="Administration"
   >
   <Columns>
     <SimpleColumn name="User" />
