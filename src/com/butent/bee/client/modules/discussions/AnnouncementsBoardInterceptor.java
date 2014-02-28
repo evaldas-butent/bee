@@ -24,6 +24,7 @@ import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -36,10 +37,11 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -216,7 +218,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         adsTable.getCellFormatter().addStyleName(subjectRow, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
       }
     }
-
+    
     row++;
     
     final Long rowId = BeeUtils.toLongOrNull(rsRow[rs.getColumnIndex(COL_DISCUSSION)]);
@@ -229,8 +231,12 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
           RowEditor.openRow(VIEW_DISCUSSIONS, rowId, false, null);
         }
       };
+      String btnCaption = BeeUtils.joinWords(
+          new FaLabel(FontAwesome.SQUARE_O).toString(),
+          new FaLabel(FontAwesome.SQUARE_O).toString(),
+          new FaLabel(FontAwesome.SQUARE_O).toString());
 
-      Button moreButton = new Button("...", command);
+      Button moreButton = new Button(btnCaption , command);
       moreButton.setTitle(Localized.getConstants().more());
       moreButton.addStyleName(STYLE_PREFIX + STYLE_ACTION + COL_DISCUSSION);
       adsTable.setText(row, 0, BeeConst.STRING_EMPTY);
@@ -240,11 +246,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
       row++;
     }
-    adsTable.setHtml(row, 0, BeeConst.STRING_EMPTY);
-
-    adsTable.getRow(row).addClassName(STYLE_PREFIX + BeeConst.EMPTY);
-    adsTable.getCellFormatter().setColSpan(row, 0, 2);
-    row++;
   }
 
   protected static void renderBirthdaySection(String[] rsRow, SimpleRowSet rs, HtmlTable adsTable) {
@@ -275,12 +276,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     adsTable.getRow(row).addClassName(STYLE_PREFIX + ALS_BIRTHDAY);
     StyleUtils.setDisplay(adsTable.getRow(row), Display.NONE);
 
-    row++;
-    adsTable.setHtml(row, 0, BeeConst.STRING_EMPTY);
-
-    adsTable.getRow(row).addClassName(STYLE_PREFIX + BeeConst.EMPTY);
-    adsTable.getCellFormatter().setColSpan(row, 0, 2);
-    StyleUtils.setDisplay(adsTable.getRow(row), Display.NONE);
     row++;
     int finishRow = row;
 
@@ -339,7 +334,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
   private static String renderDateTime(String timestamp) {
     String result;
-    result = TimeUtils.renderDateTime(BeeUtils.toLong(timestamp));
+    DateTime dt = new DateTime(BeeUtils.toLong(timestamp));
+    result = dt.toCompactString();
     return result;
   }
 
