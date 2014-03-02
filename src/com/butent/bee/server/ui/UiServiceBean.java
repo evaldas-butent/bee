@@ -217,15 +217,22 @@ public class UiServiceBean {
       response = usr.getStateRights(
           EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
           EnumUtils.getEnumByIndex(RightsState.class, reqInfo.getParameter(COL_STATE)));
+
     } else if (BeeUtils.same(svc, Service.GET_ROLE_RIGHTS)) {
       response = usr.getRoleRights(
           EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)));
 
-    } else if (BeeUtils.same(svc, Service.SET_RIGHTS)) {
-      response = usr.setRights(EnumUtils.getEnumByName(RightsObjectType.class,
+    } else if (BeeUtils.same(svc, Service.SET_STATE_RIGHTS)) {
+      response = usr.setStateRights(EnumUtils.getEnumByName(RightsObjectType.class,
           reqInfo.getParameter(COL_OBJECT_TYPE)), EnumUtils.getEnumByName(RightsState.class,
           reqInfo.getParameter(COL_STATE)),
+          Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
+
+    } else if (BeeUtils.same(svc, Service.SET_ROLE_RIGHTS)) {
+      response = usr.setRoleRights(EnumUtils.getEnumByName(RightsObjectType.class,
+          reqInfo.getParameter(COL_OBJECT_TYPE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
           Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {

@@ -92,7 +92,8 @@ public final class Service {
 
   public static final String GET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "get_state_rights";
   public static final String GET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "get_role_rights";
-  public static final String SET_RIGHTS = DATA_SERVICE_PREFIX + "set_rights";
+  public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
+  public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";

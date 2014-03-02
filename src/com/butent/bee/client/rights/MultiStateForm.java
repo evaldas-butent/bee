@@ -140,7 +140,7 @@ abstract class MultiStateForm extends RightsForm {
         public void run() {
           roleSelector.clearValue();
           roleSelector.setFocus(true);
-          
+
           roleSelector.startEdit(null, DataSelector.SHOW_SELECTOR, null, null);
         }
       };
@@ -609,7 +609,7 @@ abstract class MultiStateForm extends RightsForm {
   private void saveDiff(final RightsState state, final Map<String, String> diff,
       final Consumer<Boolean> callback) {
 
-    ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_RIGHTS);
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_STATE_RIGHTS);
     params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
     params.addQueryItem(COL_STATE, state.name());
 

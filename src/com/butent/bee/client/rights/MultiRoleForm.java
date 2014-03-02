@@ -191,7 +191,7 @@ abstract class MultiRoleForm extends RightsForm {
       header.addCommandItem(userClear);
       header.addCommandItem(userSelector);
     }
-    
+
     init();
   }
 
@@ -415,7 +415,7 @@ abstract class MultiRoleForm extends RightsForm {
       }
 
     } else {
-      ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_RIGHTS);
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_STATE_RIGHTS);
       params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
       params.addQueryItem(COL_STATE, getRightsState().name());
 

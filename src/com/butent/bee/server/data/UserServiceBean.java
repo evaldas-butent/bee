@@ -237,17 +237,10 @@ public class UserServiceBean {
           .addConstant(COL_COMPANY, company)
           .addConstant(COL_PERSON, person));
 
-      long user = qs.insertData(new SqlInsert(TBL_USERS)
+      qs.insertData(new SqlInsert(TBL_USERS)
           .addConstant(COL_LOGIN, name)
           .addConstant(COL_PASSWORD, password)
           .addConstant(COL_COMPANY_PERSON, companyPerson));
-
-      long role = qs.insertData(new SqlInsert(TBL_ROLES)
-          .addConstant(COL_ROLE_NAME, name));
-
-      qs.insertData(new SqlInsert(TBL_USER_ROLES)
-          .addConstant(COL_USER, user)
-          .addConstant(COL_ROLE, role));
     }
     UserInfo info = getUserInfo(getUserId(name));
     return info != null && Objects.equals(password, info.getPassword());
@@ -379,13 +372,13 @@ public class UserServiceBean {
   public ResponseObject getRoleRights(RightsObjectType type, Long roleId) {
     Assert.notNull(type);
     Assert.notNull(roleId);
-    
+
     Multimap<String, RightsState> objectStates = HashMultimap.create();
-    
+
     if (rightsCache.containsRow(type)) {
       for (String object : rightsCache.row(type).keySet()) {
         Multimap<RightsState, Long> stateRoles = rightsCache.get(type, object);
-        
+
         if (stateRoles.containsValue(roleId)) {
           for (RightsState state : stateRoles.keySet()) {
             if (stateRoles.containsEntry(state, roleId)) {
@@ -395,17 +388,17 @@ public class UserServiceBean {
         }
       }
     }
-    
+
     if (objectStates.isEmpty()) {
       return ResponseObject.emptyResponse();
-      
+
     } else {
       Map<String, String> result = Maps.newHashMap();
-      
+
       for (String object : objectStates.keySet()) {
         result.put(object, EnumUtils.buildIndexList(objectStates.get(object)));
       }
-      
+
       return ResponseObject.response(result);
     }
   }
@@ -423,23 +416,23 @@ public class UserServiceBean {
     if (rightsCache.containsRow(type)) {
       for (String object : rightsCache.row(type).keySet()) {
         Multimap<RightsState, Long> states = rightsCache.get(type, object);
-        
+
         if (states.containsKey(state)) {
           objectRoles.putAll(object, states.get(state));
         }
       }
     }
-    
+
     if (objectRoles.isEmpty()) {
       return ResponseObject.emptyResponse();
 
     } else {
       Map<String, String> result = Maps.newHashMap();
-      
+
       for (String object : objectRoles.keySet()) {
         result.put(object, DataUtils.buildIdList(objectRoles.get(object)));
       }
-    
+
       return ResponseObject.response(result);
     }
   }
@@ -717,16 +710,47 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
-  public ResponseObject setRights(RightsObjectType type, RightsState state,
+  public ResponseObject setRoleRights(RightsObjectType type, Long role,
+      Map<String, String> changes) {
+
+    Assert.notNull(type);
+    Assert.state(DataUtils.isId(role));
+
+    Multimap<String, Integer> plus = HashMultimap.create();
+    Multimap<String, Integer> minus = HashMultimap.create();
+
+    if (!BeeUtils.isEmpty(changes)) {
+      for (String object : changes.keySet()) {
+        Multimap<RightsState, Long> obInfo = rightsCache.get(type, object);
+
+        if (obInfo == null) {
+          obInfo = HashMultimap.create();
+          rightsCache.put(type, object, obInfo);
+        }
+        for (RightsState state : EnumUtils.parseIndexSet(RightsState.class, changes.get(object))) {
+          if (obInfo.containsEntry(state, role)) {
+            minus.put(object, state.ordinal());
+            obInfo.remove(state, role);
+          } else {
+            plus.put(object, state.ordinal());
+            obInfo.put(state, role);
+          }
+        }
+      }
+    }
+    return saveRights(type, COL_ROLE, role, COL_STATE, plus, minus);
+  }
+
+  @Lock(LockType.WRITE)
+  public ResponseObject setStateRights(RightsObjectType type, RightsState state,
       Map<String, String> changes) {
 
     Assert.noNulls(type, state);
-    int cnt = 0;
+
+    Multimap<String, Long> plus = HashMultimap.create();
+    Multimap<String, Long> minus = HashMultimap.create();
 
     if (!BeeUtils.isEmpty(changes)) {
-      Multimap<String, Long> plus = HashMultimap.create();
-      Multimap<String, Long> minus = HashMultimap.create();
-
       for (String object : changes.keySet()) {
         Multimap<RightsState, Long> obInfo = rightsCache.get(type, object);
 
@@ -744,51 +768,8 @@ public class UserServiceBean {
           }
         }
       }
-      SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
-          .addField(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), COL_OBJECT)
-          .addFrom(TBL_OBJECTS)
-          .setWhere(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal())));
-
-      HasConditions wh = SqlUtils.or();
-
-      for (String object : minus.keySet()) {
-        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
-
-        if (DataUtils.isId(id)) {
-          wh.add(SqlUtils.and(SqlUtils.equals(TBL_RIGHTS,
-              COL_OBJECT, id, COL_STATE, state.ordinal()),
-              SqlUtils.inList(TBL_RIGHTS, COL_ROLE, minus.get(object))));
-        }
-      }
-      if (!wh.isEmpty()) {
-        cnt += qs.updateData(new SqlDelete(TBL_RIGHTS)
-            .setWhere(wh));
-      }
-      for (String object : plus.keySet()) {
-        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
-
-        if (!DataUtils.isId(id)) {
-          id = qs.insertData(new SqlInsert(TBL_OBJECTS)
-              .addConstant(COL_OBJECT_TYPE, type.ordinal())
-              .addConstant(COL_OBJECT_NAME, object));
-        }
-        for (Long role : plus.get(object)) {
-          qs.insertData(new SqlInsert(TBL_RIGHTS)
-              .addConstant(COL_OBJECT, id)
-              .addConstant(COL_STATE, state.ordinal())
-              .addConstant(COL_ROLE, role));
-          cnt++;
-        }
-      }
     }
-    for (Entry<String, UserInfo> entry : infoCache.entrySet()) {
-      entry.getValue().getUserData()
-          .setRights(getUserRights(userCache.inverse().get(entry.getKey())));
-    }
-    Endpoint.updateUserData(getAllUserData());
-
-    return ResponseObject.response(cnt);
+    return saveRights(type, COL_STATE, state.ordinal(), COL_ROLE, plus, minus);
   }
 
   @Lock(LockType.WRITE)
@@ -857,5 +838,57 @@ public class UserServiceBean {
       }
     }
     return rights;
+  }
+
+  private <K, V> ResponseObject saveRights(RightsObjectType type, String keyName, K key,
+      String valueName, Multimap<String, V> plus, Multimap<String, V> minus) {
+
+    int cnt = 0;
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_OBJECTS, COL_OBJECT_NAME)
+        .addField(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), COL_OBJECT)
+        .addFrom(TBL_OBJECTS)
+        .setWhere(SqlUtils.equals(TBL_OBJECTS, COL_OBJECT_TYPE, type.ordinal())));
+
+    HasConditions wh = SqlUtils.or();
+
+    for (String object : minus.keySet()) {
+      Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+      if (DataUtils.isId(id)) {
+        wh.add(SqlUtils.and(SqlUtils.equals(TBL_RIGHTS,
+            COL_OBJECT, id, keyName, key),
+            SqlUtils.inList(TBL_RIGHTS, valueName, minus.get(object))));
+      }
+    }
+    if (!wh.isEmpty()) {
+      cnt += qs.updateData(new SqlDelete(TBL_RIGHTS)
+          .setWhere(wh));
+    }
+    for (String object : plus.keySet()) {
+      Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_OBJECT_NAME, object, COL_OBJECT));
+
+      if (!DataUtils.isId(id)) {
+        id = qs.insertData(new SqlInsert(TBL_OBJECTS)
+            .addConstant(COL_OBJECT_TYPE, type.ordinal())
+            .addConstant(COL_OBJECT_NAME, object));
+      }
+      for (V value : plus.get(object)) {
+        qs.insertData(new SqlInsert(TBL_RIGHTS)
+            .addConstant(COL_OBJECT, id)
+            .addConstant(keyName, key)
+            .addConstant(valueName, value));
+        cnt++;
+      }
+    }
+    if (cnt > 0) {
+      for (Entry<String, UserInfo> entry : infoCache.entrySet()) {
+        entry.getValue().getUserData()
+            .setRights(getUserRights(userCache.inverse().get(entry.getKey())));
+      }
+      Endpoint.updateUserData(getAllUserData());
+    }
+    return ResponseObject.response(cnt);
   }
 }
