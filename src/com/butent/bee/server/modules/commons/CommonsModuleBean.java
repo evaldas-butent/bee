@@ -58,6 +58,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -135,7 +136,7 @@ public class CommonsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> commonsSr = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.CLASSIFIERS.getName(SubModule.CONTACTS))) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.CLASSIFIERS, SubModule.CONTACTS))) {
       List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
           Filter.anyContains(Sets.newHashSet(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE,
               COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));

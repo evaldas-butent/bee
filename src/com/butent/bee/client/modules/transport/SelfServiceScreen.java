@@ -32,6 +32,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -79,8 +80,8 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
-  public void start() {
-    super.start();
+  public void start(UserData userData) {
+    super.start(userData);
 
     Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,

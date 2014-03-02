@@ -100,7 +100,7 @@ public class Bee implements EntryPoint {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());
     }
 
-    BeeKeeper.getScreen().start();
+    BeeKeeper.getScreen().init();
     Window.addResizeHandler(new ResizeHandler() {
       @Override
       public void onResize(ResizeEvent event) {
@@ -130,9 +130,10 @@ public class Bee implements EntryPoint {
   private static void load(Map<String, String> data) {
     UserData userData = UserData.restore(data.get(Service.VAR_USER));
     BeeKeeper.getUser().setUserData(userData);
-    BeeKeeper.getScreen().updateUserData(userData);
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
+
+    BeeKeeper.getScreen().start(userData);
 
     for (UserInterface.Component component : UserInterface.Component.values()) {
       String serialized = data.get(component.key());

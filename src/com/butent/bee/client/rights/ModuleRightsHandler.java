@@ -7,6 +7,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -35,16 +36,29 @@ final class ModuleRightsHandler extends MultiRoleForm {
   @Override
   protected void initObjects(Consumer<List<RightsObject>> consumer) {
     List<RightsObject> result = Lists.newArrayList();
-    for (Module module : Module.values()) {
-      RightsObject mod = new RightsObject(module.getName(), module.getCaption(), module.getName());
-      result.add(mod);
 
-      if (!BeeUtils.isEmpty(module.getSubModules())) {
-        for (SubModule subModule : module.getSubModules()) {
-          result.add(new RightsObject(subModule.getName(), subModule.getCaption(),
-              module.getName(subModule), 1, module.getName()));
+    for (Module module : Module.values()) {
+      if (module.isEnabled()) {
+        RightsObject mod = new RightsObject(module.getName(), module.getCaption(), module);
+        result.add(mod);
+
+        if (!BeeUtils.isEmpty(module.getSubModules())) {
+          int cnt = 0;
+
+          for (SubModule subModule : module.getSubModules()) {
+            ModuleAndSub ms = ModuleAndSub.of(module, subModule); 
+            
+            if (ms.isEnabled()) {
+              result.add(new RightsObject(subModule.getName(), subModule.getCaption(), ms,
+                  1, module.getName()));
+              cnt++;
+            }
+          }
+
+          if (cnt > 0) {
+            mod.setHasChildren(true);
+          }
         }
-        mod.setHasChildren(true);
       }
     }
     consumer.accept(result);

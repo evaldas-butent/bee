@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -22,20 +23,22 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,10 +56,61 @@ abstract class MultiStateForm extends RightsForm {
   private static final String STYLE_ROLE_EMPTY = STYLE_PREFIX + "role-empty";
   private static final String STYLE_ROLE_NOT_EMPTY = STYLE_PREFIX + "role-not-empty";
 
+  private static final String STYLE_MODULE = STYLE_PREFIX + "module";
+  private static final String STYLE_SUB_MODULE = STYLE_PREFIX + "sub-module";
+  private static final String STYLE_MODULE_CELL = STYLE_MODULE + STYLE_SUFFIX_CELL;
+  private static final String STYLE_MODULE_SELECTED = STYLE_MODULE + "-selected";
+//  private static final String STYLE_MODULE_CHANGED = STYLE_MODULE + "-changed";
+
+  private static final String STYLE_MSO = STYLE_PREFIX + "mso";
+  private static final String STYLE_MSO_COL_PREFIX = STYLE_MSO + "-col-";
+  private static final String STYLE_MSO_CELL = STYLE_MSO + STYLE_SUFFIX_CELL;
+  private static final String STYLE_MSO_BRANCH = STYLE_MSO + "-branch";
+  private static final String STYLE_MSO_BRANCH_CELL = STYLE_MSO_BRANCH + STYLE_SUFFIX_CELL;
+  private static final String STYLE_MSO_LEAF = STYLE_MSO + "-leaf";
+  private static final String STYLE_MSO_LEAF_CELL = STYLE_MSO_LEAF + STYLE_SUFFIX_CELL;
+  private static final String STYLE_MSO_SELECTED = STYLE_MSO + "-selected";
+//  private static final String STYLE_MSO_CHANGED = STYLE_MSO + "-changed";
+
   private static final String DATA_KEY_STATE = "rights-state";
+  private static final String DATA_KEY_MODULE = "rights-module";
 
   private static final String DATA_TYPE_STATE_LABEL = "sl";
   private static final String DATA_TYPE_STATE_TOGGLE = "st";
+
+  private static final String DATA_TYPE_MODULE = "mod";
+
+  private static final int MODULE_COL = 0;
+
+  private static void addCellStyleName(Widget widget, String styleName) {
+    TableCellElement cell = DomUtils.getParentCell(widget, false);
+
+    if (cell == null) {
+      severe("parent cell not found");
+    } else {
+      cell.addClassName(styleName);
+    }
+  }
+
+  private static boolean cellHasStyleName(Widget widget, String styleName) {
+    TableCellElement cell = DomUtils.getParentCell(widget, false);
+
+    if (cell == null) {
+      severe("parent cell not found");
+      return false;
+    } else {
+      return cell.hasClassName(styleName);
+    }
+  }
+
+  private static ModuleAndSub getModule(Widget widget) {
+    String value = DomUtils.getDataProperty(widget.getElement(), DATA_KEY_MODULE);
+    ModuleAndSub ms = ModuleAndSub.parse(value);
+    if (ms == null) {
+      severe("Widget", DomUtils.getId(widget), "has no module");
+    }
+    return ms;
+  }
 
   private static RightsState getRightsState(Widget widget) {
     Integer value = DomUtils.getDataPropertyInt(widget.getElement(), DATA_KEY_STATE);
@@ -106,7 +160,8 @@ abstract class MultiStateForm extends RightsForm {
             long id = event.getValue();
             String name = Data.getString(VIEW_ROLES, event.getRelatedRow(), COL_ROLE_NAME);
 
-            Long oldId = getRoleId();
+            final Long oldId = getRoleId();
+            final String oldName = getRoleName();
 
             if (DataUtils.isId(id) && !BeeUtils.isEmpty(name) && !Objects.equals(id, oldId)) {
               setRoleId(id);
@@ -119,7 +174,13 @@ abstract class MultiStateForm extends RightsForm {
                   @Override
                   public void accept(Boolean input) {
                     if (BeeUtils.isTrue(input)) {
-                      createUi();
+                      refreshValues();
+
+                    } else {
+                      setRoleId(oldId);
+                      setRoleName(oldName);
+
+                      roleCommand.setHtml(oldName);
                     }
                   }
                 });
@@ -166,6 +227,15 @@ abstract class MultiStateForm extends RightsForm {
     }
   }
 
+  protected void addModuleWidget(int row, ModuleAndSub moduleAndSub) {
+    getTable().setWidget(row, MODULE_COL, createModuleWidget(moduleAndSub), STYLE_MODULE_CELL);
+  }
+
+  @Override
+  protected Set<String> getChangedNames() {
+    return changes.keySet();
+  }
+
   @Override
   protected String getChangeMessage(RightsObject object) {
     Collection<RightsState> changedStates = changes.get(object.getName());
@@ -181,11 +251,6 @@ abstract class MultiStateForm extends RightsForm {
   }
 
   @Override
-  protected Multimap<String, ?> getChanges() {
-    return changes;
-  }
-
-  @Override
   protected String getDialogCaption() {
     return BeeUtils.joinWords(getFormView().getCaption(), getRoleName());
   }
@@ -196,6 +261,8 @@ abstract class MultiStateForm extends RightsForm {
   }
 
   protected abstract List<RightsState> getRightsStates();
+
+  protected abstract boolean hasValue(RightsObject object);
 
   @Override
   protected void initData(final Consumer<Boolean> callback) {
@@ -227,42 +294,33 @@ abstract class MultiStateForm extends RightsForm {
 
   @Override
   protected void populateTable() {
+    List<ModuleAndSub> modules = getModules();
+    if (modules.isEmpty()) {
+      severe(getObjectType(), "modules not available");
+      return;
+    }
+
+    int row = getValueStartRow();
+
+    for (ModuleAndSub ms : modules) {
+      addModuleWidget(row, ms);
+      row++;
+    }
+
+    ModuleAndSub ms = modules.get(0);
+    Widget widget = getTable().getWidget(getValueStartRow(), MODULE_COL);
+
+    if (widget != null) {
+      addCellStyleName(widget, STYLE_MODULE_SELECTED);
+      onSelectModule(ms);
+    }
+
     int col = getValueStartCol();
 
     for (RightsState state : getRightsStates()) {
       addColumnLabel(col, createStateLabel(state), STYLE_STATE_LABEL_CELL);
       addColumnToggle(col, createStateToggle(state), STYLE_STATE_TOGGLE_CELL);
       col++;
-    }
-
-    int row = getValueStartRow();
-
-    for (RightsObject object : getObjects()) {
-      addObjectLabel(row, object);
-      addObjectToggle(row, object);
-
-      col = getValueStartCol();
-
-      String objectName = object.getName();
-      String objectCaption = object.getCaption();
-
-      for (RightsState state : getRightsStates()) {
-        String title = BeeUtils.joinWords(objectCaption, state.getCaption());
-        addValueToggle(row, col++, createValueToggle(objectName, state, title));
-      }
-
-      afterCreateValueRow(row, object);
-      row++;
-    }
-
-    for (RightsObject object : getObjects()) {
-      if (object.hasChildren()) {
-        for (RightsState state : getRightsStates()) {
-          if (!isChecked(object.getName(), state)) {
-            enableChildren(object, state, false);
-          }
-        }
-      }
     }
   }
 
@@ -275,51 +333,50 @@ abstract class MultiStateForm extends RightsForm {
       }
 
     } else {
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_ROLE_RIGHTS);
+      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
+      params.addQueryItem(COL_ROLE, getRoleId());
 
-      final Holder<Integer> latch = Holder.of(getRightsStates().size());
+      Map<String, String> diff = Maps.newHashMap();
+      for (String objectName : changes.keySet()) {
+        diff.put(objectName, EnumUtils.buildIndexList(changes.get(objectName)));
+      }
+      params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
 
-      Consumer<Boolean> stateCallback = new Consumer<Boolean>() {
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
         @Override
-        public void accept(Boolean input) {
-          latch.set(latch.get() - 1);
+        public void onResponse(ResponseObject response) {
+          if (response.hasErrors()) {
+            response.notify(BeeKeeper.getScreen());
+            if (callback != null) {
+              callback.accept(false);
+            }
 
-          if (BeeUtils.isTrue(input)) {
-            if (latch.get() <= 0) {
-              changes.clear();
-              onClearChanges();
+          } else {
+            int size = changes.size();
 
-              String message = BeeUtils.joinWords(getObjectType(), getRoleName(), "changes saved");
-              debug(message);
-              BeeKeeper.getScreen().notifyInfo(message);
-
-              if (callback != null) {
-                callback.accept(true);
+            for (Map.Entry<String, RightsState> entry : changes.entries()) {
+              if (initialValues.containsEntry(entry.getKey(), entry.getValue())) {
+                initialValues.remove(entry.getKey(), entry.getValue());
+              } else {
+                initialValues.put(entry.getKey(), entry.getValue());
               }
             }
 
-          } else if (callback != null) {
-            callback.accept(false);
-          }
-        }
-      };
+            changes.clear();
+            onClearChanges();
 
-      String roleValue = getRoleId().toString();
+            String message = BeeUtils.joinWords(getObjectType(), getRoleName(),
+                "saved", size, "changes");
+            debug(message);
+            BeeKeeper.getScreen().notifyInfo(message);
 
-      for (RightsState state : getRightsStates()) {
-        if (changes.containsValue(state)) {
-          Map<String, String> diff = Maps.newHashMap();
-          for (Map.Entry<String, RightsState> entry : changes.entries()) {
-            if (entry.getValue() == state) {
-              diff.put(entry.getKey(), roleValue);
+            if (callback != null) {
+              callback.accept(true);
             }
           }
-
-          saveDiff(state, diff, stateCallback);
-
-        } else {
-          stateCallback.accept(true);
         }
-      }
+      });
     }
   }
 
@@ -335,35 +392,110 @@ abstract class MultiStateForm extends RightsForm {
         updateValueCell(widget, isChanged);
       }
     }
+  }
 
-    RightsObject object = findObject(objectName);
-    if (object != null && object.hasChildren()) {
-      for (RightsState state : getRightsStates()) {
-        if (checked && object.hasParent()) {
-          boolean value = checked;
+  private void clearTable(int startCol) {
+    int rc = getTable().getRowCount();
+    int maxRow = getValueStartRow();
 
-          String parentName = object.getParent();
-          while (!BeeUtils.isEmpty(parentName)) {
-            if (!isChecked(parentName, state)) {
-              value = false;
-              break;
-            }
+    for (int row = getValueStartRow(); row < rc; row++) {
+      int cc = getTable().getCellCount(row);
 
-            RightsObject parent = findObject(parentName);
-            if (parent != null && parent.hasParent()) {
-              parentName = parent.getParent();
-            } else {
-              break;
-            }
+      for (int col = 0; col < cc; col++) {
+        Widget widget = getTable().getWidget(row, col);
+
+        if (widget != null) {
+          if (col < startCol) {
+            maxRow = Math.max(maxRow, row);
+          } else {
+            getTable().getCellFormatter().setStyleName(row, col, BeeConst.STRING_EMPTY);
+            getTable().remove(widget);
           }
-
-          enableChildren(object, state, value);
-
-        } else {
-          enableChildren(object, state, checked);
         }
       }
     }
+
+    if (maxRow < rc - 1) {
+      for (int i = maxRow + 1; i < rc; i++) {
+        getTable().removeRow(maxRow + 1);
+      }
+    }
+  }
+
+  private Widget createModuleWidget(ModuleAndSub moduleAndSub) {
+    String caption = moduleAndSub.hasSubModule()
+        ? moduleAndSub.getSubModule().getCaption() : moduleAndSub.getModule().getCaption();
+    Label widget = new Label(caption);
+    widget.addStyleName(moduleAndSub.hasSubModule() ? STYLE_SUB_MODULE : STYLE_MODULE);
+
+    String name = moduleAndSub.getName();
+    widget.setTitle(name);
+
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_MODULE, name);
+    setDataType(widget, DATA_TYPE_MODULE);
+
+    widget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (event.getSource() instanceof Widget) {
+          Widget source = (Widget) event.getSource();
+          ModuleAndSub ms = getModule(source);
+
+          if (ms != null && !cellHasStyleName(source, STYLE_MODULE_SELECTED)) {
+            TableCellElement cell = getSelectedModuleCell();
+            if (cell != null) {
+              cell.removeClassName(STYLE_MODULE_SELECTED);
+            }
+
+            addCellStyleName(source, STYLE_MODULE_SELECTED);
+
+            clearTable(MODULE_COL + 1);
+            onSelectModule(ms);
+          }
+        }
+      }
+    });
+
+    return widget;
+  }
+
+  private Widget createObjectWidget(final int col, RightsObject object) {
+    Label widget = new Label(object.getCaption());
+    widget.addStyleName(STYLE_MSO);
+
+    widget.addStyleName(STYLE_MSO_COL_PREFIX + col);
+    widget.addStyleName(isLeaf(col) ? STYLE_MSO_LEAF : STYLE_MSO_BRANCH);
+
+    String name = object.getName();
+    widget.setTitle(name);
+
+    markObjectLabel(widget, object);
+
+    if (!isLeaf(col)) {
+      widget.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (event.getSource() instanceof Widget) {
+            Widget source = (Widget) event.getSource();
+            String objectName = getObjectName(source);
+
+            if (!BeeUtils.isEmpty(objectName) && !cellHasStyleName(source, STYLE_MSO_SELECTED)) {
+              TableCellElement cell = getSelectedObjectCell(col);
+              if (cell != null) {
+                cell.removeClassName(STYLE_MSO_SELECTED);
+              }
+
+              addCellStyleName(source, STYLE_MSO_SELECTED);
+
+              clearTable(col + 1);
+              onSelectObject(col, objectName);
+            }
+          }
+        }
+      });
+    }
+
+    return widget;
   }
 
   private Widget createStateLabel(RightsState state) {
@@ -380,9 +512,11 @@ abstract class MultiStateForm extends RightsForm {
     Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
         STYLE_STATE_TOGGLE);
 
+    Set<String> names = getLeaves().keySet();
     boolean checked = true;
-    for (RightsObject object : getObjects()) {
-      if (!initialValues.containsEntry(object.getName(), state)) {
+
+    for (String name : names) {
+      if (!initialValues.containsEntry(name, state)) {
         checked = false;
         break;
       }
@@ -417,11 +551,11 @@ abstract class MultiStateForm extends RightsForm {
     return toggle;
   }
 
-  private Widget createValueToggle(String objectName, RightsState state, String title) {
+  private Toggle createValueToggle(String objectName, RightsState state, String title) {
     Toggle toggle = createValueToggle(objectName);
     toggle.setTitle(title);
 
-    if (initialValues.containsEntry(objectName, state)) {
+    if (isChecked(objectName, state)) {
       toggle.setChecked(true);
     }
 
@@ -450,48 +584,38 @@ abstract class MultiStateForm extends RightsForm {
             objectToggle.setChecked(false);
             stateToggle.setChecked(false);
           }
-
-          RightsObject object = findObject(name);
-          if (object != null && object.hasChildren()) {
-            enableChildren(object, rs, t.isChecked());
-          }
         }
       }
     });
     return toggle;
   }
 
-  private void enableChildren(RightsObject object, RightsState state, boolean enabled) {
-    List<RightsObject> children = Lists.newArrayList();
+  private Map<String, Integer> getLeaves() {
+    Map<String, Integer> leaves = Maps.newHashMap();
+    
+    int col = getValueStartCol() - 2;
 
-    for (RightsObject ro : getObjects()) {
-      if (object.getName().equals(ro.getParent())) {
-        children.add(ro);
+    for (int row = getValueStartRow(); row < getTable().getRowCount(); row++) {
+      if (col >= getTable().getCellCount(row)) {
+        break;
       }
+      Widget widget = getTable().getWidget(row, col);
+      if (widget == null) {
+        break;
+      }
+
+      String name = getObjectName(widget);
+      if (BeeUtils.isEmpty(name)) {
+        break;
+      }
+
+      leaves.put(name, row);
     }
 
-    if (children.isEmpty()) {
-      warning("object", object.getName(), "children not found");
-
-    } else {
-      for (Widget widget : getTable()) {
-        if (isValueWidget(widget) && getRightsState(widget) == state) {
-          String childName = getObjectName(widget);
-
-          for (RightsObject child : children) {
-            if (child.getName().equals(childName)) {
-              enableValueWidet(widget, enabled);
-
-              if (child.hasChildren()) {
-                boolean childEnabled = enabled
-                    && widget instanceof Toggle && ((Toggle) widget).isChecked();
-                enableChildren(child, state, childEnabled);
-              }
-            }
-          }
-        }
-      }
+    if (leaves.isEmpty()) {
+      severe(getObjectType(), getRoleName(), "leaves not found");
     }
+    return leaves;
   }
 
   private void getRoleData(final Consumer<Boolean> callback) {
@@ -531,7 +655,7 @@ abstract class MultiStateForm extends RightsForm {
             for (RightsState state : getRightsStates()) {
               if (state.isChecked()) {
                 for (RightsObject object : getObjects()) {
-                  if (!values.containsEntry(object.getName(), state)) {
+                  if (hasValue(object) && !values.containsEntry(object.getName(), state)) {
                     initialValues.put(object.getName(), state);
                   }
                 }
@@ -549,7 +673,9 @@ abstract class MultiStateForm extends RightsForm {
             for (RightsState state : getRightsStates()) {
               if (state.isChecked()) {
                 for (RightsObject object : getObjects()) {
-                  initialValues.put(object.getName(), state);
+                  if (hasValue(object)) {
+                    initialValues.put(object.getName(), state);
+                  }
                 }
               }
             }
@@ -567,6 +693,31 @@ abstract class MultiStateForm extends RightsForm {
 
   private String getRoleName() {
     return roleName;
+  }
+
+  private TableCellElement getSelectedModuleCell() {
+    for (int row = getValueStartRow(); row < getTable().getRowCount(); row++) {
+      TableCellElement cell = getTable().getCellFormatter().getElement(row, MODULE_COL);
+      if (cell.hasClassName(STYLE_MODULE_SELECTED)) {
+        return cell;
+      }
+    }
+
+    return null;
+  }
+
+  private TableCellElement getSelectedObjectCell(int col) {
+    for (int row = getValueStartRow(); row < getTable().getRowCount(); row++) {
+      if (col >= getTable().getCellCount(row)) {
+        break;
+      }
+
+      TableCellElement cell = getTable().getCellFormatter().getElement(row, col);
+      if (cell.hasClassName(STYLE_MSO_SELECTED)) {
+        return cell;
+      }
+    }
+    return null;
   }
 
   private Toggle getStateToggle(RightsState state) {
@@ -592,56 +743,148 @@ abstract class MultiStateForm extends RightsForm {
     return toggles;
   }
 
+  private Toggle getToggle(int row, int col) {
+    Widget widget = getTable().getWidget(row, col);
+
+    if (widget instanceof Toggle) {
+      return (Toggle) widget;
+    } else {
+      severe("widget at", row, col, "not a toggle");
+      return null;
+    }
+  }
+
   private boolean isChecked(String objectName, RightsState state) {
     return initialValues.containsEntry(objectName, state)
         != changes.containsEntry(objectName, state);
   }
 
+  private boolean isLeaf(int col) {
+    return col == getValueStartCol() - 2;
+  }
+
   private boolean isStateChecked(RightsState state) {
-    for (RightsObject object : getObjects()) {
-      if (!isChecked(object.getName(), state)) {
+    Set<String> names = getLeaves().keySet();
+    for (String name : names) {
+      if (!isChecked(name, state)) {
         return false;
       }
     }
     return true;
   }
 
-  private void saveDiff(final RightsState state, final Map<String, String> diff,
-      final Consumer<Boolean> callback) {
+  private void onSelectModule(ModuleAndSub moduleAndSub) {
+    renderColumn(MODULE_COL + 1, filterByModule(moduleAndSub));
+  }
 
-    ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_STATE_RIGHTS);
-    params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
-    params.addQueryItem(COL_STATE, state.name());
+  private void onSelectObject(int col, String objectName) {
+    renderColumn(col + 1, filterByParent(objectName));
+  }
 
-    params.addDataItem(COL_OBJECT, Codec.beeSerialize(diff));
+  private void refreshValues() {
+    Map<String, Integer> leaves = getLeaves();
 
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          response.notify(BeeKeeper.getScreen());
-          if (callback != null) {
-            callback.accept(false);
-          }
+    EnumSet<RightsState> checkedStates = EnumSet.copyOf(getRightsStates());
 
-        } else {
-          for (String objectName : diff.keySet()) {
-            if (initialValues.containsEntry(objectName, state)) {
-              initialValues.remove(objectName, state);
-            } else {
-              initialValues.put(objectName, state);
-            }
+    for (Map.Entry<String, Integer> leaf : leaves.entrySet()) {
+      String name = leaf.getKey();
+      int row = leaf.getValue();
 
-            changes.remove(objectName, state);
-          }
+      boolean objectChecked = true;
 
-          debug(getObjectType(), state, "saved", diff.size(), "changes");
-          if (callback != null) {
-            callback.accept(true);
+      int col = getValueStartCol();
+      for (RightsState state : getRightsStates()) {
+        Toggle toggle = getToggle(row, col);
+        if (toggle == null) {
+          break;
+        }
+
+        boolean checked = isChecked(name, state);
+        toggle.setChecked(checked);
+        updateValueCell(toggle, changes.containsEntry(name, state));
+
+        if (!checked) {
+          objectChecked = false;
+          if (checkedStates.contains(state)) {
+            checkedStates.remove(state);
           }
         }
+        col++;
       }
-    });
+
+      Toggle objectToggle = getToggle(row, getValueStartCol() - 1);
+      if (objectToggle == null) {
+        break;
+      } else {
+        objectToggle.setChecked(objectChecked);
+      }
+    }
+
+    int row = getValueStartRow() - 1;
+    int col = getValueStartCol();
+
+    for (RightsState state : getRightsStates()) {
+      Toggle toggle = getToggle(row, col);
+      if (toggle == null) {
+        break;
+      } else {
+        toggle.setChecked(checkedStates.contains(state));
+      }
+      col++;
+    }
+  }
+
+  private void renderColumn(int col, List<RightsObject> columnObjects) {
+    EnumSet<RightsState> checkedStates = EnumSet.copyOf(getRightsStates());
+
+    int row = getValueStartRow();
+
+    for (RightsObject object : columnObjects) {
+      getTable().setWidget(row, col, createObjectWidget(col, object), STYLE_MSO_CELL);
+      getTable().getCellFormatter().addStyleName(row, col,
+          isLeaf(col) ? STYLE_MSO_LEAF_CELL : STYLE_MSO_BRANCH_CELL);
+
+      if (isLeaf(col)) {
+        addObjectToggle(row, object);
+
+        String objectName = object.getName();
+        String objectCaption = object.getCaption();
+
+        int j = getValueStartCol();
+        for (RightsState state : getRightsStates()) {
+          String title = BeeUtils.joinWords(objectCaption, state.getCaption());
+          Toggle valueToggle = createValueToggle(objectName, state, title);
+
+          addValueToggle(row, j++, valueToggle);
+          updateValueCell(valueToggle, changes.containsEntry(objectName, state));
+
+          if (!valueToggle.isChecked() && checkedStates.contains(state)) {
+            checkedStates.remove(state);
+          }
+        }
+
+        markValueRow(row);
+      }
+
+      row++;
+    }
+
+    if (isLeaf(col)) {
+      List<Toggle> stateToggles = getStateToggles();
+
+      for (Toggle toggle : stateToggles) {
+        toggle.setChecked(checkedStates.contains(getRightsState(toggle)));
+      }
+
+    } else {
+      RightsObject object = columnObjects.get(0);
+      Widget widget = getTable().getWidget(getValueStartRow(), col);
+
+      if (widget != null) {
+        addCellStyleName(widget, STYLE_MSO_SELECTED);
+        onSelectObject(col, object.getName());
+      }
+    }
   }
 
   private void setRoleId(Long roleId) {
@@ -678,18 +921,6 @@ abstract class MultiStateForm extends RightsForm {
 
         boolean isChanged = toggleValue(getObjectName(widget), state);
         updateValueCell(widget, isChanged);
-
-        if (checked) {
-          enableValueWidet(widget, checked);
-        }
-      }
-    }
-
-    if (!checked) {
-      for (RightsObject object : getObjects()) {
-        if (object.hasChildren() && !object.hasParent()) {
-          enableChildren(object, state, checked);
-        }
       }
     }
   }

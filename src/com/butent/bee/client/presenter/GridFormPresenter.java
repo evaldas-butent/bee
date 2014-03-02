@@ -13,7 +13,7 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HasGridView;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.CloseCallback;
@@ -240,11 +240,12 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   private static HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
-    HeaderView formHeader = new HeaderSilverImpl();
+    HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
 
-    formHeader.create(caption, false, false, null, actions, Action.NO_ACTIONS, Action.NO_ACTIONS);
+    formHeader.create(caption, false, false, null, null, actions, Action.NO_ACTIONS,
+        Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_FORM_CAPTION);
     formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
 

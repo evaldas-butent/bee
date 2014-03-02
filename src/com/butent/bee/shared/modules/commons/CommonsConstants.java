@@ -41,7 +41,7 @@ public final class CommonsConstants {
         return constants.objectField();
       }
     },
-    WIDGET(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
+    WIDGET(EnumSet.of(RightsState.VIEW)) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.objectWidget();

@@ -224,14 +224,14 @@ public class UiServiceBean {
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)));
 
     } else if (BeeUtils.same(svc, Service.SET_STATE_RIGHTS)) {
-      response = usr.setStateRights(EnumUtils.getEnumByName(RightsObjectType.class,
-          reqInfo.getParameter(COL_OBJECT_TYPE)), EnumUtils.getEnumByName(RightsState.class,
-          reqInfo.getParameter(COL_STATE)),
+      response = usr.setStateRights(
+          EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
+          EnumUtils.getEnumByIndex(RightsState.class, reqInfo.getParameter(COL_STATE)),
           Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
     } else if (BeeUtils.same(svc, Service.SET_ROLE_RIGHTS)) {
-      response = usr.setRoleRights(EnumUtils.getEnumByName(RightsObjectType.class,
-          reqInfo.getParameter(COL_OBJECT_TYPE)),
+      response = usr.setRoleRights(
+          EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
           Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 

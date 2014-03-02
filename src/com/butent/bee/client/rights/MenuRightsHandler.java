@@ -10,6 +10,7 @@ import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.ModuleAndSub;
 
 import java.util.List;
 
@@ -43,9 +44,14 @@ final class MenuRightsHandler extends MultiRoleForm {
     consumer.accept(result);
   }
 
-  private void addMenuObject(List<RightsObject> result, int level, String parent, Menu menu) {
+  private boolean addMenuObject(List<RightsObject> result, int level, String parent, Menu menu) {
+    ModuleAndSub ms = ModuleAndSub.parse(menu.getModule());
+    if (ms != null && !ms.isEnabled()) {
+      return false;
+    }
+    
     RightsObject object = new RightsObject(menu.getName(),
-        Localized.maybeTranslate(menu.getLabel()), menu.getModule(), level, parent);
+        Localized.maybeTranslate(menu.getLabel()), ms, level, parent);
 
     result.add(object);
 
@@ -53,13 +59,16 @@ final class MenuRightsHandler extends MultiRoleForm {
       int count = 0;
 
       for (Menu child : ((MenuEntry) menu).getItems()) {
-        addMenuObject(result, level + 1, object.getName(), child);
-        count++;
+        if (addMenuObject(result, level + 1, object.getName(), child)) {
+          count++;
+        }
       }
       
       if (count > 0) {
         object.setHasChildren(true);
       }
     }
+    
+    return true;
   }
 }

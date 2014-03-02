@@ -37,6 +37,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -481,33 +482,6 @@ public class UserServiceBean {
     return null;
   }
 
-  public boolean hasDataRight(String object, RightsState state) {
-    UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().hasDataRight(object, state);
-    }
-    return false;
-  }
-
-  public boolean hasFieldRight(String object, RightsState state) {
-    UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().hasFieldRight(object, state);
-    }
-    return false;
-  }
-
-  public boolean hasWidgetRight(String object, RightsState state) {
-    UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().hasWidgetRight(object, state);
-    }
-    return false;
-  }
-
   @Lock(LockType.WRITE)
   public void initRights() {
     rightsCache.clear();
@@ -631,6 +605,11 @@ public class UserServiceBean {
       return info.getUserData().isMenuVisible(object);
     }
     return false;
+  }
+
+  public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isModuleVisible(moduleAndSub);
   }
 
   public boolean isModuleVisible(String module) {

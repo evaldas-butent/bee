@@ -70,7 +70,7 @@ public class DispatcherBean {
       return response;
     }
     data.put(Service.VAR_USER, userData.getResponse());
-    data.put(Service.PROPERTY_MODULES, BeeUtils.joinItems(Module.getEnabledModules()));
+    data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
 
     UserInterface userInterface = null;
 

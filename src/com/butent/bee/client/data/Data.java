@@ -197,7 +197,7 @@ public final class Data {
   }
 
   public static boolean isViewEditable(String viewName) {
-    if (BeeUtils.isEmpty(viewName)) {
+    if (BeeUtils.isEmpty(viewName) || !BeeKeeper.getUser().canEditData(viewName)) {
       return false;
     } else if (!editableViews.isEmpty()) {
       return editableViews.contains(viewName);
@@ -209,7 +209,7 @@ public final class Data {
   }
 
   public static boolean isViewVisible(String viewName) {
-    if (BeeUtils.isEmpty(viewName)) {
+    if (BeeUtils.isEmpty(viewName) || !BeeKeeper.getUser().isDataVisible(viewName)) {
       return false;
     } else if (!visibleViews.isEmpty()) {
       return visibleViews.contains(viewName);

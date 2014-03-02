@@ -52,7 +52,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Button;
@@ -191,8 +191,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       }
     });
 
-    this.header = new HeaderSilverImpl();
-    header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
+    this.header = new HeaderImpl();
+    header.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
         EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS, Action.NO_ACTIONS);
     header.setViewPresenter(this);
 

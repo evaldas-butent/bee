@@ -31,7 +31,7 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Image;
@@ -89,8 +89,8 @@ public class Search {
 
       this.addStyleName(STYLE_RESULT_CONTAINER);
 
-      this.header = new HeaderSilverImpl();
-      header.create(query, false, true, EnumSet.of(UiOption.ROOT),
+      this.header = new HeaderImpl();
+      header.create(query, false, true, null, EnumSet.of(UiOption.ROOT),
           EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
       header.setViewPresenter(this);

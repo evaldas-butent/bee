@@ -17,7 +17,7 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.InputArea;
@@ -66,9 +66,9 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable {
       actions.add(Action.SAVE);
     }
 
-    this.headerView = new HeaderSilverImpl();
-    headerView.create(caption, false, true, EnumSet.of(UiOption.ROOT), actions, Action.NO_ACTIONS,
-        Action.NO_ACTIONS);
+    this.headerView = new HeaderImpl();
+    headerView.create(caption, false, true, null, EnumSet.of(UiOption.ROOT), actions,
+        Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     if (!BeeUtils.isEmpty(uri) && !uri.equals(caption)) {
       headerView.setCaptionTitle(uri);

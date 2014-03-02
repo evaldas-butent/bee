@@ -14,6 +14,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -90,6 +92,22 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   private UserData() {
+  }
+
+  public boolean canCreateData(String object) {
+    return hasDataRight(object, RightsState.CREATE);
+  }
+
+  public boolean canDeleteData(String object) {
+    return hasDataRight(object, RightsState.DELETE);
+  }
+
+  public boolean canEditColumn(String viewName, String column) {
+    return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.EDIT);
+  }
+
+  public boolean canEditData(String object) {
+    return hasDataRight(object, RightsState.EDIT);
   }
 
   @Override
@@ -234,17 +252,17 @@ public class UserData implements BeeSerializable, HasInfo {
     return photoFileName;
   }
 
+  public Map<String, String> getProperties() {
+    return ImmutableMap.copyOf(properties);
+  }
+
   public String getProperty(String name) {
     if (properties != null) {
       return this.properties.get(name);
     }
     return null;
   }
-
-  public Map<String, String> getProperties() {
-    return ImmutableMap.copyOf(properties);
-  }
-
+  
   public long getUserId() {
     return userId;
   }
@@ -253,25 +271,38 @@ public class UserData implements BeeSerializable, HasInfo {
     return BeeUtils.notEmpty(BeeUtils.joinWords(getFirstName(), getLastName()), getLogin());
   }
 
-  public boolean hasDataRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.DATA, object, state);
+  public boolean isColumnVisible(String viewName, String column) {
+    return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
   }
 
-  public boolean hasFieldRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.FIELD, object, state);
-  }
-
-  public boolean hasWidgetRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.WIDGET, object, state);
+  public boolean isDataVisible(String object) {
+    return hasDataRight(object, RightsState.VIEW);
   }
 
   public boolean isMenuVisible(String object) {
     return hasRight(RightsObjectType.MENU, object, RightsState.VIEW);
   }
 
+  public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
+    if (moduleAndSub == null) {
+      return true;
+    } else {
+      return moduleAndSub.isEnabled()
+          && hasRight(RightsObjectType.MODULE, moduleAndSub.getName(), RightsState.VIEW);
+    }
+  }
+
   public boolean isModuleVisible(String object) {
     return Module.isEnabled(object)
         && hasRight(RightsObjectType.MODULE, object, RightsState.VIEW);
+  }
+
+  public boolean isWidgetVisible(RegulatedWidget widget) {
+    if (widget == null) {
+      return true;
+    } else {
+      return isWidgetVisible(widget.getName()) && isModuleVisible(widget.getModuleAndSub());
+    }
   }
 
   @Override
@@ -354,6 +385,10 @@ public class UserData implements BeeSerializable, HasInfo {
     this.photoFileName = photoFileName;
   }
 
+  public void setProperties(Map<String, String> properties) {
+    this.properties = properties;
+  }
+
   public UserData setProperty(String name, String value) {
     if (this.properties == null) {
       this.properties = Maps.newHashMap();
@@ -362,12 +397,16 @@ public class UserData implements BeeSerializable, HasInfo {
     return this;
   }
 
-  public void setProperties(Map<String, String> properties) {
-    this.properties = properties;
-  }
-
   public void setRights(Table<RightsState, RightsObjectType, Set<String>> rights) {
     this.rights = rights;
+  }
+
+  private boolean hasDataRight(String object, RightsState state) {
+    return hasRight(RightsObjectType.DATA, object, state);
+  }
+
+  private boolean hasFieldRight(String object, RightsState state) {
+    return hasRight(RightsObjectType.FIELD, object, state);
   }
 
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {
@@ -400,5 +439,9 @@ public class UserData implements BeeSerializable, HasInfo {
       checked = state.isChecked();
     }
     return checked;
+  }
+
+  private boolean isWidgetVisible(String object) {
+    return hasRight(RightsObjectType.WIDGET, object, RightsState.VIEW);
   }
 }

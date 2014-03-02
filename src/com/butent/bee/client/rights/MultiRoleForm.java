@@ -196,14 +196,14 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   @Override
-  protected String getChangeMessage(RightsObject object) {
-    return BeeUtils.joinWords(object.getCaption(),
-        BeeUtils.bracket(changes.get(object.getName()).size()));
+  protected Set<String> getChangedNames() {
+    return changes.keySet();
   }
 
   @Override
-  protected Multimap<String, ?> getChanges() {
-    return changes;
+  protected String getChangeMessage(RightsObject object) {
+    return BeeUtils.joinWords(object.getCaption(),
+        BeeUtils.bracket(changes.get(object.getName()).size()));
   }
 
   @Override
@@ -213,6 +213,11 @@ abstract class MultiRoleForm extends RightsForm {
 
   protected abstract RightsState getRightsState();
 
+  @Override
+  protected int getValueStartCol() {
+    return 2;
+  }
+  
   @Override
   protected void initData(final Consumer<Boolean> callback) {
     Queries.getRowSet(VIEW_ROLES, Lists.newArrayList(COL_ROLE_NAME), new Queries.RowSetCallback() {
@@ -416,8 +421,8 @@ abstract class MultiRoleForm extends RightsForm {
 
     } else {
       ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_STATE_RIGHTS);
-      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
-      params.addQueryItem(COL_STATE, getRightsState().name());
+      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
+      params.addQueryItem(COL_STATE, getRightsState().ordinal());
 
       Map<String, String> diff = Maps.newHashMap();
       for (String objectName : changes.keySet()) {
@@ -605,7 +610,7 @@ abstract class MultiRoleForm extends RightsForm {
     return toggle;
   }
 
-  private Widget createValueToggle(String objectName, long roleId, String title) {
+  private Toggle createValueToggle(String objectName, long roleId, String title) {
     Toggle toggle = createValueToggle(objectName);
     toggle.setTitle(title);
 

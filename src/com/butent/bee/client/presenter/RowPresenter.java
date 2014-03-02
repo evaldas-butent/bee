@@ -12,7 +12,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -90,10 +90,10 @@ public class RowPresenter extends AbstractPresenter implements Printable, SaveCh
   private static HeaderView createHeader(String caption, Set<Action> enabledActions,
       Set<Action> disabledActions) {
 
-    HeaderView formHeader = new HeaderSilverImpl();
+    HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    formHeader.create(caption, false, false, null, enabledActions, disabledActions,
+    formHeader.create(caption, false, false, null, null, enabledActions, disabledActions,
         Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
 

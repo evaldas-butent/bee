@@ -292,14 +292,23 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void start() {
+  public void init() {
     createUi();
+  }
+
+  @Override
+  public void start(UserData userData) {
+    updateUserData(userData);
+
+    if (getCentralScrutinizer() != null) {
+      getCentralScrutinizer().start();
+    }
 
     if (getWorkspace() != null) {
       if (getCentralScrutinizer() != null && getWorkspace() != null) {
         getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
       }
-
+      
       Previewer.registerMouseDownPriorHandler(getWorkspace());
     }
   }
@@ -588,7 +597,6 @@ public class ScreenImpl implements Screen {
 
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
-    getCentralScrutinizer().start();
 
     Flow panel = new Flow();
     panel.add(getCentralScrutinizer());

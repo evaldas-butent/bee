@@ -9,6 +9,7 @@ import com.google.gwt.event.logical.shared.HasCloseHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidget>,
@@ -209,18 +211,26 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-    add(Domain.NEWS, Global.getNewsAggregator().getNewsPanel());
-
-    if (Endpoint.isEnabled()) {
-      add(Domain.ONLINE, Global.getUsers().getOnlinePanel());
-      add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.NEWS)) {
+      add(Domain.NEWS, Global.getNewsAggregator().getNewsPanel());
     }
 
-    Shell shell = new Shell("bee-Shell");
-    shell.restore();
+    if (Endpoint.isEnabled()) {
+      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ONLINE)) {
+        add(Domain.ONLINE, Global.getUsers().getOnlinePanel());
+      }
+      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ROOMS)) {
+        add(Domain.ROOMS, Global.getRooms().getRoomsPanel());
+      }
+    }
 
-    Simple wrapper = new Simple(shell);
-    add(Domain.ADMIN, wrapper);
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ADMIN)) {
+      Shell shell = new Shell("bee-Shell");
+      shell.restore();
+
+      Simple wrapper = new Simple(shell);
+      add(Domain.ADMIN, wrapper);
+    }
   }
 
   private int find(Domain domain, Long key) {
