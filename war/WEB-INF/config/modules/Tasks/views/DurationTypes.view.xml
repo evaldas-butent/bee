@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="DurationTypes"
-  source="DurationTypes"
-  newRowCaption="=crmNewDurationType"
+  name="DurationTypes" source="DurationTypes"
+  caption="=crmTaskDurationTypes" newRowCaption="=crmNewDurationType"
   >
   <Columns>
     <SimpleColumn name="Name" />

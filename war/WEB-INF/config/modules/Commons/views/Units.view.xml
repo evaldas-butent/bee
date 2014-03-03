@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Units" source="Units" module="Classifiers"
-  newRowCaption="=newUnit"
+  caption="=units" newRowCaption="=newUnit"
   >
   <Columns>
     <SimpleColumn name="Name" />

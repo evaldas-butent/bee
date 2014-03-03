@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Emails" source="Emails" module="Classifiers.Contacts"
-  newRowCaption="=newEmailAddress"
+  caption="=emailAddresses" newRowCaption="=newEmailAddress"
   >
   <Columns>
     <SimpleColumn name="Email" />

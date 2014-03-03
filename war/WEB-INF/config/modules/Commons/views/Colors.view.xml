@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Colors" source="Colors" module="Classifiers"
+  caption="=colors"
   >
   <Columns>
     <SimpleColumn name="Name" />

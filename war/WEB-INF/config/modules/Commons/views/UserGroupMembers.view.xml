@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="UserGroupMembers" source="UserGroups" module="Administration"
+  caption="=userGroupMembers"
   >
   <Columns>
     <SimpleColumn name="Group" />

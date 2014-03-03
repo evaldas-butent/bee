@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Objects" source="Objects" module="Administration"
-  newRowForm="Object" newRowCaption="=newObject"
+  newRowForm="Object" caption="=objects" newRowCaption="=newObject"
   >
   <Columns>
     <SimpleColumn name="Type" />

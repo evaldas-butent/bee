@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TaskTemplates" source="TaskTemplates" caption="=crmTasksTemplate" newRowCaption="=crmNewTaskTemplate"
+  name="TaskTemplates" source="TaskTemplates" 
+  caption="=crmTasksTemplates" newRowCaption="=crmNewTaskTemplate"
   >
   <Columns>
     <SimpleColumn name="Name" />

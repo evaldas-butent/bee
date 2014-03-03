@@ -2,7 +2,8 @@
 <View xmlns="http://www.butent.com/view"
 
   name="EcGroups" source="EcGroups"
-  editForm="EcGroup" newRowForm="EcGroup" newRowCaption="=ecGroupNew"
+  editForm="EcGroup" newRowForm="EcGroup"
+  caption="=ecGroups" newRowCaption="=ecGroupNew"
   >
   <Columns>
     <SimpleColumn name="Ordinal" />

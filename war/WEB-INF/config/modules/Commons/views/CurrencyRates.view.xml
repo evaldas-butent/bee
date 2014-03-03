@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="CurrencyRates" source="CurrencyRates" module="Classifiers"
-  newRowCaption="=newCurrencyRate"
+  caption="=currencyRates" newRowCaption="=newCurrencyRate"
   >
   <Columns>
     <SimpleColumn name="Currency" />
