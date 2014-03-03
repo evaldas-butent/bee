@@ -17,6 +17,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -71,6 +72,27 @@ public class UiHolderBean {
 
   private static BeeLogger logger = LogUtils.getLogger(UiHolderBean.class);
 
+  private static String key(String name) {
+    return BeeUtils.normalize(name);
+  }
+  private static <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
+      String moduleName) {
+
+    if (object != null) {
+      if (cache.containsKey(key(objectName))) {
+        logger.warning(BeeUtils.parenthesize(moduleName),
+            "Dublicate", clazz, "name:", BeeUtils.bracket(objectName));
+      } else {
+        cache.put(key(objectName), object);
+      }
+    }
+  }
+  private static void unregister(String objectName, Map<String, ?> cache) {
+    if (!BeeUtils.isEmpty(objectName)) {
+      cache.remove(key(objectName));
+    }
+  }
+
   @EJB
   ModuleHolderBean moduleBean;
   @EJB
@@ -79,7 +101,9 @@ public class UiHolderBean {
   UserServiceBean usr;
 
   Map<String, String> gridCache = Maps.newHashMap();
+
   Map<String, String> formCache = Maps.newHashMap();
+
   Map<String, Menu> menuCache = Maps.newHashMap();
 
   public ResponseObject getForm(String formName) {
@@ -112,11 +136,11 @@ public class UiHolderBean {
     return null;
   }
 
-  public ResponseObject getMenu() {
+  public ResponseObject getMenu(boolean checkRights) {
     Map<Integer, Menu> menus = Maps.newTreeMap();
 
     for (Menu menu : menuCache.values()) {
-      Menu entry = getVisibleMenu(null, Menu.restore(Codec.beeSerialize(menu)));
+      Menu entry = getMenu(null, Menu.restore(Codec.beeSerialize(menu)), checkRights);
 
       if (entry != null) {
         menus.put(entry.getOrder(), entry);
@@ -198,25 +222,33 @@ public class UiHolderBean {
     return XmlUtils.unmarshal(Menu.class, resource, UiObject.MENU.getSchemaPath());
   }
 
-  private Menu getVisibleMenu(String parent, Menu entry) {
+  private Menu getMenu(String parent, Menu entry, boolean checkRights) {
     String ref = RightsUtils.JOINER.join(parent, entry.getName());
 
-    if (usr.isModuleVisible(entry.getModule()) && usr.isMenuVisible(ref)) {
-      List<Menu> items = null;
+    boolean visible;
+    if (checkRights) {
+      visible = usr.isModuleVisible(entry.getModule()) && usr.isMenuVisible(ref);
+    } else {
+      visible = Module.isEnabled(entry.getModule());
+    }
 
+    if (visible) {
       if (entry instanceof MenuEntry) {
-        items = ((MenuEntry) entry).getItems();
-      }
-      if (!BeeUtils.isEmpty(items)) {
-        for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext();) {
-          if (getVisibleMenu(ref, iterator.next()) == null) {
-            iterator.remove();
+        List<Menu> items = ((MenuEntry) entry).getItems();
+
+        if (!BeeUtils.isEmpty(items)) {
+          for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext();) {
+            if (getMenu(ref, iterator.next(), checkRights) == null) {
+              iterator.remove();
+            }
           }
         }
       }
       return entry;
+
+    } else {
+      return null;
     }
-    return null;
   }
 
   @PostConstruct
@@ -340,29 +372,6 @@ public class UiHolderBean {
       logger.severe("No", obj.name(), "descriptions found");
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
-    }
-  }
-
-  private static String key(String name) {
-    return BeeUtils.normalize(name);
-  }
-
-  private static <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
-      String moduleName) {
-
-    if (object != null) {
-      if (cache.containsKey(key(objectName))) {
-        logger.warning(BeeUtils.parenthesize(moduleName),
-            "Dublicate", clazz, "name:", BeeUtils.bracket(objectName));
-      } else {
-        cache.put(key(objectName), object);
-      }
-    }
-  }
-
-  private static void unregister(String objectName, Map<String, ?> cache) {
-    if (!BeeUtils.isEmpty(objectName)) {
-      cache.remove(key(objectName));
     }
   }
 }

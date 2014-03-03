@@ -3,14 +3,18 @@ package com.butent.bee.client.rights;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
@@ -35,13 +39,30 @@ final class MenuRightsHandler extends MultiRoleForm {
   }
 
   @Override
-  protected void initObjects(Consumer<List<RightsObject>> consumer) {
-    List<RightsObject> result = Lists.newArrayList();
+  protected void initObjects(final Consumer<List<RightsObject>> consumer) {
+    BeeKeeper.getRpc().makeGetRequest(Service.GET_MENU, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          response.notify(BeeKeeper.getScreen());
 
-    for (Menu root : BeeKeeper.getMenu().getRoots()) {
-      addMenuObject(result, 0, null, root);
-    }
-    consumer.accept(result);
+        } else if (response.hasResponse()) {
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          List<RightsObject> result = Lists.newArrayList();
+          if (arr != null) {
+            for (String s : arr) {
+              Menu menu = Menu.restore(s);
+              if (menu != null) {
+                addMenuObject(result, 0, null, menu);
+              }
+            }
+          }
+
+          consumer.accept(result);
+        }
+      }
+    });
   }
 
   private boolean addMenuObject(List<RightsObject> result, int level, String parent, Menu menu) {
@@ -49,7 +70,7 @@ final class MenuRightsHandler extends MultiRoleForm {
     if (ms != null && !ms.isEnabled()) {
       return false;
     }
-    
+
     RightsObject object = new RightsObject(menu.getName(),
         Localized.maybeTranslate(menu.getLabel()), ms, level, parent);
 
@@ -63,12 +84,12 @@ final class MenuRightsHandler extends MultiRoleForm {
           count++;
         }
       }
-      
+
       if (count > 0) {
         object.setHasChildren(true);
       }
     }
-    
+
     return true;
   }
 }

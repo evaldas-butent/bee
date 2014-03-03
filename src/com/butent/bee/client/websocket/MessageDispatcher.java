@@ -479,6 +479,10 @@ class MessageDispatcher {
               break;
             }
           }
+          
+          if (BeeKeeper.getScreen().getUserInterface().hasMenu()) {
+            BeeKeeper.getMenu().loadMenu();
+          }
         }
         break;
     }

@@ -36,7 +36,7 @@ public class CustomFilter extends Filter {
       return null;
     }
 
-    List<String> list = splitter.splitToList(s);
+    List<String> list = Lists.newArrayList(splitter.split(s));
     if (list.isEmpty()) {
       return null;
     }

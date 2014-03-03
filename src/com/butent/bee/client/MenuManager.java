@@ -3,6 +3,7 @@ package com.butent.bee.client;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
@@ -175,7 +176,10 @@ public class MenuManager {
   }
 
   public boolean loadMenu() {
-    BeeKeeper.getRpc().makeGetRequest(Service.LOAD_MENU, new ResponseCallback() {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_MENU);
+    params.addQueryItem(Service.VAR_RIGHTS, 1);
+    
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse()) {

@@ -131,7 +131,7 @@ public enum UserInterface implements HasCaption {
   E_COMMERCE {
     @Override
     public Collection<Component> getComponents() {
-      return EnumSet.of(Component.AUTOCOMPLETE, Component.USERS);
+      return EnumSet.of(Component.DATA_INFO, Component.AUTOCOMPLETE, Component.USERS);
     }
 
     @Override
@@ -274,4 +274,8 @@ public enum UserInterface implements HasCaption {
   public abstract List<String> getStyleSheets();
 
   public abstract String getTitle();
+  
+  public boolean hasMenu() {
+    return getComponents().contains(Component.MENU);
+  }
 }

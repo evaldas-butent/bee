@@ -999,11 +999,11 @@ public final class CronExpression implements HasInfo {
   }
   
   public static List<String> splitItems(String input) {
-    List<String> result = Lists.newArrayList();
-    if (!BeeUtils.isEmpty(input)) {
-      result.addAll(itemSplitter.splitToList(input));
+    if (BeeUtils.isEmpty(input)) {
+      return Lists.newArrayList();
+    } else {
+      return Lists.newArrayList(itemSplitter.split(input));
     }
-    return result;
   }
 
   private static Integer parseMonth(String input) {

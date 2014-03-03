@@ -38,7 +38,7 @@ public final class Service {
   public static final String LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
-  public static final String LOAD_MENU = RPC_SERVICE_PREFIX + "load_menu";
+  public static final String GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
@@ -183,6 +183,8 @@ public final class Service {
 
   public static final String VAR_PROGRESS = RPC_VAR_PREFIX + "progress";
   public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
+
+  public static final String VAR_RIGHTS = RPC_VAR_PREFIX + "rights";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
