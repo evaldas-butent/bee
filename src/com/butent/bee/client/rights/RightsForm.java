@@ -1,7 +1,7 @@
 package com.butent.bee.client.rights;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
@@ -27,8 +27,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
@@ -39,11 +37,14 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public abstract class RightsForm extends AbstractFormInterceptor {
 
@@ -86,16 +87,16 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   private static final String DATA_KEY_OBJECT = "rights-object";
 
   private static final int LABEL_ROW = 0;
-  private static final int MULTI_TOGGLE_ROW = 1;
   private static final int LABEL_COL = 0;
-  private static final int MULTI_TOGGLE_COL = 1;
-
-  protected static final int VALUE_START_ROW = 2;
-  protected static final int VALUE_START_COL = 2;
 
   public static void register() {
     FormFactory.registerFormInterceptor("ModuleRights", new ModuleRightsHandler());
     FormFactory.registerFormInterceptor("MenuRights", new MenuRightsHandler());
+
+    FormFactory.registerFormInterceptor("DataRights", new DataRightsHandler());
+    FormFactory.registerFormInterceptor("FieldRights", new FieldRightsHandler());
+
+    FormFactory.registerFormInterceptor("WidgetRights", new WidgetRightsHandler());
   }
 
   protected static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
@@ -114,18 +115,35 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return toggle;
   }
 
+  protected static void debug(Object... messages) {
+    logger.debug(messages);
+  }
+
   protected static void enableValueWidet(Widget widget, boolean enabled) {
     widget.setStyleName(STYLE_VALUE_DISABLED, !enabled);
   }
 
   protected static String getObjectName(Widget widget) {
-    return DomUtils.getDataProperty(widget.getElement(), DATA_KEY_OBJECT);
+    String objectName = DomUtils.getDataProperty(widget.getElement(), DATA_KEY_OBJECT);
+    if (BeeUtils.isEmpty(objectName)) {
+      severe("widget", DomUtils.getId(widget), "has no object name");
+    }
+    return objectName;
+  }
+
+  protected static void markObjectLabel(Widget widget, RightsObject object) {
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL);
+    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_OBJECT, object.getName());
   }
 
   protected static void setNotMatched(Collection<? extends Element> elements) {
     if (!BeeUtils.isEmpty(elements)) {
       StyleUtils.addClassName(elements, STYLE_FILTER_NOT_MATCHED);
     }
+  }
+
+  protected static void severe(Object... messages) {
+    logger.severe(messages);
   }
 
   protected static void updateValueCell(Widget widget, boolean isChanged) {
@@ -140,8 +158,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  private static void doClose(Presenter presenter) {
-    BeeKeeper.getScreen().closeWidget(presenter.getMainView());
+  protected static void warning(Object... messages) {
+    logger.warning(messages);
   }
 
   private static void removeClassName(UIObject root, String className) {
@@ -151,48 +169,25 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  private List<RightsObject> objects = Lists.newArrayList();
+  private final List<RightsObject> objects = Lists.newArrayList();
 
   private HtmlTable table;
 
   private int hoverColumn = BeeConst.UNDEF;
 
   @Override
-  public void afterCreate(final FormView form) {
-    initObjects(new Consumer<List<RightsObject>>() {
-      @Override
-      public void accept(List<RightsObject> typeObjects) {
-        if (BeeUtils.isEmpty(typeObjects)) {
-          logger.severe(getObjectType(), "objects not available");
-          return;
-        }
-
-        if (!objects.isEmpty()) {
-          objects.clear();
-        }
-        objects.addAll(typeObjects);
-
-        initData(new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            if (BeeUtils.isTrue(input) && form.getRootWidget() instanceof HasIndexedWidgets) {
-              IdentifiableWidget panel = form.getRootWidget();
-              panel.addStyleName(STYLE_PANEL);
-              createUi((HasIndexedWidgets) panel);
-            }
-          }
-        });
-      }
-    });
-  }
-
-  @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
+  public boolean beforeAction(Action action, final Presenter presenter) {
     switch (action) {
       case CLOSE:
-        if (hasChanges()) {
-          onClose(presenter);
+        if (!getChangedNames().isEmpty()) {
+          onClose(new Runnable() {
+            @Override
+            public void run() {
+              BeeKeeper.getScreen().closeWidget(presenter.getMainView());
+            }
+          });
           return false;
+
         } else {
           return true;
         }
@@ -211,7 +206,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected void addColumnToggle(int col, Widget widget, String cellStyleName) {
-    table.setWidget(MULTI_TOGGLE_ROW, col, widget, cellStyleName);
+    table.setWidget(getValueStartRow() - 1, col, widget, cellStyleName);
   }
 
   protected void addObjectLabel(int row, RightsObject object) {
@@ -219,12 +214,12 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected void addObjectToggle(int row, RightsObject object) {
-    table.setWidget(row, MULTI_TOGGLE_COL, createObjectToggle(object.getName()),
+    table.setWidget(row, getValueStartCol() - 1, createObjectToggle(object.getName()),
         STYLE_OBJECT_TOGGLE_CELL);
   }
 
-  protected void addValueToggle(int row, int col, Widget widget) {
-    table.setWidget(row, col, widget, STYLE_VALUE_CELL);
+  protected void addValueToggle(int row, int col, Toggle toggle) {
+    table.setWidget(row, col, toggle, STYLE_VALUE_CELL);
   }
 
   protected void afterCreateValueRow(int row, RightsObject object) {
@@ -234,8 +229,85 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
   }
 
-  protected void debug(Object... messages) {
-    logger.debug(messages);
+  protected void createUi() {
+    HasIndexedWidgets panel;
+
+    if (getFormView() != null && getFormView().getRootWidget() instanceof HasIndexedWidgets) {
+      getFormView().getRootWidget().addStyleName(STYLE_PANEL);
+      getFormView().getRootWidget().addStyleName(getPanelStyleName());
+
+      panel = (HasIndexedWidgets) getFormView().getRootWidget();
+
+    } else {
+      logger.severe("root panel not available");
+      return;
+    }
+
+    if (!panel.isEmpty()) {
+      panel.clear();
+    }
+
+    if (table == null) {
+      this.table = new HtmlTable(STYLE_TABLE);
+
+      table.addMouseMoveHandler(new MouseMoveHandler() {
+        @Override
+        public void onMouseMove(MouseMoveEvent event) {
+          Element target = EventUtils.getTargetElement(event.getNativeEvent().getEventTarget());
+
+          for (Element el = target; el != null; el = el.getParentElement()) {
+            if (TableCellElement.is(el)) {
+              int col = ((TableCellElement) el.cast()).getCellIndex();
+
+              if (getHoverColumn() != col) {
+                onColumnHover(col);
+              }
+
+            } else if (table.getId().equals(el.getId())) {
+              break;
+            }
+          }
+        }
+      });
+
+      table.addMouseOutHandler(new MouseOutHandler() {
+        @Override
+        public void onMouseOut(MouseOutEvent event) {
+          onColumnHover(BeeConst.UNDEF);
+        }
+      });
+
+    } else if (!table.isEmpty()) {
+      table.clear();
+    }
+
+    populateTable();
+
+    panel.add(table);
+  }
+
+  protected List<RightsObject> filterByModule(ModuleAndSub moduleAndSub) {
+    List<RightsObject> result = Lists.newArrayList();
+
+    for (RightsObject object : objects) {
+      if (Objects.equal(object.getModuleAndSub(), moduleAndSub)) {
+        result.add(object);
+      }
+    }
+
+    return result;
+  }
+
+  protected List<RightsObject> filterByParent(String parent) {
+    List<RightsObject> result = Lists.newArrayList();
+
+    for (RightsObject object : objects) {
+      if (Objects.equal(object.getParent(), parent)) {
+        result.add(object);
+      }
+    }
+
+    return result;
   }
 
   protected RightsObject findObject(String objectName) {
@@ -249,7 +321,28 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return null;
   }
 
-  protected abstract Multimap<String, ?> getChanges();
+  protected abstract Set<String> getChangedNames();
+
+  protected abstract String getChangeMessage(RightsObject object);
+
+  protected String getDialogCaption() {
+    return getFormView().getCaption();
+  }
+
+  protected List<ModuleAndSub> getModules() {
+    List<ModuleAndSub> modules = Lists.newArrayList();
+
+    for (RightsObject object : objects) {
+      if (object.getModuleAndSub() != null && !modules.contains(object.getModuleAndSub())) {
+        modules.add(object.getModuleAndSub());
+      }
+    }
+
+    if (modules.size() > 0) {
+      Collections.sort(modules);
+    }
+    return modules;
+  }
 
   protected List<TableCellElement> getObjectCells(String objectName) {
     List<TableCellElement> cells = Lists.newArrayList();
@@ -304,17 +397,49 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   protected abstract RightsObjectType getObjectType();
 
+  protected abstract String getPanelStyleName();
+
   protected HtmlTable getTable() {
     return table;
   }
 
-  protected abstract boolean hasChanges();
+  protected abstract int getValueStartCol();
+
+  protected int getValueStartRow() {
+    return 2;
+  }
 
   protected boolean hasObject(Widget widget, String objectName) {
     return DomUtils.dataEquals(widget.getElement(), DATA_KEY_OBJECT, objectName);
   }
 
-  protected abstract void initData(final Consumer<Boolean> callback);
+  protected void init() {
+    initObjects(new Consumer<List<RightsObject>>() {
+      @Override
+      public void accept(List<RightsObject> typeObjects) {
+        if (BeeUtils.isEmpty(typeObjects)) {
+          logger.severe(getObjectType(), "objects not available");
+          return;
+        }
+
+        if (!objects.isEmpty()) {
+          objects.clear();
+        }
+        objects.addAll(typeObjects);
+
+        initData(new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            if (BeeUtils.isTrue(input)) {
+              createUi();
+            }
+          }
+        });
+      }
+    });
+  }
+
+  protected abstract void initData(Consumer<Boolean> callback);
 
   protected abstract void initObjects(Consumer<List<RightsObject>> consumer);
 
@@ -328,14 +453,68 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return DomUtils.dataEquals(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
   }
 
+  protected void markValueRow(int row) {
+    table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
+  }
+
   protected void markValueRows() {
-    for (int row = VALUE_START_ROW; row < table.getRowCount(); row++) {
-      table.getRowFormatter().addStyleName(row, STYLE_VALUE_ROW);
+    for (int row = getValueStartRow(); row < table.getRowCount(); row++) {
+      markValueRow(row);
     }
   }
 
   protected void onClearChanges() {
     removeClassName(table, STYLE_VALUE_CHANGED);
+  }
+
+  protected void onClose(final Runnable runnable) {
+    Set<String> changedNames = getChangedNames();
+
+    String message = BeeUtils.joinWords(Localized.getConstants().changedValues(),
+        BeeUtils.bracket(changedNames.size()));
+    List<String> messages = Lists.newArrayList(message);
+
+    List<RightsObject> changedObjects = Lists.newArrayList();
+    for (RightsObject object : objects) {
+      if (changedNames.contains(object.getName())) {
+        changedObjects.add(object);
+      }
+    }
+
+    int limit = BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 200, 1000, 2, 10);
+    int count = (changedObjects.size() > limit * 3 / 2) ? limit : changedObjects.size();
+
+    for (int i = 0; i < count; i++) {
+      messages.add(getChangeMessage(changedObjects.get(i)));
+    }
+
+    if (count < changedObjects.size()) {
+      messages.add(BeeUtils.joinWords(BeeUtils.parenthesize(changedObjects.size() - count),
+          BeeConst.ELLIPSIS));
+    }
+
+    messages.add(Localized.getConstants().saveChanges());
+
+    DecisionCallback callback = new DecisionCallback() {
+      @Override
+      public void onConfirm() {
+        save(new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            if (BeeUtils.isTrue(input)) {
+              runnable.run();
+            }
+          }
+        });
+      }
+
+      @Override
+      public void onDeny() {
+        runnable.run();
+      }
+    };
+
+    Global.decide(getDialogCaption(), messages, callback, DialogConstants.DECISION_YES);
   }
 
   protected abstract void onObjectToggle(boolean checked);
@@ -352,19 +531,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, type);
   }
 
-  protected void setObjects(List<RightsObject> objects) {
-    this.objects = objects;
-  }
-
-  protected void severe(Object... messages) {
-    logger.severe(messages);
-  }
-
   protected abstract void updateObjectValueToggles(String objectName, boolean checked);
-
-  protected void warning(Object... messages) {
-    logger.warning(messages);
-  }
 
   private Widget createObjectLabel(RightsObject object) {
     Label widget = new Label(object.getCaption());
@@ -375,8 +542,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     widget.setTitle(object.getName());
 
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_OBJECT, object.getName());
-    DomUtils.setDataProperty(widget.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_LABEL);
+    markObjectLabel(widget, object);
 
     if (object.hasChildren()) {
       widget.addStyleName(STYLE_OBJECT_CLOSED);
@@ -403,16 +569,16 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return widget;
   }
 
-  private Widget createObjectToggle(String name) {
+  private Widget createObjectToggle(String objectName) {
     Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
         STYLE_OBJECT_TOGGLE);
 
-    if (isObjectChecked(name)) {
+    if (isObjectChecked(objectName)) {
       toggle.setChecked(true);
     }
 
-    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, name);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE);
+    DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);
 
     toggle.addClickHandler(new ClickHandler() {
       @Override
@@ -427,50 +593,6 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     });
 
     return toggle;
-  }
-
-  private void createUi(HasIndexedWidgets panel) {
-    if (!panel.isEmpty()) {
-      panel.clear();
-    }
-
-    if (table == null) {
-      this.table = new HtmlTable(STYLE_TABLE);
-
-      table.addMouseMoveHandler(new MouseMoveHandler() {
-        @Override
-        public void onMouseMove(MouseMoveEvent event) {
-          Element target = EventUtils.getTargetElement(event.getNativeEvent().getEventTarget());
-
-          for (Element el = target; el != null; el = el.getParentElement()) {
-            if (TableCellElement.is(el)) {
-              int col = ((TableCellElement) el.cast()).getCellIndex();
-
-              if (getHoverColumn() != col) {
-                onColumnHover(col);
-              }
-
-            } else if (table.getId().equals(el.getId())) {
-              break;
-            }
-          }
-        }
-      });
-
-      table.addMouseOutHandler(new MouseOutHandler() {
-        @Override
-        public void onMouseOut(MouseOutEvent event) {
-          onColumnHover(BeeConst.UNDEF);
-        }
-      });
-
-    } else if (!table.isEmpty()) {
-      table.clear();
-    }
-
-    populateTable();
-
-    panel.add(table);
   }
 
   private int getHoverColumn() {
@@ -489,58 +611,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     return null;
   }
 
-  private void onClose(final Presenter presenter) {
-    String message = BeeUtils.joinWords(Localized.getConstants().changedValues(),
-        BeeUtils.bracket(getChanges().size()));
-    List<String> messages = Lists.newArrayList(message);
-
-    List<RightsObject> changedObjects = Lists.newArrayList();
-    for (RightsObject object : objects) {
-      if (getChanges().containsKey(object.getName())) {
-        changedObjects.add(object);
-      }
-    }
-
-    int limit = BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 200, 1000, 2, 10);
-    int count = (changedObjects.size() > limit * 3 / 2) ? limit : changedObjects.size();
-
-    for (int i = 0; i < count; i++) {
-      RightsObject object = changedObjects.get(i);
-      messages.add(BeeUtils.joinWords(object.getCaption(),
-          BeeUtils.bracket(getChanges().get(object.getName()).size())));
-    }
-
-    if (count < changedObjects.size()) {
-      messages.add(BeeUtils.joinWords(BeeUtils.parenthesize(changedObjects.size() - count),
-          BeeConst.ELLIPSIS));
-    }
-
-    messages.add(Localized.getConstants().saveChanges());
-
-    DecisionCallback callback = new DecisionCallback() {
-      @Override
-      public void onConfirm() {
-        save(new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            if (BeeUtils.isTrue(input)) {
-              doClose(presenter);
-            }
-          }
-        });
-      }
-
-      @Override
-      public void onDeny() {
-        doClose(presenter);
-      }
-    };
-
-    Global.decide(getFormView().getCaption(), messages, callback, DialogConstants.DECISION_YES);
-  }
-
   private void onColumnHover(int col) {
-    if (getHoverColumn() >= VALUE_START_COL) {
+    if (getHoverColumn() >= getValueStartCol()) {
       List<TableCellElement> cells = table.getColumnCells(getHoverColumn());
       for (TableCellElement cell : cells) {
         cell.removeClassName(STYLE_HOVER);
@@ -549,7 +621,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
     setHoverColumn(col);
 
-    if (col >= VALUE_START_COL) {
+    if (col >= getValueStartCol()) {
       List<TableCellElement> cells = table.getColumnCells(col);
       for (TableCellElement cell : cells) {
         cell.addClassName(STYLE_HOVER);

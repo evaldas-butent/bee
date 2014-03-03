@@ -132,11 +132,6 @@ public class EcScreen extends ScreenImpl {
   }
 
   @Override
-  public void start() {
-    createUi();
-  }
-
-  @Override
   public void updateMenu(IdentifiableWidget widget) {
   }
 

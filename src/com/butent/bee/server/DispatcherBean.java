@@ -70,7 +70,7 @@ public class DispatcherBean {
       return response;
     }
     data.put(Service.VAR_USER, userData.getResponse());
-    data.put(Service.PROPERTY_MODULES, BeeUtils.joinItems(Module.getEnabledModules()));
+    data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
 
     UserInterface userInterface = null;
 
@@ -151,7 +151,7 @@ public class DispatcherBean {
             break;
 
           case MENU:
-            ResponseObject menuData = uiHolder.getMenu();
+            ResponseObject menuData = uiHolder.getMenu(true);
             if (menuData != null) {
               response.addMessagesFrom(menuData);
               if (!menuData.hasErrors() && menuData.hasResponse()) {
@@ -199,8 +199,8 @@ public class DispatcherBean {
     } else if (Service.isSysService(svc)) {
       response = systemService.doService(svc, reqInfo);
 
-    } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
-      response = uiHolder.getMenu();
+    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
+      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());

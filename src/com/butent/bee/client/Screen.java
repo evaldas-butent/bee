@@ -56,6 +56,8 @@ public interface Screen extends NotificationListener {
 
   Workspace getWorkspace();
   
+  void init();
+
   void onLoad();
   
   void onWidgetChange(IdentifiableWidget widget);
@@ -68,7 +70,7 @@ public interface Screen extends NotificationListener {
 
   void showWidget(IdentifiableWidget widget, boolean newPlace);
 
-  void start();
+  void start(UserData userData);
   
   void updateActivePanel(IdentifiableWidget widget);
 

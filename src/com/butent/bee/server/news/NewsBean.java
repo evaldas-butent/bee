@@ -105,7 +105,7 @@ public class NewsBean {
         continue;
       }
       
-      if (!usr.isModuleVisible(feed.getModule())) {
+      if (!usr.isModuleVisible(feed.getModuleAndSub())) {
         logger.warning("user", userId, "is subscribed to invisible feed", feed);
         continue;
       }

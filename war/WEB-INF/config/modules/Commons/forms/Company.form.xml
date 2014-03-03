@@ -39,8 +39,14 @@
       </row>
     </Table> 
     
-    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
-
+   <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
+     open="true">  
+      <Label text="=contactInfo" style="text-transform: uppercase; " />
+       <FlowPanel class="flexible">
+        <xi:include href="widgets/ContactDetails.widget.xml" />     
+        <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
+      </FlowPanel>
+   </Disclosure>
     <TabbedPages class="flexible" style="margin-top: 15px;">
       <page>
         <text>=financialInfo</text>

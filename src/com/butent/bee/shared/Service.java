@@ -38,7 +38,7 @@ public final class Service {
   public static final String LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
-  public static final String LOAD_MENU = RPC_SERVICE_PREFIX + "load_menu";
+  public static final String GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
@@ -90,8 +90,10 @@ public final class Service {
   public static final String SUBSCRIBE_TO_FEEDS = DATA_SERVICE_PREFIX + "subscribe_to_feeds";
   public static final String ACCESS = DATA_SERVICE_PREFIX + "access";
 
-  public static final String GET_RIGHTS = DATA_SERVICE_PREFIX + "get_rights";
-  public static final String SET_RIGHTS = DATA_SERVICE_PREFIX + "set_rights";
+  public static final String GET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "get_state_rights";
+  public static final String GET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "get_role_rights";
+  public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
+  public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -181,6 +183,8 @@ public final class Service {
 
   public static final String VAR_PROGRESS = RPC_VAR_PREFIX + "progress";
   public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
+
+  public static final String VAR_RIGHTS = RPC_VAR_PREFIX + "rights";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

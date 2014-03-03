@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="IpFilters" source="IpFilters" caption="=ipFilters"
+  name="IpFilters" source="IpFilters" caption="=ipFilters" module="Administration"
   newRowCaption="=ipFilterNew"
   >
   <Columns>

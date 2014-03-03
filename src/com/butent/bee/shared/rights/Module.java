@@ -1,18 +1,15 @@
 package com.butent.bee.shared.rights;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 
 public enum Module implements HasLocalizedCaption {
@@ -23,25 +20,25 @@ public enum Module implements HasLocalizedCaption {
       return constants.classifiers();
     }
   },
-  CALENDAR(null) {
+  CALENDAR(EnumSet.noneOf(SubModule.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.calendar();
     }
   },
-  DOCUMENTS(null) {
+  DOCUMENTS(EnumSet.noneOf(SubModule.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.documents();
     }
   },
-  TASKS(null) {
+  TASKS(EnumSet.noneOf(SubModule.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.tasks();
     }
   },
-  DISCUSSIONS(null) {
+  DISCUSSIONS(EnumSet.noneOf(SubModule.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.discussions();
@@ -64,7 +61,7 @@ public enum Module implements HasLocalizedCaption {
       return "Ec";
     }
   },
-  TRADE(null) {
+  TRADE(EnumSet.noneOf(SubModule.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.trade();
@@ -76,59 +73,63 @@ public enum Module implements HasLocalizedCaption {
       return constants.transport();
     }
   },
-  ADMINISTRATION(null) {
+  ADMINISTRATION(EnumSet.noneOf(SubModule.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.administration();
     }
   };
 
-  private static final Set<String> ENABLED_MODULES = Sets.newHashSet();
-
-  public static Set<String> getEnabledModules() {
-    return ENABLED_MODULES;
+  static final Set<ModuleAndSub> ENABLED_MODULES = Sets.newHashSet();
+  
+  public static String getEnabledModulesAsString() {
+    return BeeUtils.joinItems(ENABLED_MODULES);
   }
 
-  public static boolean isEnabled(String module) {
-    if (!BeeUtils.isEmpty(module)) {
-      String mod = null;
-
-      for (String part : RightsUtils.SPLITTER.split(module)) {
-        mod = RightsUtils.JOINER.join(mod, part);
-
-        if (!getEnabledModules().contains(mod)) {
-          return false;
-        }
-      }
+  public static boolean isEnabled(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return true;
     }
-    return true;
+
+    ModuleAndSub ms = ModuleAndSub.parse(input);
+    if (ms == null) {
+      return false;
+    } else {
+      return ENABLED_MODULES.contains(ms);
+    }
   }
 
   public static void setEnabledModules(String moduleList) {
-    Map<String, String> modules = Maps.newLinkedHashMap();
-
-    for (Module module : Module.values()) {
-      String name = module.getName();
-      modules.put(BeeUtils.normalize(name), name);
-
-      if (!BeeUtils.isEmpty(module.getSubModules())) {
-        for (SubModule subModule : module.getSubModules()) {
-          name = module.getName(subModule);
-          modules.put(BeeUtils.normalize(name), name);
-        }
-      }
+    if (!ENABLED_MODULES.isEmpty()) {
+      ENABLED_MODULES.clear();
     }
-    getEnabledModules().clear();
 
     if (BeeUtils.isEmpty(moduleList) || BeeUtils.same(moduleList, BeeConst.ALL)) {
-      getEnabledModules().addAll(modules.values());
-    } else {
-      for (String mod : Splitter.on(BeeConst.DEFAULT_LIST_SEPARATOR).omitEmptyStrings()
-          .trimResults().split(moduleList)) {
-        String name = modules.get(BeeUtils.normalize(mod));
+      for (Module module : Module.values()) {
+        ENABLED_MODULES.add(ModuleAndSub.of(module));
 
-        if (!BeeUtils.isEmpty(name)) {
-          getEnabledModules().add(name);
+        if (!BeeUtils.isEmpty(module.getSubModules())) {
+          for (SubModule subModule : module.getSubModules()) {
+            ENABLED_MODULES.add(ModuleAndSub.of(module, subModule));
+          }
+        }
+      }
+
+    } else {
+      Set<String> modules = NameUtils.toSet(moduleList);
+
+      for (String input : modules) {
+        ModuleAndSub ms = ModuleAndSub.parse(input);
+
+        if (ms != null) {
+          if (ms.getSubModule() != null) {
+            ModuleAndSub parent = ModuleAndSub.of(ms.getModule());
+            if (!ENABLED_MODULES.contains(parent)) {
+              ENABLED_MODULES.add(parent);
+            }
+          }
+
+          ENABLED_MODULES.add(ms);
         }
       }
     }
@@ -149,12 +150,11 @@ public enum Module implements HasLocalizedCaption {
     return BeeUtils.proper(name());
   }
 
-  public String getName(SubModule subModule) {
-    Assert.notNull(subModule);
-    return RightsUtils.JOINER.join(getName(), subModule.getName());
-  }
-
   public EnumSet<SubModule> getSubModules() {
     return subModules;
+  }
+  
+  public boolean isEnabled() {
+    return ENABLED_MODULES.contains(ModuleAndSub.of(this));
   }
 }

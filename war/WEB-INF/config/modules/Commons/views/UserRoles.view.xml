@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserRoles"
-  source="UserRoles"
+  name="UserRoles" source="UserRoles" module="Administration"
   >
   <Columns>
     <SimpleColumn name="User" />

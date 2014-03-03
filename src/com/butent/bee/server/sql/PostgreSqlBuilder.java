@@ -226,8 +226,11 @@ class PostgreSqlBuilder extends SqlBuilder {
             .getSqlString(this);
 
       case LIKE:
-        return "ILIKE";
-
+        if (BeeUtils.unbox((Boolean) params.get("CaseSensitive"))) {
+          return "LIKE";
+        } else {
+          return "ILIKE";
+        }
       default:
         return super.sqlKeyword(option, params);
     }

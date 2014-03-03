@@ -82,7 +82,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
     List<Feed> feeds = Lists.newArrayList();
 
     for (Feed feed : Feed.values()) {
-      if (BeeKeeper.getUser().isModuleVisible(feed.getModule())) {
+      if (BeeKeeper.getUser().isModuleVisible(feed.getModuleAndSub())) {
         boolean used = false;
 
         if (!BeeUtils.isEmpty(data)) {

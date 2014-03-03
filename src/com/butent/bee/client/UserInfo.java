@@ -3,7 +3,8 @@ package com.butent.bee.client;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -19,6 +20,22 @@ public class UserInfo implements HasInfo {
 
   private String sessionId;
   private UserData userData;
+
+  public boolean canCreateData(String object) {
+    return isLoggedIn() && userData.canCreateData(object);
+  }
+
+  public boolean canDeleteData(String object) {
+    return isLoggedIn() && userData.canDeleteData(object);
+  }
+
+  public boolean canEditColumn(String viewName, String column) {
+    return isLoggedIn() && userData.canEditColumn(viewName, column);
+  }
+
+  public boolean canEditData(String object) {
+    return isLoggedIn() && userData.canEditData(object);
+  }
 
   public Long getCompany() {
     return isLoggedIn() ? userData.getCompany() : null;
@@ -88,44 +105,36 @@ public class UserInfo implements HasInfo {
     return userData.getUserSign();
   }
 
-  public boolean hasDataRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasDataRight(object, state);
-  }
-
-  public boolean hasEventRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasEventRight(object, state);
-  }
-
-  public boolean hasFormRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasFormRight(object, state);
-  }
-
-  public boolean isMenuVisible(String object) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.isMenuVisible(object);
-  }
-
-  public boolean isModuleVisible(String object) {
-    return isLoggedIn() ? userData.isModuleVisible(object) : false;
-  }
-
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
 
+  public boolean isColumnVisible(String viewName, String column) {
+    return isLoggedIn() && userData.isColumnVisible(viewName, column);
+  }
+
+  public boolean isDataVisible(String object) {
+    return isLoggedIn() && userData.isDataVisible(object);
+  }
+
   public boolean isLoggedIn() {
     return userData != null;
+  }
+
+  public boolean isMenuVisible(String object) {
+    return isLoggedIn() && userData.isMenuVisible(object);
+  }
+
+  public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
+    return isLoggedIn() && userData.isModuleVisible(moduleAndSub);
+  }
+
+  public boolean isModuleVisible(String object) {
+    return isLoggedIn() && userData.isModuleVisible(object);
+  }
+
+  public boolean isWidgetVisible(RegulatedWidget widget) {
+    return isLoggedIn() && userData.isWidgetVisible(widget);
   }
 
   public void setSessionId(String sessionId) {

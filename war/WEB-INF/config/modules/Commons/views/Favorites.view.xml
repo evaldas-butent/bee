@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Favorites"
-  source="Favorites"
+  name="Favorites" source="Favorites" module="Administration"
   >
   <Columns>
     <SimpleColumn name="User" />

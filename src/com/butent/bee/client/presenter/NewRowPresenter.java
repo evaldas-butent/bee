@@ -11,7 +11,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
@@ -42,10 +42,10 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   public static final String STYLE_CAPTION = "bee-NewRowCaption";
 
   private static HeaderView createHeader(String caption) {
-    HeaderView formHeader = new HeaderSilverImpl();
+    HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_HEADER);
 
-    formHeader.create(caption, false, false, null, EnumSet.of(Action.SAVE, Action.CLOSE),
+    formHeader.create(caption, false, false, null, null, EnumSet.of(Action.SAVE, Action.CLOSE),
         EnumSet.of(Action.PRINT), Action.NO_ACTIONS);
     formHeader.addCaptionStyle(STYLE_CAPTION);
 

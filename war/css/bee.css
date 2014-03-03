@@ -2812,19 +2812,29 @@
 
 .bee-Rights-role-label-cell,
 .bee-Rights-role-toggle-cell,
+.bee-Rights-state-label-cell,
+.bee-Rights-state-toggle-cell,
 .bee-Rights-object-label-cell,
 .bee-Rights-object-toggle-cell,
+.bee-Rights-module-cell,
+.bee-Rights-mso-cell,
 .bee-Rights-value-cell {
   border: 1px solid #ddd;
 }
 
-.bee-Rights-value-row:hover td {
+.bee-Rights-multi-role .bee-Rights-value-row:hover td,
+.bee-Rights-multi-state .bee-Rights-value-row:hover .bee-Rights-mso-leaf-cell,
+.bee-Rights-multi-state .bee-Rights-value-row:hover .bee-Rights-object-toggle-cell,
+.bee-Rights-multi-state .bee-Rights-value-row:hover .bee-Rights-value-cell {
   border-top: 1px double #006;
   border-bottom: 1px double #006;
 }
 .bee-Rights-hover {
   border-left: 1px double #006;
   border-right: 1px double #006;
+}
+.bee-Rights-multi-state td:empty {
+  visibility: hidden;
 }
 
 .bee-Rights-table tr:first-child td {
@@ -2851,13 +2861,16 @@
   white-space: nowrap;
   cursor: pointer;
 }
+.bee-Rights-state-label,
 .bee-Rights-object-label {
   white-space: nowrap;
 }
 
 .bee-Rights-value-row:hover .bee-Rights-role-label,
 .bee-Rights-value-row:hover .bee-Rights-object-label,
+.bee-Rights-value-row:hover .bee-Rights-mso-leaf,
 .bee-Rights-hover .bee-Rights-role-label,
+.bee-Rights-hover .bee-Rights-state-label,
 .bee-Rights-hover .bee-Rights-object-label {
   text-shadow: 1px 0px 0px black;
 }
@@ -2872,6 +2885,7 @@
 }
 
 .bee-Rights-role-toggle,
+.bee-Rights-state-toggle,
 .bee-Rights-object-toggle {
   text-align: center;
   font-size: 14px;
@@ -2879,6 +2893,7 @@
   cursor: pointer;
 }
 .bee-Rights-role-toggle-cell:hover,
+.bee-Rights-state-toggle-cell:hover,
 .bee-Rights-object-toggle-cell:hover {
   background-color: white;
 }
@@ -2904,6 +2919,10 @@
   visibility: hidden;
 }
 
+.bee-Rights-role-command.bee-Rights-role-empty {
+  font-size: medium;
+}
+
 .bee-Rights-user-clear {
   font-size: 16px;
   cursor: pointer;
@@ -2914,8 +2933,9 @@
 .bee-Rights-user-clear.bee-Rights-user-empty {
   visibility: hidden;
 }
-.bee-Rights-user-selector {
-  width: 2em;
+.bee-Rights-user-selector,
+.bee-Rights-role-selector {
+  width: 3em;
   opacity: 0;
 }
 
@@ -2944,4 +2964,14 @@
 }
 .bee-Rights-object-hidden {
   display: none;
+}
+
+.bee-Rights-module,
+.bee-Rights-sub-module,
+.bee-Rights-mso-branch {
+  cursor: pointer;
+}
+.bee-Rights-module-selected,
+.bee-Rights-mso-selected {
+  background-color: #bfb;
 }

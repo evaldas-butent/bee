@@ -7,14 +7,6 @@ name="Administration" label="=administration" order="1000" module="Administratio
   <Item name="UserGroupSettings" label="=userGroups" service="grid"
     parameters="UserGroupSettings" />
 
-  <Item name="Roles" label="=roles" service="form" parameters="Roles" separator="true" />
-
-  <Item name="Modules" label="=modules" service="form" parameters="ModuleRights"
-    separator="true" />
-  <Item name="Menu" label="=menu" service="form" parameters="MenuRights" />
-
-  <Item name="Objects" label="=objects" service="form" parameters="Objects" />
-
   <Item name="Parameters" label="=systemParameters" service="parameters" parameters="Commons"
     separator="true" />
 

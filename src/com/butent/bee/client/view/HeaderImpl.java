@@ -8,6 +8,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
@@ -37,7 +38,7 @@ import java.util.Set;
  * Implements styling and user command capture for data headers.
  */
 
-public class HeaderSilverImpl extends Flow implements HeaderView {
+public class HeaderImpl extends Flow implements HeaderView {
 
   private final class ActionListener implements ClickHandler {
     private final Action action;
@@ -55,7 +56,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
         long last = getLastTime();
         setLastTime(now);
 
-        if (now - last >= HeaderSilverImpl.ACTION_SENSITIVITY_MILLIS) {
+        if (now - last >= HeaderImpl.ACTION_SENSITIVITY_MILLIS) {
           getViewPresenter().handleAction(action);
         }
       }
@@ -70,7 +71,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     }
   }
 
-  private static final BeeLogger logger = LogUtils.getLogger(HeaderSilverImpl.class);
+  private static final BeeLogger logger = LogUtils.getLogger(HeaderImpl.class);
 
   private static final int HEIGHT = 30;
 
@@ -109,7 +110,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
 
   private final Horizontal commandPanel = new Horizontal();
 
-  public HeaderSilverImpl() {
+  public HeaderImpl() {
     super();
   }
 
@@ -130,7 +131,7 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
   }
 
   @Override
-  public void create(String caption, boolean hasData, boolean readOnly,
+  public void create(String caption, boolean hasData, boolean readOnly, String viewName,
       Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions,
       Set<Action> hiddenActions) {
 
@@ -158,15 +159,18 @@ public class HeaderSilverImpl extends Flow implements HeaderView {
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
-
-    if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
+    
+    boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
+    if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
     }
+
     if (hasAction(Action.COPY, false, enabledActions, disabledActions)) {
       add(createFa(FontAwesome.COPY, Action.COPY, hiddenActions));
     }
 
-    if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
+    boolean canDelete = hasData && !readOnly && BeeKeeper.getUser().canDeleteData(viewName);
+    if (hasAction(Action.DELETE, canDelete, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverDelete(), Action.DELETE, hiddenActions));
     }
 

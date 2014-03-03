@@ -18,6 +18,15 @@ public enum SubModule implements HasLocalizedCaption {
       return constants.contacts();
     }
   };
+  
+  public static SubModule parse(String input) {
+    for (SubModule subModule : values()) {
+      if (BeeUtils.same(subModule.getName(), input)) {
+        return subModule;
+      }
+    }
+    return null;
+  }
 
   @Override
   public String getCaption() {

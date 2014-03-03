@@ -92,7 +92,11 @@ abstract class MultiRoleForm extends RightsForm {
   private static final int COLUMN_LABEL_ORIENTATION_COL = 1;
 
   private static Long getRoleId(Widget widget) {
-    return DomUtils.getDataPropertyLong(widget.getElement(), DATA_KEY_ROLE);
+    Long roleId = DomUtils.getDataPropertyLong(widget.getElement(), DATA_KEY_ROLE);
+    if (roleId == null) {
+      severe("widget", DomUtils.getId(widget), "has no role");
+    }
+    return roleId;
   }
 
   private final BiMap<Long, String> roles = HashBiMap.create();
@@ -187,20 +191,33 @@ abstract class MultiRoleForm extends RightsForm {
       header.addCommandItem(userClear);
       header.addCommandItem(userSelector);
     }
+
+    init();
   }
 
   @Override
-  protected Multimap<String, ?> getChanges() {
-    return changes;
+  protected Set<String> getChangedNames() {
+    return changes.keySet();
+  }
+
+  @Override
+  protected String getChangeMessage(RightsObject object) {
+    return BeeUtils.joinWords(object.getCaption(),
+        BeeUtils.bracket(changes.get(object.getName()).size()));
+  }
+
+  @Override
+  protected String getPanelStyleName() {
+    return STYLE_PREFIX + "multi-role";
   }
 
   protected abstract RightsState getRightsState();
 
   @Override
-  protected boolean hasChanges() {
-    return !changes.isEmpty();
+  protected int getValueStartCol() {
+    return 2;
   }
-
+  
   @Override
   protected void initData(final Consumer<Boolean> callback) {
     Queries.getRowSet(VIEW_ROLES, Lists.newArrayList(COL_ROLE_NAME), new Queries.RowSetCallback() {
@@ -220,8 +237,9 @@ abstract class MultiRoleForm extends RightsForm {
           roles.put(roleRow.getId(), DataUtils.getString(roleData, roleRow, COL_ROLE_NAME));
         }
 
-        ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RIGHTS);
-        params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
+        ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_STATE_RIGHTS);
+        params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
+        params.addQueryItem(COL_STATE, getRightsState().ordinal());
 
         BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
           @Override
@@ -239,33 +257,36 @@ abstract class MultiRoleForm extends RightsForm {
               }
 
               if (response.hasResponse()) {
-                Map<String, String> rights =
-                    Codec.deserializeMap(response.getResponseAsString());
-
-                String stateIdx = BeeUtils.toString(RightsState.VIEW.ordinal());
+                Map<String, String> rights = Codec.deserializeMap(response.getResponseAsString());
 
                 if (getRightsState().isChecked()) {
+                  Set<Long> ids = Sets.newHashSet(roles.keySet());
+
                   for (RightsObject object : getObjects()) {
-                    Set<Long> ids = Sets.newHashSet(roles.keySet());
-
                     if (rights.containsKey(object.getName())) {
-                      ids.removeAll(DataUtils.parseIdSet(Codec
-                          .deserializeMap(rights.get(object.getName())).get(stateIdx)));
-                    }
+                      Set<Long> values = Sets.newHashSet(ids);
+                      values.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
 
-                    if (!ids.isEmpty()) {
+                      if (!values.isEmpty()) {
+                        initialValues.putAll(object.getName(), values);
+                      }
+
+                    } else {
                       initialValues.putAll(object.getName(), ids);
                     }
                   }
 
                 } else if (!rights.isEmpty()) {
                   for (Map.Entry<String, String> entry : rights.entrySet()) {
-                    Set<Long> ids = DataUtils
-                        .parseIdSet(Codec.deserializeMap(entry.getValue()).get(stateIdx));
-                    for (Long id : ids) {
-                      initialValues.put(entry.getKey(), id);
-                    }
+                    initialValues.putAll(entry.getKey(), DataUtils.parseIdSet(entry.getValue()));
                   }
+                }
+
+              } else if (getRightsState().isChecked()) {
+                Set<Long> ids = Sets.newHashSet(roles.keySet());
+
+                for (RightsObject object : getObjects()) {
+                  initialValues.putAll(object.getName(), ids);
                 }
               }
 
@@ -290,6 +311,7 @@ abstract class MultiRoleForm extends RightsForm {
   @Override
   protected void onObjectToggle(boolean checked) {
     List<Toggle> roleToggles = getRoleToggles();
+
     for (Toggle toggle : roleToggles) {
       if (checked) {
         toggle.setChecked(isRoleChecked(getRoleId(toggle)));
@@ -339,7 +361,7 @@ abstract class MultiRoleForm extends RightsForm {
 
     addColumnLabelOrientationToggle();
 
-    int col = VALUE_START_COL;
+    int col = getValueStartCol();
 
     for (String roleName : roleNames) {
       long roleId = getRoleId(roleName);
@@ -349,13 +371,13 @@ abstract class MultiRoleForm extends RightsForm {
       col++;
     }
 
-    int row = VALUE_START_ROW;
+    int row = getValueStartRow();
 
     for (RightsObject object : getObjects()) {
       addObjectLabel(row, object);
       addObjectToggle(row, object);
 
-      col = VALUE_START_COL;
+      col = getValueStartCol();
 
       String objectName = object.getName();
       String objectCaption = object.getCaption();
@@ -398,9 +420,9 @@ abstract class MultiRoleForm extends RightsForm {
       }
 
     } else {
-      ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_RIGHTS);
-      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().name());
-      params.addQueryItem(COL_STATE, getRightsState().name());
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_STATE_RIGHTS);
+      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
+      params.addQueryItem(COL_STATE, getRightsState().ordinal());
 
       Map<String, String> diff = Maps.newHashMap();
       for (String objectName : changes.keySet()) {
@@ -588,7 +610,7 @@ abstract class MultiRoleForm extends RightsForm {
     return toggle;
   }
 
-  private Widget createValueToggle(String objectName, long roleId, String title) {
+  private Toggle createValueToggle(String objectName, long roleId, String title) {
     Toggle toggle = createValueToggle(objectName);
     toggle.setTitle(title);
 
@@ -719,7 +741,6 @@ abstract class MultiRoleForm extends RightsForm {
         toggles.add((Toggle) widget);
       }
     }
-
     return toggles;
   }
 
@@ -837,5 +858,4 @@ abstract class MultiRoleForm extends RightsForm {
       }
     }
   }
-
 }

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Themes"
-  source="Themes"
+  name="Themes" source="Themes" module="Classifiers"
   >
   <Columns>
     <SimpleColumn name="Name" />

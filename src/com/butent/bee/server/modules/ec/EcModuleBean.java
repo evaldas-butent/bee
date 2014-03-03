@@ -147,7 +147,6 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return null;
     }
-
     Operator operator;
     String value;
 
@@ -162,6 +161,11 @@ public class EcModuleBean implements BeeModule {
     } else {
       operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
       value = normalizeCode(code);
+
+      if (operator == Operator.STARTS) {
+        value += Operator.CHAR_ANY;
+        operator = Operator.MATCHES;
+      }
       if (BeeUtils.length(value) < MIN_SEARCH_QUERY_LENGTH) {
         return null;
       }

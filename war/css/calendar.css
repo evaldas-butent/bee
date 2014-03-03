@@ -310,6 +310,15 @@
   text-align: right;
   padding-right: 5px;
 }
+
+.bee-cal-MonthView .dayCellLabel .day-cell {
+  text-align: left;
+  display: inline-block;
+  left: 0px;
+  position: absolute;
+  margin-left: 1ex;
+}
+
 .bee-cal-MonthView .dayCellLabel.disabled {
   color: #999;
 }

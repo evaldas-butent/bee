@@ -16,5 +16,6 @@
   <Indexes>
     <Index fields="SearchNr" />
     <Index fields="CodeNr Brand" />
+    <Index fields="OECode" />
   </Indexes>
 </Table>
