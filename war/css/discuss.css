@@ -243,6 +243,7 @@
   background-color: whitesmoke;
   position: relative;
   top: 2px;
+  width: 100%;
 }
 
 .bee-discuss-adsFormContent-Owner {
