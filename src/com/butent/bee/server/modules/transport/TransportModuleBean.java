@@ -126,9 +126,25 @@ public class TransportModuleBean implements BeeModule {
     List<SearchResult> result = Lists.newArrayList();
 
     if (usr.isModuleVisible(Module.TRANSPORT.getName())) {
-      result.addAll(qs.getSearchResults(VIEW_VEHICLES,
+      List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
-              COL_OWNER_NAME), query)));
+              COL_OWNER_NAME), query));
+      
+      Filter orderCargoFilter =  Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
+          COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+          ALS_LOADING_TERMINAL, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+          ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+          ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_TERMINAL, ALS_UNLOADING_CONTACT,
+          ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+          ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+          query);
+      
+      List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO, 
+          orderCargoFilter
+        );
+      
+      result.addAll(vehiclesResult);
+      result.addAll(orderCargoResult);
     }
 
     return result;

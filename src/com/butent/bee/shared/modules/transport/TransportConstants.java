@@ -564,6 +564,7 @@ public final class TransportConstants {
   public static final String COL_AMOUNT = "Amount";
 
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_CARGO_DIRECTIONS = "Directions";
 
   public static final String COL_UNLOADING_PLACE = "UnloadingPlace";
   public static final String COL_LOADING_PLACE = "LoadingPlace";
@@ -842,6 +843,26 @@ public final class TransportConstants {
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
+  
+  public static final String ALS_LOADING_DATE = "LoadingDate";
+  public static final String ALS_LOADING_TERMINAL = "LoadingTerminal";
+  public static final String ALS_LOADING_CONTACT = "LoadingContact";
+  public static final String ALS_LOADING_COMPANY = "LoadingCompany";
+  public static final String ALS_LOADING_ADDRESS = "LoadingAddress";
+  public static final String ALS_LOADING_POST_INDEX = "LoadingPostIndex";
+  public static final String ALS_LOADING_CITY_NAME = "LoadingCityName";
+  public static final String ALS_LOADING_COUNTRY_NAME = "LoadingCountryName";
+  public static final String ALS_LOADING_COUNTRY_CODE = "LoadingCountryCode";
+
+  public static final String ALS_UNLOADING_DATE = "UnloadingDate";
+  public static final String ALS_UNLOADING_TERMINAL = "UnloadingTerminal";
+  public static final String ALS_UNLOADING_CONTACT = "UnloadingContact";
+  public static final String ALS_UNLOADING_COMPANY = "UnloadingCompany";
+  public static final String ALS_UNLOADING_ADDRESS = "UnLoadingAddress";
+  public static final String ALS_UNLOADING_POST_INDEX = "UnloadingPostIndex";
+  public static final String ALS_UNLOADING_CITY_NAME = "UnloadingCityName";
+  public static final String ALS_UNLOADING_COUNTRY_NAME = "UnloadingCountryName";
+  public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";

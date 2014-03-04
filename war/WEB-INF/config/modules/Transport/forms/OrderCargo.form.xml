@@ -112,6 +112,10 @@
         <cell rowSpan="4">
           <InputArea source="Notes" characterWidth="30" visibleLines="4" />
         </cell>
+        <Label text="=trDirections" />
+        <cell rowSpan="4">
+          <InputArea source="Directions" characterWidth="30" visibleLines="4" />
+        </cell>
       </row>
       <row>
         <Label text="=number" horizontalAlignment="right" />

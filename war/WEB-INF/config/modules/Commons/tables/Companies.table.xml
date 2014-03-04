@@ -16,7 +16,6 @@
     <Relation name="CompanyPriority" relation="CompanyPriorities" label="=priority" />
 
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
-    <Relation name="CompanyContacts" relation="CompanyContacts" editable="true" />
 
     <Relation name="CompanySize" relation="CompanySizes" label="=companySize" />
     <Relation name="InformationSource" relation="InformationSources" label="=informationSource" />
