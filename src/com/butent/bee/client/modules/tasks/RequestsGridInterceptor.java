@@ -11,7 +11,7 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.data.filter.ColumnNotNullFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -62,13 +62,13 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
     Filter filter = null;
 
     if (registred != null && BooleanValue.unpack(registred.getValue())) {
-      filter = ColumnNotNullFilter.notNull(TasksConstants.COL_REQUEST_DATE);
+      filter = ColumnNotNullFilter.notNull(TaskConstants.COL_REQUEST_DATE);
     }
     if (finished == null || !BooleanValue.unpack(finished.getValue())) {
-      filter = Filter.and(filter, Filter.isNull(TasksConstants.COL_REQUEST_FINISHED));
+      filter = Filter.and(filter, Filter.isNull(TaskConstants.COL_REQUEST_FINISHED));
     }    
     if (finished != null && BooleanValue.unpack(finished.getValue())) {
-      filter = Filter.or(filter, Filter.isNot(Filter.isNull(TasksConstants.COL_REQUEST_FINISHED)));
+      filter = Filter.or(filter, Filter.isNot(Filter.isNull(TaskConstants.COL_REQUEST_FINISHED)));
     }
     return filter;
   }

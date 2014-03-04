@@ -12,7 +12,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -26,31 +26,31 @@ import java.util.List;
 import java.util.Set;
 
 public enum Feed implements HasLocalizedCaption {
-  TASKS_ASSIGNED(ModuleAndSub.of(Module.TASKS), TasksConstants.TBL_TASKS,
-      TasksConstants.VIEW_TASKS) {
+  TASKS_ASSIGNED(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS,
+      TaskConstants.VIEW_TASKS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTasksAssigned();
     }
   },
 
-  TASKS_DELEGATED(ModuleAndSub.of(Module.TASKS), TasksConstants.TBL_TASKS,
-      TasksConstants.VIEW_TASKS) {
+  TASKS_DELEGATED(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS,
+      TaskConstants.VIEW_TASKS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTasksDelegated();
     }
   },
 
-  TASKS_OBSERVED(ModuleAndSub.of(Module.TASKS), TasksConstants.TBL_TASKS,
-      TasksConstants.VIEW_TASKS) {
+  TASKS_OBSERVED(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS,
+      TaskConstants.VIEW_TASKS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTasksObserved();
     }
   },
 
-  TASKS_ALL(ModuleAndSub.of(Module.TASKS), TasksConstants.TBL_TASKS, TasksConstants.VIEW_TASKS) {
+  TASKS_ALL(ModuleAndSub.of(Module.TASKS), TaskConstants.TBL_TASKS, TaskConstants.VIEW_TASKS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTasksAll();

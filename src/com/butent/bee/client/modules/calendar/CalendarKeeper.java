@@ -10,7 +10,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -48,6 +47,8 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
@@ -244,7 +245,7 @@ public final class CalendarKeeper {
     RowEditor.registerHasDelegate(VIEW_CALENDARS);
     RowEditor.registerHasDelegate(VIEW_APPOINTMENTS);
 
-    BeeKeeper.getMenu().registerMenuCallback("calendar_reports", new MenuManager.MenuCallback() {
+    MenuService.CALENDAR_REPORTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         REPORT_MANAGER.onSelectReport(EnumUtils.getEnumByIndex(Report.class, parameters));

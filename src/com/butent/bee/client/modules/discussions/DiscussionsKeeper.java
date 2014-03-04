@@ -4,13 +4,14 @@ import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.news.Feed;
@@ -24,15 +25,14 @@ public final class DiscussionsKeeper {
     FormFactory.registerFormInterceptor(FORM_DISCUSSION, new DiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_ANNOUNCEMENTS_BOARD,
         new AnnouncementsBoardInterceptor());
-    /* Menu */
-    BeeKeeper.getMenu().registerMenuCallback(MENU_SERVICE_DISCUSSIONS_LIST,
-        new MenuManager.MenuCallback() {
 
-          @Override
-          public void onSelection(String parameters) {
-            DiscussionsList.open(parameters);
-          }
-        });
+    /* Menu */
+    MenuService.DISCUSS_LIST.setHandler(new MenuHandler() {
+      @Override
+      public void onSelection(String parameters) {
+        DiscussionsList.open(parameters);
+      }
+    });
 
     /* Row handlers */
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);

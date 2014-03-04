@@ -1,6 +1,6 @@
 package com.butent.bee.server.modules.tasks;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;

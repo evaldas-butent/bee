@@ -13,7 +13,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -57,9 +57,9 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -135,7 +135,7 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
-    if (event.isEmpty() && TasksUtils.sameObservers(oldRow, newRow)
+    if (event.isEmpty() && TaskUtils.sameObservers(oldRow, newRow)
         && getUpdatedRelations(oldRow, newRow).isEmpty()) {
       return;
     }
@@ -176,7 +176,7 @@ class TaskEditor extends AbstractFormInterceptor {
       if (Objects.equal(executor, userId)) {
         newStatus = TaskStatus.ACTIVE;
       }
-    } else if (TaskStatus.SCHEDULED.equals(oldStatus) && !TasksUtils.isScheduled(start)) {
+    } else if (TaskStatus.SCHEDULED.equals(oldStatus) && !TaskUtils.isScheduled(start)) {
       newStatus = Objects.equal(executor, userId) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
     }
 
@@ -293,7 +293,7 @@ class TaskEditor extends AbstractFormInterceptor {
     List<String> notes = getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
 
     if (form.isEnabled()) {
-      if (!TasksUtils.sameObservers(oldRow, newRow)) {
+      if (!TaskUtils.sameObservers(oldRow, newRow)) {
         String oldObservers = oldRow.getProperty(PROP_OBSERVERS);
         String newObservers = newRow.getProperty(PROP_OBSERVERS);
 
@@ -303,7 +303,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : removed) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(TasksUtils.getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
+            notes.add(TaskUtils.getDeleteNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
 
@@ -311,7 +311,7 @@ class TaskEditor extends AbstractFormInterceptor {
         for (long id : added) {
           String label = selector.getRowLabel(id);
           if (!BeeUtils.isEmpty(label)) {
-            notes.add(TasksUtils.getInsertNote(Localized.getConstants().crmTaskObservers(), label));
+            notes.add(TaskUtils.getInsertNote(Localized.getConstants().crmTaskObservers(), label));
           }
         }
       }
@@ -334,7 +334,7 @@ class TaskEditor extends AbstractFormInterceptor {
           for (long id : removed) {
             String label = selector.getRowLabel(id);
             if (!BeeUtils.isEmpty(label)) {
-              notes.add(TasksUtils.getDeleteNote(caption, label));
+              notes.add(TaskUtils.getDeleteNote(caption, label));
             }
           }
 
@@ -342,7 +342,7 @@ class TaskEditor extends AbstractFormInterceptor {
           for (long id : added) {
             String label = selector.getRowLabel(id);
             if (!BeeUtils.isEmpty(label)) {
-              notes.add(TasksUtils.getInsertNote(caption, label));
+              notes.add(TaskUtils.getInsertNote(caption, label));
             }
           }
         }
@@ -782,7 +782,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static String getTaskUsers(FormView form, IsRow row) {
-    return DataUtils.buildIdList(TasksUtils.getTaskUsers(row, form.getDataColumns()));
+    return DataUtils.buildIdList(TaskUtils.getTaskUsers(row, form.getDataColumns()));
   }
 
   private List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
@@ -817,11 +817,11 @@ class TaskEditor extends AbstractFormInterceptor {
         String note;
 
         if (BeeUtils.isEmpty(oldValue)) {
-          note = TasksUtils.getInsertNote(label, DataUtils.render(dataInfo, newRow, column, i));
+          note = TaskUtils.getInsertNote(label, DataUtils.render(dataInfo, newRow, column, i));
         } else if (BeeUtils.isEmpty(newValue)) {
-          note = TasksUtils.getDeleteNote(label, DataUtils.render(dataInfo, oldRow, column, i));
+          note = TaskUtils.getDeleteNote(label, DataUtils.render(dataInfo, oldRow, column, i));
         } else {
-          note = TasksUtils.getUpdateNote(label, DataUtils.render(dataInfo, oldRow, column, i),
+          note = TaskUtils.getUpdateNote(label, DataUtils.render(dataInfo, oldRow, column, i),
               DataUtils.render(dataInfo, newRow, column, i));
         }
 

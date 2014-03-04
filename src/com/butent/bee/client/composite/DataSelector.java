@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableCellElement;
@@ -44,7 +45,6 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
-import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.EnumRenderer;
@@ -367,16 +367,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     private MenuItem createNavigationItem(boolean next) {
-      MenuCommand command;
+      Scheduler.ScheduledCommand command;
       if (next) {
-        command = new MenuCommand() {
+        command = new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
             nextPage();
           }
         };
       } else {
-        command = new MenuCommand() {
+        command = new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
             prevPage();
@@ -1301,7 +1301,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   private void addItem(MenuBar menu, final BeeRow row) {
-    MenuCommand menuCommand = new MenuCommand() {
+    Scheduler.ScheduledCommand menuCommand = new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
         setSelection(row);

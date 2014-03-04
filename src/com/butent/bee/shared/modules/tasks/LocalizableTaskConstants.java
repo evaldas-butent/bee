@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.tasks;
 
-public interface LocalizableTasksConstants {
+public interface LocalizableTaskConstants {
 
   String creditLimit();
 

@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -27,7 +27,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.List;
 import java.util.Set;
 
-public final class TasksUtils {
+public final class TaskUtils {
 
   private static final String NOTE_LABEL_SEPARATOR = ": ";
 
@@ -146,6 +146,6 @@ public final class TasksUtils {
     return taskPropertyToRelation;
   }
 
-  private TasksUtils() {
+  private TaskUtils() {
   }
 }

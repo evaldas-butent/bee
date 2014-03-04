@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -99,6 +100,8 @@ public class DispatcherBean {
 
     if (!BeeUtils.isEmpty(components)) {
       for (Component component : components) {
+        long millis = System.currentTimeMillis();
+
         switch (component) {
           case AUTOCOMPLETE:
             ResponseObject acData = uiService.getAutocomplete();
@@ -174,6 +177,8 @@ public class DispatcherBean {
             data.put(component.key(), userService.getAllUserData());
             break;
         }
+        
+        logger.debug(reqInfo.getService(), component, TimeUtils.elapsedMillis(millis));
       }
     }
 

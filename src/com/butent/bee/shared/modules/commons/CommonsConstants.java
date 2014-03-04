@@ -292,6 +292,9 @@ public final class CommonsConstants {
   public static final String VIEW_RIGHTS = "Rights";
   public static final String VIEW_USER_ROLES = "UserRoles";
 
+  public static final String VIEW_PARAMETERS = "Parameters";
+  public static final String VIEW_USER_PARAMETERS = "UserParameters";
+
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";

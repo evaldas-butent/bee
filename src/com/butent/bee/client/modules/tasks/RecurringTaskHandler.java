@@ -14,7 +14,7 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -67,8 +67,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
 import com.butent.bee.shared.time.DateRange;
@@ -1026,7 +1026,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           if (data.containsKey(VIEW_RT_DATES)) {
             BeeRowSet rtDates = BeeRowSet.restore(data.get(VIEW_RT_DATES));
             if (!DataUtils.isEmpty(rtDates)) {
-              scheduleDateRanges.addAll(TasksUtils.getScheduleDateRanges(rtDates));
+              scheduleDateRanges.addAll(TaskUtils.getScheduleDateRanges(rtDates));
             }
           }
         }

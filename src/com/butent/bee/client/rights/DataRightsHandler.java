@@ -69,8 +69,9 @@ final class DataRightsHandler extends MultiStateForm {
     for (DataInfo view : views) {
       ModuleAndSub ms = ModuleAndSub.parse(view.getModule());
    
-//      if (ms == null) {
-//        warning("view", view.getViewName(), "module", view.getModule(), "not recognized");
+      if (ms == null) {
+        warning("view", view.getViewName(), "module", view.getModule(), "not recognized");
+      }
 
       if (ms != null && ms.isEnabled()) {
         String viewName = view.getViewName();

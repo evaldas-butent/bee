@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -62,7 +62,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
@@ -361,7 +361,7 @@ final class TaskList {
         }
       }
 
-      for (String propName : TasksUtils.getRelationPropertyNames()) {
+      for (String propName : TaskUtils.getRelationPropertyNames()) {
         String propValue = oldRow.getProperty(propName);
         if (!BeeUtils.isEmpty(propValue)) {
           newRow.setProperty(propName, propValue);
@@ -418,7 +418,7 @@ final class TaskList {
         }
       }
 
-      for (String propName : TasksUtils.getRelationPropertyNames()) {
+      for (String propName : TaskUtils.getRelationPropertyNames()) {
         String propValue = oldRow.getProperty(propName);
         if (!BeeUtils.isEmpty(propValue)) {
           newRow.setProperty(propName, propValue);

@@ -153,8 +153,6 @@ public final class DiscussionsConstants {
 
   public static final String GRID_DISCUSSIONS = "Discussions";
 
-  public static final String MENU_SERVICE_DISCUSSIONS_LIST = "discuss_list";
-
   public static final String PROP_COMMENTS = "Comments";
   public static final String PROP_DESCRIPTION = "Description";
   public static final String PROP_FILES = "Files";

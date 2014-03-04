@@ -7,13 +7,13 @@ import com.butent.bee.shared.modules.discussions.LocalizableDiscussionsConstants
 import com.butent.bee.shared.modules.documents.LocalizableDocumentsConstants;
 import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
 import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
-import com.butent.bee.shared.modules.tasks.LocalizableTasksConstants;
+import com.butent.bee.shared.modules.tasks.LocalizableTaskConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
     LocalizableMailConstants, LocalizableTransportConstants, LocalizableTradeConstants,
-    LocalizableTasksConstants, LocalizableEcConstants, LocalizableDiscussionsConstants,
+    LocalizableTaskConstants, LocalizableEcConstants, LocalizableDiscussionsConstants,
     LocalizableDocumentsConstants {
 
   String actionAdd();

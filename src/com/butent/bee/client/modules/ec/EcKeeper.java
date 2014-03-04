@@ -17,7 +17,6 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -55,6 +54,8 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
@@ -438,7 +439,7 @@ public final class EcKeeper {
   }
 
   public static void register() {
-    BeeKeeper.getMenu().registerMenuCallback("ensure_categories_and_open_grid", new MenuCallback() {
+    MenuService.ENSURE_CATEGORIES_AND_OPEN_GRID.setHandler(new MenuHandler() {
       @Override
       public void onSelection(final String parameters) {
         ensureCategories(new Consumer<Boolean>() {
@@ -450,7 +451,7 @@ public final class EcKeeper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("edit_terms_of_delivery", new MenuCallback() {
+    MenuService.EDIT_TERMS_OF_DELIVERY.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         editConfigurationHtml(Localized.getConstants().ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
@@ -458,7 +459,7 @@ public final class EcKeeper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("edit_ec_contacts", new MenuCallback() {
+    MenuService.EDIT_EC_CONTACTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         editConfigurationHtml(Localized.getConstants().ecContacts(), COL_CONFIG_CONTACTS_URL,

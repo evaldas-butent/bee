@@ -271,6 +271,10 @@ public class UserData implements BeeSerializable, HasInfo {
     return BeeUtils.notEmpty(BeeUtils.joinWords(getFirstName(), getLastName()), getLogin());
   }
 
+  public boolean hasDataRight(String object, RightsState state) {
+    return hasRight(RightsObjectType.DATA, object, state);
+  }
+
   public boolean isColumnVisible(String viewName, String column) {
     return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
   }
@@ -399,10 +403,6 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public void setRights(Table<RightsState, RightsObjectType, Set<String>> rights) {
     this.rights = rights;
-  }
-
-  private boolean hasDataRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.DATA, object, state);
   }
 
   private boolean hasFieldRight(String object, RightsState state) {

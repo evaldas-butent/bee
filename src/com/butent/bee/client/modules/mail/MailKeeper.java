@@ -9,8 +9,6 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
-import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.StringCallback;
@@ -25,6 +23,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.rights.Module;
@@ -43,15 +43,14 @@ public final class MailKeeper {
   private static final Set<MailPanel> mailPanels = Sets.newHashSet();
 
   public static void register() {
-    BeeKeeper.getMenu().registerMenuCallback(SVC_RESTART_PROXY,
-        new MenuManager.MenuCallback() {
-          @Override
-          public void onSelection(String parameters) {
-            BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_RESTART_PROXY));
-          }
-        });
+    MenuService.RESTART_PROXY.setHandler(new MenuHandler() {
+      @Override
+      public void onSelection(String parameters) {
+        BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_RESTART_PROXY));
+      }
+    });
 
-    BeeKeeper.getMenu().registerMenuCallback("open_mail", new MenuCallback() {
+    MenuService.OPEN_MAIL.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         mailPanels.add(new MailPanel());

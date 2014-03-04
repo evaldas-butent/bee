@@ -9,7 +9,6 @@ import com.google.gwt.event.shared.HasHandlers;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -28,6 +27,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -93,14 +94,14 @@ public final class CommonsKeeper {
   }
 
   public static void register() {
-    BeeKeeper.getMenu().registerMenuCallback("items", new MenuCallback() {
+    MenuService.ITEMS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(parameters, "s")));
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(SVC_UPDATE_EXCHANGE_RATES, new MenuCallback() {
+    MenuService.UPDATE_EXCHANGE_RATES.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         CommonsUtils.updateExchangeRates();

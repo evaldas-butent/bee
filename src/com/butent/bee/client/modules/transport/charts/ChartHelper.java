@@ -15,7 +15,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -41,6 +40,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -114,7 +115,7 @@ public final class ChartHelper {
       }
     };
 
-    BeeKeeper.getMenu().registerMenuCallback(FreightExchange.SUPPLIER_KEY, new MenuCallback() {
+    MenuService.FREIGHT_EXCHANGE.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         FreightExchange.open(showInNewTab);
@@ -128,7 +129,7 @@ public final class ChartHelper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(ShippingSchedule.SUPPLIER_KEY, new MenuCallback() {
+    MenuService.SHIPPING_SCHEDULE.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         ShippingSchedule.open(showInNewTab);
@@ -142,7 +143,7 @@ public final class ChartHelper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(DriverTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+    MenuService.DRIVER_TIME_BOARD.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         DriverTimeBoard.open(showInNewTab);
@@ -156,7 +157,7 @@ public final class ChartHelper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(TruckTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+    MenuService.TRUCK_TIME_BOARD.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         TruckTimeBoard.open(showInNewTab);
@@ -170,7 +171,7 @@ public final class ChartHelper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback(TrailerTimeBoard.SUPPLIER_KEY, new MenuCallback() {
+    MenuService.TRAILER_TIME_BOARD.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         TrailerTimeBoard.open(showInNewTab);

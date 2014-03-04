@@ -4,11 +4,10 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -30,10 +29,12 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
@@ -133,13 +134,13 @@ public final class TasksKeeper {
 
             if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
               params.addQueryItem(COL_START_TIME, newStart.getTime());
-              notes.add(TasksUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
                   TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
             }
 
             if (!Objects.equal(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
-              notes.add(TasksUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
                   TimeUtils.renderCompact(oldEnd), TimeUtils.renderCompact(newEnd)));
             }
 
@@ -189,14 +190,14 @@ public final class TasksKeeper {
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
             CommonsConstants.ALS_FILE_NAME));
 
-    BeeKeeper.getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
+    MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         TaskList.open(parameters);
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("task_reports", new MenuManager.MenuCallback() {
+    MenuService.TASK_REPORTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {

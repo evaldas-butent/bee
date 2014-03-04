@@ -9,7 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -66,9 +66,9 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -464,7 +464,7 @@ public class TasksModuleBean implements BeeModule {
 
     List<Long> newUsers;
     if (checkUsers) {
-      newUsers = TasksUtils.getTaskUsers(row, data.getColumns());
+      newUsers = TaskUtils.getTaskUsers(row, data.getColumns());
       if (!BeeUtils.sameElements(oldUsers, newUsers)) {
         updateTaskUsers(row.getId(), oldUsers, newUsers);
       }
@@ -562,7 +562,7 @@ public class TasksModuleBean implements BeeModule {
     List<RowChildren> children = Lists.newArrayList();
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String relation = TasksUtils.translateTaskPropertyToRelation(entry.getKey());
+      String relation = TaskUtils.translateTaskPropertyToRelation(entry.getKey());
 
       if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
         children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, null,
@@ -612,7 +612,7 @@ public class TasksModuleBean implements BeeModule {
       newRow.setValue(data.getColumnIndex(COL_EXECUTOR), executor);
 
       TaskStatus status;
-      if (TasksUtils.isScheduled(start)) {
+      if (TaskUtils.isScheduled(start)) {
         status = TaskStatus.SCHEDULED;
       } else {
         status = (executor == owner) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
@@ -1106,12 +1106,12 @@ public class TasksModuleBean implements BeeModule {
   private Multimap<String, Long> getRelations(String filterColumn, long filterValue) {
     Multimap<String, Long> res = HashMultimap.create();
 
-    for (String relation : TasksUtils.getRelations()) {
+    for (String relation : TaskUtils.getRelations()) {
       Long[] ids = qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, filterColumn, filterValue,
           relation);
 
       if (ids != null && ids.length > 0) {
-        String property = TasksUtils.translateRelationToTaskProperty(relation);
+        String property = TaskUtils.translateRelationToTaskProperty(relation);
 
         for (Long id : ids) {
           res.put(property, id);
@@ -1864,7 +1864,7 @@ public class TasksModuleBean implements BeeModule {
           Filter.equals(COL_RTD_RECURRING_TASK, rtId));
 
       if (!DataUtils.isEmpty(rtDates)) {
-        List<ScheduleDateRange> scheduleDateRanges = TasksUtils.getScheduleDateRanges(rtDates);
+        List<ScheduleDateRange> scheduleDateRanges = TaskUtils.getScheduleDateRanges(rtDates);
 
         for (ScheduleDateRange sdr : scheduleDateRanges) {
           builder.rangeMode(sdr.getRange(), sdr.getMode());
@@ -2321,7 +2321,7 @@ public class TasksModuleBean implements BeeModule {
     List<RowChildren> children = Lists.newArrayList();
 
     for (String property : updatedRelations) {
-      String relation = TasksUtils.translateTaskPropertyToRelation(property);
+      String relation = TaskUtils.translateTaskPropertyToRelation(property);
 
       if (!BeeUtils.isEmpty(relation)) {
         children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, taskId,

@@ -83,7 +83,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -709,7 +709,7 @@ public class MailPanel extends AbstractFormInterceptor {
         for (int i = 0; i < data.length; i += 2) {
           packet.put(data[i], data[i + 1]);
         }
-        DataInfo dataInfo = Data.getDataInfo(TasksConstants.TBL_REQUESTS);
+        DataInfo dataInfo = Data.getDataInfo(TaskConstants.TBL_REQUESTS);
         BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
         row.setValue(dataInfo.getColumnIndex("Customer"),

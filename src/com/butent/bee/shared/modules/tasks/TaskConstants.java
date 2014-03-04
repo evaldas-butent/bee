@@ -7,7 +7,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
-public final class TasksConstants {
+public final class TaskConstants {
 
   public enum TaskEvent implements HasCaption {
     CREATE(Localized.getConstants().crmTaskEventCreated(), null),
@@ -382,6 +382,6 @@ public final class TasksConstants {
   public static final String FILTER_TASKS_NEW = "tasks_new";
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";
 
-  private TasksConstants() {
+  private TaskConstants() {
   }
 }

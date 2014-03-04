@@ -482,6 +482,11 @@ public class UserServiceBean {
     return null;
   }
 
+  public boolean hasDataRight(String object, RightsState state) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().hasDataRight(object, state);
+  }
+  
   @Lock(LockType.WRITE)
   public void initRights() {
     rightsCache.clear();
@@ -600,11 +605,7 @@ public class UserServiceBean {
 
   public boolean isMenuVisible(String object) {
     UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().isMenuVisible(object);
-    }
-    return false;
+    return (info == null) ? false : info.getUserData().isMenuVisible(object);
   }
 
   public boolean isModuleVisible(ModuleAndSub moduleAndSub) {

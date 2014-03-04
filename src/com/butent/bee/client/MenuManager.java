@@ -1,7 +1,6 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -24,11 +23,11 @@ import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * creates and manages menu of the system using authorization and layout configuration.
@@ -36,15 +35,11 @@ import java.util.Map;
 
 public class MenuManager {
 
-  public interface MenuCallback {
-    void onSelection(String parameters);
-  }
-
   private static final BeeLogger logger = LogUtils.getLogger(MenuManager.class);
 
   private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
     String txt = Localized.maybeTranslate(item.getLabel());
-    String svc = null;
+    MenuService svc = null;
     String opt = null;
 
     if (item instanceof MenuItem) {
@@ -61,7 +56,12 @@ public class MenuManager {
       }
 
       if (cw == null) {
-        mb.addItem(txt, new MenuCommand(svc, opt));
+        if (svc == null) {
+          noService(item);
+        } else {
+          mb.addItem(txt, new MenuCommand(svc, opt));
+        }
+
       } else if (cw instanceof MenuBar) {
         mb.addItem(txt, (MenuBar) cw);
       }
@@ -74,13 +74,22 @@ public class MenuManager {
       TreeItem it = new TreeItem(txt);
 
       if (cw == null) {
-        it.setUserObject(new MenuCommand(svc, opt));
+        if (svc == null) {
+          noService(item);
+        } else {
+          it.setUserObject(new MenuCommand(svc, opt));
+        }
+
       } else {
         it.addItem(cw.asWidget());
       }
 
       ((Tree) rw).addItem(it);
     }
+  }
+  
+  private static void noService(Menu item) {
+    logger.warning("service not available for menu item", item.getParent(), item.getName());
   }
 
   private static IdentifiableWidget createWidget(String layout, int level) {
@@ -131,8 +140,6 @@ public class MenuManager {
     }
   }
 
-  private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
-
   private final List<Menu> roots = Lists.newArrayList();
 
   private final List<String> layouts = Lists.newArrayList();
@@ -162,11 +169,6 @@ public class MenuManager {
     return layouts;
   }
 
-  public MenuCallback getMenuCallback(String service) {
-    Assert.notEmpty(service);
-    return menuCallbacks.get(BeeUtils.normalize(service));
-  }
-
   public String getRootLayout() {
     return getLayout(0);
   }
@@ -188,11 +190,6 @@ public class MenuManager {
       }
     });
     return true;
-  }
-
-  public void registerMenuCallback(String service, MenuCallback callback) {
-    Assert.notEmpty(service);
-    menuCallbacks.put(BeeUtils.normalize(service), callback);
   }
 
   public void restore(String data) {

@@ -7,9 +7,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -27,7 +27,7 @@ class SlackRenderer extends AbstractCellRenderer {
     }
   }
   
-  private static final String STYLE_PREFIX = TasksConstants.CRM_STYLE_PREFIX + "Slack-"; 
+  private static final String STYLE_PREFIX = TaskConstants.CRM_STYLE_PREFIX + "Slack-"; 
 
   private static final String STYLE_BAR = STYLE_PREFIX + "bar"; 
   private static final String STYLE_LABEl = STYLE_PREFIX + "label"; 
@@ -52,7 +52,7 @@ class SlackRenderer extends AbstractCellRenderer {
     if (finish != null && TimeUtils.isLess(finish, now)) {
       return Kind.LATE;
 
-    } else if (TasksUtils.isScheduled(start)) {
+    } else if (TaskUtils.isScheduled(start)) {
       return Kind.SCHEDULED;
     
     } else if (start != null && TimeUtils.isMore(finish, start) && TimeUtils.isMeq(now, start)
@@ -108,9 +108,9 @@ class SlackRenderer extends AbstractCellRenderer {
   SlackRenderer(List<? extends IsColumn> columns) {
     super(null);
 
-    this.statusIndex = DataUtils.getColumnIndex(TasksConstants.COL_STATUS, columns);
-    this.startIndex = DataUtils.getColumnIndex(TasksConstants.COL_START_TIME, columns);
-    this.finishIndex = DataUtils.getColumnIndex(TasksConstants.COL_FINISH_TIME, columns);
+    this.statusIndex = DataUtils.getColumnIndex(TaskConstants.COL_STATUS, columns);
+    this.startIndex = DataUtils.getColumnIndex(TaskConstants.COL_START_TIME, columns);
+    this.finishIndex = DataUtils.getColumnIndex(TaskConstants.COL_FINISH_TIME, columns);
   }
 
   @Override

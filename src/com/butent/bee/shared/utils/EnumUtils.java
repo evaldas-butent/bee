@@ -18,7 +18,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -51,7 +51,7 @@ public final class EnumUtils {
   static {
     CalendarConstants.register();
     CommonsConstants.register();
-    TasksConstants.register();
+    TaskConstants.register();
     DiscussionsConstants.register();
     EcConstants.register();
     TransportConstants.register();

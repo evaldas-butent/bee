@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;

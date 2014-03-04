@@ -71,8 +71,8 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -1173,22 +1173,22 @@ public class CalendarModuleBean implements BeeModule {
 
     EnumMap<TaskType, ColorAndStyle> typeAppearance = Maps.newEnumMap(TaskType.class);
 
-    String source = TasksConstants.TBL_TASKS;
+    String source = TaskConstants.TBL_TASKS;
     String idName = sys.getIdName(source);
 
     HasConditions where = SqlUtils.and();
-    where.add(SqlUtils.notEqual(source, TasksConstants.COL_STATUS, TaskStatus.CANCELED.ordinal()));
+    where.add(SqlUtils.notEqual(source, TaskConstants.COL_STATUS, TaskStatus.CANCELED.ordinal()));
 
     if (startMillis != null) {
-      where.add(SqlUtils.more(source, TasksConstants.COL_FINISH_TIME, startMillis));
+      where.add(SqlUtils.more(source, TaskConstants.COL_FINISH_TIME, startMillis));
     }
     if (endMillis != null) {
-      where.add(SqlUtils.less(source, TasksConstants.COL_START_TIME, endMillis));
+      where.add(SqlUtils.less(source, TaskConstants.COL_START_TIME, endMillis));
     }
 
     HasConditions match = SqlUtils.or();
     if (assigned) {
-      match.add(SqlUtils.equals(source, TasksConstants.COL_EXECUTOR, calendarOwner));
+      match.add(SqlUtils.equals(source, TaskConstants.COL_EXECUTOR, calendarOwner));
       if (executors.contains(calendarOwner)) {
         executors.remove(calendarOwner);
       }
@@ -1204,11 +1204,11 @@ public class CalendarModuleBean implements BeeModule {
 
     if (delegated) {
       if (executors.contains(calendarOwner)) {
-        match.add(SqlUtils.equals(source, TasksConstants.COL_OWNER, calendarOwner));
+        match.add(SqlUtils.equals(source, TaskConstants.COL_OWNER, calendarOwner));
       } else {
         match.add(SqlUtils.and(
-            SqlUtils.equals(source, TasksConstants.COL_OWNER, calendarOwner),
-            SqlUtils.notEqual(source, TasksConstants.COL_EXECUTOR, calendarOwner)));
+            SqlUtils.equals(source, TaskConstants.COL_OWNER, calendarOwner),
+            SqlUtils.notEqual(source, TaskConstants.COL_EXECUTOR, calendarOwner)));
       }
 
       ColorAndStyle cs = ColorAndStyle.maybeCreate(
@@ -1222,11 +1222,11 @@ public class CalendarModuleBean implements BeeModule {
 
     if (observed) {
       match.add(SqlUtils.and(
-          SqlUtils.notEqual(source, TasksConstants.COL_OWNER, calendarOwner),
-          SqlUtils.notEqual(source, TasksConstants.COL_EXECUTOR, calendarOwner),
-          SqlUtils.in(source, idName, TasksConstants.TBL_TASK_USERS, TasksConstants.COL_TASK,
+          SqlUtils.notEqual(source, TaskConstants.COL_OWNER, calendarOwner),
+          SqlUtils.notEqual(source, TaskConstants.COL_EXECUTOR, calendarOwner),
+          SqlUtils.in(source, idName, TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK,
               SqlUtils
-                  .equals(TasksConstants.TBL_TASK_USERS, TasksConstants.COL_USER, calendarOwner))));
+                  .equals(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER, calendarOwner))));
 
       ColorAndStyle cs = ColorAndStyle.maybeCreate(
           DataUtils.getString(calRowSet, calendar, COL_OBSERVED_TASKS_BACKGROUND),
@@ -1238,23 +1238,23 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (!executors.isEmpty()) {
-      match.add(SqlUtils.inList(source, TasksConstants.COL_EXECUTOR, executors));
+      match.add(SqlUtils.inList(source, TaskConstants.COL_EXECUTOR, executors));
     }
 
     where.add(match);
 
     SqlSelect query = new SqlSelect()
-        .addFields(source, idName, TasksConstants.COL_START_TIME, TasksConstants.COL_FINISH_TIME,
-            TasksConstants.COL_SUMMARY, TasksConstants.COL_DESCRIPTION,
-            TasksConstants.COL_PRIORITY, TasksConstants.COL_STATUS,
-            TasksConstants.COL_OWNER, TasksConstants.COL_EXECUTOR)
+        .addFields(source, idName, TaskConstants.COL_START_TIME, TaskConstants.COL_FINISH_TIME,
+            TaskConstants.COL_SUMMARY, TaskConstants.COL_DESCRIPTION,
+            TaskConstants.COL_PRIORITY, TaskConstants.COL_STATUS,
+            TaskConstants.COL_OWNER, TaskConstants.COL_EXECUTOR)
         .addField(CommonsConstants.TBL_COMPANIES,
             CommonsConstants.COL_COMPANY_NAME, CommonsConstants.ALS_COMPANY_NAME)
         .addFrom(source)
         .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, source, TasksConstants.COL_COMPANY))
+            sys.joinTables(CommonsConstants.TBL_COMPANIES, source, TaskConstants.COL_COMPANY))
         .setWhere(where)
-        .addOrder(source, TasksConstants.COL_START_TIME, TasksConstants.COL_FINISH_TIME, idName);
+        .addOrder(source, TaskConstants.COL_START_TIME, TaskConstants.COL_FINISH_TIME, idName);
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
@@ -1267,18 +1267,18 @@ public class CalendarModuleBean implements BeeModule {
         continue;
       }
 
-      Long owner = row.getLong(TasksConstants.COL_OWNER);
-      Long executor = row.getLong(TasksConstants.COL_EXECUTOR);
+      Long owner = row.getLong(TaskConstants.COL_OWNER);
+      Long executor = row.getLong(TaskConstants.COL_EXECUTOR);
 
       Set<Long> observers = Sets.newHashSet();
 
       Long[] taskUsers = qs.getLongColumn(new SqlSelect()
-          .addFields(TasksConstants.TBL_TASK_USERS, TasksConstants.COL_USER)
-          .addFrom(TasksConstants.TBL_TASK_USERS)
+          .addFields(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER)
+          .addFrom(TaskConstants.TBL_TASK_USERS)
           .setWhere(SqlUtils.and(
-              SqlUtils.equals(TasksConstants.TBL_TASK_USERS, TasksConstants.COL_TASK, id),
-              SqlUtils.notEqual(TasksConstants.TBL_TASK_USERS, TasksConstants.COL_USER, owner),
-              SqlUtils.notEqual(TasksConstants.TBL_TASK_USERS, TasksConstants.COL_USER,
+              SqlUtils.equals(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK, id),
+              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER, owner),
+              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER,
                   executor))));
 
       if (taskUsers != null && taskUsers.length > 0) {
