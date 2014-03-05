@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Objects" source="Objects" module="Administration"
+  newRowForm="Object" caption="=objects" newRowCaption="=newObject"
+  >
+  <Columns>
+    <SimpleColumn name="Type" />
+    <SimpleColumn name="Name" />
+  </Columns>
+  <Order>
+    <OrderBy column="Type" />
+    <OrderBy column="Name" />
+  </Order>
+</View>
+ 

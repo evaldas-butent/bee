@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Relations" idName="RelationID"
+  >
+  <Fields>
+    <Relation name="Relation" relation="Relations" label="=internalRelation" cascade="DELETE" />
+    <Relation name="Request" relation="Requests" label="=crmRequest" cascade="DELETE" />
+    <Relation name="Cargo" relation="OrderCargo" label="=cargo" cascade="DELETE" />
+    <Relation name="Company" relation="Companies" label="=company" cascade="DELETE" />
+    <Relation name="Person" relation="Persons" label="=person" cascade="DELETE" />
+    <Relation name="Appointment" relation="Appointments" label="=calAppointment" cascade="DELETE" />
+    <Relation name="Task" relation="Tasks" label="=crmTask" cascade="DELETE" />
+    <Relation name="RecurringTask" relation="RecurringTasks" label="=crmRecurringTask" cascade="DELETE" />
+    <Relation name="Document" relation="Documents" label="=document" cascade="DELETE" />
+    <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" cascade="DELETE" />
+    <Relation name="Driver" relation="Drivers" label="=vehicleDriver" cascade="DELETE" />
+    <Relation name="TransportationOrder" relation="TransportationOrders" label="=transportOrder" cascade="DELETE" />
+    <Relation name="Trip" relation="Trips" label="=trip" cascade="DELETE" />
+    <Relation name="CargoRequest" relation="CargoRequests" label="=trRequest" cascade="DELETE" />
+    <Relation name="Discussion" relation="Discussions" label="=discussion" cascade="DELETE" />
+  </Fields>
+</Table>

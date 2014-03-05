@@ -2,7 +2,6 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TodoList" viewName="Tasks" caption="=crmTodoList"
-  cacheData="false" asyncThreshold="-1"
   currentUserFilter="Executor" filter="Status &lt; 3"
   order="FinishTime, TaskID desc"
   disabledActions="filter add delete configure audit"

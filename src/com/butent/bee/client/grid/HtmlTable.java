@@ -37,6 +37,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
-    HasMouseMoveHandlers, HasMouseOutHandlers, HasMouseOverHandlers {
+    HasMouseMoveHandlers, HasMouseOutHandlers, HasMouseOverHandlers, HasCaption {
 
   public class CellFormatter {
 
@@ -281,6 +282,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
   private final Map<Integer, String> columnCellClases = Maps.newHashMap();
   private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
+  
+  private String caption;
 
   public HtmlTable() {
     this.tableElem = Document.get().createTableElement();
@@ -345,6 +348,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     for (int i = 0; i < numRows; i++) {
       removeRow(0);
     }
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
   }
 
   public int getCellCount(int row) {
@@ -521,6 +529,10 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   @Override
   public void setBorderSpacing(int spacing) {
     StyleUtils.setBorderSpacing(tableElem, spacing);
+  }
+
+  public void setCaption(String caption) {
+    this.caption = caption;
   }
 
   public void setColumnCellClasses(int column, String classes) {

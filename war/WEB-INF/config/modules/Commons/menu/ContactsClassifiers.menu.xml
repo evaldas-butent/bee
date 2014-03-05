@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="ContactsClassifiers" label="=contactsClassifiers" parent="Contacts" order="3" 
+>
+  <Item name="CompanyTypes" label="=clientStatus" service="grid" parameters="CompanyTypes" separator="true" />
+  <Item name="CompanyGroups" label="=clientsGroups" service="grid" parameters="CompanyGroups" />
+  <Item name="CompanyPriorities" label="=clientsPriorities" service="grid" parameters="CompanyPriorities" />
+  <Item name="CompanySizes" label="=clientsCompanySizes" service="grid" parameters="CompanySizes" />
+  <Item name="FinancialStates" label="=clientsFinancialStates" service="grid" parameters="FinancialStates" />
+  <Item name="InformationSources" label="=clientsInformationSources" service="grid" parameters="InformationSources" />
+  <Item name="CompanyActivities" label="=clientsCompanyActivities" service="grid" parameters="CompanyActivities" />
+  <Item name="Responsibilities" label="=responsibilities" service="grid" parameters="Responsibilities" />
+  <Item name="Positions" label="=personPosition" service="grid" parameters="Positions" />
+
+  <Item name="CompanyRelationTypes" label="=clientsRelationTypes" service="grid" parameters="CompanyRelationTypes" separator="true" />
+  <Item name="CompanyRelationTypeStates" label="=clientsRelationTypeStates" service="grid" parameters="CompanyRelationTypeStates" />
+</Entry>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form []>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="CompanyPerson" viewName="CompaniesAndPersons" caption="=companyPerson"
+  height="350" width="850"
+  >
+  <FlowPanel>
+    <Table style="border-spacing: 10px;">
+      <row>
+        <Label text="=person" class="bee-required" />
+        <DataSelector source="Person" style="width: 200px" />
+        <Label text="=personPosition" />
+        <DataSelector source="Position" style="width: 200px" />
+      </row>
+      <row>
+        <Label text="=personTabNo" />
+        <InputText source="TabNo" style="width: 200px" />
+        <Label text="=companyDepartment" />
+        <DataSelector source="Department" style="width: 200px" />
+      </row>
+      <row>
+        <Label text="=personAccountingCode" />
+        <InputText source="AccountingCode" style="width: 200px" />
+        <Label text="=personDateOfEmployment" />
+        <InputDate source="DateOfEmployment" style="width: 200px" />
+      </row>
+    </Table>
+
+    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+  </FlowPanel>
+</f:Form>  

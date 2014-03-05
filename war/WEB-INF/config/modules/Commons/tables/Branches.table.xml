@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="Branches"
+  idName="BranchID"
+  >
+  <Fields>
+    <String name="Name" precision="100" notNull="true" unique="true" label="=name" />
+    <String name="Code" precision="20" label="=code" />
+
+    <Text name="Description" label="=description" />
+
+    <Relation name="PrimaryWarehouse" relation="Warehouses" label="=primaryWarehouse" />
+
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contact" />
+  </Fields>
+</Table>

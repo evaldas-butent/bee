@@ -44,7 +44,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_USER_NAME = "User";
   private static final String WIDGET_COMPANY_NAME = "Company";
   private static final String WIDGET_DURATION_TYPE_NAME = "DurationType";
-  
+
   private static final int FIRST_DAY_OF_MONTH = 1;
   private static final int MIDNIGHT_HOUR = 0;
   private static final int START_MINUTE_OF_HOUR = 0;
@@ -110,12 +110,10 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
           break;
         case COMPANY_TIMES:
-          params =
-              TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_COMPANY_TIMES);
+          params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_COMPANY_TIMES);
           break;
         case USERS_HOURS:
-          params =
-              TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_USERS_HOURS);
+          params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_USERS_HOURS);
           break;
         default:
           params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
@@ -132,8 +130,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           DateTime time = fromDate.getDate().getDateTime();
           time.setHour(MIDNIGHT_HOUR);
           time.setMinute(START_MINUTE_OF_HOUR);
-          params.addQueryItem(TaskConstants.VAR_TASK_DURATION_DATE_FROM,
-              time.getTime());
+          params.addQueryItem(TaskConstants.VAR_TASK_DURATION_DATE_FROM, time.getTime());
         }
       }
 

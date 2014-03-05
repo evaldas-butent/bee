@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="GridSettings" source="GridSettings" module="Administration"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Key" />
+
+    <SimpleColumn name="Caption" />
+
+    <SimpleColumn name="Columns" />
+    <SimpleColumn name="Order" />
+
+    <SimpleColumn name="HeaderHeight" />
+    <SimpleColumn name="HeaderStyle" />
+    <SimpleColumn name="HeaderFont" />
+    <SimpleColumn name="HeaderPadding" />
+    <SimpleColumn name="HeaderBorderWidth" />
+    <SimpleColumn name="HeaderMargin" />
+
+    <SimpleColumn name="RowHeight" />
+    <SimpleColumn name="BodyStyle" />
+    <SimpleColumn name="BodyFont" />
+    <SimpleColumn name="BodyPadding" />
+    <SimpleColumn name="BodyBorderWidth" />
+    <SimpleColumn name="BodyMargin" />
+
+    <SimpleColumn name="FooterHeight" />
+    <SimpleColumn name="FooterStyle" />
+    <SimpleColumn name="FooterFont" />
+    <SimpleColumn name="FooterPadding" />
+    <SimpleColumn name="FooterBorderWidth" />
+    <SimpleColumn name="FooterMargin" />
+
+    <SimpleColumn name="AutoFit" />
+
+    <SimpleColumn name="MinColumnWidth" />
+    <SimpleColumn name="MaxColumnWidth" />
+
+    <SimpleColumn name="FlexGrow" />
+    <SimpleColumn name="FlexShrink" />
+    <SimpleColumn name="FlexBasis" />
+    <SimpleColumn name="FlexBasisUnit" />
+  </Columns>
+</View>
+ 

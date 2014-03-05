@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="GridSettings"
+  idName="GridSettingID"
+  >
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER" />
+    <String name="Key" precision="100" notNull="true" />
+
+    <String name="Caption" precision="100" />
+
+    <Text name="Columns" />
+    <Text name="Order" />
+
+    <Integer name="HeaderHeight" />
+    <Text name="HeaderStyle" />
+    <String name="HeaderFont" precision="60" />
+    <String name="HeaderPadding" precision="10" />
+    <String name="HeaderBorderWidth" precision="10" />
+    <String name="HeaderMargin" precision="10" />
+
+    <Integer name="RowHeight" />
+    <Text name="BodyStyle" />
+    <String name="BodyFont" precision="60" />
+    <String name="BodyPadding" precision="10" />
+    <String name="BodyBorderWidth" precision="10" />
+    <String name="BodyMargin" precision="10" />
+
+    <Integer name="FooterHeight" />
+    <Text name="FooterStyle" />
+    <String name="FooterFont" precision="60" />
+    <String name="FooterPadding" precision="10" />
+    <String name="FooterBorderWidth" precision="10" />
+    <String name="FooterMargin" precision="10" />
+
+    <Boolean name="AutoFit" />
+
+    <Integer name="MinColumnWidth" />
+    <Integer name="MaxColumnWidth" />
+
+    <Integer name="FlexGrow" />
+    <Integer name="FlexShrink" />
+    <Integer name="FlexBasis" />
+    <String name="FlexBasisUnit" precision="3" />
+  </Fields>
+  
+  <Constraints>
+    <Unique fields="User Key" />
+  </Constraints>
+</Table>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="Persons" viewName="Persons" caption="=persons"
+  editForm="Person" flexGrow="1"
+  >
+  <g:body height="30" /> 
+  <g:columns>
+    <DataColumn name="Photo" caption="-" readOnly="true" cellType="html" sortable="false"
+      width="30" horizontalAlignment="center" filterOptions="-">
+      <renderer type="photo" />
+    </DataColumn>
+
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
+
+    <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
+
+    <RelColumn name="EmailId" renderColumns="Label Email">
+      <renderer type="mail" />
+    </RelColumn>
+
+    <DataColumn name="Address" />
+
+    <DataColumn name="CityName" caption="=city" />
+    <DataColumn name="CountryName" caption="=country" />
+
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-">
+      <renderer type="flag" />
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

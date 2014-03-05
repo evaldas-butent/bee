@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="UserGroupSettings" viewName="UserGroupSettings" caption="=userGroups"
+  currentUserFilter="Owner"
+  >
+  <g:columns>
+    <DataColumn name="Name" minWidth="150" flexGrow="1" />
+    <DataColumn name="Visibility" width="100" />
+    <DataColumn name="Notes" minWidth="100" flexGrow="2" whiteSpace="normal" />
+  </g:columns>
+</g:Grid>

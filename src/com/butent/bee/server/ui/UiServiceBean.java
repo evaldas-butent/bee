@@ -4,8 +4,10 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -571,7 +573,6 @@ public class UiServiceBean {
       return ResponseObject.response(sys.getDataInfo());
     } else {
       DataInfo dataInfo = sys.getDataInfo(viewName);
-      dataInfo.setRowCount(qs.getViewSize(viewName, null));
       return ResponseObject.response(dataInfo);
     }
   }
@@ -659,7 +660,34 @@ public class UiServiceBean {
       List<String> names = sys.getTableNames();
       Collections.sort(names);
 
-      if (BeeUtils.isEmpty(tableName)) {
+      if (BeeUtils.isEmpty(tableName) || BeeUtils.same(tableName, BeeConst.STRING_MINUS)) {
+        Collection<BeeView> views = sys.getViews();
+
+        Multimap<String, String> sources = HashMultimap.create();
+        for (BeeView view : views) {
+          sources.put(view.getSourceName(), view.getName());
+        }
+        
+        boolean noViews = BeeUtils.same(tableName, BeeConst.STRING_MINUS);
+
+        for (String name : names) {
+          int fieldCount = sys.getTable(name).getFieldCount();
+
+          String viewNames;
+          if (sources.containsKey(name)) {
+            if (noViews) {
+              continue;
+            }
+            viewNames = sources.get(name).toString();
+
+          } else {
+            viewNames = BeeConst.STRING_MINUS;
+          }
+          
+          info.add(new ExtendedProperty(name, String.valueOf(fieldCount), viewNames));
+        }
+        
+      } else if (BeeUtils.same(tableName, BeeConst.STRING_ALL)) {
         for (String name : names) {
           PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
         }

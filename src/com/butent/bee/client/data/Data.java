@@ -8,7 +8,6 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -57,11 +56,6 @@ public final class Data {
     return Objects.equal(getLong(viewName, row, colName), value);
   }
 
-  public static int getApproximateRowCount(String viewName) {
-    DataInfo dataInfo = getDataInfo(viewName);
-    return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount();
-  }
-  
   public static Boolean getBoolean(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }
@@ -182,12 +176,6 @@ public final class Data {
     }
   }
   
-  public static void init() {
-    BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
-    BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);
-    BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER, false);
-  }
-
   public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
     return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId());
   }

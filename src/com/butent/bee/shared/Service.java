@@ -152,6 +152,12 @@ public final class Service {
   public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
   public static final String VAR_VIEW_LIST = RPC_VAR_PREFIX + "view_list";
 
+  public static final String VAR_CATALOG = RPC_VAR_PREFIX + "catalog";
+  public static final String VAR_SCHEMA = RPC_VAR_PREFIX + "schema";
+
+  public static final String VAR_TYPE = RPC_VAR_PREFIX + "type";
+  public static final String VAR_CHECK = RPC_VAR_PREFIX + "check";
+
   public static final String VAR_TABLE = RPC_VAR_PREFIX + "table";
   public static final String VAR_COLUMN = RPC_VAR_PREFIX + "column";
   public static final String VAR_VALUE = RPC_VAR_PREFIX + "value";

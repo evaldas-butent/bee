@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  
+  name="CategoryTree" caption="=itemCategoryTree">
+  <DataTree caption="=itemCategories" source="CategoryTree" parentColumn="Parent">
+    <calc>
+      <ui:expression>row.Name</ui:expression>
+    </calc>
+    <form name="=categoryEdit">
+      <FlowPanel>
+        <Label text="=category" class="bee-required" />
+        <InputText source="Name" style="width: 300px;" />
+      </FlowPanel>
+    </form>
+  </DataTree>
+</f:Form>  

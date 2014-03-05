@@ -23,7 +23,6 @@
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="showRowId" type="xs:boolean" />
     <xs:attribute name="readOnly" type="xs:boolean" />
-    <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="enabledActions" type="ui:viewActions" />
     <xs:attribute name="disabledActions" type="ui:viewActions" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />

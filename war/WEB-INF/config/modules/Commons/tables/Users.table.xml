@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Users" idName="UserID"
+  >
+  <Fields>
+    <String name="Login" precision="100" notNull="true" unique="true" label="=userLogin"/>
+    <String name="Password" precision="64" label="=password" />
+
+    <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true"
+      label="=companyPerson" />
+    
+    <Enum name="Locale" key="SupportedLocale" label="=userLocale" />
+    <Enum name="Interface" key="UserInterface" label="=userInterface" />
+    
+    <DateTime name="BlockAfter" label="=blockAfter" />
+    <DateTime name="BlockBefore" label="=blockBefore" />
+
+    <Boolean name="MailAssignedTasks" label="=crmMailAssignedTasks" />
+      
+    <Text name="Properties" label="=userProperties" />
+  </Fields>
+</Table>

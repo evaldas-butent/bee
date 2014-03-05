@@ -13,6 +13,7 @@ import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataNameProvider;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -20,7 +21,6 @@ import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.menu.MenuService.DataNameProvider;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -333,14 +333,9 @@ public class UiHolderBean {
       return null;
     }
   }
-
-  @PostConstruct
-  private void init() {
-    initGrids();
-    initForms();
-    initMenu();
-
-    DataNameProvider gridDataNameProvider = new MenuService.DataNameProvider() {
+  
+  public DataNameProvider getGridDataNameProvider() {
+    return new DataNameProvider() {
       @Override
       public Set<String> apply(String input) {
         Set<String> result = new HashSet<>();
@@ -351,11 +346,10 @@ public class UiHolderBean {
         return result;
       }
     };
+  }
 
-    MenuService.GRID.setDataNameProvider(gridDataNameProvider);
-    MenuService.ENSURE_CATEGORIES_AND_OPEN_GRID.setDataNameProvider(gridDataNameProvider);
-
-    MenuService.FORM.setDataNameProvider(new MenuService.DataNameProvider() {
+  public DataNameProvider getFormDataNameProvider() {
+    return new DataNameProvider() {
       @Override
       public Set<String> apply(String input) {
         Set<String> result = new HashSet<>();
@@ -365,7 +359,17 @@ public class UiHolderBean {
         }
         return result;
       }
-    });
+    };
+  }
+  
+  @PostConstruct
+  private void init() {
+    initGrids();
+    initForms();
+    initMenu();
+
+    MenuService.GRID.setDataNameProvider(getGridDataNameProvider());
+    MenuService.FORM.setDataNameProvider(getFormDataNameProvider());
   }
 
   private boolean initForm(String moduleName, String formName) {

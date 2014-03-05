@@ -36,10 +36,6 @@ import java.util.Map;
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
     DataRequestEvent.Handler, FilterConsumer, HandlesActions {
 
-  public enum Type {
-    ASYNC, CACHED, LOCAL
-  }
-
   private final HasDataTable display;
   private final HandlesActions actionHandler;
   private final NotificationListener notificationListener;

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="Users" viewName="Users" caption="=users"
+  newRowPopup="true" editInPlace="Locale Interface BlockAfter BlockBefore"
+  >
+  <g:columns>
+    <IdColumn name="Id" caption="=captionId" />
+    <DataColumn name="Login" caption="=userLogin" visible="true" />
+
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName"
+      visible="true" />
+    <DataColumn name="CompanyName" caption="=company" />
+    <DataColumn name="PositionName" visible="false" />
+
+    <DataColumn name="Locale" />
+    <DataColumn name="Interface" />
+
+    <DataColumn name="BlockAfter" />
+    <DataColumn name="BlockBefore" />
+
+    <DataColumn name="MailAssignedTasks" visible="false" />
+
+    <DataColumn name="Properties" visible="false" />
+  </g:columns>
+</g:Grid>

@@ -120,6 +120,22 @@ public final class BeeUtils {
     return false;
   }
 
+  public static boolean anyNotEmpty(String first, String second, String... rest) {
+    if (!isEmpty(first) || !isEmpty(second)) {
+      return true;
+    }
+    if (rest == null) {
+      return false;
+    }
+    
+    for (String s : rest) {
+      if (!isEmpty(s)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean anyNotNull(Object first, Object second, Object... rest) {
     if (first != null || second != null) {
       return true;

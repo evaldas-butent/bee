@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form []>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="Warehouse" viewName="Warehouses" caption="=warehouse"
+  height="300" width="800"
+  >
+  <FlowPanel>
+    <Table style="margin: 1ex 1em;" cellStyle="padding: 1ex 1em; vertical-align: top;">
+      <row>
+        <Label text="=code" class="bee-required" />
+        <InputText source="Code" style="width: 100px" />
+        <Label text="=name" />
+        <InputText source="Name" style="width: 400px" />
+      </row>
+      <row>
+        <Label text="=branch" />
+        <DataSelector source="Branch" />
+        <Label text="=description" />
+        <cell rowSpan="2">
+          <InputArea source="Description" visibleLines="3" style="width: 400px;" />
+        </cell>
+      </row>
+      <row>
+        <Label text="=ecSupplierWarehouse" />
+        <InputText source="SupplierCode" style="width: 100px" />
+      </row>
+    </Table>
+
+    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+  </FlowPanel>
+</f:Form>  

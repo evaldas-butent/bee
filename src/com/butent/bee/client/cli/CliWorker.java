@@ -304,6 +304,9 @@ public final class CliWorker {
     } else if (z.startsWith("dbinf")) {
       getDbInfo(args);
 
+    } else if (z.startsWith("dbt")) {
+      getTables(v, arr);
+
     } else if ("debug".equals(z)) {
       setDebug(args);
 
@@ -518,11 +521,8 @@ public final class CliWorker {
     } else if ("svg".equals(z)) {
       showSvg(arr);
 
-    } else if ("table".equals(z)) {
-      showTableInfo(args);
-
-    } else if ("tables".equals(z)) {
-      getTables(args);
+    } else if (z.startsWith("tabl") || z.startsWith("tbl")) {
+      showTableInfo(v, args);
 
     } else if (z.startsWith("tile")) {
       doTiles(args);
@@ -546,7 +546,7 @@ public final class CliWorker {
       playVideo(args);
 
     } else if (z.startsWith("view")) {
-      showViewInfo(args);
+      showViewInfo(v, args);
 
     } else if (z.startsWith("viz")) {
       Showcase.open();
@@ -1641,13 +1641,40 @@ public final class CliWorker {
     });
   }
 
-  private static void getTables(String args) {
+  private static void getTables(String input, String[] arr) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
-    if (!BeeUtils.isEmpty(args)) {
-      params.addPositionalHeader(args.trim());
+
+    int len = ArrayUtils.length(arr);
+    for (int i = 1; i < len; i++) {
+      String s = arr[i];
+      
+      if (s.length() > 2 && s.charAt(1) == BeeConst.CHAR_EQ) {
+        String value = s.substring(2);
+        
+        switch (s.toLowerCase().charAt(0)) {
+          case 'c':
+            params.addQueryItem(Service.VAR_CATALOG, value);
+            break;
+          case 's':
+            params.addQueryItem(Service.VAR_SCHEMA, value);
+            break;
+          case 'n':
+            params.addQueryItem(Service.VAR_TABLE, value);
+            break;
+          case 't':
+            params.addQueryItem(Service.VAR_TYPE, value);
+            break;
+        }
+      
+      } else if (s.equals(BeeConst.STRING_MINUS) || s.equals(BeeConst.STRING_QUESTION)) {
+        params.addQueryItem(Service.VAR_CHECK, 1);
+
+      } else {
+        params.addQueryItem(Service.VAR_TABLE, s);
+      }
     }
 
-    BeeKeeper.getRpc().makeRequest(params, ResponseHandler.callback(Service.DB_TABLES));
+    BeeKeeper.getRpc().makeRequest(params, ResponseHandler.callback(input));
   }
 
   @Deprecated
@@ -2366,7 +2393,7 @@ public final class CliWorker {
       }
 
       Collections.sort(list);
-      String[][] data = new String[list.size()][7];
+      String[][] data = new String[list.size()][6];
 
       for (int i = 0; i < list.size(); i++) {
         DataInfo di = list.get(i);
@@ -2378,9 +2405,8 @@ public final class CliWorker {
 
         data[i][4] = BeeUtils.toString(di.getColumnCount());
         data[i][5] = BeeUtils.toString(di.getViewColumns().size());
-        data[i][6] = BeeUtils.toString(di.getRowCount());
       }
-      showMatrix("Data info", data, "view", "table", "id", "version", "cc", "vc", "rc");
+      showMatrix("Data info", data, "view", "table", "id", "version", "cc", "vc");
     }
   }
 
@@ -3811,14 +3837,13 @@ public final class CliWorker {
     }
   }
 
-  private static void showTableInfo(final String args) {
+  private static void showTableInfo(String input, String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_TABLE_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
 
-    BeeKeeper.getRpc().makeGetRequest(params,
-        ResponseHandler.callback(BeeUtils.joinWords("Tables", args)));
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(input));
   }
 
   private static void showUnits(String[] arr) {
@@ -3878,14 +3903,13 @@ public final class CliWorker {
     showTable("Pixels", new PropertiesData(info));
   }
 
-  private static void showViewInfo(final String args) {
+  private static void showViewInfo(String input, String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
 
-    BeeKeeper.getRpc().makeGetRequest(params,
-        ResponseHandler.callback(BeeUtils.joinWords("Views", args)));
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(input));
   }
 
   private static void showWebNote(String[] arr) {

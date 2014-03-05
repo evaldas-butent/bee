@@ -41,6 +41,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -79,6 +80,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
@@ -229,6 +231,8 @@ public class EcModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   NewsBean news;
+  @EJB
+  UiHolderBean ui;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -598,6 +602,8 @@ public class EcModuleBean implements BeeModule {
             TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_ORDERS, COL_ORDER_MANAGER));
       }
     });
+
+    MenuService.ENSURE_CATEGORIES_AND_OPEN_GRID.setDataNameProvider(ui.getGridDataNameProvider());
   }
 
   private ResponseObject addToUnsuppliedItems(Long orderId) {

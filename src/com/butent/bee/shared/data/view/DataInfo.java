@@ -76,8 +76,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private final List<ViewColumn> viewColumns = Lists.newArrayList();
 
-  private int rowCount = BeeConst.UNDEF;
-
   public DataInfo(String module, String viewName, String tableName,
       String idColumn, String versionColumn, String caption, String editForm, String rowCaption,
       String newRowForm, String newRowColumns, String newRowCaption,
@@ -155,7 +153,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 16);
+    Assert.lengthEquals(arr, 15);
     int index = 0;
 
     setModule(arr[index++]);
@@ -193,8 +191,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         getViewColumns().add(ViewColumn.restore(col));
       }
     }
-
-    setRowCount(BeeUtils.toInt(arr[index++]));
   }
 
   @Override
@@ -414,7 +410,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
         "New Row Caption", getNewRowCaption(),
-        "Row Count", getRowCount(),
         "Cache Maximum Size", getCacheMaximumSize(),
         "Cache Eviction", getCacheEviction(),
         "Column Count", getColumnCount());
@@ -527,10 +522,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return rowCaption;
   }
 
-  public int getRowCount() {
-    return rowCount;
-  }
-
   public String getTableName() {
     return tableName;
   }
@@ -615,13 +606,9 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         getIdColumn(), getVersionColumn(), getCaption(), getEditForm(), getRowCaption(),
         getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
         getCacheMaximumSize(), getCacheEviction(),
-        getColumns(), getViewColumns(), getRowCount()});
+        getColumns(), getViewColumns()});
   }
-
-  public void setRowCount(int rowCount) {
-    this.rowCount = rowCount;
-  }
-
+  
   private String getCacheEviction() {
     return cacheEviction;
   }

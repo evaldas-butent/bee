@@ -190,8 +190,6 @@ public class Bee implements EntryPoint {
 
     ModuleManager.onLoad();
 
-    Data.init();
-
     Historian.start();
 
     Endpoint.open(BeeKeeper.getUser().getUserId());

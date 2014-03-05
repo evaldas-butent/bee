@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
@@ -99,7 +100,7 @@ public class GridLoaderBean {
 
   private static final String ATTR_CACHE_DATA = "cacheData";
 
-  private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
+  private static final String ATTR_DATA_PROVIDER = "dataProvider";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
@@ -782,10 +783,10 @@ public class GridLoaderBean {
     if (cacheDescription != null) {
       dst.setCacheDescription(cacheDescription);
     }
-
-    Integer asyncThreshold = XmlUtils.getAttributeInteger(src, ATTR_ASYNC_THRESHOLD);
-    if (asyncThreshold != null) {
-      dst.setAsyncThreshold(asyncThreshold);
+    
+    String dataProvider = src.getAttribute(ATTR_DATA_PROVIDER);
+    if (!BeeUtils.isEmpty(dataProvider)) {
+      dst.setDataProvider(EnumUtils.getEnumByName(ProviderType.class, dataProvider));
     }
     Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);
     if (initialRowSetSize != null) {

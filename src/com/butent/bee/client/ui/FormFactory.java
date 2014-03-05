@@ -13,9 +13,7 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasActiveRow;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
@@ -43,8 +41,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -55,7 +53,9 @@ import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +77,7 @@ public final class FormFactory {
     void afterInsertRow(IsRow result, boolean forced);
 
     void afterRefresh(FormView form, IsRow row);
-    
+
     void afterStateChange(State state, boolean modal);
 
     void afterUpdateRow(IsRow result);
@@ -87,9 +87,9 @@ public final class FormFactory {
     void beforeRefresh(FormView form, IsRow row);
 
     void beforeStateChange(State state, boolean modal);
-    
+
     boolean focusSource(String source);
-    
+
     long getActiveRowId();
 
     int getDataIndex(String source);
@@ -432,16 +432,12 @@ public final class FormFactory {
       BeeRowSet rowSet = formInterceptor.getRowSet();
       if (rowSet != null) {
         showForm(formDescription, viewName, rowSet.getNumberOfRows(), rowSet,
-            Provider.Type.LOCAL, CachingPolicy.NONE, formInterceptor, presenterCallback);
+            ProviderType.LOCAL, CachingPolicy.NONE, formInterceptor, presenterCallback);
         return;
       }
     }
 
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-    if (dataInfo != null) {
-      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, formInterceptor,
-          presenterCallback);
-    }
+    getInitialRowSet(viewName, formDescription, formInterceptor, presenterCallback);
   }
 
   public static void openForm(String formName) {
@@ -515,37 +511,22 @@ public final class FormFactory {
     return formName.trim().toLowerCase();
   }
 
-  private static void getInitialRowSet(final String viewName, final int rowCount,
+  private static void getInitialRowSet(final String viewName,
       final FormDescription formDescription, final FormInterceptor interceptor,
       final PresenterCallback presenterCallback) {
 
-    int limit = formDescription.getAsyncThreshold();
+    final CachingPolicy cachingPolicy = CachingPolicy.NONE;
 
-    final Provider.Type providerType;
-    final CachingPolicy cachingPolicy;
+    Collection<Property> options = PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, true);
 
-    if (rowCount >= limit) {
-      providerType = Provider.Type.ASYNC;
-      cachingPolicy = CachingPolicy.FULL;
-
-      if (rowCount <= DataUtils.getMaxInitialRowSetSize()) {
-        limit = BeeConst.UNDEF;
-      } else {
-        limit = DataUtils.getMaxInitialRowSetSize();
-      }
-
-    } else {
-      providerType = Provider.Type.CACHED;
-      cachingPolicy = CachingPolicy.NONE;
-      limit = BeeConst.UNDEF;
-    }
-
-    Queries.getRowSet(viewName, null, null, null, 0, limit, cachingPolicy,
-        new Queries.RowSetCallback() {
+    Queries.getRowSet(viewName, null, null, null, 0, DataUtils.getMaxInitialRowSetSize(),
+        cachingPolicy, options, new Queries.RowSetCallback() {
           @Override
-          public void onSuccess(final BeeRowSet rowSet) {
-            int rc = Math.max(rowCount, rowSet.getNumberOfRows());
-            showForm(formDescription, viewName, rc, rowSet, providerType, cachingPolicy,
+          public void onSuccess(BeeRowSet rowSet) {
+            int rc = Math.max(rowSet.getNumberOfRows(),
+                BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
+
+            showForm(formDescription, viewName, rc, rowSet, ProviderType.DEFAULT, cachingPolicy,
                 interceptor, presenterCallback);
           }
         });
@@ -553,12 +534,12 @@ public final class FormFactory {
 
   private static void showForm(FormDescription formDescription, FormInterceptor interceptor,
       PresenterCallback presenterCallback) {
-    showForm(formDescription, null, BeeConst.UNDEF, null, Provider.Type.CACHED,
+    showForm(formDescription, null, BeeConst.UNDEF, null, ProviderType.CACHED,
         CachingPolicy.NONE, interceptor, presenterCallback);
   }
 
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       FormInterceptor interceptor, PresenterCallback presenterCallback) {
 
     FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet,

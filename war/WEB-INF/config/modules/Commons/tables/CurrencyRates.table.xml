@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CurrencyRates"
+  idName="RateID"
+  >
+  <Fields>
+    <Relation name="Currency" relation="Currencies" notNull="true" cascade="DELETE" label="=currency" />
+    <DateTime name="Date" notNull="true" label="=date" />
+    <Integer name="Quantity" notNull="true" label="=quantity" />
+    <Numeric name="Rate" precision="10" scale="4" notNull="true" label="=currencyRate" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Currency Date" />
+  </Constraints>
+</Table>

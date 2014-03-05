@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Countries"
+  idName="CountryID"
+  x="59" y="262"
+  >
+  <Fields>
+    <String name="Name" precision="60" notNull="true" unique="true" label="=country" />
+    <String name="Code" precision="10" unique="true" label="=countryCode" />
+    <Boolean name="EUMember" label="=countryEUMember" />
+  </Fields>
+</Table>

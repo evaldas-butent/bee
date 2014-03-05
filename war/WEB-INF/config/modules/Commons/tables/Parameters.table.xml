@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="Parameters"
+  idName="ParameterID"
+  >
+  <Fields>
+    <String name="Module" precision="20" notNull="true" label="=module" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="=parameterName" />
+    <Text name="Value" label="=valueParameter" />
+  </Fields>
+ 
+   <Indexes>
+     <Index fields="Module" />
+   </Indexes>
+</Table>

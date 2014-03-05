@@ -213,6 +213,13 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="dataProvider">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="async" />
+      <xs:enumeration value="cached" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="customProperties">
     <xs:anyAttribute processContents="lax" />
   </xs:complexType>

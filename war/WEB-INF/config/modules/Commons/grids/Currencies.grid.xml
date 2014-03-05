@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="Currencies" viewName="Currencies" caption="=currencies"
+  newRowForm="Currency" newRowCaption="=newCurrency" editForm="Currency"
+  newRowPopup="true" editPopup="true"
+  >
+  <g:columns>
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Caption" />
+    <DataColumn name="MinorName" />
+    <DataColumn name="MinorCaption" />
+    <DataColumn name="UpdateTag" />
+  </g:columns>
+</g:Grid>

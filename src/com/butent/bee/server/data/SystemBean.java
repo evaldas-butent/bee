@@ -231,26 +231,14 @@ public class SystemBean {
   }
 
   public List<DataInfo> getDataInfo() {
-    SimpleRowSet dbTables = qs.dbTables(dbName, dbSchema, null);
-    String[] tables = dbTables.getColumn(SqlConstants.TBL_NAME);
+    List<DataInfo> result = Lists.newArrayList();
 
-    List<DataInfo> lst = Lists.newArrayList();
-    Set<String> viewNames = Sets.newHashSet(getViewNames());
-    viewNames.addAll(getTableNames());
-
+    Collection<String> viewNames = getViewNames();
     for (String viewName : viewNames) {
-      String sourceName = getView(viewName).getSourceName();
-      DataInfo dataInfo = getDataInfo(viewName);
-
-      for (int i = 0; i < tables.length; i++) {
-        if (BeeUtils.same(tables[i], sourceName)) {
-          dataInfo.setRowCount(BeeUtils.unbox(dbTables.getInt(i, SqlConstants.ROW_COUNT)));
-          break;
-        }
-      }
-      lst.add(dataInfo);
+      result.add(getDataInfo(viewName));
     }
-    return lst;
+
+    return result;
   }
 
   public DataInfo getDataInfo(String viewName) {
@@ -339,6 +327,10 @@ public class SystemBean {
       views.add(view.getName());
     }
     return views;
+  }
+  
+  public Collection<BeeView> getViews() {
+    return viewCache.values();
   }
 
   public String getViewSource(String viewName) {

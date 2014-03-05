@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ReminderTypes"
+  idName="ReminderTypeID"
+  >
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" label="=reminderName"/>
+    <Enum name="Method" key="ReminderMethod" notNull="true" label="=reminderMethod" />
+
+    <Integer name="Hours" label="=unitHours" />
+    <Integer name="Minutes" label="=unitMinutes" />
+    <String name="Caption" precision="15" label="=reminderCaption" />
+    <Text name="Template" label="=reminderTemplate" />
+
+    <Text name="Description" label="=description" />
+  </Fields>
+</Table>

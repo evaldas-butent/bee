@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="Companies"
+  idName="CompanyID"
+  x="752" y="484"
+  >
+  <Fields>
+    <Relation name="Owner" relation="Companies" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=companyName" />
+    <String name="Code" precision="30" unique="true" label="=companyCode" />
+    <String name="VATCode" precision="30" label="=companyVATCode" />
+
+    <Relation name="CompanyType" relation="CompanyTypes" label="=companyStatus" />
+    <Relation name="CompanyGroup" relation="CompanyGroups" label="=group" />
+    <Relation name="CompanyPriority" relation="CompanyPriorities" label="=priority" />
+
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
+
+    <Relation name="CompanySize" relation="CompanySizes" label="=companySize" />
+    <Relation name="InformationSource" relation="InformationSources" label="=informationSource" />
+
+    <String name="Rating" precision="100" label="=companyRating" />
+
+    <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="=companyRelation" />
+    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="=companyRelationState" />
+
+    <String name="ExchangeCode" precision="30" label="=exchangeCode" />
+
+    <Integer name="CreditLimit" label="=creditLimit" />
+    <Relation name="LimitCurrency" relation="Currencies" label="=limitCurrency" />
+    <Integer name="CreditTolerance" label="=creditTolerance" />
+    <Numeric name="CreditDays" precision="3" label="=creditDays" />
+    
+    <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
+    <String name="BankAccount" precision="30" label="=bankAccount" />
+    <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
+    <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

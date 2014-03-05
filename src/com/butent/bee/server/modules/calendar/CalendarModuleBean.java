@@ -685,12 +685,12 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject doReport(RequestInfo reqInfo) {
     Integer paramRep = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
     if (!BeeUtils.isOrdinal(Report.class, paramRep)) {
-      return ResponseObject.parameterNotFound(SVC_DO_REPORT, PARAM_REPORT);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_REPORT);
     }
 
     BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
     if (rowSet.isEmpty()) {
-      return ResponseObject.error(SVC_DO_REPORT, ": options rowSet is empty");
+      return ResponseObject.error(reqInfo.getService(), ": options rowSet is empty");
     }
 
     BeeRow row = rowSet.getRow(0);
@@ -1370,7 +1370,7 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject getReportOptions(RequestInfo reqInfo) {
     Integer report = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
     if (!BeeUtils.isOrdinal(Report.class, report)) {
-      return ResponseObject.parameterNotFound(SVC_GET_REPORT_OPTIONS, PARAM_REPORT);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_REPORT);
     }
 
     long userId = usr.getCurrentUserId();
@@ -1393,7 +1393,7 @@ public class CalendarModuleBean implements BeeModule {
 
     BeeRowSet result = qs.getViewData(VIEW_REPORT_OPTIONS, filter);
     if (result.getNumberOfRows() != 1) {
-      return ResponseObject.error(SVC_GET_REPORT_OPTIONS, COL_USER, userId, COL_REPORT, report,
+      return ResponseObject.error(reqInfo.getService(), COL_USER, userId, COL_REPORT, report,
           "report options not created");
     }
     return ResponseObject.response(result.getRow(0));

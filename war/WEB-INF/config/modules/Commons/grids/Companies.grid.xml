@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
+  >
+  <g:columns>
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="TypeName" caption="=companyStatus" />
+    <DataColumn name="GroupName" caption="=group" />
+    <DataColumn name="PriorityName" caption="=priority" />
+    <DataColumn name="Code" />
+    <DataColumn name="VATCode" visible="false" />
+    <DataColumn name="ExchangeCode" caption="=code" visible="false" />
+    <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
+    <DataColumn name="Fax" caption="=fax" visible="false" />
+    <RelColumn name="EmailId" renderColumns="Label Email">
+      <renderer type="mail" />
+    </RelColumn>
+
+    <DataColumn name="Address" />
+    <DataColumn name="PostIndex" />
+
+    <DataColumn name="CityName" caption="=city" />
+    <DataColumn name="CountryName" caption="=country" />
+    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
+      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+      filterOptions="-" visible="false">
+      <renderer type="flag" />
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

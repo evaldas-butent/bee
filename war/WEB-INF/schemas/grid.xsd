@@ -52,7 +52,7 @@
     <xs:attribute name="footerMode" type="footerMode" />
     <xs:attribute name="cacheData" type="xs:boolean" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
-    <xs:attribute name="asyncThreshold" type="xs:int" default="100" />
+    <xs:attribute name="dataProvider" type="type:dataProvider" />
     <xs:attribute name="initialRowSetSize" type="xs:int" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="newRowForm" type="xs:normalizedString" />
