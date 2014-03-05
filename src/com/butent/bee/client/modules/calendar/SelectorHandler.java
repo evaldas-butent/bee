@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -26,7 +27,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -46,7 +47,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     if (BeeUtils.same(event.getRelatedViewName(), VIEW_EXTENDED_PROPERTIES)) {
       handleExtendedProperties(event);
 
-    } else if (BeeUtils.same(event.getRelatedViewName(), CommonsConstants.VIEW_COMPANIES)) {
+    } else if (BeeUtils.same(event.getRelatedViewName(), ClassifiersConstants.VIEW_COMPANIES)) {
       if (isCompanyHandlerEnabled()) {
         handleCompany(event);
       }
@@ -91,18 +92,18 @@ class SelectorHandler implements SelectorEvent.Handler {
 
     Global.choice(Localized.getConstants().calSelectVehicle(), companyName, options,
         new ChoiceCallback() {
-      @Override
-      public void onSuccess(int value) {
-        if (value < rowSet.getNumberOfRows()) {
-          RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
-              dataView.getActiveRow(), Data.getDataInfo(TransportConstants.VIEW_VEHICLES),
-              rowSet.getRow(value), true);
-          dataView.refresh(false, true);
-        } else {
-          createVehicle(owner, dataView);
-        }
-      }
-    });
+          @Override
+          public void onSuccess(int value) {
+            if (value < rowSet.getNumberOfRows()) {
+              RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_VEHICLE,
+                  dataView.getActiveRow(), Data.getDataInfo(TransportConstants.VIEW_VEHICLES),
+                  rowSet.getRow(value), true);
+              dataView.refresh(false, true);
+            } else {
+              createVehicle(owner, dataView);
+            }
+          }
+        });
   }
 
   private static void createVehicle(IsRow owner, final DataView dataView) {
@@ -111,7 +112,7 @@ class SelectorHandler implements SelectorEvent.Handler {
 
     if (owner != null) {
       RelationUtils.updateRow(vehiclesInfo, TransportConstants.COL_OWNER, row,
-          Data.getDataInfo(CommonsConstants.VIEW_COMPANIES), owner, true);
+          Data.getDataInfo(ClassifiersConstants.VIEW_COMPANIES), owner, true);
     }
 
     RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, Localized.getConstants()
@@ -135,7 +136,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private static void getCompanyRow(Long company, final RowCallback callback) {
-    Queries.getRow(CommonsConstants.VIEW_COMPANIES, company, new RowCallback() {
+    Queries.getRow(ClassifiersConstants.VIEW_COMPANIES, company, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         callback.onSuccess(result);
@@ -277,7 +278,7 @@ class SelectorHandler implements SelectorEvent.Handler {
           @Override
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_COMPANY, row,
-                Data.getDataInfo(CommonsConstants.VIEW_COMPANIES), result, true);
+                Data.getDataInfo(ClassifiersConstants.VIEW_COMPANIES), result, true);
             dataView.refresh(false, false);
           }
         });

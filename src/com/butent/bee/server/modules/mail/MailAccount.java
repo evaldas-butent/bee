@@ -10,7 +10,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
@@ -89,7 +89,7 @@ public class MailAccount {
       storeHost = data.getValue(COL_STORE_SERVER);
       storePort = data.getInt(COL_STORE_SPORT);
       storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),
-          data.getValue(CommonsConstants.COL_EMAIL));
+          data.getValue(ClassifiersConstants.COL_EMAIL));
       storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD))
           ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
       storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
@@ -98,14 +98,14 @@ public class MailAccount {
       transportHost = data.getValue(COL_TRANSPORT_SERVER);
       transportPort = data.getInt(COL_TRANSPORT_PORT);
       transportLogin = BeeUtils.notEmpty(data.getValue(COL_TRANSPORT_LOGIN),
-          data.getValue(CommonsConstants.COL_EMAIL));
+          data.getValue(ClassifiersConstants.COL_EMAIL));
       transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD))
           ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
       transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
       transportProperties = Codec.deserializeMap(data.getValue(COL_TRANSPORT_PROPERTIES));
 
       accountId = data.getLong(COL_ACCOUNT);
-      addressId = data.getLong(CommonsConstants.COL_ADDRESS);
+      addressId = data.getLong(ClassifiersConstants.COL_ADDRESS);
 
       for (SystemFolder sysFolder : SystemFolder.values()) {
         sysFolders.put(sysFolder, data.getLong(sysFolder.name() + COL_FOLDER));

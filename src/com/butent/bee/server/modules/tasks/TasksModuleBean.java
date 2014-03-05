@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -133,19 +134,19 @@ public class TasksModuleBean implements BeeModule {
     if (usr.isModuleVisible(Module.TASKS.getName())) {
       List<SearchResult> tasksSr = qs.getSearchResults(VIEW_TASKS,
           Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-              CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
+              ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME),
               query));
       result.addAll(tasksSr);
 
       List<SearchResult> taskDurationsSr = qs.getSearchResults(VIEW_TASK_DURATIONS,
           Filter.anyContains(Sets.newHashSet(COL_DURATION_TYPE, COL_COMMENT,
-              CommonsConstants.ALS_COMPANY_NAME, COL_SUMMARY, ALS_PUBLISHER_FIRST_NAME,
+              ALS_COMPANY_NAME, COL_SUMMARY, ALS_PUBLISHER_FIRST_NAME,
               ALS_PUBLISHER_LAST_NAME), query));
       result.addAll(taskDurationsSr);
 
       List<SearchResult> taskTemplatesSr = qs.getSearchResults(VIEW_TASK_TEMPLATES,
           Filter.anyContains(Sets.newHashSet(COL_NAME, COL_SUMMARY, COL_DESCRIPTION,
-              CommonsConstants.ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME),
+              ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME),
               query));
       result.addAll(taskTemplatesSr);
     }
@@ -919,22 +920,22 @@ public class TasksModuleBean implements BeeModule {
 
     SqlSelect companiesListQuery =
         new SqlSelect()
-            .addFields(CommonsConstants.TBL_COMPANIES,
-                sys.getIdName(CommonsConstants.TBL_COMPANIES))
-            .addFields(CommonsConstants.TBL_COMPANIES, COL_NAME)
-            .addField(CommonsConstants.TBL_COMPANY_TYPES, COL_NAME,
-                CommonsConstants.ALS_COMPANY_TYPE)
-            .addFrom(CommonsConstants.TBL_COMPANIES)
+            .addFields(TBL_COMPANIES,
+                sys.getIdName(TBL_COMPANIES))
+            .addFields(TBL_COMPANIES, COL_NAME)
+            .addField(TBL_COMPANY_TYPES, COL_NAME,
+                ALS_COMPANY_TYPE)
+            .addFrom(TBL_COMPANIES)
             .addFromLeft(
-                CommonsConstants.TBL_COMPANY_TYPES,
-                sys.joinTables(CommonsConstants.TBL_COMPANY_TYPES,
-                    CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_TYPE))
+                TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES,
+                    TBL_COMPANIES, COL_COMPANY_TYPE))
             .setWhere(SqlUtils.sqlTrue())
-            .addOrder(CommonsConstants.TBL_COMPANIES, COL_NAME);
+            .addOrder(TBL_COMPANIES, COL_NAME);
 
     if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
       companiesListQuery.setWhere(SqlUtils.and(companiesListQuery.getWhere(), SqlUtils.inList(
-          CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES), DataUtils
+          TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), DataUtils
               .parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
     }
 
@@ -954,8 +955,8 @@ public class TasksModuleBean implements BeeModule {
     for (int i = 0; i < companiesListSet.getNumberOfRows(); i++) {
       String compFullName =
           companiesListSet.getValue(i, COL_NAME)
-              + (!BeeUtils.isEmpty(companiesListSet.getValue(i, CommonsConstants.ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, CommonsConstants.ALS_COMPANY_TYPE) : "");
+              + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
+                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
       String dTime = "0:00";
 
       SqlSelect companyTimesQuery = new SqlSelect()
@@ -967,14 +968,14 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
           .addFromLeft(TBL_TASKS,
               sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
-          .addFromLeft(CommonsConstants.TBL_COMPANIES,
-              sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
           .addFromLeft(CommonsConstants.TBL_USERS,
               sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .setWhere(
-              SqlUtils.equals(CommonsConstants.TBL_COMPANIES, sys
-                  .getIdName(CommonsConstants.TBL_COMPANIES), companiesListSet.getValue(i, sys
-                  .getIdName(CommonsConstants.TBL_COMPANIES))));
+              SqlUtils.equals(TBL_COMPANIES, sys
+                  .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
+                  .getIdName(TBL_COMPANIES))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1350,8 +1351,8 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
           .addFromLeft(TBL_TASKS,
               sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
-          .addFromLeft(CommonsConstants.TBL_COMPANIES,
-              sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
           .addFromLeft(CommonsConstants.TBL_USERS,
               sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .addFields(TBL_DURATION_TYPES, COL_NAME)
@@ -1377,7 +1378,7 @@ public class TasksModuleBean implements BeeModule {
       if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_COMPANY))) {
           dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
-              CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
+              TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
               DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
         }
       }
@@ -1448,21 +1449,21 @@ public class TasksModuleBean implements BeeModule {
     SqlSelect userListQuery =
         new SqlSelect()
             .addFields(CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS))
-            .addFields(CommonsConstants.TBL_PERSONS,
-                CommonsConstants.COL_FIRST_NAME,
-                CommonsConstants.COL_LAST_NAME)
+            .addFields(TBL_PERSONS,
+                COL_FIRST_NAME,
+                COL_LAST_NAME)
             .addFrom(CommonsConstants.TBL_USERS)
             .addFromLeft(
-                CommonsConstants.TBL_COMPANY_PERSONS,
-                sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                    CommonsConstants.COL_COMPANY_PERSON))
+                TBL_COMPANY_PERSONS,
+                sys.joinTables(TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                    COL_COMPANY_PERSON))
             .addFromLeft(
-                CommonsConstants.TBL_PERSONS,
-                sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                    CommonsConstants.COL_PERSON)).setWhere(SqlUtils.sqlTrue())
+                TBL_PERSONS,
+                sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                    COL_PERSON)).setWhere(SqlUtils.sqlTrue())
             .setWhere(SqlUtils.sqlTrue())
-            .addOrder(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-                CommonsConstants.COL_LAST_NAME);
+            .addOrder(TBL_PERSONS, COL_FIRST_NAME,
+                COL_LAST_NAME);
 
     boolean hideTimeZeros = false;
 
@@ -1485,10 +1486,10 @@ public class TasksModuleBean implements BeeModule {
 
     for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
       String userFullName =
-          (!BeeUtils.isEmpty(usersListSet.getValue(i, CommonsConstants.COL_FIRST_NAME))
-              ? usersListSet.getValue(i, CommonsConstants.COL_FIRST_NAME) : "") + " "
-              + (!BeeUtils.isEmpty(usersListSet.getValue(i, CommonsConstants.COL_LAST_NAME))
-                  ? usersListSet.getValue(i, CommonsConstants.COL_LAST_NAME) : "");
+          (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
+              ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
+              + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
+                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
       String dTime = "0:00";
@@ -1502,8 +1503,8 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS, COL_DURATION_TYPE))
           .addFromLeft(TBL_TASKS,
               sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
-          .addFromLeft(CommonsConstants.TBL_COMPANIES,
-              sys.joinTables(CommonsConstants.TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+          .addFromLeft(TBL_COMPANIES,
+              sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
           .addFromLeft(CommonsConstants.TBL_USERS,
               sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .setWhere(
@@ -1530,7 +1531,7 @@ public class TasksModuleBean implements BeeModule {
       if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_COMPANY))) {
           userTimesQuery.setWhere(SqlUtils.and(userTimesQuery.getWhere(), SqlUtils.inList(
-              CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
+              TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
               DataUtils.parseIdList(reqInfo.getParameter(VAR_TASK_COMPANY)))));
         }
       }

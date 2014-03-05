@@ -34,6 +34,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -83,9 +84,9 @@ public final class TradeUtils {
         if (table.getRowCount() == 0) {
           Map<String, String> cols = Maps.newLinkedHashMap();
           cols.put(COL_NAME, Localized.getConstants().item());
-          cols.put(COL_ITEM_ARTICLE, Localized.getConstants().article());
+          cols.put(ClassifiersConstants.COL_ITEM_ARTICLE, Localized.getConstants().article());
           cols.put(COL_TRADE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
-          cols.put(COL_UNIT, Localized.getConstants().unit());
+          cols.put(ClassifiersConstants.COL_UNIT, Localized.getConstants().unit());
           cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
           cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
           cols.put(COL_TRADE_VAT, Localized.getConstants().vat());

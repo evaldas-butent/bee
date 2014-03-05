@@ -13,6 +13,7 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
@@ -1248,11 +1249,9 @@ public class CalendarModuleBean implements BeeModule {
             TaskConstants.COL_SUMMARY, TaskConstants.COL_DESCRIPTION,
             TaskConstants.COL_PRIORITY, TaskConstants.COL_STATUS,
             TaskConstants.COL_OWNER, TaskConstants.COL_EXECUTOR)
-        .addField(CommonsConstants.TBL_COMPANIES,
-            CommonsConstants.COL_COMPANY_NAME, CommonsConstants.ALS_COMPANY_NAME)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
         .addFrom(source)
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, source, TaskConstants.COL_COMPANY))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, source, COL_COMPANY))
         .setWhere(where)
         .addOrder(source, TaskConstants.COL_START_TIME, TaskConstants.COL_FINISH_TIME, idName);
 
@@ -1528,27 +1527,26 @@ public class CalendarModuleBean implements BeeModule {
 
     SimpleRow data = qs.getRow(new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
-        .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL)
+        .addFields(TBL_CONTACTS, COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
         .addFields(CommonsConstants.TBL_REMINDER_TYPES, CommonsConstants.COL_REMINDER_METHOD,
             CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION, CommonsConstants.COL_REMINDER_TEMPLATE)
-        .addField(personContacts, CommonsConstants.COL_EMAIL, personEmail)
+        .addField(personContacts, COL_EMAIL, personEmail)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
         .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
             sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
                 COL_REMINDER_TYPE))
-        .addFromLeft(CommonsConstants.VIEW_COMPANIES,
-            sys.joinTables(CommonsConstants.VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
-        .addFromLeft(CommonsConstants.TBL_CONTACTS, sys.joinTables(CommonsConstants.TBL_CONTACTS,
-            CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CONTACT))
-        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
+        .addFromLeft(VIEW_COMPANIES,
+            sys.joinTables(VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, VIEW_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
                 COL_RECIPIENT))
-        .addFromLeft(CommonsConstants.TBL_CONTACTS, personContacts,
-            SqlUtils.join(personContacts, sys.getIdName(CommonsConstants.TBL_CONTACTS),
-                CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_CONTACT))
+        .addFromLeft(TBL_CONTACTS, personContacts,
+            SqlUtils.join(personContacts, sys.getIdName(TBL_CONTACTS),
+                TBL_COMPANY_PERSONS, COL_CONTACT))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
                 System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
@@ -1575,7 +1573,7 @@ public class CalendarModuleBean implements BeeModule {
         if (method == ReminderMethod.EMAIL) {
           Long sender = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
           Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
-              data.getValue(CommonsConstants.COL_EMAIL)));
+              data.getValue(COL_EMAIL)));
 
           if (!DataUtils.isId(sender)) {
             error = "No default sender specified (parameter DefaultAccount)";

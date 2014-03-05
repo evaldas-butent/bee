@@ -47,12 +47,14 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -318,7 +320,7 @@ public final class CalendarKeeper {
               builder.setRequiredFields(formDescription.getOptions());
               builder.initPeriod(start);
 
-              boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
+              boolean companyAndVehicle = builder.isRequired(ClassifiersConstants.COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
@@ -520,7 +522,7 @@ public final class CalendarKeeper {
 
               builder.setRequiredFields(formDescription.getOptions());
 
-              boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
+              boolean companyAndVehicle = builder.isRequired(ClassifiersConstants.COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);

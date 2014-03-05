@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.base.Objects;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -28,7 +28,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.client.Browser;
@@ -37,7 +37,7 @@ import elemental.events.EventListener;
 import elemental.html.File;
 import elemental.html.FileReader;
 
-class PersonFormInterceptor extends AbstractFormInterceptor {
+class PersonForm extends AbstractFormInterceptor {
 
   private static final String PHOTO_FILE_WIDGET_NAME = "PhotoFile";
   private static final String PHOTO_IMAGE_WIDGET_NAME = "PhotoImg";
@@ -49,7 +49,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
   private Image photoImageWidget;
   private NewFileInfo photoImageAttachment;
 
-  PersonFormInterceptor() {
+  PersonForm() {
     super();
   }
 
@@ -97,7 +97,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
           FormView form = getFormView();
           IsRow row = form.getActiveRow();
 
-          row.clearCell(form.getDataIndex(CommonsConstants.COL_PHOTO));
+          row.clearCell(form.getDataIndex(ClassifiersConstants.COL_PHOTO));
           photoImageAttachment = null;
           clearPhoto();
         }
@@ -107,7 +107,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new PersonFormInterceptor();
+    return new PersonForm();
   }
 
   @Override
@@ -195,13 +195,13 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     if (form == null || row == null) {
       return null;
     } else {
-      return row.getString(form.getDataIndex(CommonsConstants.COL_PHOTO));
+      return row.getString(form.getDataIndex(ClassifiersConstants.COL_PHOTO));
     }
   }
   
   private static void setPhotoFileName(FormView form, IsRow row, String value) {
     if (form != null && row != null) {
-      row.setValue(form.getDataIndex(CommonsConstants.COL_PHOTO), value);
+      row.setValue(form.getDataIndex(ClassifiersConstants.COL_PHOTO), value);
     }
   }
 
@@ -236,7 +236,7 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     photoImageAttachment = null;
 
     if (photoImageWidget != null) {
-      String photoFileName = row.getString(form.getDataIndex(CommonsConstants.COL_PHOTO));
+      String photoFileName = row.getString(form.getDataIndex(ClassifiersConstants.COL_PHOTO));
       if (!BeeUtils.isEmpty(photoFileName)) {
         photoImageWidget.setUrl(PhotoRenderer.getUrl(photoFileName));
       } else {
@@ -251,8 +251,8 @@ class PersonFormInterceptor extends AbstractFormInterceptor {
     if (form != null && row != null && userData != null
         && Objects.equal(userData.getPerson(), row.getId())) {
 
-      userData.setFirstName(row.getString(form.getDataIndex(CommonsConstants.COL_FIRST_NAME)));
-      userData.setLastName(row.getString(form.getDataIndex(CommonsConstants.COL_LAST_NAME)));
+      userData.setFirstName(row.getString(form.getDataIndex(ClassifiersConstants.COL_FIRST_NAME)));
+      userData.setLastName(row.getString(form.getDataIndex(ClassifiersConstants.COL_LAST_NAME)));
       userData.setPhotoFileName(getPhotoFileName(form, row));
 
       BeeKeeper.getScreen().updateUserData(userData);

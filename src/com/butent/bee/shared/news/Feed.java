@@ -4,11 +4,12 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -58,8 +59,8 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   COMPANIES_MY(ModuleAndSub.of(Module.CLASSIFIERS, SubModule.CONTACTS),
-      CommonsConstants.TBL_COMPANY_USERS, CommonsConstants.VIEW_COMPANIES,
-      CommonsConstants.COL_COMPANY_NAME) {
+      TBL_COMPANY_USERS, VIEW_COMPANIES,
+      COL_COMPANY_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedCompaniesMy();
@@ -67,26 +68,26 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   COMPANIES_ALL(ModuleAndSub.of(Module.CLASSIFIERS, SubModule.CONTACTS),
-      CommonsConstants.TBL_COMPANIES, CommonsConstants.VIEW_COMPANIES,
-      CommonsConstants.COL_COMPANY_NAME) {
+      TBL_COMPANIES, VIEW_COMPANIES,
+      COL_COMPANY_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedCompaniesAll();
     }
   },
 
-  PERSONS(ModuleAndSub.of(Module.CLASSIFIERS, SubModule.CONTACTS), CommonsConstants.TBL_PERSONS,
-      CommonsConstants.VIEW_PERSONS,
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+  PERSONS(ModuleAndSub.of(Module.CLASSIFIERS, SubModule.CONTACTS), TBL_PERSONS,
+      VIEW_PERSONS,
+      Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedPersons();
     }
   },
 
-  GOODS(ModuleAndSub.of(Module.TRADE), CommonsConstants.TBL_ITEMS, CommonsConstants.VIEW_ITEMS,
-      Lists.newArrayList(CommonsConstants.COL_ITEM_NAME),
-      Lists.newArrayList(CommonsConstants.COL_ITEM_ARTICLE)) {
+  GOODS(ModuleAndSub.of(Module.TRADE), TBL_ITEMS, VIEW_ITEMS,
+      Lists.newArrayList(COL_ITEM_NAME),
+      Lists.newArrayList(COL_ITEM_ARTICLE)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedGoods();
@@ -118,8 +119,8 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   EC_CLIENTS_MY(ModuleAndSub.of(Module.ECOMMERCE), EcConstants.TBL_CLIENTS,
-      EcConstants.VIEW_CLIENTS, Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+      EcConstants.VIEW_CLIENTS, Lists.newArrayList(ALS_COMPANY_NAME),
+      Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedEcClientsMy();
@@ -127,8 +128,8 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   EC_CLIENTS_ALL(ModuleAndSub.of(Module.ECOMMERCE), EcConstants.TBL_CLIENTS,
-      EcConstants.VIEW_CLIENTS, Lists.newArrayList(CommonsConstants.ALS_COMPANY_NAME),
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+      EcConstants.VIEW_CLIENTS, Lists.newArrayList(ALS_COMPANY_NAME),
+      Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedEcClientsAll();
@@ -167,11 +168,11 @@ public enum Feed implements HasLocalizedCaption {
       TransportConstants.VIEW_ORDER_CARGO,
       Lists.newArrayList(TransportConstants.COL_CARGO_DESCRIPTION),
       Lists.newArrayList(TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE),
-          TransportConstants.loadingColumnAlias(CommonsConstants.ALS_CITY_NAME),
-          TransportConstants.loadingColumnAlias(CommonsConstants.ALS_COUNTRY_NAME),
+          TransportConstants.loadingColumnAlias(ALS_CITY_NAME),
+          TransportConstants.loadingColumnAlias(ALS_COUNTRY_NAME),
           TransportConstants.unloadingColumnAlias(TransportConstants.COL_PLACE_DATE),
-          TransportConstants.unloadingColumnAlias(CommonsConstants.ALS_CITY_NAME),
-          TransportConstants.unloadingColumnAlias(CommonsConstants.ALS_COUNTRY_NAME))) {
+          TransportConstants.unloadingColumnAlias(ALS_CITY_NAME),
+          TransportConstants.unloadingColumnAlias(ALS_COUNTRY_NAME))) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrCargo();
@@ -236,7 +237,8 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  SHIPMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_SHIPMENT_REQUESTS,
+  SHIPMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT),
+      TransportConstants.TBL_SHIPMENT_REQUESTS,
       TransportConstants.VIEW_SHIPMENT_REQUESTS, TransportConstants.COL_QUERY_CUSTOMER_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -265,7 +267,7 @@ public enum Feed implements HasLocalizedCaption {
 
   DRIVERS(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_DRIVERS,
       TransportConstants.VIEW_DRIVERS,
-      Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME)) {
+      Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrDrivers();
@@ -348,16 +350,15 @@ public enum Feed implements HasLocalizedCaption {
 
   private Feed(ModuleAndSub moduleAndSub, String table, String headlineView,
       List<String> labelColumns, List<String> titleColumns) {
-    
+
     this.moduleAndSub = moduleAndSub;
     this.table = table;
 
     this.headlineView = headlineView;
-    
+
     this.labelColumns = labelColumns;
     this.titleColumns = titleColumns;
   }
-
 
   @Override
   public String getCaption() {

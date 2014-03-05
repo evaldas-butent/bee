@@ -31,7 +31,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.modules.commons.CommonsUtils;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -82,11 +82,11 @@ public class AssessmentForm extends PrintFormInterceptor {
     public void beforeRefresh(FormView form, IsRow row) {
       Widget w = form.getWidgetByName("CustomerInfo");
       if (w instanceof HasWidgets) {
-        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), w);
+        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), w);
       }
       w = form.getWidgetByName("ForwarderInfo");
       if (w instanceof HasWidgets) {
-        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), w);
+        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), w);
       }
     }
 

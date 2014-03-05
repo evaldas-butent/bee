@@ -292,8 +292,6 @@ public final class CalendarConstants {
   public static final String COL_MULTIDAY_LAYOUT = "MultidayLayout";
   public static final String COL_MULTIDAY_TASK_LAYOUT = "MultidayTaskLayout";
 
-  public static final String COL_COMPANY = "Company";
-  public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_PHONE = "CompanyPhone";
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
 
@@ -353,8 +351,6 @@ public final class CalendarConstants {
 
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
-
-  public static final String COL_COMPANY_PERSON = "CompanyPerson";
 
   public static final String COL_SIMPLE_HEADER = "SimpleHeader";
   public static final String COL_SIMPLE_BODY = "SimpleBody";

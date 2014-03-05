@@ -36,7 +36,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.Paths;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -183,9 +183,9 @@ public class EcServlet extends LoginServlet {
     String name = COL_REGISTRATION_BRANCH;
     Select select = select().name(name).required().append(option());
 
-    BeeRowSet branches = qs.getViewData(CommonsConstants.VIEW_BRANCHES);
+    BeeRowSet branches = qs.getViewData(ClassifiersConstants.VIEW_BRANCHES);
     if (!DataUtils.isEmpty(branches)) {
-      int index = branches.getColumnIndex(CommonsConstants.COL_BRANCH_NAME);
+      int index = branches.getColumnIndex(ClassifiersConstants.COL_BRANCH_NAME);
 
       for (BeeRow row : branches.getRows()) {
         select.append(option().value(row.getId()).text(row.getString(index)));
@@ -234,8 +234,8 @@ public class EcServlet extends LoginServlet {
                 button().typeSubmit().addClass(REG_STYLE_PREFIX + "submit")
                     .text(constants.ecRegister()))));
 
-    Datalist cities = proxy.getDataList(CommonsConstants.TBL_CITIES,
-        CommonsConstants.COL_CITY_NAME);
+    Datalist cities = proxy.getDataList(ClassifiersConstants.TBL_CITIES,
+        ClassifiersConstants.COL_CITY_NAME);
     if (cities != null) {
       String listId = COL_REGISTRATION_CITY + ID_SUFFIX_LIST;
       cities.id(listId);
@@ -247,8 +247,8 @@ public class EcServlet extends LoginServlet {
       }
     }
 
-    Datalist countries = proxy.getDataList(CommonsConstants.TBL_COUNTRIES,
-        CommonsConstants.COL_COUNTRY_NAME);
+    Datalist countries = proxy.getDataList(ClassifiersConstants.TBL_COUNTRIES,
+        ClassifiersConstants.COL_COUNTRY_NAME);
     if (countries != null) {
       String listId = COL_REGISTRATION_COUNTRY + ID_SUFFIX_LIST;
       countries.id(listId);

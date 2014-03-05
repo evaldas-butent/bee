@@ -8,7 +8,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_ITEM;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -45,7 +44,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -93,7 +92,7 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
         boolean itemEmpty = false;
         DataInfo info = Data.getDataInfo(VIEW_CARGO_CREDIT_INCOMES);
 
-        int item = info.getColumnIndex(COL_ITEM);
+        int item = info.getColumnIndex(ClassifiersConstants.COL_ITEM);
         int order = info.getColumnIndex(COL_ORDER_NO);
         int custId = info.getColumnIndex(COL_CUSTOMER);
         int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
@@ -209,7 +208,7 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                 args.addDataItem("IdList", DataUtils.buildIdList(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
-                  args.addDataItem(CommonsConstants.COL_ITEM, mainItem.getRelatedId());
+                  args.addDataItem(ClassifiersConstants.COL_ITEM, mainItem.getRelatedId());
                 }
                 if (creditAmount != null && BeeUtils.isPositive(creditAmount.getNumber())) {
                   args.addDataItem(COL_TRADE_AMOUNT, creditAmount.getNumber());

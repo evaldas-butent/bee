@@ -24,7 +24,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -80,7 +80,7 @@ public class Users {
       nameWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          RowEditor.openRow(CommonsConstants.VIEW_PERSONS, personId, true, null);
+          RowEditor.openRow(ClassifiersConstants.VIEW_PERSONS, personId, true, null);
         }
       });
 

@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -130,8 +131,8 @@ public final class DiscussionsUtils {
       if (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
           .getColumnIndex(COL_COMMENT)]))) {
         String text = BeeUtils.joinWords(
-            row[marksStats.getColumnIndex(CommonsConstants.COL_FIRST_NAME)],
-            row[marksStats.getColumnIndex(CommonsConstants.COL_LAST_NAME)]);
+            row[marksStats.getColumnIndex(ClassifiersConstants.COL_FIRST_NAME)],
+            row[marksStats.getColumnIndex(ClassifiersConstants.COL_LAST_NAME)]);
         text += BeeConst.STRING_COMMA + BeeConst.STRING_SPACE
             + Localized.maybeTranslate(row[marksStats.getColumnIndex(COL_MARK_NAME)]);
 
@@ -240,8 +241,8 @@ public final class DiscussionsUtils {
 
   private static BiMap<String, String> ensureDiscussionPropertyToRelation() {
     if (discussionPropertyToRelation.isEmpty()) {
-      discussionPropertyToRelation.put(PROP_COMPANIES, CommonsConstants.COL_COMPANY);
-      discussionPropertyToRelation.put(PROP_PERSONS, CommonsConstants.COL_PERSON);
+      discussionPropertyToRelation.put(PROP_COMPANIES, ClassifiersConstants.COL_COMPANY);
+      discussionPropertyToRelation.put(PROP_PERSONS, ClassifiersConstants.COL_PERSON);
       discussionPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
       discussionPropertyToRelation.put(PROP_TASKS, TaskConstants.COL_TASK);
       discussionPropertyToRelation.put(PROP_DOCUMENTS, DocumentsConstants.COL_DOCUMENT);

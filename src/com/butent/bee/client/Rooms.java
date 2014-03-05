@@ -7,6 +7,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+
 import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
 import com.butent.bee.client.composite.MultiSelector;
@@ -683,7 +685,7 @@ public class Rooms implements HasInfo {
     table.setWidgetAndStyle(row, 0, ownersLabel, stylePrefix + "ownersLabel");
 
     final MultiSelector ownersWidget = MultiSelector.autonomous(CommonsConstants.TBL_USERS,
-        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME));
+        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getOwners())) {
       ownersWidget.render(DataUtils.buildIdList(roomSettings.getOwners()));
     }
@@ -694,7 +696,7 @@ public class Rooms implements HasInfo {
     table.setWidgetAndStyle(row, 0, dwellersLabel, stylePrefix + "dwellersLabel");
 
     final MultiSelector dwellersWidget = MultiSelector.autonomous(CommonsConstants.TBL_USERS,
-        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME));
+        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getDwellers())) {
       dwellersWidget.render(DataUtils.buildIdList(roomSettings.getDwellers()));
     }

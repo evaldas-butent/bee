@@ -13,6 +13,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -57,9 +58,9 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -612,7 +613,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     final String sid =
         dialog.addSelector(Localized.getConstants().crmTaskExecutor(), CommonsConstants.VIEW_USERS,
-            Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
             true, exclusions);
 
     final String cid = dialog.addComment(true);
@@ -652,7 +653,7 @@ class TaskEditor extends AbstractFormInterceptor {
         } else if (oldStatus == TaskStatus.NOT_VISITED && Objects.equal(newUser, userId)) {
           newStatus = TaskStatus.ACTIVE;
         }
-        
+
         if (newStatus != null) {
           newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
         }
@@ -1125,12 +1126,12 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (renderPhoto) {
       Flow colPhoto = new Flow();
-      colPhoto.addStyleName(STYLE_EVENT_COL + CommonsConstants.COL_PHOTO);
+      colPhoto.addStyleName(STYLE_EVENT_COL + COL_PHOTO);
 
-      String photo = row.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, columns));
+      String photo = row.getString(DataUtils.getColumnIndex(COL_PHOTO, columns));
       if (!BeeUtils.isEmpty(photo)) {
         Image image = new Image(PhotoRenderer.getUrl(photo));
-        image.addStyleName(STYLE_EVENT + CommonsConstants.COL_PHOTO);
+        image.addStyleName(STYLE_EVENT + COL_PHOTO);
         colPhoto.add(image);
       }
 
@@ -1235,7 +1236,7 @@ class TaskEditor extends AbstractFormInterceptor {
     Table<String, String, Long> durations = TreeBasedTable.create();
 
     boolean hasPhoto = false;
-    int photoIndex = rowSet.getColumnIndex(CommonsConstants.COL_PHOTO);
+    int photoIndex = rowSet.getColumnIndex(COL_PHOTO);
     if (photoIndex >= 0) {
       for (BeeRow row : rowSet.getRows()) {
         if (!BeeUtils.isEmpty(row.getString(photoIndex))) {

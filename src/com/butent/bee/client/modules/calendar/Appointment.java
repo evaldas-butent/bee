@@ -4,10 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.KEY_PERIOD;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.build;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.joinChildren;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.wrap;
+import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.BeeColumn;
@@ -84,8 +82,8 @@ public class Appointment extends CalendarItem {
     PARTIAL_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL),
             wrap(COL_VEHICLE_MODEL)),
-            wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
-            wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
+        wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
+        wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
 
     MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
     MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_APPOINTMENT_LOCATION),

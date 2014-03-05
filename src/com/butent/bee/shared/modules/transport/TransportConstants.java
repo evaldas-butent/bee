@@ -7,7 +7,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -155,7 +155,7 @@ public final class TransportConstants {
             TBL_VEHICLES, COL_VEHICLE_NUMBER));
         addProperty(new ImportProperty(COL_COSTS_DATE, locale.date()));
         addProperty(new ImportProperty(COL_COSTS_ITEM, locale.itemOrService(),
-            CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_NAME));
+            ClassifiersConstants.TBL_ITEMS, ClassifiersConstants.COL_ITEM_NAME));
         addProperty(new ImportProperty(COL_COSTS_QUANTITY, locale.quantity()));
         addProperty(new ImportProperty(COL_COSTS_PRICE, locale.price()));
         addProperty(new ImportProperty(COL_COSTS_CURRENCY, locale.currency(),
@@ -165,10 +165,10 @@ public final class TransportConstants {
         addProperty(new ImportProperty(TradeConstants.COL_TRADE_VAT_PERC, locale.vatPercent()));
         addProperty(new ImportProperty(COL_AMOUNT, locale.amount()));
         addProperty(new ImportProperty(COL_COSTS_SUPPLIER, locale.supplier(),
-            CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME));
+            ClassifiersConstants.TBL_COMPANIES, ClassifiersConstants.COL_COMPANY_NAME));
         addProperty(new ImportProperty(COL_NUMBER, locale.number()));
         addProperty(new ImportProperty(COL_COSTS_COUNTRY, locale.country(),
-            CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
+            ClassifiersConstants.TBL_COUNTRIES, ClassifiersConstants.COL_COUNTRY_NAME));
         addProperty(new ImportProperty(COL_COSTS_NOTE, locale.notes()));
         addProperty(new ImportProperty(COL_COSTS_EXTERNAL_ID, locale.externalId()));
       }
@@ -186,8 +186,8 @@ public final class TransportConstants {
         addProperty(new ImportProperty(VAR_IMPORT_PASSWORD, locale.loginPassword()));
         addProperty(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
             TBL_VEHICLES, COL_VEHICLE_NUMBER));
-        addProperty(new ImportProperty(CommonsConstants.COL_COUNTRY, locale.country(),
-            CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
+        addProperty(new ImportProperty(ClassifiersConstants.COL_COUNTRY, locale.country(),
+            ClassifiersConstants.TBL_COUNTRIES, ClassifiersConstants.COL_COUNTRY_NAME));
       }
     };
 

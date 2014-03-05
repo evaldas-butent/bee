@@ -72,7 +72,7 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -201,8 +201,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
       JsUtils.setProperty(template, "title", loc.company());
       List<String> descr = Lists.newArrayList();
 
-      for (BeeColumn col : Data.getColumns(CommonsConstants.TBL_COMPANIES)) {
-        descr.add("{" + CommonsConstants.COL_COMPANY + col.getId() + "}");
+      for (BeeColumn col : Data.getColumns(ClassifiersConstants.TBL_COMPANIES)) {
+        descr.add("{" + ClassifiersConstants.COL_COMPANY + col.getId() + "}");
       }
       JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
       JsUtils.setProperty(template, "content",
@@ -221,8 +221,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
       JsUtils.setProperty(template, "title", loc.person());
       descr.clear();
 
-      for (BeeColumn col : Data.getColumns(CommonsConstants.TBL_PERSONS)) {
-        descr.add("{" + CommonsConstants.COL_PERSON + col.getId() + "}");
+      for (BeeColumn col : Data.getColumns(ClassifiersConstants.TBL_PERSONS)) {
+        descr.add("{" + ClassifiersConstants.COL_PERSON + col.getId() + "}");
       }
       JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
       JsUtils.setProperty(template, "content",

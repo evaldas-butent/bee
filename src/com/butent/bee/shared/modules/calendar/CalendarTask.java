@@ -5,17 +5,17 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
@@ -124,7 +124,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
     this.summary = row.getValue(TaskConstants.COL_SUMMARY);
     this.description = row.getValue(TaskConstants.COL_DESCRIPTION);
 
-    this.companyName = row.getValue(CommonsConstants.ALS_COMPANY_NAME);
+    this.companyName = row.getValue(ALS_COMPANY_NAME);
 
     this.priority = EnumUtils.getEnumByIndex(TaskPriority.class,
         row.getInt(TaskConstants.COL_PRIORITY));

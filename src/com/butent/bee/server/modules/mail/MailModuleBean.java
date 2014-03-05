@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -32,6 +33,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
@@ -465,10 +467,10 @@ public class MailModuleBean implements BeeModule {
             .setWhere(SqlUtils.equals(TBL_ACCOUNTS, COL_STORE_LOGIN, recipient)));
       } else {
         accountId = qs.getLong(ss
-            .addFromInner(CommonsConstants.TBL_EMAILS,
-                sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_ACCOUNTS, COL_ADDRESS))
-            .setWhere(SqlUtils.equals(CommonsConstants.TBL_EMAILS,
-                CommonsConstants.COL_EMAIL_ADDRESS, recipient)));
+            .addFromInner(TBL_EMAILS,
+                sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+            .setWhere(SqlUtils.equals(TBL_EMAILS,
+                COL_EMAIL_ADDRESS, recipient)));
       }
       if (DataUtils.isId(accountId)) {
         folderId = mail.getAccount(accountId).getSysFolderId(SystemFolder.Inbox);
@@ -649,7 +651,8 @@ public class MailModuleBean implements BeeModule {
 
     return ResponseObject.response(qs.getData(new SqlSelect()
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
-        .addFields(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION, COL_ADDRESS, COL_ACCOUNT_DEFAULT,
+        .addFields(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION, MailConstants.COL_ADDRESS,
+            COL_ACCOUNT_DEFAULT,
             SystemFolder.Inbox.name() + COL_FOLDER,
             SystemFolder.Drafts.name() + COL_FOLDER,
             SystemFolder.Sent.name() + COL_FOLDER,
@@ -668,18 +671,18 @@ public class MailModuleBean implements BeeModule {
 
     if (!BeeUtils.isEmpty(ids)) {
       SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addFields(CommonsConstants.TBL_EMAILS,
-              CommonsConstants.COL_EMAIL_ADDRESS, CommonsConstants.COL_EMAIL_LABEL)
-          .addFrom(CommonsConstants.TBL_EMAILS)
-          .setWhere(SqlUtils.inList(CommonsConstants.TBL_EMAILS,
-              sys.getIdName(CommonsConstants.TBL_EMAILS), ids.toArray())));
+          .addFields(TBL_EMAILS,
+              COL_EMAIL_ADDRESS, COL_EMAIL_LABEL)
+          .addFrom(TBL_EMAILS)
+          .setWhere(SqlUtils.inList(TBL_EMAILS,
+              sys.getIdName(TBL_EMAILS), ids.toArray())));
 
       Assert.state(ids.size() == rs.getNumberOfRows(), "Address count mismatch");
 
       for (SimpleRow address : rs) {
         try {
-          addresses.add(new InternetAddress(address.getValue(CommonsConstants.COL_EMAIL_ADDRESS),
-              address.getValue(CommonsConstants.COL_EMAIL_LABEL), BeeConst.CHARSET_UTF8));
+          addresses.add(new InternetAddress(address.getValue(COL_EMAIL_ADDRESS),
+              address.getValue(COL_EMAIL_LABEL), BeeConst.CHARSET_UTF8));
         } catch (UnsupportedEncodingException e) {
           logger.warning(e);
         }
@@ -695,11 +698,11 @@ public class MailModuleBean implements BeeModule {
 
     packet.put(TBL_MESSAGES, qs.getRow(new SqlSelect()
         .addFields(TBL_MESSAGES, COL_DATE, COL_SENDER, COL_SUBJECT)
-        .addFields(CommonsConstants.TBL_EMAILS,
-            CommonsConstants.COL_EMAIL_ADDRESS, CommonsConstants.COL_EMAIL_LABEL)
+        .addFields(TBL_EMAILS,
+            COL_EMAIL_ADDRESS, COL_EMAIL_LABEL)
         .addFrom(TBL_MESSAGES)
-        .addFromInner(CommonsConstants.TBL_EMAILS,
-            sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
+        .addFromInner(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
         .setWhere(sys.idEquals(TBL_MESSAGES, messageId))).getRowSet());
 
     IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, messageId);
@@ -709,12 +712,12 @@ public class MailModuleBean implements BeeModule {
           SqlUtils.notEqual(TBL_RECIPIENTS, COL_ADDRESS_TYPE, AddressType.BCC.name()));
     }
     packet.put(TBL_RECIPIENTS, qs.getData(new SqlSelect()
-        .addFields(TBL_RECIPIENTS, COL_ADDRESS_TYPE, COL_ADDRESS)
-        .addFields(CommonsConstants.TBL_EMAILS,
-            CommonsConstants.COL_EMAIL_ADDRESS, CommonsConstants.COL_EMAIL_LABEL)
+        .addFields(TBL_RECIPIENTS, COL_ADDRESS_TYPE, MailConstants.COL_ADDRESS)
+        .addFields(TBL_EMAILS,
+            COL_EMAIL_ADDRESS, COL_EMAIL_LABEL)
         .addFrom(TBL_RECIPIENTS)
-        .addFromInner(CommonsConstants.TBL_EMAILS,
-            sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_RECIPIENTS, COL_ADDRESS))
+        .addFromInner(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_RECIPIENTS, MailConstants.COL_ADDRESS))
         .setWhere(wh)
         .addOrderDesc(TBL_RECIPIENTS, COL_ADDRESS_TYPE)));
 
@@ -750,50 +753,50 @@ public class MailModuleBean implements BeeModule {
     Map<String, Object> packet = Maps.newHashMap();
 
     SimpleRow data = qs.getRow(new SqlSelect()
-        .addFields(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_COMPANY)
-        .addField(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.getIdName(CommonsConstants.TBL_COMPANY_PERSONS), CommonsConstants.COL_PERSON)
-        .addFields(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-            CommonsConstants.COL_LAST_NAME)
-        .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME)
+        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+        .addField(TBL_COMPANY_PERSONS,
+            sys.getIdName(TBL_COMPANY_PERSONS), COL_PERSON)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME,
+            COL_LAST_NAME)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFrom(TBL_MESSAGES)
-        .addFromInner(CommonsConstants.TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
-            CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
-        .addFromInner(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_CONTACTS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_CONTACT))
-        .addFromInner(CommonsConstants.TBL_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_PERSON))
-        .addFromInner(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_COMPANY))
+        .addFromInner(TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
+            TBL_CONTACTS, COL_EMAIL))
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS,
+                COL_CONTACT))
+        .addFromInner(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                COL_PERSON))
+        .addFromInner(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS,
+                COL_COMPANY))
         .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
     if (data != null) {
-      packet.put(CommonsConstants.COL_COMPANY, data.getLong(CommonsConstants.COL_COMPANY));
-      packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME,
-          data.getValue(CommonsConstants.COL_COMPANY_NAME));
-      packet.put(CommonsConstants.COL_PERSON, data.getLong(CommonsConstants.COL_PERSON));
-      packet.put(CommonsConstants.COL_FIRST_NAME, data.getValue(CommonsConstants.COL_FIRST_NAME));
-      packet.put(CommonsConstants.COL_LAST_NAME, data.getValue(CommonsConstants.COL_LAST_NAME));
+      packet.put(COL_COMPANY, data.getLong(COL_COMPANY));
+      packet.put(COL_COMPANY + COL_COMPANY_NAME,
+          data.getValue(COL_COMPANY_NAME));
+      packet.put(COL_PERSON, data.getLong(COL_PERSON));
+      packet.put(COL_FIRST_NAME, data.getValue(COL_FIRST_NAME));
+      packet.put(COL_LAST_NAME, data.getValue(COL_LAST_NAME));
     } else {
       data = qs.getRow(new SqlSelect()
-          .addField(CommonsConstants.TBL_COMPANIES, sys.getIdName(CommonsConstants.TBL_COMPANIES),
-              CommonsConstants.COL_COMPANY)
-          .addFields(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME)
+          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+              COL_COMPANY)
+          .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
           .addFrom(TBL_MESSAGES)
-          .addFromInner(CommonsConstants.TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
-              CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
-          .addFromInner(CommonsConstants.TBL_COMPANIES,
-              sys.joinTables(CommonsConstants.TBL_CONTACTS, CommonsConstants.TBL_COMPANIES,
-                  CommonsConstants.COL_CONTACT))
+          .addFromInner(TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
+              TBL_CONTACTS, COL_EMAIL))
+          .addFromInner(TBL_COMPANIES,
+              sys.joinTables(TBL_CONTACTS, TBL_COMPANIES,
+                  COL_CONTACT))
           .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
       if (data != null) {
-        packet.put(CommonsConstants.COL_COMPANY, data.getValue(CommonsConstants.COL_COMPANY));
-        packet.put(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME,
-            data.getValue(CommonsConstants.COL_COMPANY_NAME));
+        packet.put(COL_COMPANY, data.getValue(COL_COMPANY));
+        packet.put(COL_COMPANY + COL_COMPANY_NAME,
+            data.getValue(COL_COMPANY_NAME));
       }
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()

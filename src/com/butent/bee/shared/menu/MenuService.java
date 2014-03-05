@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -27,7 +28,7 @@ public enum MenuService {
       Sets.newHashSet(CommonsConstants.VIEW_PARAMETERS, CommonsConstants.VIEW_USER_PARAMETERS)),
 
   @XmlEnumValue("items")
-  ITEMS(RightsState.VIEW, CommonsConstants.VIEW_ITEMS),
+  ITEMS(RightsState.VIEW, ClassifiersConstants.VIEW_ITEMS),
   @XmlEnumValue("update_exchange_rates")
   UPDATE_EXCHANGE_RATES(EnumSet.of(RightsState.VIEW, RightsState.CREATE),
       CommonsConstants.VIEW_CURRENCY_RATES),
@@ -94,7 +95,7 @@ public enum MenuService {
       setDataIsParameter();
     }
   }
-  
+
   private MenuService(EnumSet<RightsState> dataRightsStates) {
     this.dataRightsStates = dataRightsStates;
   }

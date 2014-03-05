@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -23,7 +24,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
@@ -202,15 +203,15 @@ public class MailStorageBean {
     Assert.notEmpty(email);
 
     Long id = qs.getLong(new SqlSelect()
-        .addFields(CommonsConstants.TBL_EMAILS, sys.getIdName(CommonsConstants.TBL_EMAILS))
-        .addFrom(CommonsConstants.TBL_EMAILS)
-        .setWhere(SqlUtils.equals(CommonsConstants.TBL_EMAILS, CommonsConstants.COL_EMAIL_ADDRESS,
+        .addFields(TBL_EMAILS, sys.getIdName(TBL_EMAILS))
+        .addFrom(TBL_EMAILS)
+        .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS,
             email)));
 
     if (id == null) {
-      id = qs.insertData(new SqlInsert(CommonsConstants.TBL_EMAILS)
-          .addConstant(CommonsConstants.COL_EMAIL_ADDRESS, email)
-          .addConstant(CommonsConstants.COL_EMAIL_LABEL, label));
+      id = qs.insertData(new SqlInsert(TBL_EMAILS)
+          .addConstant(COL_EMAIL_ADDRESS, email)
+          .addConstant(COL_EMAIL_LABEL, label));
     }
     return id;
   }
@@ -276,7 +277,7 @@ public class MailStorageBean {
         if (allAddresses.add(adr)) {
           qs.insertData(new SqlInsert(TBL_RECIPIENTS)
               .addConstant(COL_MESSAGE, messageId)
-              .addConstant(COL_ADDRESS, adr)
+              .addConstant(MailConstants.COL_ADDRESS, adr)
               .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
         }
       }
@@ -444,12 +445,12 @@ public class MailStorageBean {
     return new MailAccount(qs.getRow(new SqlSelect()
         .addAllFields(TBL_ACCOUNTS)
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
-        .addFields(CommonsConstants.TBL_EMAILS, CommonsConstants.COL_EMAIL_ADDRESS)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addFrom(TBL_ACCOUNTS)
-        .addFromInner(CommonsConstants.TBL_EMAILS,
-            sys.joinTables(CommonsConstants.TBL_EMAILS, TBL_ACCOUNTS, COL_ADDRESS))
+        .addFromInner(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
         .setWhere(DataUtils.isId(addressId)
-            ? SqlUtils.equals(TBL_ACCOUNTS, COL_ADDRESS, addressId)
+            ? SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId)
             : sys.idEquals(TBL_ACCOUNTS, accountId))));
   }
 

@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Longs;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.server.i18n.I18nUtils;
@@ -486,7 +487,7 @@ public class UserServiceBean {
     UserInfo info = getCurrentUserInfo();
     return (info == null) ? false : info.getUserData().hasDataRight(object, state);
   }
-  
+
   @Lock(LockType.WRITE)
   public void initRights() {
     rightsCache.clear();

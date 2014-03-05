@@ -8,6 +8,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -129,8 +130,8 @@ public class TransportModuleBean implements BeeModule {
       List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
               COL_OWNER_NAME), query));
-      
-      Filter orderCargoFilter =  Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
+
+      Filter orderCargoFilter = Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
           COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
           ALS_LOADING_TERMINAL, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
           ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
@@ -138,11 +139,11 @@ public class TransportModuleBean implements BeeModule {
           ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
           ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
           query);
-      
-      List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO, 
+
+      List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
           orderCargoFilter
-        );
-      
+          );
+
       result.addAll(vehiclesResult);
       result.addAll(orderCargoResult);
     }

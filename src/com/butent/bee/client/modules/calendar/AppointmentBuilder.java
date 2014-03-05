@@ -82,6 +82,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -1556,7 +1557,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       return false;
     }
 
-    if (isRequired(COL_COMPANY) && isEmpty(row, COL_COMPANY)) {
+    if (isRequired(ClassifiersConstants.COL_COMPANY)
+        && isEmpty(row, ClassifiersConstants.COL_COMPANY)) {
       getFormView().notifySevere(Localized.getConstants().calEnterClient());
       return false;
     }

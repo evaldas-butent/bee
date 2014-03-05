@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -13,18 +13,18 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
-class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
+class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
   private static final String FILTER_KEY = "f1";
   private final boolean services;
 
   private IsRow selectedCategory;
 
-  ItemGridHandler(boolean showServices) {
+  ItemsGrid(boolean showServices) {
     this.services = showServices;
   }
 
@@ -58,14 +58,14 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
   @Override
   public String getSupplierKey() {
     return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid",
-        CommonsConstants.TBL_ITEMS, getCaption()));
+        ClassifiersConstants.TBL_ITEMS, getCaption()));
   }
 
   @Override
   public boolean onLoad(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isNull(CommonsConstants.COL_ITEM_IS_SERVICE);
+    Filter filter = Filter.isNull(ClassifiersConstants.COL_ITEM_IS_SERVICE);
 
     if (showServices()) {
       filter = Filter.isNot(filter);
@@ -105,9 +105,9 @@ class ItemGridHandler extends AbstractGridInterceptor implements SelectionHandle
     if (category == null) {
       return null;
     } else {
-      return Filter.in(Data.getIdColumn(CommonsConstants.VIEW_ITEMS),
-          CommonsConstants.VIEW_ITEM_CATEGORIES, CommonsConstants.COL_ITEM,
-          Filter.equals(CommonsConstants.COL_CATEGORY, category));
+      return Filter.in(Data.getIdColumn(ClassifiersConstants.VIEW_ITEMS),
+          ClassifiersConstants.VIEW_ITEM_CATEGORIES, ClassifiersConstants.COL_ITEM,
+          Filter.equals(ClassifiersConstants.COL_CATEGORY, category));
     }
   }
 

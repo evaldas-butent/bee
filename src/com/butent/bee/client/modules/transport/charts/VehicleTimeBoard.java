@@ -42,7 +42,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -374,8 +374,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         drivers.put(row.getLong(COL_TRIP), new Driver(row.getLong(COL_DRIVER),
-            row.getValue(CommonsConstants.COL_FIRST_NAME),
-            row.getValue(CommonsConstants.COL_LAST_NAME),
+            row.getValue(ClassifiersConstants.COL_FIRST_NAME),
+            row.getValue(ClassifiersConstants.COL_LAST_NAME),
             row.getDateTime(COL_TRIP_DRIVER_FROM), row.getDateTime(COL_TRIP_DRIVER_TO),
             row.getValue(COL_TRIP_DRIVER_NOTE)));
       }

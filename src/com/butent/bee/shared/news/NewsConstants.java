@@ -6,7 +6,7 @@ import com.google.common.collect.Multimap;
 
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -66,17 +66,17 @@ public final class NewsConstants {
   }
 
   private static void initObservedColumns() {
-    observedColumns.put(CommonsConstants.TBL_COMPANY_USERS,
-        CommonsConstants.COL_COMPANY_USER_RESPONSIBILITY);
-    observedColumns.put(CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME);
+    observedColumns.put(ClassifiersConstants.TBL_COMPANY_USERS,
+        ClassifiersConstants.COL_COMPANY_USER_RESPONSIBILITY);
+    observedColumns.put(ClassifiersConstants.TBL_COMPANIES, ClassifiersConstants.COL_COMPANY_NAME);
 
-    observedColumns.put(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME);
-    observedColumns.put(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME);
+    observedColumns.put(ClassifiersConstants.TBL_PERSONS, ClassifiersConstants.COL_FIRST_NAME);
+    observedColumns.put(ClassifiersConstants.TBL_PERSONS, ClassifiersConstants.COL_LAST_NAME);
 
-    observedColumns.put(CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_NAME);
-    observedColumns.put(CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_ARTICLE);
-    observedColumns.put(CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_PRICE);
-    observedColumns.put(CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_CURRENCY);
+    observedColumns.put(ClassifiersConstants.TBL_ITEMS, ClassifiersConstants.COL_ITEM_NAME);
+    observedColumns.put(ClassifiersConstants.TBL_ITEMS, ClassifiersConstants.COL_ITEM_ARTICLE);
+    observedColumns.put(ClassifiersConstants.TBL_ITEMS, ClassifiersConstants.COL_ITEM_PRICE);
+    observedColumns.put(ClassifiersConstants.TBL_ITEMS, ClassifiersConstants.COL_ITEM_CURRENCY);
 
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_START_DATE_TIME);
     observedColumns.put(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_END_DATE_TIME);
@@ -107,10 +107,10 @@ public final class NewsConstants {
   }
 
   private static void initUsageTables() {
-    usageTables.put(CommonsConstants.TBL_COMPANY_USERS, "CompanyUserUsage");
-    usageTables.put(CommonsConstants.TBL_COMPANIES, "CompanyUsage");
-    usageTables.put(CommonsConstants.TBL_PERSONS, "PersonUsage");
-    usageTables.put(CommonsConstants.TBL_ITEMS, "ItemUsage");
+    usageTables.put(ClassifiersConstants.TBL_COMPANY_USERS, "CompanyUserUsage");
+    usageTables.put(ClassifiersConstants.TBL_COMPANIES, "CompanyUsage");
+    usageTables.put(ClassifiersConstants.TBL_PERSONS, "PersonUsage");
+    usageTables.put(ClassifiersConstants.TBL_ITEMS, "ItemUsage");
 
     usageTables.put(DocumentsConstants.TBL_DOCUMENTS, "DocumentUsage");
 

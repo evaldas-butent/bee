@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
@@ -399,8 +400,8 @@ final class DriverTimeBoard extends ChartBase {
     
     BeeRowSet brs = BeeRowSet.getIfPresent(properties, PROP_DRIVERS);
     if (!DataUtils.isEmpty(brs)) {
-      int firstNameIndex = brs.getColumnIndex(CommonsConstants.COL_FIRST_NAME);
-      int lastNameIndex = brs.getColumnIndex(CommonsConstants.COL_LAST_NAME);
+      int firstNameIndex = brs.getColumnIndex(ClassifiersConstants.COL_FIRST_NAME);
+      int lastNameIndex = brs.getColumnIndex(ClassifiersConstants.COL_LAST_NAME);
 
       int startDateIndex = brs.getColumnIndex(COL_DRIVER_START_DATE);
       int endDateIndex = brs.getColumnIndex(COL_DRIVER_END_DATE);
@@ -473,8 +474,8 @@ final class DriverTimeBoard extends ChartBase {
           driverTrips.put(driverId, new DriverTrip(tripId, dateFrom, dateTo, note));
        
           tripDrivers.put(tripId, new Driver(driverId,
-              row.getValue(CommonsConstants.COL_FIRST_NAME),
-              row.getValue(CommonsConstants.COL_LAST_NAME),
+              row.getValue(ClassifiersConstants.COL_FIRST_NAME),
+              row.getValue(ClassifiersConstants.COL_LAST_NAME),
               dateFrom, dateTo, note));
         }
       }

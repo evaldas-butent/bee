@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -15,6 +16,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -97,18 +99,17 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         }
 
         Map<String, String> parameters = Maps.newHashMap();
-        parameters.put(CommonsConstants.COL_COMPANY_NAME, companyName);
+        parameters.put(COL_COMPANY_NAME, companyName);
 
-        putField(parameters, COL_QUERY_CUSTOMER_CODE, CommonsConstants.COL_COMPANY_CODE);
-        putField(parameters, COL_QUERY_CUSTOMER_VAT_CODE, CommonsConstants.COL_COMPANY_VAT_CODE);
-        putField(parameters, COL_QUERY_CUSTOMER_EXCHANGE_CODE,
-            CommonsConstants.COL_COMPANY_EXCHANGE_CODE);
+        putField(parameters, COL_QUERY_CUSTOMER_CODE, COL_COMPANY_CODE);
+        putField(parameters, COL_QUERY_CUSTOMER_VAT_CODE, COL_COMPANY_VAT_CODE);
+        putField(parameters, COL_QUERY_CUSTOMER_EXCHANGE_CODE, COL_COMPANY_EXCHANGE_CODE);
 
-        putField(parameters, COL_QUERY_CUSTOMER_EMAIL, CommonsConstants.COL_EMAIL);
-        putField(parameters, COL_QUERY_CUSTOMER_ADDRESS, CommonsConstants.COL_ADDRESS);
-        putField(parameters, COL_QUERY_CUSTOMER_PHONE, CommonsConstants.COL_PHONE);
+        putField(parameters, COL_QUERY_CUSTOMER_EMAIL, COL_EMAIL);
+        putField(parameters, COL_QUERY_CUSTOMER_ADDRESS, COL_ADDRESS);
+        putField(parameters, COL_QUERY_CUSTOMER_PHONE, COL_PHONE);
 
-        CommonsUtils.createCompany(parameters, getFormView(), new IdCallback() {
+        ClassifierUtils.createCompany(parameters, getFormView(), new IdCallback() {
           @Override
           public void onSuccess(Long company) {
             List<String> colNames = Lists.newArrayList(COL_CUSTOMER);
@@ -171,7 +172,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
         header.addCommandItem(this.activateCommand);
       }
 
-      if (!BeeUtils.isEmpty(getStringValue(COL_QUERY_HOST)) 
+      if (!BeeUtils.isEmpty(getStringValue(COL_QUERY_HOST))
           && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =

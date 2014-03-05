@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.UserGroupVisibility;
 import com.butent.bee.shared.ui.Relation;
@@ -31,9 +32,9 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
       String childColumn) {
     return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn,
         CommonsConstants.VIEW_USERS,
-        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
-        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME,
-            CommonsConstants.ALS_COMPANY_NAME, CommonsConstants.ALS_POSITION_NAME));
+        Lists.newArrayList(ClassifiersConstants.COL_FIRST_NAME, ClassifiersConstants.COL_LAST_NAME),
+        Lists.newArrayList(ClassifiersConstants.COL_FIRST_NAME, ClassifiersConstants.COL_LAST_NAME,
+            ClassifiersConstants.ALS_COMPANY_NAME, ClassifiersConstants.ALS_POSITION_NAME));
   }
 
   public static UniqueChildInterceptor forUserGroups(String dialogCaption, String parentColumn,

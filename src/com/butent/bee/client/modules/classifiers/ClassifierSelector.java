@@ -1,11 +1,11 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -24,11 +24,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class CommonsSelectorHandler implements SelectorEvent.Handler {
+public class ClassifierSelector implements SelectorEvent.Handler {
 
   private final Map<String, Long> companyPersonSelectors = Maps.newHashMap();
 
-  CommonsSelectorHandler() {
+  ClassifierSelector() {
     super();
   }
 
@@ -40,7 +40,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CITIES)) {
       handleCities(event);
 
-    } else if (event.isNewRow() 
+    } else if (event.isNewRow()
         && BeeUtils.inListSame(event.getRelatedViewName(), VIEW_PERSONS, VIEW_COMPANY_PERSONS)) {
       handleNewPersons(event);
 
@@ -83,7 +83,7 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
     if (country == null || country.equals(target.getLong(targetIndex))) {
       return;
     }
-    
+
     if (dataView.isFlushable()) {
       target.setValue(targetIndex, country);
     } else {

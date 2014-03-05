@@ -15,7 +15,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.documents.DocumentHandler;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
@@ -31,10 +30,11 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
@@ -55,7 +55,7 @@ public final class TasksKeeper {
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
     private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
-        CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
+        ClassifiersConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
         COL_FINISH_TIME, COL_STATUS);
 
     private DataInfo taskViewInfo;
@@ -216,8 +216,6 @@ public final class TasksKeeper {
     });
 
     SelectorEvent.register(new TaskSelectorHandler());
-
-    DocumentHandler.register();
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 

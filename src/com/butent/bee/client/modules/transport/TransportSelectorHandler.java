@@ -24,7 +24,7 @@ import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -39,7 +39,7 @@ public class TransportSelectorHandler implements Handler {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_SERVICES)) {
       handleServices(event);
 
-    } else if (BeeUtils.same(event.getRelatedViewName(), CommonsConstants.TBL_COMPANIES)) {
+    } else if (BeeUtils.same(event.getRelatedViewName(), ClassifiersConstants.TBL_COMPANIES)) {
       handleCompanies(event);
 
     } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_CARGO_REQUEST_TEMPLATES)) {
@@ -85,7 +85,7 @@ public class TransportSelectorHandler implements Handler {
       id = target.getLong(targetInfo.getColumnIndex(COL_CUSTOMER));
     }
     if (DataUtils.isId(id)) {
-      Queries.getValue(CommonsConstants.TBL_COMPANIES, id, "CreditDays", consumer);
+      Queries.getValue(ClassifiersConstants.TBL_COMPANIES, id, "CreditDays", consumer);
     } else {
       consumer.onSuccess(null);
     }

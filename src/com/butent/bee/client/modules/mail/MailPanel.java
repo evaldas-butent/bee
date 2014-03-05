@@ -79,6 +79,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -713,15 +714,15 @@ public class MailPanel extends AbstractFormInterceptor {
         BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
         row.setValue(dataInfo.getColumnIndex("Customer"),
-            BeeUtils.toLongOrNull(packet.get(CommonsConstants.COL_COMPANY)));
+            BeeUtils.toLongOrNull(packet.get(ClassifiersConstants.COL_COMPANY)));
         row.setValue(dataInfo.getColumnIndex("CustomerName"),
-            packet.get(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME));
+            packet.get(ClassifiersConstants.COL_COMPANY + ClassifiersConstants.COL_COMPANY_NAME));
         row.setValue(dataInfo.getColumnIndex("CustomerPerson"),
-            BeeUtils.toLongOrNull(packet.get(CommonsConstants.COL_PERSON)));
+            BeeUtils.toLongOrNull(packet.get(ClassifiersConstants.COL_PERSON)));
         row.setValue(dataInfo.getColumnIndex("PersonFirstName"),
-            packet.get(CommonsConstants.COL_FIRST_NAME));
+            packet.get(ClassifiersConstants.COL_FIRST_NAME));
         row.setValue(dataInfo.getColumnIndex("PersonLastName"),
-            packet.get(CommonsConstants.COL_LAST_NAME));
+            packet.get(ClassifiersConstants.COL_LAST_NAME));
         row.setValue(dataInfo.getColumnIndex(COL_CONTENT), packet.get(COL_CONTENT));
 
         Map<Long, NewFileInfo> files = Maps.newHashMap();

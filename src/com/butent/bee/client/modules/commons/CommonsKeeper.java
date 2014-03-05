@@ -6,12 +6,12 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
@@ -41,16 +41,6 @@ public final class CommonsKeeper {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_USERS), event.getRow(),
             Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
             BeeConst.STRING_SPACE));
-
-      } else if (event.hasView(VIEW_COMPANIES)) {
-        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
-            Lists.newArrayList(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
-
-      } else if (event.hasView(VIEW_PERSONS)) {
-        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
-            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
       }
     }
   }
@@ -94,13 +84,6 @@ public final class CommonsKeeper {
   }
 
   public static void register() {
-    MenuService.ITEMS.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(parameters, "s")));
-      }
-    });
-
     MenuService.UPDATE_EXCHANGE_RATES.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
@@ -109,9 +92,6 @@ public final class CommonsKeeper {
     });
 
     FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
-    FormFactory.registerFormInterceptor("Item", new ItemFormHandler());
-    FormFactory.registerFormInterceptor(FORM_PERSON, new PersonFormInterceptor());
-    FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
 
@@ -134,8 +114,6 @@ public final class CommonsKeeper {
         styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_THEME_COLORS, COL_FOREGROUND,
         styleProvider);
-
-    SelectorEvent.register(new CommonsSelectorHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 

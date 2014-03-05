@@ -66,6 +66,7 @@ import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -661,8 +662,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     List<String> messages = Lists.newArrayList();
 
     List<Integer> indexes = Lists.newArrayList(
-        getExecutors().getColumnIndex(CommonsConstants.COL_FIRST_NAME),
-        getExecutors().getColumnIndex(CommonsConstants.COL_LAST_NAME));
+        getExecutors().getColumnIndex(ClassifiersConstants.COL_FIRST_NAME),
+        getExecutors().getColumnIndex(ClassifiersConstants.COL_LAST_NAME));
 
     int size = DataUtils.isId(executor) ? 1 : getExecutors().getNumberOfRows();
     int maxCount = (size > 15) ? 10 : (size + 1);
@@ -936,10 +937,10 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         }
 
         table.setText(r, COL_OFFSPRING_FIRST_NAME,
-            DataUtils.getString(getExecutors(), userRow, CommonsConstants.COL_FIRST_NAME),
+            DataUtils.getString(getExecutors(), userRow, ClassifiersConstants.COL_FIRST_NAME),
             STYLE_OFFSPRING_FIRST_NAME);
         table.setText(r, COL_OFFSPRING_LAST_NAME,
-            DataUtils.getString(getExecutors(), userRow, CommonsConstants.COL_LAST_NAME),
+            DataUtils.getString(getExecutors(), userRow, ClassifiersConstants.COL_LAST_NAME),
             STYLE_OFFSPRING_LAST_NAME);
 
         FaLabel create = new FaLabel(FontAwesome.PLUS_SQUARE_O);

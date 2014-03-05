@@ -35,7 +35,7 @@
       </FlowPanel>
       &separator;
 
-      <xi:include href="../../Commons/forms/widgets/ContactInfoClosed.widget.xml" />  
+      <xi:include href="../../Classifiers/forms/widgets/ContactInfoClosed.widget.xml" />  
       &separator;
 
       <FlowPanel class="flexBox-horizontal">

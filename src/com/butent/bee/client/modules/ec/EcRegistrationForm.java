@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.ui.UserInterface;
@@ -104,21 +105,21 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     final String activity = getStringValue(COL_REGISTRATION_ACTIVITY);
 
     Map<String, String> userFields = Maps.newHashMap();
-    userFields.put(CommonsConstants.COL_EMAIL, email);
-    userFields.put(CommonsConstants.COL_FIRST_NAME, firstName.trim());
-    userFields.put(CommonsConstants.ALS_COMPANY_NAME, companyName.trim());
+    userFields.put(ClassifiersConstants.COL_EMAIL, email);
+    userFields.put(ClassifiersConstants.COL_FIRST_NAME, firstName.trim());
+    userFields.put(ClassifiersConstants.ALS_COMPANY_NAME, companyName.trim());
 
-    putUserField(userFields, COL_REGISTRATION_COMPANY_CODE, CommonsConstants.ALS_COMPANY_CODE);
-    putUserField(userFields, COL_REGISTRATION_VAT_CODE, CommonsConstants.COL_COMPANY_VAT_CODE);
+    putUserField(userFields, COL_REGISTRATION_COMPANY_CODE, ClassifiersConstants.ALS_COMPANY_CODE);
+    putUserField(userFields, COL_REGISTRATION_VAT_CODE, ClassifiersConstants.COL_COMPANY_VAT_CODE);
 
-    putUserField(userFields, COL_REGISTRATION_LAST_NAME, CommonsConstants.COL_LAST_NAME);
+    putUserField(userFields, COL_REGISTRATION_LAST_NAME, ClassifiersConstants.COL_LAST_NAME);
 
-    putUserField(userFields, COL_REGISTRATION_ADDRESS, CommonsConstants.COL_ADDRESS);
-    putUserField(userFields, COL_REGISTRATION_CITY, CommonsConstants.COL_CITY);
-    putUserField(userFields, COL_REGISTRATION_COUNTRY, CommonsConstants.COL_COUNTRY);
+    putUserField(userFields, COL_REGISTRATION_ADDRESS, ClassifiersConstants.COL_ADDRESS);
+    putUserField(userFields, COL_REGISTRATION_CITY, ClassifiersConstants.COL_CITY);
+    putUserField(userFields, COL_REGISTRATION_COUNTRY, ClassifiersConstants.COL_COUNTRY);
 
-    putUserField(userFields, COL_REGISTRATION_PHONE, CommonsConstants.COL_PHONE);
-    putUserField(userFields, COL_REGISTRATION_POST_INDEX, CommonsConstants.COL_POST_INDEX);
+    putUserField(userFields, COL_REGISTRATION_PHONE, ClassifiersConstants.COL_PHONE);
+    putUserField(userFields, COL_REGISTRATION_POST_INDEX, ClassifiersConstants.COL_POST_INDEX);
 
     String login = BeeUtils.notEmpty(BeeUtils.getPrefix(email, BeeConst.CHAR_AT), email);
     final String password = BeeUtils.left(login, 1);

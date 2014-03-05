@@ -241,9 +241,6 @@ public final class TaskConstants {
 
   public static final String COL_EXPIRES = "Expires";
 
-  public static final String COL_COMPANY = "Company";
-  public static final String COL_CONTACT = "Contact";
-
   public static final String COL_REMINDER = "Reminder";
   public static final String COL_REMINDER_TIME = "ReminderTime";
   public static final String COL_REMINDER_SENT = "ReminderSent";
@@ -270,8 +267,6 @@ public final class TaskConstants {
 
   public static final String COL_COMPLETED = "Completed";
   public static final String COL_APPROVED = "Approved";
-
-  public static final String COL_PERSON = "Person";
 
   public static final String COL_REQUEST = "Request";
   public static final String COL_REQUEST_DATE = "Date";

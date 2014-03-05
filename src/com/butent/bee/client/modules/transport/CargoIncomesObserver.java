@@ -18,6 +18,7 @@ import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -87,13 +88,13 @@ public final class CargoIncomesObserver implements RowInsertEvent.Handler, Handl
           return;
         }
         Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
-        double limit = BeeUtils.toDouble(result.get(CommonsConstants.COL_COMPANY_CREDIT_LIMIT));
+        double limit = BeeUtils.toDouble(result.get(ClassifiersConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
         double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
         double income = BeeUtils.toDouble(result.get(VAR_INCOME));
 
         if (overdue > 0 || (debt + income) > limit) {
-          String cap = result.get(CommonsConstants.COL_COMPANY_NAME);
+          String cap = result.get(ClassifiersConstants.COL_COMPANY_NAME);
           List<String> msgs = Lists.newArrayList();
 
           msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),

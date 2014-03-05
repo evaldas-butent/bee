@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -29,7 +30,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
 import com.butent.bee.shared.time.DateTime;
@@ -159,8 +159,8 @@ public class TransportImports {
 
         case TRACKING:
           response = importTracking(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              BeeUtils.toIntOrNull(reqInfo.getParameter(CommonsConstants.VAR_DATE_LOW)),
-              BeeUtils.toIntOrNull(reqInfo.getParameter(CommonsConstants.VAR_DATE_HIGH)),
+              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_LOW)),
+              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_HIGH)),
               BeeUtils.toBoolean(reqInfo.getParameter("test")));
           break;
       }
