@@ -9,7 +9,8 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -22,8 +23,8 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.modules.commons.ExtensionIcons;
-import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.HasConditions;
@@ -65,7 +66,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -229,8 +230,8 @@ public class TasksModuleBean implements BeeModule {
           return;
         }
         if (BeeUtils.same(event.getTargetName(), VIEW_RT_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), CommonsConstants.ALS_FILE_NAME,
-              CommonsConstants.PROP_ICON);
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME,
+              PROP_ICON);
 
         } else if (BeeUtils.same(event.getTargetName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
@@ -547,7 +548,7 @@ public class TasksModuleBean implements BeeModule {
       qs.copyData(TBL_RT_DATES, COL_RTD_RECURRING_TASK, rtId, newId);
       qs.copyData(TBL_RT_FILES, COL_RTD_RECURRING_TASK, rtId, newId);
 
-      qs.copyData(CommonsConstants.TBL_RELATIONS, COL_RECURRING_TASK, rtId, newId);
+      qs.copyData(TBL_RELATIONS, COL_RECURRING_TASK, rtId, newId);
     }
 
     return response;
@@ -566,7 +567,7 @@ public class TasksModuleBean implements BeeModule {
       String relation = TaskUtils.translateTaskPropertyToRelation(entry.getKey());
 
       if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
-        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, null,
+        children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
             relation, entry.getValue()));
       }
     }
@@ -970,8 +971,8 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
           .addFromLeft(TBL_COMPANIES,
               sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
-          .addFromLeft(CommonsConstants.TBL_USERS,
-              sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .addFromLeft(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .setWhere(
               SqlUtils.equals(TBL_COMPANIES, sys
                   .getIdName(TBL_COMPANIES), companiesListSet.getValue(i, sys
@@ -996,7 +997,7 @@ public class TasksModuleBean implements BeeModule {
       if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
           companyTimesQuery.setWhere(SqlUtils.and(companyTimesQuery.getWhere(), SqlUtils.inList(
-              CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
+              TBL_USERS, sys.getIdName(TBL_USERS), DataUtils
                   .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
         }
       }
@@ -1049,11 +1050,11 @@ public class TasksModuleBean implements BeeModule {
 
     users = qs.getLongColumn(new SqlSelect()
         .setDistinctMode(true)
-        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER)
         .addFrom(TBL_RT_EXECUTOR_GROUPS)
-        .addFromInner(CommonsConstants.TBL_USER_GROUPS,
+        .addFromInner(TBL_USER_GROUPS,
             SqlUtils.join(TBL_RT_EXECUTOR_GROUPS, COL_RTEXGR_GROUP,
-                CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
+                TBL_USER_GROUPS, COL_UG_GROUP))
         .setWhere(SqlUtils.equals(TBL_RT_EXECUTOR_GROUPS, COL_RTEXGR_RECURRING_TASK, rtId)));
 
     if (users != null) {
@@ -1088,11 +1089,11 @@ public class TasksModuleBean implements BeeModule {
 
     users = qs.getLongColumn(new SqlSelect()
         .setDistinctMode(true)
-        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER)
         .addFrom(TBL_RT_OBSERVER_GROUPS)
-        .addFromInner(CommonsConstants.TBL_USER_GROUPS,
+        .addFromInner(TBL_USER_GROUPS,
             SqlUtils.join(TBL_RT_OBSERVER_GROUPS, COL_RTOBGR_GROUP,
-                CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
+                TBL_USER_GROUPS, COL_UG_GROUP))
         .setWhere(SqlUtils.equals(TBL_RT_OBSERVER_GROUPS, COL_RTOBGR_RECURRING_TASK, rtId)));
 
     if (users != null) {
@@ -1108,7 +1109,7 @@ public class TasksModuleBean implements BeeModule {
     Multimap<String, Long> res = HashMultimap.create();
 
     for (String relation : TaskUtils.getRelations()) {
-      Long[] ids = qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, filterColumn, filterValue,
+      Long[] ids = qs.getRelatedValues(TBL_RELATIONS, filterColumn, filterValue,
           relation);
 
       if (ids != null && ids.length > 0) {
@@ -1128,11 +1129,11 @@ public class TasksModuleBean implements BeeModule {
     SimpleRowSet data =
         qs.getData(new SqlSelect()
             .addFields(TBL_REQUEST_FILES, COL_FILE, COL_CAPTION)
-            .addFields(CommonsConstants.TBL_FILES, CommonsConstants.COL_FILE_NAME,
-                CommonsConstants.COL_FILE_SIZE, CommonsConstants.COL_FILE_TYPE)
+            .addFields(TBL_FILES, COL_FILE_NAME,
+                COL_FILE_SIZE, COL_FILE_TYPE)
             .addFrom(TBL_REQUEST_FILES)
-            .addFromInner(CommonsConstants.TBL_FILES,
-                sys.joinTables(CommonsConstants.TBL_FILES, TBL_REQUEST_FILES, COL_FILE))
+            .addFromInner(TBL_FILES,
+                sys.joinTables(TBL_FILES, TBL_REQUEST_FILES, COL_FILE))
             .setWhere(SqlUtils.equals(TBL_REQUEST_FILES, COL_REQUEST, requestId)));
 
     List<StoredFile> files = Lists.newArrayList();
@@ -1140,9 +1141,9 @@ public class TasksModuleBean implements BeeModule {
     for (SimpleRow file : data) {
       StoredFile sf = new StoredFile(file.getLong(COL_FILE),
           BeeUtils.notEmpty(file.getValue(COL_CAPTION),
-              file.getValue(CommonsConstants.COL_FILE_NAME)),
-          file.getLong(CommonsConstants.COL_FILE_SIZE),
-          file.getValue(CommonsConstants.COL_FILE_TYPE));
+              file.getValue(COL_FILE_NAME)),
+          file.getLong(COL_FILE_SIZE),
+          file.getValue(COL_FILE_TYPE));
 
       sf.setIcon(ExtensionIcons.getIcon(sf.getName()));
       files.add(sf);
@@ -1160,7 +1161,7 @@ public class TasksModuleBean implements BeeModule {
 
     Set<Long> executors = getRecurringTaskExecutors(rtId);
     if (!executors.isEmpty()) {
-      BeeRowSet users = qs.getViewData(CommonsConstants.VIEW_USERS, Filter.idIn(executors));
+      BeeRowSet users = qs.getViewData(VIEW_USERS, Filter.idIn(executors));
       if (!DataUtils.isEmpty(users)) {
         data.put(users.getViewName(), users.serialize());
       }
@@ -1276,9 +1277,9 @@ public class TasksModuleBean implements BeeModule {
 
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf = new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE),
-          DataUtils.getString(rowSet, row, CommonsConstants.ALS_FILE_NAME),
-          DataUtils.getLong(rowSet, row, CommonsConstants.ALS_FILE_SIZE),
-          DataUtils.getString(rowSet, row, CommonsConstants.ALS_FILE_TYPE));
+          DataUtils.getString(rowSet, row, ALS_FILE_NAME),
+          DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
+          DataUtils.getString(rowSet, row, ALS_FILE_TYPE));
 
       Long teId = DataUtils.getLong(rowSet, row, COL_TASK_EVENT);
       if (teId != null) {
@@ -1353,8 +1354,8 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
           .addFromLeft(TBL_COMPANIES,
               sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
-          .addFromLeft(CommonsConstants.TBL_USERS,
-              sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .addFromLeft(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .addFields(TBL_DURATION_TYPES, COL_NAME)
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
           .setWhere(SqlUtils.equals(TBL_DURATION_TYPES, COL_NAME, dType));
@@ -1386,7 +1387,7 @@ public class TasksModuleBean implements BeeModule {
       if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_PUBLISHER))) {
           dTypeTime.setWhere(SqlUtils.and(dTypeTime.getWhere(), SqlUtils.inList(
-              CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
+              TBL_USERS, sys.getIdName(TBL_USERS), DataUtils
                   .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
         }
       }
@@ -1427,10 +1428,10 @@ public class TasksModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .setDistinctMode(true)
-        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
-        .addFrom(CommonsConstants.TBL_USER_GROUPS)
-        .setWhere(SqlUtils.inList(CommonsConstants.TBL_USER_GROUPS,
-            CommonsConstants.COL_UG_GROUP, groups));
+        .addFields(TBL_USER_GROUPS, COL_UG_USER)
+        .addFrom(TBL_USER_GROUPS)
+        .setWhere(SqlUtils.inList(TBL_USER_GROUPS,
+            COL_UG_GROUP, groups));
 
     Long[] members = qs.getLongColumn(query);
     if (members != null) {
@@ -1448,14 +1449,14 @@ public class TasksModuleBean implements BeeModule {
     LocalizableConstants constants = usr.getLocalizableConstants();
     SqlSelect userListQuery =
         new SqlSelect()
-            .addFields(CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS))
+            .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
             .addFields(TBL_PERSONS,
                 COL_FIRST_NAME,
                 COL_LAST_NAME)
-            .addFrom(CommonsConstants.TBL_USERS)
+            .addFrom(TBL_USERS)
             .addFromLeft(
                 TBL_COMPANY_PERSONS,
-                sys.joinTables(TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
+                sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS,
                     COL_COMPANY_PERSON))
             .addFromLeft(
                 TBL_PERSONS,
@@ -1469,7 +1470,7 @@ public class TasksModuleBean implements BeeModule {
 
     if (reqInfo.hasParameter(VAR_TASK_PUBLISHER)) {
       userListQuery.setWhere(SqlUtils.and(userListQuery.getWhere(), SqlUtils.inList(
-          CommonsConstants.TBL_USERS, sys.getIdName(CommonsConstants.TBL_USERS), DataUtils
+          TBL_USERS, sys.getIdName(TBL_USERS), DataUtils
               .parseIdList(reqInfo.getParameter(VAR_TASK_PUBLISHER)))));
     }
 
@@ -1505,12 +1506,12 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_TASKS, TBL_TASK_EVENTS, COL_TASK))
           .addFromLeft(TBL_COMPANIES,
               sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
-          .addFromLeft(CommonsConstants.TBL_USERS,
-              sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
+          .addFromLeft(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .setWhere(
-              SqlUtils.equals(CommonsConstants.TBL_USERS, sys
-                  .getIdName(CommonsConstants.TBL_USERS), usersListSet.getValue(i, sys
-                  .getIdName(CommonsConstants.TBL_USERS))));
+              SqlUtils.equals(TBL_USERS, sys
+                  .getIdName(TBL_USERS), usersListSet.getValue(i, sys
+                  .getIdName(TBL_USERS))));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1576,7 +1577,7 @@ public class TasksModuleBean implements BeeModule {
 
     HasConditions where = SqlUtils.and(SqlUtils.equals(TBL_TASKS, COL_TASK_ID, taskId));
     if (!ownerPreference) {
-      where.add(SqlUtils.notNull(CommonsConstants.TBL_USERS, COL_MAIL_ASSIGNED_TASKS));
+      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_ASSIGNED_TASKS));
     }
     if (!automatic) {
       where.add(SqlUtils.notEqual(TBL_TASKS, COL_OWNER, SqlUtils.field(TBL_TASKS, COL_EXECUTOR)));
@@ -1586,8 +1587,8 @@ public class TasksModuleBean implements BeeModule {
         .addFields(TBL_TASKS, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
             COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
         .addFrom(TBL_TASKS)
-        .addFromInner(CommonsConstants.TBL_USERS,
-            sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASKS, COL_EXECUTOR))
+        .addFromInner(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_TASKS, COL_EXECUTOR))
         .setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
@@ -1641,15 +1642,15 @@ public class TasksModuleBean implements BeeModule {
         SqlUtils.inList(TBL_TASKS, COL_TASK_ID, tasks),
         SqlUtils.or(
             SqlUtils.notNull(TBL_RECURRING_TASKS, COL_RT_COPY_BY_MAIL),
-            SqlUtils.notNull(CommonsConstants.TBL_USERS, COL_MAIL_ASSIGNED_TASKS)));
+            SqlUtils.notNull(TBL_USERS, COL_MAIL_ASSIGNED_TASKS)));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TASKS, COL_TASK_ID)
         .addFrom(TBL_TASKS)
         .addFromInner(TBL_RECURRING_TASKS,
             sys.joinTables(TBL_RECURRING_TASKS, TBL_TASKS, COL_RECURRING_TASK))
-        .addFromInner(CommonsConstants.TBL_USERS,
-            sys.joinTables(CommonsConstants.TBL_USERS, TBL_TASKS, COL_EXECUTOR))
+        .addFromInner(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_TASKS, COL_EXECUTOR))
         .setWhere(where);
 
     Long[] ids = qs.getLongColumn(query);
@@ -1953,17 +1954,17 @@ public class TasksModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
             COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME, COL_REMINDER_TIME, COL_REMINDER_SENT)
-        .addFields(CommonsConstants.TBL_REMINDER_TYPES, CommonsConstants.COL_REMINDER_HOURS,
-            CommonsConstants.COL_REMINDER_MINUTES)
+        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_HOURS,
+            COL_REMINDER_MINUTES)
         .addFrom(TBL_TASKS)
-        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
-            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_TASKS, COL_REMINDER))
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_TASKS, COL_REMINDER))
         .setWhere(SqlUtils.and(
             SqlUtils.inList(TBL_TASKS, COL_STATUS, statusValues),
             SqlUtils.more(TBL_TASKS, COL_FINISH_TIME, System.currentTimeMillis()),
-            SqlUtils.equals(CommonsConstants.TBL_REMINDER_TYPES,
-                CommonsConstants.COL_REMINDER_METHOD,
-                CommonsConstants.ReminderMethod.EMAIL.ordinal())))
+            SqlUtils.equals(TBL_REMINDER_TYPES,
+                COL_REMINDER_METHOD,
+                ReminderMethod.EMAIL.ordinal())))
         .addOrder(TBL_TASKS, COL_TASK_ID);
 
     SimpleRowSet data = qs.getData(query);
@@ -1978,8 +1979,8 @@ public class TasksModuleBean implements BeeModule {
       if (reminderTime == null) {
         reminderMillis = row.getLong(COL_FINISH_TIME);
 
-        Integer hours = row.getInt(CommonsConstants.COL_REMINDER_HOURS);
-        Integer minutes = row.getInt(CommonsConstants.COL_REMINDER_MINUTES);
+        Integer hours = row.getInt(COL_REMINDER_HOURS);
+        Integer minutes = row.getInt(COL_REMINDER_MINUTES);
 
         if (BeeUtils.isPositive(hours) || BeeUtils.isPositive(minutes)) {
           if (BeeUtils.isPositive(hours)) {
@@ -2325,7 +2326,7 @@ public class TasksModuleBean implements BeeModule {
       String relation = TaskUtils.translateTaskPropertyToRelation(property);
 
       if (!BeeUtils.isEmpty(relation)) {
-        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_TASK, taskId,
+        children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, taskId,
             relation, row.getProperty(property)));
       }
     }

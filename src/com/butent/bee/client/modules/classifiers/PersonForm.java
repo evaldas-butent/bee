@@ -28,7 +28,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import elemental.client.Browser;
@@ -97,7 +97,7 @@ class PersonForm extends AbstractFormInterceptor {
           FormView form = getFormView();
           IsRow row = form.getActiveRow();
 
-          row.clearCell(form.getDataIndex(ClassifiersConstants.COL_PHOTO));
+          row.clearCell(form.getDataIndex(ClassifierConstants.COL_PHOTO));
           photoImageAttachment = null;
           clearPhoto();
         }
@@ -195,13 +195,13 @@ class PersonForm extends AbstractFormInterceptor {
     if (form == null || row == null) {
       return null;
     } else {
-      return row.getString(form.getDataIndex(ClassifiersConstants.COL_PHOTO));
+      return row.getString(form.getDataIndex(ClassifierConstants.COL_PHOTO));
     }
   }
   
   private static void setPhotoFileName(FormView form, IsRow row, String value) {
     if (form != null && row != null) {
-      row.setValue(form.getDataIndex(ClassifiersConstants.COL_PHOTO), value);
+      row.setValue(form.getDataIndex(ClassifierConstants.COL_PHOTO), value);
     }
   }
 
@@ -236,7 +236,7 @@ class PersonForm extends AbstractFormInterceptor {
     photoImageAttachment = null;
 
     if (photoImageWidget != null) {
-      String photoFileName = row.getString(form.getDataIndex(ClassifiersConstants.COL_PHOTO));
+      String photoFileName = row.getString(form.getDataIndex(ClassifierConstants.COL_PHOTO));
       if (!BeeUtils.isEmpty(photoFileName)) {
         photoImageWidget.setUrl(PhotoRenderer.getUrl(photoFileName));
       } else {
@@ -251,8 +251,8 @@ class PersonForm extends AbstractFormInterceptor {
     if (form != null && row != null && userData != null
         && Objects.equal(userData.getPerson(), row.getId())) {
 
-      userData.setFirstName(row.getString(form.getDataIndex(ClassifiersConstants.COL_FIRST_NAME)));
-      userData.setLastName(row.getString(form.getDataIndex(ClassifiersConstants.COL_LAST_NAME)));
+      userData.setFirstName(row.getString(form.getDataIndex(ClassifierConstants.COL_FIRST_NAME)));
+      userData.setLastName(row.getString(form.getDataIndex(ClassifierConstants.COL_LAST_NAME)));
       userData.setPhotoFileName(getPhotoFileName(form, row));
 
       BeeKeeper.getScreen().updateUserData(userData);

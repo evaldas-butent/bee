@@ -3,10 +3,11 @@ package com.butent.bee.shared.menu;
 import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 
@@ -25,13 +26,13 @@ public enum MenuService {
   NEW(EnumSet.of(RightsState.VIEW, RightsState.EDIT, RightsState.CREATE), true),
   @XmlEnumValue("parameters")
   PARAMETERS(RightsState.VIEW,
-      Sets.newHashSet(CommonsConstants.VIEW_PARAMETERS, CommonsConstants.VIEW_USER_PARAMETERS)),
+      Sets.newHashSet(VIEW_PARAMETERS, VIEW_USER_PARAMETERS)),
 
   @XmlEnumValue("items")
-  ITEMS(RightsState.VIEW, ClassifiersConstants.VIEW_ITEMS),
+  ITEMS(RightsState.VIEW, ClassifierConstants.VIEW_ITEMS),
   @XmlEnumValue("update_exchange_rates")
   UPDATE_EXCHANGE_RATES(EnumSet.of(RightsState.VIEW, RightsState.CREATE),
-      CommonsConstants.VIEW_CURRENCY_RATES),
+      VIEW_CURRENCY_RATES),
 
   @XmlEnumValue("calendar_reports")
   CALENDAR_REPORTS(RightsState.VIEW, CalendarConstants.VIEW_APPOINTMENTS),

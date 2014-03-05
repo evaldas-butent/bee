@@ -55,7 +55,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -383,7 +383,7 @@ public final class TransportHandler {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
-    args.addQueryItem(CommonsConstants.METHOD, name);
+    args.addQueryItem(AdministrationConstants.METHOD, name);
     return args;
   }
 
@@ -442,7 +442,7 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
         new FileGridInterceptor(COL_CRF_REQUEST, COL_CRF_FILE, COL_CRF_CAPTION,
-            CommonsConstants.ALS_FILE_NAME));
+            AdministrationConstants.ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
 

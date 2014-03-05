@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -15,7 +15,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -39,7 +39,7 @@ public final class ClassifierKeeper {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.CLASSIFIERS.getName());
-    args.addQueryItem(CommonsConstants.METHOD, method);
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 

@@ -3,8 +3,8 @@ package com.butent.bee.shared.ui;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.html.builder.elements.Meta;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
@@ -43,7 +43,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CommonsConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          AdministrationConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
           MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET,
           DiscussionsConstants.STYLE_SHEET);
     }
@@ -81,7 +81,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CommonsConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          AdministrationConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
           MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
     }
 
@@ -118,7 +118,7 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CommonsConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          AdministrationConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
           MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
     }
 

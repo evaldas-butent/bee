@@ -14,7 +14,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -62,7 +62,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
   }
 
   private static void handleCompanies(SelectorEvent event, IsRow taskRow) {
-    Long company = Data.getLong(VIEW_TASKS, taskRow, ClassifiersConstants.COL_COMPANY);
+    Long company = Data.getLong(VIEW_TASKS, taskRow, ClassifierConstants.COL_COMPANY);
     if (company == null) {
       return;
     }

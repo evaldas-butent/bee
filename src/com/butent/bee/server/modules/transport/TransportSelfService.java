@@ -4,7 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.LoginServlet;
@@ -46,7 +47,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.TranspRegStatus;
 import com.butent.bee.shared.time.TimeUtils;
@@ -548,13 +548,13 @@ public class TransportSelfService extends LoginServlet {
         qField(constants.trRequestCargoPalettes(), COL_CARGO_PALETTES, false),
         qField(constants.trRequestCargoValue(), COL_CARGO_VALUE, false),
         qSelector(constants.trRequestCargoCurrency(), COL_CARGO_VALUE_CURRENCY,
-            CommonsConstants.VIEW_CURRENCIES, CommonsConstants.COL_CURRENCY_NAME, false, true));
+            VIEW_CURRENCIES, COL_CURRENCY_NAME, false, true));
 
     fieldPanel.append(qGroup(constants.trRequestCargoInfo(), cargoFields));
 
     Tbody additionalFields = tbody().append(
         qSelector(constants.trRequestResponsibleManager(), COL_QUERY_MANAGER,
-            CommonsConstants.VIEW_USERS, null,
+            VIEW_USERS, null,
             Order.ascending(COL_LAST_NAME, COL_FIRST_NAME),
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
             false, true),

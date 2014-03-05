@@ -1,4 +1,4 @@
-package com.butent.bee.shared.modules.commons;
+package com.butent.bee.shared.modules.administration;
 
 import com.google.common.collect.Lists;
 
@@ -21,18 +21,18 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-public final class CommonsConstants {
+public final class AdministrationConstants {
 
   public static final List<BeeColumn> HISTORY_COLUMNS = Lists.newArrayList(
-      new BeeColumn(ValueType.DATE_TIME, CommonsConstants.AUDIT_FLD_TIME, false),
-      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_USER, true),
-      new BeeColumn(ValueType.LONG, CommonsConstants.AUDIT_FLD_TX, false),
-      new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_MODE, false),
-      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_OBJECT, false),
-      new BeeColumn(ValueType.LONG, CommonsConstants.AUDIT_FLD_ID, false),
-      new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_FIELD, false),
-      new BeeColumn(ValueType.TEXT, CommonsConstants.AUDIT_FLD_VALUE, true),
-      new BeeColumn(ValueType.TEXT, CommonsConstants.COL_RELATION, true));
+      new BeeColumn(ValueType.DATE_TIME, AdministrationConstants.AUDIT_FLD_TIME, false),
+      new BeeColumn(ValueType.TEXT, AdministrationConstants.COL_USER, true),
+      new BeeColumn(ValueType.LONG, AdministrationConstants.AUDIT_FLD_TX, false),
+      new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_MODE, false),
+      new BeeColumn(ValueType.TEXT, AdministrationConstants.COL_OBJECT, false),
+      new BeeColumn(ValueType.LONG, AdministrationConstants.AUDIT_FLD_ID, false),
+      new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_FIELD, false),
+      new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_VALUE, true),
+      new BeeColumn(ValueType.TEXT, AdministrationConstants.COL_RELATION, true));
 
   public enum RightsObjectType implements HasLocalizedCaption {
     FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
@@ -165,14 +165,12 @@ public final class CommonsConstants {
 
   public static final String METHOD = "Service";
 
-  public static final String COMMONS_MODULE = "Commons";
+  public static final String PARAMETERS_PREFIX = "parameters_";
 
-  public static final String COMMONS_PARAMETERS_PREFIX = "parameters_";
-
-  public static final String SVC_GET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "parameter";
-  public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
-  public static final String SVC_RESET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "reset";
-  public static final String SVC_SET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "set";
+  public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
+  public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
+  public static final String SVC_RESET_PARAMETER = PARAMETERS_PREFIX + "reset";
+  public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
 
@@ -356,7 +354,6 @@ public final class CommonsConstants {
   public static final String ALS_OBJECT_NAME = "ObjectName";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
-  public static final String PRM_AUDIT_OFF = "DisableAuditing";
   public static final String PRM_VAT_PERCENT = "VATPercent";
 
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
@@ -371,6 +368,6 @@ public final class CommonsConstants {
 
   public static final String STYLE_SHEET = "commons";
 
-  private CommonsConstants() {
+  private AdministrationConstants() {
   }
 }

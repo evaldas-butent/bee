@@ -9,6 +9,8 @@ import com.google.gwt.dom.client.FormElement;
 import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.OptionElement;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -35,7 +37,6 @@ import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasSuggestionSource;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -245,17 +246,17 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
 
         for (Pair<IdentifiableWidget, String> wav : widgetsAndValues) {
           HasSuggestionSource widget = (HasSuggestionSource) wav.getA();
-          
+
           String key = BeeUtils.trim(widget.getSuggestionSource());
           String value = BeeUtils.trim(wav.getB());
-          
+
           if (!BeeUtils.anyEmpty(key, value) && INSTANCE.updateData(key, value)) {
             ParameterList params = new ParameterList(Service.UPDATE_AUTOCOMPLETE);
-            params.addDataItem(CommonsConstants.COL_AUTOCOMPLETE_KEY, key);
-            params.addDataItem(CommonsConstants.COL_AUTOCOMPLETE_VALUE, value);
-            
+            params.addDataItem(COL_AUTOCOMPLETE_KEY, key);
+            params.addDataItem(COL_AUTOCOMPLETE_VALUE, value);
+
             BeeKeeper.getRpc().makeRequest(params);
-            
+
             logger.debug(key, value);
             updated = true;
           }
@@ -492,13 +493,13 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
   }
 
   private static OptionElement getOptionElement(Element parent, String value) {
-    for (Element child = parent.getFirstChildElement(); child != null;
-        child = child.getNextSiblingElement()) {
+    for (Element child = parent.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
       if (OptionElement.is(child) && BeeUtils.same(OptionElement.as(child).getValue(), value)) {
         return OptionElement.as(child);
       }
     }
-    
+
     return null;
   }
 
@@ -546,7 +547,7 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
   public void onRowUpdate(RowUpdateEvent event) {
     onDataEvent(event);
   }
-  
+
   private boolean addData(String key, List<String> values) {
     if (Features.supportsElementDataList()) {
       Element dataList = DomUtils.createElement(Tags.DATA_LIST);
@@ -556,7 +557,7 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
         OptionElement option = createOption(value);
         dataList.appendChild(option);
       }
-      
+
       dataContainer.appendChild(dataList);
       return true;
 
@@ -578,8 +579,8 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
   }
 
   private Element getDataList(String key) {
-    for (Element child = dataContainer.getFirstChildElement(); child != null;
-        child = child.getNextSiblingElement()) {
+    for (Element child = dataContainer.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
       if (DomUtils.idEquals(child, key)) {
         return child;
       }
@@ -605,7 +606,7 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
   }
 
   private void onDataEvent(DataEvent event) {
-    if (event != null && CommonsConstants.VIEW_AUTOCOMPLETE.equalsIgnoreCase(event.getViewName())
+    if (event != null && VIEW_AUTOCOMPLETE.equalsIgnoreCase(event.getViewName())
         && getType() != null) {
       getType().refresh();
     }
@@ -624,7 +625,7 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
       return false;
     }
   }
-  
+
   private boolean save(IdentifiableWidget widget, String value) {
     if (getType() != null) {
       List<Pair<IdentifiableWidget, String>> widgetsAndValues = Lists.newArrayList();
@@ -640,10 +641,10 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
   private void setType(Type type) {
     this.type = type;
   }
-  
+
   private boolean updateData(String key, String value) {
     Element dataList = getDataList(key);
-    
+
     if (dataList == null) {
       return addData(key, value);
 
@@ -656,7 +657,7 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
 
       } else if (value.equals(option.getValue()) && option.getPreviousSiblingElement() == null) {
         return false;
-      
+
       } else {
         option.removeFromParent();
         dataList.insertFirst(createOption(value));

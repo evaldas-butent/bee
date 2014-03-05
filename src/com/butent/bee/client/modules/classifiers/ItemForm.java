@@ -10,7 +10,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class ItemForm extends AbstractFormInterceptor {
@@ -43,7 +43,7 @@ class ItemForm extends AbstractFormInterceptor {
     ItemsGrid gridHandler = getItemGridHandler(form);
 
     if (gridHandler != null && gridHandler.showServices()) {
-      newRow.setValue(form.getDataIndex(ClassifiersConstants.COL_ITEM_IS_SERVICE), 1);
+      newRow.setValue(form.getDataIndex(ClassifierConstants.COL_ITEM_IS_SERVICE), 1);
     }
   }
 

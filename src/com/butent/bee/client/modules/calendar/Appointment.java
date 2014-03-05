@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.BeeColumn;
@@ -13,9 +13,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -26,9 +26,9 @@ import java.util.Map;
 public class Appointment extends CalendarItem {
 
   private static final int BACKGROUND_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      CommonsConstants.COL_BACKGROUND);
+      AdministrationConstants.COL_BACKGROUND);
   private static final int COLOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      CommonsConstants.COL_COLOR);
+      AdministrationConstants.COL_COLOR);
   private static final int COMPANY_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       ALS_COMPANY_NAME);
   private static final int CREATOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_CREATOR);
@@ -37,7 +37,7 @@ public class Appointment extends CalendarItem {
   private static final int END_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_END_DATE_TIME);
   private static final int FOREGROUND_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      CommonsConstants.COL_FOREGROUND);
+      AdministrationConstants.COL_FOREGROUND);
   private static final int START_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_START_DATE_TIME);
   private static final int STYLE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STYLE);

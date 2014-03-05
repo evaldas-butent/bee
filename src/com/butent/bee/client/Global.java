@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -31,7 +31,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
@@ -212,7 +212,7 @@ public final class Global {
     Assert.notEmpty(prm);
     Assert.notNull(prmConsumer);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -558,7 +558,7 @@ public final class Global {
   public static void setParameter(String prm, String value) {
     Assert.notEmpty(prm);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_SET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_SET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
     if (!BeeUtils.isEmpty(value)) {

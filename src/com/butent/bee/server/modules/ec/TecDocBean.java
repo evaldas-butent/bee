@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.IdGeneratorBean;

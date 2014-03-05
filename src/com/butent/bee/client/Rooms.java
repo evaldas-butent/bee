@@ -7,7 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
@@ -40,7 +40,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -684,7 +684,7 @@ public class Rooms implements HasInfo {
     ownersLabel.addStyleName(StyleUtils.NAME_REQUIRED);
     table.setWidgetAndStyle(row, 0, ownersLabel, stylePrefix + "ownersLabel");
 
-    final MultiSelector ownersWidget = MultiSelector.autonomous(CommonsConstants.TBL_USERS,
+    final MultiSelector ownersWidget = MultiSelector.autonomous(AdministrationConstants.TBL_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getOwners())) {
       ownersWidget.render(DataUtils.buildIdList(roomSettings.getOwners()));
@@ -695,7 +695,7 @@ public class Rooms implements HasInfo {
     Label dwellersLabel = new Label(Localized.getConstants().roomDwellers());
     table.setWidgetAndStyle(row, 0, dwellersLabel, stylePrefix + "dwellersLabel");
 
-    final MultiSelector dwellersWidget = MultiSelector.autonomous(CommonsConstants.TBL_USERS,
+    final MultiSelector dwellersWidget = MultiSelector.autonomous(AdministrationConstants.TBL_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getDwellers())) {
       dwellersWidget.render(DataUtils.buildIdList(roomSettings.getDwellers()));

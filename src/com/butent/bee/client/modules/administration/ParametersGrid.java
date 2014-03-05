@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -394,7 +394,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
     }
     provider.clear();
     params.clear();
-    ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETERS);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_PARAMETERS);
     args.addDataItem(VAR_PARAMETERS_MODULE, module);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -423,7 +423,7 @@ public class ParametersGrid extends AbstractGridInterceptor {
 
   @SuppressWarnings("unused")
   private void reset(BeeParameter param) {
-    ParameterList args = CommonsKeeper.createArgs(SVC_RESET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_RESET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, param.getName());
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

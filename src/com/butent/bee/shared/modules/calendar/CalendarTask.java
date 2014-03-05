@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

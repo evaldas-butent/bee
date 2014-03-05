@@ -56,7 +56,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
@@ -159,7 +159,7 @@ public final class EcKeeper {
 
   public static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.ECOMMERCE.getName());
-    args.addQueryItem(CommonsConstants.METHOD, method);
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 

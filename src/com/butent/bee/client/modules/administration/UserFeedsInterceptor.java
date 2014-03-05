@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.OptionElement;

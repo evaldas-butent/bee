@@ -5,6 +5,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.logging.LogbackFactory;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 
@@ -26,6 +27,8 @@ public class InitializationBean {
   UserServiceBean usr;
   @EJB
   SystemBean sys;
+  @EJB
+  ParamHolderBean prm;
 
   @PostConstruct
   public void init() {
@@ -37,6 +40,8 @@ public class InitializationBean {
     Localized.setConstants(Localizations.getConstants(locale));
     Localized.setMessages(Localizations.getMessages(locale));
     Localized.setDictionary(Localizations.getDictionary(locale));
+
+    prm.init();
 
     moduleBean.initModules();
 

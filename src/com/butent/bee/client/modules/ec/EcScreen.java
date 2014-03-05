@@ -20,7 +20,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.modules.commons.PasswordService;
+import com.butent.bee.client.modules.administration.PasswordService;
 import com.butent.bee.client.modules.ec.EcCommandWidget.Type;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;

@@ -23,7 +23,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.modules.commons.PasswordService;
+import com.butent.bee.client.modules.administration.PasswordService;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -37,7 +37,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.documents.DocumentsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
 
@@ -101,7 +101,7 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
     GridFactory.hideColumn(VIEW_CARGO_CREDIT_INVOICES, "Select");
 
-    FormFactory.hideWidget(DocumentsConstants.FORM_DOCUMENT, "DocumentRelations");
+    FormFactory.hideWidget(DocumentConstants.FORM_DOCUMENT, "DocumentRelations");
 
     addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
         new ClickHandler() {

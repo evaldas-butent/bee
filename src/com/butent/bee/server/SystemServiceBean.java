@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
-import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;

@@ -269,7 +269,6 @@ public final class CalendarConstants {
   public static final String DEFAULT_NEW_APPOINTMENT_FORM = "SimpleAppointment";
   public static final String DEFAULT_EDIT_APPOINTMENT_FORM = "SimpleAppointment";
 
-  public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
   public static final String COL_USER_CALENDAR = "UserCalendar";
 
@@ -360,8 +359,6 @@ public final class CalendarConstants {
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
 
-  public static final String COL_BACKGROUND = "Background";
-  public static final String COL_FOREGROUND = "Foreground";
   public static final String COL_STYLE = "Style";
 
   public static final String COL_SIMPLE = "Simple";

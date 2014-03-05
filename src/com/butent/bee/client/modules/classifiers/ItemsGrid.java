@@ -13,7 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -58,14 +58,14 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   @Override
   public String getSupplierKey() {
     return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid",
-        ClassifiersConstants.TBL_ITEMS, getCaption()));
+        ClassifierConstants.TBL_ITEMS, getCaption()));
   }
 
   @Override
   public boolean onLoad(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isNull(ClassifiersConstants.COL_ITEM_IS_SERVICE);
+    Filter filter = Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
 
     if (showServices()) {
       filter = Filter.isNot(filter);
@@ -105,9 +105,9 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
     if (category == null) {
       return null;
     } else {
-      return Filter.in(Data.getIdColumn(ClassifiersConstants.VIEW_ITEMS),
-          ClassifiersConstants.VIEW_ITEM_CATEGORIES, ClassifiersConstants.COL_ITEM,
-          Filter.equals(ClassifiersConstants.COL_CATEGORY, category));
+      return Filter.in(Data.getIdColumn(ClassifierConstants.VIEW_ITEMS),
+          ClassifierConstants.VIEW_ITEM_CATEGORIES, ClassifierConstants.COL_ITEM,
+          Filter.equals(ClassifierConstants.COL_CATEGORY, category));
     }
   }
 

@@ -12,8 +12,9 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
@@ -61,6 +62,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
@@ -68,12 +70,10 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -350,13 +350,13 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName, COL_APPOINTMENT,
             COL_HOURS, COL_MINUTES, COL_SCHEDULED)
-        .addField(CommonsConstants.TBL_REMINDER_TYPES, COL_HOURS, "defHours")
-        .addField(CommonsConstants.TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
+        .addField(TBL_REMINDER_TYPES, COL_HOURS, "defHours")
+        .addField(TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
-            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
                 COL_REMINDER_TYPE))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
@@ -488,7 +488,7 @@ public class CalendarModuleBean implements BeeModule {
       @Subscribe
       public void updateTimers(ViewModifyEvent event) {
         if (event.isAfter()) {
-          if (BeeUtils.same(event.getTargetName(), CommonsConstants.TBL_REMINDER_TYPES)) {
+          if (BeeUtils.same(event.getTargetName(), TBL_REMINDER_TYPES)) {
             if (event instanceof ViewDeleteEvent
                 || event instanceof ViewUpdateEvent
                 && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
@@ -1122,17 +1122,17 @@ public class CalendarModuleBean implements BeeModule {
 
     SimpleRowSet exGroupData = qs.getData(new SqlSelect()
         .setDistinctMode(true)
-        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER)
         .addFields(TBL_CAL_EXECUTOR_GROUPS, COL_BACKGROUND, COL_FOREGROUND, COL_STYLE)
         .addFrom(TBL_CAL_EXECUTOR_GROUPS)
-        .addFromInner(CommonsConstants.TBL_USER_GROUPS,
+        .addFromInner(TBL_USER_GROUPS,
             SqlUtils.join(TBL_CAL_EXECUTOR_GROUPS, COL_EXECUTOR_GROUP,
-                CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
+                TBL_USER_GROUPS, COL_UG_GROUP))
         .setWhere(SqlUtils.equals(TBL_CAL_EXECUTOR_GROUPS, COL_CALENDAR, calendarId)));
 
     if (!DataUtils.isEmpty(exGroupData)) {
       for (SimpleRow exRow : exGroupData) {
-        Long user = exRow.getLong(CommonsConstants.COL_UG_USER);
+        Long user = exRow.getLong(COL_UG_USER);
         executors.add(user);
 
         ColorAndStyle cs = ColorAndStyle.maybeCreate(exRow.getValue(COL_BACKGROUND),
@@ -1227,7 +1227,7 @@ public class CalendarModuleBean implements BeeModule {
           SqlUtils.notEqual(source, TaskConstants.COL_EXECUTOR, calendarOwner),
           SqlUtils.in(source, idName, TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK,
               SqlUtils
-                  .equals(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER, calendarOwner))));
+                  .equals(TaskConstants.TBL_TASK_USERS, COL_USER, calendarOwner))));
 
       ColorAndStyle cs = ColorAndStyle.maybeCreate(
           DataUtils.getString(calRowSet, calendar, COL_OBSERVED_TASKS_BACKGROUND),
@@ -1272,12 +1272,12 @@ public class CalendarModuleBean implements BeeModule {
       Set<Long> observers = Sets.newHashSet();
 
       Long[] taskUsers = qs.getLongColumn(new SqlSelect()
-          .addFields(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER)
+          .addFields(TaskConstants.TBL_TASK_USERS, COL_USER)
           .addFrom(TaskConstants.TBL_TASK_USERS)
           .setWhere(SqlUtils.and(
               SqlUtils.equals(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK, id),
-              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER, owner),
-              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_USER,
+              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, COL_USER, owner),
+              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, COL_USER,
                   executor))));
 
       if (taskUsers != null && taskUsers.length > 0) {
@@ -1529,14 +1529,14 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(TBL_CONTACTS, COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
-        .addFields(CommonsConstants.TBL_REMINDER_TYPES, CommonsConstants.COL_REMINDER_METHOD,
-            CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION, CommonsConstants.COL_REMINDER_TEMPLATE)
+        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD,
+            COL_REMINDER_TEMPLATE_CAPTION, COL_REMINDER_TEMPLATE)
         .addField(personContacts, COL_EMAIL, personEmail)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
-            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
                 COL_REMINDER_TYPE))
         .addFromLeft(VIEW_COMPANIES,
             sys.joinTables(VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
@@ -1556,9 +1556,9 @@ public class CalendarModuleBean implements BeeModule {
     if (data != null) {
       notificationTimers.remove(data.getLong(COL_APPOINTMENT), timer);
       String error = null;
-      String subject = data.getValue(CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION);
+      String subject = data.getValue(COL_REMINDER_TEMPLATE_CAPTION);
       String template = BeeUtils.notEmpty(data.getValue(COL_MESSAGE),
-          data.getValue(CommonsConstants.COL_REMINDER_TEMPLATE));
+          data.getValue(COL_REMINDER_TEMPLATE));
 
       if (BeeUtils.isEmpty(subject)) {
         error = "No reminder caption specified";
@@ -1568,7 +1568,7 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (BeeUtils.isEmpty(error)) {
         ReminderMethod method = EnumUtils.getEnumByIndex(ReminderMethod.class,
-            data.getInt(CommonsConstants.COL_REMINDER_METHOD));
+            data.getInt(COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
           Long sender = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);

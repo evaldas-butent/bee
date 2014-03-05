@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.documents;
 
-public final class DocumentsConstants {
+public final class DocumentConstants {
 
   public static final String SVC_COPY_DOCUMENT_DATA = "copy_document_data";
 
@@ -45,11 +45,10 @@ public final class DocumentsConstants {
   public static final String COL_FILE_VERSION = "FileVersion";
   public static final String COL_FILE_CAPTION = "Caption";
 
-  public static final String VIEW_DOCUMENTS = "Documents";
-  public static final String VIEW_MAIN_CRITERIA = "MainCriteria";
+  public static final String VIEW_DATA_CRITERIA = "DataCriteria";
 
   public static final String FORM_DOCUMENT = "Document";
 
-  private DocumentsConstants() {
+  private DocumentConstants() {
   }
 }

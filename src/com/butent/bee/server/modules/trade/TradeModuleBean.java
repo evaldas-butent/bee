@@ -3,8 +3,8 @@ package com.butent.bee.server.modules.trade;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -16,7 +16,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
-import com.butent.bee.server.modules.commons.ExchangeUtils;
+import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -86,7 +86,7 @@ public class TradeModuleBean implements BeeModule {
     if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo.getParameter("view_name"),
           BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
-          reqInfo.getParameter(ExchangeUtils.COL_CURRENCY));
+          reqInfo.getParameter(COL_CURRENCY));
 
     } else if (BeeUtils.same(svc, SVC_CREDIT_INFO)) {
       response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
@@ -242,14 +242,14 @@ public class TradeModuleBean implements BeeModule {
         .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
             COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
             COL_TRADE_ITEM_NOTE)
-        .addField(ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME,
-            ExchangeUtils.COL_CURRENCY)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME,
+            COL_CURRENCY)
         .addFrom(tradeItems)
         .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-        .addFromInner(ExchangeUtils.TBL_CURRENCIES,
-            sys.joinTables(ExchangeUtils.TBL_CURRENCIES, trade, ExchangeUtils.COL_CURRENCY))
+        .addFromInner(TBL_CURRENCIES,
+            sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
         .addOrder(tradeItems, sys.getIdName(tradeItems));
 
@@ -257,16 +257,15 @@ public class TradeModuleBean implements BeeModule {
       String currAlias = SqlUtils.uniqueName();
 
       IsExpression xpr = ExchangeUtils.exchangeFieldTo(query
-          .addFromLeft(ExchangeUtils.TBL_CURRENCIES, currAlias,
-              SqlUtils.equals(currAlias, ExchangeUtils.COL_CURRENCY_NAME, currencyTo)),
+          .addFromLeft(TBL_CURRENCIES, currAlias,
+              SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
           SqlUtils.constant(1),
-          SqlUtils.field(trade, ExchangeUtils.COL_CURRENCY),
+          SqlUtils.field(trade, COL_CURRENCY),
           SqlUtils.field(trade, COL_TRADE_DATE),
-          SqlUtils.field(currAlias, sys.getIdName(ExchangeUtils.TBL_CURRENCIES)));
+          SqlUtils.field(currAlias, sys.getIdName(TBL_CURRENCIES)));
 
-      query.addExpr(xpr, ExchangeUtils.COL_RATES_RATE)
-          .addField(currAlias, ExchangeUtils.COL_CURRENCY_NAME,
-              ExchangeUtils.COL_RATES_RATE + ExchangeUtils.COL_CURRENCY);
+      query.addExpr(xpr, COL_CURRENCY_RATE)
+          .addField(currAlias, COL_CURRENCY_NAME, COL_CURRENCY_RATE + COL_CURRENCY);
     }
     return ResponseObject.response(qs.getData(query));
   }

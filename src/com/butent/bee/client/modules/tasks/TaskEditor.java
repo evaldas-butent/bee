@@ -13,7 +13,8 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -57,7 +58,6 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -612,7 +612,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskForwarding());
 
     final String sid =
-        dialog.addSelector(Localized.getConstants().crmTaskExecutor(), CommonsConstants.VIEW_USERS,
+        dialog.addSelector(Localized.getConstants().crmTaskExecutor(), VIEW_USERS,
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
             true, exclusions);
 
@@ -642,7 +642,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         BeeRow newRow = getNewRow();
         RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
-            Data.getDataInfo(CommonsConstants.VIEW_USERS), selector.getRelatedRow(), true);
+            Data.getDataInfo(VIEW_USERS), selector.getRelatedRow(), true);
 
         TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
             newRow.getInteger(getDataIndex(COL_STATUS)));

@@ -79,8 +79,8 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
@@ -714,15 +714,15 @@ public class MailPanel extends AbstractFormInterceptor {
         BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
         row.setValue(dataInfo.getColumnIndex("Customer"),
-            BeeUtils.toLongOrNull(packet.get(ClassifiersConstants.COL_COMPANY)));
+            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_COMPANY)));
         row.setValue(dataInfo.getColumnIndex("CustomerName"),
-            packet.get(ClassifiersConstants.COL_COMPANY + ClassifiersConstants.COL_COMPANY_NAME));
+            packet.get(ClassifierConstants.COL_COMPANY + ClassifierConstants.COL_COMPANY_NAME));
         row.setValue(dataInfo.getColumnIndex("CustomerPerson"),
-            BeeUtils.toLongOrNull(packet.get(ClassifiersConstants.COL_PERSON)));
+            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_PERSON)));
         row.setValue(dataInfo.getColumnIndex("PersonFirstName"),
-            packet.get(ClassifiersConstants.COL_FIRST_NAME));
+            packet.get(ClassifierConstants.COL_FIRST_NAME));
         row.setValue(dataInfo.getColumnIndex("PersonLastName"),
-            packet.get(ClassifiersConstants.COL_LAST_NAME));
+            packet.get(ClassifierConstants.COL_LAST_NAME));
         row.setValue(dataInfo.getColumnIndex(COL_CONTENT), packet.get(COL_CONTENT));
 
         Map<Long, NewFileInfo> files = Maps.newHashMap();
@@ -731,8 +731,8 @@ public class MailPanel extends AbstractFormInterceptor {
         for (SimpleRow attach : rs) {
           files.put(attach.getLong(COL_FILE),
               new NewFileInfo(BeeUtils.notEmpty(attach.getValue(COL_ATTACHMENT_NAME),
-                  attach.getValue(CommonsConstants.COL_FILE_NAME)),
-                  attach.getLong(CommonsConstants.COL_FILE_SIZE), null));
+                  attach.getValue(AdministrationConstants.COL_FILE_NAME)),
+                  attach.getLong(AdministrationConstants.COL_FILE_SIZE), null));
         }
         RowFactory.createRow(dataInfo.getNewRowForm(), null, dataInfo, row, null,
             new RequestBuilder(files), null);

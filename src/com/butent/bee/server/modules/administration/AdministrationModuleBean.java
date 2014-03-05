@@ -1,4 +1,4 @@
-package com.butent.bee.server.modules.commons;
+package com.butent.bee.server.modules.administration;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -8,8 +8,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
@@ -73,34 +73,9 @@ import lt.lb.webservices.exchangerates.ExchangeRatesWS;
 
 @Stateless
 @LocalBean
-public class CommonsModuleBean implements BeeModule {
+public class AdministrationModuleBean implements BeeModule {
 
-  private static BeeLogger logger = LogUtils.getLogger(CommonsModuleBean.class);
-
-  private static Collection<? extends BeeParameter> getSqlEngineParameters() {
-    List<BeeParameter> params = Lists.newArrayList();
-
-    for (SqlEngine engine : SqlEngine.values()) {
-      Map<String, String> value = null;
-
-      switch (engine) {
-        case GENERIC:
-        case MSSQL:
-        case ORACLE:
-          break;
-        case POSTGRESQL:
-          value = ImmutableMap
-              .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
-                  "Tokia reikšmė jau egzistuoja: $1",
-                  ".+violates foreign key constraint.+from table \"(.+)\"\\.",
-                  "Įrašas naudojamas lentelėje \"$1\"");
-          break;
-      }
-      params.add(BeeParameter.createMap(COMMONS_MODULE,
-          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), false, value));
-    }
-    return params;
-  }
+  private static BeeLogger logger = LogUtils.getLogger(AdministrationModuleBean.class);
 
   @EJB
   SystemBean sys;
@@ -132,7 +107,7 @@ public class CommonsModuleBean implements BeeModule {
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
+    if (BeeUtils.isPrefix(svc, PARAMETERS_PREFIX)) {
       response = prm.doService(svc, reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_HISTORY)) {
@@ -170,18 +145,18 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
+    String module = getModule().getName();
+
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(COMMONS_MODULE, "ProgramTitle", false, UserInterface.TITLE),
-        BeeParameter.createRelation(COMMONS_MODULE, PRM_COMPANY, false,
-            TBL_COMPANIES, COL_COMPANY_NAME),
-        BeeParameter.createNumber(COMMONS_MODULE, PRM_VAT_PERCENT, false, 21),
-        BeeParameter.createBoolean(COMMONS_MODULE, PRM_AUDIT_OFF, false, null),
-        BeeParameter.createText(COMMONS_MODULE, PRM_ERP_ADDRESS, false, null),
-        BeeParameter.createText(COMMONS_MODULE, PRM_ERP_LOGIN, false, null),
-        BeeParameter.createText(COMMONS_MODULE, PRM_ERP_PASSWORD, false, null),
-        BeeParameter.createText(COMMONS_MODULE, "ERPOperation", false, null),
-        BeeParameter.createText(COMMONS_MODULE, "ERPWarehouse", false, null),
-        BeeParameter.createText(COMMONS_MODULE, PRM_URL, false, null));
+        BeeParameter.createText(module, "ProgramTitle", false, UserInterface.TITLE),
+        BeeParameter.createRelation(module, PRM_COMPANY, false, TBL_COMPANIES, COL_COMPANY_NAME),
+        BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
+        BeeParameter.createText(module, PRM_ERP_ADDRESS, false, null),
+        BeeParameter.createText(module, PRM_ERP_LOGIN, false, null),
+        BeeParameter.createText(module, PRM_ERP_PASSWORD, false, null),
+        BeeParameter.createText(module, "ERPOperation", false, null),
+        BeeParameter.createText(module, "ERPWarehouse", false, null),
+        BeeParameter.createText(module, PRM_URL, false, null));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -189,18 +164,16 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public Module getModule() {
-    return null;
+    return Module.ADMINISTRATION;
   }
 
   @Override
   public String getResourcePath() {
-    return COMMONS_MODULE;
+    return getModule().getName();
   }
 
   @Override
   public void init() {
-    prm.init();
-
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void refreshIpFilterCache(TableModifyEvent event) {
@@ -655,6 +628,31 @@ public class CommonsModuleBean implements BeeModule {
     }
     return ResponseObject.response(new RuleBasedNumberFormat(loc, RuleBasedNumberFormat.SPELLOUT)
         .format(number));
+  }
+
+  private Collection<? extends BeeParameter> getSqlEngineParameters() {
+    List<BeeParameter> params = Lists.newArrayList();
+
+    for (SqlEngine engine : SqlEngine.values()) {
+      Map<String, String> value = null;
+
+      switch (engine) {
+        case GENERIC:
+        case MSSQL:
+        case ORACLE:
+          break;
+        case POSTGRESQL:
+          value = ImmutableMap
+              .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
+                  "Tokia reikšmė jau egzistuoja: $1",
+                  ".+violates foreign key constraint.+from table \"(.+)\"\\.",
+                  "Įrašas naudojamas lentelėje \"$1\"");
+          break;
+      }
+      params.add(BeeParameter.createMap(getModule().getName(),
+          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), false, value));
+    }
+    return params;
   }
 
   private ResponseObject updateExchangeRates(RequestInfo reqInfo) {

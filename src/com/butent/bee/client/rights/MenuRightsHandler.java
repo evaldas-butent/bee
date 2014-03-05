@@ -11,8 +11,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.utils.Codec;
 

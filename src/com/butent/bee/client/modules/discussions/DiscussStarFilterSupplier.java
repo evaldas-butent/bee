@@ -16,7 +16,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
@@ -46,7 +46,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
   public Filter parse(FilterValue input) {
     if (input != null && BeeUtils.isFalse(input.getEmptyValues())) {
       return Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION, 
-          Filter.and(BeeKeeper.getUser().getFilter(CommonsConstants.COL_USER), Filter
+          Filter.and(BeeKeeper.getUser().getFilter(AdministrationConstants.COL_USER), Filter
               .notNull(COL_STAR)));
     } else {
       return null;

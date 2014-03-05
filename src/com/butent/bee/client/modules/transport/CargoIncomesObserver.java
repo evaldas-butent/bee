@@ -3,7 +3,7 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.collect.Lists;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -18,8 +18,7 @@ import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -88,17 +87,17 @@ public final class CargoIncomesObserver implements RowInsertEvent.Handler, Handl
           return;
         }
         Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
-        double limit = BeeUtils.toDouble(result.get(ClassifiersConstants.COL_COMPANY_CREDIT_LIMIT));
+        double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
         double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
         double income = BeeUtils.toDouble(result.get(VAR_INCOME));
 
         if (overdue > 0 || (debt + income) > limit) {
-          String cap = result.get(ClassifiersConstants.COL_COMPANY_NAME);
+          String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
           List<String> msgs = Lists.newArrayList();
 
           msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
-              BeeUtils.joinWords(limit, result.get(CommonsConstants.COL_CURRENCY))));
+              BeeUtils.joinWords(limit, result.get(COL_CURRENCY))));
           msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
 
           if (overdue > 0) {

@@ -3,7 +3,7 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -27,7 +27,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -47,7 +47,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     if (BeeUtils.same(event.getRelatedViewName(), VIEW_EXTENDED_PROPERTIES)) {
       handleExtendedProperties(event);
 
-    } else if (BeeUtils.same(event.getRelatedViewName(), ClassifiersConstants.VIEW_COMPANIES)) {
+    } else if (BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.VIEW_COMPANIES)) {
       if (isCompanyHandlerEnabled()) {
         handleCompany(event);
       }
@@ -112,7 +112,7 @@ class SelectorHandler implements SelectorEvent.Handler {
 
     if (owner != null) {
       RelationUtils.updateRow(vehiclesInfo, TransportConstants.COL_OWNER, row,
-          Data.getDataInfo(ClassifiersConstants.VIEW_COMPANIES), owner, true);
+          Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), owner, true);
     }
 
     RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, Localized.getConstants()
@@ -136,7 +136,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private static void getCompanyRow(Long company, final RowCallback callback) {
-    Queries.getRow(ClassifiersConstants.VIEW_COMPANIES, company, new RowCallback() {
+    Queries.getRow(ClassifierConstants.VIEW_COMPANIES, company, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         callback.onSuccess(result);
@@ -278,7 +278,7 @@ class SelectorHandler implements SelectorEvent.Handler {
           @Override
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_COMPANY, row,
-                Data.getDataInfo(ClassifiersConstants.VIEW_COMPANIES), result, true);
+                Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), result, true);
             dataView.refresh(false, false);
           }
         });

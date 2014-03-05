@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.classifiers;
 
-public final class ClassifiersConstants {
+public final class ClassifierConstants {
 
   public static final String SVC_CREATE_COMPANY = "create_company";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
@@ -118,6 +118,6 @@ public final class ClassifiersConstants {
 
   public static final String ALS_EMAIL_ID = "EmailId";
 
-  private ClassifiersConstants() {
+  private ClassifierConstants() {
   }
 }

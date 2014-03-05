@@ -8,8 +8,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -26,8 +26,8 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
-import com.butent.bee.server.modules.commons.ExchangeUtils;
-import com.butent.bee.server.modules.commons.ExtensionIcons;
+import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
@@ -216,7 +216,7 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
-      Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY));
+      Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
       Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter("IdList"));
       Long item = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM));
 
@@ -248,7 +248,7 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_TOTAL)) {
       response = getCargoTotal(BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(ExchangeUtils.COL_CURRENCY)));
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -315,9 +315,9 @@ public class TransportModuleBean implements BeeModule {
 
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
                 TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
-                SqlUtils.field(tbl, ExchangeUtils.COL_CURRENCY),
+                SqlUtils.field(tbl, COL_CURRENCY),
                 SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-                SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY));
+                SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
 
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
@@ -592,7 +592,7 @@ public class TransportModuleBean implements BeeModule {
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
-        SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY),
+        SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY),
         SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
             SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
 
@@ -700,7 +700,7 @@ public class TransportModuleBean implements BeeModule {
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
-        SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY),
+        SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY),
         SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
             SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
 
@@ -798,9 +798,9 @@ public class TransportModuleBean implements BeeModule {
 
       IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
           TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
-          SqlUtils.field(tbl, ExchangeUtils.COL_CURRENCY),
+          SqlUtils.field(tbl, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-          SqlUtils.field(TBL_ORDER_CARGO, ExchangeUtils.COL_CURRENCY));
+          SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
 
       ss.addSum(xpr, VAR_TOTAL)
           .addSum(SqlUtils.sqlIf(SqlUtils.equals(tbl, COL_ASSESSOR, assessorId), xpr, null),
@@ -836,7 +836,7 @@ public class TransportModuleBean implements BeeModule {
     ss.addSum(ExchangeUtils.exchangeField(ss,
         TradeModuleBean.getTotalExpression(TBL_CARGO_EXPENSES,
             SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT)),
-        SqlUtils.field(TBL_CARGO_EXPENSES, ExchangeUtils.COL_CURRENCY),
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY),
         SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
             SqlUtils.field(TBL_ORDERS, COL_DATE))), VAR_EXPENSE);
 
@@ -874,27 +874,27 @@ public class TransportModuleBean implements BeeModule {
           SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION), null,
               TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
                   SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT))),
-          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr,
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr,
           SqlUtils.constant(currency));
 
       servicesIncome = ExchangeUtils.exchangeFieldTo(ss,
           SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
               TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
                   SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)), null),
-          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr,
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr,
           SqlUtils.constant(currency));
     } else {
       cargoIncome = ExchangeUtils.exchangeField(ss,
           SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION), null,
               TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
                   SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT))),
-          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr);
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
 
       servicesIncome = ExchangeUtils.exchangeField(ss,
           SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
               TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
                   SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)), null),
-          SqlUtils.field(TBL_CARGO_INCOMES, ExchangeUtils.COL_CURRENCY), dateExpr);
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
     }
 
     ss.addSum(cargoIncome, "CargoIncome")

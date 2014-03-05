@@ -46,7 +46,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -607,7 +607,7 @@ public class ScreenImpl implements Screen {
   }
 
   protected void onUserSignatureClick(long userId) {
-    RowEditor.openRow(CommonsConstants.VIEW_USERS, userId, true, null);
+    RowEditor.openRow(AdministrationConstants.VIEW_USERS, userId, true, null);
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

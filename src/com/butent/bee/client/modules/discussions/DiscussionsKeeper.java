@@ -12,7 +12,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -43,7 +43,7 @@ public final class DiscussionsKeeper {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.DISCUSSIONS.getName());
-    args.addQueryItem(CommonsConstants.METHOD, method);
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 

@@ -19,7 +19,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.HistoryHandler;
+import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -67,7 +67,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -356,7 +356,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           }
           return;
         }
-        GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
+        GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
             new HistoryHandler(getGridView().getViewName(), ids), null,
             PresenterCallback.SHOW_IN_POPUP);
         break;

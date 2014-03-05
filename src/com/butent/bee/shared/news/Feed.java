@@ -4,14 +4,14 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
-import com.butent.bee.shared.modules.documents.DocumentsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -94,8 +94,8 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
-  DOCUMENTS(ModuleAndSub.of(Module.DOCUMENTS), DocumentsConstants.TBL_DOCUMENTS,
-      DocumentsConstants.VIEW_DOCUMENTS, DocumentsConstants.COL_DOCUMENT_NAME) {
+  DOCUMENTS(ModuleAndSub.of(Module.DOCUMENTS), DocumentConstants.TBL_DOCUMENTS,
+      DocumentConstants.TBL_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedDocuments();

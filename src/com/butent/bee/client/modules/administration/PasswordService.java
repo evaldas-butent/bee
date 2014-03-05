@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -21,7 +21,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -36,8 +36,8 @@ public final class PasswordService {
       return;
     }
 
-    final String viewName = CommonsConstants.VIEW_USERS;
-    final String colName = CommonsConstants.COL_PASSWORD;
+    final String viewName = AdministrationConstants.VIEW_USERS;
+    final String colName = AdministrationConstants.COL_PASSWORD;
 
     Queries.getValue(viewName, userId, colName, new Callback<String>() {
       @Override
@@ -58,13 +58,13 @@ public final class PasswordService {
     IsRow row = userForm.getActiveRow();
     Assert.notNull(row);
 
-    int index = userForm.getDataIndex(CommonsConstants.COL_PASSWORD);
+    int index = userForm.getDataIndex(AdministrationConstants.COL_PASSWORD);
     Assert.nonNegative(index);
 
     openDialog(row.getString(index), new Consumer<String>() {
       @Override
       public void accept(String input) {
-        userForm.updateCell(CommonsConstants.COL_PASSWORD, input);
+        userForm.updateCell(AdministrationConstants.COL_PASSWORD, input);
       }
     });
   }

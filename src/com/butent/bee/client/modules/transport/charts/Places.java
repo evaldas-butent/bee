@@ -8,7 +8,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -132,8 +132,8 @@ final class Places {
       Places.countries = rowSet;
       
       if (BeeConst.isUndef(countryCodeIndex)) {
-        Places.countryCodeIndex = rowSet.getColumnIndex(ClassifiersConstants.COL_COUNTRY_CODE);
-        Places.countryNameIndex = rowSet.getColumnIndex(ClassifiersConstants.COL_COUNTRY_NAME);
+        Places.countryCodeIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_CODE);
+        Places.countryNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_NAME);
       }
     }
   }

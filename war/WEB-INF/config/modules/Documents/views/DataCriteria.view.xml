@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="MainCriteria" source="CriteriaGroups" filter="!(Name)"
+  name="DataCriteria" source="CriteriaGroups"
   >
   <Columns>
     <SimpleColumn name="Data" />
-    <HiddenColumn name="Name" />
+    <SimpleColumn name="Name" />
+    <HiddenColumn name="Ordinal" alias="GroupOrdinal" />
 
     <ExternalJoin source="Criteria" name="Group" joinType="LEFT">
       <IdColumn name="ID" />
@@ -15,6 +16,7 @@
     </ExternalJoin>
   </Columns>
   <Order>
+    <OrderBy column="GroupOrdinal" />
     <OrderBy column="Ordinal" />
   </Order>
 </View>

@@ -6,9 +6,10 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.documents.DocumentsConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.ChildSelector;
@@ -48,6 +49,9 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -194,7 +198,8 @@ public class DocumentForm extends DocumentDataForm {
     }
     getHeaderView().clearCommandPanel();
 
-    if (!DataUtils.isNewRow(row)) {
+    if (!DataUtils.isNewRow(row) && BeeKeeper.getUser()
+        .isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
       getHeaderView().addCommandItem(newTemplateButton);
     }
   }

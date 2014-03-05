@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -6,8 +6,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -30,9 +30,10 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.news.NewsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public final class CommonsKeeper {
+public final class AdministrationKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
     @Override
@@ -78,7 +79,7 @@ public final class CommonsKeeper {
   }
 
   public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(COMMONS_MODULE);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION.getName());
     args.addQueryItem(METHOD, name);
     return args;
   }
@@ -87,7 +88,7 @@ public final class CommonsKeeper {
     MenuService.UPDATE_EXCHANGE_RATES.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        CommonsUtils.updateExchangeRates();
+        AdministrationUtils.updateExchangeRates();
       }
     });
 
@@ -120,6 +121,6 @@ public final class CommonsKeeper {
     RightsForm.register();
   }
 
-  private CommonsKeeper() {
+  private AdministrationKeeper() {
   }
 }

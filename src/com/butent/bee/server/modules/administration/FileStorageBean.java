@@ -1,8 +1,8 @@
-package com.butent.bee.server.modules.commons;
+package com.butent.bee.server.modules.administration;
 
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.QueryServiceBean;

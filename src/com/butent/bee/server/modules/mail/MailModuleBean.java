@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -12,7 +12,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
-import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.proxy.MailProxy;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -32,7 +32,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
@@ -737,11 +737,11 @@ public class MailModuleBean implements BeeModule {
 
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
         .addFields(TBL_ATTACHMENTS, COL_FILE, COL_ATTACHMENT_NAME)
-        .addFields(CommonsConstants.TBL_FILES, CommonsConstants.COL_FILE_NAME,
-            CommonsConstants.COL_FILE_SIZE)
+        .addFields(AdministrationConstants.TBL_FILES, AdministrationConstants.COL_FILE_NAME,
+            AdministrationConstants.COL_FILE_SIZE)
         .addFrom(TBL_ATTACHMENTS)
-        .addFromInner(CommonsConstants.TBL_FILES,
-            sys.joinTables(CommonsConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
+        .addFromInner(AdministrationConstants.TBL_FILES,
+            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
         .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
 
     return ResponseObject.response(packet);
@@ -817,11 +817,11 @@ public class MailModuleBean implements BeeModule {
 
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
         .addFields(TBL_ATTACHMENTS, COL_FILE, COL_ATTACHMENT_NAME)
-        .addFields(CommonsConstants.TBL_FILES, CommonsConstants.COL_FILE_NAME,
-            CommonsConstants.COL_FILE_SIZE)
+        .addFields(AdministrationConstants.TBL_FILES, AdministrationConstants.COL_FILE_NAME,
+            AdministrationConstants.COL_FILE_SIZE)
         .addFrom(TBL_ATTACHMENTS)
-        .addFromInner(CommonsConstants.TBL_FILES,
-            sys.joinTables(CommonsConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
+        .addFromInner(AdministrationConstants.TBL_FILES,
+            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
         .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
 
     return ResponseObject.response(packet);

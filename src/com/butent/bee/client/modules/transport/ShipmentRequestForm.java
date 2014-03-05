@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -16,8 +16,8 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
-import com.butent.bee.client.modules.commons.CommonsUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
@@ -29,7 +29,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -78,7 +78,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
     }
 
     String caption = Localized.getConstants().ipBlockCommand();
-    CommonsUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
+    AdministrationUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
       @Override
       public void onSuccess(String result) {
         if (getFormView().isInteractive()) {
@@ -173,7 +173,7 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
       }
 
       if (!BeeUtils.isEmpty(getStringValue(COL_QUERY_HOST))
-          && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
+          && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
               new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {

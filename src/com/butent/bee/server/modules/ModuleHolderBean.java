@@ -15,7 +15,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -54,7 +54,7 @@ public class ModuleHolderBean {
     Assert.notNull(reqInfo);
 
     return getModule(reqInfo.getService())
-        .doService(reqInfo.getParameter(CommonsConstants.METHOD), reqInfo);
+        .doService(reqInfo.getParameter(AdministrationConstants.METHOD), reqInfo);
   }
 
   public List<SearchResult> doSearch(String query) {
@@ -127,7 +127,7 @@ public class ModuleHolderBean {
   private void init() {
     Module.setEnabledModules(Config.getProperty(Service.PROPERTY_MODULES));
 
-    List<String> mods = Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
+    List<String> mods = Lists.newArrayList();
 
     for (Module modul : Module.values()) {
       if (BeeUtils.isEmpty(modul.getName())) {

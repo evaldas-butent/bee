@@ -9,7 +9,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -35,6 +35,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
@@ -62,8 +63,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -164,6 +164,7 @@ public class SystemBean {
   ParamHolderBean prm;
 
   private final BeeLogger logger = LogUtils.getLogger(getClass());
+  private boolean auditOff;
   private String dbName;
   private String dbSchema;
   private String dbAuditSchema;
@@ -226,7 +227,7 @@ public class SystemBean {
 
   public String getAuditSource(String tableName) {
     return BeeUtils.join(".", dbAuditSchema, BeeUtils.join("_", tableName,
-        CommonsConstants.AUDIT_SUFFIX));
+        AUDIT_SUFFIX));
   }
 
   public List<DataInfo> getDataInfo() {
@@ -413,16 +414,16 @@ public class SystemBean {
 
     SimpleRowSet data =
         qs.getData(new SqlSelect()
-            .addFields(CommonsConstants.TBL_IP_FILTERS, CommonsConstants.COL_IP_FILTER_HOST,
-                CommonsConstants.COL_IP_FILTER_BLOCK_AFTER,
-                CommonsConstants.COL_IP_FILTER_BLOCK_BEFORE)
-            .addFrom(CommonsConstants.TBL_IP_FILTERS));
+            .addFields(TBL_IP_FILTERS, COL_IP_FILTER_HOST,
+                COL_IP_FILTER_BLOCK_AFTER,
+                COL_IP_FILTER_BLOCK_BEFORE)
+            .addFrom(TBL_IP_FILTERS));
 
     if (!DataUtils.isEmpty(data)) {
       for (SimpleRow row : data) {
-        filters.add(new IpFilter(row.getValue(CommonsConstants.COL_IP_FILTER_HOST),
-            row.getDateTime(CommonsConstants.COL_IP_FILTER_BLOCK_AFTER),
-            row.getDateTime(CommonsConstants.COL_IP_FILTER_BLOCK_BEFORE)));
+        filters.add(new IpFilter(row.getValue(COL_IP_FILTER_HOST),
+            row.getDateTime(COL_IP_FILTER_BLOCK_AFTER),
+            row.getDateTime(COL_IP_FILTER_BLOCK_BEFORE)));
       }
     }
 
@@ -921,7 +922,7 @@ public class SystemBean {
       }
       if (!update && table.isAuditable() && isTable(tblName)) {
         logger.debug("Checking audit tables...");
-        String auditName = BeeUtils.join("_", tblName, CommonsConstants.AUDIT_SUFFIX);
+        String auditName = BeeUtils.join("_", tblName, AUDIT_SUFFIX);
 
         if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
           String msg = BeeUtils.joinWords("AUDIT TABLE",
@@ -1079,6 +1080,7 @@ public class SystemBean {
 
   @PostConstruct
   private void init() {
+    auditOff = BeeUtils.toBoolean(Config.getProperty(Service.PROPERTY_AUDIT_OFF));
     initTables();
   }
 
@@ -1231,8 +1233,7 @@ public class SystemBean {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
         logger.warning("Table name doesn't match resource name:", xmlTable.name);
       } else {
-        table = new BeeTable(moduleName, xmlTable,
-            BeeUtils.isTrue(prm.getBoolean(CommonsConstants.PRM_AUDIT_OFF)));
+        table = new BeeTable(moduleName, xmlTable, auditOff);
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {

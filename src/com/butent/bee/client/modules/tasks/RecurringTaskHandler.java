@@ -66,8 +66,8 @@ import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.CronExpression;
@@ -662,8 +662,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     List<String> messages = Lists.newArrayList();
 
     List<Integer> indexes = Lists.newArrayList(
-        getExecutors().getColumnIndex(ClassifiersConstants.COL_FIRST_NAME),
-        getExecutors().getColumnIndex(ClassifiersConstants.COL_LAST_NAME));
+        getExecutors().getColumnIndex(ClassifierConstants.COL_FIRST_NAME),
+        getExecutors().getColumnIndex(ClassifierConstants.COL_LAST_NAME));
 
     int size = DataUtils.isId(executor) ? 1 : getExecutors().getNumberOfRows();
     int maxCount = (size > 15) ? 10 : (size + 1);
@@ -937,10 +937,10 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         }
 
         table.setText(r, COL_OFFSPRING_FIRST_NAME,
-            DataUtils.getString(getExecutors(), userRow, ClassifiersConstants.COL_FIRST_NAME),
+            DataUtils.getString(getExecutors(), userRow, ClassifierConstants.COL_FIRST_NAME),
             STYLE_OFFSPRING_FIRST_NAME);
         table.setText(r, COL_OFFSPRING_LAST_NAME,
-            DataUtils.getString(getExecutors(), userRow, ClassifiersConstants.COL_LAST_NAME),
+            DataUtils.getString(getExecutors(), userRow, ClassifierConstants.COL_LAST_NAME),
             STYLE_OFFSPRING_LAST_NAME);
 
         FaLabel create = new FaLabel(FontAwesome.PLUS_SQUARE_O);
@@ -1013,8 +1013,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         if (response.hasResponse()) {
           Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
 
-          if (data.containsKey(CommonsConstants.VIEW_USERS)) {
-            setExecutors(BeeRowSet.restore(data.get(CommonsConstants.VIEW_USERS)));
+          if (data.containsKey(AdministrationConstants.VIEW_USERS)) {
+            setExecutors(BeeRowSet.restore(data.get(AdministrationConstants.VIEW_USERS)));
           }
 
           if (data.containsKey(VIEW_TASKS)) {

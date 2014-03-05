@@ -8,7 +8,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -33,7 +34,6 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -101,9 +101,9 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
         int driver = info.getColumnIndex(COL_DRIVER);
         int custId = info.getColumnIndex(COL_CUSTOMER);
         int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
-        int currId = info.getColumnIndex(ExchangeUtils.COL_CURRENCY);
-        int currName = info.getColumnIndex(ExchangeUtils.COL_CURRENCY
-            + ExchangeUtils.COL_CURRENCY_NAME);
+        int currId = info.getColumnIndex(COL_CURRENCY);
+        int currName = info.getColumnIndex(COL_CURRENCY
+            + COL_CURRENCY_NAME);
 
         for (BeeRow row : result.getRows()) {
           if (!itemEmpty) {
@@ -178,10 +178,10 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
         }
         if (currencies.size() == 1) {
           for (Entry<Long, String> entry : currencies.entrySet()) {
-            newRow.setValue(saleInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY),
+            newRow.setValue(saleInfo.getColumnIndex(COL_CURRENCY),
                 entry.getKey());
-            newRow.setValue(saleInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY
-                + ExchangeUtils.COL_CURRENCY_NAME), entry.getValue());
+            newRow.setValue(saleInfo.getColumnIndex(COL_CURRENCY
+                + COL_CURRENCY_NAME), entry.getValue());
           }
         }
         RowFactory.createRow(FORM_NEW_CARGO_INVOICE, null, saleInfo, newRow, null,
@@ -219,8 +219,8 @@ public class CargoInvoiceIncomesGrid extends AbstractGridInterceptor implements 
               public void onSuccess(final BeeRow row) {
                 ParameterList args = TransportHandler.createArgs(SVC_CREATE_INVOICE_ITEMS);
                 args.addDataItem(COL_SALE, row.getId());
-                args.addDataItem(ExchangeUtils.COL_CURRENCY,
-                    row.getLong(saleInfo.getColumnIndex(ExchangeUtils.COL_CURRENCY)));
+                args.addDataItem(COL_CURRENCY,
+                    row.getLong(saleInfo.getColumnIndex(COL_CURRENCY)));
                 args.addDataItem("IdList", DataUtils.buildIdList(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {

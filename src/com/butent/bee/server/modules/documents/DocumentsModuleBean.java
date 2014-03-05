@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.documents.DocumentsConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -15,7 +15,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
-import com.butent.bee.server.modules.commons.ExtensionIcons;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -32,7 +32,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -62,7 +62,7 @@ public class DocumentsModuleBean implements BeeModule {
     List<SearchResult> result = Lists.newArrayList();
 
     if (usr.isModuleVisible(Module.DOCUMENTS.getName())) {
-      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
+      List<SearchResult> docsSr = qs.getSearchResults(TBL_DOCUMENTS,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
               COL_DOCUMENT_NAME, COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME,
               COL_DOCUMENT_PLACE_NAME, COL_DOCUMENT_STATUS_NAME), query));
@@ -110,8 +110,8 @@ public class DocumentsModuleBean implements BeeModule {
           return;
         }
         if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), CommonsConstants.ALS_FILE_NAME,
-              CommonsConstants.PROP_ICON);
+          ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
+              AdministrationConstants.PROP_ICON);
 
         } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TEMPLATES)) {
           Map<Long, IsRow> indexedRows = Maps.newHashMap();
@@ -126,10 +126,11 @@ public class DocumentsModuleBean implements BeeModule {
             }
           }
           if (!indexedRows.isEmpty()) {
-            BeeView view = sys.getView(VIEW_MAIN_CRITERIA);
+            BeeView view = sys.getView(VIEW_DATA_CRITERIA);
             SqlSelect query = view.getQuery();
 
             query.setWhere(SqlUtils.and(query.getWhere(),
+                SqlUtils.isNull(view.getSourceAlias(), COL_CRITERIA_GROUP_NAME),
                 SqlUtils.inList(view.getSourceAlias(), COL_DOCUMENT_DATA, indexedRows.keySet())));
 
             for (SimpleRow row : qs.getData(query)) {

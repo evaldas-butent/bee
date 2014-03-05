@@ -2,6 +2,8 @@ package com.butent.bee.client.style;
 
 import com.google.gwt.safecss.shared.SafeStyles;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.css.CssProperties;
@@ -10,7 +12,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public final class ColorStyleProvider implements StyleProvider {
   }
 
   public static ColorStyleProvider createDefault(String viewName) {
-    return create(viewName, CommonsConstants.COL_BACKGROUND, CommonsConstants.COL_FOREGROUND);
+    return create(viewName, COL_BACKGROUND, COL_FOREGROUND);
   }
 
   private final CellSource bgSource;
@@ -80,10 +81,10 @@ public final class ColorStyleProvider implements StyleProvider {
     if (row == null) {
       return null;
     }
-    
+
     String bgValue = bgSource.getString(row);
     String fgValue = fgSource.getString(row);
-    
+
     SafeStyles styles;
     if (BeeUtils.isEmpty(bgValue)) {
       styles = BeeUtils.isEmpty(fgValue)
@@ -94,7 +95,7 @@ public final class ColorStyleProvider implements StyleProvider {
       styles = StyleUtils.buildStyle(CssProperties.BACKGROUND_COLOR, bgValue,
           CssProperties.COLOR, fgValue);
     }
-    
-    return (styles == null) ? null : StyleDescriptor.of(styles); 
+
+    return (styles == null) ? null : StyleDescriptor.of(styles);
   }
 }

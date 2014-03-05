@@ -30,8 +30,8 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -55,7 +55,7 @@ public final class TasksKeeper {
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
     private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
-        ClassifiersConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
+        ClassifierConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
         COL_FINISH_TIME, COL_STATUS);
 
     private DataInfo taskViewInfo;
@@ -188,7 +188,7 @@ public final class TasksKeeper {
     GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid());
     GridFactory.registerGridInterceptor(GRID_RT_FILES,
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
-            CommonsConstants.ALS_FILE_NAME));
+            AdministrationConstants.ALS_FILE_NAME));
 
     MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override
@@ -265,7 +265,7 @@ public final class TasksKeeper {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TASKS.getName());
-    args.addQueryItem(CommonsConstants.METHOD, method);
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 

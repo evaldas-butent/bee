@@ -1,10 +1,10 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -103,7 +103,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
     }
     provider.clear();
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_GET_HISTORY);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_HISTORY);
     args.addDataItem(VAR_HISTORY_VIEW, viewName);
 
     if (!BeeUtils.isEmpty(ids)) {

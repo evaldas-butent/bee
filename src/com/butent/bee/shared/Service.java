@@ -8,6 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public final class Service {
 
+  public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
   public static final String PROPERTY_MODULES = "Modules";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";

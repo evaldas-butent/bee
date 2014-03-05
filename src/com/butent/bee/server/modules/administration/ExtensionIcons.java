@@ -1,4 +1,4 @@
-package com.butent.bee.server.modules.commons;
+package com.butent.bee.server.modules.administration;
 
 import com.google.common.collect.Maps;
 

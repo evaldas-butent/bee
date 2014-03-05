@@ -7,7 +7,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
-import static com.butent.bee.shared.modules.documents.DocumentsConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -58,7 +58,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -261,7 +261,7 @@ public final class DocumentHandler {
       if (BeeUtils.same(columnName, COL_FILE)) {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
             DataUtils.getColumnIndex(COL_FILE_CAPTION, dataColumns),
-            DataUtils.getColumnIndex(CommonsConstants.ALS_FILE_NAME, dataColumns));
+            DataUtils.getColumnIndex(AdministrationConstants.ALS_FILE_NAME, dataColumns));
 
       } else {
         return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
@@ -313,8 +313,8 @@ public final class DocumentHandler {
         return result;
       }
 
-      int nameIndex = gridView.getDataIndex(CommonsConstants.ALS_FILE_NAME);
-      int sizeIndex = gridView.getDataIndex(CommonsConstants.ALS_FILE_SIZE);
+      int nameIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_NAME);
+      int sizeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_SIZE);
       int dateIndex = gridView.getDataIndex(COL_FILE_DATE);
 
       Set<NewFileInfo> oldFiles = Sets.newHashSet();
@@ -361,7 +361,7 @@ public final class DocumentHandler {
 
     @Override
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-      RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
+      RowFactory.createRow(TBL_DOCUMENTS, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
           final long docId = result.getId();
@@ -369,8 +369,8 @@ public final class DocumentHandler {
           presenter.getGridView().ensureRelId(new IdCallback() {
             @Override
             public void onSuccess(Long relId) {
-              Queries.insert(CommonsConstants.TBL_RELATIONS,
-                  Data.getColumns(CommonsConstants.TBL_RELATIONS,
+              Queries.insert(AdministrationConstants.TBL_RELATIONS,
+                  Data.getColumns(AdministrationConstants.TBL_RELATIONS,
                       Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
                   Queries.asList(docId, relId), null, new RowCallback() {
                     @Override
@@ -399,7 +399,7 @@ public final class DocumentHandler {
         Long docId = event.getRowValue().getLong(documentIndex);
 
         if (DataUtils.isId(docId)) {
-          RowEditor.openRow(VIEW_DOCUMENTS, docId, true, new RowCallback() {
+          RowEditor.openRow(TBL_DOCUMENTS, docId, true, new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               getGridPresenter().handleAction(Action.REFRESH);
@@ -451,7 +451,7 @@ public final class DocumentHandler {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.DOCUMENTS.getName());
-    args.addQueryItem(CommonsConstants.METHOD, method);
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 

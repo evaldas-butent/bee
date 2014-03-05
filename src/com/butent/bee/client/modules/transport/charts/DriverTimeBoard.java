@@ -44,8 +44,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifiersConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -400,8 +400,8 @@ final class DriverTimeBoard extends ChartBase {
     
     BeeRowSet brs = BeeRowSet.getIfPresent(properties, PROP_DRIVERS);
     if (!DataUtils.isEmpty(brs)) {
-      int firstNameIndex = brs.getColumnIndex(ClassifiersConstants.COL_FIRST_NAME);
-      int lastNameIndex = brs.getColumnIndex(ClassifiersConstants.COL_LAST_NAME);
+      int firstNameIndex = brs.getColumnIndex(ClassifierConstants.COL_FIRST_NAME);
+      int lastNameIndex = brs.getColumnIndex(ClassifierConstants.COL_LAST_NAME);
 
       int startDateIndex = brs.getColumnIndex(COL_DRIVER_START_DATE);
       int endDateIndex = brs.getColumnIndex(COL_DRIVER_END_DATE);
@@ -431,8 +431,8 @@ final class DriverTimeBoard extends ChartBase {
       int nameIndex = brs.getColumnIndex(ALS_ABSENCE_NAME);
       int labelIndex = brs.getColumnIndex(ALS_ABSENCE_LABEL);
 
-      int bgIndex = brs.getColumnIndex(CommonsConstants.COL_BACKGROUND);
-      int fgIndex = brs.getColumnIndex(CommonsConstants.COL_FOREGROUND);
+      int bgIndex = brs.getColumnIndex(AdministrationConstants.COL_BACKGROUND);
+      int fgIndex = brs.getColumnIndex(AdministrationConstants.COL_FOREGROUND);
 
       int notesIndex = brs.getColumnIndex(COL_ABSENCE_NOTES);
 
@@ -474,8 +474,8 @@ final class DriverTimeBoard extends ChartBase {
           driverTrips.put(driverId, new DriverTrip(tripId, dateFrom, dateTo, note));
        
           tripDrivers.put(tripId, new Driver(driverId,
-              row.getValue(ClassifiersConstants.COL_FIRST_NAME),
-              row.getValue(ClassifiersConstants.COL_LAST_NAME),
+              row.getValue(ClassifierConstants.COL_FIRST_NAME),
+              row.getValue(ClassifierConstants.COL_LAST_NAME),
               dateFrom, dateTo, note));
         }
       }

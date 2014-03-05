@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifiersConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.shared.data.BeeColumn;
@@ -15,7 +15,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
-import com.butent.bee.shared.modules.documents.DocumentsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -139,7 +139,7 @@ public final class TaskUtils {
     if (taskPropertyToRelation.isEmpty()) {
       taskPropertyToRelation.put(PROP_COMPANIES, COL_COMPANY);
       taskPropertyToRelation.put(PROP_PERSONS, COL_PERSON);
-      taskPropertyToRelation.put(PROP_DOCUMENTS, DocumentsConstants.COL_DOCUMENT);
+      taskPropertyToRelation.put(PROP_DOCUMENTS, DocumentConstants.COL_DOCUMENT);
       taskPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
       taskPropertyToRelation.put(PROP_DISCUSSIONS, DiscussionsConstants.COL_DISCUSSION);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);

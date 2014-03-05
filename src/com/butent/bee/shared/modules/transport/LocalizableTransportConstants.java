@@ -224,6 +224,10 @@ public interface LocalizableTransportConstants {
 
   String trLoadingNumber();
 
+  String trLogistics();
+
+  String trMenuSelfService();
+
   String trNewExpedition();
 
   String trNewTrip();
@@ -393,7 +397,7 @@ public interface LocalizableTransportConstants {
   String trRequestStatusNew();
 
   String trRequestStatusRejected();
-  
+
   String trRequestsUnregistered();
 
   String trRequestTemplateName();
@@ -415,7 +419,7 @@ public interface LocalizableTransportConstants {
   String trSendToERP();
 
   String trSendToERPConfirm();
-  
+
   String trTransportationOrders();
 
   String trTripStatusActive();

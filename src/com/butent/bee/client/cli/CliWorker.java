@@ -33,6 +33,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -62,9 +64,9 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.WebNotification;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.WebNotification;
 import com.butent.bee.client.dom.ClientRect;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
@@ -102,7 +104,7 @@ import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
 import com.butent.bee.client.maps.Marker;
 import com.butent.bee.client.maps.MarkerOptions;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
 import com.butent.bee.client.output.Printable;
@@ -174,7 +176,6 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -1524,7 +1525,7 @@ public final class CliWorker {
 
     if (BeeUtils.isEmpty(cls)) {
       showError(errorPopup, "Class name not specified");
-    
+
     } else if (cls.length() < 2) {
       showError(errorPopup, "Class name", cls, "too short");
 
@@ -1589,7 +1590,7 @@ public final class CliWorker {
     for (int i = 0; i < parCnt; i++) {
       params.addPositionalHeader(arr[i + 1]);
     }
-    
+
     BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(params.getService()));
   }
 
@@ -2327,10 +2328,10 @@ public final class CliWorker {
   }
 
   private static void showCurrentExchangeRate(String currency) {
-    ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE);
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_CURRENT_EXCHANGE_RATE);
+    params.addQueryItem(COL_CURRENCY_NAME, currency);
 
-    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE, currency),
+    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_CURRENT_EXCHANGE_RATE, currency),
         params);
   }
 
@@ -2600,24 +2601,24 @@ public final class CliWorker {
   }
 
   private static void showExchangeRate(String currency, String date) {
-    ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATE);
+    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATE);
 
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_RATE_DATE, date);
+    params.addQueryItem(COL_CURRENCY_NAME, currency);
+    params.addQueryItem(COL_CURRENCY_RATE_DATE, date);
 
-    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_EXCHANGE_RATE, currency, date),
+    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_EXCHANGE_RATE, currency, date),
         params);
   }
 
   private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
     ParameterList params =
-        CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
+        AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
 
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
-    params.addQueryItem(CommonsConstants.VAR_DATE_LOW, dateLow);
-    params.addQueryItem(CommonsConstants.VAR_DATE_HIGH, dateHigh);
+    params.addQueryItem(COL_CURRENCY_NAME, currency);
+    params.addQueryItem(VAR_DATE_LOW, dateLow);
+    params.addQueryItem(VAR_DATE_HIGH, dateHigh);
 
-    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
+    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
         currency, dateLow, dateHigh), params);
   }
 
@@ -3022,8 +3023,8 @@ public final class CliWorker {
   }
 
   private static void showListOfCurrencies() {
-    getSimpleRowSet(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES,
-        CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
+    getSimpleRowSet(SVC_GET_LIST_OF_CURRENCIES,
+        AdministrationKeeper.createArgs(SVC_GET_LIST_OF_CURRENCIES));
   }
 
   private static void showMap(final String[] arr, boolean errorPopup) {

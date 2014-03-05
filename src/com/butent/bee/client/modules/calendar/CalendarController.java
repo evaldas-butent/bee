@@ -48,7 +48,7 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -170,7 +170,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     enabledIndex = rowSet.getColumnIndex(COL_ENABLED);
 
     attBgIndex = rowSet.getColumnIndex(ALS_ATTENDEE_BACKGROUND);
-    bgIndex = rowSet.getColumnIndex(CommonsConstants.COL_BACKGROUND);
+    bgIndex = rowSet.getColumnIndex(AdministrationConstants.COL_BACKGROUND);
 
     initialized = true;
   }
@@ -663,7 +663,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       return;
     }
 
-    updateCell(rowId, CommonsConstants.COL_BACKGROUND, new TextValue(value));
+    updateCell(rowId, AdministrationConstants.COL_BACKGROUND, new TextValue(value));
     row.setValue(bgIndex, value);
 
     Widget widget = table.getWidget(index, UcaColumn.COLOR.ordinal());

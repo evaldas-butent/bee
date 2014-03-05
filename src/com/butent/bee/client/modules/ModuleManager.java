@@ -1,8 +1,8 @@
 package com.butent.bee.client.modules;
 
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.discussions.DiscussionsKeeper;
 import com.butent.bee.client.modules.documents.DocumentHandler;
 import com.butent.bee.client.modules.ec.EcKeeper;
@@ -19,7 +19,7 @@ public final class ModuleManager {
   }
 
   public static void onLoad() {
-    CommonsKeeper.register();
+    AdministrationKeeper.register();
     ClassifierKeeper.register();
     TransportHandler.register();
 

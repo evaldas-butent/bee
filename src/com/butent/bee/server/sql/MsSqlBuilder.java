@@ -1,6 +1,6 @@
 package com.butent.bee.server.sql;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

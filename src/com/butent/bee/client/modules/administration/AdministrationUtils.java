@@ -1,10 +1,10 @@
-package com.butent.bee.client.modules.commons;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -35,7 +35,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 
-public final class CommonsUtils {
+public final class AdministrationUtils {
 
   private static final String STYLE_UPDATE_RATES_PREFIX = "bee-co-updateRates-";
 
@@ -54,7 +54,7 @@ public final class CommonsUtils {
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            ParameterList args = CommonsKeeper.createArgs(SVC_BLOCK_HOST);
+            ParameterList args = AdministrationKeeper.createArgs(SVC_BLOCK_HOST);
             args.addDataItem(COL_IP_FILTER_HOST, host);
 
             BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -104,7 +104,7 @@ public final class CommonsUtils {
         new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            ParameterList args = CommonsKeeper.createArgs(SVC_CREATE_USER);
+            ParameterList args = AdministrationKeeper.createArgs(SVC_CREATE_USER);
             args.addDataItem(COL_LOGIN, login);
             args.addDataItem(COL_PASSWORD, Codec.encodePassword(pswd));
 
@@ -220,7 +220,7 @@ public final class CommonsUtils {
         output.clear();
         output.add(new Image(Global.getImages().loading()));
 
-        ParameterList params = CommonsKeeper.createArgs(SVC_UPDATE_EXCHANGE_RATES);
+        ParameterList params = AdministrationKeeper.createArgs(SVC_UPDATE_EXCHANGE_RATES);
         params.addQueryItem(VAR_DATE_LOW, lowDate.getDays());
         params.addQueryItem(VAR_DATE_HIGH, hightDate.getDays());
 
@@ -256,6 +256,6 @@ public final class CommonsUtils {
     });
   }
 
-  private CommonsUtils() {
+  private AdministrationUtils() {
   }
 }

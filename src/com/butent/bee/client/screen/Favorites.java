@@ -6,6 +6,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -37,7 +39,6 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -142,7 +143,7 @@ public class Favorites implements HandlesDeleteEvents {
     private HtmlTable getDisplay(String key) {
       return displays.get(key);
     }
-    
+
     private int getSize() {
       int size = 0;
       for (List<Item> values : items.values()) {
@@ -192,7 +193,7 @@ public class Favorites implements HandlesDeleteEvents {
     private final long id;
 
     private String html;
-    private int order;
+    private final int order;
 
     private Item(long id, String html) {
       this(id, html, 0);
@@ -268,7 +269,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     addDisplayRow(group.getDisplay(key), group, key, item);
 
-    Queries.insert(CommonsConstants.TBL_FAVORITES,
+    Queries.insert(TBL_FAVORITES,
         DataUtils.getColumns(columns, groupIndex, keyIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), key, BeeUtils.toString(id),
             BeeUtils.toString(order), BeeUtils.trim(html)));
@@ -316,12 +317,12 @@ public class Favorites implements HandlesDeleteEvents {
     htmlIndex = DataUtils.getColumnIndex(COL_HTML, columns);
 
     loadItems(rowSet);
-    
+
     int size = 0;
     for (Group group : Group.values()) {
       size += group.getSize();
     }
-    
+
     logger.info("favorites", size);
   }
 
@@ -458,7 +459,7 @@ public class Favorites implements HandlesDeleteEvents {
     Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
         Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
 
-    Queries.delete(CommonsConstants.TBL_FAVORITES, filter, null);
+    Queries.delete(TBL_FAVORITES, filter, null);
     return group.remove(key, item);
   }
 
@@ -473,12 +474,12 @@ public class Favorites implements HandlesDeleteEvents {
     display.getWidget(group.indexOf(key, item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
 
     CompoundFilter filter = Filter.and();
-    filter.add(BeeKeeper.getUser().getFilter(CommonsConstants.COL_FAVORITE_USER),
+    filter.add(BeeKeeper.getUser().getFilter(COL_FAVORITE_USER),
         Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
         Filter.isEqual(COL_KEY, new TextValue(key)),
         Filter.equals(COL_ITEM, id));
 
-    Queries.update(CommonsConstants.TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
+    Queries.update(TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
     return true;
   }
 }
