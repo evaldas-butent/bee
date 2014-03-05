@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  
-  name="WidgetRights" caption="=widgets" enabledActions="save"
-  >
-  <FlowPanel>
-  </FlowPanel>
-</f:Form>  

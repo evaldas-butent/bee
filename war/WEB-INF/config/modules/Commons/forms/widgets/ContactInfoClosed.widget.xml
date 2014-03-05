@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Disclosure>
-<Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
-  open="false">
-  
-  <Label text="=contactInfo" style="text-transform: uppercase; " />
-  <xi:include href="ContactDetails.widget.xml" />
-</Disclosure>
