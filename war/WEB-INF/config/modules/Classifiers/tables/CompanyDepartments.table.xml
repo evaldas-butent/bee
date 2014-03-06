@@ -3,11 +3,10 @@
   
   name="CompanyDepartments"
   idName="DepartmentID"
-  x="501" y="339"
   >
   <Fields>
     <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="=company" />
-    <String name="Name" precision="50" unique="true" label="=companyDepartment"/>   
+    <String name="Name" precision="50" notNull="true" label="=companyDepartment" />   
   </Fields>
 
   <Constraints>

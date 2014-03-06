@@ -22,7 +22,7 @@
     <DataColumn name="DocumentDate" />
     <DataColumn name="Expires" />
     <DataColumn name="Number" />
-    <DataColumn name="CategoryName" caption="=documentCategory" filterOptions="empty" />
+    <DataColumn name="CategoryName" label="=documentCategory" />
     <DataColumn name="TypeName" />
     <DataColumn name="PlaceName" />
     <DataColumn name="StatusName" />

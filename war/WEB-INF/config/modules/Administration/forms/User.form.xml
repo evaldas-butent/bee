@@ -34,8 +34,9 @@
     <Table style="border-spacing: 10px;">
       <row>
         <Label text="=userRoles" class="bee-required" />
-        <ChildSelector childTable="UserRoles" viewName="Roles" style="width: 400px;" 
-          required="true" />
+        <ChildSelector childTable="UserRoles" viewName="Roles"
+          targetRelColumn="User" sourceRelColumn="Role"
+          style="width: 400px;" required="true" />
       </row>
     </Table>
     

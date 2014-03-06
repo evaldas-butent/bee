@@ -110,6 +110,7 @@
               <Label text="=companyActivities" style="margin-right: 5px" />
               <cell colSpan="3">
                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
+                  targetRelColumn="Company" sourceRelColumn="Activity"
                   label="=companyActivities" style="width: 338px;" />
               </cell>
             </row>

@@ -14,5 +14,5 @@ name="ContactsClassifiers" label="=contactsClassifiers" parent="Contacts" order=
   <Item name="Positions" label="=personPosition" service="grid" parameters="Positions" />
 
   <Item name="CompanyRelationTypes" label="=clientsRelationTypes" service="grid" parameters="CompanyRelationTypes" separator="true" />
-  <Item name="CompanyRelationTypeStates" label="=clientsRelationTypeStates" service="grid" parameters="CompanyRelationTypeStates" />
+  <Item name="RelationTypeStates" label="=clientsRelationTypeStates" service="grid" parameters="RelationTypeStates" />
 </Entry>

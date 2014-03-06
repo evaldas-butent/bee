@@ -25,18 +25,21 @@
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=companies" style="&chlabel;" />
           <ChildSelector name="Company" viewName="Companies" childTable="Relations"
+            targetRelColumn="Document" sourceRelColumn="Company"
             renderColumns="Name" class="flexible" />
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=persons" style="&chlabel;" />
           <ChildSelector name="Person" class="flexible" viewName="Persons" childTable="Relations"
+              targetRelColumn="Document" sourceRelColumn="Person"
               renderColumns="FirstName LastName" />
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=calAppointments" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Appointments" childTable="Relations"
+            targetRelColumn="Document" sourceRelColumn="Appointment"
             renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
             newRowEnabled="false" />
         </FlowPanel>
@@ -44,13 +47,14 @@
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=tasks" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Tasks" childTable="Relations" 
-            renderColumns="Summary"
+            targetRelColumn="Document" sourceRelColumn="Task" renderColumns="Summary"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
         </FlowPanel>
   
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=trRequestsShort" style="&chlabel;" />
-          <ChildSelector class="flexible" viewName="CargoRequests" childTable="Relations" 
+          <ChildSelector class="flexible" viewName="CargoRequests" childTable="Relations"
+            targetRelColumn="Document" sourceRelColumn="CargoRequest"
             renderColumns="CustomerCompanyName LoadingDate"
             choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName" />
         </FlowPanel>
@@ -58,25 +62,28 @@
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=vehiclesShort" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Vehicles" childTable="Relations" 
+            targetRelColumn="Document" sourceRelColumn="Vehicle"
             renderColumns="Number" choiceColumns="Number ParentModelName ModelName" />
         </FlowPanel>
   
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=drivers" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Drivers" childTable="Relations" 
+            targetRelColumn="Document" sourceRelColumn="Driver"
             renderColumns="FirstName LastName" newRowEnabled="false" />
         </FlowPanel>
   
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=trOrders" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="TransportationOrders" childTable="Relations" 
+            targetRelColumn="Document" sourceRelColumn="TransportationOrder"
             renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" />
         </FlowPanel>
   
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=cargos" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="OrderCargo" childTable="Relations" 
-            renderColumns="Description"
+            targetRelColumn="Document" sourceRelColumn="Cargo" renderColumns="Description"
             choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode"
             newRowEnabled="false" />
         </FlowPanel>
@@ -84,6 +91,7 @@
         <FlowPanel class="flexBox-horizontal" style="&row;">
           <Label text="=trips" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Trips" childTable="Relations" 
+            targetRelColumn="Document" sourceRelColumn="Trip"
             renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber" />
         </FlowPanel>
       </FlowPanel>

@@ -12,24 +12,28 @@
     <row>
       <Label text="=companies" />
       <ChildSelector childTable="Relations" viewName="Companies" property="Companies"
+        targetRelColumn="RecurringTask" sourceRelColumn="Company"      
         renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row>
       <Label text="=persons" />
       <ChildSelector childTable="Relations" viewName="Persons" property="Persons"
+        targetRelColumn="RecurringTask" sourceRelColumn="Person"      
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row>
       <Label text="=documents" />
       <ChildSelector childTable="Relations" viewName="Documents" property="Documents"
+        targetRelColumn="RecurringTask" sourceRelColumn="Document"      
         renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row>
       <Label text="=calAppointments" />
       <ChildSelector childTable="Relations" viewName="Appointments" property="Appointments"
+        targetRelColumn="RecurringTask" sourceRelColumn="Appointment"      
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
         newRowEnabled="true" editPopup="true" style="&inp;" />
     </row>
@@ -37,12 +41,14 @@
     <row>
       <Label text="=discussions" />
       <ChildSelector childTable="Relations" viewName="Discussions" property="Discussions"
+        targetRelColumn="RecurringTask" sourceRelColumn="Discussion"      
         renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp;" />
     </row>
 
     <row>
       <Label text="=tasks" />
       <ChildSelector childTable="Relations" viewName="Tasks" property="Tasks"
+        targetRelColumn="RecurringTask" sourceRelColumn="Task"      
         renderColumns="Summary ExecutorFirstName ExecutorLastName"
         choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
         newRowEnabled="false" editPopup="true" style="&inp;" />

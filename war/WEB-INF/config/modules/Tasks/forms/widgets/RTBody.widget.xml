@@ -54,6 +54,7 @@
     <row>
       <Label text="=crmTaskExecutors" />
       <ChildSelector childTable="RTExecutors" viewName="Users" property="Executors"
+        targetRelColumn="RecurringTask" sourceRelColumn="User"
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp2x;"
         label="=crmTaskExecutors" />
     </row>
@@ -61,6 +62,7 @@
     <row>
       <Label text="=crmTaskExecutorGroups" />
       <ChildSelector childTable="RTExecutorGroups" viewName="UserGroupSettings"
+        targetRelColumn="RecurringTask" sourceRelColumn="Group"
         property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
         style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1" />
     </row>
@@ -68,6 +70,7 @@
     <row>
       <Label text="=crmTaskObservers" />
       <ChildSelector childTable="RTObservers" viewName="Users" property="Observers"
+        targetRelColumn="RecurringTask" sourceRelColumn="User"      
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp2x;"
         label="=crmTaskObservers" />
     </row>
@@ -75,6 +78,7 @@
     <row>
       <Label text="=crmTaskObserverGroups" />
       <ChildSelector childTable="RTObserverGroups" viewName="UserGroupSettings"
+        targetRelColumn="RecurringTask" sourceRelColumn="Group"      
         property="ObserverGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
         style="&inp2y;" label="=crmTaskObserverGroups" filter="Owner {u} or Visibility 1" />
     </row>

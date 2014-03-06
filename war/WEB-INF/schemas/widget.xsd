@@ -724,8 +724,8 @@
         <xs:extension base="selectorType">
           <xs:attribute name="viewName" type="type:nameType" use="required" />
           <xs:attribute name="childTable" type="type:nameType" use="required" />
-          <xs:attribute name="targetRelColumn" type="type:nameType" />
-          <xs:attribute name="sourceRelColumn" type="type:nameType" />
+          <xs:attribute name="targetRelColumn" type="type:nameType" use="required" />
+          <xs:attribute name="sourceRelColumn" type="type:nameType" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

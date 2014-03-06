@@ -61,10 +61,12 @@
       <FlowPanel class="flexBox-horizontal">
         <Label text="=ecWarehousesPrimary" style="&lbl;" />
         <ChildSelector viewName="Warehouses" childTable="PrimaryWarehouses" renderColumns="Code"
+          targetRelColumn="Client" sourceRelColumn="Warehouse"
           newRowEnabled="false" label="=ecWarehousesPrimary" style="&inp;" />
 
         <Label text="=ecWarehousesSecondary" style="&lbl;" />
         <ChildSelector viewName="Warehouses" childTable="SecondaryWarehouses" renderColumns="Code"
+          targetRelColumn="Client" sourceRelColumn="Warehouse"
           newRowEnabled="false" label="=ecWarehousesSecondary" style="&inp;" />
       </FlowPanel>
       &separator;
