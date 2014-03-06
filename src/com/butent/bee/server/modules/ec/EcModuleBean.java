@@ -503,14 +503,14 @@ public class EcModuleBean implements BeeModule {
       @Subscribe
       public void setSuppliersAndRemainders(ViewQueryEvent event) {
         if (event.isAfter() && !DataUtils.isEmpty(event.getRowset())
-            && BeeUtils.inListSame(event.getTargetName(), VIEW_CATALOG, VIEW_ORDER_ITEMS)) {
+            && BeeUtils.inListSame(event.getTargetName(), VIEW_ARTICLES, VIEW_ORDER_ITEMS)) {
 
           Set<Long> articleIds = Sets.newHashSet();
 
           BeeRowSet rowSet = event.getRowset();
 
           int index;
-          if (BeeUtils.same(event.getTargetName(), VIEW_CATALOG)) {
+          if (BeeUtils.same(event.getTargetName(), VIEW_ARTICLES)) {
             index = DataUtils.ID_INDEX;
           } else if (BeeUtils.same(event.getTargetName(), VIEW_ORDER_ITEMS)) {
             index = rowSet.getColumnIndex(COL_ORDER_ITEM_ARTICLE);

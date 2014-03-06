@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="RTFiles"
-  source="RTFiles"
+  name="RTFiles" source="RTFiles"
+  caption="=crmRTFiles"
   >
   <Columns>
     <SimpleColumn name="RecurringTask" />

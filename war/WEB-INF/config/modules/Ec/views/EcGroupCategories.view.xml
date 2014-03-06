@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcGroupCategories" source="EcGroupCategories"
+  name="EcGroupCategories" source="EcGroupCategories" module="Ec.Classifiers"
   caption="=ecItemCategories" newRowCaption="=ecItemCategoryNew"
   >
   <Columns>

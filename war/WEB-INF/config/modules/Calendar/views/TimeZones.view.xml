@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TimeZones"
-  source="TimeZones"
+  name="TimeZones" source="TimeZones"
+  caption="=timeZones"
   >
   <Columns>
     <SimpleColumn name="Name" />

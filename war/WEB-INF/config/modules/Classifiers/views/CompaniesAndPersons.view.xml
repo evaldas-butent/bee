@@ -3,6 +3,7 @@
   xmlns:xpr="http://www.butent.com/expression"
   
   name="CompaniesAndPersons" source="CompanyPersons" module="Classifiers.Contacts"
+  caption="=personContacts"
   >
   <Columns>
     <SimpleColumn name="Position" />

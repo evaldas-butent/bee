@@ -204,6 +204,7 @@
       <xs:enumeration value="Mail.Administration" />
       <xs:enumeration value="Ec" />
       <xs:enumeration value="Ec.Administration" />
+      <xs:enumeration value="Ec.Classifiers" />
       <xs:enumeration value="Trade" />
       <xs:enumeration value="Transport" />
       <xs:enumeration value="Transport.Logistics" />

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AttendeeTypes" source="AttendeeTypes" newRowCaption="=calNewAttendeeType"
+  name="AttendeeTypes" source="AttendeeTypes"
+  caption="=calAttendeeTypes" newRowCaption="=calNewAttendeeType"
   >
   <Columns>
     <SimpleColumn name="Name" label="=calAttendeeType" />

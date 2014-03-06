@@ -3,7 +3,7 @@
   xmlns:g="http://www.butent.com/grid"
 
   name="Attendees" viewName="Attendees"
-  caption="=calAppointmentAttendees" newRowCaption="=calNewAttendee"
+  caption="=calAttendees" newRowCaption="=calNewAttendee"
   editForm="Attendee" newRowForm="Attendee" editInPlace="Ordinal"
   >
   <g:columns>

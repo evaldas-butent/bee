@@ -51,7 +51,7 @@ public enum Module implements HasLocalizedCaption {
       return constants.mail();
     }
   },
-  ECOMMERCE(SubModule.ADMINISTRATION) {
+  ECOMMERCE(SubModule.ADMINISTRATION, SubModule.CLASSIFIERS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.ecModule();

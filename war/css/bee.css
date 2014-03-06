@@ -2966,6 +2966,9 @@
   display: none;
 }
 
+.bee-Rights-sub-module {
+  padding-left: 1em;
+}
 .bee-Rights-module,
 .bee-Rights-sub-module,
 .bee-Rights-mso-branch {

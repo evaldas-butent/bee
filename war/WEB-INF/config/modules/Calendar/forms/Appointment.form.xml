@@ -58,7 +58,7 @@
     
     <TabbedPages class="flexible">
       <page>
-        <text>=calAppointmentAttendees</text>
+        <text>=calAttendees</text>
         <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />
       </page>
 

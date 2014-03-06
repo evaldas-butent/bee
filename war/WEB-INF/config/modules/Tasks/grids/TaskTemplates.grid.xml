@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
-  name="TaskTemplates" viewName="TaskTemplates" caption="=crmTasksTemplates"
+  name="TaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplates"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>

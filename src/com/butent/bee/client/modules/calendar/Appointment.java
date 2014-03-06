@@ -304,7 +304,7 @@ public class Appointment extends CalendarItem {
       }
     }
 
-    result.put(wrap(KEY_RESOURCES), build(Localized.getConstants().calAppointmentAttendees(),
+    result.put(wrap(KEY_RESOURCES), build(Localized.getConstants().calAttendees(),
         joinChildren(attNames), addLabels));
     result.put(wrap(KEY_OWNERS), build(Localized.getConstants().responsiblePersons(),
         joinChildren(ownerNames), addLabels));

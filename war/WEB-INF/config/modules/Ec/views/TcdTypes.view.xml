@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TcdTypes" source="TcdTypes" newRowCaption="=tcdTypeNew"
+  name="TcdTypes" source="TcdTypes" module="Ec.Classifiers"
+  caption="=tcdTypes" newRowCaption="=tcdTypeNew"
   >
   <Columns>
     <SimpleColumn name="Model" />

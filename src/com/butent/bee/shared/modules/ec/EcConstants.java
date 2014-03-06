@@ -302,9 +302,9 @@ public final class EcConstants {
   public static final String TBL_TCD_ORPHANS = "TcdOrphans";
 
   public static final String VIEW_ARTICLE_CODES = "TcdArticleCodes";
+  public static final String VIEW_ARTICLES = "TcdArticles";
   public static final String VIEW_BANNERS = "EcBanners";
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
-  public static final String VIEW_CATALOG = "EcCatalog";
   public static final String VIEW_CATEGORIES = "TcdCategories";
   public static final String VIEW_CLIENTS = "EcClients";
   public static final String VIEW_CONFIGURATION = "EcConfiguration";

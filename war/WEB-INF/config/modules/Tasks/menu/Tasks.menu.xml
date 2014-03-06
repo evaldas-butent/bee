@@ -24,7 +24,7 @@ name="Tasks" label="=tasks" order="30" module="Tasks"
   <Item name="RecurringTasks" label="=crmRecurringTasks" service="grid" 
     parameters="RecurringTasks" />
 
-  <Item name="TaskTemplates" label="=crmTasksTemplates" service="grid" parameters="TaskTemplates"
+  <Item name="TaskTemplates" label="=crmTaskTemplates" service="grid" parameters="TaskTemplates"
     separator="true" />
 
   <Item name="DurationTypes" label="=crmTaskDurationTypes" service="grid" 

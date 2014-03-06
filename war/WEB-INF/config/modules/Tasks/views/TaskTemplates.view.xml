@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TaskTemplates" source="TaskTemplates" 
-  caption="=crmTasksTemplates" newRowCaption="=crmNewTaskTemplate"
+  caption="=crmTaskTemplates" newRowCaption="=crmNewTaskTemplate"
   >
   <Columns>
     <SimpleColumn name="Name" />

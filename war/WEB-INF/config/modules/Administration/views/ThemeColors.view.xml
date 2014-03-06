@@ -2,8 +2,8 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ThemeColors" source="ThemeColors" module="Classifiers"
+  caption="=themeColors"
   >
-
   <Columns>
     <SimpleColumn name="Theme" />
     <SimpleColumn name="Color" />
@@ -17,4 +17,3 @@
     <OrderBy column="ColorName" />
   </Order>
 </View>
-

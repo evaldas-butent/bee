@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="CompanyDepartments" source="CompanyDepartments" module="Classifiers.Contacts"
+  caption="=companyDepartments"
   >
   <Columns>
     <SimpleColumn name="Company" />
