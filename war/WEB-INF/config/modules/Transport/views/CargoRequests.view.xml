@@ -2,9 +2,9 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:x="http://www.butent.com/expression"
 
-  name="CargoRequests" source="CargoRequests" caption="=trRequestsShort"
+  name="CargoRequests" source="CargoRequests" module="Transport.SelfService"
+  caption="=trRequests" newRowCaption="=trRequestNew"
   newRowForm="NewCargoRequest" editForm="CargoRequest"
-  newRowCaption="=trRequestNew"
   >
   <Columns>
     <SimpleColumn name="Date" />

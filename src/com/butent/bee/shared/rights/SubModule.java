@@ -21,7 +21,7 @@ public enum SubModule implements HasLocalizedCaption {
   SELFSERVICE {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.trMenuSelfService();
+      return constants.trSelfService();
     }
 
     @Override

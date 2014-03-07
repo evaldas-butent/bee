@@ -224,7 +224,6 @@ public final class AdministrationConstants {
 
   public static final String TBL_RELATIONS = "Relations";
   public static final String TBL_FAVORITES = "Favorites";
-  public static final String TBL_FILTERS = "Filters";
 
   public static final String TBL_IP_FILTERS = "IpFilters";
 
@@ -256,6 +255,8 @@ public final class AdministrationConstants {
 
   public static final String VIEW_PARAMETERS = "Parameters";
   public static final String VIEW_USER_PARAMETERS = "UserParameters";
+
+  public static final String VIEW_FILTERS = "Filters";
 
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";

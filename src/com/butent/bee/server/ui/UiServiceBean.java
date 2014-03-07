@@ -328,7 +328,7 @@ public class UiServiceBean {
     Order order = new Order(COL_FILTER_KEY, true);
     order.add(COL_FILTER_ORDINAL, true);
 
-    return qs.getViewData(TBL_FILTERS, usr.getCurrentUserFilter(COL_FILTER_USER), order);
+    return qs.getViewData(VIEW_FILTERS, usr.getCurrentUserFilter(COL_FILTER_USER), order);
   }
 
   public Pair<BeeRowSet, BeeRowSet> getGridAndColumnSettings() {

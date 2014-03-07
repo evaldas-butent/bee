@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="GridColumnSettings" source="GridColumnSettings" module="Administration"
+  caption="=gridColumnSettings"
   >
   <Columns>
     <SimpleColumn name="GridSetting" />

@@ -226,8 +226,6 @@ public interface LocalizableTransportConstants {
 
   String trLogistics();
 
-  String trMenuSelfService();
-
   String trNewExpedition();
 
   String trNewTrip();
@@ -407,6 +405,8 @@ public interface LocalizableTransportConstants {
   String trRequestTemplates();
 
   String trRequestTermsOfDelivery();
+
+  String trSelfService();
 
   String trSelfServiceCommandHistory();
 

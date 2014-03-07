@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -9,7 +8,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -20,7 +18,7 @@ final class Places {
   private static int countryCodeIndex = BeeConst.UNDEF;
   private static int countryNameIndex = BeeConst.UNDEF;
   
-  private static ValueType placeDateType;
+  private static ValueType placeDateType = ValueType.DATE_TIME;
 
   static String getCountryFlag(Long countryId) {
     if (!DataUtils.isId(countryId) || DataUtils.isEmpty(countries)) {
@@ -84,10 +82,6 @@ final class Places {
   }
 
   static ValueType getPlaceDateType() {
-    if (Places.placeDateType == null) {
-      Places.placeDateType = Data.getColumnType(TransportConstants.TBL_CARGO_PLACES,
-          TransportConstants.COL_PLACE_DATE);
-    }
     return Places.placeDateType;
   }
   

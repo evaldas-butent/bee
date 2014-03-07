@@ -283,7 +283,7 @@ public class Filters {
           Item updatedItem = getItem(items, id);
           updatedItem.setInitial(value);
 
-          Queries.update(TBL_FILTERS, id, COL_INITIAL, new BooleanValue(value));
+          Queries.update(VIEW_FILTERS, id, COL_INITIAL, new BooleanValue(value));
 
           if (BeeUtils.isTrue(value) && items.size() > 1) {
             synchronizeInitialFilters(items, updatedItem, table);
@@ -327,7 +327,7 @@ public class Filters {
                       editItem.setLabel(newLabel);
                       labelWidget.setHtml(newLabel);
 
-                      Queries.update(TBL_FILTERS, editItem.getId(), COL_LABEL,
+                      Queries.update(VIEW_FILTERS, editItem.getId(), COL_LABEL,
                           new TextValue(newLabel));
                       callback.accept(null, Action.EDIT);
                     }
@@ -357,7 +357,7 @@ public class Filters {
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {
-                    Queries.deleteRow(TBL_FILTERS, delItem.getId());
+                    Queries.deleteRow(VIEW_FILTERS, delItem.getId());
                     itemsByKey.remove(key, delItem);
 
                     int index = items.indexOf(delItem);
@@ -507,7 +507,7 @@ public class Filters {
 
   private int getMaxLabelLength() {
     if (maxLabelLength <= 0) {
-      maxLabelLength = Data.getColumnPrecision(TBL_FILTERS, COL_LABEL);
+      maxLabelLength = Data.getColumnPrecision(VIEW_FILTERS, COL_LABEL);
     }
     return maxLabelLength;
   }
@@ -516,7 +516,7 @@ public class Filters {
       boolean predefined, RowCallback callback) {
 
     List<BeeColumn> columns =
-        Data.getColumns(TBL_FILTERS,
+        Data.getColumns(VIEW_FILTERS,
             Lists.newArrayList(COL_FILTER_USER, COL_FILTER_KEY,
                 COL_NAME, COL_LABEL, COL_VALUE, COL_FILTER_ORDINAL));
 
@@ -525,25 +525,25 @@ public class Filters {
         filterDescription.serializeComponents(), ordinal);
 
     if (filterDescription.isInitial()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_INITIAL));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_INITIAL));
       values.add(BooleanValue.pack(filterDescription.isInitial()));
     }
 
     if (filterDescription.isEditable()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_EDITABLE));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_EDITABLE));
       values.add(BooleanValue.pack(filterDescription.isEditable()));
     }
     if (filterDescription.isRemovable()) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_REMOVABLE));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_REMOVABLE));
       values.add(BooleanValue.pack(filterDescription.isRemovable()));
     }
 
     if (predefined) {
-      columns.add(Data.getColumn(TBL_FILTERS, COL_PREDEFINED));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_PREDEFINED));
       values.add(BooleanValue.pack(predefined));
     }
 
-    Queries.insert(TBL_FILTERS, columns, values, null, callback);
+    Queries.insert(VIEW_FILTERS, columns, values, null, callback);
   }
 
   private String normalizeLabel(String label) {
@@ -560,7 +560,7 @@ public class Filters {
     for (Item item : items) {
       if (item.id != checkedItem.id && item.isInitial() && item.containsAnyComponent(checkedKeys)) {
         item.setInitial(null);
-        Queries.update(TBL_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
+        Queries.update(VIEW_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
 
         for (Widget widget : table) {
           if (widget instanceof Initial && ((Initial) widget).id == item.id) {
