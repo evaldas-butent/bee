@@ -7,18 +7,18 @@
   <FlowPanel class="flexBox-vertical">
     <Table style="border-spacing: 10px;">
       <row>
-        <Label text="=currency" class="bee-required" />
+        <Label text="=currency" class="bee-required" for="Name" />
         <InputText source="Name" />
-        <Label text="=caption" horizontalAlignment="right" />
+        <Label text="=caption" horizontalAlignment="right" for="Caption" />
         <InputText source="Caption" />
       </row>
       <row>
-        <Label text="=minorName" />
+        <Label text="=minorName" for="MinorName" />
         <InputText source="MinorName" />
-        <Label text="=minorCaption" horizontalAlignment="right" />
+        <Label text="=minorCaption" horizontalAlignment="right" for="MinorCaption" />
         <InputText source="MinorCaption" />
       </row>
-      <row>
+      <row for="UpdateTag">
         <CheckBox text="=currencyUpdateTag" source="UpdateTag" />
       </row>
     </Table>

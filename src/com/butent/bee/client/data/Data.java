@@ -177,7 +177,12 @@ public final class Data {
   }
   
   public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
-    return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId());
+    return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId())
+        || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());
+  }
+
+  public static boolean isColumnVisible(String viewName, BeeColumn column) {
+    return BeeKeeper.getUser().isColumnVisible(viewName, column.getId());
   }
 
   public static boolean isNull(String viewName, IsRow row, String colName) {
