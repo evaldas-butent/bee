@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Sales" source="Sales"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="InvoicePrefix" />
+    <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="Term" />
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
+    <SimpleColumn name="Proforma" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
+
+    <SimpleColumn name="WarehouseFrom" />
+    
+    <SimpleColumn name="Supplier" />
+    <SimpleColumn name="Customer" />
+    <SimpleColumn name="Payer" />
+    
+    <SimpleColumn name="Manager" />
+  </Columns>
+</View>

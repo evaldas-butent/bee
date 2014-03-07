@@ -77,7 +77,7 @@ public final class ClassifierConstants {
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
-  public static final String COL_MOBILE = "Mobil";
+  public static final String COL_MOBILE = "Mobile";
   public static final String COL_FAX = "Fax";
   public static final String COL_EMAIL = "Email";
   public static final String COL_ADDRESS = "Address";
