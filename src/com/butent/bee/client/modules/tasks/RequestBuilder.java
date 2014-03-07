@@ -73,7 +73,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
     Widget widget = getFormView().getWidgetByName("Files");
 
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
-      final List<BeeColumn> columns = Data.getColumns(TBL_REQUEST_FILES,
+      final List<BeeColumn> columns = Data.getColumns(VIEW_REQUEST_FILES,
           Lists.newArrayList(COL_REQUEST, COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : ((FileCollector) widget).getFiles()) {
@@ -89,13 +89,13 @@ public class RequestBuilder extends AbstractFormInterceptor {
         final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
         if (DataUtils.isId(file)) {
-          Queries.insert(TBL_REQUEST_FILES, columns,
+          Queries.insert(VIEW_REQUEST_FILES, columns,
               Lists.newArrayList(request, BeeUtils.toString(file), fileName));
         } else {
           FileUtils.uploadFile(fileInfo, new Callback<Long>() {
             @Override
             public void onSuccess(Long result) {
-              Queries.insert(TBL_REQUEST_FILES, columns,
+              Queries.insert(VIEW_REQUEST_FILES, columns,
                   Lists.newArrayList(request, BeeUtils.toString(result), fileName));
             }
           });

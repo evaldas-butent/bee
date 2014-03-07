@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TcdArticleCodes" source="TcdArticleCodes"
-  caption="=ecItemAnalogs" newRowCaption="=ecItemAnalogNew"
+  caption="=tcdArticleCodes" newRowCaption="=ecItemAnalogNew"
   >
   <Columns>
     <SimpleColumn name="Article" />

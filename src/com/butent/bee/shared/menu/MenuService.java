@@ -9,7 +9,6 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 
@@ -50,7 +49,7 @@ public enum MenuService {
   DISCUSS_LIST(RightsState.VIEW, DiscussionsConstants.VIEW_DISCUSSIONS),
 
   @XmlEnumValue("open_mail")
-  OPEN_MAIL(RightsState.VIEW, MailConstants.TBL_MESSAGES),
+  OPEN_MAIL(EnumSet.noneOf(RightsState.class)),
   @XmlEnumValue("restart_proxy")
   RESTART_PROXY(EnumSet.noneOf(RightsState.class)),
 

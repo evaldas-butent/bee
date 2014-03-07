@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Roles" source="Roles" module="Administration"
-  newRowCaption="=newRole" editForm="Role"
+  caption="=roles" newRowCaption="=newRole" editForm="Role"
   >
   <Columns>
     <SimpleColumn name="Name" />

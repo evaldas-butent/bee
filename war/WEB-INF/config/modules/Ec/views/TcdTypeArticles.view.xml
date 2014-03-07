@@ -2,6 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TcdTypeArticles" source="TcdTypeArticles"
+  caption="=tcdTypeArticles"
   >
   <Columns>
     <SimpleColumn name="Article" />

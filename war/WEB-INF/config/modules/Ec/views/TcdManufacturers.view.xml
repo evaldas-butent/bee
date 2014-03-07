@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TcdManufacturers" source="TcdManufacturers" module="Ec.Classifiers"
-  newRowCaption="=tcdManufacturerNew"
+  caption="=tcdManufacturers" newRowCaption="=tcdManufacturerNew"
   >
   <Columns>
     <SimpleColumn name="ManufacturerName" />

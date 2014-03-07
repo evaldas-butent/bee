@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="EcGroupCriteria" source="EcGroupCriteria" module="Ec.Classifiers"
-  caption="=ecItemCriteria" newRowCaption="=ecCriteriaNew"
+  caption="=ecGroupCriteria" newRowCaption="=ecCriteriaNew"
   >
   <Columns>
     <SimpleColumn name="Ordinal" />
