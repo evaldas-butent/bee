@@ -13,7 +13,7 @@
     <Relation name="Currency" relation="Currencies" label="=currency" />
     <Boolean name="Vat" label="=vat" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
-    <Boolean name="IsService" />
+    <Boolean name="IsService" label="=service" />
     <String name="ExternalCode" precision="10" label="ERPCode" />
   </Fields>
 

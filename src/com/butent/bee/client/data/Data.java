@@ -181,10 +181,6 @@ public final class Data {
         || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());
   }
 
-  public static boolean isColumnVisible(String viewName, BeeColumn column) {
-    return BeeKeeper.getUser().isColumnVisible(viewName, column.getId());
-  }
-
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }

@@ -40,7 +40,7 @@
     <xs:attribute name="name" type="gridName" use="required" />
     <xs:attribute name="parent" type="xs:normalizedString" />
     <xs:attribute name="caption" type="xs:string" />
-    <xs:attribute name="viewName" type="type:nameType" />
+    <xs:attribute name="viewName" type="type:dataView" />
     <xs:attribute name="filter" type="xs:normalizedString" />
     <xs:attribute name="currentUserFilter" type="type:nameType" />
     <xs:attribute name="order" type="xs:normalizedString" />

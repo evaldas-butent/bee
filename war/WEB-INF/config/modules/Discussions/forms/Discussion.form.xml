@@ -55,7 +55,7 @@
   
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
+  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussions"
   caption="=discussion">
 
   <FlowPanel class="flexBox-vertical">

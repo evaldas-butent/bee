@@ -19,7 +19,7 @@
       <xs:element name="rowValidation" type="ui:calcType" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="type:nameType" use="required" />
-    <xs:attribute name="viewName" type="type:nameType" />
+    <xs:attribute name="viewName" type="type:dataView" />
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="showRowId" type="xs:boolean" />
     <xs:attribute name="readOnly" type="xs:boolean" />

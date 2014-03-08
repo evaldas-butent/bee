@@ -170,7 +170,7 @@ public enum FormWidget {
   BUTTON("Button", EnumSet.of(Type.DISPLAY)),
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
-  CHILD_GRID("ChildGrid", EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
+  CHILD_GRID(UiConstants.TAG_CHILD_GRID, EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
   CHILD_SELECTOR("ChildSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
   COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
@@ -196,7 +196,7 @@ public enum FormWidget {
   FLAG("Flag", EnumSet.of(Type.DISPLAY)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
-  GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
+  GRID_PANEL(UiConstants.TAG_GRID_PANEL, EnumSet.of(Type.IS_GRID)),
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HEADING("Heading", null),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
@@ -386,7 +386,6 @@ public enum FormWidget {
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
 
-  private static final String ATTR_GRID_NAME = "gridName";
   private static final String ATTR_REL_COLUMN = "relColumn";
 
   private static final String ATTR_ANIMATE = "animate";
@@ -467,18 +466,6 @@ public enum FormWidget {
     }
 
     EventUtils.addDomHandler(widget.asWidget(), event, handler);
-  }
-  private static boolean checkBoundSourceVisibility(Element element, String viewName,
-      List<BeeColumn> columns) {
-
-    String forSource = element.getAttribute(UiConstants.ATTR_FOR);
-    if (!BeeUtils.isEmpty(forSource)) {
-      BeeColumn forColumn = DataUtils.getColumn(forSource, columns);
-      if (forColumn != null && !Data.isColumnVisible(viewName, forColumn)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private static IdentifiableWidget createFace(Element element) {
@@ -958,33 +945,10 @@ public enum FormWidget {
       return null;
     }
 
-    String module = element.getAttribute(UiConstants.ATTR_MODULE);
-    if (!BeeUtils.isEmpty(module) && !BeeKeeper.getUser().isModuleVisible(module)) {
-      return null;
-    }
-
     Map<String, String> attributes = XmlUtils.getAttributes(element);
-
-    BeeColumn column;
-    if (BeeUtils.isEmpty(viewName) || BeeUtils.isEmpty(columns)) {
-      column = null;
-
-    } else {
-      column = getColumn(columns, attributes);
-      if (column != null && !Data.isColumnVisible(viewName, column)) {
-        return null;
-      }
-
-      String forSource = element.getAttribute(UiConstants.ATTR_FOR);
-      if (!BeeUtils.isEmpty(forSource)) {
-        BeeColumn forColumn = DataUtils.getColumn(forSource, columns);
-        if (forColumn != null && !Data.isColumnVisible(viewName, forColumn)) {
-          return null;
-        }
-      }
-    }
-
     List<Element> children = XmlUtils.getChildrenElements(element);
+
+    BeeColumn column = getColumn(columns, attributes);
 
     String html = getTextOrHtml(element);
 
@@ -1030,7 +994,7 @@ public enum FormWidget {
         break;
 
       case CHILD_GRID:
-        String gridName = BeeUtils.notEmpty(attributes.get(ATTR_GRID_NAME), name);
+        String gridName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_GRID_NAME), name);
 
         String relColumn = attributes.get(ATTR_REL_COLUMN);
         String source = attributes.get(UiConstants.ATTR_SOURCE);
@@ -1223,7 +1187,7 @@ public enum FormWidget {
         break;
 
       case GRID_PANEL:
-        String gName = BeeUtils.notEmpty(attributes.get(ATTR_GRID_NAME), name);
+        String gName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_GRID_NAME), name);
         if (!BeeUtils.isEmpty(gName)) {
           widget = new GridPanel(gName, GridFactory.getGridOptions(attributes));
         }
@@ -1788,10 +1752,8 @@ public enum FormWidget {
           }
 
         } else {
-          if (checkBoundSourceVisibility(child, viewName, columns)) {
-            processChild(formName, widget, child, viewName, columns, widgetDescriptionCallback,
-                widgetCallback);
-          }
+          processChild(formName, widget, child, viewName, columns, widgetDescriptionCallback,
+              widgetCallback);
         }
       }
     }
@@ -2022,20 +1984,18 @@ public enum FormWidget {
         int c = 0;
 
         for (Element cell : XmlUtils.getChildrenElements(child)) {
-          if (checkBoundSourceVisibility(cell, viewName, columns)) {
-            if (XmlUtils.tagIs(cell, UiConstants.TAG_CELL)) {
-              for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
-                if (createTableCell(table, formName, cellContent, r, c, viewName, columns, wdcb,
-                    widgetCallback)) {
-                  break;
-                }
+          if (XmlUtils.tagIs(cell, UiConstants.TAG_CELL)) {
+            for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
+              if (createTableCell(table, formName, cellContent, r, c, viewName, columns, wdcb,
+                  widgetCallback)) {
+                break;
               }
-              setTableCellAttributes(table, cell, r, c);
-              c++;
-            } else if (createTableCell(table, formName, cell, r, c, viewName, columns, wdcb,
-                widgetCallback)) {
-              c++;
             }
+            setTableCellAttributes(table, cell, r, c);
+            c++;
+          } else if (createTableCell(table, formName, cell, r, c, viewName, columns, wdcb,
+              widgetCallback)) {
+            c++;
           }
         }
 

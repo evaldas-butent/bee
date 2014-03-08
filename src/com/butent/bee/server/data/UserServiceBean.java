@@ -604,6 +604,16 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
+  public boolean isColumnVisible(String viewName, String column) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isColumnVisible(viewName, column);
+  }
+  
+  public boolean isDataVisible(String object) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isDataVisible(object);
+  }
+
   public boolean isMenuVisible(String object) {
     UserInfo info = getCurrentUserInfo();
     return (info == null) ? false : info.getUserData().isMenuVisible(object);

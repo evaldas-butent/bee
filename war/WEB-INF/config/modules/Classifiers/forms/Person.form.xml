@@ -47,11 +47,12 @@
     <xi:include href="widgets/ContactInfoOpen.widget.xml" />
 
     <TabbedPages class="flexible" style="margin-top: 1ex;" >
-      <page>
+      <page data="CompaniesAndPersons">
         <text>=personCompanies</text>
         <ChildGrid name="PersonCompanies" relColumn="Person" />
       </page>
-      <page>
+
+      <page module="Documents" data="RelatedDocuments" for="Person">
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="Person" />
       </page>

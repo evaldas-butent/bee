@@ -5,8 +5,8 @@
   idName="OrderItemID"
   >
   <Fields>
-    <Relation name="Order" notNull="true" relation="EcOrders" cascade="DELETE" />
-    <Relation name="Article" relation="TcdArticles" notNull="true" label="=ecItemName" />
+    <Relation name="Order" notNull="true" relation="EcOrders" cascade="DELETE" label="=ecOrder" />
+    <Relation name="Article" relation="TcdArticles" notNull="true" label="=ecItem" />
     <Integer name="QuantityOrdered" notNull="true" label="=ecItemQuantityOrdered" />
     <Integer name="QuantitySubmit" label="=ecItemQuantitySubmit" />
     <Numeric name="Price" notNull="true" precision="10" scale="2" label="=ecItemPrice" />

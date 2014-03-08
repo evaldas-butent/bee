@@ -6,8 +6,9 @@
   >
   <Fields>
     <Numeric name="Ordinal" precision="3" label="=ordinal" />
-    <Relation name="Group" relation="EcGroups" notNull="true" cascade="DELETE" />
-    <Relation name="Criteria" relation="TcdCriteria" notNull="true" cascade="DELETE" />
+    <Relation name="Group" relation="EcGroups" notNull="true" cascade="DELETE" label="=ecGroup" />
+    <Relation name="Criteria" relation="TcdCriteria" notNull="true" cascade="DELETE" 
+      label="=ecCriteriaName" />
   </Fields>
   <Constraints>
     <Unique fields="Group Criteria" />

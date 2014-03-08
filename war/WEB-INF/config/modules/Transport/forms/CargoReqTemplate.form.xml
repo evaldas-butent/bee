@@ -12,7 +12,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="CargoReqTemplate" viewName="CargoReqTemplate" caption="=trRequestTemplate"
+  name="CargoReqTemplate" viewName="CargoReqTemplates" caption="=trRequestTemplate"
   width="700" height="80" heightUnit="vh"
   >
   <FlowPanel>

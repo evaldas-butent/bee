@@ -583,14 +583,7 @@ public class UiServiceBean {
 
   private ResponseObject getForm(RequestInfo reqInfo) {
     String formName = reqInfo.getContent();
-
-    if (BeeUtils.isEmpty(formName)) {
-      return ResponseObject.error("Which form?");
-    }
-    if (ui.isForm(formName)) {
-      return ui.getForm(formName);
-    }
-    return ResponseObject.error("Form", formName, "not found");
+    return ui.getForm(formName);
   }
 
   private ResponseObject getGrid(RequestInfo reqInfo) {

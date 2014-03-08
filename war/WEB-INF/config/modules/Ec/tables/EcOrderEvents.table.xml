@@ -5,7 +5,7 @@
   idName="OrderEventID"
   >
   <Fields>
-    <Relation name="Order" notNull="true" relation="EcOrders" cascade="DELETE" />
+    <Relation name="Order" notNull="true" relation="EcOrders" cascade="DELETE" label="=ecOrder" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
     <Enum name="Status" key="EcOrderStatus" notNull="true" defValue="0" label="=ecOrderStatus" />
     <Relation name="User" relation="Users" notNull="true" defExpr="CURRENT_USER" cascade="DELETE"
