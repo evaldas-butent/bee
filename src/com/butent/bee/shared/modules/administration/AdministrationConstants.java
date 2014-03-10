@@ -306,6 +306,7 @@ public final class AdministrationConstants {
   public static final String COL_REMINDER_TEMPLATE = "Template";
 
   public static final String COL_COLOR = "Color";
+  public static final String COL_COLOR_NAME = "Name";
   public static final String COL_DEFAULT_COLOR = "DefaultColor";
   public static final String COL_BACKGROUND = "Background";
   public static final String COL_FOREGROUND = "Foreground";

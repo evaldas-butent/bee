@@ -184,36 +184,35 @@ public class ClassifierSelector implements SelectorEvent.Handler {
   }
 
   private static void handleEmails(SelectorEvent event) {
-    if (!event.isNewRow()) {
-      return;
+    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
+      Data.setValue(TBL_EMAILS, event.getNewRow(), COL_EMAIL_ADDRESS, event.getDefValue());
+      event.setDefValue(null);
     }
-    Data.setValue(TBL_EMAILS, event.getNewRow(), COL_EMAIL_ADDRESS,
-        event.getSelector().getDisplayValue());
-    event.consume();
   }
 
   private static void handleNewPersons(SelectorEvent event) {
-    if (!event.isNewRow()) {
-      return;
-    }
-    String value = event.getSelector().getDisplayValue();
-
-    if (!BeeUtils.isEmpty(value)) {
+    if (event.isNewRow() && !BeeUtils.isEmpty(event.getDefValue())) {
       String firstName = null;
       String lastName = null;
 
       for (String val : Splitter.on(BeeConst.CHAR_SPACE).trimResults().omitEmptyStrings().limit(2)
-          .split(value)) {
+          .split(event.getDefValue())) {
         if (BeeUtils.isEmpty(firstName)) {
           firstName = val;
         } else {
           lastName = val;
         }
       }
-      Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_FIRST_NAME, firstName);
-      Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_LAST_NAME, lastName);
+
+      if (!BeeUtils.isEmpty(firstName)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_FIRST_NAME, firstName);
+      }
+      if (!BeeUtils.isEmpty(lastName)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(), COL_LAST_NAME, lastName);
+      }
+
+      event.setDefValue(null);
     }
-    event.consume();
   }
 
   private void removeCompanyPersonSelector(String id) {

@@ -175,8 +175,8 @@ class TaskBuilder extends AbstractFormInterceptor {
         } else if (!response.hasResponse()) {
           event.getCallback().onFailure("No tasks created");
           
-        } else if (response.hasResponse(String.class)) {
-          List<Long> tasks = DataUtils.parseIdList(response.getResponseAsString());
+        } else if (response.hasResponse(BeeRowSet.class)) {
+          BeeRowSet tasks = BeeRowSet.restore(response.getResponseAsString());
           if (tasks.isEmpty()) {
             event.getCallback().onFailure("No tasks created");
             return;
@@ -189,12 +189,14 @@ class TaskBuilder extends AbstractFormInterceptor {
           clearValue(NAME_REMINDER_DATE);
           clearValue(NAME_REMINDER_TIME);
 
-          createFiles(tasks);
+          createFiles(tasks.getRowIds());
 
           event.getCallback().onSuccess(null);
           
-          String message = Localized.getMessages().crmCreatedNewTasks(tasks.size());
+          String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
+          
+          event.getCallback().onSuccess(tasks.getRow(0));
           
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 

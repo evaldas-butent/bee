@@ -740,6 +740,8 @@ public class TasksModuleBean implements BeeModule {
               response.addMessagesFrom(mailResponse);
             }
           }
+          
+          response.setResponse(qs.getViewData(VIEW_TASKS, Filter.idIn(createdTasks)));
         }
         break;
 

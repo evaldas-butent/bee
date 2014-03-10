@@ -13,6 +13,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.ChildSelector;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
@@ -20,6 +21,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.InputCallback;
@@ -46,6 +48,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -63,14 +66,6 @@ import java.util.List;
 import java.util.Map;
 
 public class DocumentForm extends DocumentDataForm implements SelectorEvent.Handler {
-
-  private static Long getFirstValue(ChildSelector selector) {
-    if (BeeUtils.isEmpty(selector.getValue())) {
-      return null;
-    } else {
-      return BeeUtils.peek(DataUtils.parseIdList(selector.getValue()));
-    }
-  }
 
   private final Button newTemplateButton = new Button(Localized.getConstants()
       .newDocumentTemplate(), new ClickHandler() {
@@ -222,43 +217,111 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
-      if (BeeUtils.isEmpty(event.getSelector().getDisplayValue())) {
-        Data.setValue(TaskConstants.VIEW_TASKS, event.getNewRow(), TaskConstants.COL_SUMMARY,
-            BeeUtils.trim(getStringValue(COL_DOCUMENT_NAME)));
+      final BeeRow row = event.getNewRow();
+
+      String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
+      if (!BeeUtils.isEmpty(summary)) {
+        Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
+            BeeUtils.trim(summary));
       }
+
+      event.setDefValue(null);
 
       String description = getStringValue(COL_DESCRIPTION);
       if (!BeeUtils.isEmpty(description)) {
-        Data.setValue(TaskConstants.VIEW_TASKS, event.getNewRow(), TaskConstants.COL_DESCRIPTION,
+        Data.setValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_DESCRIPTION,
             BeeUtils.trim(description));
       }
 
-      Long company = null;
-      Long person = null;
+      final List<Long> companies = Lists.newArrayList();
+      final List<Long> persons = Lists.newArrayList();
 
       for (ChildSelector selector : childSelectors.values()) {
         if (selector.hasRelatedView(ClassifierConstants.VIEW_COMPANIES)) {
-          company = getFirstValue(selector);
+          if (!BeeUtils.isEmpty(selector.getValue())) {
+            companies.addAll(DataUtils.parseIdList(selector.getValue()));
+          }
+
         } else if (selector.hasRelatedView(ClassifierConstants.VIEW_PERSONS)) {
-          person = getFirstValue(selector);
+          if (!BeeUtils.isEmpty(selector.getValue())) {
+            persons.addAll(DataUtils.parseIdList(selector.getValue()));
+          }
         }
       }
 
-      if (company != null) {
-        Queries.getRow(ClassifierConstants.VIEW_COMPANIES, company, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-          }
-        });
-      }
+      if (!companies.isEmpty() || !persons.isEmpty()) {
+        event.consume();
 
-      if (person != null) {
-        Queries.getRowSet(ClassifierConstants.VIEW_COMPANY_PERSONS, null,
-            Filter.equals(ClassifierConstants.COL_PERSON, person), new RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
+        final String formName = event.getNewRowFormName();
+        final DataSelector selector = event.getSelector();
+
+        int count = (companies.isEmpty() ? 0 : 1) + (persons.isEmpty() ? 0 : 1);
+        final Holder<Integer> latch = Holder.of(count);
+
+        if (!companies.isEmpty()) {
+          if (companies.size() > 1) {
+            row.setProperty(TaskConstants.PROP_COMPANIES,
+                DataUtils.buildIdList(companies.subList(1, companies.size())));
+          }
+
+          Queries.getRow(ClassifierConstants.VIEW_COMPANIES, companies.get(0), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
+                  ClassifierConstants.COL_COMPANY, row,
+                  Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), result, true);
+
+              latch.set(latch.get() - 1);
+              if (latch.get() <= 0) {
+                RowFactory.createRelatedRow(formName, row, selector);
               }
-            });
+            }
+          });
+        }
+
+        if (!persons.isEmpty()) {
+          Queries.getRowSet(ClassifierConstants.VIEW_COMPANY_PERSONS, null,
+              Filter.equals(ClassifierConstants.COL_PERSON, persons.get(0)), new RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  BeeRow contact = null;
+
+                  int size = result.getNumberOfRows();
+                  if (size == 1) {
+                    contact = result.getRow(0);
+
+                  } else if (size > 1 && !companies.isEmpty()) {
+                    Long company = companies.get(0);
+                    int index = result.getColumnIndex(ClassifierConstants.COL_COMPANY);
+
+                    for (BeeRow r : result) {
+                      if (company.equals(r.getLong(index))) {
+                        contact = r;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (contact == null) {
+                    row.setProperty(TaskConstants.PROP_PERSONS, DataUtils.buildIdList(persons));
+                  } else {
+                    RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
+                        ClassifierConstants.COL_CONTACT, row,
+                        Data.getDataInfo(ClassifierConstants.VIEW_COMPANY_PERSONS), contact, true);
+
+                    if (persons.size() > 1) {
+                      row.setProperty(TaskConstants.PROP_PERSONS,
+                          DataUtils.buildIdList(persons.subList(1, persons.size())));
+                    }
+                  }
+
+                  latch.set(latch.get() - 1);
+                  if (latch.get() <= 0) {
+                    RowFactory.createRelatedRow(formName, row, selector);
+                  }
+                }
+              });
+        }
       }
     }
   }

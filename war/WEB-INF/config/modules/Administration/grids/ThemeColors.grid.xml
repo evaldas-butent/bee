@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="ThemeColors" viewName="ThemeColors" caption="=colors" newRowCaption="=newThemeColor"
+  name="ThemeColors" viewName="ThemeColors" caption="=colors" newRowCaption="=newThemeColors"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <RelColumn name="ColorName" caption="=name" visible="true" />
+    <RelColumn name="Color" visible="true" renderColumns="ColorName"
+      choiceColumns="Name Background Foreground" />
 
-    <DataColumn name="Background" caption="=backgroundColor" />
-    <DataColumn name="Foreground" caption="=foregroundColor" />
+    <DataColumn name="Background" />
+    <DataColumn name="Foreground" />
   </g:columns>
 </g:Grid>
 

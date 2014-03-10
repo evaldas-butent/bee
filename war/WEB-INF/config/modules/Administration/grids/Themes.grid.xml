@@ -6,9 +6,9 @@
   >
   <g:body height="40" />
   <g:columns>
-    <DataColumn name="Name" caption="=name" minWidth="100" visible="true" />
-    <DataColumn name="Description" caption="=description" flexShrink="3" />
+    <DataColumn name="Name" minWidth="100" visible="true" />
+    <DataColumn name="Description" flexShrink="3" />
 
-    <RelColumn name="DefaultColorName" caption="=defaultColor" />
+    <RelColumn name="DefaultColor" renderColumns="DefaultColorName" />
   </g:columns>
 </g:Grid>

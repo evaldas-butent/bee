@@ -44,6 +44,19 @@ public final class Data {
 
   private static BeeLogger logger = LogUtils.getLogger(Data.class);
 
+  public static String clamp(String viewName, String colName, String value) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    } else {
+      Integer precision = getColumnPrecision(viewName, colName);
+      if (BeeUtils.isPositive(precision) && value.length() > precision) {
+        return BeeUtils.left(value.trim(), precision);
+      } else {
+        return value;
+      }
+    }
+  }
+
   public static void clearCell(String viewName, IsRow row, String colName) {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
   }
@@ -167,20 +180,11 @@ public final class Data {
     return (dataInfo == null) ? null : dataInfo.getTableName();
   }
 
-  public static boolean sameTable(String v1, String v2) {
-    String t1 = getViewTable(v1);
-    if (BeeUtils.isEmpty(t1)) {
-      return false;
-    } else {
-      return v1.equals(v2) || t1.equals(getViewTable(v2));
-    }
-  }
-  
   public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
     return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId())
         || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());
   }
-
+  
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
@@ -218,6 +222,15 @@ public final class Data {
 
   public static void onViewChange(String viewName, EnumSet<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
+  }
+
+  public static boolean sameTable(String v1, String v2) {
+    String t1 = getViewTable(v1);
+    if (BeeUtils.isEmpty(t1)) {
+      return false;
+    } else {
+      return v1.equals(v2) || t1.equals(getViewTable(v2));
+    }
   }
 
   public static void setColumnReadOnly(String viewName, String colName) {
@@ -273,6 +286,10 @@ public final class Data {
 
   public static void setVisibleViews(Collection<String> views) {
     BeeUtils.overwrite(visibleViews, views);
+  }
+
+  public static void squeezeValue(String viewName, IsRow row, String colName, String value) {
+    COLUMN_MAPPER.setValue(viewName, row, colName, clamp(viewName, colName, value));
   }
 
   private Data() {

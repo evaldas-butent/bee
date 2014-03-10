@@ -9,7 +9,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -29,12 +29,15 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
   public static SelectorEvent fireExclusions(DataSelector selector, Collection<Long> exclusions) {
     SelectorEvent event = new SelectorEvent(State.UPDATING);
     event.setExclusions(exclusions);
+
     fireEvent(selector, event);
     return event;
   }
 
-  public static SelectorEvent fireNewRow(DataSelector selector, IsRow row) {
-    SelectorEvent event = new SelectorEvent(State.NEW, row);
+  public static SelectorEvent fireNewRow(DataSelector selector, BeeRow row, String newRowFormName) {
+    SelectorEvent event = new SelectorEvent(State.NEW, row, newRowFormName);
+    event.setDefValue(selector.getDisplayValue());
+
     fireEvent(selector, event);
     return event;
   }
@@ -60,20 +63,24 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
   }
   
   private final State state;
-  private final IsRow newRow;
+  private final BeeRow newRow;
+  private String newRowFormName;
   
   private Collection<Long> exclusions;
 
   private boolean consumed;
+  
+  private String defValue;
 
   private SelectorEvent(State state) {
-    this(state, null);
+    this(state, null, null);
   }
 
-  private SelectorEvent(State state, IsRow newRow) {
+  private SelectorEvent(State state, BeeRow newRow, String newRowFormName) {
     super();
     this.state = state;
     this.newRow = newRow;
+    this.newRowFormName = newRowFormName;
   }
 
   @Override
@@ -86,15 +93,23 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return TYPE;
   }
 
+  public String getDefValue() {
+    return defValue;
+  }
+
   public Collection<Long> getExclusions() {
     return exclusions;
   }
 
-  public IsRow getNewRow() {
+  public BeeRow getNewRow() {
     return newRow;
   }
 
-  public IsRow getRelatedRow() {
+  public String getNewRowFormName() {
+    return newRowFormName;
+  }
+
+  public BeeRow getRelatedRow() {
     return (getSelector() == null) ? null : getSelector().getRelatedRow();
   }
 
@@ -133,24 +148,24 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
   public boolean isClosed() {
     return State.CLOSED.equals(getState());
   }
-
+  
   @Override
   public boolean isConsumed() {
     return consumed;
   }
-
+  
   public boolean isDataLoaded() {
     return State.LOADED.equals(getState());
   }
-  
+
   public boolean isExclusions() {
     return State.UPDATING.equals(getState());
   }
-  
+
   public boolean isNewRow() {
     return State.NEW.equals(getState());
   }
-
+  
   public boolean isOpened() {
     return State.OPEN.equals(getState());
   }
@@ -158,10 +173,18 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
   public boolean isUnloading() {
     return State.UNLOADING.equals(getState());
   }
-  
+
   @Override
   public void setConsumed(boolean consumed) {
     this.consumed = consumed;
+  }
+
+  public void setDefValue(String defValue) {
+    this.defValue = defValue;
+  }
+
+  public void setNewRowFormName(String newRowFormName) {
+    this.newRowFormName = newRowFormName;
   }
 
   @Override

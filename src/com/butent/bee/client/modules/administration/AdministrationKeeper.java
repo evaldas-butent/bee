@@ -103,6 +103,10 @@ public final class AdministrationKeeper {
         UniqueChildInterceptor.forUsers(Localized.getConstants().roleAddUsers(),
             COL_ROLE, COL_USER));
 
+    GridFactory.registerGridInterceptor(GRID_THEME_COLORS,
+        new UniqueChildInterceptor(Localized.getConstants().newThemeColors(),
+            COL_THEME, COL_COLOR, VIEW_COLORS, COL_COLOR_NAME));
+
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_FOREGROUND, styleProvider);
