@@ -103,7 +103,8 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean canEditColumn(String viewName, String column) {
-    return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.EDIT);
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.EDIT);
   }
 
   public boolean canEditData(String object) {
@@ -276,7 +277,8 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean isColumnVisible(String viewName, String column) {
-    return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
   }
 
   public boolean isDataVisible(String object) {

@@ -668,7 +668,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return null;
     }
   }
-  
+
   @Override
   public JustDate getDateValue(String source) {
     int index = getDataIndex(source);
@@ -833,10 +833,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     String id = creationCallback.getWidgetIdByName(name);
 
     if (BeeUtils.isEmpty(id)) {
-      logger.warning("widget name", name, "not found");
       return null;
+    } else {
+      return getWidgetById(id);
     }
-    return getWidgetById(id);
   }
 
   @Override
@@ -1917,8 +1917,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private Set<String> refreshEditableWidgets() {
     Set<String> refreshed = Sets.newHashSet();
-    boolean rowEnabled = isRowEditable(false);
 
+    boolean rowEnabled = isRowEditable(false);
+    boolean isNew = DataUtils.isNewRow(getActiveRow());
+    
     for (EditableWidget editableWidget : getEditableWidgets()) {
       Editor editor = editableWidget.getEditor();
       if (editor == null) {
@@ -1929,8 +1931,19 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       if (getActiveRow() == null) {
         editable = false;
+      
       } else {
-        editable = rowEnabled && !editableWidget.isReadOnly();
+        editable = rowEnabled;
+        
+        if (editable && editableWidget.isReadOnly()) {
+          if (isNew && editableWidget.hasColumn()) {
+            BeeColumn column = editableWidget.getDataColumn();
+            editable = column.isEditable() && !column.isNullable() && !column.hasDefaults();
+          } else {
+            editable = false;
+          }
+        }
+        
         if (editable) {
           editable = editableWidget.isEditable(getActiveRow());
         }

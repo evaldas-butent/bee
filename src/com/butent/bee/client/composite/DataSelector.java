@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RowCallback;
@@ -164,6 +165,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
               start(charCode);
               consumed = true;
             }
+          
+          } else if (event.getCharCode() == CREATE_NEW && isNewRowEnabled()) {
+            if (showing) {
+              getSelector().hide();
+            }
+            consumed = true;
+            RowFactory.createRelatedRow(DataSelector.this);
+            
           } else {
             consumed = inputEvents.isConsumed();
           }
@@ -543,6 +552,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   public static final char SHOW_SELECTOR = '*';
+  private static final char CREATE_NEW = '+';
 
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
@@ -728,7 +738,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowColumns());
     this.newRowCaption = BeeUtils.notEmpty(relation.getNewRowCaption(),
         dataInfo.getNewRowCaption());
-    this.newRowEnabled = relation.isNewRowEnabled() && Data.isViewEditable(relation.getViewName());
+    this.newRowEnabled = relation.isNewRowEnabled() && Data.isViewEditable(relation.getViewName())
+        && BeeKeeper.getUser().canCreateData(relation.getViewName());
 
     if (relation.isEditEnabled(true)) {
       String es = relation.getEditSource();
@@ -949,6 +960,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public boolean handlesTabulation() {
     return handlesTabulation;
   }
+  
+  public boolean hasRelatedView(String viewName) {
+    return !BeeUtils.isEmpty(viewName) && BeeUtils.same(viewName, getOracle().getViewName());
+  }
 
   public boolean isAdding() {
     return adding;
@@ -1109,14 +1124,19 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setLastRequest(null);
     setOffset(0);
     setHasMore(false);
+    
+    boolean createNew = false;
 
     if (charCode != BeeConst.CHAR_SPACE && Codec.isValidUnicodeChar(charCode)) {
       if (charCode == SHOW_SELECTOR) {
         clearDisplay();
+      } else if (charCode == CREATE_NEW && isNewRowEnabled()) {
+        createNew = true;
       } else {
         setDisplayValue(BeeUtils.toString(charCode));
       }
-      if (isInstant()) {
+
+      if (!createNew && isInstant()) {
         askOracle();
       }
 
@@ -1133,6 +1153,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     inputEvents.consume();
     setActive(true);
+    
+    if (createNew) {
+      RowFactory.createRelatedRow(this);
+    }
   }
 
   @Override

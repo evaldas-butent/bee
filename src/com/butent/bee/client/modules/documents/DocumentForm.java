@@ -25,6 +25,7 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -49,6 +50,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -59,7 +62,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
-public class DocumentForm extends DocumentDataForm {
+public class DocumentForm extends DocumentDataForm implements SelectorEvent.Handler {
+
+  private static Long getFirstValue(ChildSelector selector) {
+    if (BeeUtils.isEmpty(selector.getValue())) {
+      return null;
+    } else {
+      return BeeUtils.peek(DataUtils.parseIdList(selector.getValue()));
+    }
+  }
 
   private final Button newTemplateButton = new Button(Localized.getConstants()
       .newDocumentTemplate(), new ClickHandler() {
@@ -68,8 +79,8 @@ public class DocumentForm extends DocumentDataForm {
       createTemplate();
     }
   });
-
   private ChildGrid itemsGrid;
+
   private final Map<String, ChildSelector> childSelectors = Maps.newHashMap();
 
   @Override
@@ -82,6 +93,10 @@ public class DocumentForm extends DocumentDataForm {
       if (!BeeUtils.isEmpty(name)) {
         childSelectors.put(name, (ChildSelector) widget);
       }
+      if (((ChildSelector) widget).hasRelatedView(TaskConstants.VIEW_TASKS)) {
+        ((ChildSelector) widget).addSelectorHandler(this);
+      }
+
     } else if (BeeUtils.same(name, TBL_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
 
@@ -187,11 +202,6 @@ public class DocumentForm extends DocumentDataForm {
   }
 
   @Override
-  public FormInterceptor getInstance() {
-    return new DocumentForm();
-  }
-
-  @Override
   public void beforeRefresh(FormView form, IsRow row) {
     if (getHeaderView() == null) {
       return;
@@ -201,6 +211,55 @@ public class DocumentForm extends DocumentDataForm {
     if (!DataUtils.isNewRow(row) && BeeKeeper.getUser()
         .isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
       getHeaderView().addCommandItem(newTemplateButton);
+    }
+  }
+
+  @Override
+  public FormInterceptor getInstance() {
+    return new DocumentForm();
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
+      if (BeeUtils.isEmpty(event.getSelector().getDisplayValue())) {
+        Data.setValue(TaskConstants.VIEW_TASKS, event.getNewRow(), TaskConstants.COL_SUMMARY,
+            BeeUtils.trim(getStringValue(COL_DOCUMENT_NAME)));
+      }
+
+      String description = getStringValue(COL_DESCRIPTION);
+      if (!BeeUtils.isEmpty(description)) {
+        Data.setValue(TaskConstants.VIEW_TASKS, event.getNewRow(), TaskConstants.COL_DESCRIPTION,
+            BeeUtils.trim(description));
+      }
+
+      Long company = null;
+      Long person = null;
+
+      for (ChildSelector selector : childSelectors.values()) {
+        if (selector.hasRelatedView(ClassifierConstants.VIEW_COMPANIES)) {
+          company = getFirstValue(selector);
+        } else if (selector.hasRelatedView(ClassifierConstants.VIEW_PERSONS)) {
+          person = getFirstValue(selector);
+        }
+      }
+
+      if (company != null) {
+        Queries.getRow(ClassifierConstants.VIEW_COMPANIES, company, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+          }
+        });
+      }
+
+      if (person != null) {
+        Queries.getRowSet(ClassifierConstants.VIEW_COMPANY_PERSONS, null,
+            Filter.equals(ClassifierConstants.COL_PERSON, person), new RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+              }
+            });
+      }
     }
   }
 

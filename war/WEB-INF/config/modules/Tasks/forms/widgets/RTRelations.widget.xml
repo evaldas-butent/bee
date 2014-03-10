@@ -9,28 +9,28 @@
       cellStyle="padding-bottom: 3px;">
     <col index="0" cellStyle="text-align: right; vertical-align: top; padding-right: 1em;" />
 
-    <row>
+    <row data="Relations" for="Company" module="Classifiers.Contacts">
       <Label text="=companies" />
       <ChildSelector childTable="Relations" viewName="Companies" property="Companies"
         targetRelColumn="RecurringTask" sourceRelColumn="Company"      
         renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
-    <row>
+    <row data="Relations" for="Person" module="Classifiers.Contacts">
       <Label text="=persons" />
       <ChildSelector childTable="Relations" viewName="Persons" property="Persons"
         targetRelColumn="RecurringTask" sourceRelColumn="Person"      
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
-    <row>
+    <row data="Relations" for="Document" module="Documents">
       <Label text="=documents" />
       <ChildSelector childTable="Relations" viewName="Documents" property="Documents"
         targetRelColumn="RecurringTask" sourceRelColumn="Document"      
         renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
-    <row>
+    <row data="Relations" for="Appointment" module="Calendar">
       <Label text="=calAppointments" />
       <ChildSelector childTable="Relations" viewName="Appointments" property="Appointments"
         targetRelColumn="RecurringTask" sourceRelColumn="Appointment"      
@@ -38,14 +38,14 @@
         newRowEnabled="true" editPopup="true" style="&inp;" />
     </row>
 
-    <row>
+    <row data="Relations" for="Discussion" module="Discussions">
       <Label text="=discussions" />
       <ChildSelector childTable="Relations" viewName="Discussions" property="Discussions"
         targetRelColumn="RecurringTask" sourceRelColumn="Discussion"      
         renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp;" />
     </row>
 
-    <row>
+    <row data="Relations" for="Task">
       <Label text="=tasks" />
       <ChildSelector childTable="Relations" viewName="Tasks" property="Tasks"
         targetRelColumn="RecurringTask" sourceRelColumn="Task"      

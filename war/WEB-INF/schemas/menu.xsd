@@ -69,5 +69,6 @@
     <xs:attribute name="order" type="xs:int" />
     <xs:attribute name="parent" type="xs:string" />
     <xs:attribute name="module" type="type:module" />
+    <xs:attribute name="data" type="type:dataView" />
   </xs:complexType>
 </xs:schema>

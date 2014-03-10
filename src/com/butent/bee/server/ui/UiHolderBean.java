@@ -122,20 +122,16 @@ public class UiHolderBean {
 
   @EJB
   ModuleHolderBean moduleBean;
-
   @EJB
   GridLoaderBean gridBean;
-
   @EJB
   UserServiceBean usr;
 
   private final Map<String, String> gridCache = Maps.newHashMap();
-
   private final Map<String, String> formCache = Maps.newHashMap();
   private final Map<String, Menu> menuCache = Maps.newHashMap();
 
   private final Map<String, String> gridViewNames = new ConcurrentHashMap<>();
-
   private final Map<String, String> formViewNames = new ConcurrentHashMap<>();
 
   public ResponseObject getForm(String formName) {
@@ -310,23 +306,27 @@ public class UiHolderBean {
           }
         }
 
-        if (visible && element.hasAttribute(UiConstants.ATTR_DATA)) {
-          if (!usr.isDataVisible(element.getAttribute(UiConstants.ATTR_DATA))) {
+        if (visible && !BeeUtils.isEmpty(formViewName)) {
+          String source = element.getAttribute(UiConstants.ATTR_SOURCE);
+          if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(formViewName, source)) {
             visible = false;
           }
         }
 
-        if (!BeeUtils.isEmpty(formViewName)) {
-          if (visible && element.hasAttribute(UiConstants.ATTR_SOURCE)) {
-            if (!usr.isColumnVisible(formViewName, element.getAttribute(UiConstants.ATTR_SOURCE))) {
-              visible = false;
+        if (visible) {
+          String data = element.getAttribute(UiConstants.ATTR_DATA);
+          String field = element.getAttribute(UiConstants.ATTR_FOR);
+
+          if (BeeUtils.isEmpty(data)) {
+            if (BeeUtils.allNotEmpty(formViewName, field)) {
+              visible = usr.isColumnVisible(formViewName, field);
             }
-          }
- 
-          if (visible && element.hasAttribute(UiConstants.ATTR_FOR)) {
-            if (!usr.isColumnVisible(formViewName, element.getAttribute(UiConstants.ATTR_FOR))) {
-              visible = false;
-            }
+
+          } else if (!usr.isDataVisible(data)) {
+            visible = false;
+
+          } else if (!BeeUtils.isEmpty(field)) {
+            visible = usr.isColumnVisible(data, field);
           }
         }
 
@@ -390,7 +390,15 @@ public class UiHolderBean {
 
     boolean visible;
     if (checkRights) {
-      visible = usr.isModuleVisible(entry.getModule()) && usr.isMenuVisible(ref);
+      visible = usr.isMenuVisible(ref);
+      
+      if (visible && !BeeUtils.isEmpty(entry.getModule())) {
+        visible = usr.isModuleVisible(entry.getModule());
+      }
+      if (visible && !BeeUtils.isEmpty(entry.getData())) {
+        visible = usr.isDataVisible(entry.getData());
+      }
+
       if (visible && entry instanceof MenuItem) {
         visible = hasMenuDataRights((MenuItem) entry);
       }

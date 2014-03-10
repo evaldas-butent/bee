@@ -7,36 +7,41 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="Item" caption="=item"
+  name="Item" viewName="Items" caption="=item"
   width="650" height="250"
   >
   <FlowPanel style="padding: 2ex 1em 0 1em;">
     <FlowPanel class="flexBox-horizontal">
       <Label text="=name" class="bee-required" style="&lbl1;" />
-      <InputText source="Name" style="width: 500px;" autocomplete="true" />
+      <InputText source="Name" style="width: 500px;" autocomplete="true" visible="true" />
     </FlowPanel>
     &separator;
 
     <FlowPanel class="flexBox-horizontal">
-      <Label text="=article" style="&lbl1;" />
+      <Label for="Article" text="=article" style="&lbl1;" />
       <InputText source="Article" />
-      <Label text="=itemUnits" horizontalAlignment="right" class="bee-required" style="margin-right: 5px; width: 86px; margin-left: 2px;" />
-      <DataSelector source="UnitName" style="width: 100px;" />
+
+      <Label text="=itemUnits" horizontalAlignment="right" class="bee-required"
+        style="margin-right: 5px; width: 86px; margin-left: 2px;" />
+      <DataSelector source="Unit" style="width: 100px;" visible="true" />
     </FlowPanel>
     &separator;
 
     <FlowPanel class="flexBox-horizontal">
-      <Label text="=barcode" style="&lbl1;" />
+      <Label for="Barcode" text="=barcode" style="&lbl1;" />
       <InputText source="Barcode" />
-      <Label text="=sellingPrice" horizontalAlignment="right" style="&lbl2; margin-left: 15px;" />
+
+      <Label for="Price" text="=sellingPrice" horizontalAlignment="right"
+        style="&lbl2; margin-left: 15px;" />
       <InputCurrency source="Price" style="width: 100px;" />
-      <DataSelector renderColumns="CurrencyName" style="width: 50px; margin-left: 1em;" />
+      <DataSelector source="Currency" for="Price" style="width: 50px; margin-left: 1em;" />
     </FlowPanel>
     &separator;
 
     <FlowPanel class="flexBox-horizontal">
       <CheckBox source="Vat" text="=vat" style="margin-right:13px; margin-left:20px;" />
-      <InputDecimal source="VatPercent" caption="%" decorator="caption-right" style="width: 30px; margin-left: 4px;" />
+      <InputDecimal source="VatPercent" caption="%" decorator="caption-right" 
+        style="width: 30px; margin-left: 4px;" />
     </FlowPanel>
     &separator;
 

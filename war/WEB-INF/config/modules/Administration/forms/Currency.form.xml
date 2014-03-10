@@ -8,7 +8,7 @@
     <Table style="border-spacing: 10px;">
       <row>
         <Label text="=currency" class="bee-required" for="Name" />
-        <InputText source="Name" />
+        <InputText source="Name" visible="true" />
         <Label text="=caption" horizontalAlignment="right" for="Caption" />
         <InputText source="Caption" />
       </row>

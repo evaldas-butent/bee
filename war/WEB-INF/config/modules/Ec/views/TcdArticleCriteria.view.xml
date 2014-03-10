@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="TcdArticleCriteria" source="TcdArticleCriteria"
-  caption="=tcdArticleCriteria" newRowCaption="=ecCriteriaNew"
+  caption="=tcdArticleCriteria" newRowCaption="=ecCriterionNew"
   >
   <Columns>
     <SimpleColumn name="Article" />

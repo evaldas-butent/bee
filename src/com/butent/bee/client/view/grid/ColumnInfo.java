@@ -278,11 +278,6 @@ public class ColumnInfo implements HasValueType, Flexible {
   void initProperties(ColumnDescription columnDescription, GridDescription gridDescription) {
     Assert.notNull(columnDescription);
 
-    if (columnDescription.getColType().isReadOnly()
-        || BeeUtils.isTrue(columnDescription.getReadOnly())) {
-      setColReadOnly(true);
-    }
-
     if (columnDescription.getWidth() != null) {
       setInitialWidth(columnDescription.getWidth());
     }
@@ -376,6 +371,10 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   void setBodyWidth(int bodyWidth) {
     this.bodyWidth = bodyWidth;
+  }
+
+  void setColReadOnly(boolean colReadOnly) {
+    this.colReadOnly = colReadOnly;
   }
 
   void setDynStyles(ConditionalStyle dynStyles) {
@@ -497,10 +496,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private void setCellResizable(boolean cellResizable) {
     this.cellResizable = cellResizable;
-  }
-
-  private void setColReadOnly(boolean colReadOnly) {
-    this.colReadOnly = colReadOnly;
   }
 
   private void setFlexWidth(int flexWidth) {

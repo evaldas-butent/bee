@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 public abstract class Menu implements BeeSerializable {
 
   private enum Serial {
-    NAME, LABEL, SEPARATOR, ORDER, MODULE
+    NAME, LABEL, SEPARATOR, ORDER, MODULE, DATA
   }
 
   public static Menu restore(String s) {
@@ -24,10 +24,10 @@ public abstract class Menu implements BeeSerializable {
     Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length + 2);
     String clazz = arr[0];
-    String data = arr[1];
+    String content = arr[1];
     Menu menu = null;
 
-    if (data != null) {
+    if (content != null) {
       menu = Menu.getMenu(clazz);
 
       for (int i = 0; i < members.length; i++) {
@@ -50,9 +50,12 @@ public abstract class Menu implements BeeSerializable {
           case MODULE:
             menu.module = value;
             break;
+          case DATA:
+            menu.data = value;
+            break;
         }
       }
-      menu.deserialize(data);
+      menu.deserialize(content);
     }
     return menu;
   }
@@ -84,6 +87,12 @@ public abstract class Menu implements BeeSerializable {
   private String parent;
   @XmlAttribute
   private String module;
+  @XmlAttribute
+  private String data;
+
+  public String getData() {
+    return data;
+  }
 
   public String getLabel() {
     return label;
@@ -134,6 +143,9 @@ public abstract class Menu implements BeeSerializable {
           break;
         case MODULE:
           arr[i++] = module;
+          break;
+        case DATA:
+          arr[i++] = data;
           break;
       }
     }

@@ -480,9 +480,7 @@ class MessageDispatcher {
             }
           }
           
-          if (BeeKeeper.getScreen().getUserInterface().hasMenu()) {
-            BeeKeeper.getMenu().loadMenu();
-          }
+          BeeKeeper.onRightsChange();
         }
         break;
     }

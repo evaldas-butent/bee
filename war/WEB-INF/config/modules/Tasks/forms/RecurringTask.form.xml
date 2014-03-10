@@ -29,7 +29,7 @@
         </SimplePanel>
       </page>  
 
-      <page>
+      <page data="Relations" for="RecurringTask">
         <text>=relatedTo</text>
         <xi:include href="widgets/RTRelations.widget.xml" />
       </page>

@@ -216,6 +216,10 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     return hasColumn() ? getDataColumn().getId() : null;
   }
 
+  public BeeColumn getDataColumn() {
+    return dataColumn;
+  }
+
   public int getDataIndex() {
     return dataIndex;
   }
@@ -470,10 +474,6 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
 
   private Evaluator getCarry() {
     return carry;
-  }
-
-  private BeeColumn getDataColumn() {
-    return dataColumn;
   }
 
   private ValueType getDataType() {

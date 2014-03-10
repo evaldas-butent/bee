@@ -16,27 +16,32 @@
       <text>=mainInformation</text>
       <FlowPanel class="flexBox-vertical">
         <xi:include href="widgets/DocumentFields.widget.xml" />
-        <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible" style="margin-top: 1ex;" />
+        <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible"
+          style="margin-top: 1ex;" />
       </FlowPanel>
     </page>
-    <page>
+
+    <page data="Relations" for="Document">
       <text>=relations</text>
       <FlowPanel>
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Company" module="Classifiers.Contacts">
           <Label text="=companies" style="&chlabel;" />
           <ChildSelector name="Company" viewName="Companies" childTable="Relations"
             targetRelColumn="Document" sourceRelColumn="Company"
             renderColumns="Name" class="flexible" />
         </FlowPanel>
 
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Person" module="Classifiers.Contacts">
           <Label text="=persons" style="&chlabel;" />
           <ChildSelector name="Person" class="flexible" viewName="Persons" childTable="Relations"
               targetRelColumn="Document" sourceRelColumn="Person"
               renderColumns="FirstName LastName" />
         </FlowPanel>
 
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Appointment" module="Calendar">
           <Label text="=calAppointments" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Appointments" childTable="Relations"
             targetRelColumn="Document" sourceRelColumn="Appointment"
@@ -44,14 +49,16 @@
             newRowEnabled="false" />
         </FlowPanel>
 
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Task" module="Tasks">
           <Label text="=tasks" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Tasks" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="Task" renderColumns="Summary"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
         </FlowPanel>
   
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="CargoRequest" module="Transport.SelfService">
           <Label text="=trRequestsShort" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="CargoRequests" childTable="Relations"
             targetRelColumn="Document" sourceRelColumn="CargoRequest"
@@ -59,28 +66,32 @@
             choiceColumns="CustomerCompanyName LoadingDate LoadingCityName UnloadingCityName" />
         </FlowPanel>
   
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Vehicle" module="Transport">
           <Label text="=vehiclesShort" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Vehicles" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="Vehicle"
             renderColumns="Number" choiceColumns="Number ParentModelName ModelName" />
         </FlowPanel>
   
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Driver" module="Transport">
           <Label text="=drivers" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Drivers" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="Driver"
             renderColumns="FirstName LastName" newRowEnabled="false" />
         </FlowPanel>
   
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="TransportationOrder" module="Transport">
           <Label text="=trOrders" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="TransportationOrders" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="TransportationOrder"
             renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" />
         </FlowPanel>
   
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Cargo" module="Transport">
           <Label text="=cargos" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="OrderCargo" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="Cargo" renderColumns="Description"
@@ -88,7 +99,8 @@
             newRowEnabled="false" />
         </FlowPanel>
   
-        <FlowPanel class="flexBox-horizontal" style="&row;">
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Trip" module="Transport">
           <Label text="=trips" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Trips" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="Trip"
@@ -96,6 +108,7 @@
         </FlowPanel>
       </FlowPanel>
     </page>
+
     <page>
       <text>=content</text>
       <xi:include href="widgets/Content.widget.xml" />
