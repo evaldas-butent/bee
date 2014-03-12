@@ -1565,6 +1565,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
       Places.setCountries(BeeRowSet.restore(serialized));
     }
 
+    serialized = rowSet.getTableProperty(PROP_CITIES);
+    if (!BeeUtils.isEmpty(serialized)) {
+      Places.setCities(BeeRowSet.restore(serialized));
+    }
+
     serialized = rowSet.getTableProperty(PROP_COLORS);
     if (!BeeUtils.isEmpty(serialized)) {
       restoreColors(serialized);

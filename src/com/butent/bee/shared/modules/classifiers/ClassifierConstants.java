@@ -38,6 +38,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
 
   public static final String VIEW_COUNTRIES = "Countries";
+  public static final String VIEW_CITIES = "Cities";
   public static final String VIEW_BRANCHES = "Branches";
   public static final String VIEW_WAREHOUSES = "Warehouses";
 

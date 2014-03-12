@@ -487,6 +487,14 @@ public final class BeeUtils {
     return false;
   }
 
+  /**
+   * Returns true if and {@code src} string contains the specified sequence of {@code ctxt} string
+   * value in case-insensitive.
+   * 
+   * @param src source of search
+   * @param ctxt the sequence to search for
+   * @return true if {@code src} string contains {@code ctxt}, false otherwise
+   */
   public static boolean containsSame(String src, String ctxt) {
     if (isEmpty(src) || isEmpty(ctxt)) {
       return false;

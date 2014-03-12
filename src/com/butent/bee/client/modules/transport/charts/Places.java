@@ -14,9 +14,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 final class Places {
 
   private static BeeRowSet countries;
+  private static BeeRowSet cities;
   
   private static int countryCodeIndex = BeeConst.UNDEF;
   private static int countryNameIndex = BeeConst.UNDEF;
+  private static int cityNameIndex = BeeConst.UNDEF;
   
   private static ValueType placeDateType = ValueType.DATE_TIME;
 
@@ -56,6 +58,24 @@ final class Places {
     }
   }
   
+  static String getCityLabel(Long cityId) {
+    if (!DataUtils.isId(cityId) || DataUtils.isEmpty(cities)) {
+      return null;
+    }
+
+    BeeRow row = cities.getRowById(cityId);
+    if (row == null) {
+      return null;
+    }
+
+    String label = row.getString(cityNameIndex);
+    if (BeeUtils.isEmpty(label)) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.trim(label);
+    }
+  }
+
   static JustDate getLoadingDate(SimpleRow row, String colName) {
     if (getPlaceDateType() == ValueType.DATE_TIME) {
       return JustDate.get(row.getDateTime(colName));
@@ -77,6 +97,7 @@ final class Places {
       return null;
     } else {
       return getPlaceInfo(item.getLoadingCountry(), item.getLoadingPlace(),
+          item.getLoadingPostIndex(), item.getLoadingCity(),
           item.getLoadingTerminal());
     }
   }
@@ -85,14 +106,18 @@ final class Places {
     return Places.placeDateType;
   }
   
-  static String getPlaceInfo(Long countryId, String placeName, String terminal) {
+  static String getPlaceInfo(Long countryId, String placeName, String postIndex, Long cityId,
+      String terminal) {
     String countryLabel = getCountryLabel(countryId);
+    String cityLabel = getCityLabel(cityId);
 
     if (BeeUtils.isEmpty(countryLabel) || BeeUtils.containsSame(placeName, countryLabel)
         || BeeUtils.containsSame(terminal, countryLabel)) {
-      return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, placeName, terminal);
+      return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, placeName, postIndex, cityLabel,
+          terminal);
     } else {
-      return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, terminal);
+      return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, postIndex,
+          cityLabel, terminal);
     }
   }
   
@@ -117,6 +142,7 @@ final class Places {
       return null;
     } else {
       return getPlaceInfo(item.getUnloadingCountry(), item.getUnloadingPlace(),
+          item.getUnloadingPostIndex(), item.getUnloadingCity(),
           item.getUnloadingTerminal());
     }
   }
@@ -128,6 +154,16 @@ final class Places {
       if (BeeConst.isUndef(countryCodeIndex)) {
         Places.countryCodeIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_CODE);
         Places.countryNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_NAME);
+      }
+    }
+  }
+
+  static void setCities(BeeRowSet rowSet) {
+    if (!DataUtils.isEmpty(rowSet)) {
+      Places.cities = rowSet;
+
+      if (BeeConst.isUndef(cityNameIndex)) {
+        Places.cityNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_CITY_NAME);
       }
     }
   }
