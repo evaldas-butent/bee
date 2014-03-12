@@ -2,7 +2,6 @@ package com.butent.bee.server;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -21,6 +20,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -70,6 +71,7 @@ public class DispatcherBean {
       return response;
     }
     data.put(Service.VAR_USER, userData.getResponse());
+    data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
 
     UserInterface userInterface = null;
 
@@ -82,7 +84,7 @@ public class DispatcherBean {
     }
 
     Collection<Component> components = UserInterface.normalize(userInterface).getComponents();
-    
+
     Collection<Component> requiredComponents = UserInterface.getRequiredComponents();
     if (!BeeUtils.isEmpty(requiredComponents)) {
       if (components == null) {
@@ -98,6 +100,8 @@ public class DispatcherBean {
 
     if (!BeeUtils.isEmpty(components)) {
       for (Component component : components) {
+        long millis = System.currentTimeMillis();
+
         switch (component) {
           case AUTOCOMPLETE:
             ResponseObject acData = uiService.getAutocomplete();
@@ -108,7 +112,7 @@ public class DispatcherBean {
               }
             }
             break;
-            
+
           case DATA_INFO:
             data.put(component.key(), system.getDataInfo());
             break;
@@ -150,7 +154,7 @@ public class DispatcherBean {
             break;
 
           case MENU:
-            ResponseObject menuData = uiHolder.getMenu();
+            ResponseObject menuData = uiHolder.getMenu(true);
             if (menuData != null) {
               response.addMessagesFrom(menuData);
               if (!menuData.hasErrors() && menuData.hasResponse()) {
@@ -158,7 +162,7 @@ public class DispatcherBean {
               }
             }
             break;
-            
+
           case NEWS:
             ResponseObject newsData = news.getNews();
             if (newsData != null) {
@@ -173,6 +177,8 @@ public class DispatcherBean {
             data.put(component.key(), userService.getAllUserData());
             break;
         }
+        
+        logger.debug(reqInfo.getService(), component, TimeUtils.elapsedMillis(millis));
       }
     }
 
@@ -183,8 +189,8 @@ public class DispatcherBean {
     userService.logout(userId, historyId);
   }
 
-  public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
-    ResponseObject response = null;
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
+    ResponseObject response;
 
     if (moduleHolder.hasModule(svc)) {
       response = moduleHolder.doModule(reqInfo);
@@ -193,19 +199,19 @@ public class DispatcherBean {
       response = uiService.doService(reqInfo);
 
     } else if (Service.isDbService(svc)) {
-      dataService.doService(svc, reqInfo, buff);
+      response = dataService.doService(svc, reqInfo);
 
     } else if (Service.isSysService(svc)) {
-      response = systemService.doService(svc, reqInfo, buff);
+      response = systemService.doService(svc, reqInfo);
 
-    } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
-      response = uiHolder.getMenu();
+    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
+      response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-      buff.addLine(buff.now(), BeeConst.whereAmI());
+      response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
 
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
+      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords(svc, "service not recognized");

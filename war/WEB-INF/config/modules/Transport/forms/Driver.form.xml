@@ -19,8 +19,9 @@
           renderColumns="FirstName LastName" choiceColumns="FirstName LastName CompanyName" />
 
         <Label text="=driverGroupsShort" class="bee-required" style="&lbl;" />
-        <ChildSelector viewName="TransportGroups" childTable="DriverGroups" required="true"
-          label="=driverGroupsShort" />
+        <ChildSelector viewName="TransportGroups" childTable="DriverGroups"
+          targetRelColumn="Driver" sourceRelColumn="Group"
+          required="true" label="=driverGroupsShort" />
       </FlowPanel>
       &separator;
 

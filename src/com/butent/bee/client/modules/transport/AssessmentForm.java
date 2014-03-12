@@ -12,11 +12,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -34,7 +31,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.modules.commons.CommonsUtils;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -85,11 +82,11 @@ public class AssessmentForm extends PrintFormInterceptor {
     public void beforeRefresh(FormView form, IsRow row) {
       Widget w = form.getWidgetByName("CustomerInfo");
       if (w instanceof HasWidgets) {
-        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), w);
+        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), w);
       }
       w = form.getWidgetByName("ForwarderInfo");
       if (w instanceof HasWidgets) {
-        CommonsUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), w);
+        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), w);
       }
     }
 
@@ -143,13 +140,12 @@ public class AssessmentForm extends PrintFormInterceptor {
 
     @Override
     public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
-      final String expeditionTrips = "ExpeditionTrips";
       final long tripId = row.getLong(presenter.getGridView().getDataIndex(COL_TRIP));
 
-      Queries.deleteRow(expeditionTrips, tripId, 0, new IntCallback() {
+      Queries.deleteRow(VIEW_EXPEDITION_TRIPS, tripId, 0, new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
-          RowDeleteEvent.fire(BeeKeeper.getBus(), expeditionTrips, tripId);
+          RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_EXPEDITION_TRIPS, tripId);
           RowDeleteEvent.fire(BeeKeeper.getBus(), presenter.getViewName(), row.getId());
           refresh();
         }

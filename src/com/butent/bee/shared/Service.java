@@ -8,6 +8,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public final class Service {
 
+  public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
+  public static final String PROPERTY_MODULES = "Modules";
+
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
@@ -36,7 +39,7 @@ public final class Service {
   public static final String LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
-  public static final String LOAD_MENU = RPC_SERVICE_PREFIX + "load_menu";
+  public static final String GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
@@ -87,25 +90,24 @@ public final class Service {
   public static final String GET_NEWS = DATA_SERVICE_PREFIX + "get_news";
   public static final String SUBSCRIBE_TO_FEEDS = DATA_SERVICE_PREFIX + "subscribe_to_feeds";
   public static final String ACCESS = DATA_SERVICE_PREFIX + "access";
-  
+
+  public static final String GET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "get_state_rights";
+  public static final String GET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "get_role_rights";
+  public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
+  public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
+
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
   public static final String RPC_VAR_SVC = RPC_VAR_SYS_PREFIX + "svc";
   public static final String RPC_VAR_QID = RPC_VAR_SYS_PREFIX + "qid";
   public static final String RPC_VAR_SID = RPC_VAR_SYS_PREFIX + "sid";
-  public static final String RPC_VAR_SEP = RPC_VAR_SYS_PREFIX + "sep";
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
-  public static final String RPC_VAR_RESP = RPC_VAR_SYS_PREFIX + "ro";
 
-  public static final String RPC_VAR_CNT = RPC_VAR_SYS_PREFIX + "cnt";
-  public static final String RPC_VAR_COLS = RPC_VAR_SYS_PREFIX + "c_c";
-  public static final String RPC_VAR_ROWS = RPC_VAR_SYS_PREFIX + "r_c";
   public static final String RPC_VAR_CTP = RPC_VAR_SYS_PREFIX + "ctp";
   public static final String RPC_VAR_URI = RPC_VAR_SYS_PREFIX + "uri";
   public static final String RPC_VAR_MD5 = RPC_VAR_SYS_PREFIX + "md5";
 
-  public static final String RPC_VAR_MSG_CNT = RPC_VAR_SYS_PREFIX + "m_c";
   public static final String RPC_VAR_MSG = RPC_VAR_SYS_PREFIX + "msg";
   public static final String RPC_VAR_PRM_CNT = RPC_VAR_SYS_PREFIX + "p_c";
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";
@@ -150,6 +152,12 @@ public final class Service {
   public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
   public static final String VAR_VIEW_LIST = RPC_VAR_PREFIX + "view_list";
 
+  public static final String VAR_CATALOG = RPC_VAR_PREFIX + "catalog";
+  public static final String VAR_SCHEMA = RPC_VAR_PREFIX + "schema";
+
+  public static final String VAR_TYPE = RPC_VAR_PREFIX + "type";
+  public static final String VAR_CHECK = RPC_VAR_PREFIX + "check";
+
   public static final String VAR_TABLE = RPC_VAR_PREFIX + "table";
   public static final String VAR_COLUMN = RPC_VAR_PREFIX + "column";
   public static final String VAR_VALUE = RPC_VAR_PREFIX + "value";
@@ -182,6 +190,8 @@ public final class Service {
 
   public static final String VAR_PROGRESS = RPC_VAR_PREFIX + "progress";
   public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
+
+  public static final String VAR_RIGHTS = RPC_VAR_PREFIX + "rights";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

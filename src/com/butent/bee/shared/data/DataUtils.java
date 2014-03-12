@@ -67,7 +67,6 @@ public final class DataUtils {
   private static final Splitter ID_SPLITTER =
       Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults();
 
-  private static int defaultAsyncThreshold = 100;
   private static int maxInitialRowSetSize = 50;
 
   public static long assertId(Long id) {
@@ -382,12 +381,8 @@ public final class DataUtils {
     return row.getDateTime(getColumnIndex(columnId, columns));
   }
 
-  public static int getDefaultAsyncThreshold() {
-    return defaultAsyncThreshold;
-  }
-
   public static List<Long> getDistinct(BeeRowSet rowSet, String columnId) {
-    return getDistinct(rowSet.getRows().getList(), rowSet.getColumnIndex(columnId));
+    return getDistinct(rowSet.getRows(), rowSet.getColumnIndex(columnId));
   }
 
   public static List<Long> getDistinct(Collection<? extends IsRow> rows, int index) {

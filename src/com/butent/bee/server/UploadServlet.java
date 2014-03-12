@@ -1,7 +1,7 @@
 package com.butent.bee.server;
 
 import com.butent.bee.server.http.HttpUtils;
-import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;

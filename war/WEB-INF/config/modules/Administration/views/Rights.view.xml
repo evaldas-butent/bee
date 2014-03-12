@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Rights" source="Rights" module="Administration"
+  caption="=rights" newRowCaption="=newRight"
+  >
+  <Columns>
+    <SimpleColumn name="Object" />
+    <SimpleJoin name="Object" joinType="INNER">
+      <SimpleColumn name="Type" alias="ObjectType" />
+      <SimpleColumn name="Name" alias="ObjectName" />
+    </SimpleJoin>
+    <SimpleColumn name="Role" />
+    <SimpleJoin name="Role" joinType="LEFT">
+      <SimpleColumn name="Name" alias="RoleName" />
+    </SimpleJoin>
+    <SimpleColumn name="State" />
+  </Columns>
+  <Order>
+    <OrderBy column="ObjectType" />
+    <OrderBy column="ObjectName" />
+    <OrderBy column="RoleName" />
+  </Order>
+</View>
+ 

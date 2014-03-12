@@ -5,12 +5,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -23,6 +23,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -46,11 +48,15 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -87,7 +93,7 @@ public final class CalendarKeeper {
 
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
         event.consume();
-        if (event.getRow() instanceof BeeRow) {
+        if (event.hasRow()) {
           ensureData(new Command() {
             @Override
             public void execute() {
@@ -118,8 +124,8 @@ public final class CalendarKeeper {
 
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES,
-          CommonsConstants.VIEW_THEMES, CommonsConstants.VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
+          VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES,
+          VIEW_THEMES, VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
           VIEW_APPOINTMENT_STYLES, VIEW_CALENDARS, VIEW_CAL_APPOINTMENT_TYPES,
           VIEW_CALENDAR_EXECUTORS, VIEW_CAL_EXECUTOR_GROUPS);
 
@@ -184,8 +190,8 @@ public final class CalendarKeeper {
   }
 
   public static String getReminderTypeName(long id) {
-    return CACHE.getString(CommonsConstants.VIEW_REMINDER_TYPES, id,
-        CommonsConstants.COL_REMINDER_NAME);
+    return CACHE.getString(VIEW_REMINDER_TYPES, id,
+        COL_REMINDER_NAME);
   }
 
   public static boolean isDataLoaded() {
@@ -215,6 +221,23 @@ public final class CalendarKeeper {
         VIEW_EXTENDED_PROPERTIES, Lists.newArrayList(COL_PROPERTY_NAME),
         Lists.newArrayList(COL_PROPERTY_NAME, ALS_PROPERTY_GROUP_NAME)));
 
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_APPOINTMENTS,
+        ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_APPOINTMENTS));
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_ATTENDEES,
+        ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_ATTENDEES));
+
+    ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_CALENDAR_EXECUTORS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
+        COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
+        COL_FOREGROUND, styleProvider);
+
+    styleProvider = ColorStyleProvider.createDefault(VIEW_CAL_EXECUTOR_GROUPS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CAL_EXECUTOR_GROUPS,
+        COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CAL_EXECUTOR_GROUPS,
+        COL_FOREGROUND, styleProvider);
+
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
@@ -224,7 +247,7 @@ public final class CalendarKeeper {
     RowEditor.registerHasDelegate(VIEW_CALENDARS);
     RowEditor.registerHasDelegate(VIEW_APPOINTMENTS);
 
-    BeeKeeper.getMenu().registerMenuCallback("calendar_reports", new MenuManager.MenuCallback() {
+    MenuService.CALENDAR_REPORTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         REPORT_MANAGER.onSelectReport(EnumUtils.getEnumByIndex(Report.class, parameters));
@@ -297,7 +320,7 @@ public final class CalendarKeeper {
               builder.setRequiredFields(formDescription.getOptions());
               builder.initPeriod(start);
 
-              boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
+              boolean companyAndVehicle = builder.isRequired(ClassifierConstants.COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
@@ -311,8 +334,8 @@ public final class CalendarKeeper {
   }
 
   static ParameterList createRequestParameters(String service) {
-    ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
-    params.addQueryItem(CALENDAR_METHOD, service);
+    ParameterList params = BeeKeeper.getRpc().createParameters(Module.CALENDAR.getName());
+    params.addQueryItem(METHOD, service);
     return params;
   }
 
@@ -404,15 +427,15 @@ public final class CalendarKeeper {
   }
 
   static BeeRowSet getReminderTypes() {
-    return CACHE.getRowSet(CommonsConstants.VIEW_REMINDER_TYPES);
+    return CACHE.getRowSet(VIEW_REMINDER_TYPES);
   }
 
   static BeeRowSet getThemeColors() {
-    return CACHE.getRowSet(CommonsConstants.VIEW_THEME_COLORS);
+    return CACHE.getRowSet(VIEW_THEME_COLORS);
   }
 
   static BeeRowSet getThemes() {
-    return CACHE.getRowSet(CommonsConstants.VIEW_THEMES);
+    return CACHE.getRowSet(VIEW_THEMES);
   }
 
   static boolean isAttendeeOpaque(long id) {
@@ -499,7 +522,7 @@ public final class CalendarKeeper {
 
               builder.setRequiredFields(formDescription.getOptions());
 
-              boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
+              boolean companyAndVehicle = builder.isRequired(ClassifierConstants.COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
@@ -592,13 +615,13 @@ public final class CalendarKeeper {
       BeeKeeper.getRpc().makeRequest(params);
     }
   }
-  
+
   static boolean showsTasks(long calendarId) {
     Boolean value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_ASSIGNED_TASKS);
     if (BeeUtils.isTrue(value)) {
       return true;
     }
-    
+
     value = CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_DELEGATED_TASKS);
     if (BeeUtils.isTrue(value)) {
       return true;
@@ -608,9 +631,9 @@ public final class CalendarKeeper {
     if (BeeUtils.isTrue(value)) {
       return true;
     }
-    
+
     Filter filter = Filter.equals(COL_CALENDAR, calendarId);
-    return CACHE.contains(VIEW_CALENDAR_EXECUTORS, filter) 
+    return CACHE.contains(VIEW_CALENDAR_EXECUTORS, filter)
         || CACHE.contains(VIEW_CAL_EXECUTOR_GROUPS, filter);
   }
 
@@ -836,7 +859,7 @@ public final class CalendarKeeper {
 
           List<String> colNames = Lists.newArrayList(COL_MULTIDAY_LAYOUT,
               COL_MULTIDAY_TASK_LAYOUT, COL_WORKING_HOUR_START, COL_WORKING_HOUR_END);
-          
+
           for (String colName : colNames) {
             int index = rowSet.getColumnIndex(colName);
             if (!Objects.equals(oldRow.getString(index), newRow.getString(index))) {

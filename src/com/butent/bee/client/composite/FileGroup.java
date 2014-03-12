@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
+public class FileGroup extends HtmlTable implements HasOptions {
 
   public enum Column implements HasCaption {
     ICON("icon", null, false, true) {
@@ -393,7 +393,6 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
 
   private final List<StoredFile> files = Lists.newArrayList();
 
-  private String caption;
   private String options;
 
   private final List<Column> columns = Lists.newArrayList();
@@ -481,11 +480,6 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
     super.clear();
   }
 
-  @Override
-  public String getCaption() {
-    return caption;
-  }
-
   public List<StoredFile> getFiles() {
     return files;
   }
@@ -510,10 +504,6 @@ public class FileGroup extends HtmlTable implements HasOptions, HasCaption {
       clear();
     }
     addFiles(StoredFile.restoreCollection(serialized));
-  }
-
-  public void setCaption(String caption) {
-    this.caption = caption;
   }
 
   @Override

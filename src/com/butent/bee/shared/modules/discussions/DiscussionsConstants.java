@@ -94,9 +94,6 @@ public final class DiscussionsConstants {
     EnumUtils.register(DiscussionStatus.class);
   }
 
-  public static final String DISCUSSIONS_MODULE = "Discussions";
-
-  public static final String DISCUSSIONS_METHOD = DISCUSSIONS_MODULE + "Method";
   public static final String DISCUSSIONS_PREFIX = "discuss_";
   public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
   public static final String STYLE_SHEET = "discuss";
@@ -109,6 +106,7 @@ public final class DiscussionsConstants {
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
   public static final String ALS_TOPIC_NAME = "TopicName";
+  public static final String ALS_NEW_ANNOUCEMENT = "NewAnnouncement";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
@@ -142,6 +140,7 @@ public final class DiscussionsConstants {
   public static final String COL_REASON = "Reason";
   public static final String COL_STAR = "Star";
   public static final String COL_STATUS = "Status";
+  public static final String COL_USER = "User";
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_TOPIC = "Topic";
   public static final String COL_VISIBLE = "Visible";
@@ -153,8 +152,6 @@ public final class DiscussionsConstants {
   public static final String FORM_ANNOUNCEMENTS_BOARD = "AnnouncementsBoard";
 
   public static final String GRID_DISCUSSIONS = "Discussions";
-
-  public static final String MENU_SERVICE_DISCUSSIONS_LIST = "discuss_list";
 
   public static final String PROP_COMMENTS = "Comments";
   public static final String PROP_DESCRIPTION = "Description";
@@ -199,6 +196,7 @@ public final class DiscussionsConstants {
   public static final String TBL_ADS_TOPICS = "AdsTopics";
   public static final String TBL_DISCUSSIONS = "Discussions";
   public static final String TBL_DISCUSSIONS_COMMENTS = "DiscussionsComments";
+  public static final String TBL_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String TBL_DISCUSSIONS_USERS = "DiscussionsUsers";
   public static final String TBL_DISCUSSIONS_COMMENTS_MARKS = "DiscussCommentsMarks";
   public static final String TBL_COMMENTS_MARK_TYPES = "CommentsMarksTypes";
@@ -225,6 +223,7 @@ public final class DiscussionsConstants {
   public static final String VIEW_DISCUSSIONS_FILES = "DiscussionsFiles";
   public static final String VIEW_DISCUSSIONS_USERS = "DiscussionsUsers";
   public static final String VIEW_DISCUSSIONS_MARK_TYPES = "DiscussMarkTypes";
+  public static final String VIEW_ADS_TOPICS = "AdsTopics";
 
   public static final long DEFAUT_DISCCUSS_TIMER_TIMEOUT = 12 * TimeUtils.MILLIS_PER_HOUR;
   public static final int DEFAULT_BIRTHDAYS_DAYS_RANGE = 6;

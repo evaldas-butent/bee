@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableCellElement;
@@ -25,6 +26,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RowCallback;
@@ -44,7 +46,6 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
-import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.EnumRenderer;
@@ -164,6 +165,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
               start(charCode);
               consumed = true;
             }
+          
+          } else if (event.getCharCode() == CREATE_NEW && isNewRowEnabled()) {
+            if (showing) {
+              getSelector().hide();
+            }
+            consumed = true;
+            RowFactory.createRelatedRow(DataSelector.this);
+            
           } else {
             consumed = inputEvents.isConsumed();
           }
@@ -367,16 +376,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     private MenuItem createNavigationItem(boolean next) {
-      MenuCommand command;
+      Scheduler.ScheduledCommand command;
       if (next) {
-        command = new MenuCommand() {
+        command = new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
             nextPage();
           }
         };
       } else {
-        command = new MenuCommand() {
+        command = new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
             prevPage();
@@ -542,6 +551,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  public static final char SHOW_SELECTOR = '*';
+  private static final char CREATE_NEW = '+';
+
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
@@ -576,8 +588,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
-
-  private static final char SHOW_SELECTOR = '*';
 
   private final Callback callback = new Callback() {
     @Override
@@ -728,7 +738,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowColumns());
     this.newRowCaption = BeeUtils.notEmpty(relation.getNewRowCaption(),
         dataInfo.getNewRowCaption());
-    this.newRowEnabled = relation.isNewRowEnabled() && Data.isViewEditable(relation.getViewName());
+    this.newRowEnabled = relation.isNewRowEnabled() && Data.isViewEditable(relation.getViewName())
+        && BeeKeeper.getUser().canCreateData(relation.getViewName());
 
     if (relation.isEditEnabled(true)) {
       String es = relation.getEditSource();
@@ -949,6 +960,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public boolean handlesTabulation() {
     return handlesTabulation;
   }
+  
+  public boolean hasRelatedView(String viewName) {
+    return !BeeUtils.isEmpty(viewName) && BeeUtils.same(viewName, getOracle().getViewName());
+  }
 
   public boolean isAdding() {
     return adding;
@@ -1109,14 +1124,19 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setLastRequest(null);
     setOffset(0);
     setHasMore(false);
+    
+    boolean createNew = false;
 
     if (charCode != BeeConst.CHAR_SPACE && Codec.isValidUnicodeChar(charCode)) {
       if (charCode == SHOW_SELECTOR) {
         clearDisplay();
+      } else if (charCode == CREATE_NEW && isNewRowEnabled()) {
+        createNew = true;
       } else {
         setDisplayValue(BeeUtils.toString(charCode));
       }
-      if (isInstant()) {
+
+      if (!createNew && isInstant()) {
         askOracle();
       }
 
@@ -1133,6 +1153,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     inputEvents.consume();
     setActive(true);
+    
+    if (createNew) {
+      RowFactory.createRelatedRow(this);
+    }
   }
 
   @Override
@@ -1301,7 +1325,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   private void addItem(MenuBar menu, final BeeRow row) {
-    MenuCommand menuCommand = new MenuCommand() {
+    Scheduler.ScheduledCommand menuCommand = new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
         setSelection(row);

@@ -13,7 +13,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.commons.UserFeedsInterceptor;
+import com.butent.bee.client.modules.administration.UserFeedsInterceptor;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Badge;

@@ -7,8 +7,10 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItemName" />
-    <Relation name="Criteria" relation="TcdCriteria" notNull="true" cascade="DELETE" label="=ecCriteriaName" />
-    <String name="Value" precision="50" label="=ecCriteriaValue" />
+    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" 
+      label="=ecItem" />
+    <Relation name="Criteria" relation="TcdCriteria" notNull="true" cascade="DELETE"
+      label="=ecCriterion" />
+    <String name="Value" precision="50" label="=ecCriterionValue" />
   </Fields>
 </Table>

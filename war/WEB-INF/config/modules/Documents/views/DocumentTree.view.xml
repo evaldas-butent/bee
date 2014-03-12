@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DocumentTree" source="DocumentTree"
+  caption="=documentTree"
+  >
+  <Columns>
+    <SimpleColumn name="Parent" />
+    <SimpleColumn name="Order" />
+    <SimpleColumn name="Name" />
+    <SimpleJoin joinType="LEFT" name="Parent">
+      <SimpleColumn alias="ParentOrder" name="Order" />
+    </SimpleJoin>
+    <ExternalJoin source="Documents" joinType="LEFT" name="Category">
+      <AggregateColumn alias="DocumentCount" aggregate="COUNT" name="Category" />
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="ParentOrder" />
+    <OrderBy column="Order" />
+  </Order>
+</View>

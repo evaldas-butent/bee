@@ -8,7 +8,6 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.layout.Simple;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -174,7 +174,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
       Filter immutableFilter, Map<String, Filter> initialFilters, Order order) {
 
     GridPresenter gp = new GridPresenter(getGridDescription(), gridView,
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, getCachingPolicy(),
+        rowSet.getNumberOfRows(), rowSet, ProviderType.ASYNC, getCachingPolicy(),
         uiOptions, getGridInterceptor(), immutableFilter, initialFilters, null, null,
         order, getGridOptions());
 
@@ -196,7 +196,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private CachingPolicy getCachingPolicy() {
-    return getGridDescription().getCachingPolicy(false);
+    return getGridDescription().getCachingPolicy();
   }
 
   private Filter getFilter(IsRow row) {

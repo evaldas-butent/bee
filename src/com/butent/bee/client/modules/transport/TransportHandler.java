@@ -29,6 +29,8 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -53,7 +55,8 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -379,8 +382,8 @@ public final class TransportHandler {
   }
 
   public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(TRANSPORT_MODULE);
-    args.addQueryItem(TRANSPORT_METHOD, name);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
+    args.addQueryItem(AdministrationConstants.METHOD, name);
     return args;
   }
 
@@ -415,6 +418,9 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
 
+    ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
+        ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
+
     TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
@@ -436,7 +442,7 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
         new FileGridInterceptor(COL_CRF_REQUEST, COL_CRF_FILE, COL_CRF_CAPTION,
-            CommonsConstants.ALS_FILE_NAME));
+            AdministrationConstants.ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
 

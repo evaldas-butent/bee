@@ -11,11 +11,13 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
@@ -98,7 +100,7 @@ public class GridLoaderBean {
 
   private static final String ATTR_CACHE_DATA = "cacheData";
 
-  private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
+  private static final String ATTR_DATA_PROVIDER = "dataProvider";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
@@ -120,7 +122,6 @@ public class GridLoaderBean {
   private static final String ATTR_AUTO_FIT = "autoFit";
 
   private static final String ATTR_SORTABLE = "sortable";
-  private static final String ATTR_VISIBLE = "visible";
 
   private static final String ATTR_REQUIRED = "required";
 
@@ -558,8 +559,11 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, ATTR_SORTABLE)) {
           dst.setSortable(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_VISIBLE)) {
+
+        } else if (BeeUtils.same(key, UiConstants.ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, UiConstants.ATTR_MODULE)) {
+          dst.setModule(EnumUtils.getEnumByName(Module.class, value));
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());
@@ -779,10 +783,10 @@ public class GridLoaderBean {
     if (cacheDescription != null) {
       dst.setCacheDescription(cacheDescription);
     }
-
-    Integer asyncThreshold = XmlUtils.getAttributeInteger(src, ATTR_ASYNC_THRESHOLD);
-    if (asyncThreshold != null) {
-      dst.setAsyncThreshold(asyncThreshold);
+    
+    String dataProvider = src.getAttribute(ATTR_DATA_PROVIDER);
+    if (!BeeUtils.isEmpty(dataProvider)) {
+      dst.setDataProvider(EnumUtils.getEnumByName(ProviderType.class, dataProvider));
     }
     Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);
     if (initialRowSetSize != null) {

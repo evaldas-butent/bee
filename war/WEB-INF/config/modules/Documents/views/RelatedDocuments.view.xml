@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="RelatedDocuments" source="Relations" caption="=documentsRelated"
+  >
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="Person" />
+    <SimpleColumn name="Appointment" />
+    <SimpleColumn name="Task" />
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="TransportationOrder" />
+    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Trip" />
+    <SimpleColumn name="CargoRequest" />
+
+    <SimpleColumn name="Document" />
+    <SimpleJoin name="Document" joinType="INNER">
+
+      <SimpleColumn name="Name" />
+
+      <SimpleColumn name="DocumentDate" />
+      <SimpleColumn name="Expires" />
+
+      <SimpleColumn name="Number" />
+      <SimpleColumn name="RegistrationNumber" />
+
+      <SimpleColumn name="Category" />
+      <SimpleJoin joinType="LEFT" name="Category">
+        <SimpleColumn alias="CategoryName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Type" />
+      <SimpleJoin joinType="LEFT" name="Type">
+        <SimpleColumn alias="TypeName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Place" />
+      <SimpleJoin joinType="LEFT" name="Place">
+        <SimpleColumn alias="PlaceName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Status" />
+      <SimpleJoin joinType="LEFT" name="Status">
+        <SimpleColumn alias="StatusName" name="Name" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Received" />
+      <SimpleColumn name="Sent" />
+      <SimpleColumn name="Returned" />
+
+      <SimpleColumn name="Description" />
+    </SimpleJoin>
+  </Columns>
+</View>
+ 

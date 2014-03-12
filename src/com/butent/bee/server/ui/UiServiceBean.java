@@ -4,11 +4,14 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -59,7 +62,8 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -176,7 +180,7 @@ public class UiServiceBean {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
       response = insertRows(reqInfo);
-    
+
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
@@ -211,6 +215,28 @@ public class UiServiceBean {
       response = news.subscribe(reqInfo);
     } else if (BeeUtils.same(svc, Service.ACCESS)) {
       response = news.onAccess(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_STATE_RIGHTS)) {
+      response = usr.getStateRights(
+          EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
+          EnumUtils.getEnumByIndex(RightsState.class, reqInfo.getParameter(COL_STATE)));
+
+    } else if (BeeUtils.same(svc, Service.GET_ROLE_RIGHTS)) {
+      response = usr.getRoleRights(
+          EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)));
+
+    } else if (BeeUtils.same(svc, Service.SET_STATE_RIGHTS)) {
+      response = usr.setStateRights(
+          EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
+          EnumUtils.getEnumByIndex(RightsState.class, reqInfo.getParameter(COL_STATE)),
+          Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
+
+    } else if (BeeUtils.same(svc, Service.SET_ROLE_RIGHTS)) {
+      response = usr.setRoleRights(
+          EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo.getParameter(COL_OBJECT_TYPE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
+          Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
     } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
       response = importOsamaTiekejai(reqInfo);
@@ -302,7 +328,7 @@ public class UiServiceBean {
     Order order = new Order(COL_FILTER_KEY, true);
     order.add(COL_FILTER_ORDINAL, true);
 
-    return qs.getViewData(TBL_FILTERS, usr.getCurrentUserFilter(COL_FILTER_USER), order);
+    return qs.getViewData(VIEW_FILTERS, usr.getCurrentUserFilter(COL_FILTER_USER), order);
   }
 
   public Pair<BeeRowSet, BeeRowSet> getGridAndColumnSettings() {
@@ -385,7 +411,7 @@ public class UiServiceBean {
       buildDbList(root, tables, true);
     }
     for (String tableName : tables) {
-      XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModuleName(), tableName);
+      XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModule(), tableName);
 
       if (xmlTable != null) {
         Collection<XmlField> fields = Lists.newArrayList();
@@ -547,7 +573,6 @@ public class UiServiceBean {
       return ResponseObject.response(sys.getDataInfo());
     } else {
       DataInfo dataInfo = sys.getDataInfo(viewName);
-      dataInfo.setRowCount(qs.getViewSize(viewName, null));
       return ResponseObject.response(dataInfo);
     }
   }
@@ -558,14 +583,7 @@ public class UiServiceBean {
 
   private ResponseObject getForm(RequestInfo reqInfo) {
     String formName = reqInfo.getContent();
-
-    if (BeeUtils.isEmpty(formName)) {
-      return ResponseObject.error("Which form?");
-    }
-    if (ui.isForm(formName)) {
-      return ui.getForm(formName);
-    }
-    return ResponseObject.error("Form", formName, "not found");
+    return ui.getForm(formName);
   }
 
   private ResponseObject getGrid(RequestInfo reqInfo) {
@@ -635,7 +653,34 @@ public class UiServiceBean {
       List<String> names = sys.getTableNames();
       Collections.sort(names);
 
-      if (BeeUtils.isEmpty(tableName)) {
+      if (BeeUtils.isEmpty(tableName) || BeeUtils.same(tableName, BeeConst.STRING_MINUS)) {
+        Collection<BeeView> views = sys.getViews();
+
+        Multimap<String, String> sources = HashMultimap.create();
+        for (BeeView view : views) {
+          sources.put(view.getSourceName(), view.getName());
+        }
+        
+        boolean noViews = BeeUtils.same(tableName, BeeConst.STRING_MINUS);
+
+        for (String name : names) {
+          int fieldCount = sys.getTable(name).getFieldCount();
+
+          String viewNames;
+          if (sources.containsKey(name)) {
+            if (noViews) {
+              continue;
+            }
+            viewNames = sources.get(name).toString();
+
+          } else {
+            viewNames = BeeConst.STRING_MINUS;
+          }
+          
+          info.add(new ExtendedProperty(name, String.valueOf(fieldCount), viewNames));
+        }
+        
+      } else if (BeeUtils.same(tableName, BeeConst.STRING_ALL)) {
         for (String name : names) {
           PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
         }
@@ -652,7 +697,7 @@ public class UiServiceBean {
         }
       }
     }
-    return ResponseObject.response(info);
+    return ResponseObject.collection(info, ExtendedProperty.class);
   }
 
   private ResponseObject getValue(RequestInfo reqInfo) {
@@ -670,7 +715,7 @@ public class UiServiceBean {
           rowId);
     } else {
       String value = rowSet.getString(0, column);
-      return ResponseObject.response(value, String.class);
+      return ResponseObject.response(value);
     }
   }
 
@@ -728,7 +773,7 @@ public class UiServiceBean {
         PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getExtendedInfo());
       }
     }
-    return ResponseObject.response(info);
+    return ResponseObject.collection(info, ExtendedProperty.class);
   }
 
   private ResponseObject getViewSize(RequestInfo reqInfo) {
@@ -1285,7 +1330,7 @@ public class UiServiceBean {
     if (DataUtils.isEmpty(rowSet)) {
       return ResponseObject.error(reqInfo.getService(), "row set is empty");
     }
-    
+
     int count = 0;
 
     for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
@@ -1293,7 +1338,7 @@ public class UiServiceBean {
       if (response.hasErrors()) {
         return response;
       }
-      
+
       count++;
     }
 

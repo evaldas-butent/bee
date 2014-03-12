@@ -16,7 +16,7 @@ import java.util.Map;
  * 
  */
 
-public class Storage implements Module {
+public class Storage {
   
   private final Map<String, String> items = new HashMap<String, String>();
   private final boolean localStorage;
@@ -64,34 +64,11 @@ public class Storage implements Module {
     }
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
   public boolean hasItem(String key) {
     if (BeeUtils.isEmpty(key)) {
       return false;
     }
     return get(key) != null;
-  }
-
-  @Override
-  public void init() {
   }
 
   public String key(int index) {
@@ -122,10 +99,6 @@ public class Storage implements Module {
     }
   }
 
-  @Override
-  public void onExit() {
-  }
-
   public void remove(String key) {
     Assert.notEmpty(key);
 
@@ -150,10 +123,6 @@ public class Storage implements Module {
     } else {
       items.put(key, value);
     }
-  }
-
-  @Override
-  public void start() {
   }
 
   private native void lsClear() /*-{

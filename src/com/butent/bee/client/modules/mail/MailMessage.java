@@ -42,7 +42,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -294,8 +295,8 @@ public class MailMessage extends AbstractFormInterceptor {
         }
         SimpleRow row = packet.get(TBL_MESSAGES).getRow(0);
         sender = row.getLong(COL_SENDER);
-        String lbl = row.getValue(CommonsConstants.COL_EMAIL_LABEL);
-        String mail = row.getValue(CommonsConstants.COL_EMAIL_ADDRESS);
+        String lbl = row.getValue(ClassifierConstants.COL_EMAIL_LABEL);
+        String mail = row.getValue(ClassifierConstants.COL_EMAIL_ADDRESS);
 
         setWidgetText(SENDER_LABEL, BeeUtils.notEmpty(lbl, mail));
         setWidgetText(SENDER_EMAIL, BeeUtils.isEmpty(lbl) ? "" : mail);
@@ -307,8 +308,8 @@ public class MailMessage extends AbstractFormInterceptor {
         for (SimpleRow address : packet.get(TBL_RECIPIENTS)) {
           String[] info = new String[Ints.max(ADDR_ID, ADDR_EMAIL, ADDR_LABEL)];
           info[ADDR_ID] = address.getValue(COL_ADDRESS);
-          info[ADDR_EMAIL] = address.getValue(CommonsConstants.COL_EMAIL_ADDRESS);
-          info[ADDR_LABEL] = address.getValue(CommonsConstants.COL_EMAIL_LABEL);
+          info[ADDR_EMAIL] = address.getValue(ClassifierConstants.COL_EMAIL_ADDRESS);
+          info[ADDR_LABEL] = address.getValue(ClassifierConstants.COL_EMAIL_LABEL);
 
           recipients.put(address.getValue(COL_ADDRESS_TYPE), info);
           txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(info[ADDR_LABEL], info[ADDR_EMAIL]));
@@ -323,8 +324,8 @@ public class MailMessage extends AbstractFormInterceptor {
           String[] info = new String[Ints.max(ATTA_ID, ATTA_NAME, ATTA_SIZE)];
           info[ATTA_ID] = attachment.getValue(COL_FILE);
           info[ATTA_NAME] = BeeUtils.notEmpty(attachment.getValue(COL_ATTACHMENT_NAME),
-              attachment.getValue(CommonsConstants.COL_FILE_NAME));
-          info[ATTA_SIZE] = attachment.getValue(CommonsConstants.COL_FILE_SIZE);
+              attachment.getValue(AdministrationConstants.COL_FILE_NAME));
+          info[ATTA_SIZE] = attachment.getValue(AdministrationConstants.COL_FILE_SIZE);
 
           attachments.add(info);
           cnt++;

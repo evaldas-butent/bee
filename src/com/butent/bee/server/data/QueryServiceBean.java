@@ -41,8 +41,8 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -90,7 +90,7 @@ public class QueryServiceBean {
       String error = null;
 
       Map<String, String> params = prm.getMap(BeeUtils.join(BeeConst.STRING_EMPTY,
-          CommonsConstants.PRM_SQL_MESSAGES, SqlBuilderFactory.getBuilder().getEngine()));
+          AdministrationConstants.PRM_SQL_MESSAGES, SqlBuilderFactory.getBuilder().getEngine()));
 
       if (!BeeUtils.isEmpty(params)) {
         String msg = ex.getMessage();
@@ -112,7 +112,7 @@ public class QueryServiceBean {
     public abstract T processUpdateCount(int updateCount);
   }
 
-  private static final String EDITABLE_STATE_COLUMN = RightsState.EDITABLE.name();
+  private static final String EDITABLE_STATE_COLUMN = RightsState.EDIT.name();
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
@@ -498,7 +498,7 @@ public class QueryServiceBean {
 
   public List<Long> getLongList(IsQuery query) {
     List<Long> result = Lists.newArrayList();
-    
+
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
       for (Long value : arr) {
@@ -553,13 +553,13 @@ public class QueryServiceBean {
         .addOrder(tableName, sys.getIdName(tableName));
 
     boolean selfRelationsMode = BeeUtils.same(filterColumn, resultColumn)
-        && BeeUtils.same(tableName, CommonsConstants.TBL_RELATIONS);
+        && BeeUtils.same(tableName, AdministrationConstants.TBL_RELATIONS);
 
     if (selfRelationsMode) {
       String als = SqlUtils.uniqueName();
 
       query.addFromInner(tableName, als,
-          SqlUtils.and(sys.joinTables(tableName, als, CommonsConstants.COL_RELATION),
+          SqlUtils.and(sys.joinTables(tableName, als, AdministrationConstants.COL_RELATION),
               SqlUtils.notNull(tableName, resultColumn),
               SqlUtils.equals(als, filterColumn, filterValue)));
     } else {
@@ -633,10 +633,10 @@ public class QueryServiceBean {
     sys.filterVisibleState(query, tableName, tableAlias);
 
     BeeTable table = sys.getTable(tableName);
-    String stateAlias = table.joinState(query, tableAlias, RightsState.EDITABLE);
+    String stateAlias = table.joinState(query, tableAlias, RightsState.EDIT);
 
     if (!BeeUtils.isEmpty(stateAlias)) {
-      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDITABLE,
+      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDIT,
           table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
           EDITABLE_STATE_COLUMN);
     }
@@ -813,7 +813,7 @@ public class QueryServiceBean {
     if (isDebugEnabled) {
       logger.setLevel(LogLevel.INFO);
     }
-    doSql(SqlUtils.setSqlParameter(CommonsConstants.AUDIT_USER,
+    doSql(SqlUtils.setSqlParameter(AdministrationConstants.AUDIT_USER,
         usr.getCurrentUserId()).getQuery());
 
     if (isDebugEnabled) {

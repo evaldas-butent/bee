@@ -1,6 +1,7 @@
 package com.butent.bee.server.ui;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -11,25 +12,35 @@ import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataNameProvider;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -71,6 +82,44 @@ public class UiHolderBean {
 
   private static BeeLogger logger = LogUtils.getLogger(UiHolderBean.class);
 
+  private static boolean isEmbeddedGrid(Element element) {
+    return BeeUtils.inListSame(element.getTagName(), UiConstants.TAG_CHILD_GRID,
+        UiConstants.TAG_GRID_PANEL);
+  }
+
+  private static boolean isHidable(Element element) {
+    for (Element parent = element; parent != null; parent = XmlUtils.getParentElement(parent)) {
+      Boolean visible = XmlUtils.getAttributeBoolean(parent, UiConstants.ATTR_VISIBLE);
+      if (BeeUtils.isTrue(visible)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static String key(String name) {
+    return BeeUtils.normalize(name);
+  }
+
+  private static <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
+      String moduleName) {
+
+    if (object != null) {
+      if (cache.containsKey(key(objectName))) {
+        logger.warning(BeeUtils.parenthesize(moduleName),
+            "Dublicate", clazz, "name:", BeeUtils.bracket(objectName));
+      } else {
+        cache.put(key(objectName), object);
+      }
+    }
+  }
+
+  private static void unregister(String objectName, Map<String, ?> cache) {
+    if (!BeeUtils.isEmpty(objectName)) {
+      cache.remove(key(objectName));
+    }
+  }
+
   @EJB
   ModuleHolderBean moduleBean;
   @EJB
@@ -78,26 +127,51 @@ public class UiHolderBean {
   @EJB
   UserServiceBean usr;
 
-  Map<String, String> gridCache = Maps.newHashMap();
-  Map<String, String> formCache = Maps.newHashMap();
-  Map<String, Menu> menuCache = Maps.newHashMap();
+  private final Map<String, String> gridCache = Maps.newHashMap();
+  private final Map<String, String> formCache = Maps.newHashMap();
+  private final Map<String, Menu> menuCache = Maps.newHashMap();
+
+  private final Map<String, String> gridViewNames = new ConcurrentHashMap<>();
+  private final Map<String, String> formViewNames = new ConcurrentHashMap<>();
 
   public ResponseObject getForm(String formName) {
-    Assert.state(isForm(formName), "Not a form: " + formName);
-    String resource = formCache.get(key(formName));
+    if (!isForm(formName)) {
+      return ResponseObject.error("Not a form:", formName);
+    }
 
+    String resource = formCache.get(key(formName));
     Document doc = XmlUtils.getXmlResource(resource, UiObject.FORM.getSchemaPath());
 
     if (doc == null) {
       return ResponseObject.error("Cannot parse xml:", resource);
     }
+
+    checkFormVisibility(doc.getDocumentElement());
+
     return ResponseObject.response(XmlUtils.toString(doc, false));
   }
 
-  public GridDescription getGrid(String gridName) {
-    Assert.state(isGrid(gridName), "Not a grid: " + gridName);
-    String resource = gridCache.get(key(gridName));
+  public DataNameProvider getFormDataNameProvider() {
+    return new DataNameProvider() {
+      @Override
+      public Set<String> apply(String input) {
+        Set<String> result = new HashSet<>();
+        String viewName = getFormViewName(input);
+        if (!BeeUtils.isEmpty(viewName)) {
+          result.add(viewName);
+        }
+        return result;
+      }
+    };
+  }
 
+  public GridDescription getGrid(String gridName) {
+    if (!isGrid(gridName)) {
+      logger.severe("Not a grid:", gridName);
+      return null;
+    }
+
+    String resource = gridCache.get(key(gridName));
     GridDescription grid = gridBean.loadGrid(resource, UiObject.GRID.getSchemaPath());
 
     if (grid != null) {
@@ -112,11 +186,25 @@ public class UiHolderBean {
     return null;
   }
 
-  public ResponseObject getMenu() {
+  public DataNameProvider getGridDataNameProvider() {
+    return new DataNameProvider() {
+      @Override
+      public Set<String> apply(String input) {
+        Set<String> result = new HashSet<>();
+        String viewName = getGridViewName(input);
+        if (!BeeUtils.isEmpty(viewName)) {
+          result.add(viewName);
+        }
+        return result;
+      }
+    };
+  }
+
+  public ResponseObject getMenu(boolean checkRights) {
     Map<Integer, Menu> menus = Maps.newTreeMap();
 
     for (Menu menu : menuCache.values()) {
-      Menu entry = getVisibleMenu(null, Menu.restore(Codec.beeSerialize(menu)));
+      Menu entry = getMenu(null, Menu.restore(Codec.beeSerialize(menu)), checkRights);
 
       if (entry != null) {
         menus.put(entry.getOrder(), entry);
@@ -170,7 +258,7 @@ public class UiHolderBean {
           }
         }
         if (menu == null || !(menu instanceof MenuEntry)) {
-          logger.severe("Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
+          logger.severe("Menu parent is not valid:", "Module:", xmlMenu.getModule(),
               "; Menu:", xmlMenu.getName(), "; Parent:", parent);
         } else {
           List<Menu> items = ((MenuEntry) menu).getItems();
@@ -187,37 +275,178 @@ public class UiHolderBean {
   }
 
   public boolean isForm(String formName) {
-    return !BeeUtils.isEmpty(formName) && (formCache.containsKey(key(formName)));
+    return !BeeUtils.isEmpty(formName) && formCache.containsKey(key(formName));
   }
 
   public boolean isGrid(String gridName) {
-    return !BeeUtils.isEmpty(gridName) && (gridCache.containsKey(key(gridName)));
+    return !BeeUtils.isEmpty(gridName) && gridCache.containsKey(key(gridName));
   }
 
   public Menu loadXmlMenu(String resource) {
     return XmlUtils.unmarshal(Menu.class, resource, UiObject.MENU.getSchemaPath());
   }
 
-  private Menu getVisibleMenu(String parent, Menu entry) {
-    String ref = BeeUtils.join(".", parent, entry.getName());
+  private void checkFormVisibility(Element formElement) {
+    String formViewName = formElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
 
-    if (usr.hasModuleRight(entry.getModuleName(), RightsState.VISIBLE)
-        && usr.hasMenuRight(ref, RightsState.VISIBLE)) {
-      List<Menu> items = null;
+    List<Element> elements = XmlUtils.getAllDescendantElements(formElement);
 
-      if (entry instanceof MenuEntry) {
-        items = ((MenuEntry) entry).getItems();
+    for (Element element : elements) {
+      if (element.hasAttribute(UiConstants.ATTR_VISIBLE)) {
+        if (BeeConst.isFalse(element.getAttribute(UiConstants.ATTR_VISIBLE))) {
+          XmlUtils.removeFromParent(element);
+        }
+
+      } else {
+        boolean visible = true;
+
+        if (element.hasAttribute(UiConstants.ATTR_MODULE)) {
+          if (!usr.isModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
+            visible = false;
+          }
+        }
+
+        if (visible && !BeeUtils.isEmpty(formViewName)) {
+          String source = element.getAttribute(UiConstants.ATTR_SOURCE);
+          if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(formViewName, source)) {
+            visible = false;
+          }
+        }
+
+        if (visible) {
+          String data = element.getAttribute(UiConstants.ATTR_DATA);
+          String field = element.getAttribute(UiConstants.ATTR_FOR);
+
+          if (BeeUtils.isEmpty(data)) {
+            if (BeeUtils.allNotEmpty(formViewName, field)) {
+              visible = usr.isColumnVisible(formViewName, field);
+            }
+
+          } else if (!usr.isDataVisible(data)) {
+            visible = false;
+
+          } else if (!BeeUtils.isEmpty(field)) {
+            visible = usr.isColumnVisible(data, field);
+          }
+        }
+
+        if (visible && isEmbeddedGrid(element)) {
+          String gridName = BeeUtils.notEmpty(element.getAttribute(UiConstants.ATTR_GRID_NAME),
+              element.getAttribute(UiConstants.ATTR_NAME));
+          String gridViewName = BeeUtils.isEmpty(gridName) ? null : getGridViewName(gridName);
+
+          if (!BeeUtils.isEmpty(gridViewName) && !usr.isDataVisible(gridViewName)) {
+            visible = false;
+          }
+        }
+
+        if (!visible && isHidable(XmlUtils.getParentElement(element))) {
+          XmlUtils.removeFromParent(element);
+        }
       }
-      if (!BeeUtils.isEmpty(items)) {
-        for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext();) {
-          if (getVisibleMenu(ref, iterator.next()) == null) {
-            iterator.remove();
+    }
+  }
+
+  private String getFormViewName(String formName) {
+    if (formViewNames.containsKey(formName)) {
+      return formViewNames.get(formName);
+    }
+
+    String viewName = null;
+    String resource = formCache.get(key(formName));
+
+    if (!BeeUtils.isEmpty(resource)) {
+      Document doc = XmlUtils.getXmlResource(resource, UiObject.FORM.getSchemaPath());
+      if (doc != null) {
+        viewName = doc.getDocumentElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
+      }
+    }
+
+    formViewNames.put(formName, Strings.nullToEmpty(viewName));
+    return viewName;
+  }
+
+  private String getGridViewName(String gridName) {
+    if (gridViewNames.containsKey(gridName)) {
+      return gridViewNames.get(gridName);
+    }
+
+    String viewName = null;
+    String resource = gridCache.get(key(gridName));
+
+    if (!BeeUtils.isEmpty(resource)) {
+      Document doc = XmlUtils.getXmlResource(resource, UiObject.GRID.getSchemaPath());
+      if (doc != null) {
+        viewName = doc.getDocumentElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
+      }
+    }
+
+    gridViewNames.put(gridName, Strings.nullToEmpty(viewName));
+    return viewName;
+  }
+
+  private Menu getMenu(String parent, Menu entry, boolean checkRights) {
+    String ref = RightsUtils.JOINER.join(parent, entry.getName());
+
+    boolean visible;
+    if (checkRights) {
+      visible = usr.isMenuVisible(ref);
+      
+      if (visible && !BeeUtils.isEmpty(entry.getModule())) {
+        visible = usr.isModuleVisible(entry.getModule());
+      }
+      if (visible && !BeeUtils.isEmpty(entry.getData())) {
+        visible = usr.isDataVisible(entry.getData());
+      }
+
+      if (visible && entry instanceof MenuItem) {
+        visible = hasMenuDataRights((MenuItem) entry);
+      }
+
+    } else {
+      visible = Module.isEnabled(entry.getModule());
+    }
+
+    if (visible) {
+      if (entry instanceof MenuEntry) {
+        List<Menu> items = ((MenuEntry) entry).getItems();
+
+        if (!BeeUtils.isEmpty(items)) {
+          for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext();) {
+            if (getMenu(ref, iterator.next(), checkRights) == null) {
+              iterator.remove();
+            }
           }
         }
       }
       return entry;
+
+    } else {
+      return null;
     }
-    return null;
+  }
+
+  private boolean hasMenuDataRights(MenuItem item) {
+    MenuService service = item.getService();
+
+    if (service != null) {
+      String parameters = item.getParameters();
+
+      Set<String> dataNames = service.getDataNames(parameters);
+      Set<RightsState> states = service.getDataRightsStates();
+
+      if (!BeeUtils.isEmpty(dataNames) && !BeeUtils.isEmpty(states)) {
+        for (String dataName : dataNames) {
+          for (RightsState state : states) {
+            if (!usr.hasDataRight(dataName, state)) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   @PostConstruct
@@ -225,6 +454,9 @@ public class UiHolderBean {
     initGrids();
     initForms();
     initMenu();
+
+    MenuService.GRID.setDataNameProvider(getGridDataNameProvider());
+    MenuService.FORM.setDataNameProvider(getFormDataNameProvider());
   }
 
   private boolean initForm(String moduleName, String formName) {
@@ -267,7 +499,6 @@ public class UiHolderBean {
 
     boolean ok = xmlMenu != null;
     if (ok) {
-      xmlMenu.setModuleName(moduleName);
       register("menu", xmlMenu, menuCache, BeeUtils.join(".", xmlMenu.getParent(), menuName),
           moduleName);
     } else {
@@ -282,10 +513,14 @@ public class UiHolderBean {
     switch (obj) {
       case GRID:
         gridCache.clear();
+        gridViewNames.clear();
         break;
+
       case FORM:
         formCache.clear();
+        formViewNames.clear();
         break;
+
       case MENU:
         menuCache.clear();
         break;
@@ -342,29 +577,6 @@ public class UiHolderBean {
       logger.severe("No", obj.name(), "descriptions found");
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
-    }
-  }
-
-  private static String key(String name) {
-    return BeeUtils.normalize(name);
-  }
-
-  private static <T> void register(String clazz, T object, Map<String, T> cache, String objectName,
-      String moduleName) {
-
-    if (object != null) {
-      if (cache.containsKey(key(objectName))) {
-        logger.warning(BeeUtils.parenthesize(moduleName),
-            "Dublicate", clazz, "name:", BeeUtils.bracket(objectName));
-      } else {
-        cache.put(key(objectName), object);
-      }
-    }
-  }
-
-  private static void unregister(String objectName, Map<String, ?> cache) {
-    if (!BeeUtils.isEmpty(objectName)) {
-      cache.remove(key(objectName));
     }
   }
 }

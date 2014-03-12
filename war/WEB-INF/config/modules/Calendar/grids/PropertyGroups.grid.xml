@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="PropertyGroups" viewName="PropertyGroups" caption="=calParametersGroups"
+  name="PropertyGroups" viewName="PropertyGroups" caption="=calAppointmentPropertyGroups"
   newRowColumns="Name Description" newRowCaption="=calNewParameterGroup"
   flexGrow="1" flexShrink="1"
   >

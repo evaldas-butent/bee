@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TaskTemplates" source="TaskTemplates" 
+  caption="=crmTaskTemplates" newRowCaption="=crmNewTaskTemplate"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Summary" />
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="Priority" />
+
+    <SimpleColumn name="ExpectedDuration" />
+
+    <SimpleColumn name="Company" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn alias="CompanyName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Contact" />
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleColumn alias="ContactPerson" name="Person" />
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="ContactFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactLastName" name="LastName" />
+      </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="ContactCompanyName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Reminder" />
+    <SimpleJoin name="Reminder" joinType="LEFT">
+      <SimpleColumn alias="ReminderName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+  
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>
+ 

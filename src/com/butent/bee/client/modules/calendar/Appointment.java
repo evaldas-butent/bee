@@ -4,10 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.KEY_PERIOD;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.build;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.joinChildren;
-import static com.butent.bee.shared.modules.calendar.CalendarHelper.wrap;
+import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.BeeColumn;
@@ -15,9 +13,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -28,9 +26,9 @@ import java.util.Map;
 public class Appointment extends CalendarItem {
 
   private static final int BACKGROUND_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      CommonsConstants.COL_BACKGROUND);
+      AdministrationConstants.COL_BACKGROUND);
   private static final int COLOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      CommonsConstants.COL_COLOR);
+      AdministrationConstants.COL_COLOR);
   private static final int COMPANY_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       ALS_COMPANY_NAME);
   private static final int CREATOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_CREATOR);
@@ -39,7 +37,7 @@ public class Appointment extends CalendarItem {
   private static final int END_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_END_DATE_TIME);
   private static final int FOREGROUND_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      CommonsConstants.COL_FOREGROUND);
+      AdministrationConstants.COL_FOREGROUND);
   private static final int START_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_START_DATE_TIME);
   private static final int STYLE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STYLE);
@@ -84,8 +82,8 @@ public class Appointment extends CalendarItem {
     PARTIAL_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL),
             wrap(COL_VEHICLE_MODEL)),
-            wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
-            wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
+        wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
+        wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
 
     MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
     MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_APPOINTMENT_LOCATION),
@@ -306,7 +304,7 @@ public class Appointment extends CalendarItem {
       }
     }
 
-    result.put(wrap(KEY_RESOURCES), build(Localized.getConstants().calAppointmentAttendees(),
+    result.put(wrap(KEY_RESOURCES), build(Localized.getConstants().calAttendees(),
         joinChildren(attNames), addLabels));
     result.put(wrap(KEY_OWNERS), build(Localized.getConstants().responsiblePersons(),
         joinChildren(ownerNames), addLabels));

@@ -102,6 +102,7 @@
     </ExternalJoin>
     
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Directions" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />

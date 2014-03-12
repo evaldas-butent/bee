@@ -1,13 +1,25 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasMouseMoveHandlers;
+import com.google.gwt.event.dom.client.HasMouseOutHandlers;
+import com.google.gwt.event.dom.client.HasMouseOverHandlers;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
@@ -25,13 +37,16 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable {
+public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
+    HasMouseMoveHandlers, HasMouseOutHandlers, HasMouseOverHandlers, HasCaption {
 
   public class CellFormatter {
 
@@ -52,9 +67,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       return DomUtils.getColSpan(getElement(row, column));
     }
 
-    public Element getElement(int row, int column) {
+    public TableCellElement getElement(int row, int column) {
       checkCellBounds(row, column);
-      return getTd(bodyElem, row, column);
+      return getCell(bodyElem, row, column);
     }
 
     public int getRowSpan(int row, int column) {
@@ -130,8 +145,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       StyleUtils.setWordWrap(ensureElement(row, column), wrap);
     }
 
-    private native Element getTd(Element table, int row, int col) /*-{
-      return table.rows[row].cells[col];
+    private native TableCellElement getCell(Element table, int row, int column) /*-{
+      return table.rows[row].cells[column];
     }-*/;
   }
 
@@ -185,9 +200,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
     protected void ensureColumnGroup() {
       if (columnGroup == null) {
-        columnGroup = DOM.createColGroup();
-        DOM.insertChild(tableElem, columnGroup, 0);
-        DOM.appendChild(columnGroup, DOM.createCol());
+        columnGroup = Document.get().createColGroupElement();
+        tableElem.insertFirst(columnGroup);
+        columnGroup.appendChild(Document.get().createColElement());
       }
     }
   }
@@ -252,12 +267,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
 
-  private static Element createRow() {
-    return DOM.createTR();
-  }
-
-  private final Element tableElem;
-  private final Element bodyElem;
+  private final TableElement tableElem;
+  private TableSectionElement bodyElem;
 
   private final ElementMapperImpl<Widget> widgetMap;
 
@@ -271,11 +282,14 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   private final Map<Integer, String> columnCellClases = Maps.newHashMap();
   private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
+  
+  private String caption;
 
   public HtmlTable() {
-    this.tableElem = DOM.createTable();
-    this.bodyElem = DOM.createTBody();
-    DOM.appendChild(tableElem, bodyElem);
+    this.tableElem = Document.get().createTableElement();
+    this.bodyElem = Document.get().createTBodyElement();
+    tableElem.appendChild(bodyElem);
+
     setElement(tableElem);
 
     this.widgetMap = new ElementMapperImpl<Widget>();
@@ -300,7 +314,22 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addDomHandler(handler, ClickEvent.getType());
   }
-  
+
+  @Override
+  public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
+    return addDomHandler(handler, MouseMoveEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addMouseOutHandler(MouseOutHandler handler) {
+    return addDomHandler(handler, MouseOutEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addMouseOverHandler(MouseOverHandler handler) {
+    return addDomHandler(handler, MouseOverEvent.getType());
+  }
+
   public void alignCenter(int row, int column) {
     getCellFormatter().setHorizontalAlignment(row, column, TextAlign.CENTER);
   }
@@ -321,6 +350,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     }
   }
 
+  @Override
+  public String getCaption() {
+    return caption;
+  }
+
   public int getCellCount(int row) {
     checkRowBounds(row);
     return getDOMCellCount(bodyElem, row);
@@ -328,6 +362,18 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   public CellFormatter getCellFormatter() {
     return cellFormatter;
+  }
+
+  public List<TableCellElement> getColumnCells(int column) {
+    Assert.nonNegative(column);
+    List<TableCellElement> cells = Lists.newArrayList();
+
+    for (int row = 0; row < getRowCount(); row++) {
+      if (getCellCount(row) > column) {
+        cells.add(getCellFormatter().getCell(tableElem, row, column));
+      }
+    }
+    return cells;
   }
 
   public ColumnFormatter getColumnFormatter() {
@@ -372,6 +418,19 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     return rowFormatter.getTr(bodyElem, row);
   }
 
+  public List<TableCellElement> getRowCells(int row) {
+    Assert.nonNegative(row);
+    List<TableCellElement> cells = Lists.newArrayList();
+
+    if (row < getRowCount()) {
+      int cc = getCellCount(row);
+      for (int column = 0; column < cc; column++) {
+        cells.add(getCellFormatter().getCell(tableElem, row, column));
+      }
+    }
+    return cells;
+  }
+
   public int getRowCount() {
     return getDOMRowCount(bodyElem);
   }
@@ -389,7 +448,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     if (beforeRow != getRowCount()) {
       checkRowBounds(beforeRow);
     }
-    Element tr = DOM.createTR();
+    Element tr = Document.get().createTRElement();
     DOM.insertChild(bodyElem, tr, beforeRow);
     return beforeRow;
   }
@@ -472,6 +531,10 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     StyleUtils.setBorderSpacing(tableElem, spacing);
   }
 
+  public void setCaption(String caption) {
+    this.caption = caption;
+  }
+
   public void setColumnCellClasses(int column, String classes) {
     Assert.nonNegative(column);
     if (BeeUtils.isEmpty(classes)) {
@@ -530,7 +593,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     setText(row, column, text);
     getCellFormatter().addStyleName(row, column, cellStyleName);
   }
-  
+
   public void setWidget(int row, int column, Widget widget) {
     prepareCell(row, column);
     if (widget != null) {
@@ -540,7 +603,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
       widgetMap.put(widget);
 
-      DOM.appendChild(td, widget.getElement());
+      td.appendChild(widget.getElement());
 
       adopt(widget);
     }
@@ -558,6 +621,45 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
     if (row == 0) {
       getColumnFormatter().addStyleName(column, styleName + STYLE_SUFFIX_COL);
     }
+  }
+
+  public void transpose() {
+    int rc = getRowCount();
+    if (rc <= 0 || rc == 1 && getCellCount(0) <= 1) {
+      return;
+    }
+
+    TableSectionElement newBody = Document.get().createTBodyElement();
+
+    for (int i = 0; i < rc; i++) {
+      for (int j = 0; j < getCellCount(i); j++) {
+        Element oldTd = getCellFormatter().getElement(i, j);
+
+        Element child = oldTd.getFirstChildElement();
+        Widget widget = (child == null) ? null : widgetMap.get(child);
+
+        Element newTd = oldTd.cloneNode(widget == null).cast();
+        if (widget != null) {
+          newTd.appendChild(child);
+        }
+
+        NodeList<TableRowElement> rows = newBody.getRows();
+        TableRowElement tr;
+        if (rows == null || rows.getLength() <= j) {
+          tr = Document.get().createTRElement();
+          newBody.appendChild(tr);
+        } else {
+          tr = rows.getItem(j);
+        }
+
+        tr.appendChild(newTd);
+      }
+    }
+
+    tableElem.removeAllChildren();
+    tableElem.appendChild(newBody);
+
+    this.bodyElem = newBody;
   }
 
   private void checkCellBounds(int row, int column) {
@@ -612,7 +714,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
 
   private Widget getWidgetImpl(int row, int column) {
     Element td = cellFormatter.getElement(row, column);
-    Element child = DOM.getFirstChild(td);
+    Element child = td.getFirstChildElement();
 
     if (child == null) {
       return null;
@@ -630,7 +732,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable 
       return false;
     }
 
-    Element maybeChild = DOM.getFirstChild(td);
+    Element maybeChild = td.getFirstChildElement();
     Widget widget = null;
     if (maybeChild != null) {
       widget = widgetMap.get(maybeChild);

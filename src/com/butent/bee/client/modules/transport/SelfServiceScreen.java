@@ -23,7 +23,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.modules.commons.PasswordService;
+import com.butent.bee.client.modules.administration.PasswordService;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -32,11 +32,12 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
 
@@ -79,8 +80,8 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
-  public void start() {
-    super.start();
+  public void start(UserData userData) {
+    super.start(userData);
 
     Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
@@ -100,7 +101,7 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
     GridFactory.hideColumn(VIEW_CARGO_CREDIT_INVOICES, "Select");
 
-    FormFactory.hideWidget(CrmConstants.FORM_DOCUMENT, "DocumentRelations");
+    FormFactory.hideWidget(DocumentConstants.FORM_DOCUMENT, "DocumentRelations");
 
     addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
         new ClickHandler() {
@@ -206,7 +207,7 @@ public class SelfServiceScreen extends ScreenImpl {
   protected void onUserSignatureClick(long userId) {
     PasswordService.change();
   }
-  
+
   private void openGrid(String gridName, boolean intercept, Filter filter) {
     GridOptions gridOptions = (filter == null) ? null : GridOptions.forFilter(filter);
     openGrid(gridName, intercept, gridOptions);

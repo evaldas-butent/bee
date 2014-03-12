@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 
   name="Discussions" viewName="Discussions" caption="=discussions"
-  cacheData="false" asyncThreshold="-1" favorite="Subject" flexGrow="1" order="DiscussionID desc"
+  favorite="Subject" flexGrow="1" order="DiscussionID desc"
   disabledActions="delete" >
   <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html"
@@ -40,7 +40,7 @@
     </PropColumn>
     
     <CalcColumn name="Announcement" type="boolean"
-      width="20" maxWidth="20" autoFit="true" 
+      width="20" maxWidth="20" autoFit="true" searchBy="TopicName" filterOptions="empty"
       caption="=announcement">
         <render>
           <ui:function>

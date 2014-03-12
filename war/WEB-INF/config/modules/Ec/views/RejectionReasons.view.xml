@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="RejectionReasons" source="RejectionReasons"
+  name="RejectionReasons" source="RejectionReasons" module="Ec.Classifiers"
   caption="=ecRejectionReasons" newRowCaption="=ecRejectionReasonNew"
   >
   <Columns>

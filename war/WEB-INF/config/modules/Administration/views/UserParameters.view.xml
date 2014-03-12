@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="UserParameters" source="UserParameters" module="Administration"
+  caption="=userParameters"
+  >
+  <Columns>
+    <SimpleColumn name="Parameter" />
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Value" />
+  </Columns>
+  <Order>
+    <OrderBy column="Parameter" />
+    <OrderBy column="User" />
+  </Order>
+</View>
+ 

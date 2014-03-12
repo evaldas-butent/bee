@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.calendar;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -11,12 +12,15 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -58,22 +62,23 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
-import com.butent.bee.shared.modules.crm.CrmConstants;
-import com.butent.bee.shared.modules.crm.TaskType;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskStatus;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.news.NewsConstants;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -124,20 +129,6 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
     }
-  }
-
-  private static Map<String, SqlSelect> getAppointmentChildrenQueries() {
-    Map<String, SqlSelect> queries = Maps.newHashMap();
-
-    for (Map.Entry<String, String> child : APPOINTMENT_CHILDREN.entrySet()) {
-      String source = child.getKey();
-      String field = child.getValue();
-      
-      queries.put(source,
-          new SqlSelect().addFields(source, field).addFrom(source).addOrder(source, field));
-    }
-    
-    return queries;
   }
 
   private static Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
@@ -281,6 +272,7 @@ public class CalendarModuleBean implements BeeModule {
 
     rowSet.addRow(rowId, arr);
   }
+
   @EJB
   SystemBean sys;
   @EJB
@@ -358,13 +350,13 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName, COL_APPOINTMENT,
             COL_HOURS, COL_MINUTES, COL_SCHEDULED)
-        .addField(CommonsConstants.TBL_REMINDER_TYPES, COL_HOURS, "defHours")
-        .addField(CommonsConstants.TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
+        .addField(TBL_REMINDER_TYPES, COL_HOURS, "defHours")
+        .addField(TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
-            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
                 COL_REMINDER_TYPE))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
@@ -411,32 +403,28 @@ public class CalendarModuleBean implements BeeModule {
   }
 
   @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE, MailConstants.MAIL_MODULE);
-  }
-
-  @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> results = Lists.newArrayList();
 
-    Filter filter = Filter.or(
-        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, COL_APPOINTMENT_LOCATION,
-            ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
-        Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
+    if (usr.isModuleVisible(Module.CALENDAR.getName())) {
+      Filter filter = Filter.or(
+          Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
+              COL_APPOINTMENT_LOCATION, ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
+          Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
-    List<BeeRow> appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
-    if (!BeeUtils.isEmpty(appointments)) {
-      for (BeeRow row : appointments) {
-        results.add(new SearchResult(VIEW_APPOINTMENTS, row));
+      List<BeeRow> appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
+      if (!BeeUtils.isEmpty(appointments)) {
+        for (BeeRow row : appointments) {
+          results.add(new SearchResult(VIEW_APPOINTMENTS, row));
+        }
       }
     }
     return results;
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CALENDAR_METHOD);
 
     if (BeeUtils.same(svc, SVC_GET_USER_CALENDAR)) {
       response = getUserCalendar(reqInfo);
@@ -465,21 +453,23 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
+    String module = getModule().getName();
+
     return Lists.newArrayList(
-        BeeParameter.createTimeOfDay(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, false,
+        BeeParameter.createTimeOfDay(module, PRM_REMINDER_TIME_FROM, false,
             TimeUtils.parseTime("8:00")),
-        BeeParameter.createTimeOfDay(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, false,
+        BeeParameter.createTimeOfDay(module, PRM_REMINDER_TIME_UNTIL, false,
             TimeUtils.parseTime("18:00")));
   }
 
   @Override
-  public String getName() {
-    return CALENDAR_MODULE;
+  public Module getModule() {
+    return Module.CALENDAR;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override
@@ -488,9 +478,17 @@ public class CalendarModuleBean implements BeeModule {
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
+      public void setRowProperties(ViewQueryEvent event) {
+        if (event.isAfter() && BeeUtils.same(event.getTargetName(), VIEW_APPOINTMENTS)
+            && !DataUtils.isEmpty(event.getRowset())) {
+          setAppopintmentProperties(event.getRowset());
+        }
+      }
+
+      @Subscribe
       public void updateTimers(ViewModifyEvent event) {
         if (event.isAfter()) {
-          if (BeeUtils.same(event.getTargetName(), CommonsConstants.TBL_REMINDER_TYPES)) {
+          if (BeeUtils.same(event.getTargetName(), TBL_REMINDER_TYPES)) {
             if (event instanceof ViewDeleteEvent
                 || event instanceof ViewUpdateEvent
                 && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
@@ -498,6 +496,7 @@ public class CalendarModuleBean implements BeeModule {
 
               createNotificationTimers(null);
             }
+
           } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENTS)) {
             if (event instanceof ViewDeleteEvent) {
               for (long id : ((ViewDeleteEvent) event).getIds()) {
@@ -512,6 +511,7 @@ public class CalendarModuleBean implements BeeModule {
                 createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
               }
             }
+
           } else if (BeeUtils.same(event.getTargetName(), TBL_APPOINTMENT_REMINDERS)) {
             if (event instanceof ViewDeleteEvent) {
               for (long id : ((ViewDeleteEvent) event).getIds()) {
@@ -659,17 +659,17 @@ public class CalendarModuleBean implements BeeModule {
     if (rowSet.isEmpty()) {
       return ResponseObject.error(SVC_CREATE_APPOINTMENT, ": rowSet is empty");
     }
-    
+
     ResponseObject response = deb.commitRow(rowSet);
     if (response.hasErrors()) {
       return response;
     }
 
     long appId = ((BeeRow) response.getResponse()).getId();
-    
+
     for (Map.Entry<String, String> entry : APPOINTMENT_CHILDREN.entrySet()) {
       String childTable = entry.getKey();
-      
+
       List<Long> children = DataUtils.parseIdList(rowSet.getTableProperty(childTable));
       if (!children.isEmpty()) {
         for (long child : children) {
@@ -685,12 +685,12 @@ public class CalendarModuleBean implements BeeModule {
   private ResponseObject doReport(RequestInfo reqInfo) {
     Integer paramRep = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
     if (!BeeUtils.isOrdinal(Report.class, paramRep)) {
-      return ResponseObject.parameterNotFound(SVC_DO_REPORT, PARAM_REPORT);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_REPORT);
     }
 
     BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
     if (rowSet.isEmpty()) {
-      return ResponseObject.error(SVC_DO_REPORT, ": options rowSet is empty");
+      return ResponseObject.error(reqInfo.getService(), ": options rowSet is empty");
     }
 
     BeeRow row = rowSet.getRow(0);
@@ -752,7 +752,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(result);
     }
   }
-  
+
   private List<BeeRow> getAppointments(Filter filter, Order order) {
     List<BeeRow> result = Lists.newArrayList();
 
@@ -769,20 +769,13 @@ public class CalendarModuleBean implements BeeModule {
         Filter.isEqual(COL_VISIBILITY, IntegerValue.of(CalendarVisibility.PUBLIC)));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
-    if (DataUtils.isEmpty(appointments)) {
-      return result;
-    }
-    
-    Map<String, SqlSelect> queries = getAppointmentChildrenQueries();
-    
-    for (BeeRow row : appointments.getRows()) {
-      setAppopintmentProperties(row, queries);
-      result.add(row);
+    if (!DataUtils.isEmpty(appointments)) {
+      result.addAll(appointments.getRows());
     }
 
     return result;
   }
-  
+
   private SimpleRowSet getAttendeePeriods(JustDate lowerDate, JustDate upperDate,
       List<Long> attendeeTypes, List<Long> attendees, boolean canceled) {
 
@@ -1068,13 +1061,20 @@ public class CalendarModuleBean implements BeeModule {
           DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
     }
 
+    long millis = System.currentTimeMillis();
+
     List<BeeRow> appointments = getAppointments(appFilter, null);
+    long appDuration = System.currentTimeMillis() - millis;
+
     List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
+    long taskDuration = System.currentTimeMillis() - millis - appDuration;
 
     logger.info(reqInfo.getService(), calendarId,
         (startTime == null) ? BeeConst.STRING_EMPTY : new DateTime(startTime).toCompactString(),
         (endTime == null) ? BeeConst.STRING_EMPTY : new DateTime(endTime).toCompactString(),
-        BeeConst.STRING_EQ, appointments.size(), BeeConst.STRING_PLUS, tasks.size());
+        BeeConst.STRING_EQ, appointments.size(), BeeConst.STRING_PLUS, tasks.size(),
+        BeeConst.STRING_LEFT_BRACKET, appDuration, BeeConst.STRING_PLUS, taskDuration,
+        BeeConst.STRING_EQ, appDuration + taskDuration, BeeConst.STRING_RIGHT_BRACKET);
 
     Map<String, Object> result = Maps.newHashMap();
     if (!appointments.isEmpty()) {
@@ -1122,17 +1122,17 @@ public class CalendarModuleBean implements BeeModule {
 
     SimpleRowSet exGroupData = qs.getData(new SqlSelect()
         .setDistinctMode(true)
-        .addFields(CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_USER)
+        .addFields(TBL_USER_GROUPS, COL_UG_USER)
         .addFields(TBL_CAL_EXECUTOR_GROUPS, COL_BACKGROUND, COL_FOREGROUND, COL_STYLE)
         .addFrom(TBL_CAL_EXECUTOR_GROUPS)
-        .addFromInner(CommonsConstants.TBL_USER_GROUPS,
+        .addFromInner(TBL_USER_GROUPS,
             SqlUtils.join(TBL_CAL_EXECUTOR_GROUPS, COL_EXECUTOR_GROUP,
-                CommonsConstants.TBL_USER_GROUPS, CommonsConstants.COL_UG_GROUP))
+                TBL_USER_GROUPS, COL_UG_GROUP))
         .setWhere(SqlUtils.equals(TBL_CAL_EXECUTOR_GROUPS, COL_CALENDAR, calendarId)));
 
     if (!DataUtils.isEmpty(exGroupData)) {
       for (SimpleRow exRow : exGroupData) {
-        Long user = exRow.getLong(CommonsConstants.COL_UG_USER);
+        Long user = exRow.getLong(COL_UG_USER);
         executors.add(user);
 
         ColorAndStyle cs = ColorAndStyle.maybeCreate(exRow.getValue(COL_BACKGROUND),
@@ -1174,22 +1174,22 @@ public class CalendarModuleBean implements BeeModule {
 
     EnumMap<TaskType, ColorAndStyle> typeAppearance = Maps.newEnumMap(TaskType.class);
 
-    String source = CrmConstants.TBL_TASKS;
+    String source = TaskConstants.TBL_TASKS;
     String idName = sys.getIdName(source);
 
     HasConditions where = SqlUtils.and();
-    where.add(SqlUtils.notEqual(source, CrmConstants.COL_STATUS, TaskStatus.CANCELED.ordinal()));
+    where.add(SqlUtils.notEqual(source, TaskConstants.COL_STATUS, TaskStatus.CANCELED.ordinal()));
 
     if (startMillis != null) {
-      where.add(SqlUtils.more(source, CrmConstants.COL_FINISH_TIME, startMillis));
+      where.add(SqlUtils.more(source, TaskConstants.COL_FINISH_TIME, startMillis));
     }
     if (endMillis != null) {
-      where.add(SqlUtils.less(source, CrmConstants.COL_START_TIME, endMillis));
+      where.add(SqlUtils.less(source, TaskConstants.COL_START_TIME, endMillis));
     }
 
     HasConditions match = SqlUtils.or();
     if (assigned) {
-      match.add(SqlUtils.equals(source, CrmConstants.COL_EXECUTOR, calendarOwner));
+      match.add(SqlUtils.equals(source, TaskConstants.COL_EXECUTOR, calendarOwner));
       if (executors.contains(calendarOwner)) {
         executors.remove(calendarOwner);
       }
@@ -1205,11 +1205,11 @@ public class CalendarModuleBean implements BeeModule {
 
     if (delegated) {
       if (executors.contains(calendarOwner)) {
-        match.add(SqlUtils.equals(source, CrmConstants.COL_OWNER, calendarOwner));
+        match.add(SqlUtils.equals(source, TaskConstants.COL_OWNER, calendarOwner));
       } else {
         match.add(SqlUtils.and(
-            SqlUtils.equals(source, CrmConstants.COL_OWNER, calendarOwner),
-            SqlUtils.notEqual(source, CrmConstants.COL_EXECUTOR, calendarOwner)));
+            SqlUtils.equals(source, TaskConstants.COL_OWNER, calendarOwner),
+            SqlUtils.notEqual(source, TaskConstants.COL_EXECUTOR, calendarOwner)));
       }
 
       ColorAndStyle cs = ColorAndStyle.maybeCreate(
@@ -1223,10 +1223,11 @@ public class CalendarModuleBean implements BeeModule {
 
     if (observed) {
       match.add(SqlUtils.and(
-          SqlUtils.notEqual(source, CrmConstants.COL_OWNER, calendarOwner),
-          SqlUtils.notEqual(source, CrmConstants.COL_EXECUTOR, calendarOwner),
-          SqlUtils.in(source, idName, CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK,
-              SqlUtils.equals(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, calendarOwner))));
+          SqlUtils.notEqual(source, TaskConstants.COL_OWNER, calendarOwner),
+          SqlUtils.notEqual(source, TaskConstants.COL_EXECUTOR, calendarOwner),
+          SqlUtils.in(source, idName, TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK,
+              SqlUtils
+                  .equals(TaskConstants.TBL_TASK_USERS, COL_USER, calendarOwner))));
 
       ColorAndStyle cs = ColorAndStyle.maybeCreate(
           DataUtils.getString(calRowSet, calendar, COL_OBSERVED_TASKS_BACKGROUND),
@@ -1238,23 +1239,21 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     if (!executors.isEmpty()) {
-      match.add(SqlUtils.inList(source, CrmConstants.COL_EXECUTOR, executors));
+      match.add(SqlUtils.inList(source, TaskConstants.COL_EXECUTOR, executors));
     }
 
     where.add(match);
 
     SqlSelect query = new SqlSelect()
-        .addFields(source, idName, CrmConstants.COL_START_TIME, CrmConstants.COL_FINISH_TIME,
-            CrmConstants.COL_SUMMARY, CrmConstants.COL_DESCRIPTION,
-            CrmConstants.COL_PRIORITY, CrmConstants.COL_STATUS,
-            CrmConstants.COL_OWNER, CrmConstants.COL_EXECUTOR)
-        .addField(CommonsConstants.TBL_COMPANIES,
-            CommonsConstants.COL_COMPANY_NAME, CommonsConstants.ALS_COMPANY_NAME)
+        .addFields(source, idName, TaskConstants.COL_START_TIME, TaskConstants.COL_FINISH_TIME,
+            TaskConstants.COL_SUMMARY, TaskConstants.COL_DESCRIPTION,
+            TaskConstants.COL_PRIORITY, TaskConstants.COL_STATUS,
+            TaskConstants.COL_OWNER, TaskConstants.COL_EXECUTOR)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
         .addFrom(source)
-        .addFromLeft(CommonsConstants.TBL_COMPANIES,
-            sys.joinTables(CommonsConstants.TBL_COMPANIES, source, CrmConstants.COL_COMPANY))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, source, COL_COMPANY))
         .setWhere(where)
-        .addOrder(source, CrmConstants.COL_START_TIME, CrmConstants.COL_FINISH_TIME, idName);
+        .addOrder(source, TaskConstants.COL_START_TIME, TaskConstants.COL_FINISH_TIME, idName);
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
@@ -1267,18 +1266,19 @@ public class CalendarModuleBean implements BeeModule {
         continue;
       }
 
-      Long owner = row.getLong(CrmConstants.COL_OWNER);
-      Long executor = row.getLong(CrmConstants.COL_EXECUTOR);
+      Long owner = row.getLong(TaskConstants.COL_OWNER);
+      Long executor = row.getLong(TaskConstants.COL_EXECUTOR);
 
       Set<Long> observers = Sets.newHashSet();
 
       Long[] taskUsers = qs.getLongColumn(new SqlSelect()
-          .addFields(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER)
-          .addFrom(CrmConstants.TBL_TASK_USERS)
+          .addFields(TaskConstants.TBL_TASK_USERS, COL_USER)
+          .addFrom(TaskConstants.TBL_TASK_USERS)
           .setWhere(SqlUtils.and(
-              SqlUtils.equals(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK, id),
-              SqlUtils.notEqual(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, owner),
-              SqlUtils.notEqual(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, executor))));
+              SqlUtils.equals(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK, id),
+              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, COL_USER, owner),
+              SqlUtils.notEqual(TaskConstants.TBL_TASK_USERS, COL_USER,
+                  executor))));
 
       if (taskUsers != null && taskUsers.length > 0) {
         for (Long user : taskUsers) {
@@ -1359,28 +1359,18 @@ public class CalendarModuleBean implements BeeModule {
 
     filter.add(Filter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
     filter.add(Filter.isLess(COL_START_DATE_TIME, new LongValue(BeeUtils.toLong(end))));
-    
+
     filter.add(Filter.in(sys.getIdName(TBL_APPOINTMENTS), VIEW_APPOINTMENT_ATTENDEES,
         COL_APPOINTMENT, Filter.any(COL_ATTENDEE, resources)));
 
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, filter);
-    if (appointments.isEmpty()) {
-      return ResponseObject.response(appointments);
-    }
-
-    Map<String, SqlSelect> queries = getAppointmentChildrenQueries();
-    for (BeeRow row : appointments.getRows()) {
-      setAppopintmentProperties(row, queries);
-    }
-
-    logger.info(reqInfo.getService(), appointments.getNumberOfRows(), appointments.getViewName());
     return ResponseObject.response(appointments);
   }
 
   private ResponseObject getReportOptions(RequestInfo reqInfo) {
     Integer report = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
     if (!BeeUtils.isOrdinal(Report.class, report)) {
-      return ResponseObject.parameterNotFound(SVC_GET_REPORT_OPTIONS, PARAM_REPORT);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_REPORT);
     }
 
     long userId = usr.getCurrentUserId();
@@ -1403,7 +1393,7 @@ public class CalendarModuleBean implements BeeModule {
 
     BeeRowSet result = qs.getViewData(VIEW_REPORT_OPTIONS, filter);
     if (result.getNumberOfRows() != 1) {
-      return ResponseObject.error(SVC_GET_REPORT_OPTIONS, COL_USER, userId, COL_REPORT, report,
+      return ResponseObject.error(reqInfo.getService(), COL_USER, userId, COL_REPORT, report,
           "report options not created");
     }
     return ResponseObject.response(result.getRow(0));
@@ -1537,27 +1527,26 @@ public class CalendarModuleBean implements BeeModule {
 
     SimpleRow data = qs.getRow(new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
-        .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL)
+        .addFields(TBL_CONTACTS, COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
-        .addFields(CommonsConstants.TBL_REMINDER_TYPES, CommonsConstants.COL_REMINDER_METHOD,
-            CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION, CommonsConstants.COL_REMINDER_TEMPLATE)
-        .addField(personContacts, CommonsConstants.COL_EMAIL, personEmail)
+        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD,
+            COL_REMINDER_TEMPLATE_CAPTION, COL_REMINDER_TEMPLATE)
+        .addField(personContacts, COL_EMAIL, personEmail)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(CommonsConstants.TBL_REMINDER_TYPES,
-            sys.joinTables(CommonsConstants.TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
                 COL_REMINDER_TYPE))
-        .addFromLeft(CommonsConstants.VIEW_COMPANIES,
-            sys.joinTables(CommonsConstants.VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
-        .addFromLeft(CommonsConstants.TBL_CONTACTS, sys.joinTables(CommonsConstants.TBL_CONTACTS,
-            CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CONTACT))
-        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
+        .addFromLeft(VIEW_COMPANIES,
+            sys.joinTables(VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, VIEW_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
                 COL_RECIPIENT))
-        .addFromLeft(CommonsConstants.TBL_CONTACTS, personContacts,
-            SqlUtils.join(personContacts, sys.getIdName(CommonsConstants.TBL_CONTACTS),
-                CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_CONTACT))
+        .addFromLeft(TBL_CONTACTS, personContacts,
+            SqlUtils.join(personContacts, sys.getIdName(TBL_CONTACTS),
+                TBL_COMPANY_PERSONS, COL_CONTACT))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
                 System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
@@ -1567,9 +1556,9 @@ public class CalendarModuleBean implements BeeModule {
     if (data != null) {
       notificationTimers.remove(data.getLong(COL_APPOINTMENT), timer);
       String error = null;
-      String subject = data.getValue(CommonsConstants.COL_REMINDER_TEMPLATE_CAPTION);
+      String subject = data.getValue(COL_REMINDER_TEMPLATE_CAPTION);
       String template = BeeUtils.notEmpty(data.getValue(COL_MESSAGE),
-          data.getValue(CommonsConstants.COL_REMINDER_TEMPLATE));
+          data.getValue(COL_REMINDER_TEMPLATE));
 
       if (BeeUtils.isEmpty(subject)) {
         error = "No reminder caption specified";
@@ -1579,12 +1568,12 @@ public class CalendarModuleBean implements BeeModule {
       }
       if (BeeUtils.isEmpty(error)) {
         ReminderMethod method = EnumUtils.getEnumByIndex(ReminderMethod.class,
-            data.getInt(CommonsConstants.COL_REMINDER_METHOD));
+            data.getInt(COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
           Long sender = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
           Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
-              data.getValue(CommonsConstants.COL_EMAIL)));
+              data.getValue(COL_EMAIL)));
 
           if (!DataUtils.isId(sender)) {
             error = "No default sender specified (parameter DefaultAccount)";
@@ -1629,18 +1618,32 @@ public class CalendarModuleBean implements BeeModule {
     return qs.updateDataWithResponse(update);
   }
 
-  private void setAppopintmentProperties(BeeRow row, Map<String, SqlSelect> queries) {
-    long appId = row.getId();
-    
-    for (Map.Entry<String, SqlSelect> entry : queries.entrySet()) {
-      String source = entry.getKey();
+  private void setAppopintmentProperties(BeeRowSet rowSet) {
+    List<Long> appIds = rowSet.getRowIds();
 
-      SqlSelect query = entry.getValue();
-      query.setWhere(SqlUtils.equals(source, COL_APPOINTMENT, appId));
-      
-      List<Long> values = qs.getLongList(query);
-      if (!values.isEmpty()) {
-        row.setProperty(source, DataUtils.buildIdList(values));
+    for (Map.Entry<String, String> entry : APPOINTMENT_CHILDREN.entrySet()) {
+      String source = entry.getKey();
+      String field = entry.getValue();
+
+      SqlSelect query = new SqlSelect()
+          .addFields(source, COL_APPOINTMENT, field)
+          .addFrom(source)
+          .setWhere(SqlUtils.inList(source, COL_APPOINTMENT, appIds))
+          .addOrder(source, COL_APPOINTMENT, field);
+
+      SimpleRowSet data = qs.getData(query);
+
+      if (!DataUtils.isEmpty(data)) {
+        Multimap<Long, Long> children = ArrayListMultimap.create();
+        for (SimpleRow childRow : data) {
+          children.put(childRow.getLong(0), childRow.getLong(1));
+        }
+
+        for (BeeRow row : rowSet) {
+          if (children.containsKey(row.getId())) {
+            row.setProperty(source, DataUtils.buildIdList(children.get(row.getId())));
+          }
+        }
       }
     }
   }
@@ -1662,12 +1665,14 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(reqInfo.getService(), ": old row not found", appId);
     }
 
-    BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRowSet.getRow(0),
+    BeeRow oldRow = oldRowSet.getRow(0);
+
+    BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRow,
         newRowSet.getRow(0), null);
 
     ResponseObject response;
     if (updated == null) {
-      response = ResponseObject.response(oldRowSet.getRow(0));
+      response = ResponseObject.response(oldRow);
     } else {
       response = deb.commitRow(updated);
       if (response.hasErrors()) {
@@ -1675,20 +1680,16 @@ public class CalendarModuleBean implements BeeModule {
       }
     }
 
-    boolean childrenChanged = false;    
-    boolean updateReminders = false;    
+    boolean childrenChanged = false;
+    boolean updateReminders = false;
 
     for (Map.Entry<String, String> entry : APPOINTMENT_CHILDREN.entrySet()) {
       String table = entry.getKey();
       String column = entry.getValue();
-      
-      List<Long> oldValues = qs.getLongList(new SqlSelect()
-        .addFields(table, column)
-        .addFrom(table)
-        .setWhere(SqlUtils.equals(table, COL_APPOINTMENT, appId)));
-      
+
+      List<Long> oldValues = DataUtils.parseIdList(oldRow.getProperty(table));
       List<Long> newValues = DataUtils.parseIdList(newRowSet.getTableProperty(table));
-      
+
       if (TBL_APPOINTMENT_REMINDERS.equals(table)) {
         updateReminders = !oldValues.isEmpty() || !newValues.isEmpty();
       }
@@ -1698,7 +1699,7 @@ public class CalendarModuleBean implements BeeModule {
         childrenChanged = true;
       }
     }
-    
+
     if (childrenChanged) {
       news.maybeRecordUpdate(VIEW_APPOINTMENTS, appId);
     }

@@ -20,7 +20,7 @@
       label="=calAppointmentStatus" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=registered" />
-    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="creator" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
 
     <DateTime name="StartDateTime" notNull="true" label="=calAppointmentStart" />
     <DateTime name="EndDateTime" notNull="true" label="=calAppointmentEnd" />

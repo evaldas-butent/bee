@@ -23,7 +23,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.websocket.Endpoint;
@@ -141,8 +141,8 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
     this.roomId = chatRoom.getId();
 
-    this.headerView = new HeaderSilverImpl();
-    headerView.create(chatRoom.getName(), false, true, EnumSet.of(UiOption.ROOT),
+    this.headerView = new HeaderImpl();
+    headerView.create(chatRoom.getName(), false, true, null, EnumSet.of(UiOption.ROOT),
         EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.CLOSE), Action.NO_ACTIONS,
         Action.NO_ACTIONS);
     headerView.setViewPresenter(this);

@@ -1,8 +1,8 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
@@ -23,25 +23,122 @@ import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * creates and manages menu of the system using authorization and layout configuration.
  */
 
-public class MenuManager implements Module {
-
-  public interface MenuCallback {
-    void onSelection(String parameters);
-  }
+public class MenuManager {
 
   private static final BeeLogger logger = LogUtils.getLogger(MenuManager.class);
 
-  private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
+  private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
+    String txt = Localized.maybeTranslate(item.getLabel());
+    MenuService svc = null;
+    String opt = null;
+
+    if (item instanceof MenuItem) {
+      svc = ((MenuItem) item).getService();
+      opt = ((MenuItem) item).getParameters();
+    }
+    boolean sepBefore = item.hasSeparator();
+    boolean sepAfter = false;
+
+    if (rw instanceof MenuBar) {
+      MenuBar mb = (MenuBar) rw;
+      if (sepBefore && mb.getItemCount() > 0) {
+        mb.addSeparator(new MenuSeparator());
+      }
+
+      if (cw == null) {
+        if (svc == null) {
+          noService(item);
+        } else {
+          mb.addItem(txt, new MenuCommand(svc, opt));
+        }
+
+      } else if (cw instanceof MenuBar) {
+        mb.addItem(txt, (MenuBar) cw);
+      }
+
+      if (sepAfter) {
+        mb.addSeparator(new MenuSeparator());
+      }
+
+    } else if (rw instanceof Tree) {
+      TreeItem it = new TreeItem(txt);
+
+      if (cw == null) {
+        if (svc == null) {
+          noService(item);
+        } else {
+          it.setUserObject(new MenuCommand(svc, opt));
+        }
+
+      } else {
+        it.addItem(cw.asWidget());
+      }
+
+      ((Tree) rw).addItem(it);
+    }
+  }
+  
+  private static void noService(Menu item) {
+    logger.warning("service not available for menu item", item.getParent(), item.getName());
+  }
+
+  private static IdentifiableWidget createWidget(String layout, int level) {
+    IdentifiableWidget w = null;
+
+    if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
+      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.LABEL);
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
+      w = new Tree();
+      ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
+      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT);
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
+      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.RADIO);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.RADIO);
+
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
+      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.BUTTON);
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.BUTTON);
+
+    } else {
+      Assert.untouchable();
+    }
+
+    return w;
+  }
+
+  private static BAR_TYPE getBarType(boolean table) {
+    return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
+  }
+
+  private static void prepareWidget(IdentifiableWidget w) {
+    if (w instanceof MenuBar) {
+      ((MenuBar) w).prepare();
+    }
+  }
 
   private final List<Menu> roots = Lists.newArrayList();
 
@@ -72,40 +169,19 @@ public class MenuManager implements Module {
     return layouts;
   }
 
-  public MenuCallback getMenuCallback(String service) {
-    Assert.notEmpty(service);
-    return menuCallbacks.get(BeeUtils.normalize(service));
-  }
-
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return 20;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
   public String getRootLayout() {
     return getLayout(0);
   }
 
-  @Override
-  public void init() {
+  public List<Menu> getRoots() {
+    return roots;
   }
 
   public boolean loadMenu() {
-    BeeKeeper.getRpc().makeGetRequest(Service.LOAD_MENU, new ResponseCallback() {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_MENU);
+    params.addQueryItem(Service.VAR_RIGHTS, 1);
+    
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse()) {
@@ -114,15 +190,6 @@ public class MenuManager implements Module {
       }
     });
     return true;
-  }
-
-  @Override
-  public void onExit() {
-  }
-
-  public void registerMenuCallback(String service, MenuCallback callback) {
-    Assert.notEmpty(service);
-    menuCallbacks.put(BeeUtils.normalize(service), callback);
   }
 
   public void restore(String data) {
@@ -158,51 +225,6 @@ public class MenuManager implements Module {
       tree.addItem(item);
     }
     BeeKeeper.getScreen().updateActivePanel(tree);
-  }
-
-  @Override
-  public void start() {
-  }
-
-  private static void addEntry(IdentifiableWidget rw, Menu item, IdentifiableWidget cw) {
-    String txt = Localized.maybeTranslate(item.getLabel());
-    String svc = null;
-    String opt = null;
-
-    if (item instanceof MenuItem) {
-      svc = ((MenuItem) item).getService();
-      opt = ((MenuItem) item).getParameters();
-    }
-    boolean sepBefore = item.hasSeparator();
-    boolean sepAfter = false;
-
-    if (rw instanceof MenuBar) {
-      MenuBar mb = (MenuBar) rw;
-      if (sepBefore && mb.getItemCount() > 0) {
-        mb.addSeparator(new MenuSeparator());
-      }
-
-      if (cw == null) {
-        mb.addItem(txt, new MenuCommand(svc, opt));
-      } else if (cw instanceof MenuBar) {
-        mb.addItem(txt, (MenuBar) cw);
-      }
-
-      if (sepAfter) {
-        mb.addSeparator(new MenuSeparator());
-      }
-
-    } else if (rw instanceof Tree) {
-      TreeItem it = new TreeItem(txt);
-
-      if (cw == null) {
-        it.setUserObject(new MenuCommand(svc, opt));
-      } else {
-        it.addItem(cw.asWidget());
-      }
-
-      ((Tree) rw).addItem(it);
-    }
   }
 
   private void collectMenuInfo(TreeItem treeItem, Menu menu) {
@@ -269,56 +291,8 @@ public class MenuManager implements Module {
     return rw;
   }
 
-  private static IdentifiableWidget createWidget(String layout, int level) {
-    IdentifiableWidget w = null;
-
-    if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
-      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
-      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.LABEL);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
-      w = new Tree();
-      ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
-      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.RADIO);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
-      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.RADIO);
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
-      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.BUTTON);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
-      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.BUTTON);
-
-    } else {
-      Assert.untouchable();
-    }
-
-    return w;
-  }
-
-  private static BAR_TYPE getBarType(boolean table) {
-    return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
-  }
-
   private String getLayout(int idx) {
     Assert.isIndex(getLayouts(), idx);
     return getLayouts().get(idx);
-  }
-
-  private static void prepareWidget(IdentifiableWidget w) {
-    if (w instanceof MenuBar) {
-      ((MenuBar) w).prepare();
-    }
   }
 }

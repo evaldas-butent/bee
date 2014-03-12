@@ -6,6 +6,6 @@
   >
   <g:columns>
     <DataColumn name="Ordinal" width="60" visible="true" />
-    <RelColumn name="Criteria" caption="=ecCriteriaName" newRowEnabled="false" visible="true" />
+    <RelColumn name="Criteria" newRowEnabled="false" visible="true" />
   </g:columns>
 </g:Grid>

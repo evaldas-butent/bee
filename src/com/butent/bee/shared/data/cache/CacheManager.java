@@ -341,7 +341,7 @@ public class CacheManager implements HandlesAllDataEvents {
       }
 
       if (rowCount > 0) {
-        entry.addRows(rowSet.getRows().getList(), filter, order, offset);
+        entry.addRows(rowSet.getRows(), filter, order, offset);
       }
       if (isComplete) {
         entry.setRowCount(filter, order, rowCount);

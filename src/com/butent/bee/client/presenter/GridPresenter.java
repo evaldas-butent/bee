@@ -19,7 +19,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.HistoryHandler;
+import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -54,6 +54,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -67,7 +68,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -136,11 +137,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           rowIds[i] = rowInfo.getId();
           i++;
         }
-      
+
         if (BeeUtils.isEmpty(getViewName())) {
           MultiDeleteEvent.forward(getDataProvider(), getViewName(), rows);
           afterMulti(rowIds);
-        
+
         } else {
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
@@ -185,14 +186,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final GridFilterManager filterManager;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions) {
     this(gridDescription, gridView, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
         null, null, null, null, null, null, null);
   }
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Filter immutableFilter, Map<String, Filter> parentFilters,
       List<FilterComponent> userFilterValues, Filter userFilter,
@@ -326,9 +327,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
-    if (getGridView().hasNotifications()) {
-      return;
-    }
+
     if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(action, this)) {
       return;
     }
@@ -358,7 +357,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           }
           return;
         }
-        GridFactory.openGrid(CommonsConstants.GRID_HISTORY,
+        GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
             new HistoryHandler(getGridView().getViewName(), ids), null,
             PresenterCallback.SHOW_IN_POPUP);
         break;
@@ -437,7 +436,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public boolean hasFilter() {
     return getDataProvider().hasFilter();
   }
-  
+
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),
@@ -643,7 +642,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Provider createProvider(GridContainerView view, String viewName,
       List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter, Order order,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy) {
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy) {
 
     if (providerType == null) {
       return null;

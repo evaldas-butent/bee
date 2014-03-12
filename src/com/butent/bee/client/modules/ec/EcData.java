@@ -23,7 +23,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
 import com.butent.bee.shared.modules.ec.EcBrand;
 import com.butent.bee.shared.modules.ec.EcCarModel;
@@ -202,7 +202,7 @@ class EcData {
 
   void ensureWarehouses(final Consumer<Boolean> callback) {
     if (warehouses == null) {
-      Queries.getRowSet(CommonsConstants.VIEW_WAREHOUSES, null, new Queries.RowSetCallback() {
+      Queries.getRowSet(ClassifierConstants.VIEW_WAREHOUSES, null, new Queries.RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           warehouses = result; 
@@ -349,7 +349,7 @@ class EcData {
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
 
-          Map<String, String> map = Codec.beeDeserializeMap(response.getResponseAsString());
+          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
           if (!map.isEmpty()) {
             clientInfo.clear();
             clientInfo.putAll(map);
@@ -377,7 +377,7 @@ class EcData {
         public void onResponse(ResponseObject response) {
           EcKeeper.dispatchMessages(response);
 
-          Map<String, String> map = Codec.beeDeserializeMap(response.getResponseAsString());
+          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
           if (!map.isEmpty()) {
             configuration.clear();
             configuration.putAll(map);
@@ -460,8 +460,8 @@ class EcData {
     if (BeeUtils.isEmpty(code) || DataUtils.isEmpty(warehouses)) {
       return null;
     } else {
-      int codeIndex = warehouses.getColumnIndex(CommonsConstants.COL_WAREHOUSE_CODE);
-      int nameIndex = warehouses.getColumnIndex(CommonsConstants.COL_WAREHOUSE_NAME);
+      int codeIndex = warehouses.getColumnIndex(ClassifierConstants.COL_WAREHOUSE_CODE);
+      int nameIndex = warehouses.getColumnIndex(ClassifierConstants.COL_WAREHOUSE_NAME);
 
       for (BeeRow row : warehouses.getRows()) {
         if (code.equals(row.getString(codeIndex))) {

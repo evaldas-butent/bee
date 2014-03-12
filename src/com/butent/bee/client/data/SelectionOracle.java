@@ -543,7 +543,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
       if (filter == null) {
         if (exclusions.isEmpty()) {
-          getRequestData().setRows(getViewData().getRows().getList());
+          getRequestData().setRows(getViewData().getRows());
         } else {
           for (BeeRow row : getViewData().getRows()) {
             if (!exclusions.contains(row.getId())) {

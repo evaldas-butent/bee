@@ -97,12 +97,12 @@
     
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=adTopic" style="&lbl1; min-width:150px;" />
-      <DataSelector source="Topic" style="&inp2x; width: 250px" 
+      <DataSelector name="Topic" source="Topic" style="&inp2x; width: 250px" 
         choiceColumns="Name" filter="Visible" />
     </FlowPanel>
     
     <FlowPanel style="&section;" class="flexBox-horizontal">
-      <Label text="=displayInBoard" style="&lbl1; min-width:150px;" />
+      <Label name="DisplayInBoard" text="=displayInBoard" style="&lbl1; min-width:150px;" />
       <Label text="=dateFromShort" style="text-transform: lowercase; margin-right:4px"/>
       <InputDateTime source="VisibleFrom" style="&inp2x; width: 100px; margin-right:8px"/>
       <Label text="=dateToShort" style="text-transform: lowercase; margin-right:4px"/>
@@ -111,7 +111,7 @@
     
     <FlowPanel style="&section;" class="flexBox-horizontal">      
       <CheckBox name="Important" source="Important" text="=important" style="&top1; min-width:70px; padding-right:18px;" />
-      <CheckBox name="PermitComment" source="PermitComment" text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" /> 
+      <CheckBox name="PermitComment" text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" /> 
     </FlowPanel>
     
   </FlowPanel>

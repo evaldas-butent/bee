@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="Colors" viewName="Colors" caption="=colors"
+  flexGrow="1" flexShrink="1"
+  >
+  <g:columns>
+    <DataColumn name="Name" caption="=caption" width="120" visible="true" />
+
+    <DataColumn name="Background" minWidth="100" updateMode="row" visible="true">
+      <editor type="color" />
+    </DataColumn>
+    
+    <DataColumn name="Foreground" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+</g:Grid>

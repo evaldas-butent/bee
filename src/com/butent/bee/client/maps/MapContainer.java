@@ -5,7 +5,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -28,8 +28,8 @@ public class MapContainer extends Flow implements Presenter, View {
   public MapContainer(String caption, MapWidget mapWidget) {
     super(STYLE_NAME);
 
-    this.headerView = new HeaderSilverImpl();
-    headerView.create(caption, false, true, EnumSet.of(UiOption.ROOT),
+    this.headerView = new HeaderImpl();
+    headerView.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
         EnumSet.of(Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     headerView.setViewPresenter(this);

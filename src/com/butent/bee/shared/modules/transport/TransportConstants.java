@@ -2,12 +2,12 @@ package com.butent.bee.shared.modules.transport;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -155,20 +155,20 @@ public final class TransportConstants {
             TBL_VEHICLES, COL_VEHICLE_NUMBER));
         addProperty(new ImportProperty(COL_COSTS_DATE, locale.date()));
         addProperty(new ImportProperty(COL_COSTS_ITEM, locale.itemOrService(),
-            CommonsConstants.TBL_ITEMS, CommonsConstants.COL_ITEM_NAME));
+            ClassifierConstants.TBL_ITEMS, ClassifierConstants.COL_ITEM_NAME));
         addProperty(new ImportProperty(COL_COSTS_QUANTITY, locale.quantity()));
         addProperty(new ImportProperty(COL_COSTS_PRICE, locale.price()));
         addProperty(new ImportProperty(COL_COSTS_CURRENCY, locale.currency(),
-            ExchangeUtils.TBL_CURRENCIES, ExchangeUtils.COL_CURRENCY_NAME));
+            AdministrationConstants.TBL_CURRENCIES, AdministrationConstants.COL_CURRENCY_NAME));
         addProperty(new ImportProperty(TradeConstants.COL_TRADE_VAT_PLUS, locale.vatPlus()));
         addProperty(new ImportProperty(COL_COSTS_VAT, locale.vat()));
         addProperty(new ImportProperty(TradeConstants.COL_TRADE_VAT_PERC, locale.vatPercent()));
         addProperty(new ImportProperty(COL_AMOUNT, locale.amount()));
         addProperty(new ImportProperty(COL_COSTS_SUPPLIER, locale.supplier(),
-            CommonsConstants.TBL_COMPANIES, CommonsConstants.COL_COMPANY_NAME));
+            ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME));
         addProperty(new ImportProperty(COL_NUMBER, locale.number()));
         addProperty(new ImportProperty(COL_COSTS_COUNTRY, locale.country(),
-            CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
+            ClassifierConstants.TBL_COUNTRIES, ClassifierConstants.COL_COUNTRY_NAME));
         addProperty(new ImportProperty(COL_COSTS_NOTE, locale.notes()));
         addProperty(new ImportProperty(COL_COSTS_EXTERNAL_ID, locale.externalId()));
       }
@@ -186,8 +186,8 @@ public final class TransportConstants {
         addProperty(new ImportProperty(VAR_IMPORT_PASSWORD, locale.loginPassword()));
         addProperty(new ImportProperty(COL_VEHICLE, locale.trVehicle(),
             TBL_VEHICLES, COL_VEHICLE_NUMBER));
-        addProperty(new ImportProperty(CommonsConstants.COL_COUNTRY, locale.country(),
-            CommonsConstants.TBL_COUNTRIES, CommonsConstants.COL_COUNTRY_NAME));
+        addProperty(new ImportProperty(ClassifierConstants.COL_COUNTRY, locale.country(),
+            ClassifierConstants.TBL_COUNTRIES, ClassifierConstants.COL_COUNTRY_NAME));
       }
     };
 
@@ -358,9 +358,6 @@ public final class TransportConstants {
     EnumUtils.register(ImportType.class);
   }
 
-  public static final String TRANSPORT_MODULE = "Transport";
-  public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
-
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
   public static final String SVC_GET_PROFIT = "GetProfit";
@@ -509,6 +506,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_DESCRIPTION = "Description";
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
+  public static final String COL_CARGO_MESSAGE = "Message";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
@@ -566,6 +564,7 @@ public final class TransportConstants {
   public static final String COL_AMOUNT = "Amount";
 
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_CARGO_DIRECTIONS = "Directions";
 
   public static final String COL_UNLOADING_PLACE = "UnloadingPlace";
   public static final String COL_LOADING_PLACE = "LoadingPlace";
@@ -821,6 +820,7 @@ public final class TransportConstants {
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
+  public static final String PROP_CITIES = "Cities";
   public static final String PROP_DRIVERS = "Drivers";
   public static final String PROP_ABSENCE = "Absence";
   public static final String PROP_VEHICLES = "Vehicles";
@@ -844,6 +844,26 @@ public final class TransportConstants {
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
+
+  public static final String ALS_LOADING_DATE = "LoadingDate";
+  public static final String ALS_LOADING_TERMINAL = "LoadingTerminal";
+  public static final String ALS_LOADING_CONTACT = "LoadingContact";
+  public static final String ALS_LOADING_COMPANY = "LoadingCompany";
+  public static final String ALS_LOADING_ADDRESS = "LoadingAddress";
+  public static final String ALS_LOADING_POST_INDEX = "LoadingPostIndex";
+  public static final String ALS_LOADING_CITY_NAME = "LoadingCityName";
+  public static final String ALS_LOADING_COUNTRY_NAME = "LoadingCountryName";
+  public static final String ALS_LOADING_COUNTRY_CODE = "LoadingCountryCode";
+
+  public static final String ALS_UNLOADING_DATE = "UnloadingDate";
+  public static final String ALS_UNLOADING_TERMINAL = "UnloadingTerminal";
+  public static final String ALS_UNLOADING_CONTACT = "UnloadingContact";
+  public static final String ALS_UNLOADING_COMPANY = "UnloadingCompany";
+  public static final String ALS_UNLOADING_ADDRESS = "UnLoadingAddress";
+  public static final String ALS_UNLOADING_POST_INDEX = "UnloadingPostIndex";
+  public static final String ALS_UNLOADING_CITY_NAME = "UnloadingCityName";
+  public static final String ALS_UNLOADING_COUNTRY_NAME = "UnloadingCountryName";
+  public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";

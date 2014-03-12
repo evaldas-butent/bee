@@ -5,8 +5,9 @@
   idName="GroupCategoryID"
   >
   <Fields>
-    <Relation name="Group" relation="EcGroups" notNull="true" cascade="DELETE" />
-    <Relation name="Category" relation="TcdCategories" notNull="true" cascade="DELETE" label="=ecItemCategory" />
+    <Relation name="Group" relation="EcGroups" notNull="true" cascade="DELETE" label="=ecGroup" />
+    <Relation name="Category" relation="TcdCategories" notNull="true" cascade="DELETE"
+      label="=ecItemCategory" />
   </Fields>
   <Constraints>
     <Unique fields="Group Category" />

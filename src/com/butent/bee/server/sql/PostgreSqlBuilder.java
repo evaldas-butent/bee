@@ -1,6 +1,6 @@
 package com.butent.bee.server.sql;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -226,8 +226,11 @@ class PostgreSqlBuilder extends SqlBuilder {
             .getSqlString(this);
 
       case LIKE:
-        return "ILIKE";
-
+        if (BeeUtils.unbox((Boolean) params.get("CaseSensitive"))) {
+          return "LIKE";
+        } else {
+          return "ILIKE";
+        }
       default:
         return super.sqlKeyword(option, params);
     }

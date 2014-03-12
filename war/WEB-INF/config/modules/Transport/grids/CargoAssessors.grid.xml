@@ -11,7 +11,7 @@
     <ActionColumn element="link" name="ID" options="open" width="40">
       <render><ui:expression>rowId</ui:expression></render>
     </ActionColumn>
-    <DataColumn name="Assessor" caption="=captionPId" readOnly="true" width="40" />
+    <DataColumn name="Assessor" caption="=captionPid" readOnly="true" width="40" />
     <RelColumn name="Manager" caption="=manager" />
     <DataColumn name="Notes" caption="=notes" />
     <PropColumn name="Income" type="decimal" caption="=income" format="#.00" />

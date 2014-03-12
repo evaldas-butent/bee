@@ -83,6 +83,8 @@ public class XmlView {
   }
 
   @XmlAttribute
+  public String module;
+  @XmlAttribute
   public String name;
   @XmlAttribute
   public String source;

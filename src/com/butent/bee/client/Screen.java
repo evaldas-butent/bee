@@ -18,7 +18,7 @@ import java.util.List;
  * manages the main browser window and it's main containing elements (f.e. panels).
  */
 
-public interface Screen extends Module, NotificationListener {
+public interface Screen extends NotificationListener {
 
   boolean activateDomainEntry(Domain domain, Long key);
 
@@ -56,6 +56,8 @@ public interface Screen extends Module, NotificationListener {
 
   Workspace getWorkspace();
   
+  void init();
+
   void onLoad();
   
   void onWidgetChange(IdentifiableWidget widget);
@@ -68,6 +70,8 @@ public interface Screen extends Module, NotificationListener {
 
   void showWidget(IdentifiableWidget widget, boolean newPlace);
 
+  void start(UserData userData);
+  
   void updateActivePanel(IdentifiableWidget widget);
 
   void updateCommandPanel(IdentifiableWidget widget);

@@ -20,6 +20,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -27,6 +28,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
@@ -37,6 +39,8 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
@@ -46,10 +50,10 @@ import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -63,6 +67,7 @@ import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -77,9 +82,11 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -265,6 +272,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final String STYLE_CHATTER = "-chatter";
 
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
+  private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
 
   private static final int INITIAL_COMMENT_ROW_PADDING_LEFT = 0;
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = 5;
@@ -303,6 +311,38 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           }
         }
       });
+    }
+
+    if (BeeUtils.same(COL_PERMIT_COMMENT, name) && widget instanceof InputBoolean) {
+      final InputBoolean pcib = (InputBoolean) widget;
+      pcib.addValueChangeHandler(new ValueChangeHandler<String>() {
+
+        @Override
+        public void onValueChange(ValueChangeEvent<String> event) {
+          boolean value = BeeUtils.toBoolean(event.getValue());
+          if (value) {
+            doClose();
+          } else {
+            doActivate();
+          }
+        }
+      });
+    }
+
+    if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
+      final DataSelector tds = (DataSelector) widget;
+      Handler selHandler = new Handler() {
+
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+          if (label != null) {
+            label.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
+          }
+        }
+      };
+
+      tds.addSelectorHandler(selHandler);
     }
   }
 
@@ -348,6 +388,24 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (widget instanceof Panel) {
       createMarkPanel((Flow) widget, form, row, null, true);
     }
+
+    widget = form.getWidgetByName(COL_PERMIT_COMMENT);
+    if (widget instanceof InputBoolean) {
+      InputBoolean pcib = (InputBoolean) widget;
+      boolean closed =
+          BeeUtils.unbox(row.getInteger(form.getDataIndex(COL_STATUS))) == DiscussionStatus.CLOSED
+              .ordinal();
+      pcib.setValue(BeeUtils.toString(closed));
+    }
+
+    widget = form.getWidgetBySource(COL_TOPIC);
+    if (widget instanceof DataSelector) {
+      DataSelector tds = (DataSelector) widget;
+      Label lbl = (Label) form.getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
+      if (lbl != null) {
+        lbl.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(tds.getValue()));
+      }
+    }
   }
 
   @Override
@@ -371,6 +429,32 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     event.consume();
 
+    boolean isTopic =
+        DataUtils.isId(BeeUtils.toLongOrNull(((DataSelector) getFormView().getWidgetBySource(
+            COL_TOPIC)).getValue()));
+
+    if (isTopic) {
+      String validFromVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_FROM)).getValue();
+
+      String validToVal = ((InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_TO)).getValue();
+
+      Long validFrom = null;
+      if (!BeeUtils.isEmpty(validFromVal)) {
+        validFrom = TimeUtils.parseTime(validFromVal);
+      }
+
+      Long validTo = null;
+      if (!BeeUtils.isEmpty(validToVal)) {
+        validTo = TimeUtils.parseTime(validToVal);
+      }
+
+      if (!validateDates(validFrom, validTo, event)) {
+        return;
+      }
+    }
+
     ParameterList params = createParams(DiscussionEvent.MODIFY, null);
 
     sendRequest(params, new Callback<ResponseObject>() {
@@ -380,7 +464,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         BeeRow data = getResponseRow(DiscussionEvent.MODIFY.getCaption(), result, this);
 
         if (data != null) {
-          // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
         }
       }
@@ -391,7 +474,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     form.setEnabled(false);
-    
+
     MultiSelector members = getMultiSelector(form, PROP_MEMBERS);
     Widget accessWidget = form.getWidgetBySource(COL_ACCESSIBILITY);
     InputBoolean accessibility = (InputBoolean) accessWidget;
@@ -434,7 +517,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           return;
         }
 
-        // BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_DISCUSSIONS, data));
         RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
         Widget fileWidget = form.getWidgetByName(PROP_FILES);
@@ -583,7 +665,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private static boolean isPhoto(BeeRow row, BeeRowSet rowSet) {
-    return !BeeUtils.isEmpty(row.getString(rowSet.getColumnIndex(CommonsConstants.COL_PHOTO)));
+    return !BeeUtils.isEmpty(row.getString(rowSet.getColumnIndex(COL_PHOTO)));
   }
 
   private static void sendRequest(ParameterList params, final Callback<ResponseObject> callback) {
@@ -649,10 +731,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     Flow colPhoto = new Flow();
-    colPhoto.addStyleName(STYLE_COMMENT_ROW + CommonsConstants.COL_PHOTO);
+    colPhoto.addStyleName(STYLE_COMMENT_ROW + COL_PHOTO);
 
     if (paddingLeft > MAX_COMMENT_ROW_PADDING_LEFT) {
-      colPhoto.addStyleName(STYLE_COMMENT_ROW + CommonsConstants.COL_PHOTO + STYLE_CHATTER);
+      colPhoto.addStyleName(STYLE_COMMENT_ROW + COL_PHOTO + STYLE_CHATTER);
     }
 
     if (renderPhoto) {
@@ -1276,10 +1358,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static void renderPhoto(IsRow commentRow, List<BeeColumn> commentColumns,
       Flow container) {
     String photo =
-        commentRow.getString(DataUtils.getColumnIndex(CommonsConstants.COL_PHOTO, commentColumns));
+        commentRow.getString(DataUtils.getColumnIndex(COL_PHOTO, commentColumns));
     if (!BeeUtils.isEmpty(photo)) {
       Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.addStyleName(STYLE_COMMENT + CommonsConstants.COL_PHOTO);
+      image.addStyleName(STYLE_COMMENT + COL_PHOTO);
       container.add(image);
     }
   }
@@ -1404,5 +1486,52 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
       });
     }
+  }
+
+  private static boolean validateDates(Long from, Long to,
+      final SaveChangesEvent event) {
+    long now = System.currentTimeMillis();
+
+    if (from == null && to == null) {
+      event.getCallback().onFailure(
+          BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+              .enterDate()));
+      return false;
+    }
+
+    if (from == null && to != null) {
+      if (to.longValue() >= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateToShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to == null) {
+      if (from.longValue() <= now) {
+        return true;
+        // } else {
+        // event.getCallback().onFailure(
+        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
+        // .invalidDate(), Localized.getConstants().dateFromShort()));
+        // return false;
+      }
+    }
+
+    if (from != null && to != null) {
+      if (from <= to) {
+        return true;
+      } else {
+        event.getCallback().onFailure(
+            BeeUtils.joinWords(Localized.getConstants().displayInBoard(),
+                Localized.getConstants().crmFinishDateMustBeGreaterThanStart()));
+        return false;
+      }
+    }
+
+    return true;
   }
 }

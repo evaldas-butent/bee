@@ -9,15 +9,14 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -123,13 +122,6 @@ public class Mobile extends ScreenImpl {
   @Override
   public void showWidget(IdentifiableWidget widget, boolean newPlace) {
     getScreenPanel().updateCenter(widget);
-  }
-
-  @Override
-  public void start() {
-    createUi();
-    notifyInfo(BeeUtils.joinWords("Start Time:",
-        System.currentTimeMillis() - Settings.getStartMillis(), "ms"));
   }
 
   @Override

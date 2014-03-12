@@ -31,6 +31,7 @@
     <xs:attributeGroup ref="flex" />
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" />
+    <xs:attribute name="module" type="type:module" />
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
     <xs:attribute name="whiteSpace" type="ui:whiteSpaceType" />
@@ -90,7 +91,7 @@
             <xs:element name="selectorColumn" type="ui:selectorColumn" />
           </xs:choice>
         </xs:sequence>
-        <xs:attribute name="viewName" type="type:nameType" />
+        <xs:attribute name="viewName" type="type:dataView" />
         <xs:attributeGroup ref="ui:relation" />
       </xs:extension>
     </xs:complexContent>
@@ -101,7 +102,7 @@
   <xs:complexType name="autocompleteColumn">
     <xs:complexContent>
       <xs:extension base="baseColumn">
-        <xs:attribute name="viewName" type="type:nameType" use="required" />
+        <xs:attribute name="viewName" type="type:dataView" use="required" />
         <xs:attribute name="viewColumn" type="type:fieldNameType" use="required" />
       </xs:extension>
     </xs:complexContent>

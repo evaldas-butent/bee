@@ -204,10 +204,24 @@ public final class StyleUtils {
 
   private static String styleTransform;
 
+  public static int addClassName(Collection<? extends Element> elements, String className) {
+    Assert.notNull(elements);
+    Assert.notEmpty(className);
+
+    int cnt = 0;
+    for (Element el : elements) {
+      if (el != null) {
+        el.addClassName(className);
+        cnt++;
+      }
+    }
+    return cnt;
+  }
+
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
-
+    
     int cnt = nodes.getLength();
     for (int i = 0; i < cnt; i++) {
       nodes.getItem(i).addClassName(className);
@@ -453,11 +467,15 @@ public final class StyleUtils {
         + DEFINITION_SEPARATOR);
   }
 
+  public static SafeStyles buildStyle(String n1, String v1, String n2, String v2) {
+    return buildStyle(buildStyle(n1, v1), buildStyle(n2, v2));
+  }
+
   public static SafeStyles buildTextTransform(TextTransform textTransform) {
     Assert.notNull(textTransform);
     return buildStyle(CssProperties.TEXT_TRANSFORM, textTransform.getCssName());
   }
-
+  
   public static SafeStyles buildTop(double value, CssUnit unit) {
     return buildStyle(STYLE_TOP, toCssLength(value, unit));
   }
@@ -1273,6 +1291,20 @@ public final class StyleUtils {
 
   public static WhiteSpace parseWhiteSpace(String input) {
     return parseCssName(WhiteSpace.class, input);
+  }
+
+  public static int removeClassName(Collection<? extends Element> elements, String className) {
+    Assert.notNull(elements);
+    Assert.notEmpty(className);
+    
+    int cnt = 0;
+    for (Element el : elements) {
+      if (el != null) {
+        el.removeClassName(className);
+        cnt++;
+      }
+    }
+    return cnt;
   }
 
   public static int removeClassName(NodeList<Element> nodes, String className) {

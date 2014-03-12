@@ -451,7 +451,7 @@
     <xs:attribute name="editEnabled" type="xs:boolean" />
     <xs:attribute name="editKey" type="xs:int" />
     <xs:attribute name="editSource" type="type:nameType" />
-    <xs:attribute name="editViewName" type="type:nameType" />
+    <xs:attribute name="editViewName" type="type:dataView" />
   </xs:attributeGroup>
   
   <xs:simpleType name="refreshType">

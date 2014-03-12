@@ -33,6 +33,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -62,9 +64,9 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.WebNotification;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.WebNotification;
 import com.butent.bee.client.dom.ClientRect;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
@@ -102,9 +104,9 @@ import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
 import com.butent.bee.client.maps.Marker;
 import com.butent.bee.client.maps.MarkerOptions;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
-import com.butent.bee.client.modules.crm.CrmKeeper;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
+import com.butent.bee.client.modules.tasks.TasksKeeper;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -174,7 +176,6 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -292,16 +293,19 @@ public final class CliWorker {
       showColor(arr);
 
     } else if (z.startsWith("conf")) {
-      BeeKeeper.getRpc().invoke("configInfo");
+      BeeKeeper.getRpc().invoke("configInfo", ResponseHandler.callback(z));
 
     } else if (z.startsWith("conn") || "http".equals(z)) {
-      BeeKeeper.getRpc().invoke("connectionInfo");
+      BeeKeeper.getRpc().invoke("connectionInfo", ResponseHandler.callback(z));
 
     } else if ("cornify".equals(z)) {
       cornify(arr);
 
     } else if (z.startsWith("dbinf")) {
       getDbInfo(args);
+
+    } else if (z.startsWith("dbt")) {
+      getTables(v, arr);
 
     } else if ("debug".equals(z)) {
       setDebug(args);
@@ -422,7 +426,7 @@ public final class CliWorker {
       doLike(arr);
 
     } else if ("loaders".equals(z)) {
-      BeeKeeper.getRpc().invoke("loaderInfo");
+      BeeKeeper.getRpc().invoke("loaderInfo", ResponseHandler.callback(z));
 
     } else if (z.startsWith("loc")) {
       doLocale(arr, args);
@@ -455,7 +459,7 @@ public final class CliWorker {
       showProperties(v, arr, errorPopup);
 
     } else if (z.startsWith("ping")) {
-      BeeKeeper.getRpc().makeGetRequest(Service.DB_PING);
+      BeeKeeper.getRpc().makeGetRequest(Service.DB_PING, ResponseHandler.callback(z));
 
     } else if (z.startsWith("prev")) {
       Global.showModalGrid("Previewers", new PropertiesData(Previewer.getInstance().getInfo()));
@@ -483,12 +487,12 @@ public final class CliWorker {
 
     } else if ("rts".equals(z)) {
       scheduleTasks(arr, errorPopup);
-      
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
-      BeeKeeper.getRpc().invoke("systemInfo");
+      BeeKeeper.getRpc().invoke("systemInfo", ResponseHandler.callback(z));
 
     } else if ("settings".equals(z)) {
       showPropData(v, Settings.getInfo());
@@ -517,11 +521,8 @@ public final class CliWorker {
     } else if ("svg".equals(z)) {
       showSvg(arr);
 
-    } else if ("table".equals(z)) {
-      showTableInfo(args);
-
-    } else if ("tables".equals(z)) {
-      getTables(args);
+    } else if (z.startsWith("tabl") || z.startsWith("tbl")) {
+      showTableInfo(v, args);
 
     } else if (z.startsWith("tile")) {
       doTiles(args);
@@ -545,13 +546,13 @@ public final class CliWorker {
       playVideo(args);
 
     } else if (z.startsWith("view")) {
-      showViewInfo(args);
+      showViewInfo(v, args);
 
     } else if (z.startsWith("viz")) {
       Showcase.open();
 
     } else if ("vm".equals(z)) {
-      BeeKeeper.getRpc().invoke("vmInfo");
+      BeeKeeper.getRpc().invoke("vmInfo", ResponseHandler.callback(z));
 
     } else if ("wf".equals(z) || z.startsWith("suppl")) {
       showWidgetSuppliers();
@@ -868,6 +869,7 @@ public final class CliWorker {
       logger.info(Codec.escapeUnicode(src));
     }
     logger.info(BeeConst.CLIENT, Codec.md5(src));
+
     BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.HTML, src);
   }
 
@@ -1278,7 +1280,7 @@ public final class CliWorker {
     }
 
     BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
-        XmlUtils.createString(Service.XML_TAG_DATA, params));
+        XmlUtils.createString(Service.XML_TAG_DATA, params), ResponseHandler.callback(args));
   }
 
   private static void doLike(String[] arr) {
@@ -1331,7 +1333,8 @@ public final class CliWorker {
       showExtData("Locale info", LocaleUtils.getInfo());
 
     } else if (BeeUtils.contains(arr[0], 's')) {
-      BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args);
+      BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args,
+          ResponseHandler.callback(ArrayUtils.joinWords(arr)));
 
     } else {
       List<Property> info = Lists.newArrayList();
@@ -1511,7 +1514,7 @@ public final class CliWorker {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("cs");
 
-    BeeKeeper.getRpc().makeGetRequest(params);
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback("cs"));
   }
 
   private static void getClassInfo(String args, boolean errorPopup) {
@@ -1522,12 +1525,15 @@ public final class CliWorker {
 
     if (BeeUtils.isEmpty(cls)) {
       showError(errorPopup, "Class name not specified");
+
     } else if (cls.length() < 2) {
       showError(errorPopup, "Class name", cls, "too short");
+
     } else {
       BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
           XmlUtils.createString(Service.XML_TAG_DATA,
-              Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck));
+              Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck),
+          ResponseHandler.callback(args));
     }
   }
 
@@ -1536,7 +1542,7 @@ public final class CliWorker {
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
-    BeeKeeper.getRpc().makeRequest(params);
+    BeeKeeper.getRpc().makeRequest(params, ResponseHandler.callback(Service.DB_INFO));
   }
 
   private static void getFiles() {
@@ -1569,7 +1575,7 @@ public final class CliWorker {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("fs");
 
-    BeeKeeper.getRpc().makeGetRequest(params);
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback("fs"));
   }
 
   private static void getKeys(String[] arr, boolean errorPopup) {
@@ -1584,10 +1590,11 @@ public final class CliWorker {
     for (int i = 0; i < parCnt; i++) {
       params.addPositionalHeader(arr[i + 1]);
     }
-    BeeKeeper.getRpc().makeGetRequest(params);
+
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(params.getService()));
   }
 
-  private static void getResource(String[] arr) {
+  private static void getResource(final String[] arr) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(ArrayUtils.join(BeeConst.STRING_SPACE, arr));
       return;
@@ -1611,6 +1618,9 @@ public final class CliWorker {
           ResourceEditor resourceEditor = new ResourceEditor(resource);
 
           BeeKeeper.getScreen().updateActivePanel(resourceEditor);
+
+        } else {
+          ResponseHandler.dispatch(ArrayUtils.joinWords(arr), response);
         }
       }
     });
@@ -1631,12 +1641,40 @@ public final class CliWorker {
     });
   }
 
-  private static void getTables(String args) {
+  private static void getTables(String input, String[] arr) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.DB_TABLES);
-    if (!BeeUtils.isEmpty(args)) {
-      params.addPositionalHeader(args.trim());
+
+    int len = ArrayUtils.length(arr);
+    for (int i = 1; i < len; i++) {
+      String s = arr[i];
+      
+      if (s.length() > 2 && s.charAt(1) == BeeConst.CHAR_EQ) {
+        String value = s.substring(2);
+        
+        switch (s.toLowerCase().charAt(0)) {
+          case 'c':
+            params.addQueryItem(Service.VAR_CATALOG, value);
+            break;
+          case 's':
+            params.addQueryItem(Service.VAR_SCHEMA, value);
+            break;
+          case 'n':
+            params.addQueryItem(Service.VAR_TABLE, value);
+            break;
+          case 't':
+            params.addQueryItem(Service.VAR_TYPE, value);
+            break;
+        }
+      
+      } else if (s.equals(BeeConst.STRING_MINUS) || s.equals(BeeConst.STRING_QUESTION)) {
+        params.addQueryItem(Service.VAR_CHECK, 1);
+
+      } else {
+        params.addQueryItem(Service.VAR_TABLE, s);
+      }
     }
-    BeeKeeper.getRpc().makeRequest(params);
+
+    BeeKeeper.getRpc().makeRequest(params, ResponseHandler.callback(input));
   }
 
   @Deprecated
@@ -2021,14 +2059,14 @@ public final class CliWorker {
   private static void scheduleTasks(String[] arr, boolean errorPopup) {
     JustDate from = (arr.length > 1) ? TimeUtils.parseDate(arr[1]) : TimeUtils.today();
     JustDate until = (arr.length > 2) ? TimeUtils.parseDate(arr[2]) : null;
-    
+
     if (from == null || until != null && TimeUtils.isLess(until, from)) {
       showError(errorPopup, arr);
     } else {
       DateRange range = (until == null) ? DateRange.day(from) : DateRange.closed(from, until);
       logger.debug("schedule tasks", range);
-      
-      CrmKeeper.scheduleTasks(range);
+
+      TasksKeeper.scheduleTasks(range);
     }
   }
 
@@ -2255,15 +2293,15 @@ public final class CliWorker {
 
         if (BeeUtils.isEmpty(normalized)) {
           boolean found = false;
-          
+
           for (Map.Entry<String, String> entry : Color.getNames().entrySet()) {
-            if (Wildcards.isLike(entry.getKey(), arr[i]) 
+            if (Wildcards.isLike(entry.getKey(), arr[i])
                 || Wildcards.isLike(entry.getValue(), arr[i])) {
               output.put(entry.getKey(), entry.getValue());
               found = true;
             }
           }
-          
+
           if (!found) {
             logger.warning("color not recognized", arr[i]);
           }
@@ -2317,10 +2355,10 @@ public final class CliWorker {
   }
 
   private static void showCurrentExchangeRate(String currency) {
-    ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE);
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
+    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_CURRENT_EXCHANGE_RATE);
+    params.addQueryItem(COL_CURRENCY_NAME, currency);
 
-    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_CURRENT_EXCHANGE_RATE, currency),
+    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_CURRENT_EXCHANGE_RATE, currency),
         params);
   }
 
@@ -2355,7 +2393,7 @@ public final class CliWorker {
       }
 
       Collections.sort(list);
-      String[][] data = new String[list.size()][7];
+      String[][] data = new String[list.size()][6];
 
       for (int i = 0; i < list.size(); i++) {
         DataInfo di = list.get(i);
@@ -2367,9 +2405,8 @@ public final class CliWorker {
 
         data[i][4] = BeeUtils.toString(di.getColumnCount());
         data[i][5] = BeeUtils.toString(di.getViewColumns().size());
-        data[i][6] = BeeUtils.toString(di.getRowCount());
       }
-      showMatrix("Data info", data, "view", "table", "id", "version", "cc", "vc", "rc");
+      showMatrix("Data info", data, "view", "table", "id", "version", "cc", "vc");
     }
   }
 
@@ -2590,24 +2627,24 @@ public final class CliWorker {
   }
 
   private static void showExchangeRate(String currency, String date) {
-    ParameterList params = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATE);
+    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATE);
 
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_RATE_DATE, date);
+    params.addQueryItem(COL_CURRENCY_NAME, currency);
+    params.addQueryItem(COL_CURRENCY_RATE_DATE, date);
 
-    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_EXCHANGE_RATE, currency, date),
+    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_EXCHANGE_RATE, currency, date),
         params);
   }
 
   private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
     ParameterList params =
-        CommonsKeeper.createArgs(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
+        AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
 
-    params.addQueryItem(CommonsConstants.COL_CURRENCY_NAME, currency);
-    params.addQueryItem(CommonsConstants.VAR_DATE_LOW, dateLow);
-    params.addQueryItem(CommonsConstants.VAR_DATE_HIGH, dateHigh);
+    params.addQueryItem(COL_CURRENCY_NAME, currency);
+    params.addQueryItem(VAR_DATE_LOW, dateLow);
+    params.addQueryItem(VAR_DATE_HIGH, dateHigh);
 
-    getSimpleRowSet(BeeUtils.joinWords(CommonsConstants.SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
+    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
         currency, dateLow, dateHigh), params);
   }
 
@@ -3012,8 +3049,8 @@ public final class CliWorker {
   }
 
   private static void showListOfCurrencies() {
-    getSimpleRowSet(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES,
-        CommonsKeeper.createArgs(CommonsConstants.SVC_GET_LIST_OF_CURRENCIES));
+    getSimpleRowSet(SVC_GET_LIST_OF_CURRENCIES,
+        AdministrationKeeper.createArgs(SVC_GET_LIST_OF_CURRENCIES));
   }
 
   private static void showMap(final String[] arr, boolean errorPopup) {
@@ -3229,7 +3266,7 @@ public final class CliWorker {
       }
     }
   }
-  
+
   private static void showProgress(String[] arr, boolean errorPopup) {
     if (!Features.supportsElementProgress()) {
       showError(errorPopup, "progress element not supported");
@@ -3800,19 +3837,13 @@ public final class CliWorker {
     }
   }
 
-  private static void showTableInfo(final String args) {
+  private static void showTableInfo(String input, String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_TABLE_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
 
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        showExtData(BeeUtils.joinWords("Tables", args),
-            PropertyUtils.restoreExtended((String) response.getResponse()));
-      }
-    });
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(input));
   }
 
   private static void showUnits(String[] arr) {
@@ -3872,19 +3903,13 @@ public final class CliWorker {
     showTable("Pixels", new PropertiesData(info));
   }
 
-  private static void showViewInfo(final String args) {
+  private static void showViewInfo(String input, String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
 
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        showExtData(BeeUtils.joinWords("Views", args),
-            PropertyUtils.restoreExtended((String) response.getResponse()));
-      }
-    });
+    BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(input));
   }
 
   private static void showWebNote(String[] arr) {
@@ -4324,21 +4349,14 @@ public final class CliWorker {
       }
     }
 
-    String s = sb.toString();
-    byte[] bytes = Codec.toBytes(s);
+    final String input = sb.toString();
 
-    int id = BeeKeeper.getRpc().invoke("stringInfo", ContentType.TEXT, s);
-
-    Map<String, String> data = Maps.newHashMap();
-    data.put("length", BeeUtils.toString(s.length()));
-    data.put("data", s);
-
-    data.put("adler32", Codec.adler32(bytes));
-    data.put("crc16", Codec.crc16(bytes));
-    data.put("crc32", Codec.crc32(bytes));
-    data.put("crc32d", Codec.crc32Direct(bytes));
-
-    BeeKeeper.getRpc().setUserData(id, data);
+    BeeKeeper.getRpc().invoke("stringInfo", ContentType.TEXT, input, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        ResponseHandler.unicodeTest(input, response);
+      }
+    });
   }
 
   private static void upload() {

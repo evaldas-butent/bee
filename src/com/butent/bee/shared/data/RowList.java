@@ -1,11 +1,12 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.Pair;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -14,16 +15,18 @@ import java.util.List;
  */
 
 public abstract class RowList<R extends IsRow, C extends IsColumn> extends AbstractTable<R, C> {
-  private final ListSequence<R> rows;
+
+  private final List<R> rows = new ArrayList<R>();
 
   public RowList() {
     super();
-    this.rows = new ListSequence<R>();
   }
 
   public RowList(List<R> rows) {
-    super();
-    this.rows = new ListSequence<R>(rows);
+    this();
+    if (rows != null && !rows.isEmpty()) {
+      this.rows.addAll(rows);
+    }
   }
 
   @Override
@@ -33,18 +36,23 @@ public abstract class RowList<R extends IsRow, C extends IsColumn> extends Abstr
 
   @Override
   public int getNumberOfRows() {
-    return getRows().getLength();
+    return rows.size();
   }
 
   @Override
   public R getRow(int rowIndex) {
     assertRowIndex(rowIndex);
-    return getRows().get(rowIndex);
+    return rows.get(rowIndex);
   }
 
   @Override
-  public ListSequence<R> getRows() {
+  public List<R> getRows() {
     return rows;
+  }
+
+  @Override
+  public Iterator<R> iterator() {
+    return rows.iterator();
   }
 
   @Override
@@ -54,7 +62,12 @@ public abstract class RowList<R extends IsRow, C extends IsColumn> extends Abstr
   }
 
   public void setRows(List<R> list) {
-    this.rows.setValues(list);
+    if (!rows.isEmpty()) {
+      rows.clear();
+    }
+    if (list != null && !list.isEmpty()) {
+      rows.addAll(list);
+    }
   }
 
   @Override
@@ -63,20 +76,20 @@ public abstract class RowList<R extends IsRow, C extends IsColumn> extends Abstr
     Assert.isTrue(sortInfo.size() >= 1);
 
     if (getNumberOfRows() > 1) {
-      Collections.sort(getRows().getList(), new RowOrdering<R>(getColumns(), sortInfo, collator));
+      Collections.sort(rows, new RowOrdering<R>(getColumns(), sortInfo, collator));
     }
   }
 
   @Override
   public void sortByRowId(boolean ascending) {
     if (getNumberOfRows() > 1) {
-      Collections.sort(getRows().getList(), new RowIdOrdering(ascending));
+      Collections.sort(rows, new RowIdOrdering(ascending));
     }
   }
 
   @Override
   protected void insertRow(int rowIndex, R row) {
     Assert.betweenInclusive(rowIndex, 0, getNumberOfRows());
-    getRows().insert(rowIndex, row);
+    rows.add(rowIndex, row);
   }
 }

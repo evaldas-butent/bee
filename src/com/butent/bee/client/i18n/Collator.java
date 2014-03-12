@@ -111,16 +111,16 @@ public final class Collator implements Comparator<String> {
 
   public static final Collator CASE_SENSITIVE_NULLS_LAST = new Collator(Case.SENSITIVE,
       NullOrdering.NULLS_LAST, Localized.getConstants().languageTag());
-  
+
   public static final Collator CASE_INSENSITIVE_NULLS_FIRST = new Collator(Case.INSENSITIVE,
       NullOrdering.NULLS_FIRST, Localized.getConstants().languageTag());
-  
+
   public static final Collator CASE_INSENSITIVE_NULLS_LAST = new Collator(Case.INSENSITIVE,
       NullOrdering.NULLS_LAST, Localized.getConstants().languageTag());
 
   public static final Collator DEFAULT = new Collator(Case.INSENSITIVE, NullOrdering.DEFAULT,
       Localized.getConstants().languageTag());
-  
+
   private final Case caseSensitivity;
   private final NullOrdering nullOrdering;
 
@@ -173,7 +173,7 @@ public final class Collator implements Comparator<String> {
   }-*/;
 
   private native int compareImpl(String source, String target, String loc) /*-{
-// chromium issue 314210    
+    // chromium issue 314210    
     var z;
     try {
       z = source.localeCompare(target, loc);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="UserGroupSettings" source="UserGroupSettings" module="Administration"
+  caption="=userGroups" newRowCaption="=newUserGroup"
+  editForm="UserGroup" newRowForm="UserGroup"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Owner" />
+
+    <SimpleColumn name="Visibility" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Visibility" />
+    <OrderBy column="Name" />
+  </Order>
+</View>
+ 

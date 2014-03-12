@@ -9,6 +9,7 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -71,7 +72,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private enum Serial {
     COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, MODULE, FORMAT, HOR_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ENUM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
@@ -108,7 +109,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Flexibility flexibility;
 
   private Boolean sortable;
+
   private Boolean visible;
+  private Module module;
 
   private String format;
   private String horAlign;
@@ -281,6 +284,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case VISIBLE:
           setVisible(BeeUtils.toBooleanOrNull(value));
+          break;
+        case MODULE:
+          setModule(Codec.unpack(Module.class, value));
           break;
         case BODY_STYLE:
           setBodyStyle(StyleDeclaration.restore(value));
@@ -458,6 +464,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Auto Fit", getAutoFit(),
         "Sortable", getSortable(),
         "Visible", getVisible(),
+        "Module", getModule(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
         "White Space", getWhiteSpace(),
@@ -565,6 +572,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public Integer getMinWidth() {
     return minWidth;
+  }
+
+  public Module getModule() {
+    return module;
   }
 
   @Override
@@ -817,6 +828,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case VISIBLE:
           arr[i++] = getVisible();
           break;
+        case MODULE:
+          arr[i++] = Codec.pack(getModule());
+          break;
         case BODY_STYLE:
           arr[i++] = getBodyStyle();
           break;
@@ -982,6 +996,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.minWidth = minWidth;
   }
 
+  public void setModule(Module module) {
+    this.module = module;
+  }
+
   @Override
   public void setOptions(String options) {
     this.options = options;
@@ -1062,7 +1080,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
-
+  
   public void setWhiteSpace(String whiteSpace) {
     this.whiteSpace = whiteSpace;
   }

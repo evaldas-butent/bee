@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY separator '<div style="height: 5px; visibility: hidden;"/>'>
+  <!ENTITY lbl1 "width: 73px; margin-right: 1em; text-align: right">
+  <!ENTITY lbl2 "width: 80px; margin-right: 1em; text-align: right">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Item" viewName="Items" caption="=item"
+  width="650" height="250"
+  >
+  <FlowPanel style="padding: 2ex 1em 0 1em;">
+    <FlowPanel class="flexBox-horizontal">
+      <Label text="=name" class="bee-required" style="&lbl1;" />
+      <InputText source="Name" style="width: 500px;" autocomplete="true" visible="true" />
+    </FlowPanel>
+    &separator;
+
+    <FlowPanel class="flexBox-horizontal">
+      <Label for="Article" text="=article" style="&lbl1;" />
+      <InputText source="Article" />
+
+      <Label text="=itemUnits" horizontalAlignment="right" class="bee-required"
+        style="margin-right: 5px; width: 86px; margin-left: 2px;" />
+      <DataSelector source="Unit" style="width: 100px;" visible="true" />
+    </FlowPanel>
+    &separator;
+
+    <FlowPanel class="flexBox-horizontal">
+      <Label for="Barcode" text="=barcode" style="&lbl1;" />
+      <InputText source="Barcode" />
+
+      <Label for="Price" text="=sellingPrice" horizontalAlignment="right"
+        style="&lbl2; margin-left: 15px;" />
+      <InputCurrency source="Price" style="width: 100px;" />
+      <DataSelector source="Currency" for="Price" style="width: 50px; margin-left: 1em;" />
+    </FlowPanel>
+    &separator;
+
+    <FlowPanel class="flexBox-horizontal">
+      <CheckBox source="Vat" text="=vat" style="margin-right:13px; margin-left:20px;" />
+      <InputDecimal source="VatPercent" caption="%" decorator="caption-right" 
+        style="width: 30px; margin-left: 4px;" />
+    </FlowPanel>
+    &separator;
+
+    <FlowPanel class="flexBox-horizontal">
+      <Label text="=itemCategories" style="&lbl1;" />
+      <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree" 
+        targetRelColumn="Item" sourceRelColumn="Category"
+        renderColumns="ParentName Name" style="width: 500px;" label="=categories" />
+    </FlowPanel>
+  </FlowPanel>
+</f:Form>  

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Users" caption="=systemUsers" source="Users" module="Administration"
+  editForm="User" newRowForm="User" newRowCaption="=newUser" rowCaption="Login"
+  >
+  <Columns>
+    <SimpleColumn name="Login" />
+    <SimpleColumn name="Password" />
+
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Person" />
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+        <SimpleColumn name="DateOfBirth" />
+      </SimpleJoin>
+      <SimpleJoin name="Position" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PositionName" />
+      </SimpleJoin>
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Locale" />
+    <SimpleColumn name="Interface" />
+
+    <SimpleColumn name="BlockAfter" />
+    <SimpleColumn name="BlockBefore" />
+
+    <SimpleColumn name="MailAssignedTasks" />
+
+    <SimpleColumn name="Properties" />
+  </Columns>
+  <Order>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+    <OrderBy column="CompanyName" />
+  </Order>
+</View>
+ 

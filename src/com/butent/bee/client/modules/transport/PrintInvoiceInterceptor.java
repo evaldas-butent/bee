@@ -8,7 +8,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.modules.commons.CommonsUtils;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -51,7 +51,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
       if (!DataUtils.isId(id) && !BeeUtils.same(name, COL_SALE_PAYER)) {
         id = BeeKeeper.getUser().getUserData().getCompany();
       }
-      CommonsUtils.getCompanyInfo(id, companies.get(name));
+      ClassifierUtils.getCompanyInfo(id, companies.get(name));
     }
     if (invoiceDetails != null) {
       TradeUtils.getDocumentItems(getFormView().getViewName(), row.getId(), invoiceDetails);

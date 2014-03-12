@@ -39,7 +39,7 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.modules.crm.RequestBuilder;
+import com.butent.bee.client.modules.tasks.RequestBuilder;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -79,11 +79,12 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -709,19 +710,19 @@ public class MailPanel extends AbstractFormInterceptor {
         for (int i = 0; i < data.length; i += 2) {
           packet.put(data[i], data[i + 1]);
         }
-        DataInfo dataInfo = Data.getDataInfo(CrmConstants.TBL_REQUESTS);
+        DataInfo dataInfo = Data.getDataInfo(TaskConstants.TBL_REQUESTS);
         BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
         row.setValue(dataInfo.getColumnIndex("Customer"),
-            BeeUtils.toLongOrNull(packet.get(CommonsConstants.COL_COMPANY)));
+            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_COMPANY)));
         row.setValue(dataInfo.getColumnIndex("CustomerName"),
-            packet.get(CommonsConstants.COL_COMPANY + CommonsConstants.COL_COMPANY_NAME));
+            packet.get(ClassifierConstants.COL_COMPANY + ClassifierConstants.COL_COMPANY_NAME));
         row.setValue(dataInfo.getColumnIndex("CustomerPerson"),
-            BeeUtils.toLongOrNull(packet.get(CommonsConstants.COL_PERSON)));
+            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_PERSON)));
         row.setValue(dataInfo.getColumnIndex("PersonFirstName"),
-            packet.get(CommonsConstants.COL_FIRST_NAME));
+            packet.get(ClassifierConstants.COL_FIRST_NAME));
         row.setValue(dataInfo.getColumnIndex("PersonLastName"),
-            packet.get(CommonsConstants.COL_LAST_NAME));
+            packet.get(ClassifierConstants.COL_LAST_NAME));
         row.setValue(dataInfo.getColumnIndex(COL_CONTENT), packet.get(COL_CONTENT));
 
         Map<Long, NewFileInfo> files = Maps.newHashMap();
@@ -730,8 +731,8 @@ public class MailPanel extends AbstractFormInterceptor {
         for (SimpleRow attach : rs) {
           files.put(attach.getLong(COL_FILE),
               new NewFileInfo(BeeUtils.notEmpty(attach.getValue(COL_ATTACHMENT_NAME),
-                  attach.getValue(CommonsConstants.COL_FILE_NAME)),
-                  attach.getLong(CommonsConstants.COL_FILE_SIZE), null));
+                  attach.getValue(AdministrationConstants.COL_FILE_NAME)),
+                  attach.getLong(AdministrationConstants.COL_FILE_SIZE), null));
         }
         RowFactory.createRow(dataInfo.getNewRowForm(), null, dataInfo, row, null,
             new RequestBuilder(files), null);

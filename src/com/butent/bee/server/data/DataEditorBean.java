@@ -41,8 +41,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -870,7 +870,7 @@ public class DataEditorBean {
     String childColumn = children.getChildColumn();
 
     boolean selfRelationsMode = BeeUtils.same(parentColumn, childColumn)
-        && BeeUtils.same(tableName, CommonsConstants.TBL_RELATIONS);
+        && BeeUtils.same(tableName, AdministrationConstants.TBL_RELATIONS);
 
     for (long childId : idList) {
       if (selfRelationsMode) {
@@ -878,11 +878,11 @@ public class DataEditorBean {
             .addConstant(parentColumn, parentId));
 
         long relId = qs.insertData(new SqlInsert(tableName)
-            .addConstant(CommonsConstants.COL_RELATION, id)
+            .addConstant(AdministrationConstants.COL_RELATION, id)
             .addConstant(childColumn, childId));
 
         qs.updateData(new SqlUpdate(tableName)
-            .addConstant(CommonsConstants.COL_RELATION, relId)
+            .addConstant(AdministrationConstants.COL_RELATION, relId)
             .setWhere(sys.idEquals(tableName, id)));
 
       } else {
@@ -1044,7 +1044,7 @@ public class DataEditorBean {
       }
     }
     boolean selfRelationsMode = BeeUtils.same(parentColumn, childColumn)
-        && BeeUtils.same(tableName, CommonsConstants.TBL_RELATIONS);
+        && BeeUtils.same(tableName, AdministrationConstants.TBL_RELATIONS);
 
     if (!delete.isEmpty()) {
       IsCondition wh;
@@ -1052,11 +1052,11 @@ public class DataEditorBean {
       if (selfRelationsMode) {
         String als = SqlUtils.uniqueName();
 
-        wh = SqlUtils.in(tableName, CommonsConstants.COL_RELATION, new SqlSelect()
+        wh = SqlUtils.in(tableName, AdministrationConstants.COL_RELATION, new SqlSelect()
             .addFields(tableName, sys.getIdName(tableName))
             .addFrom(tableName)
             .addFromInner(tableName, als,
-                SqlUtils.and(sys.joinTables(tableName, als, CommonsConstants.COL_RELATION),
+                SqlUtils.and(sys.joinTables(tableName, als, AdministrationConstants.COL_RELATION),
                     SqlUtils.inList(tableName, childColumn, delete),
                     SqlUtils.equals(als, parentColumn, parentId))));
       } else {
@@ -1077,11 +1077,11 @@ public class DataEditorBean {
               .addConstant(parentColumn, parentId));
 
           long relId = qs.insertData(new SqlInsert(tableName)
-              .addConstant(CommonsConstants.COL_RELATION, id)
+              .addConstant(AdministrationConstants.COL_RELATION, id)
               .addConstant(childColumn, childId));
 
           qs.updateData(new SqlUpdate(tableName)
-              .addConstant(CommonsConstants.COL_RELATION, relId)
+              .addConstant(AdministrationConstants.COL_RELATION, relId)
               .setWhere(sys.idEquals(tableName, id)));
         } else {
           qs.insertData(new SqlInsert(tableName)

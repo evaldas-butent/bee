@@ -13,8 +13,7 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.XMLParser;
 import com.google.gwt.xml.client.impl.DOMParseException;
 
-import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_RATES_RATE;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -22,7 +21,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
@@ -34,6 +33,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -49,9 +49,9 @@ public final class TradeUtils {
 
   private static final String COL_NAME = "Name";
   private static final String COL_TOTAL = "Total";
-  private static final String COL_RATE_AMOUNT = COL_RATES_RATE + COL_TRADE_AMOUNT;
-  private static final String COL_RATE_VAT = COL_RATES_RATE + COL_TRADE_VAT;
-  private static final String COL_RATE_TOTAL = COL_RATES_RATE + COL_TOTAL;
+  private static final String COL_RATE_AMOUNT = COL_CURRENCY_RATE + COL_TRADE_AMOUNT;
+  private static final String COL_RATE_VAT = COL_CURRENCY_RATE + COL_TRADE_VAT;
+  private static final String COL_RATE_TOTAL = COL_CURRENCY_RATE + COL_TOTAL;
 
   private static ProvidesGridColumnRenderer totalRenderer;
 
@@ -66,7 +66,7 @@ public final class TradeUtils {
     args.addDataItem("id", tradeId);
 
     final String currencyTo = DomUtils.getDataProperty(table.getElement(),
-        COL_RATES_RATE + COL_CURRENCY);
+        COL_CURRENCY_RATE + COL_CURRENCY);
     final boolean rateExists = !BeeUtils.isEmpty(currencyTo);
 
     if (rateExists) {
@@ -83,9 +83,9 @@ public final class TradeUtils {
         if (table.getRowCount() == 0) {
           Map<String, String> cols = Maps.newLinkedHashMap();
           cols.put(COL_NAME, Localized.getConstants().item());
-          cols.put(COL_ITEM_ARTICLE, Localized.getConstants().article());
+          cols.put(ClassifierConstants.COL_ITEM_ARTICLE, Localized.getConstants().article());
           cols.put(COL_TRADE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
-          cols.put(COL_UNIT, Localized.getConstants().unit());
+          cols.put(ClassifierConstants.COL_UNIT, Localized.getConstants().unit());
           cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
           cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
           cols.put(COL_TRADE_VAT, Localized.getConstants().vat());
@@ -191,9 +191,9 @@ public final class TradeUtils {
 
           if (rateExists) {
             if (BeeUtils.isEmpty(rateCurrency)) {
-              rateCurrency = row.getValue(COL_RATES_RATE + COL_CURRENCY);
+              rateCurrency = row.getValue(COL_CURRENCY_RATE + COL_CURRENCY);
             }
-            double rate = BeeUtils.unbox(row.getDouble(COL_RATES_RATE));
+            double rate = BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE));
             currSum = BeeUtils.round(sum * rate, 2);
             currSumTotal += currSum;
             currVatTotal += vat * rate;
@@ -305,7 +305,7 @@ public final class TradeUtils {
               } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
                 value = formater.format(currSumTotal + currVatTotal);
 
-              } else if (BeeUtils.same(fld, COL_RATES_RATE + COL_CURRENCY)) {
+              } else if (BeeUtils.same(fld, COL_CURRENCY_RATE + COL_CURRENCY)) {
                 value = rateCurrency;
 
               } else {
@@ -334,7 +334,7 @@ public final class TradeUtils {
     long number = BeeUtils.toLong(Math.floor(amount));
     final int fraction = BeeUtils.toInt((amount - number) * 100);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_NUMBER_TO_WORDS);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_NUMBER_TO_WORDS);
     args.addDataItem(VAR_AMOUNT, number);
 
     if (!BeeUtils.isEmpty(locale)) {

@@ -208,6 +208,7 @@
   word-wrap: normal;
   margin: 1ex;
   width: 95%;
+  border-spacing: 0px;
 }
 
 .bee-discuss-adsFormContent-TopicName {
@@ -223,43 +224,55 @@
   border-bottom: 1px solid red !important;
 }
 
-.bee-discuss-adsFormContent-empty {
-  border-top: 1px solid #CCC;
-}
-
-.bee-discuss-adsFormContent-empty > td {
-  border-top: 1px solid #CCC;
-}
-
 .bee-discuss-adsFormContent-TopicName > td {
   border-bottom: 2px solid #ccc;
   width: 100%;
-  padding-top: 1em;
 }
 
 .bee-discuss-adsFormContent-Created {
- /* min-width: 200px;*/
+ 
 }
 
 .bee-discuss-adsFormContent-Subject {
   font-weight: bolder;
- /* width: 100%;*/
   vertical-align: top;
   padding-left: 1ex;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right:  1px solid #ccc;
+  background-color: whitesmoke;
+  position: relative;
+  top: 2px;
+  width: 100%;
 }
 
 .bee-discuss-adsFormContent-Owner {
   white-space: nowrap;
   vertical-align: top;
+  padding-right: 1ex;
 }
 
 .bee-discuss-adsFormContent-Description {
- /* width: 100%;*/
   vertical-align: top;
   padding: 1ex;
   max-height: 370px;
-  display: inline-block;
+  display: block;
   overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 6em;
+  border-bottom: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right:  1px solid #ccc;
+  border-bottom-right-radius: 10px;
+  background-color: whitesmoke;
+  position: relative;
+  top: 2px;
+  box-shadow: 5px 3px 5px #ccc;
+  margin-bottom: 1em;
+}
+
+.bee-discuss-adsFormContent-NewAnnouncement {
+ background-color: #ffffcc;
 }
 
 .bee-discuss-adsFormContent-Owner-Photo {
@@ -307,15 +320,48 @@
 }
 
 .bee-discuss-adsFormContent-actionDiscussion {
-  border-top-left-radius: 0px;
-  border-top-right-radius: 0px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  width: 50px;
-  height: 1em;
+  width: 33%;
+  height: 2em;
   padding: 0px;
   padding-bottom: 1ex;
-  line-height: 5px;
   letter-spacing: 2px;
-  background: white;
+  opacity: 0.7;
+  background: whitesmoke;
+  margin-right: 25%;
+  position: relative;
+  top: -6ex;
+  border: 0px !important;
+}
+
+.bee-discuss-adsFormContent-actionDiscussion > div {
+  display: inline-block;
+}
+
+.bee-discuss-adsFormContent-chatBalloon {
+ width: 0px;
+ height: 0px;
+ position: absolute;
+ left: -10px;
+ top: 8px;
+ border-top: 10px solid transparent;
+ border-bottom: 10px solid transparent;
+ border-right: 10px solid #ccc;
+ z-index: 1;
+}
+
+.bee-discuss-adsFormContent-chatBalloon:after {
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  left: 1px;
+  top: -8px;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 9px solid whitesmoke;
+  z-index: 0;
+  content: '';
+ }
+
+.bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon:after {
+  border-right: 9px solid #ffffCC;
 }

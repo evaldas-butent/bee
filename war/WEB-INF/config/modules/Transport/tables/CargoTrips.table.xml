@@ -15,6 +15,7 @@
     <Numeric name="CargoPercent" precision="3" scale="0" />
     <Relation name="CargoExpense" relation="CargoExpenses" cascade="DELETE" editable="true" />
     <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
+    <Text name="Message" label="=message" />
   </Fields>
 
   <Constraints>

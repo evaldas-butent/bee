@@ -48,6 +48,10 @@ final class Freight extends OrderCargo {
             row.getLong(defaultLoadingColumnAlias(COL_PLACE_COUNTRY))),
         BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
             row.getValue(defaultLoadingColumnAlias(COL_PLACE_ADDRESS))),
+        BeeUtils.nvl(row.getValue(ALS_LOADING_POST_INDEX),
+            row.getValue(defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))),
+        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
+                row.getLong(defaultLoadingColumnAlias(COL_PLACE_CITY))),
         BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL)),
             row.getValue(defaultLoadingColumnAlias(COL_PLACE_TERMINAL))),
         BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
@@ -56,6 +60,10 @@ final class Freight extends OrderCargo {
             row.getLong(defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))),
         BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS)),
             row.getValue(defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))),
+        BeeUtils.nvl(row.getValue(ALS_UNLOADING_POST_INDEX),
+            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))),
+        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_CITY)),
+            row.getLong(defaultUnloadingColumnAlias(COL_PLACE_CITY))),
         BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL)),
             row.getValue(defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))),
         row.getLong(COL_TRIP_ID), row.getLong(COL_VEHICLE), row.getLong(COL_TRAILER),
@@ -76,14 +84,18 @@ final class Freight extends OrderCargo {
 
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
-      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingTerminal,
-      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
+      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
+      Long loadingCity, String loadingTerminal,
+      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace, 
+      String unloadingPostIndex, Long unloadingCity,
       String unloadingTerminal, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
       Long cargoTripVersion) {
 
     super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, cargoId,
-        cargoDescription, notes, loadingDate, loadingCountry, loadingPlace, loadingTerminal,
-        unloadingDate, unloadingCountry, unloadingPlace, unloadingTerminal);
+        cargoDescription, notes, loadingDate, loadingCountry, loadingPlace, loadingPostIndex,
+        loadingCity, loadingTerminal,
+        unloadingDate, unloadingCountry, unloadingPlace, unloadingPostIndex, unloadingCity,
+        unloadingTerminal);
 
     this.tripId = tripId;
     this.truckId = truckId;

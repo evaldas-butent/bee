@@ -239,19 +239,6 @@ public final class Codec {
     return res;
   }
 
-  public static Map<String, String> beeDeserializeMap(String data) {
-    Map<String, String> result = Maps.newLinkedHashMap();
-
-    String[] arr = beeDeserializeCollection(data);
-    if (arr != null) {
-      for (int i = 0; i < arr.length - 1; i += 2) {
-        result.put(arr[i], arr[i + 1]);
-      }
-    }
-
-    return result;
-  }
-
   /**
    * Serializes an Object {@code obj}. The method wraps the Object, if the object is any type of
    * collection, itself is wrapped too. This method also serializes the length of each object.
@@ -304,7 +291,13 @@ public final class Codec {
       sb.append(beeSerialize(((BeeSerializable) obj).serialize()));
 
     } else {
-      String s = obj.toString();
+      String s;
+
+      if (obj instanceof String) {
+        s = BeeUtils.trimRight((String) obj);
+      } else {
+        s = obj.toString();
+      }
       String l = BeeUtils.toString(s.length());
       sb.append(l.length()).append(l).append(s);
     }
@@ -461,6 +454,19 @@ public final class Codec {
       x = Integer.parseInt(src.substring(start + 1, start + z + 1));
     }
     return Pair.of(x, z + 1);
+  }
+
+  public static Map<String, String> deserializeMap(String data) {
+    Map<String, String> result = Maps.newLinkedHashMap();
+
+    String[] arr = beeDeserializeCollection(data);
+    if (arr != null) {
+      for (int i = 0; i < arr.length - 1; i += 2) {
+        result.put(arr[i], arr[i + 1]);
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -836,16 +842,6 @@ public final class Codec {
     }
   }
 
-  public static boolean unpack(String value) {
-    if (BooleanValue.S_TRUE.equals(value)) {
-      return true;
-    } else if (BooleanValue.S_FALSE.equals(value)) {
-      return false;
-    } else {
-      return BeeUtils.toBoolean(value);
-    }
-  }
-
   public static <E extends Enum<?>> E unpack(Class<E> clazz, String value) {
     if (clazz == null || !BeeUtils.isDigit(value)) {
       return null;
@@ -856,6 +852,16 @@ public final class Codec {
       return clazz.getEnumConstants()[index];
     } else {
       return null;
+    }
+  }
+
+  public static boolean unpack(String value) {
+    if (BooleanValue.S_TRUE.equals(value)) {
+      return true;
+    } else if (BooleanValue.S_FALSE.equals(value)) {
+      return false;
+    } else {
+      return BeeUtils.toBoolean(value);
     }
   }
 

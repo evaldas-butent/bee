@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Currency" viewName="Currencies" caption="=currency" height="50" heightUnit="%" width="600"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table style="border-spacing: 10px;">
+      <row>
+        <Label text="=currency" class="bee-required" for="Name" />
+        <InputText source="Name" visible="true" />
+        <Label text="=caption" horizontalAlignment="right" for="Caption" />
+        <InputText source="Caption" />
+      </row>
+      <row>
+        <Label text="=minorName" for="MinorName" />
+        <InputText source="MinorName" />
+        <Label text="=minorCaption" horizontalAlignment="right" for="MinorCaption" />
+        <InputText source="MinorCaption" />
+      </row>
+      <row for="UpdateTag">
+        <CheckBox text="=currencyUpdateTag" source="UpdateTag" />
+      </row>
+    </Table>
+
+    <ChildGrid class="flexible" name="CurrencyRates" relColumn="Currency" />
+  </FlowPanel>
+</f:Form>  

@@ -1,5 +1,6 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -426,17 +427,19 @@ public abstract class SqlBuilder {
       case ENDS:
       case CONTAINS:
       case MATCHES:
+        boolean matches = operator == Operator.MATCHES;
         value = value.replace("|", "||").replace("%", "|%").replace("_", "|_");
 
-        if (operator == Operator.MATCHES) {
+        if (matches) {
           value = value.replace(Operator.CHAR_ANY, "%").replace(Operator.CHAR_ONE, "_");
         } else {
           value = value.replaceFirst("^(" + sqlTransform(")(.*)(") + ")$",
               "$1" + (operator != Operator.STARTS ? "%" : "")
                   + "$2" + (operator != Operator.ENDS ? "%" : "") + "$3");
         }
-        return BeeUtils.joinWords(
-            expression, sqlKeyword(SqlKeyword.LIKE, null), value, "ESCAPE '|'");
+        return BeeUtils.joinWords(expression,
+            sqlKeyword(SqlKeyword.LIKE, ImmutableMap.of("CaseSensitive", (Object) matches)),
+            value, "ESCAPE '|'");
     }
     Assert.untouchable();
     return null;

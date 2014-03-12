@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="UserRoles" source="UserRoles" module="Administration"
+  caption="=userRoles"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Role" />
+    <SimpleJoin name="Role" joinType="INNER">
+      <SimpleColumn alias="RoleName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="RoleName" />
+  </Order>
+</View>
+ 

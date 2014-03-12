@@ -169,6 +169,25 @@ public final class XmlUtils {
     schemaFactory = sf;
   }
 
+  public static Document createDoc(String rootName, String... nodes) {
+    Document doc = createDocument();
+    Element root = doc.createElement(rootName);
+
+    String tag;
+    String txt;
+
+    for (int i = 0; i < nodes.length - 1; i += 2) {
+      tag = nodes[i];
+      txt = nodes[i + 1];
+
+      if (!BeeUtils.anyEmpty(tag, txt)) {
+        appendElementWithText(doc, root, tag.trim(), txt.trim());
+      }
+    }
+    doc.appendChild(root);
+    return doc;
+  }
+
   public static Document createDocument() {
     return domBuilder.newDocument();
   }
@@ -197,12 +216,16 @@ public final class XmlUtils {
     return doc;
   }
 
+  public static List<Element> getAllDescendantElements(Element parent) {
+    return getElementsByLocalName(parent, ALL_TAGS);
+  }
+
   public static Boolean getAttributeBoolean(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
     return BeeUtils.toBooleanOrNull(element.getAttribute(name));
   }
-
+  
   public static Integer getAttributeInteger(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -666,6 +689,15 @@ public final class XmlUtils {
     return lst;
   }
 
+  public static Element getParentElement(Element child) {
+    if (child == null) {
+      return null;
+    } else {
+      Node parent = child.getParentNode();
+      return isElement(parent) ? (Element) parent : null;
+    }
+  }
+
   public static List<Property> getProcessingInstructionInfo(ProcessingInstruction pin) {
     Assert.notNull(pin);
     List<Property> lst = new ArrayList<Property>();
@@ -930,6 +962,15 @@ public final class XmlUtils {
     return result.toString();
   }
 
+  public static boolean removeFromParent(Node node) {
+    if (node == null || node.getParentNode() == null) {
+      return false;
+    } else {
+      node.getParentNode().removeChild(node);
+      return true;
+    }
+  }
+
   public static String tag(String tagName, Object value) {
     if (value == null) {
       return "";
@@ -1102,25 +1143,6 @@ public final class XmlUtils {
     }
   }
 
-  public static Document createDoc(String rootName, String... nodes) {
-    Document doc = createDocument();
-    Element root = doc.createElement(rootName);
-
-    String tag;
-    String txt;
-
-    for (int i = 0; i < nodes.length - 1; i += 2) {
-      tag = nodes[i];
-      txt = nodes[i + 1];
-
-      if (!BeeUtils.anyEmpty(tag, txt)) {
-        appendElementWithText(doc, root, tag.trim(), txt.trim());
-      }
-    }
-    doc.appendChild(root);
-    return doc;
-  }
-
   private static synchronized Document createDocument(File fl) {
     Document ret = null;
     if (!checkBuilder()) {
@@ -1219,14 +1241,6 @@ public final class XmlUtils {
     return nd != null && nd.getNodeType() == Node.ELEMENT_NODE;
   }
 
-  private static String transformDOMImplementation(DOMImplementation imp) {
-    if (imp == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return imp.toString();
-    }
-  }
-
   private static String transformDocument(Document doc) {
     try {
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -1240,6 +1254,14 @@ public final class XmlUtils {
     } catch (TransformerException ex) {
       LogUtils.getRootLogger().error(ex);
       return null;
+    }
+  }
+
+  private static String transformDOMImplementation(DOMImplementation imp) {
+    if (imp == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return imp.toString();
     }
   }
 

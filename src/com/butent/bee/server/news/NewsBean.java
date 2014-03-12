@@ -104,6 +104,11 @@ public class NewsBean {
         logger.severe("invalid user feed name", row.getValue(NewsConstants.COL_UF_FEED));
         continue;
       }
+      
+      if (!usr.isModuleVisible(feed.getModuleAndSub())) {
+        logger.warning("user", userId, "is subscribed to invisible feed", feed);
+        continue;
+      }
 
       String caption = row.getValue(NewsConstants.COL_UF_CAPTION);
       DateTime date = row.getDateTime(NewsConstants.COL_UF_SUBSCRIPTION_DATE);
@@ -121,7 +126,11 @@ public class NewsBean {
 
     logger.info("user", userId, "subscriptions", subscriptions.size(), "headlines", countHeadlines);
 
-    return ResponseObject.response(subscriptions);
+    if (subscriptions.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(subscriptions);
+    }
   }
 
   public String getUsageRelationColumn(String table) {

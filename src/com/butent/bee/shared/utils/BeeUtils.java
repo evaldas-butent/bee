@@ -120,6 +120,22 @@ public final class BeeUtils {
     return false;
   }
 
+  public static boolean anyNotEmpty(String first, String second, String... rest) {
+    if (!isEmpty(first) || !isEmpty(second)) {
+      return true;
+    }
+    if (rest == null) {
+      return false;
+    }
+    
+    for (String s : rest) {
+      if (!isEmpty(s)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean anyNotNull(Object first, Object second, Object... rest) {
     if (first != null || second != null) {
       return true;
@@ -471,6 +487,14 @@ public final class BeeUtils {
     return false;
   }
 
+  /**
+   * Returns true if and {@code src} string contains the specified sequence of {@code ctxt} string
+   * value in case-insensitive.
+   * 
+   * @param src source of search
+   * @param ctxt the sequence to search for
+   * @return true if {@code src} string contains {@code ctxt}, false otherwise
+   */
   public static boolean containsSame(String src, String ctxt) {
     if (isEmpty(src) || isEmpty(ctxt)) {
       return false;

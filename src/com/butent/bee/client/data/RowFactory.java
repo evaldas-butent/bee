@@ -63,7 +63,7 @@ public final class RowFactory {
   private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
-  
+
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
     if (defaults) {
@@ -78,30 +78,12 @@ public final class RowFactory {
     DataInfo dataInfo = selector.getOracle().getDataInfo();
 
     String formName = selector.getNewRowForm();
-    String caption = selector.getNewRowCaption();
-
-    BeeRow row = createEmptyRow(dataInfo, true);
-
-    SelectorEvent event = SelectorEvent.fireNewRow(selector, row);
-    String value = selector.getDisplayValue();
-
-    if (!event.isConsumed() && !BeeUtils.isEmpty(value)) {
-      for (String colName : selector.getChoiceColumns()) {
-        BeeColumn column = dataInfo.getColumn(colName);
-
-        if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
-          String v = (column.getPrecision() > 0) 
-              ? BeeUtils.left(value.trim(), column.getPrecision()) : value.trim();
-          Data.setValue(dataInfo.getViewName(), row, column.getId(), v);
-          break;
-        }
-      }
-    }
 
     if (BeeUtils.isEmpty(formName)) {
       List<BeeColumn> columns = getColumns(dataInfo, selector.getNewRowColumns(),
           selector.getChoiceColumns());
       if (columns.isEmpty()) {
+        logger.warning(dataInfo.getViewName(), "columns not available for create row");
         return;
       }
 
@@ -114,21 +96,51 @@ public final class RowFactory {
       }
     }
 
+    BeeRow row = createEmptyRow(dataInfo, true);
+
+    SelectorEvent event = SelectorEvent.fireNewRow(selector, row, formName);
+
+    if (!event.isConsumed()) {
+      String defValue = event.getDefValue();
+
+      if (!BeeUtils.isEmpty(defValue)) {
+        for (String colName : selector.getChoiceColumns()) {
+          BeeColumn column = dataInfo.getColumn(colName);
+
+          if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
+            String v = (column.getPrecision() > 0)
+                ? BeeUtils.left(defValue.trim(), column.getPrecision()) : defValue.trim();
+            Data.setValue(dataInfo.getViewName(), row, column.getId(), v);
+            break;
+          }
+        }
+      }
+
+      createRelatedRow(formName, row, selector);
+    }
+  }
+
+  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector) {
+    Assert.notEmpty(formName);
+    Assert.notNull(row);
+    Assert.notNull(selector);
+    
     selector.setAdding(true);
 
-    createRow(formName, caption, dataInfo, row, selector, null, new RowCallback() {
-      @Override
-      public void onCancel() {
-        selector.setAdding(false);
-        selector.setFocus(true);
-      }
+    createRow(formName, selector.getNewRowCaption(), selector.getOracle().getDataInfo(), row,
+        selector, null, new RowCallback() {
+          @Override
+          public void onCancel() {
+            selector.setAdding(false);
+            selector.setFocus(true);
+          }
 
-      @Override
-      public void onSuccess(BeeRow result) {
-        selector.setAdding(false);
-        selector.setSelection(result);
-      }
-    });
+          @Override
+          public void onSuccess(BeeRow result) {
+            selector.setAdding(false);
+            selector.setSelection(result);
+          }
+        });
   }
 
   public static void createRow(String viewName) {
@@ -138,7 +150,7 @@ public final class RowFactory {
   public static void createRow(String viewName, RowCallback rowCallback) {
     createRow(viewName, null, rowCallback);
   }
-  
+
   public static void createRow(String viewName, String caption, RowCallback rowCallback) {
     Assert.notEmpty(viewName);
 
@@ -374,16 +386,16 @@ public final class RowFactory {
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }
-        
+
         switch (action) {
           case CANCEL:
             close.onClose();
             break;
-            
+
           case CLOSE:
             formView.onClose(close);
             break;
-            
+
           case SAVE:
             close.onSave();
             break;
@@ -391,7 +403,7 @@ public final class RowFactory {
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }
-        
+
         if (interceptor != null) {
           interceptor.afterAction(action, presenter);
         }
@@ -415,7 +427,7 @@ public final class RowFactory {
         }
       }
     });
-    
+
     dialog.addOpenHandler(new OpenEvent.Handler() {
       @Override
       public void onOpen(OpenEvent event) {

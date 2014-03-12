@@ -172,9 +172,6 @@ public final class EcConstants {
     EnumUtils.register(EcSupplier.class);
   }
 
-  public static final String EC_MODULE = "Ec";
-  public static final String EC_METHOD = EC_MODULE + "Method";
-
   public static final String SVC_GET_PROMO = "getPromo";
 
   public static final String SVC_FINANCIAL_INFORMATION = "financialInformation";
@@ -304,9 +301,10 @@ public final class EcConstants {
 
   public static final String TBL_TCD_ORPHANS = "TcdOrphans";
 
+  public static final String VIEW_ARTICLE_CODES = "TcdArticleCodes";
+  public static final String VIEW_ARTICLES = "TcdArticles";
   public static final String VIEW_BANNERS = "EcBanners";
   public static final String VIEW_DELIVERY_METHODS = "DeliveryMethods";
-  public static final String VIEW_CATALOG = "EcCatalog";
   public static final String VIEW_CATEGORIES = "TcdCategories";
   public static final String VIEW_CLIENTS = "EcClients";
   public static final String VIEW_CONFIGURATION = "EcConfiguration";
@@ -538,6 +536,7 @@ public final class EcConstants {
 
   public static final String GRID_DISCOUNTS = "EcDiscounts";
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
+  public static final String GRID_ARTICLE_CODES = "TcdArticleCodes";
   public static final String GRID_ARTICLE_GRAPHICS = "TcdArticleGraphics";
   public static final String GRID_GROUP_CATEGORIES = "EcGroupCategories";
 
@@ -564,7 +563,7 @@ public final class EcConstants {
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
 
   public static final String NAME_PREFIX = "ec-";
-  
+
   private EcConstants() {
   }
 }

@@ -13,7 +13,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -75,7 +75,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
       }
     }
 
-    if (!BeeUtils.same(table, CommonsConstants.TBL_RELATIONS)
+    if (!BeeUtils.same(table, AdministrationConstants.TBL_RELATIONS)
         && BeeUtils.same(targetColumn, sourceColumn)) {
       return null;
     }

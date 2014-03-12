@@ -1,7 +1,8 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.DataSourceBean;
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.jdbc.BeeConnection;
 import com.butent.bee.server.jdbc.BeeResultSet;
@@ -13,17 +14,19 @@ import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Property;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -35,6 +38,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class DataServiceBean {
+
   private static BeeLogger logger = LogUtils.getLogger(DataServiceBean.class);
 
   @EJB
@@ -44,55 +48,48 @@ public class DataServiceBean {
   @EJB
   ResultSetBean rsb;
 
-  public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     Assert.notEmpty(svc);
 
-    BeeDataSource ds = checkDs(buff);
+    BeeDataSource ds = dsb.getDefaultDs();
     if (ds == null) {
-      return;
+      return ResponseObject.error(svc, "data source not available");
     }
 
+    if (!ds.check()) {
+      return ResponseObject.error(svc, "cannot open data source", ds.getErrors());
+    }
+
+    ResponseObject response;
+
     if (Service.isDbMetaService(svc)) {
-      mdb.doService(svc, ds, reqInfo, buff);
+      response = mdb.doService(svc, ds, reqInfo);
+
     } else if (BeeUtils.same(svc, Service.DB_JDBC)) {
-      testJdbc(ds.getConn(), reqInfo, buff);
+      response = testJdbc(ds.getConn(), reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords(svc, "data service not recognized");
       logger.warning(msg);
-      buff.addWarning(msg);
+      response = ResponseObject.error(msg);
     }
 
     ds.close();
+
+    return response;
   }
 
-  private BeeDataSource checkDs(ResponseBuffer buff) {
-    BeeDataSource z = dsb.getDefaultDs();
-
-    if (z == null) {
-      buff.addWarning("dsn not specified");
-      return null;
-    }
-
-    if (!z.check()) {
-      buff.addSevere("cannot open data source", z.getErrors());
-      return null;
-    }
-    return z;
-  }
-
-  private void testJdbc(Connection conn, RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject testJdbc(Connection conn, RequestInfo reqInfo) {
     DateTime enter = new DateTime();
 
     Map<String, String> map = reqInfo.getVars();
     if (BeeUtils.isEmpty(map)) {
-      buff.addSevere("Request data not found");
-      return;
+      return ResponseObject.error(reqInfo.getService(), "Request data not found");
     }
 
     String sql = map.get(Service.VAR_JDBC_QUERY);
     if (BeeUtils.isEmpty(sql)) {
-      buff.addSevere("Parameter", Service.VAR_JDBC_QUERY, "not found");
-      return;
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_JDBC_QUERY);
     }
 
     for (String key : map.keySet()) {
@@ -122,7 +119,6 @@ public class DataServiceBean {
     String rFs = map.get(Service.VAR_RESULT_SET_FETCH_SIZE);
 
     String ret = map.get(Service.VAR_JDBC_RETURN);
-    boolean debug = reqInfo.isDebug();
 
     String before = "before:";
     String after = "after:";
@@ -133,6 +129,8 @@ public class DataServiceBean {
     int v2;
     int vu;
 
+    ResponseObject response = new ResponseObject();
+
     BeeConnection bc = new BeeConnection(conn);
 
     if (BeeUtils.isBoolean(cAc)) {
@@ -142,11 +140,11 @@ public class DataServiceBean {
 
       if (bc.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bc.getErrors());
-        return;
+        response.addError(bc.getErrors());
+        return response;
       }
 
-      buff.addMessage("Connection Auto Commit:", cAc, before, vb, after, BeeUtils.toBoolean(v2));
+      response.addInfo("Connection Auto Commit:", cAc, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
     if (!BeeUtils.isEmpty(cHo)) {
@@ -156,11 +154,11 @@ public class DataServiceBean {
 
       if (bc.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bc.getErrors());
-        return;
+        response.addError(bc.getErrors());
+        return response;
       }
 
-      buff.addMessage("Connection Holdability:", cHo,
+      response.addInfo("Connection Holdability:", cHo,
           before, v1, JdbcUtils.holdabilityAsString(v1),
           after, v2, JdbcUtils.holdabilityAsString(v2));
     }
@@ -172,11 +170,11 @@ public class DataServiceBean {
 
       if (bc.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bc.getErrors());
-        return;
+        response.addError(bc.getErrors());
+        return response;
       }
 
-      buff.addMessage("Connection Transaction Isolation:", cTi,
+      response.addInfo("Connection Transaction Isolation:", cTi,
           before, v1, JdbcUtils.transactionIsolationAsString(v1),
           after, v2, JdbcUtils.transactionIsolationAsString(v2));
     }
@@ -188,35 +186,35 @@ public class DataServiceBean {
 
       if (bc.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bc.getErrors());
-        return;
+        response.addError(bc.getErrors());
+        return response;
       }
 
-      buff.addMessage("Connection Read Only:", cRo, before, vb, after, BeeUtils.toBoolean(v2));
+      response.addInfo("Connection Read Only:", cRo, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
     Statement stmt = bc.createStatement(conn, sRt, sRc, sRh);
     if (bc.hasErrors() || stmt == null) {
       bc.revert(conn);
-      buff.addErrors(bc.getErrors());
+      response.addError(bc.getErrors());
       if (stmt == null) {
-        buff.addMessage(LogLevel.ERROR, "Statement not created");
+        response.addError("Statement not created");
       }
       JdbcUtils.closeStatement(stmt);
-      return;
+      return response;
     }
 
     BeeStatement bs = new BeeStatement(stmt);
     if (bs.hasErrors()) {
       bc.revert(conn);
-      buff.addErrors(bs.getErrors());
+      response.addError(bs.getErrors());
       JdbcUtils.closeStatement(stmt);
-      return;
+      return response;
     }
 
     if (!BeeUtils.allEmpty(sRt, sRc, sRh)) {
-      buff.addMessage("Statement parameters:", sRt, sRc, sRh);
-      buff.addMessage("Statement created:", bs.getResultSetType(),
+      response.addInfo("Statement parameters:", sRt, sRc, sRh);
+      response.addInfo("Statement created:", bs.getResultSetType(),
           JdbcUtils.rsTypeAsString(bs.getResultSetType()), bs.getConcurrency(),
           JdbcUtils.concurrencyAsString(bs.getConcurrency()), bs.getHoldability(),
           JdbcUtils.holdabilityAsString(bs.getHoldability()));
@@ -224,30 +222,30 @@ public class DataServiceBean {
 
     if (!BeeUtils.isEmpty(sCn)) {
       if (JdbcUtils.supportsCursorName(conn)) {
-        buff.addMessage("Cursor name:", sCn);
+        response.addInfo("Cursor name:", sCn);
         bs.setCursorName(stmt, sCn);
 
         if (bs.hasErrors()) {
           bc.revert(conn);
-          buff.addErrors(bs.getErrors());
+          response.addError(bs.getErrors());
           JdbcUtils.closeStatement(stmt);
-          return;
+          return response;
         }
 
       } else {
-        buff.addMessage(LogLevel.WARNING, "Cursor name:", sCn, JdbcConst.FEATURE_NOT_SUPPORTED);
+        response.addWarning("Cursor name:", sCn, JdbcConst.FEATURE_NOT_SUPPORTED);
       }
     }
 
     if (BeeUtils.isBoolean(sEp)) {
-      buff.addMessage("Escape Processing:", sEp);
+      response.addInfo("Escape Processing:", sEp);
       bs.setEscapeProcessing(stmt, BeeUtils.toBoolean(sEp));
 
       if (bs.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bs.getErrors());
+        response.addError(bs.getErrors());
         JdbcUtils.closeStatement(stmt);
-        return;
+        return response;
       }
     }
 
@@ -258,12 +256,12 @@ public class DataServiceBean {
 
       if (bs.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bs.getErrors());
+        response.addError(bs.getErrors());
         JdbcUtils.closeStatement(stmt);
-        return;
+        return response;
       }
 
-      buff.addMessage("Statement Fetch Direction:", sFd,
+      response.addInfo("Statement Fetch Direction:", sFd,
           before, v1, JdbcUtils.fetchDirectionAsString(v1),
           after, v2, JdbcUtils.fetchDirectionAsString(v2));
     }
@@ -275,7 +273,7 @@ public class DataServiceBean {
       } else if (BeeUtils.isInt(sFs)) {
         vu = BeeUtils.toInt(sFs);
       } else {
-        buff.addMessage(LogLevel.WARNING, "Statement Fetch Size:", sFs, "not an integer");
+        response.addWarning("Statement Fetch Size:", sFs, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -287,12 +285,12 @@ public class DataServiceBean {
 
         if (bs.hasErrors()) {
           bc.revert(conn);
-          buff.addErrors(bs.getErrors());
+          response.addError(bs.getErrors());
           JdbcUtils.closeStatement(stmt);
-          return;
+          return response;
         }
 
-        buff.addMessage("Statement Fetch Size:", sFs, BeeUtils.bracket(vu), before, v1, after, v2);
+        response.addInfo("Statement Fetch Size:", sFs, BeeUtils.bracket(vu), before, v1, after, v2);
       }
     }
 
@@ -301,7 +299,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sMf);
         ok = true;
       } else {
-        buff.addMessage(LogLevel.WARNING, "Statement Max Field Size:", sMf, "not an integer");
+        response.addWarning("Statement Max Field Size:", sMf, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -313,12 +311,12 @@ public class DataServiceBean {
 
         if (bs.hasErrors()) {
           bc.revert(conn);
-          buff.addErrors(bs.getErrors());
+          response.addError(bs.getErrors());
           JdbcUtils.closeStatement(stmt);
-          return;
+          return response;
         }
 
-        buff.addMessage("Statement Max Field Size:", sMf, BeeUtils.bracket(vu),
+        response.addInfo("Statement Max Field Size:", sMf, BeeUtils.bracket(vu),
             before, v1, after, v2);
       }
     }
@@ -328,7 +326,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sMr);
         ok = true;
       } else {
-        buff.addMessage(LogLevel.WARNING, "Statement Max Rows:", sMr, "not an integer");
+        response.addWarning("Statement Max Rows:", sMr, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -340,12 +338,12 @@ public class DataServiceBean {
 
         if (bs.hasErrors()) {
           bc.revert(conn);
-          buff.addErrors(bs.getErrors());
+          response.addError(bs.getErrors());
           JdbcUtils.closeStatement(stmt);
-          return;
+          return response;
         }
 
-        buff.addMessage("Statement Max Rows:", sMr, BeeUtils.bracket(vu), before, v1, after, v2);
+        response.addInfo("Statement Max Rows:", sMr, BeeUtils.bracket(vu), before, v1, after, v2);
       }
     }
 
@@ -354,7 +352,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sQt);
         ok = true;
       } else {
-        buff.addMessage(LogLevel.WARNING, "Statement Query Timeout:", sQt, "not an integer");
+        response.addWarning("Statement Query Timeout:", sQt, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -366,12 +364,12 @@ public class DataServiceBean {
 
         if (bs.hasErrors()) {
           bc.revert(conn);
-          buff.addErrors(bs.getErrors());
+          response.addError(bs.getErrors());
           JdbcUtils.closeStatement(stmt);
-          return;
+          return response;
         }
 
-        buff.addMessage("Statement Query Timeout:", sQt, BeeUtils.bracket(vu),
+        response.addInfo("Statement Query Timeout:", sQt, BeeUtils.bracket(vu),
             before, v1, after, v2);
       }
     }
@@ -383,12 +381,12 @@ public class DataServiceBean {
 
       if (bs.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(bs.getErrors());
+        response.addError(bs.getErrors());
         JdbcUtils.closeStatement(stmt);
-        return;
+        return response;
       }
 
-      buff.addMessage("Statement Poolable:", sPo, before, vb, after, BeeUtils.toBoolean(v2));
+      response.addInfo("Statement Poolable:", sPo, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
     long memQ1 = SystemInfo.freeMemory();
@@ -397,16 +395,19 @@ public class DataServiceBean {
 
     if (bs.hasErrors() || rs == null) {
       bc.revert(conn);
-      buff.addErrors(bs.getErrors());
+      response.addError(bs.getErrors());
       if (rs == null) {
-        buff.addMessage(LogLevel.ERROR, BeeUtils.bracket(sql), "result set not created");
+        response.addError(BeeUtils.bracket(sql), "result set not created");
       }
       JdbcUtils.closeResultSet(rs);
       JdbcUtils.closeStatement(stmt);
-      return;
+      return response;
     }
 
-    buff.addWarnings(JdbcUtils.getWarnings(stmt));
+    List<String> warnings = JdbcUtils.getWarnings(stmt);
+    if (!BeeUtils.isEmpty(warnings)) {
+      response.addWarning(warnings);
+    }
 
     BeeResultSet br = new BeeResultSet();
 
@@ -420,13 +421,13 @@ public class DataServiceBean {
 
       if (br.hasErrors()) {
         bc.revert(conn);
-        buff.addErrors(br.getErrors());
+        response.addError(br.getErrors());
         JdbcUtils.closeResultSet(rs);
         JdbcUtils.closeStatement(stmt);
-        return;
+        return response;
       }
 
-      buff.addMessage("Result Set Fetch Direction:", rFd,
+      response.addInfo("Result Set Fetch Direction:", rFd,
           before, v1, JdbcUtils.fetchDirectionAsString(v1),
           after, v2, JdbcUtils.fetchDirectionAsString(v2));
     }
@@ -438,7 +439,7 @@ public class DataServiceBean {
       } else if (BeeUtils.isInt(rFs)) {
         vu = BeeUtils.toInt(rFs);
       } else {
-        buff.addMessage(LogLevel.WARNING, "Result Set Fetch Size:", rFs, "not an integer");
+        response.addWarning("Result Set Fetch Size:", rFs, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -453,18 +454,23 @@ public class DataServiceBean {
 
         if (br.hasErrors()) {
           bc.revert(conn);
-          buff.addErrors(br.getErrors());
+          response.addError(br.getErrors());
           JdbcUtils.closeResultSet(rs);
           JdbcUtils.closeStatement(stmt);
-          return;
+          return response;
         }
 
-        buff.addMessage("Result Set Fetch Size:", rFs, BeeUtils.bracket(vu), before, v1, after, v2);
+        response.addInfo("Result Set Fetch Size:", rFs, BeeUtils.bracket(vu),
+            before, v1, after, v2);
       }
     }
 
     if (BeeUtils.containsSame(ret, "col")) {
-      rsb.rsMdToResponse(rs, buff, debug);
+      ResponseObject mdResponse = rsb.getMetaData(rs);
+      response.addMessagesFrom(mdResponse);
+      if (mdResponse.hasResponse()) {
+        response.setResponse(mdResponse.getResponse());
+      }
 
     } else if (BeeUtils.containsSame(ret, "count")) {
       DateTime start = new DateTime();
@@ -473,24 +479,43 @@ public class DataServiceBean {
       long memC2 = SystemInfo.freeMemory();
       DateTime end = new DateTime();
 
-      buff.addLine(enter.toTimeString(), start.toTimeString(), end.toTimeString());
-      buff.addLine(ret, rc, BeeUtils.bracket(TimeUtils.toSeconds(end.getTime() - start.getTime())),
+      response.addInfo(enter.toTimeString(), start.toTimeString(), end.toTimeString());
+      response.addInfo(ret, rc,
+          BeeUtils.bracket(TimeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));
-      buff.addLine("memory", NameUtils.addName("executeQuery", BeeUtils.toString(memQ1 - memQ2)),
+      response.addInfo("memory", NameUtils.addName("executeQuery",
+          BeeUtils.toString(memQ1 - memQ2)),
           NameUtils.addName(ret, BeeUtils.toString(memC1 - memC2)));
 
     } else if (BeeUtils.containsSame(ret, "meta")) {
-      buff.addExtendedPropertiesColumns();
-      buff.appendProperties("Connection", BeeConnection.getInfo(conn));
-      buff.appendProperties("Statement", BeeStatement.getInfo(stmt));
-      buff.appendProperties("Result Set", BeeResultSet.getInfo(rs));
+      List<Property> result = Lists.newArrayList();
+
+      List<Property> info = BeeConnection.getInfo(conn);
+      result.add(new Property("Connection", BeeUtils.bracket(info.size())));
+      result.addAll(info);
+
+      info = BeeStatement.getInfo(stmt);
+      result.add(new Property("Statement", BeeUtils.bracket(info.size())));
+      result.addAll(info);
+
+      info = BeeResultSet.getInfo(rs);
+      result.add(new Property("Result Set", BeeUtils.bracket(info.size())));
+      result.addAll(info);
+
+      response.setCollection(result, Property.class);
 
     } else {
-      rsb.rsToResponse(rs, buff, debug);
+      ResponseObject rsResponse = rsb.read(rs);
+      response.addMessagesFrom(rsResponse);
+      if (rsResponse.hasResponse()) {
+        response.setResponse(rsResponse.getResponse());
+      }
     }
 
     JdbcUtils.closeResultSet(rs);
     JdbcUtils.closeStatement(stmt);
     bc.revert(conn);
+
+    return response;
   }
 }

@@ -43,6 +43,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -98,7 +99,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Filter lastFilter;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       FormInterceptor interceptor) {
 
     List<BeeColumn> columns = (rowSet == null) ? null : rowSet.getColumns();
@@ -343,7 +344,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private Provider createProvider(FormContainerView view, String viewName,
-      List<BeeColumn> columns, BeeRowSet rowSet, Provider.Type providerType,
+      List<BeeColumn> columns, BeeRowSet rowSet, ProviderType providerType,
       CachingPolicy cachingPolicy) {
     if (BeeUtils.isEmpty(viewName) || providerType == null) {
       return null;

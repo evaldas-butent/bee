@@ -49,7 +49,7 @@ import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.HeaderSilverImpl;
+import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Label;
@@ -76,7 +76,8 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -185,8 +186,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private int rowCount;
 
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
-      VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, CommonsConstants.VIEW_COUNTRIES,
-      CommonsConstants.VIEW_COLORS, CommonsConstants.VIEW_THEME_COLORS);
+      VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, ClassifierConstants.VIEW_COUNTRIES,
+      AdministrationConstants.VIEW_COLORS, AdministrationConstants.VIEW_THEME_COLORS);
 
   private final CustomDiv filterLabel;
   private final CustomDiv removeFilter;
@@ -200,8 +201,8 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     Set<Action> enabledActions = getEnabledActions();
 
-    this.headerView = new HeaderSilverImpl();
-    headerView.create(getCaption(), false, true, EnumSet.of(UiOption.ROOT), enabledActions,
+    this.headerView = new HeaderImpl();
+    headerView.create(getCaption(), false, true, null, EnumSet.of(UiOption.ROOT), enabledActions,
         Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     if (BeeUtils.contains(enabledActions, Action.FILTER)) {
@@ -1562,6 +1563,11 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     String serialized = rowSet.getTableProperty(PROP_COUNTRIES);
     if (!BeeUtils.isEmpty(serialized)) {
       Places.setCountries(BeeRowSet.restore(serialized));
+    }
+
+    serialized = rowSet.getTableProperty(PROP_CITIES);
+    if (!BeeUtils.isEmpty(serialized)) {
+      Places.setCities(BeeRowSet.restore(serialized));
     }
 
     serialized = rowSet.getTableProperty(PROP_COLORS);

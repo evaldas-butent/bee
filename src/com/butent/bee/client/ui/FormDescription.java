@@ -7,7 +7,6 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.CustomProperties;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
@@ -31,8 +30,6 @@ public class FormDescription implements HasViewName {
   private static final String TAG_ROW_EDITABLE = "rowEditable";
   private static final String TAG_ROW_VALIDATION = "rowValidation";
 
-  private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
-
   private static final String ATTR_SHOW_ROW_ID = "showRowId";
 
   private static final String ATTR_PRINT_HEADER = "printHeader";
@@ -55,14 +52,6 @@ public class FormDescription implements HasViewName {
         UiConstants.ATTR_CACHE_DESCRIPTION));
   }
   
-  public int getAsyncThreshold() {
-    Integer asyncThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_ASYNC_THRESHOLD);
-    if (asyncThreshold == null) {
-      asyncThreshold = DataUtils.getDefaultAsyncThreshold();
-    }
-    return asyncThreshold;
-  }
-
   public String getCaption() {
     String caption = getFormElement().getAttribute(UiConstants.ATTR_CAPTION);
     return Localized.maybeTranslate(BeeUtils.trim(caption));

@@ -17,8 +17,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants.UserGroupVisibility;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.UserGroupVisibility;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -30,24 +31,24 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
   public static UniqueChildInterceptor forUsers(String dialogCaption, String parentColumn,
       String childColumn) {
     return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn,
-        CommonsConstants.VIEW_USERS,
-        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
-        Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME,
-            CommonsConstants.ALS_COMPANY_NAME, CommonsConstants.ALS_POSITION_NAME));
+        AdministrationConstants.VIEW_USERS,
+        Lists.newArrayList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME),
+        Lists.newArrayList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME,
+            ClassifierConstants.ALS_COMPANY_NAME, ClassifierConstants.ALS_POSITION_NAME));
   }
 
   public static UniqueChildInterceptor forUserGroups(String dialogCaption, String parentColumn,
       String childColumn) {
 
-    List<String> columns = Lists.newArrayList(CommonsConstants.COL_USER_GROUP_SETTINGS_NAME);
+    List<String> columns = Lists.newArrayList(AdministrationConstants.COL_USER_GROUP_SETTINGS_NAME);
 
     Filter filter = Filter.or(
-        BeeKeeper.getUser().getFilter(CommonsConstants.COL_USER_GROUP_SETTINGS_OWNER),
-        Filter.isEqual(CommonsConstants.COL_USER_GROUP_SETTINGS_VISIBILITY,
+        BeeKeeper.getUser().getFilter(AdministrationConstants.COL_USER_GROUP_SETTINGS_OWNER),
+        Filter.isEqual(AdministrationConstants.COL_USER_GROUP_SETTINGS_VISIBILITY,
             IntegerValue.of(UserGroupVisibility.PUBLIC)));
 
     return new UniqueChildInterceptor(dialogCaption, parentColumn, childColumn,
-        CommonsConstants.VIEW_USER_GROUP_SETTINGS, columns, columns, columns, filter);
+        AdministrationConstants.VIEW_USER_GROUP_SETTINGS, columns, columns, columns, filter);
   }
 
   private final String dialogCaption;

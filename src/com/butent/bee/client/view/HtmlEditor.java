@@ -87,8 +87,8 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
 
     this.onSave = onSave;
 
-    this.headerView = new HeaderSilverImpl();
-    headerView.create(caption, false, true, EnumSet.of(UiOption.ROOT),
+    this.headerView = new HeaderImpl();
+    headerView.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
         EnumSet.of(Action.SAVE, Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     headerView.setViewPresenter(this);

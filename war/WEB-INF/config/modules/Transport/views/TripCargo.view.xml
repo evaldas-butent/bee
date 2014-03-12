@@ -9,6 +9,7 @@
     <SimpleColumn name="Trip"/>
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="CargoPercent" />
+    <SimpleColumn name="Message" />
     
     <SimpleColumn name="Cargo"/>    
     <SimpleJoin joinType="LEFT" name="Cargo">

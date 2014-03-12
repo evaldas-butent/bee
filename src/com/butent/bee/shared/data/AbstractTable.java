@@ -23,6 +23,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -436,6 +437,15 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
     return null;
   }
 
+  @Override
+  public List<Long> getRowIds() {
+    List<Long> result = new ArrayList<>();
+    for (R row : this) {
+      result.add(row.getId());
+    }
+    return result;
+  }
+  
   @Override
   public int getRowIndex(long rowId) {
     for (int i = 0; i < getNumberOfRows(); i++) {

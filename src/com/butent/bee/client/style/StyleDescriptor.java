@@ -19,6 +19,17 @@ public class StyleDescriptor extends StyleDeclaration {
     return new StyleDescriptor(src.getClassName(), src.getInline(), src.getFontDeclaration());
   }
 
+  public static StyleDescriptor of(SafeStyles styles) {
+    if (styles == null) {
+      return null;
+
+    } else {
+      StyleDescriptor sd = new StyleDescriptor(null);
+      sd.setSafeStyles(styles);
+      return sd;
+    }
+  }
+  
   private Font font;
   private SafeStyles safeStyles;
 

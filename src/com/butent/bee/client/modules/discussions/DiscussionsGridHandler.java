@@ -26,7 +26,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -112,7 +112,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     final long rowId = event.getRowValue().getId();
 
     Filter filter = Filter.and(Filter.equals(COL_DISCUSSION, rowId),
-        Filter.equals(CommonsConstants.COL_USER, userId));
+        Filter.equals(AdministrationConstants.COL_USER, userId));
 
     Queries.update(VIEW_DISCUSSIONS_USERS, filter, COL_STAR, new IntegerValue(value),
         new Queries.IntCallback() {

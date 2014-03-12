@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="References" label="=classifiers" order="10" module="Classifiers"
+>
+  <Item name="Goods" label="=goods" service="items" parameters="g" />
+  <Item name="Services" label="=services" service="items" parameters="s" />
+
+  <Item name="Categories" label="=itemCategories" service="form" parameters="CategoryTree"
+    separator="true" data="CategoryTree" />
+
+  <Item name="Units" label="=units" service="grid" parameters="Units" separator="true" />
+
+  <Item name="Currencies" label="=currencies" service="grid" parameters="Currencies"
+    separator="true" />
+  <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
+    service="update_exchange_rates" />
+
+  <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
+  <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
+  
+  <Item name="Colors" label="=colors" service="grid" parameters="Colors" separator="true" />
+  <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />
+</Entry>

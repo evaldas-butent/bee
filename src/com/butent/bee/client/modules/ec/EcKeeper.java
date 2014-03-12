@@ -17,7 +17,6 @@ import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -55,6 +54,9 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
@@ -64,6 +66,7 @@ import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants.CartType;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcItemInfo;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -155,8 +158,8 @@ public final class EcKeeper {
   }
 
   public static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(EC_MODULE);
-    args.addQueryItem(EC_METHOD, method);
+    ParameterList args = BeeKeeper.getRpc().createParameters(Module.ECOMMERCE.getName());
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 
@@ -436,7 +439,7 @@ public final class EcKeeper {
   }
 
   public static void register() {
-    BeeKeeper.getMenu().registerMenuCallback("ensure_categories_and_open_grid", new MenuCallback() {
+    MenuService.ENSURE_CATEGORIES_AND_OPEN_GRID.setHandler(new MenuHandler() {
       @Override
       public void onSelection(final String parameters) {
         ensureCategories(new Consumer<Boolean>() {
@@ -448,7 +451,7 @@ public final class EcKeeper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("edit_terms_of_delivery", new MenuCallback() {
+    MenuService.EDIT_TERMS_OF_DELIVERY.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         editConfigurationHtml(Localized.getConstants().ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
@@ -456,7 +459,7 @@ public final class EcKeeper {
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("edit_ec_contacts", new MenuCallback() {
+    MenuService.EDIT_EC_CONTACTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         editConfigurationHtml(Localized.getConstants().ecContacts(), COL_CONFIG_CONTACTS_URL,
@@ -475,6 +478,7 @@ public final class EcKeeper {
 
     GridFactory.registerGridInterceptor(GRID_ARTICLE_GRAPHICS, new ArticleGraphicsHandler());
     GridFactory.registerGridInterceptor("EcBanners", new BannerGridInterceptor());
+    GridFactory.registerGridInterceptor(GRID_ARTICLE_CODES, new ArticleCodesGridInterceptor());
 
     FormFactory.registerFormInterceptor("EcRegistration", new EcRegistrationForm());
     FormFactory.registerFormInterceptor("EcOrder", new EcOrderForm());

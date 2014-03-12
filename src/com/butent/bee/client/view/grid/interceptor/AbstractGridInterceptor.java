@@ -11,6 +11,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -178,6 +179,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public StyleProvider getColumnStyleProvider(String columnName) {
+    return null;
+  }
+
+  @Override
   public List<BeeColumn> getDataColumns() {
     return (getGridView() == null) ? null : getGridView().getDataColumns();
   }
@@ -262,6 +268,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public String getRowCaption(IsRow row, boolean edit) {
+    return null;
+  }
+
+  @Override
+  public StyleProvider getRowStyleProvider() {
     return null;
   }
 

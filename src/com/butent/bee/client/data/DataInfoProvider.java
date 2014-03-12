@@ -9,10 +9,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.event.HandlesDeleteEvents;
-import com.butent.bee.shared.data.event.MultiDeleteEvent;
-import com.butent.bee.shared.data.event.RowDeleteEvent;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.ColumnNamesProvider;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -24,8 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Handler,
-    DataInfo.Provider, ColumnNamesProvider {
+public class DataInfoProvider implements DataInfo.Provider, ColumnNamesProvider {
 
   private static final BeeLogger logger = LogUtils.getLogger(DataInfoProvider.class);
 
@@ -75,30 +70,6 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
         restore((String) response.getResponse());
       }
     });
-  }
-
-  @Override
-  public void onMultiDelete(MultiDeleteEvent event) {
-    DataInfo dataInfo = getDataInfo(event.getViewName(), false);
-    if (dataInfo != null) {
-      dataInfo.setRowCount(dataInfo.getRowCount() - event.getRows().size());
-    }
-  }
-
-  @Override
-  public void onRowDelete(RowDeleteEvent event) {
-    DataInfo dataInfo = getDataInfo(event.getViewName(), false);
-    if (dataInfo != null) {
-      dataInfo.setRowCount(dataInfo.getRowCount() - 1);
-    }
-  }
-
-  @Override
-  public void onRowInsert(RowInsertEvent event) {
-    DataInfo dataInfo = getDataInfo(event.getViewName(), false);
-    if (dataInfo != null) {
-      dataInfo.setRowCount(dataInfo.getRowCount() + 1);
-    }
   }
 
   public void restore(String serialized) {

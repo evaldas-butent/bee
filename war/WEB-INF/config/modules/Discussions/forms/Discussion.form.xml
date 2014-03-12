@@ -55,7 +55,7 @@
   
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
+  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussions"
   caption="=discussion">
 
   <FlowPanel class="flexBox-vertical">
@@ -144,12 +144,12 @@
 
         <FlowPanel class="flexBox-horizontal">
           <Label text="=adTopic" style="&lbl1; min-width:150px;" />
-          <DataSelector source="Topic" style="&inp2x; width: 250px"
+          <DataSelector name="Topic" source="Topic" style="&inp2x; width: 250px"
             choiceColumns="Name" filter="Visible" disablable="false"/>
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal">
-          <Label text="=displayInBoard" style="&lbl1; min-width:150px;" />
+          <Label name="DisplayInBoard" text="=displayInBoard" style="&lbl1; min-width:150px;" />
           <Label text="=dateFromShort"
             style="text-transform: lowercase; margin-right:4px" />
           <InputDateTime source="VisibleFrom"
@@ -162,14 +162,12 @@
         <FlowPanel class="flexBox-horizontal">
           <CheckBox name="Important" source="Important" text="=important"
             style="&top1; min-width:70px; padding-right:18px;" disablable="false"/>
-          <CheckBox name="PermitComment" source="PermitComment"
+          <CheckBox name="PermitComment"
             text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" 
             disablable="false" />
         </FlowPanel>
       </FlowPanel>
     </Disclosure>
-
-
 
     <FlowPanel name="DiscussionsComments" class="flexible bee-discuss-comment-container"
       style="&commentsPanel;" />

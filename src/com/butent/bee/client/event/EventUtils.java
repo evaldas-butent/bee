@@ -709,7 +709,6 @@ public final class EventUtils {
   }
 
   public static Element getTargetElement(EventTarget et) {
-    Assert.notNull(et);
     if (Element.is(et)) {
       return Element.as(et);
     } else {
@@ -718,7 +717,6 @@ public final class EventUtils {
   }
 
   public static String getTargetId(EventTarget et) {
-    Assert.notNull(et);
     if (Element.is(et)) {
       return Element.as(et).getId();
     } else {
@@ -727,7 +725,6 @@ public final class EventUtils {
   }
 
   public static Node getTargetNode(EventTarget et) {
-    Assert.notNull(et);
     if (Node.is(et)) {
       return Node.as(et);
     } else {
@@ -736,7 +733,6 @@ public final class EventUtils {
   }
   
   public static String getTargetTagName(EventTarget et) {
-    Assert.notNull(et);
     if (Element.is(et)) {
       return Element.as(et).getTagName();
     } else {

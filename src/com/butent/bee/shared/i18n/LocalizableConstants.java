@@ -3,16 +3,18 @@ package com.butent.bee.shared.i18n;
 import com.google.gwt.i18n.client.Constants;
 
 import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
-import com.butent.bee.shared.modules.crm.LocalizableCrmConstants;
 import com.butent.bee.shared.modules.discussions.LocalizableDiscussionsConstants;
+import com.butent.bee.shared.modules.documents.LocalizableDocumentsConstants;
 import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
 import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
+import com.butent.bee.shared.modules.tasks.LocalizableTaskConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
     LocalizableMailConstants, LocalizableTransportConstants, LocalizableTradeConstants,
-    LocalizableCrmConstants, LocalizableEcConstants, LocalizableDiscussionsConstants {
+    LocalizableTaskConstants, LocalizableEcConstants, LocalizableDiscussionsConstants,
+    LocalizableDocumentsConstants {
 
   String actionAdd();
 
@@ -92,6 +94,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String address();
 
+  String administration();
+
   String allowPhotoSize();
 
   String amount();
@@ -103,7 +107,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String branch();
 
   String cancel();
-  
+
   String captionId();
 
   String changedValues();
@@ -119,6 +123,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String choosePrintingForm();
 
   String city();
+
+  String classifiers();
 
   String clear();
 
@@ -372,6 +378,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String message();
 
+  String messageSent();
+
   String minValue();
 
   String mobile();
@@ -393,6 +401,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String newService();
 
   String newTab();
+  
+  String newThemeColors();
 
   String newUser();
 
@@ -414,15 +424,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String number();
 
-  String objectEvent();
+  String objectData();
 
-  String objectGrid();
-
-  String objectForm();
+  String objectField();
 
   String objectMenu();
 
   String objectModule();
+
+  String objectWidget();
 
   String ok();
 
@@ -496,9 +506,15 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String responsiblePersons();
 
-  String rightStateAmendable();
+  String rightStateCreate();
 
-  String rightStateVisible();
+  String rightStateDelete();
+
+  String rightStateEdit();
+
+  String rightStateView();
+
+  String roleAddUsers();
 
   String roomDeleteQuestion();
 
@@ -537,6 +553,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String selectAtLeastOneRow();
+  
+  String selectRole();
 
   String send();
 

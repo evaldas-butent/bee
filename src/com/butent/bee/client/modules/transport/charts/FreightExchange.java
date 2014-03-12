@@ -40,7 +40,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -519,7 +519,7 @@ final class FreightExchange extends ChartBase {
     Label widget = new Label(item.getCustomerName());
     widget.addStyleName(STYLE_CUSTOMER_LABEL);
 
-    bindOpener(widget, CommonsConstants.VIEW_COMPANIES, item.getCustomerId());
+    bindOpener(widget, ClassifierConstants.VIEW_COMPANIES, item.getCustomerId());
 
     Simple panel = new Simple(widget);
     panel.addStyleName(STYLE_CUSTOMER_PANEL);

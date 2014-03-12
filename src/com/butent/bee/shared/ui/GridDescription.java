@@ -8,6 +8,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -35,8 +36,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, CURRENT_USER_FILTER, ORDER,
-    HEADER_MODE, FOOTER_MODE,
-    ASYNC_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
+    HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
     EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_POPUP,
@@ -85,7 +85,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Boolean cacheData;
   private Boolean cacheDescription;
 
-  private Integer asyncThreshold;
+  private ProviderType dataProvider;
   private Integer initialRowSetSize;
 
   private Boolean readOnly;
@@ -210,8 +210,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           }
           break;
 
-        case ASYNC_THRESHOLD:
-          setAsyncThreshold(BeeUtils.toIntOrNull(value));
+        case DATA_PROVIDER:
+          setDataProvider(Codec.unpack(ProviderType.class, value));
           break;
         case BODY:
           setBody(GridComponentDescription.restore(value));
@@ -407,14 +407,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           setOptions(value);
           break;
         case PROPERTIES:
-          setProperties(Codec.beeDeserializeMap(value));
+          setProperties(Codec.deserializeMap(value));
           break;
       }
     }
-  }
-
-  public Integer getAsyncThreshold() {
-    return asyncThreshold;
   }
 
   public String getAutoFit() {
@@ -433,8 +429,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return cacheDescription;
   }
 
-  public CachingPolicy getCachingPolicy(boolean def) {
-    return BeeUtils.nvl(getCacheData(), def) ? CachingPolicy.FULL : CachingPolicy.NONE;
+  public CachingPolicy getCachingPolicy() {
+    return BeeUtils.isTrue(getCacheData()) ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   public String getCaption() {
@@ -460,6 +456,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getCurrentUserFilter() {
     return currentUserFilter;
+  }
+
+  public ProviderType getDataProvider() {
+    return dataProvider;
   }
 
   public Set<Action> getDisabledActions() {
@@ -524,7 +524,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Footer Mode", getFooterMode(),
         "Cache Data", getCacheData(),
         "Cache Description", getCacheDescription(),
-        "Async Threshold", getAsyncThreshold(),
+        "Data Provider", getDataProvider(),
         "Initial Row Set Size", getInitialRowSetSize(),
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
@@ -840,8 +840,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case COLUMNS:
           arr[i++] = getColumns();
           break;
-        case ASYNC_THRESHOLD:
-          arr[i++] = getAsyncThreshold();
+        case DATA_PROVIDER:
+          arr[i++] = Codec.pack(getDataProvider());
           break;
         case BODY:
           arr[i++] = getBody();
@@ -995,10 +995,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return Codec.beeSerialize(arr);
   }
 
-  public void setAsyncThreshold(Integer asyncThreshold) {
-    this.asyncThreshold = asyncThreshold;
-  }
-
   public void setAutoFit(String autoFit) {
     this.autoFit = autoFit;
   }
@@ -1021,6 +1017,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setCurrentUserFilter(String currentUserFilter) {
     this.currentUserFilter = currentUserFilter;
+  }
+
+  public void setDataProvider(ProviderType dataProvider) {
+    this.dataProvider = dataProvider;
   }
 
   public void setDefaults() {
@@ -1127,7 +1127,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowColumns(String newRowColumns) {
     this.newRowColumns = newRowColumns;
   }
-
+  
   public void setNewRowDefaults(String newRowDefaults) {
     this.newRowDefaults = newRowDefaults;
   }
@@ -1135,7 +1135,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
-  
+
   public void setNewRowFormImmediate(Boolean newRowFormImmediate) {
     this.newRowFormImmediate = newRowFormImmediate;
   }
@@ -1183,7 +1183,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowMessage(Calculation rowMessage) {
     this.rowMessage = rowMessage;
   }
-
+  
   public void setRowStyles(Collection<ConditionalStyleDeclaration> rowStyles) {
     this.rowStyles = rowStyles;
   }
@@ -1191,7 +1191,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowValidation(Calculation rowValidation) {
     this.rowValidation = rowValidation;
   }
-  
+
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }

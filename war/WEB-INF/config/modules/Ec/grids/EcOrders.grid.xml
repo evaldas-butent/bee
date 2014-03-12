@@ -3,8 +3,7 @@
   
   name="EcOrders" viewName="EcOrders" caption="=ecOrders"
   newRowColumns="Date Client Manager DeliveryMethod"
-  order="Date desc" cacheData="false" asyncThreshold="-1"
-  flexGrow="1"
+  order="Date desc" flexGrow="1"
   >
   <g:columns>
     <IdColumn name="ID" caption="=ecOrderNumber" maxWidth="80" />

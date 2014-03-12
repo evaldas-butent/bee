@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcRegistrations" source="EcRegistrations" caption="=ecRegistrations"
-  editForm="EcRegistration" newRowForm="EcRegistration" newRowCaption="=ecRegistrationNew"
+  name="EcRegistrations" source="EcRegistrations" module="Ec.Administration"
+  caption="=ecRegistrations" newRowCaption="=ecRegistrationNew"
+  editForm="EcRegistration" newRowForm="EcRegistration"
   >
   <Columns>
     <SimpleColumn name="Date" />

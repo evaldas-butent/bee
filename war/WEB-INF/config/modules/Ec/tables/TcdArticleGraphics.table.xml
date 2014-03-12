@@ -7,7 +7,7 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" />
+    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItem" />
     <Relation name="Graphics" relation="TcdGraphics" notNull="true" cascade="DELETE" />
     <Numeric name="Sort" precision="2" notNull="true" />
   </Fields>

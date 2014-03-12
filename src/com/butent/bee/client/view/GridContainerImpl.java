@@ -120,7 +120,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     HeaderView header;
     if (gridDescription.hasGridHeader()) {
-      header = new HeaderSilverImpl();
+      header = new HeaderImpl();
 
       String caption = (gridInterceptor == null) ? null : gridInterceptor.getCaption();
       if (caption == null) {
@@ -170,7 +170,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
 
       if (!readOnly && !BeeUtils.isEmpty(gridDescription.getEnableCopy()) 
-          && !disabledActions.contains(Action.COPY)) {
+          && !disabledActions.contains(Action.COPY)
+          && BeeKeeper.getUser().canCreateData(gridDescription.getViewName())) {
         enabledActions.add(Action.COPY);
       }
 
@@ -181,8 +182,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         enabledActions.add(Action.AUDIT);
       }
 
-      header.create(caption, hasData, readOnly, uiOptions, enabledActions, disabledActions,
-          hiddenActions);
+      header.create(caption, hasData, readOnly, gridDescription.getViewName(), uiOptions,
+          enabledActions, disabledActions, hiddenActions);
     } else {
       header = null;
     }

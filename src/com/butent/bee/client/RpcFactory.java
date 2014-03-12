@@ -30,7 +30,7 @@ import java.util.Set;
  * 
  */
 
-public class RpcFactory implements Module {
+public class RpcFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(RpcFactory.class);
 
@@ -70,11 +70,6 @@ public class RpcFactory implements Module {
     return new ParameterList(svc);
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
   public String getOptions() {
     if (Global.isDebug()) {
       return CommUtils.OPTION_DEBUG;
@@ -94,20 +89,6 @@ public class RpcFactory implements Module {
     return result;
   }
 
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
   public AsyncCallback getReqCallBack() {
     return reqCallBack;
   }
@@ -120,16 +101,6 @@ public class RpcFactory implements Module {
     return rpcList;
   }
 
-  public Object getUserData(int id) {
-    RpcInfo info = getRpcInfo(id);
-
-    if (info == null) {
-      return null;
-    } else {
-      return info.getUserData();
-    }
-  }
-
   public boolean hasPendingRequests() {
     for (RpcInfo info : rpcList.values()) {
       if (info != null && info.isPending()) {
@@ -139,29 +110,25 @@ public class RpcFactory implements Module {
     return false;
   }
 
-  @Override
-  public void init() {
+  public int invoke(String method, ResponseCallback callback) {
+    return invoke(method, null, null, callback);
   }
 
-  public int invoke(String method) {
-    return invoke(method, null, null);
-  }
-
-  public int invoke(String method, ContentType ctp, String data) {
+  public int invoke(String method, ContentType ctp, String data, ResponseCallback callback) {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(Service.INVOKE);
     params.addQueryItem(Service.RPC_VAR_METH, method);
 
     if (data == null) {
-      return makeGetRequest(params);
+      return makeGetRequest(params, callback);
     } else {
-      return makePostRequest(params, ctp, data);
+      return makePostRequest(params, ctp, data, callback);
     }
   }
 
-  public int invoke(String method, String data) {
-    return invoke(method, null, data);
+  public int invoke(String method, String data, ResponseCallback callback) {
+    return invoke(method, null, data, callback);
   }
 
   public int makeGetRequest(ParameterList params) {
@@ -259,10 +226,6 @@ public class RpcFactory implements Module {
     return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
   }
   
-  @Override
-  public void onExit() {
-  }
-
   public int sendText(ParameterList params, String data, ResponseCallback callback) {
     return makePostRequest(params, ContentType.TEXT, data, callback);
   }
@@ -273,17 +236,6 @@ public class RpcFactory implements Module {
 
   public int sendText(String svc, String data, ResponseCallback callback) {
     return makePostRequest(svc, ContentType.TEXT, data, callback);
-  }
-
-  public void setUserData(int id, Object data) {
-    RpcInfo info = getRpcInfo(id);
-    if (info != null) {
-      info.setUserData(data);
-    }
-  }
-
-  @Override
-  public void start() {
   }
 
   private int makeRequest(RequestBuilder.Method meth, ParameterList params,

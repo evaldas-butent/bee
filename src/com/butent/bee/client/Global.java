@@ -9,13 +9,14 @@ import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -31,14 +32,14 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputText;
@@ -48,10 +49,13 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.Defaults;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.font.FontAwesome;
@@ -70,7 +74,7 @@ import java.util.Set;
  * initializes and contains system parameters, which are used globally in the whole system.
  */
 
-public class Global implements Module {
+public final class Global {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
 
@@ -212,7 +216,7 @@ public class Global implements Module {
     Assert.notEmpty(prm);
     Assert.notNull(prmConsumer);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -521,15 +525,15 @@ public class Global implements Module {
     return debug;
   }
 
-  public static void messageBox(String caption, Icon icon, String message) {
-    messageBox(caption, icon, Lists.newArrayList(message),
-        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
-  }
-
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
     msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
         null, null, null, null, null);
+  }
+
+  public static void messageBox(String caption, Icon icon, String message) {
+    messageBox(caption, icon, Lists.newArrayList(message),
+        Lists.newArrayList(Localized.getConstants().ok()), 0, null);
   }
 
   public static boolean nativeConfirm(String... lines) {
@@ -558,7 +562,7 @@ public class Global implements Module {
   public static void setParameter(String prm, String value) {
     Assert.notEmpty(prm);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_SET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_SET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
     if (!BeeUtils.isEmpty(value)) {
@@ -599,12 +603,52 @@ public class Global implements Module {
   }
 
   public static void showGrid(String caption, IsTable<?, ?> table) {
-    Assert.notNull(table, "showGrid: table is null");
-    CellGrid grid = GridFactory.simpleGrid(caption, table,
-        BeeKeeper.getScreen().getActivePanelWidth());
-    if (grid != null) {
-      BeeKeeper.getScreen().showWidget(grid, true);
+    if (table == null || table.getNumberOfColumns() <= 0 || table.getNumberOfRows() <= 0) {
+      logger.warning(caption, "table is empty");
+      return;
     }
+
+    IdentifiableWidget widget = GridFactory.simpleGrid(caption, table,
+        BeeKeeper.getScreen().getActivePanelWidth());
+    if (widget != null) {
+      BeeKeeper.getScreen().showWidget(widget, true);
+    }
+  }
+  
+  public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
+    int c = data.getNumberOfColumns();
+    Assert.isPositive(c);
+    
+    HtmlTable table = new HtmlTable();
+    table.setCaption(caption);
+    
+    int r = 0;
+    for (int i = 0; i < c; i++) {
+      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      table.setHtml(r, i, label);
+      
+      TableCellElement cell = table.getCellFormatter().getElement(r, i);
+      StyleUtils.setTextAlign(cell, TextAlign.CENTER);
+      StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
+      
+//      if (ValueType.isNumeric(data.getColumnType(i))) {
+//      }
+      
+      r++;
+    }
+    
+    for (IsRow row : data) {
+      for (int i = 0; i < c; i++) {
+        String value = row.getString(i);
+        if (value != null) {
+          table.setHtml(r, i, value);
+        }
+      }
+      
+      r++;
+    }
+    
+    return table;
   }
 
   public static void showInfo(List<String> messages) {
@@ -637,46 +681,23 @@ public class Global implements Module {
     msgBoxen.showTable(caption, table);
   }
 
-  public static void showModalWidget(Widget widget) {
-    showModalWidget(null, widget, null);
-  }
-
   public static void showModalWidget(String caption, Widget widget) {
     showModalWidget(caption, widget, null);
-  }
-
-  public static void showModalWidget(Widget widget, Element target) {
-    showModalWidget(null, widget, target);
   }
 
   public static void showModalWidget(String caption, Widget widget, Element target) {
     msgBoxen.showWidget(caption, widget, target);
   }
 
-  Global() {
+  public static void showModalWidget(Widget widget) {
+    showModalWidget(null, widget, null);
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
+  public static void showModalWidget(Widget widget, Element target) {
+    showModalWidget(null, widget, target);
   }
 
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return 20;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
-  @Override
-  public void init() {
+  static void init() {
     initCache();
     initImages();
     initFavorites();
@@ -685,27 +706,19 @@ public class Global implements Module {
     exportMethods();
   }
 
-  @Override
-  public void onExit() {
-  }
-
-  @Override
-  public void start() {
-  }
-
   // CHECKSTYLE:OFF
-  private native void exportMethods() /*-{
+  private static native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
   }-*/;
 
-  // CHECKSTYLE:ON
-
   private static void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache(), true);
   }
+
+  // CHECKSTYLE:ON
 
   private static void initFavorites() {
     BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);
@@ -718,5 +731,8 @@ public class Global implements Module {
 
   private static void initNewsAggregator() {
     BeeKeeper.getBus().registerDataHandler(getNewsAggregator(), true);
+  }
+
+  private Global() {
   }
 }

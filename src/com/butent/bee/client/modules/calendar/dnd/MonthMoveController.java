@@ -8,7 +8,7 @@ import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.view.MonthView;
-import com.butent.bee.client.modules.crm.CrmKeeper;
+import com.butent.bee.client.modules.tasks.TasksKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
@@ -115,7 +115,7 @@ public class MonthMoveController implements MoveEvent.Handler {
           break;
 
         case TASK:
-          CrmKeeper.extendTask(item.getId(), start, end);
+          TasksKeeper.extendTask(item.getId(), start, end);
           break;
       }
     }

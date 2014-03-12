@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "Item", namespace = DataUtils.MENU_NAMESPACE)
 public class MenuItem extends Menu {
   @XmlAttribute
-  private String service;
+  private MenuService service;
   @XmlAttribute
   private String parameters;
 
@@ -18,7 +18,7 @@ public class MenuItem extends Menu {
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
-    service = arr[0];
+    service = Codec.unpack(MenuService.class, arr[0]);
     parameters = arr[1];
   }
 
@@ -26,7 +26,7 @@ public class MenuItem extends Menu {
     return parameters;
   }
 
-  public String getService() {
+  public MenuService getService() {
     return service;
   }
   
@@ -37,6 +37,6 @@ public class MenuItem extends Menu {
 
   @Override
   public String serialize() {
-    return super.serialize(new Object[] {service, parameters});
+    return super.serialize(new Object[] {Codec.pack(service), parameters});
   }
 }

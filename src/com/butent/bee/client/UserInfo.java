@@ -3,7 +3,8 @@ package com.butent.bee.client;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -15,15 +16,31 @@ import java.util.List;
  * 
  */
 
-public class UserInfo implements Module, HasInfo {
+public class UserInfo implements HasInfo {
 
   private String sessionId;
   private UserData userData;
 
+  public boolean canCreateData(String object) {
+    return isLoggedIn() && userData.canCreateData(object);
+  }
+
+  public boolean canDeleteData(String object) {
+    return isLoggedIn() && userData.canDeleteData(object);
+  }
+
+  public boolean canEditColumn(String viewName, String column) {
+    return isLoggedIn() && userData.canEditColumn(viewName, column);
+  }
+
+  public boolean canEditData(String object) {
+    return isLoggedIn() && userData.canEditData(object);
+  }
+
   public Long getCompany() {
     return isLoggedIn() ? userData.getCompany() : null;
   }
-  
+
   public Filter getFilter(String column) {
     if (isLoggedIn() && !BeeUtils.isEmpty(column)) {
       return Filter.equals(column, getUserId());
@@ -59,25 +76,6 @@ public class UserInfo implements Module, HasInfo {
     return userData.getLogin();
   }
 
-  @Override
-  public String getName() {
-    return getClass().getName();
-  }
-
-  @Override
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
-    }
-  }
-
   public String getProperty(String property) {
     if (!isLoggedIn()) {
       return null;
@@ -107,55 +105,36 @@ public class UserInfo implements Module, HasInfo {
     return userData.getUserSign();
   }
 
-  public boolean hasEventRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasEventRight(object, state);
-  }
-
-  public boolean hasFormRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasFormRight(object, state);
-  }
-
-  public boolean hasGridRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasGridRight(object, state);
-  }
-
-  public boolean hasMenuRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasMenuRight(object, state);
-  }
-
-  public boolean hasModuleRight(String object, RightsState state) {
-    if (!isLoggedIn()) {
-      return false;
-    }
-    return userData.hasModuleRight(object, state);
-  }
-
-  @Override
-  public void init() {
-  }
-
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
+  }
+
+  public boolean isColumnVisible(String viewName, String column) {
+    return isLoggedIn() && userData.isColumnVisible(viewName, column);
+  }
+
+  public boolean isDataVisible(String object) {
+    return isLoggedIn() && userData.isDataVisible(object);
   }
 
   public boolean isLoggedIn() {
     return userData != null;
   }
 
-  @Override
-  public void onExit() {
+  public boolean isMenuVisible(String object) {
+    return isLoggedIn() && userData.isMenuVisible(object);
+  }
+
+  public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
+    return isLoggedIn() && userData.isModuleVisible(moduleAndSub);
+  }
+
+  public boolean isModuleVisible(String object) {
+    return isLoggedIn() && userData.isModuleVisible(object);
+  }
+
+  public boolean isWidgetVisible(RegulatedWidget widget) {
+    return isLoggedIn() && userData.isWidgetVisible(widget);
   }
 
   public void setSessionId(String sessionId) {
@@ -164,9 +143,5 @@ public class UserInfo implements Module, HasInfo {
 
   public void setUserData(UserData userData) {
     this.userData = userData;
-  }
-
-  @Override
-  public void start() {
   }
 }

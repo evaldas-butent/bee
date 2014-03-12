@@ -479,6 +479,8 @@ class MessageDispatcher {
               break;
             }
           }
+          
+          BeeKeeper.onRightsChange();
         }
         break;
     }

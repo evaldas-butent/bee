@@ -178,6 +178,8 @@ public interface LocalizableEcConstants {
 
   String ecMenu();
 
+  String ecModule();
+
   String ecMoreItems();
 
   String ecNothingToOrder();

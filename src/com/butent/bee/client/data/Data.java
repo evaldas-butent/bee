@@ -8,7 +8,6 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -45,6 +44,19 @@ public final class Data {
 
   private static BeeLogger logger = LogUtils.getLogger(Data.class);
 
+  public static String clamp(String viewName, String colName, String value) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    } else {
+      Integer precision = getColumnPrecision(viewName, colName);
+      if (BeeUtils.isPositive(precision) && value.length() > precision) {
+        return BeeUtils.left(value.trim(), precision);
+      } else {
+        return value;
+      }
+    }
+  }
+
   public static void clearCell(String viewName, IsRow row, String colName) {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
   }
@@ -57,11 +69,6 @@ public final class Data {
     return Objects.equal(getLong(viewName, row, colName), value);
   }
 
-  public static int getApproximateRowCount(String viewName) {
-    DataInfo dataInfo = getDataInfo(viewName);
-    return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount();
-  }
-  
   public static Boolean getBoolean(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }
@@ -173,31 +180,17 @@ public final class Data {
     return (dataInfo == null) ? null : dataInfo.getTableName();
   }
 
-  public static boolean sameTable(String v1, String v2) {
-    String t1 = getViewTable(v1);
-    if (BeeUtils.isEmpty(t1)) {
-      return false;
-    } else {
-      return v1.equals(v2) || t1.equals(getViewTable(v2));
-    }
+  public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
+    return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId())
+        || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());
   }
   
-  public static void init() {
-    BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
-    BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);
-    BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER, false);
-  }
-
-  public static boolean isColumnReadOnly(String viewName, BeeColumn column) {
-    return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId());
-  }
-
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
 
   public static boolean isViewEditable(String viewName) {
-    if (BeeUtils.isEmpty(viewName)) {
+    if (BeeUtils.isEmpty(viewName) || !BeeKeeper.getUser().canEditData(viewName)) {
       return false;
     } else if (!editableViews.isEmpty()) {
       return editableViews.contains(viewName);
@@ -209,7 +202,7 @@ public final class Data {
   }
 
   public static boolean isViewVisible(String viewName) {
-    if (BeeUtils.isEmpty(viewName)) {
+    if (BeeUtils.isEmpty(viewName) || !BeeKeeper.getUser().isDataVisible(viewName)) {
       return false;
     } else if (!visibleViews.isEmpty()) {
       return visibleViews.contains(viewName);
@@ -229,6 +222,15 @@ public final class Data {
 
   public static void onViewChange(String viewName, EnumSet<DataChangeEvent.Effect> effects) {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
+  }
+
+  public static boolean sameTable(String v1, String v2) {
+    String t1 = getViewTable(v1);
+    if (BeeUtils.isEmpty(t1)) {
+      return false;
+    } else {
+      return v1.equals(v2) || t1.equals(getViewTable(v2));
+    }
   }
 
   public static void setColumnReadOnly(String viewName, String colName) {
@@ -284,6 +286,10 @@ public final class Data {
 
   public static void setVisibleViews(Collection<String> views) {
     BeeUtils.overwrite(visibleViews, views);
+  }
+
+  public static void squeezeValue(String viewName, IsRow row, String colName, String value) {
+    COLUMN_MAPPER.setValue(viewName, row, colName, clamp(viewName, colName, value));
   }
 
   private Data() {

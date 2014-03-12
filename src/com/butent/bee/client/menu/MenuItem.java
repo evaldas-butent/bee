@@ -1,6 +1,7 @@
 package com.butent.bee.client.menu;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
@@ -21,7 +22,7 @@ public class MenuItem extends UIObject implements HasIdentity {
   private static final String STYLENAME_DEFAULT = "bee-MenuItem";
   private static final String STYLENAME_SELECTED = "selected";
 
-  private MenuCommand command;
+  private Scheduler.ScheduledCommand command;
 
   private MenuBar parentMenu;
   private MenuBar subMenu;
@@ -38,17 +39,17 @@ public class MenuItem extends UIObject implements HasIdentity {
     setSubMenu(subMenu);
   }
 
-  public MenuItem(MenuBar parent, String text, ITEM_TYPE type, MenuCommand cmd) {
+  public MenuItem(MenuBar parent, String text, ITEM_TYPE type, Scheduler.ScheduledCommand cmd) {
     init(parent, text, type);
     setCommand(cmd);
   }
 
-  public MenuItem(MenuBar parent, String text, MenuCommand cmd) {
+  public MenuItem(MenuBar parent, String text, Scheduler.ScheduledCommand cmd) {
     init(parent, text, getDefaultType(parent));
     setCommand(cmd);
   }
 
-  public MenuCommand getCommand() {
+  public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
@@ -74,7 +75,7 @@ public class MenuItem extends UIObject implements HasIdentity {
     return subMenu;
   }
 
-  public void setCommand(MenuCommand cmd) {
+  public void setCommand(Scheduler.ScheduledCommand cmd) {
     this.command = cmd;
   }
 

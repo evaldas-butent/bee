@@ -13,7 +13,8 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
@@ -40,6 +41,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -78,8 +80,8 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.ArticleCriteria;
 import com.butent.bee.shared.modules.ec.ArticleSupplier;
 import com.butent.bee.shared.modules.ec.Cart;
@@ -104,6 +106,7 @@ import com.butent.bee.shared.modules.ec.EcOrderItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 // import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -146,7 +149,6 @@ public class EcModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(code)) {
       return null;
     }
-
     Operator operator;
     String value;
 
@@ -161,6 +163,11 @@ public class EcModuleBean implements BeeModule {
     } else {
       operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
       value = normalizeCode(code);
+
+      if (operator == Operator.STARTS) {
+        value += Operator.CHAR_ANY;
+        operator = Operator.MATCHES;
+      }
       if (BeeUtils.length(value) < MIN_SEARCH_QUERY_LENGTH) {
         return null;
       }
@@ -224,11 +231,8 @@ public class EcModuleBean implements BeeModule {
   MailModuleBean mail;
   @EJB
   NewsBean news;
-
-  @Override
-  public Collection<String> dependsOn() {
-    return Lists.newArrayList(COMMONS_MODULE);
-  }
+  @EJB
+  UiHolderBean ui;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -236,11 +240,10 @@ public class EcModuleBean implements BeeModule {
   }
 
   @Override
-  public ResponseObject doService(RequestInfo reqInfo) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo) {
     long startMillis = System.currentTimeMillis();
 
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(EC_METHOD);
 
     String query = null;
     Long article = null;
@@ -392,13 +395,13 @@ public class EcModuleBean implements BeeModule {
   }
 
   @Override
-  public String getName() {
-    return EC_MODULE;
+  public Module getModule() {
+    return Module.ECOMMERCE;
   }
 
   @Override
   public String getResourcePath() {
-    return getName();
+    return getModule().getName();
   }
 
   @Override
@@ -471,7 +474,7 @@ public class EcModuleBean implements BeeModule {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows().getList(), new Comparator<BeeRow>() {
+            Collections.sort(rowSet.getRows(), new Comparator<BeeRow>() {
               @Override
               public int compare(BeeRow row1, BeeRow row2) {
                 String name1 = row1.getString(fullNameIndex);
@@ -500,14 +503,14 @@ public class EcModuleBean implements BeeModule {
       @Subscribe
       public void setSuppliersAndRemainders(ViewQueryEvent event) {
         if (event.isAfter() && !DataUtils.isEmpty(event.getRowset())
-            && BeeUtils.inListSame(event.getTargetName(), VIEW_CATALOG, VIEW_ORDER_ITEMS)) {
+            && BeeUtils.inListSame(event.getTargetName(), VIEW_ARTICLES, VIEW_ORDER_ITEMS)) {
 
           Set<Long> articleIds = Sets.newHashSet();
 
           BeeRowSet rowSet = event.getRowset();
 
           int index;
-          if (BeeUtils.same(event.getTargetName(), VIEW_CATALOG)) {
+          if (BeeUtils.same(event.getTargetName(), VIEW_ARTICLES)) {
             index = DataUtils.ID_INDEX;
           } else if (BeeUtils.same(event.getTargetName(), VIEW_ORDER_ITEMS)) {
             index = rowSet.getColumnIndex(COL_ORDER_ITEM_ARTICLE);
@@ -599,6 +602,8 @@ public class EcModuleBean implements BeeModule {
 //            TBL_MANAGERS, sys.joinTables(TBL_MANAGERS, TBL_ORDERS, COL_ORDER_MANAGER));
 //      }
 //    });
+
+    MenuService.ENSURE_CATEGORIES_AND_OPEN_GRID.setDataNameProvider(ui.getGridDataNameProvider());
   }
 
   private ResponseObject addToUnsuppliedItems(Long orderId) {
@@ -888,7 +893,7 @@ public class EcModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, idName, COL_TCD_ARTICLE, COL_TCD_SUPPLIER,
             COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE)
-        .addFields(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(TBL_TCD_ARTICLE_SUPPLIERS);
 
@@ -899,9 +904,9 @@ public class EcModuleBean implements BeeModule {
 
     query.addFromLeft(TBL_TCD_REMAINDERS,
         sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_SUPPLIER));
-    query.addFromLeft(CommonsConstants.TBL_WAREHOUSES,
-        sys.joinTables(CommonsConstants.TBL_WAREHOUSES, TBL_TCD_REMAINDERS,
-            CommonsConstants.COL_WAREHOUSE));
+    query.addFromLeft(TBL_WAREHOUSES,
+        sys.joinTables(TBL_WAREHOUSES, TBL_TCD_REMAINDERS,
+            COL_WAREHOUSE));
 
     if (!BeeUtils.isEmpty(articleIds)) {
       query.setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_ARTICLE, articleIds));
@@ -926,7 +931,7 @@ public class EcModuleBean implements BeeModule {
         suppliers.put(row.getLong(COL_TCD_ARTICLE), supplier);
         lastId = id;
       }
-      supplier.addRemainder(row.getValue(CommonsConstants.COL_WAREHOUSE_CODE),
+      supplier.addRemainder(row.getValue(COL_WAREHOUSE_CODE),
           row.getDouble(COL_TCD_REMAINDER));
     }
     return suppliers;
@@ -973,20 +978,20 @@ public class EcModuleBean implements BeeModule {
     }
 
     SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(CommonsConstants.TBL_BRANCHES, CommonsConstants.COL_BRANCH_NAME,
-            CommonsConstants.COL_BRANCH_CODE)
-        .addFrom(CommonsConstants.TBL_BRANCHES)
-        .setWhere(sys.idEquals(CommonsConstants.TBL_BRANCHES, branch)));
+        .addFields(TBL_BRANCHES, COL_BRANCH_NAME,
+            COL_BRANCH_CODE)
+        .addFrom(TBL_BRANCHES)
+        .setWhere(sys.idEquals(TBL_BRANCHES, branch)));
 
     if (row == null) {
       return null;
     }
 
-    String label = row.getValue(CommonsConstants.COL_BRANCH_CODE);
+    String label = row.getValue(COL_BRANCH_CODE);
     if (!BeeUtils.isEmpty(label)) {
       return label;
     }
-    return row.getValue(CommonsConstants.COL_BRANCH_NAME);
+    return row.getValue(COL_BRANCH_NAME);
   }
 
   private List<String> getBranchWarehouses(Long branch) {
@@ -994,11 +999,11 @@ public class EcModuleBean implements BeeModule {
 
     if (branch != null) {
       String[] arr = qs.getColumn(new SqlSelect()
-          .addFields(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE)
-          .addFrom(CommonsConstants.TBL_WAREHOUSES)
-          .setWhere(SqlUtils.equals(CommonsConstants.TBL_WAREHOUSES,
-              CommonsConstants.COL_WAREHOUSE_BRANCH, branch))
-          .addOrder(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE));
+          .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+          .addFrom(TBL_WAREHOUSES)
+          .setWhere(SqlUtils.equals(TBL_WAREHOUSES,
+              COL_WAREHOUSE_BRANCH, branch))
+          .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE));
 
       if (arr != null) {
         for (String s : arr) {
@@ -1308,12 +1313,12 @@ public class EcModuleBean implements BeeModule {
 
     if (client != null) {
       String[] arr = qs.getColumn(new SqlSelect()
-          .addFields(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE)
+          .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
           .addFrom(table)
-          .addFromInner(CommonsConstants.TBL_WAREHOUSES,
-              sys.joinTables(CommonsConstants.TBL_WAREHOUSES, table, COL_CW_WAREHOUSE))
+          .addFromInner(TBL_WAREHOUSES,
+              sys.joinTables(TBL_WAREHOUSES, table, COL_CW_WAREHOUSE))
           .setWhere(SqlUtils.equals(table, COL_CW_CLIENT, client))
-          .addOrder(CommonsConstants.TBL_WAREHOUSES, CommonsConstants.COL_WAREHOUSE_CODE));
+          .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE));
 
       if (arr != null) {
         for (String s : arr) {
@@ -1962,12 +1967,12 @@ public class EcModuleBean implements BeeModule {
         .addFields(tempArticleIds, COL_TCD_ARTICLE)
         .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR, COL_TCD_BRAND,
             COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_ARTICLE_NOVELTY, COL_TCD_ARTICLE_FEATURED)
-        .addField(CommonsConstants.TBL_UNITS, CommonsConstants.COL_UNIT_NAME, unitName)
+        .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES,
             sys.joinTables(TBL_TCD_ARTICLES, tempArticleIds, COL_TCD_ARTICLE))
-        .addFromLeft(CommonsConstants.TBL_UNITS,
-            sys.joinTables(CommonsConstants.TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
+        .addFromLeft(TBL_UNITS,
+            sys.joinTables(TBL_UNITS, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_UNIT))
         .setWhere(articleCondition);
 
     SimpleRowSet articleData = qs.getData(articleQuery);
@@ -2399,7 +2404,7 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject mailRegistration(Long sender, Long recipient, String login,
       String password, SupportedLocale locale) {
 
-    String companyName = BeeUtils.trim(prm.getText(PRM_COMPANY_NAME));
+    String companyName = BeeUtils.trim(prm.getText(PRM_COMPANY));
     String url = BeeUtils.trim(prm.getText(PRM_URL));
 
     LocalizableMessages messages = Localizations.getPreferredMessages(locale.getLanguage());

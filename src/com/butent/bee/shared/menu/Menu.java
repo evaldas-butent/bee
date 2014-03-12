@@ -8,13 +8,12 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlTransient;
 
 @XmlSeeAlso({MenuEntry.class, MenuItem.class })
 public abstract class Menu implements BeeSerializable {
 
   private enum Serial {
-    NAME, LABEL, SEPARATOR, ORDER, MODULE
+    NAME, LABEL, SEPARATOR, ORDER, MODULE, DATA
   }
 
   public static Menu restore(String s) {
@@ -25,10 +24,10 @@ public abstract class Menu implements BeeSerializable {
     Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length + 2);
     String clazz = arr[0];
-    String data = arr[1];
+    String content = arr[1];
     Menu menu = null;
 
-    if (data != null) {
+    if (content != null) {
       menu = Menu.getMenu(clazz);
 
       for (int i = 0; i < members.length; i++) {
@@ -49,11 +48,14 @@ public abstract class Menu implements BeeSerializable {
             menu.order = BeeUtils.toIntOrNull(value);
             break;
           case MODULE:
-            menu.moduleName = value;
+            menu.module = value;
+            break;
+          case DATA:
+            menu.data = value;
             break;
         }
       }
-      menu.deserialize(data);
+      menu.deserialize(content);
     }
     return menu;
   }
@@ -83,16 +85,21 @@ public abstract class Menu implements BeeSerializable {
   private Integer order;
   @XmlAttribute
   private String parent;
+  @XmlAttribute
+  private String module;
+  @XmlAttribute
+  private String data;
 
-  @XmlTransient
-  private String moduleName;
+  public String getData() {
+    return data;
+  }
 
   public String getLabel() {
     return label;
   }
 
-  public String getModuleName() {
-    return moduleName;
+  public String getModule() {
+    return module;
   }
 
   public String getName() {
@@ -106,15 +113,11 @@ public abstract class Menu implements BeeSerializable {
   public String getParent() {
     return parent;
   }
-  
+
   public abstract int getSize();
 
   public Boolean hasSeparator() {
     return BeeUtils.isTrue(separator);
-  }
-
-  public void setModuleName(String moduleName) {
-    this.moduleName = moduleName;
   }
 
   protected String serialize(Object obj) {
@@ -139,7 +142,10 @@ public abstract class Menu implements BeeSerializable {
           arr[i++] = order;
           break;
         case MODULE:
-          arr[i++] = moduleName;
+          arr[i++] = module;
+          break;
+        case DATA:
+          arr[i++] = data;
           break;
       }
     }

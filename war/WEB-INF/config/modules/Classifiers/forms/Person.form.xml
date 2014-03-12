@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="Person" viewName="Persons" caption="=person" width="800"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <cell rowSpan="4">
+          <Image name="PhotoImg" style="max-height: 100px; max-width: 100px; border: 1px dashed silver; cursor: default;" />
+        </cell> 
+        <Label text="=firstName" class="bee-required" horizontalAlignment="right"/>
+        <InputText style="width: 200px;" source="FirstName" />
+      </row>
+
+      <row>
+        <Label text="=lastName" horizontalAlignment="right"  />
+        <InputText style="width: 200px;" source="LastName" />
+      </row>
+
+      <row>         
+        <Label text="=dateOfBirth" horizontalAlignment="right" />
+        <InputDate source="DateOfBirth" style="width: 80px;" minValue="1900" maxValue="2000" />
+      </row>         
+ 
+      <row>
+        <Table>
+          <row>       
+            <Label text="=photo" horizontalAlignment="right" />
+            <FileCollector name="PhotoFile" editableColumns="none" accept="image/*">
+              <face resource="attachment" />
+            </FileCollector>              
+          </row>
+        </Table>
+        <FlowPanel class="flexBox-horizontal" style="font-style:italic; font-size: smaller;">
+          <Image name="unsetPhoto" resource="silverMinus" />
+          <Label html="(" style="margin-left: 8px;" />
+          <Label text="=allowPhotoSize" style="text-transform: lowercase; " />
+          <Label html="1.2 MB)" style="margin-left: 0.2em;" />
+        </FlowPanel>
+      </row>
+    </Table>
+ 
+    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+
+    <TabbedPages class="flexible" style="margin-top: 1ex;" >
+      <page data="CompaniesAndPersons">
+        <text>=personCompanies</text>
+        <ChildGrid name="PersonCompanies" relColumn="Person" />
+      </page>
+
+      <page module="Documents" data="RelatedDocuments" for="Person">
+        <text>=documents</text>
+        <ChildGrid name="RelatedDocuments" relColumn="Person" />
+      </page>
+    </TabbedPages>
+
+  </FlowPanel>
+</f:Form>  

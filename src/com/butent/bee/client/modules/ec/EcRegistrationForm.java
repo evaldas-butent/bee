@@ -13,7 +13,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.modules.commons.CommonsUtils;
+import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
@@ -26,7 +26,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -59,7 +60,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     }
 
     String caption = Localized.getConstants().ipBlockCommand();
-    CommonsUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
+    AdministrationUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
       @Override
       public void onSuccess(String result) {
         if (getFormView().isInteractive()) {
@@ -104,21 +105,21 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     final String activity = getStringValue(COL_REGISTRATION_ACTIVITY);
 
     Map<String, String> userFields = Maps.newHashMap();
-    userFields.put(CommonsConstants.COL_EMAIL, email);
-    userFields.put(CommonsConstants.COL_FIRST_NAME, firstName.trim());
-    userFields.put(CommonsConstants.ALS_COMPANY_NAME, companyName.trim());
+    userFields.put(ClassifierConstants.COL_EMAIL, email);
+    userFields.put(ClassifierConstants.COL_FIRST_NAME, firstName.trim());
+    userFields.put(ClassifierConstants.ALS_COMPANY_NAME, companyName.trim());
 
-    putUserField(userFields, COL_REGISTRATION_COMPANY_CODE, CommonsConstants.ALS_COMPANY_CODE);
-    putUserField(userFields, COL_REGISTRATION_VAT_CODE, CommonsConstants.COL_COMPANY_VAT_CODE);
+    putUserField(userFields, COL_REGISTRATION_COMPANY_CODE, ClassifierConstants.ALS_COMPANY_CODE);
+    putUserField(userFields, COL_REGISTRATION_VAT_CODE, ClassifierConstants.COL_COMPANY_VAT_CODE);
 
-    putUserField(userFields, COL_REGISTRATION_LAST_NAME, CommonsConstants.COL_LAST_NAME);
+    putUserField(userFields, COL_REGISTRATION_LAST_NAME, ClassifierConstants.COL_LAST_NAME);
 
-    putUserField(userFields, COL_REGISTRATION_ADDRESS, CommonsConstants.COL_ADDRESS);
-    putUserField(userFields, COL_REGISTRATION_CITY, CommonsConstants.COL_CITY);
-    putUserField(userFields, COL_REGISTRATION_COUNTRY, CommonsConstants.COL_COUNTRY);
+    putUserField(userFields, COL_REGISTRATION_ADDRESS, ClassifierConstants.COL_ADDRESS);
+    putUserField(userFields, COL_REGISTRATION_CITY, ClassifierConstants.COL_CITY);
+    putUserField(userFields, COL_REGISTRATION_COUNTRY, ClassifierConstants.COL_COUNTRY);
 
-    putUserField(userFields, COL_REGISTRATION_PHONE, CommonsConstants.COL_PHONE);
-    putUserField(userFields, COL_REGISTRATION_POST_INDEX, CommonsConstants.COL_POST_INDEX);
+    putUserField(userFields, COL_REGISTRATION_PHONE, ClassifierConstants.COL_PHONE);
+    putUserField(userFields, COL_REGISTRATION_POST_INDEX, ClassifierConstants.COL_POST_INDEX);
 
     String login = BeeUtils.notEmpty(BeeUtils.getPrefix(email, BeeConst.CHAR_AT), email);
     final String password = BeeUtils.left(login, 1);
@@ -126,7 +127,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     final Integer locale = getIntegerValue(COL_REGISTRATION_LANGUAGE);
 
     String caption = Localized.getConstants().ecRegistrationCommandCreate();
-    CommonsUtils.createUser(caption, login, password, UserInterface.E_COMMERCE, userFields,
+    AdministrationUtils.createUser(caption, login, password, UserInterface.E_COMMERCE, userFields,
         getFormView(), new IdCallback() {
           @Override
           public void onSuccess(Long result) {
@@ -144,8 +145,8 @@ class EcRegistrationForm extends AbstractFormInterceptor {
             params.addNotEmptyData(COL_CLIENT_PERSON_CODE, personCode);
             params.addNotEmptyData(COL_CLIENT_ACTIVITY, activity);
 
-            params.addDataItem(CommonsConstants.COL_PASSWORD, password);
-            params.addNotNullData(CommonsConstants.COL_USER_LOCALE, locale);
+            params.addDataItem(AdministrationConstants.COL_PASSWORD, password);
+            params.addNotNullData(AdministrationConstants.COL_USER_LOCALE, locale);
             
             BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
               @Override
@@ -181,7 +182,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     }
 
     if (DataUtils.hasId(row)) {
-      if (Data.isViewEditable(CommonsConstants.VIEW_USERS)) {
+      if (Data.isViewEditable(AdministrationConstants.VIEW_USERS)) {
         if (this.registerCommand == null) {
           this.registerCommand =
               new Button(Localized.getConstants().ecRegistrationCommandCreate(),
@@ -196,7 +197,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
       }
 
       if (!BeeUtils.isEmpty(getStringValue(COL_REGISTRATION_HOST))
-          && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
+          && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
               new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {

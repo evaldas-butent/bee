@@ -9,7 +9,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.modules.commons.CommonsUtils;
+import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
@@ -19,7 +19,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.TranspRegStatus;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -60,7 +61,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     }
 
     String caption = Localized.getConstants().ipBlockCommand();
-    CommonsUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
+    AdministrationUtils.blockHost(caption, host, getFormView(), new Callback<String>() {
       @Override
       public void onSuccess(String result) {
         if (getFormView().isInteractive()) {
@@ -80,36 +81,36 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     String login = BeeUtils.notEmpty(BeeUtils.getPrefix(email, BeeConst.CHAR_AT), email);
 
     Map<String, String> parameters = Maps.newHashMap();
-    parameters.put(CommonsConstants.COL_EMAIL, email);
+    parameters.put(ClassifierConstants.COL_EMAIL, email);
 
-    putUserField(parameters, COL_REGISTRATION_COMPANY_NAME, CommonsConstants.ALS_COMPANY_NAME);
-    putUserField(parameters, COL_REGISTRATION_COMPANY_CODE, CommonsConstants.ALS_COMPANY_CODE);
-    putUserField(parameters, COL_REGISTRATION_VAT_CODE, CommonsConstants.COL_COMPANY_VAT_CODE);
+    putUserField(parameters, COL_REGISTRATION_COMPANY_NAME, ClassifierConstants.ALS_COMPANY_NAME);
+    putUserField(parameters, COL_REGISTRATION_COMPANY_CODE, ClassifierConstants.ALS_COMPANY_CODE);
+    putUserField(parameters, COL_REGISTRATION_VAT_CODE, ClassifierConstants.COL_COMPANY_VAT_CODE);
     putUserField(parameters, COL_REGISTRATION_EXCHANGE_CODE,
-        CommonsConstants.COL_COMPANY_EXCHANGE_CODE);
+        ClassifierConstants.COL_COMPANY_EXCHANGE_CODE);
 
     String contact = BeeUtils.trim(getStringValue(COL_REGISTRATION_CONTACT));
     if (!BeeUtils.isEmpty(contact)) {
       int p = contact.lastIndexOf(BeeConst.CHAR_SPACE);
       if (p > 0) {
-        parameters.put(CommonsConstants.COL_FIRST_NAME, contact.substring(0, p).trim());
-        parameters.put(CommonsConstants.COL_LAST_NAME, contact.substring(p + 1).trim());
+        parameters.put(ClassifierConstants.COL_FIRST_NAME, contact.substring(0, p).trim());
+        parameters.put(ClassifierConstants.COL_LAST_NAME, contact.substring(p + 1).trim());
       } else {
-        parameters.put(CommonsConstants.COL_FIRST_NAME, contact);
+        parameters.put(ClassifierConstants.COL_FIRST_NAME, contact);
       }
     }
-    putUserField(parameters, COL_REGISTRATION_CONTACT_POSITION, CommonsConstants.COL_POSITION);
+    putUserField(parameters, COL_REGISTRATION_CONTACT_POSITION, ClassifierConstants.COL_POSITION);
 
-    putUserField(parameters, COL_REGISTRATION_ADDRESS, CommonsConstants.COL_ADDRESS);
-    putUserField(parameters, COL_REGISTRATION_CITY, CommonsConstants.COL_CITY);
-    putUserField(parameters, COL_REGISTRATION_COUNTRY, CommonsConstants.COL_COUNTRY);
+    putUserField(parameters, COL_REGISTRATION_ADDRESS, ClassifierConstants.COL_ADDRESS);
+    putUserField(parameters, COL_REGISTRATION_CITY, ClassifierConstants.COL_CITY);
+    putUserField(parameters, COL_REGISTRATION_COUNTRY, ClassifierConstants.COL_COUNTRY);
 
-    putUserField(parameters, COL_REGISTRATION_PHONE, CommonsConstants.COL_PHONE);
-    putUserField(parameters, COL_REGISTRATION_MOBILE, CommonsConstants.COL_MOBILE);
-    putUserField(parameters, COL_REGISTRATION_FAX, CommonsConstants.COL_FAX);
+    putUserField(parameters, COL_REGISTRATION_PHONE, ClassifierConstants.COL_PHONE);
+    putUserField(parameters, COL_REGISTRATION_MOBILE, ClassifierConstants.COL_MOBILE);
+    putUserField(parameters, COL_REGISTRATION_FAX, ClassifierConstants.COL_FAX);
 
     String caption = Localized.getConstants().trCommandCreateNewUser();
-    CommonsUtils.createUser(caption, login, null, UserInterface.SELF_SERVICE, parameters,
+    AdministrationUtils.createUser(caption, login, null, UserInterface.SELF_SERVICE, parameters,
         getFormView(), new IdCallback() {
           @Override
           public void onSuccess(Long result) {
@@ -143,7 +144,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
     }
 
     if (status == TranspRegStatus.NEW) {
-      if (Data.isViewEditable(CommonsConstants.VIEW_USERS)) {
+      if (Data.isViewEditable(AdministrationConstants.VIEW_USERS)) {
         if (this.registerCommand == null) {
           this.registerCommand =
               new Button(Localized.getConstants().trCommandCreateNewUser(), new ClickHandler() {
@@ -157,7 +158,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
       }
 
       if (!BeeUtils.isEmpty(getStringValue(COL_REGISTRATION_HOST)) 
-          && Data.isViewEditable(CommonsConstants.VIEW_IP_FILTERS)) {
+          && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =
               new Button(Localized.getConstants().ipBlockCommand(), new ClickHandler() {

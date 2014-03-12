@@ -10,6 +10,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -20,8 +22,8 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
@@ -36,7 +38,6 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -282,7 +283,7 @@ public class Filters {
           Item updatedItem = getItem(items, id);
           updatedItem.setInitial(value);
 
-          Queries.update(CommonsConstants.TBL_FILTERS, id, COL_INITIAL, new BooleanValue(value));
+          Queries.update(VIEW_FILTERS, id, COL_INITIAL, new BooleanValue(value));
 
           if (BeeUtils.isTrue(value) && items.size() > 1) {
             synchronizeInitialFilters(items, updatedItem, table);
@@ -319,19 +320,19 @@ public class Filters {
 
             Global.inputString(Localized.getConstants().actionRenameFilter(), null,
                 new StringCallback() {
-              @Override
-              public void onSuccess(String newValue) {
-                String newLabel = normalizeLabel(newValue);
-                if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
-                  editItem.setLabel(newLabel);
-                  labelWidget.setHtml(newLabel);
+                  @Override
+                  public void onSuccess(String newValue) {
+                    String newLabel = normalizeLabel(newValue);
+                    if (!BeeUtils.isEmpty(newLabel) && !newLabel.equals(oldLabel)) {
+                      editItem.setLabel(newLabel);
+                      labelWidget.setHtml(newLabel);
 
-                  Queries.update(CommonsConstants.TBL_FILTERS, editItem.getId(), COL_LABEL,
-                      new TextValue(newLabel));
-                  callback.accept(null, Action.EDIT);
-                }
-              }
-            }, oldLabel, getMaxLabelLength());
+                      Queries.update(VIEW_FILTERS, editItem.getId(), COL_LABEL,
+                          new TextValue(newLabel));
+                      callback.accept(null, Action.EDIT);
+                    }
+                  }
+                }, oldLabel, getMaxLabelLength());
           }
         });
 
@@ -356,7 +357,7 @@ public class Filters {
                 new ConfirmationCallback() {
                   @Override
                   public void onConfirm() {
-                    Queries.deleteRow(CommonsConstants.TBL_FILTERS, delItem.getId());
+                    Queries.deleteRow(VIEW_FILTERS, delItem.getId());
                     itemsByKey.remove(key, delItem);
 
                     int index = items.indexOf(delItem);
@@ -436,13 +437,13 @@ public class Filters {
 
     BeeRowSet rowSet = BeeRowSet.restore(serialized);
 
-    keyColumnIndex = rowSet.getColumnIndex(CommonsConstants.COL_FILTER_KEY);
+    keyColumnIndex = rowSet.getColumnIndex(COL_FILTER_KEY);
 
     nameColumnIndex = rowSet.getColumnIndex(COL_NAME);
     labelColumnIndex = rowSet.getColumnIndex(COL_LABEL);
 
     initialColumnIndex = rowSet.getColumnIndex(COL_INITIAL);
-    ordinalColumnIndex = rowSet.getColumnIndex(CommonsConstants.COL_FILTER_ORDINAL);
+    ordinalColumnIndex = rowSet.getColumnIndex(COL_FILTER_ORDINAL);
 
     editableColumnIndex = rowSet.getColumnIndex(COL_EDITABLE);
     removableColumnIndex = rowSet.getColumnIndex(COL_REMOVABLE);
@@ -506,7 +507,7 @@ public class Filters {
 
   private int getMaxLabelLength() {
     if (maxLabelLength <= 0) {
-      maxLabelLength = Data.getColumnPrecision(CommonsConstants.TBL_FILTERS, COL_LABEL);
+      maxLabelLength = Data.getColumnPrecision(VIEW_FILTERS, COL_LABEL);
     }
     return maxLabelLength;
   }
@@ -515,34 +516,34 @@ public class Filters {
       boolean predefined, RowCallback callback) {
 
     List<BeeColumn> columns =
-        Data.getColumns(CommonsConstants.TBL_FILTERS,
-            Lists.newArrayList(CommonsConstants.COL_FILTER_USER, CommonsConstants.COL_FILTER_KEY,
-                COL_NAME, COL_LABEL, COL_VALUE, CommonsConstants.COL_FILTER_ORDINAL));
+        Data.getColumns(VIEW_FILTERS,
+            Lists.newArrayList(COL_FILTER_USER, COL_FILTER_KEY,
+                COL_NAME, COL_LABEL, COL_VALUE, COL_FILTER_ORDINAL));
 
     List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
         filterDescription.getName(), filterDescription.getLabel(),
         filterDescription.serializeComponents(), ordinal);
 
     if (filterDescription.isInitial()) {
-      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_INITIAL));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_INITIAL));
       values.add(BooleanValue.pack(filterDescription.isInitial()));
     }
 
     if (filterDescription.isEditable()) {
-      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_EDITABLE));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_EDITABLE));
       values.add(BooleanValue.pack(filterDescription.isEditable()));
     }
     if (filterDescription.isRemovable()) {
-      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_REMOVABLE));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_REMOVABLE));
       values.add(BooleanValue.pack(filterDescription.isRemovable()));
     }
 
     if (predefined) {
-      columns.add(Data.getColumn(CommonsConstants.TBL_FILTERS, COL_PREDEFINED));
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_PREDEFINED));
       values.add(BooleanValue.pack(predefined));
     }
 
-    Queries.insert(CommonsConstants.TBL_FILTERS, columns, values, null, callback);
+    Queries.insert(VIEW_FILTERS, columns, values, null, callback);
   }
 
   private String normalizeLabel(String label) {
@@ -559,7 +560,7 @@ public class Filters {
     for (Item item : items) {
       if (item.id != checkedItem.id && item.isInitial() && item.containsAnyComponent(checkedKeys)) {
         item.setInitial(null);
-        Queries.update(CommonsConstants.TBL_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
+        Queries.update(VIEW_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
 
         for (Widget widget : table) {
           if (widget instanceof Initial && ((Initial) widget).id == item.id) {
