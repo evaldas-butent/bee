@@ -1423,6 +1423,7 @@
 }
 
 .bee-MultiSelector-container {
+  position: relative;
   width: 300px;
 }
 
@@ -1445,16 +1446,32 @@
   color: red;
   cursor: pointer;
 }
-.bee-MultiSelector-container.bee-disabled .bee-MultiSelector-close {
+.bee-MultiSelector-container.bee-disabled .bee-MultiSelector-close,
+.bee-MultiSelector-container.bee-disabled .bee-MultiSelector-plus {
   display: none;
 }
 
-.bee-MultiSelector-input {
+.bee-MultiSelector-container .bee-MultiSelector-input {
   background: transparent;
-  border: none !important;
+  border: none;
+  margin-right: 20px;
 }
-.bee-MultiSelector-input:focus {
-  outline: none !important;
+.bee-MultiSelector-container .bee-MultiSelector-input:focus {
+  outline: none;
+}
+
+.bee-MultiSelector-plus {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  padding: 1px 2px;
+  font-size: 14px;
+  color: #777;
+  cursor: pointer;
+}
+.bee-MultiSelector-plus:hover {
+  background-color: #0a0;
+  color: white;
 }
 
 .bee-SimplePager-container {

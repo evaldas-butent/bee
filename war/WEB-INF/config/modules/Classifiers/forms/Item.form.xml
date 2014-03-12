@@ -48,7 +48,7 @@
     <FlowPanel class="flexBox-horizontal">
       <Label text="=itemCategories" style="&lbl1;" />
       <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree" 
-        targetRelColumn="Item" sourceRelColumn="Category"
+        targetRelColumn="Item" sourceRelColumn="Category" newRowEnabled="false"
         renderColumns="ParentName Name" style="width: 500px;" label="=categories" />
     </FlowPanel>
   </FlowPanel>

@@ -34,9 +34,10 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return event;
   }
 
-  public static SelectorEvent fireNewRow(DataSelector selector, BeeRow row, String newRowFormName) {
+  public static SelectorEvent fireNewRow(DataSelector selector, BeeRow row, String newRowFormName,
+      String defValue) {
     SelectorEvent event = new SelectorEvent(State.NEW, row, newRowFormName);
-    event.setDefValue(selector.getDisplayValue());
+    event.setDefValue(defValue);
 
     fireEvent(selector, event);
     return event;

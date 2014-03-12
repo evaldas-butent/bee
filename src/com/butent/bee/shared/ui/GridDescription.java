@@ -9,7 +9,6 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.ProviderType;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.Order;
@@ -427,10 +426,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Boolean getCacheDescription() {
     return cacheDescription;
-  }
-
-  public CachingPolicy getCachingPolicy() {
-    return BeeUtils.isTrue(getCacheData()) ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   public String getCaption() {

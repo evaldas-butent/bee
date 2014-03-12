@@ -196,7 +196,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private CachingPolicy getCachingPolicy() {
-    return getGridDescription().getCachingPolicy();
+    return BeeUtils.isTrue(getGridDescription().getCacheData()) 
+        ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   private Filter getFilter(IsRow row) {

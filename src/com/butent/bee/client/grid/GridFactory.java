@@ -564,7 +564,8 @@ public final class GridFactory {
       cachingPolicy = CachingPolicy.NONE;
     } else {
       providerType = BeeUtils.nvl(gridDescription.getDataProvider(), ProviderType.DEFAULT);
-      cachingPolicy = gridDescription.getCachingPolicy();
+      cachingPolicy = BeeUtils.isFalse(gridDescription.getCacheData()) 
+          ? CachingPolicy.NONE : CachingPolicy.FULL;
     }
 
     if (brs != null) {

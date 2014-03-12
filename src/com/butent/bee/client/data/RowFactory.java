@@ -72,7 +72,7 @@ public final class RowFactory {
     return row;
   }
 
-  public static void createRelatedRow(final DataSelector selector) {
+  public static void createRelatedRow(final DataSelector selector, String defValue) {
     Assert.notNull(selector);
 
     DataInfo dataInfo = selector.getOracle().getDataInfo();
@@ -98,19 +98,16 @@ public final class RowFactory {
 
     BeeRow row = createEmptyRow(dataInfo, true);
 
-    SelectorEvent event = SelectorEvent.fireNewRow(selector, row, formName);
+    SelectorEvent event = SelectorEvent.fireNewRow(selector, row, formName, defValue);
 
     if (!event.isConsumed()) {
-      String defValue = event.getDefValue();
-
-      if (!BeeUtils.isEmpty(defValue)) {
+      if (!BeeUtils.isEmpty(event.getDefValue())) {
         for (String colName : selector.getChoiceColumns()) {
           BeeColumn column = dataInfo.getColumn(colName);
 
           if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
-            String v = (column.getPrecision() > 0)
-                ? BeeUtils.left(defValue.trim(), column.getPrecision()) : defValue.trim();
-            Data.setValue(dataInfo.getViewName(), row, column.getId(), v);
+            Data.squeezeValue(dataInfo.getViewName(), row, column.getId(),
+                event.getDefValue().trim());
             break;
           }
         }

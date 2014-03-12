@@ -20,7 +20,7 @@
 
         <Label text="=driverGroupsShort" class="bee-required" style="&lbl;" />
         <ChildSelector viewName="TransportGroups" childTable="DriverGroups"
-          targetRelColumn="Driver" sourceRelColumn="Group"
+          targetRelColumn="Driver" sourceRelColumn="Group" newRowEnabled="false"
           required="true" label="=driverGroupsShort" />
       </FlowPanel>
       &separator;

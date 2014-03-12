@@ -15,13 +15,15 @@ import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.user.client.ui.InsertPanel;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.InputEvent;
@@ -36,6 +38,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -48,6 +51,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
@@ -125,30 +129,16 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   private static final String STYLE_PREFIX = "bee-MultiSelector-";
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_CONTAINER_ACTIVE = STYLE_CONTAINER + "-active";
+
   private static final String STYLE_CHOICE = STYLE_PREFIX + "choice";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
+
   private static final String STYLE_INPUT = STYLE_PREFIX + "input";
+  private static final String STYLE_PLUS = STYLE_PREFIX + "plus";
 
   private static final int MIN_INPUT_WIDTH = 25;
   private static final int MAX_INPUT_LENGTH = 30;
-
-  public static MultiSelector autonomous(String viewName, List<String> columns) {
-    Assert.notEmpty(viewName);
-    Assert.notEmpty(columns);
-    
-    return autonomous(Relation.create(viewName, columns),
-        RendererFactory.createRenderer(viewName, columns));    
-  }
-  
-  public static MultiSelector autonomous(Relation relation, List<String> renderColumns) {
-    Assert.notNull(relation);
-    Assert.notEmpty(relation.getViewName());
-    Assert.notEmpty(renderColumns);
-
-    return autonomous(relation,
-        RendererFactory.createRenderer(relation.getViewName(), renderColumns));    
-  }
 
   public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
     Assert.notNull(relation);
@@ -173,6 +163,23 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     return selector;
   }
 
+  public static MultiSelector autonomous(Relation relation, List<String> renderColumns) {
+    Assert.notNull(relation);
+    Assert.notEmpty(relation.getViewName());
+    Assert.notEmpty(renderColumns);
+
+    return autonomous(relation,
+        RendererFactory.createRenderer(relation.getViewName(), renderColumns));
+  }
+
+  public static MultiSelector autonomous(String viewName, List<String> columns) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(columns);
+
+    return autonomous(Relation.create(viewName, columns),
+        RendererFactory.createRenderer(viewName, columns));
+  }
+
   private final String rowProperty;
 
   private AbstractCellRenderer renderer;
@@ -182,12 +189,16 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   private String oldValue;
 
   private final Consumer<InputText> inputResizer;
-
+  
+  private final int emptyContainerSize;
+  
   public MultiSelector(Relation relation, boolean embedded, String rowProperty) {
     super(relation, embedded);
     this.rowProperty = rowProperty;
 
     this.inputResizer = UiHelper.getTextBoxResizer(MIN_INPUT_WIDTH);
+    
+    this.emptyContainerSize = getContainer().getWidgetCount();
 
     SelectorEvent.fire(this, State.INITIALIZED);
   }
@@ -321,10 +332,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     if (row != null) {
       String label = renderer.render(row);
       cache.put(row.getId(), label);
-
-      InsertPanel container = getContainer();
-      container.insert(new ChoiceWidget(row.getId(), label), container.getWidgetCount() - 1);
-
+      
+      addChoice(new ChoiceWidget(row.getId(), label));
       updateValue();
 
       getElement().scrollIntoView();
@@ -334,7 +343,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       SelectorEvent.fire(this, State.INSERTED);
     }
   }
-
+  
   @Override
   public void startEdit(String oldV, char charCode, EditorAction onEntry, Element sourceElement) {
     SelectorEvent.fireExclusions(this, getOracle().getExclusions());
@@ -372,8 +381,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   @Override
   protected void init(final InputWidget inputWidget, boolean embed) {
-    final Flow container = new Flow();
-    container.addStyleName(STYLE_CONTAINER);
+    final Flow container = new Flow(STYLE_CONTAINER);
 
     int maxLength = inputWidget.getMaxLength();
     maxLength = (maxLength > 0) ? Math.min(maxLength, MAX_INPUT_LENGTH) : MAX_INPUT_LENGTH;
@@ -381,6 +389,22 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     inputWidget.addStyleName(STYLE_INPUT);
     container.add(inputWidget);
+
+    if (isNewRowEnabled()) {
+      FaLabel plusWidget = new FaLabel(FontAwesome.PLUS_SQUARE_O, STYLE_PLUS);
+      plusWidget.setTitle(BeeUtils.buildLines(Localized.getConstants().actionCreate(),
+          BeeUtils.bracket(getLabel())));
+      
+      plusWidget.addMouseDownHandler(new MouseDownHandler() {
+        @Override
+        public void onMouseDown(MouseDownEvent event) {
+          event.stopPropagation();
+          RowFactory.createRelatedRow(MultiSelector.this, getDisplayValue());
+        }
+      });
+
+      container.add(plusWidget);
+    }
 
     inputWidget.addFocusHandler(new FocusHandler() {
       @Override
@@ -429,10 +453,14 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     initWidget(container);
   }
 
+  private void addChoice(ChoiceWidget choice) {
+    Flow container = getContainer();
+    container.insert(choice, container.getWidgetCount() - emptyContainerSize);
+  }
+
   private void clearChoices() {
-    InsertPanel container = getContainer();
-    int count = container.getWidgetCount();
-    for (int i = 0; i < count - 1; i++) {
+    Flow container = getContainer();
+    while (container.getWidgetCount() > emptyContainerSize) {
       container.remove(0);
     }
   }
@@ -515,8 +543,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
         getWidget(), rowCallback, null);
   }
 
-  private InsertPanel getContainer() {
-    return (InsertPanel) getWidget();
+  private Flow getContainer() {
+    return (Flow) getWidget();
   }
 
   private void getData(Collection<Long> choices, Queries.RowSetCallback callback) {
@@ -547,11 +575,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   private void onBackSpace() {
     if (getInput().getCursorPos() == 0 && !BeeUtils.isEmpty(getValue())) {
-      InsertPanel container = getContainer();
-      int count = container.getWidgetCount();
+      Flow container = getContainer();
 
-      if (count > 1) {
-        Widget child = container.getWidget(count - 2);
+      if (container.getWidgetCount() > emptyContainerSize) {
+        Widget child = container.getWidget(container.getWidgetCount() - emptyContainerSize - 1);
         if (child instanceof ChoiceWidget) {
           removeChoice(((ChoiceWidget) child).getRowId());
         }
@@ -568,15 +595,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     reset();
     clearInput();
 
-    InsertPanel container = getContainer();
-    int count = container.getWidgetCount();
+    Flow panel = getContainer();
+    int count = panel.getWidgetCount();
 
     boolean removed = false;
 
-    for (int i = 0; i < count - 1; i++) {
-      Widget child = container.getWidget(i);
+    for (int i = 0; i < count; i++) {
+      Widget child = panel.getWidget(i);
       if (child instanceof ChoiceWidget && ((ChoiceWidget) child).getRowId() == rowId) {
-        removed = container.remove(i);
+        removed = panel.remove(i);
         break;
       }
     }
@@ -593,10 +620,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   private void renderChoices(List<Long> choices) {
     clearChoices();
-    InsertPanel container = getContainer();
 
     for (Long rowId : choices) {
-      container.insert(new ChoiceWidget(rowId, cache.get(rowId)), container.getWidgetCount() - 1);
+      addChoice(new ChoiceWidget(rowId, cache.get(rowId)));
     }
 
     setExclusions(choices);
@@ -622,11 +648,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       if (!BeeUtils.isEmpty(label) && !label.equals(cache.get(rowId))) {
         cache.put(rowId, label);
 
-        InsertPanel container = getContainer();
-        int count = container.getWidgetCount();
-
-        for (int i = 0; i < count - 1; i++) {
-          Widget child = container.getWidget(i);
+        Flow panel = getContainer();
+        for (Widget child : panel) {
           if (child instanceof ChoiceWidget && ((ChoiceWidget) child).getRowId() == rowId) {
             ((ChoiceWidget) child).setCaption(label);
             break;
@@ -638,11 +661,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   private void updateValue() {
     List<Long> choices = Lists.newArrayList();
-    InsertPanel container = getContainer();
-    int count = container.getWidgetCount();
 
-    for (int i = 0; i < count - 1; i++) {
-      Widget child = container.getWidget(i);
+    Flow panel = getContainer();
+    for (Widget child : panel) {
       if (child instanceof ChoiceWidget) {
         choices.add(((ChoiceWidget) child).getRowId());
       }

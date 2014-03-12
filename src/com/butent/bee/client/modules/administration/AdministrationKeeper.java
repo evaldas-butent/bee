@@ -105,7 +105,8 @@ public final class AdministrationKeeper {
 
     GridFactory.registerGridInterceptor(GRID_THEME_COLORS,
         new UniqueChildInterceptor(Localized.getConstants().newThemeColors(),
-            COL_THEME, COL_COLOR, VIEW_COLORS, COL_COLOR_NAME));
+            COL_THEME, COL_COLOR, VIEW_COLORS, Lists.newArrayList(COL_COLOR_NAME),
+            Lists.newArrayList(COL_COLOR_NAME, COL_BACKGROUND, COL_FOREGROUND)));
 
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);

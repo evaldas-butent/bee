@@ -567,7 +567,7 @@ public class TasksModuleBean implements BeeModule {
       response = ResponseObject.error(msg);
       return response;
     }
-    
+
     List<Long> taskIdList = Codec.deserializeIdList(taskIdListData);
     DataInfo info = sys.getDataInfo(VIEW_TASKS);
     response = ResponseObject.emptyResponse();
@@ -579,41 +579,40 @@ public class TasksModuleBean implements BeeModule {
     if (!TaskUtils.canConfirmTasks(info, oldTaskData.getRows(), user, response)) {
       return response;
     }
-    
+
     String comment = reqInfo.getParameter(VAR_TASK_COMMENT);
     String notes = reqInfo.getParameter(VAR_TASK_NOTES);
-    
+
     String eventNote;
     if (BeeUtils.isEmpty(notes)) {
       eventNote = null;
     } else {
       eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
     }
-    
+
     DateTime approved = new DateTime();
-    
+
     if (reqInfo.hasParameter(VAR_TASK_APPROVED_TIME)) {
-      String strTime =reqInfo.getParameter(VAR_TASK_APPROVED_TIME);
-      
+      String strTime = reqInfo.getParameter(VAR_TASK_APPROVED_TIME);
+
       if (!BeeUtils.isEmpty(strTime)) {
         approved = DateTime.restore(strTime);
       }
     }
 
     for (Long taskId : taskIdList) {
-      response =
-          registerTaskEvent(BeeUtils.unbox(taskId), user, TaskEvent.APPROVE, comment, eventNote, null,
-              null, now);
-              
-        if (response.hasErrors()) {
-          logger.severe("Confirmation failed");
-          ctx.setRollbackOnly();
-          return response;
-        }
+      response = registerTaskEvent(BeeUtils.unbox(taskId), user, TaskEvent.APPROVE, comment,
+          eventNote, null, null, now);
+
+      if (response.hasErrors()) {
+        logger.severe("Confirmation failed");
+        ctx.setRollbackOnly();
+        return response;
       }
-    
+    }
+
     SqlUpdate update = new SqlUpdate(TBL_TASKS)
-    .addConstant(COL_STATUS, TaskStatus.APPROVED.ordinal())
+        .addConstant(COL_STATUS, TaskStatus.APPROVED.ordinal())
         .addConstant(COL_APPROVED, approved)
         .setWhere(SqlUtils.inList(TBL_TASKS, sys.getIdName(TBL_TASKS), taskIdList));
     response = qs.updateDataWithResponse(update);
@@ -813,7 +812,7 @@ public class TasksModuleBean implements BeeModule {
               response.addMessagesFrom(mailResponse);
             }
           }
-          
+
           response.setResponse(qs.getViewData(VIEW_TASKS, Filter.idIn(createdTasks)));
         }
         break;

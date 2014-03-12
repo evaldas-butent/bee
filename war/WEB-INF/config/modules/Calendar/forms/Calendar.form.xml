@@ -34,19 +34,19 @@
           <row>
             <Label text="=calAttendeeTypes" />
             <ChildSelector childTable="CalAttendeeTypes" viewName="AttendeeTypes"
-              targetRelColumn="Calendar" sourceRelColumn="AttendeeType"
+              targetRelColumn="Calendar" sourceRelColumn="AttendeeType" newRowEnabled="false"
               renderColumns="Name" style="&chld;" />
           </row>
           <row>
             <Label text="=calAttendees" />
             <ChildSelector childTable="CalendarAttendees" viewName="Attendees"
-              targetRelColumn="Calendar" sourceRelColumn="Attendee"
+              targetRelColumn="Calendar" sourceRelColumn="Attendee" newRowEnabled="false"
               renderColumns="Name" choiceColumns="TypeName Name" style="&chld;" />
           </row>
           <row>
             <Label text="=calAppointmentTypes" />
             <ChildSelector childTable="CalAppointmentTypes" viewName="AppointmentTypes"
-              targetRelColumn="Calendar" sourceRelColumn="AppointmentType"
+              targetRelColumn="Calendar" sourceRelColumn="AppointmentType" newRowEnabled="false"
               renderColumns="Name" style="&chld;" />
           </row>
         </Table>

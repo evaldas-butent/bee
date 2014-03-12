@@ -2,6 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="EcOrders" viewName="EcOrders" caption="=ecOrders"
+  cacheData="false"
   newRowColumns="Date Client Manager DeliveryMethod"
   order="Date desc" flexGrow="1"
   >
