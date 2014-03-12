@@ -481,6 +481,14 @@
   margin-right: 4px;
 }
 
+.bee-Header-commandPanel .bee-fa-label {
+  margin-left: 4px;
+  margin-right: 4px;
+  font-size: 18px;
+  color: #888;
+  cursor: pointer;
+}
+
 .bee-Header-control {
   margin-right: 10px;
 }

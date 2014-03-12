@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.tasks;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -19,8 +20,10 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -39,22 +42,26 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -63,6 +70,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
@@ -74,6 +82,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
@@ -82,7 +91,7 @@ import java.util.Set;
 
 final class TaskList {
 
-  private static final class GridHandler extends AbstractGridInterceptor {
+  private static final class GridHandler extends AbstractGridInterceptor implements ClickHandler {
 
     private static final String NAME_MODE = "Mode";
     private static final String NAME_SLACK = "Slack";
@@ -254,6 +263,29 @@ final class TaskList {
     }
 
     @Override
+    public void onClick(ClickEvent event) {
+      final GridView gridView = getGridPresenter().getGridView();
+      CompoundFilter filter = CompoundFilter.or();
+
+      for (RowInfo row : gridView.getSelectedRows(SelectedRows.ALL)) {
+        filter.add(Filter.compareId(row.getId()));
+      }
+
+      if (filter.isEmpty()) {
+
+        IsRow selectedRow = gridView.getActiveRow();
+        if (selectedRow == null) {
+          gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+          return;
+        } else {
+          confirmTask(gridView, selectedRow);
+        }
+      } else {
+        confirmTasks(gridView, filter);
+      }
+    }
+
+    @Override
     public void onEditStart(final EditStartEvent event) {
       if (PROP_STAR.equals(event.getColumnId())) {
         IsRow row = event.getRowValue();
@@ -279,6 +311,124 @@ final class TaskList {
     public boolean onLoad(GridDescription gridDescription) {
       gridDescription.setFilter(type.getFilter(new LongValue(userId)));
       return true;
+    }
+
+    @Override
+    public void onShow(GridPresenter presenter) {
+      presenter.getHeader().clearCommandPanel();
+
+      if (type.equals(TaskType.ALL) || type.equals(TaskType.DELEGATED)) {
+        FaLabel confirmTask = new FaLabel(FontAwesome.CHECK_SQUARE_O);
+        confirmTask.setTitle(Localized.getConstants().crmTaskConfirm());
+        confirmTask.addClickHandler(this);
+
+        presenter.getHeader().addCommandItem(confirmTask);
+      }
+    }
+
+    private void confirmTask(final GridView gridView, final IsRow row) {
+      Assert.notNull(row);
+
+      final List<BeeRow> taskRow = Lists.newArrayList(DataUtils.cloneRow(row));
+      final DataInfo info = Data.getDataInfo(gridView.getViewName());
+      final ResponseObject messages = ResponseObject.emptyResponse();
+      long user = BeeUtils.unbox(userId);
+
+      if (!TaskUtils.canConfirmTasks(info, taskRow, user, messages)) {
+        if (messages.hasWarnings()) {
+          gridView.notifyWarning(messages.getWarnings());
+        }
+        return;
+      }
+
+      final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskConfirmation());
+
+      final String did =
+          dialog.addDateTime(Localized.getConstants().crmTaskConfirmDate(), true, TimeUtils
+              .nowMinutes());
+      final String cid = dialog.addComment(false);
+
+      dialog.addAction(Localized.getConstants().crmTaskConfirm(), new ScheduledCommand() {
+        @Override
+        public void execute() {
+          DateTime approved = dialog.getDateTime(did);
+          if (approved == null) {
+            gridView.notifySevere(Localized.getConstants().crmEnterConfirmDate());
+            return;
+          }
+
+          List<String> notes = Lists.newArrayList();
+
+          BeeRow newRow = DataUtils.cloneRow(row);
+          newRow.setValue(info.getColumnIndex(COL_STATUS), TaskStatus.APPROVED.ordinal());
+          newRow.setValue(info.getColumnIndex(COL_APPROVED), approved);
+
+          notes.add(TaskUtils.getUpdateNote(Localized.getLabel(info.getColumn(COL_STATUS)),
+              DataUtils.render(info, row, info.getColumn(COL_STATUS), info
+                  .getColumnIndex(COL_STATUS)), DataUtils.render(
+                  info, newRow, info.getColumn(COL_STATUS), info.getColumnIndex(COL_STATUS))));
+
+          notes.add(TaskUtils.getInsertNote(Localized.getLabel(info.getColumn(COL_APPROVED)),
+              DataUtils.render(info, newRow, info.getColumn(COL_APPROVED), info
+                  .getColumnIndex(COL_APPROVED))));
+
+
+          ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
+          params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));
+          params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
+
+          String comment = dialog.getComment(cid);
+          if (!BeeUtils.isEmpty(comment)) {
+            params.addDataItem(VAR_TASK_COMMENT, comment);
+          }
+
+          if (!notes.isEmpty()) {
+            params.addDataItem(VAR_TASK_NOTES, Codec.beeSerialize(notes));
+          }
+
+          sendRequest(params, gridView);
+          dialog.close();
+        }
+      });
+
+      dialog.display();
+    }
+
+    private void confirmTasks(final GridView gridView, final CompoundFilter filter) {
+
+      Queries.getRowSet(gridView.getViewName(), null, filter, new RowSetCallback() {
+
+        @Override
+        public void onSuccess(final BeeRowSet result) {
+          final DataInfo info = Data.getDataInfo(gridView.getViewName());
+          final ResponseObject messages = ResponseObject.emptyResponse();
+          long user = BeeUtils.unbox(userId);
+
+          if (!TaskUtils.canConfirmTasks(info, result.getRows(), user, messages)) {
+            if (messages.hasWarnings()) {
+              gridView.notifyWarning(messages.getWarnings());
+            }
+            return;
+          }
+
+          Global.confirm(Localized.getConstants().crmTasksConfirmQuestion(),
+              new ConfirmationCallback() {
+
+                @Override
+                public void onConfirm() {
+                  DateTime approved = new DateTime();
+                 
+                  ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
+                  params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(result.getRowIds()));
+                  params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
+
+                  sendRequest(params, gridView);
+                }
+              });
+
+        }
+      });
+
     }
 
     private void copyAsRecurringTask(BeeRow oldRow) {
@@ -429,6 +579,23 @@ final class TaskList {
       }
 
       RowFactory.createRow(dataInfo, newRow);
+    }
+
+    private void sendRequest(final ParameterList params, final GridView gridView) {
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasMessages()) {
+            gridView.notifySevere(BeeUtils.joinItems(response.getMessages()));
+            return;
+          }
+
+          gridView.notifyInfo(Localized.getConstants().crmTaskStatusApproved());
+          getGridPresenter().refresh(true);
+        }
+
+      });
     }
 
     private void updateStar(final EditStartEvent event, final CellSource source,

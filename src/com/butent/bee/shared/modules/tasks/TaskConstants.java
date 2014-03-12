@@ -141,6 +141,8 @@ public final class TaskConstants {
   public static final String SVC_ACCESS_TASK = "access_task";
   public static final String SVC_EXTEND_TASK = "extend_task";
 
+  public static final String SVC_CONFIRM_TASKS = "confirm_tasks";
+
   public static final String SVC_TASKS_REPORTS_PREFIX = "get_tasks_reports_";
   public static final String SVC_TASKS_REPORTS_COMPANY_TIMES = SVC_TASKS_REPORTS_PREFIX
       + "company_times";
@@ -157,6 +159,7 @@ public final class TaskConstants {
 
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
+  public static final String VAR_TASK_APPROVED_TIME = Service.RPC_VAR_PREFIX + "task_approved";
 
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
   public static final String VAR_TASK_NOTES = Service.RPC_VAR_PREFIX + "task_notes";

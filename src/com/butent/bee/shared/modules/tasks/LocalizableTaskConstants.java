@@ -98,6 +98,8 @@ public interface LocalizableTaskConstants {
 
   String crmTaskConfirm();
 
+  String crmTaskConfirmCanManager();
+
   String crmTaskConfirmDate();
 
   String crmTaskCopyQuestion();
@@ -142,6 +144,8 @@ public interface LocalizableTaskConstants {
 
   String crmTaskManager();
 
+  String crmTaskMustBePerformed();
+
   String crmTaskObservers();
 
   String crmTaskPriority();
@@ -159,6 +163,8 @@ public interface LocalizableTaskConstants {
   String crmTasksAll();
 
   String crmTasksAssignedTasks();
+
+  String crmTasksConfirmQuestion();
 
   String crmTasksDelegatedTasks();
 

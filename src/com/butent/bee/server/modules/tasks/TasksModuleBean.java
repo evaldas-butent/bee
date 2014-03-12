@@ -53,6 +53,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.Tags;
@@ -198,6 +199,8 @@ public class TasksModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_RT_SCHEDULE)) {
       response = scheduleTasks(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_CONFIRM_TASKS)) {
+      response = confirmTasks(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -549,6 +552,76 @@ public class TasksModuleBean implements BeeModule {
       qs.copyData(TBL_RT_FILES, COL_RTD_RECURRING_TASK, rtId, newId);
 
       qs.copyData(TBL_RELATIONS, COL_RECURRING_TASK, rtId, newId);
+    }
+
+    return response;
+  }
+
+  private ResponseObject confirmTasks(RequestInfo reqInfo) {
+    ResponseObject response = null;
+
+    String taskIdListData = reqInfo.getParameter(VAR_TASK_DATA);
+    if (BeeUtils.isEmpty(taskIdListData)) {
+      String msg = BeeUtils.joinWords("Task data not received:", SVC_CONFIRM_TASKS);
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
+      return response;
+    }
+    
+    List<Long> taskIdList = Codec.deserializeIdList(taskIdListData);
+    DataInfo info = sys.getDataInfo(VIEW_TASKS);
+    response = ResponseObject.emptyResponse();
+    long user = BeeUtils.unbox(usr.getCurrentUserId());
+    long now = System.currentTimeMillis();
+
+    /* Don't trust client only */
+    BeeRowSet oldTaskData = qs.getViewData(VIEW_TASKS, Filter.idIn(taskIdList));
+    if (!TaskUtils.canConfirmTasks(info, oldTaskData.getRows(), user, response)) {
+      return response;
+    }
+    
+    String comment = reqInfo.getParameter(VAR_TASK_COMMENT);
+    String notes = reqInfo.getParameter(VAR_TASK_NOTES);
+    
+    String eventNote;
+    if (BeeUtils.isEmpty(notes)) {
+      eventNote = null;
+    } else {
+      eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
+    }
+    
+    DateTime approved = new DateTime();
+    
+    if (reqInfo.hasParameter(VAR_TASK_APPROVED_TIME)) {
+      String strTime =reqInfo.getParameter(VAR_TASK_APPROVED_TIME);
+      
+      if (!BeeUtils.isEmpty(strTime)) {
+        approved = DateTime.restore(strTime);
+      }
+    }
+
+    for (Long taskId : taskIdList) {
+      response =
+          registerTaskEvent(BeeUtils.unbox(taskId), user, TaskEvent.APPROVE, comment, eventNote, null,
+              null, now);
+              
+        if (response.hasErrors()) {
+          logger.severe("Confirmation failed");
+          ctx.setRollbackOnly();
+          return response;
+        }
+      }
+    
+    SqlUpdate update = new SqlUpdate(TBL_TASKS)
+    .addConstant(COL_STATUS, TaskStatus.APPROVED.ordinal())
+        .addConstant(COL_APPROVED, approved)
+        .setWhere(SqlUtils.inList(TBL_TASKS, sys.getIdName(TBL_TASKS), taskIdList));
+    response = qs.updateDataWithResponse(update);
+
+    if (response.hasErrors()) {
+      logger.severe("Confirmation failed");
+      ctx.setRollbackOnly();
+      return response;
     }
 
     return response;

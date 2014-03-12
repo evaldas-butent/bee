@@ -7,15 +7,19 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -33,6 +37,39 @@ public final class TaskUtils {
   private static final String NOTE_LABEL_SEPARATOR = ": ";
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
+
+  public static boolean canConfirmTasks(final DataInfo info, final List<BeeRow> rows,
+      long userId, ResponseObject resp) {
+    Assert.notNull(info);
+    Assert.notNull(rows);
+
+    for (IsRow row : rows) {
+      if (BeeUtils.unbox(row.getLong(info.getColumnIndex(COL_OWNER))) != userId) {
+        if (resp != null) {
+          resp.addWarning(
+              BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId()),
+              Localized.getConstants().crmTaskConfirmCanManager());
+        }
+        return false;
+      }
+
+      if (BeeUtils.unbox(row.getInteger(info.getColumnIndex(COL_STATUS)))
+        != TaskStatus.COMPLETED.ordinal()) {
+        if (resp != null) {
+          resp.addWarning(
+              BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId()),
+              Localized.getConstants().crmTaskMustBePerformed());
+        }
+        return false;
+      }
+    }
+
+    if (resp != null) {
+      resp.clearMessages();
+      resp.setResponse(null);
+    }
+    return true;
+  }
 
   public static String getDeleteNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label,
