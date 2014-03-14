@@ -7,6 +7,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
@@ -55,7 +56,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final String caption;
   private final boolean hasActions;
 
-  public TreeContainer(String caption, boolean hideActions) {
+  public TreeContainer(String caption, boolean hideActions, String viewName) {
     super();
     addStyleName(STYLE_NAME);
 
@@ -66,20 +67,30 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      Image img = new Image(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
-      img.addStyleName(STYLE_NAME + "-add");
-      img.setTitle(Action.ADD.getCaption());
-      hdr.add(img);
+      boolean editable = BeeKeeper.getUser().canEditData(viewName);
 
-      img = new Image(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
-      img.addStyleName(STYLE_NAME + "-delete");
-      img.setTitle(Action.DELETE.getCaption());
-      hdr.add(img);
+      Image img;
 
-      img = new Image(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
-      img.addStyleName(STYLE_NAME + "-edit");
-      img.setTitle(Action.EDIT.getCaption());
-      hdr.add(img);
+      if (editable && BeeKeeper.getUser().canCreateData(viewName)) {
+        img = new Image(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
+        img.addStyleName(STYLE_NAME + "-add");
+        img.setTitle(Action.ADD.getCaption());
+        hdr.add(img);
+      }
+
+      if (editable && BeeKeeper.getUser().canDeleteData(viewName)) {
+        img = new Image(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
+        img.addStyleName(STYLE_NAME + "-delete");
+        img.setTitle(Action.DELETE.getCaption());
+        hdr.add(img);
+      }
+
+      if (editable) {
+        img = new Image(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
+        img.addStyleName(STYLE_NAME + "-edit");
+        img.setTitle(Action.EDIT.getCaption());
+        hdr.add(img);
+      }
 
       img = new Image(Global.getImages().silverReload(), new ActionListener(Action.REFRESH));
       img.addStyleName(STYLE_NAME + "-refresh");

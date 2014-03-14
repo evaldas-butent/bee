@@ -83,7 +83,7 @@ public class UiHolderBean {
   private static BeeLogger logger = LogUtils.getLogger(UiHolderBean.class);
 
   private static boolean isEmbeddedGrid(Element element) {
-    return BeeUtils.inListSame(element.getTagName(), UiConstants.TAG_CHILD_GRID,
+    return BeeUtils.inListSame(XmlUtils.getLocalName(element), UiConstants.TAG_CHILD_GRID,
         UiConstants.TAG_GRID_PANEL);
   }
 
@@ -134,6 +134,10 @@ public class UiHolderBean {
   private final Map<String, String> gridViewNames = new ConcurrentHashMap<>();
   private final Map<String, String> formViewNames = new ConcurrentHashMap<>();
 
+  public void checkWidgetChildrenVisibility(Element parent) {
+    checkWidgetChildrenVisibility(parent, null);
+  }
+
   public ResponseObject getForm(String formName) {
     if (!isForm(formName)) {
       return ResponseObject.error("Not a form:", formName);
@@ -141,12 +145,13 @@ public class UiHolderBean {
 
     String resource = formCache.get(key(formName));
     Document doc = XmlUtils.getXmlResource(resource, UiObject.FORM.getSchemaPath());
-
     if (doc == null) {
       return ResponseObject.error("Cannot parse xml:", resource);
     }
 
-    checkFormVisibility(doc.getDocumentElement());
+    Element formElement = doc.getDocumentElement();
+    checkWidgetChildrenVisibility(formElement,
+        formElement.getAttribute(UiConstants.ATTR_VIEW_NAME));
 
     return ResponseObject.response(XmlUtils.toString(doc, false));
   }
@@ -165,25 +170,23 @@ public class UiHolderBean {
     };
   }
 
-  public GridDescription getGrid(String gridName) {
+  public ResponseObject getGrid(String gridName) {
     if (!isGrid(gridName)) {
-      logger.severe("Not a grid:", gridName);
-      return null;
+      return ResponseObject.error("Not a grid:", gridName);
     }
 
     String resource = gridCache.get(key(gridName));
-    GridDescription grid = gridBean.loadGrid(resource, UiObject.GRID.getSchemaPath());
-
-    if (grid != null) {
-      if (!BeeUtils.same(grid.getName(), gridName)) {
-        logger.warning("Grid name doesn't match resource name:", gridName, resource);
-      } else if (grid.isEmpty()) {
-        logger.warning(resource, "Grid has no columns defined:", gridName);
-      } else {
-        return grid;
-      }
+    Document doc = XmlUtils.getXmlResource(resource, UiObject.GRID.getSchemaPath());
+    if (doc == null) {
+      return ResponseObject.error("Cannot parse xml:", resource);
     }
-    return null;
+   
+    GridDescription grid = gridBean.getGridDescription(doc.getDocumentElement());
+    if (grid == null) {
+      return ResponseObject.error("Cannot create grid description:", resource);
+    } else {
+      return ResponseObject.response(grid);
+    }
   }
 
   public DataNameProvider getGridDataNameProvider() {
@@ -286,63 +289,19 @@ public class UiHolderBean {
     return XmlUtils.unmarshal(Menu.class, resource, UiObject.MENU.getSchemaPath());
   }
 
-  private void checkFormVisibility(Element formElement) {
-    String formViewName = formElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
-
-    List<Element> elements = XmlUtils.getAllDescendantElements(formElement);
-
+  private void checkWidgetChildrenVisibility(Element parent, String viewName) {
+    List<Element> elements = XmlUtils.getAllDescendantElements(parent);
+    boolean visible;
+    
     for (Element element : elements) {
       if (element.hasAttribute(UiConstants.ATTR_VISIBLE)) {
-        if (BeeConst.isFalse(element.getAttribute(UiConstants.ATTR_VISIBLE))) {
-          XmlUtils.removeFromParent(element);
-        }
-
+        visible = !BeeConst.isFalse(element.getAttribute(UiConstants.ATTR_VISIBLE));
       } else {
-        boolean visible = true;
-
-        if (element.hasAttribute(UiConstants.ATTR_MODULE)) {
-          if (!usr.isModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
-            visible = false;
-          }
-        }
-
-        if (visible && !BeeUtils.isEmpty(formViewName)) {
-          String source = element.getAttribute(UiConstants.ATTR_SOURCE);
-          if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(formViewName, source)) {
-            visible = false;
-          }
-        }
-
-        if (visible) {
-          String data = element.getAttribute(UiConstants.ATTR_DATA);
-          String field = element.getAttribute(UiConstants.ATTR_FOR);
-
-          if (BeeUtils.isEmpty(data)) {
-            if (BeeUtils.allNotEmpty(formViewName, field)) {
-              visible = usr.isColumnVisible(formViewName, field);
-            }
-
-          } else if (!usr.isDataVisible(data)) {
-            visible = false;
-
-          } else if (!BeeUtils.isEmpty(field)) {
-            visible = usr.isColumnVisible(data, field);
-          }
-        }
-
-        if (visible && isEmbeddedGrid(element)) {
-          String gridName = BeeUtils.notEmpty(element.getAttribute(UiConstants.ATTR_GRID_NAME),
-              element.getAttribute(UiConstants.ATTR_NAME));
-          String gridViewName = BeeUtils.isEmpty(gridName) ? null : getGridViewName(gridName);
-
-          if (!BeeUtils.isEmpty(gridViewName) && !usr.isDataVisible(gridViewName)) {
-            visible = false;
-          }
-        }
-
-        if (!visible && isHidable(XmlUtils.getParentElement(element))) {
-          XmlUtils.removeFromParent(element);
-        }
+        visible = isWidgetVisible(element, viewName);
+      }
+      
+      if (!visible && isHidable(XmlUtils.getParentElement(element))) {
+        XmlUtils.removeFromParent(element);
       }
     }
   }
@@ -391,7 +350,7 @@ public class UiHolderBean {
     boolean visible;
     if (checkRights) {
       visible = usr.isMenuVisible(ref);
-      
+
       if (visible && !BeeUtils.isEmpty(entry.getModule())) {
         visible = usr.isModuleVisible(entry.getModule());
       }
@@ -578,5 +537,56 @@ public class UiHolderBean {
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
     }
+  }
+
+  private boolean isWidgetVisible(Element element, String viewName) {
+    if (element.hasAttribute(UiConstants.ATTR_MODULE)
+        && !usr.isModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
+      return false;
+    }
+
+    if (!BeeUtils.isEmpty(viewName)) {
+      String source = element.getAttribute(UiConstants.ATTR_SOURCE);
+      if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(viewName, source)) {
+        return false;
+      }
+    }
+
+    String data = element.getAttribute(UiConstants.ATTR_DATA);
+    String field = element.getAttribute(UiConstants.ATTR_FOR);
+
+    if (BeeUtils.isEmpty(data)) {
+      if (BeeUtils.allNotEmpty(viewName, field) && !usr.isColumnVisible(viewName, field)) {
+        return false;
+      }
+
+    } else {
+      if (!usr.isDataVisible(data)) {
+        return false;
+      }
+
+      if (!BeeUtils.isEmpty(field) && !usr.isColumnVisible(data, field)) {
+        return false;
+      }
+    }
+
+    if (isEmbeddedGrid(element)) {
+      String gridName = BeeUtils.notEmpty(element.getAttribute(UiConstants.ATTR_GRID_NAME),
+          element.getAttribute(UiConstants.ATTR_NAME));
+      String gridViewName = BeeUtils.isEmpty(gridName) ? null : getGridViewName(gridName);
+
+      if (!BeeUtils.isEmpty(gridViewName) && !usr.isDataVisible(gridViewName)) {
+        return false;
+      }
+
+    } else if (BeeUtils.same(XmlUtils.getLocalName(element), UiConstants.TAG_DATA_TREE)) {
+      String treeViewName = element.getAttribute(UiConstants.ATTR_VIEW_NAME);
+
+      if (!BeeUtils.isEmpty(treeViewName) && !usr.isDataVisible(treeViewName)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

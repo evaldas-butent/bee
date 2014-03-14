@@ -7,7 +7,8 @@
   flexGrow="1" minColumnWidth="60"
   >
   <g:west size="160" splitterSize="2">
-    <w:DataTree name="VehicleModels" caption="=vehicleModelsShort" source="VehicleModels" parentColumn="Parent">
+    <w:DataTree name="VehicleModels" caption="=vehicleModelsShort" viewName="VehicleModels"
+      parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>

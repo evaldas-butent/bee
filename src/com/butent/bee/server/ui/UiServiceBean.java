@@ -588,17 +588,7 @@ public class UiServiceBean {
 
   private ResponseObject getGrid(RequestInfo reqInfo) {
     String gridName = reqInfo.getContent();
-
-    if (BeeUtils.isEmpty(gridName)) {
-      return ResponseObject.error("Which grid?");
-    }
-    if (ui.isGrid(gridName)) {
-      return ResponseObject.response(ui.getGrid(gridName));
-    }
-    if (sys.isView(gridName)) {
-      return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName)));
-    }
-    return ResponseObject.error("Grid", gridName, "not found");
+    return ui.getGrid(gridName);
   }
 
   private ResponseObject getHistogram(RequestInfo reqInfo) {

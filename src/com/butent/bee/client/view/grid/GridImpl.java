@@ -115,7 +115,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.CellType;
@@ -208,24 +207,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
   }
 
-  private static boolean isColumnVisible(String gridName, String viewName,
-      ColumnDescription columnDescription) {
-
+  private static boolean isColumnVisible(String gridName, ColumnDescription columnDescription) {
     if (BeeUtils.isTrue(columnDescription.getVisible())) {
       return true;
-
-    } else if (GridFactory.isHidden(gridName, columnDescription.getId())) {
-      return false;
-
-    } else if (columnDescription.getModule() != null
-        && !BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(columnDescription.getModule()))) {
-      return false;
-
-    } else if (BeeUtils.allNotEmpty(viewName, columnDescription.getSource())) {
-      return BeeKeeper.getUser().isColumnVisible(viewName, columnDescription.getSource());
-
     } else {
-      return true;
+      return !GridFactory.isHidden(gridName, columnDescription.getId());
     }
   }
 
@@ -818,7 +804,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String viewName = gridDescription.getViewName();
 
     for (ColumnDescription columnDescription : columnDescriptions) {
-      if (isColumnVisible(getGridName(), viewName, columnDescription)) {
+      if (isColumnVisible(getGridName(), columnDescription)) {
         if (BeeUtils.isTrue(columnDescription.getDynamic())) {
           dynamicColumnGroups.add(columnDescription.getId());
         } else {

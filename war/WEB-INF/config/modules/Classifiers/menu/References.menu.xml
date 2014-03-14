@@ -6,7 +6,7 @@ name="References" label="=classifiers" order="10" module="Classifiers"
   <Item name="Goods" label="=goods" service="items" parameters="g" />
   <Item name="Services" label="=services" service="items" parameters="s" />
 
-  <Item name="Categories" label="=itemCategories" service="form" parameters="CategoryTree"
+  <Item name="ItemCategories" label="=itemCategories" service="form" parameters="CategoryTree"
     separator="true" data="CategoryTree" />
 
   <Item name="Units" label="=units" service="grid" parameters="Units" separator="true" />

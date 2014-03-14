@@ -225,7 +225,7 @@ public final class XmlUtils {
     Assert.notEmpty(name);
     return BeeUtils.toBooleanOrNull(element.getAttribute(name));
   }
-  
+
   public static Integer getAttributeInteger(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -934,6 +934,23 @@ public final class XmlUtils {
           "URI Resolver", NameUtils.transformClass(xsltFactory.getURIResolver()));
     }
     return lst;
+  }
+
+  public static boolean hasChildElements(Element parent) {
+    if (parent == null) {
+      return false;
+    }
+
+    NodeList nodes = parent.getChildNodes();
+
+    if (!isEmpty(nodes)) {
+      for (int i = 0; i < nodes.getLength(); i++) {
+        if (isElement(nodes.item(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static boolean isEmpty(NodeList nodes) {

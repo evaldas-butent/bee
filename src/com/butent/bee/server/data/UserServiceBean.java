@@ -248,6 +248,11 @@ public class UserServiceBean {
     return info != null && Objects.equals(password, info.getPassword());
   }
 
+  public boolean canEditColumn(String viewName, String column) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canEditColumn(viewName, column);
+  }
+
   public List<UserData> getAllUserData() {
     List<UserData> data = Lists.newArrayList();
     for (UserInfo userInfo : infoCache.values()) {

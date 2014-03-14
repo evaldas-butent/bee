@@ -8,7 +8,7 @@
   >
   
   <g:west size="200" splitterSize="2">
-    <w:DataTree name="DocumentTree" caption="=documentCategories" source="TemplateTree"
+    <w:DataTree name="DocumentTree" caption="=documentCategories" viewName="TemplateTree"
       parentColumn="Parent" hideActions="true">
       <w:calc>
         <ui:expression>row.CategoryName + (row.TemplateCount > 0 ? ' [' + row.TemplateCount + ']' : '')</ui:expression>

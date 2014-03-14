@@ -5,7 +5,7 @@
   
   name="DocumentTree" caption="=documentTree">
 
-  <DataTree caption="=documentCategories" source="DocumentTree" parentColumn="Parent"
+  <DataTree caption="=documentCategories" viewName="DocumentTree" parentColumn="Parent"
     orderColumn="Order">
     <calc>
       <ui:expression>row.Name</ui:expression>

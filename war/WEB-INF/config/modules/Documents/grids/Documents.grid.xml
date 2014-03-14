@@ -9,7 +9,7 @@
   >
   
   <g:west size="200" splitterSize="2">
-    <w:DataTree name="Tree" caption="=documentCategories" source="DocumentTree"
+    <w:DataTree name="Tree" caption="=documentCategories" viewName="DocumentTree"
       parentColumn="Parent" hideActions="true">
       <w:calc>
         <ui:expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</ui:expression>

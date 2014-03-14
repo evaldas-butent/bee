@@ -254,8 +254,7 @@ public enum FormWidget {
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
   VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
   TREE("Tree", EnumSet.of(Type.FOCUSABLE)),
-  DATA_TREE("DataTree", EnumSet.of(Type.FOCUSABLE)),
-  CHILD_TREE("ChildTree", EnumSet.of(Type.IS_CHILD, Type.FOCUSABLE));
+  DATA_TREE("DataTree", EnumSet.of(Type.FOCUSABLE));
 
   private final class HeaderAndContent {
     private final String headerTag;
@@ -1609,12 +1608,12 @@ public enum FormWidget {
         break;
 
       case DATA_TREE:
-      case CHILD_TREE:
+        String treeViewName = attributes.get(UiConstants.ATTR_VIEW_NAME);
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            BeeUtils.toBoolean(attributes.get("hideActions")));
+            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
-            attributes.get(UiConstants.ATTR_SOURCE), attributes.get("parentColumn"),
+            treeViewName, attributes.get("parentColumn"),
             attributes.get("orderColumn"), attributes.get("relationColumn"),
             XmlUtils.getCalculation(element, TAG_CALC),
             XmlUtils.getFirstChildElement(element, "form")));
