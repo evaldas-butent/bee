@@ -15,12 +15,10 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.event.shared.LegacyHandlerWrapper;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Event;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.SimpleEventBus;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
@@ -32,7 +30,7 @@ import java.util.Set;
 public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHandlers {
 
   private Set<String> consumedEvents = Sets.newHashSet();
-  private EventBus eventBus;
+  private HandlerManager handlerManager;
 
   private CellContext eventContext;
   private C eventValue;
@@ -67,7 +65,7 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
     Assert.notNull(handler);
 
     addConsumedEvent(type.getName());
-    return new LegacyHandlerWrapper(ensureEventBus().addHandler(type, handler));
+    return ensureHandlerManager().addHandler(type, handler);
   }
 
   @Override
@@ -91,11 +89,11 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
 
   @Override
   public void fireEvent(GwtEvent<?> event) {
-    if (eventBus != null) {
-      eventBus.fireEventFromSource(event, this);
+    if (handlerManager != null) {
+      handlerManager.fireEvent(event);
     }
   }
-
+  
   public Set<String> getConsumedEvents() {
     return consumedEvents;
   }
@@ -113,13 +111,13 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
   }
 
   public EventState onBrowserEvent(CellContext context, Element parent, C value, Event event) {
-    if (consumesEvent(event.getType()) && eventBus != null) {
+    if (consumesEvent(event.getType()) && handlerManager != null) {
       setEventContext(context);
       setEventValue(value);
       
       setEventCanceled(false);
 
-      DomEvent.fireNativeEvent(event, this, parent);
+      DomEvent.fireNativeEvent(event, handlerManager, parent);
 
       setEventContext(null);
       setEventValue(null);
@@ -148,11 +146,11 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
     }
   }
 
-  private EventBus ensureEventBus() {
-    if (eventBus == null) {
-      eventBus = new SimpleEventBus();
+  private HandlerManager ensureHandlerManager() {
+    if (handlerManager == null) {
+      handlerManager = new HandlerManager(this);
     }
-    return eventBus;
+    return handlerManager;
   }
 
   private void setEventContext(CellContext eventContext) {
