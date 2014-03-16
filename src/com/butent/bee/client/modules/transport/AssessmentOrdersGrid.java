@@ -21,6 +21,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
@@ -29,8 +30,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -38,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandler {
+public class AssessmentOrdersGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private final Button action = new Button(Localized.getConstants().trCreateTransportation(), this);
 
@@ -59,10 +63,10 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
       presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
       return;
     }
-    Queries.getRowSet(VIEW_ASSESSMENT_FORWARDERS,
+    Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS,
         Lists.newArrayList(COL_CARGO, COL_FORWARDER, COL_EXPEDITION, COL_FORWARDER + "Name",
             COL_FORWARDER + COL_VEHICLE),
-        Filter.any(COL_ASSESSOR, ids), new RowSetCallback() {
+        Filter.any(COL_ASSESSMENT, ids), new RowSetCallback() {
           @Override
           public void onSuccess(final BeeRowSet result) {
             int cargoCol = result.getColumnIndex(COL_CARGO);
@@ -116,7 +120,7 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
                                         holder.set(holder.get() + 1);
 
                                         if (Objects.equal(holder.get(), cargoIds.size())) {
-                                          DataChangeEvent.fire(BeeKeeper.getBus(), 
+                                          DataChangeEvent.fire(BeeKeeper.getBus(),
                                               presenter.getViewName(),
                                               DataChangeEvent.CANCEL_RESET_REFRESH);
 
@@ -134,6 +138,14 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
             }
           }
         });
+  }
+
+  @Override
+  public boolean onLoad(GridDescription gridDescription) {
+    gridDescription.setFilter(Filter.and(Filter.equals(COL_ORDER_MANAGER,
+        BeeKeeper.getUser().getUserId()), Filter.isNotEqual(ALS_ORDER_STATUS,
+        IntegerValue.of(OrderStatus.REQUEST))));
+    return true;
   }
 
   @Override

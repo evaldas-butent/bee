@@ -233,7 +233,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
           case "Unloading":
             xpr = lbl + ": {" + fld + "Date} {" + fld + "Contact} {" + fld + "Company} {"
                 + fld + "Address} {" + fld + "PostIndex} {" + fld + "CityName} {"
-                + fld + "CountryName} {" + fld + "Terminal} ";
+                + fld + "CountryName} {" + fld + "Number} ";
             break;
 
           default:

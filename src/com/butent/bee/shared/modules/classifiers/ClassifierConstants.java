@@ -115,8 +115,6 @@ public final class ClassifierConstants {
 
   public static final String ALS_POSITION_NAME = "PositionName";
 
-  public static final String PRM_COMPANY = "CompanyName";
-
   public static final String ALS_EMAIL_ID = "EmailId";
 
   private ClassifierConstants() {

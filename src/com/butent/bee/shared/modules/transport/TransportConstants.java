@@ -20,67 +20,39 @@ import java.util.Map;
 
 public final class TransportConstants {
 
-  public enum AssessmentStatus implements HasCaption {
-    NEW(Localized.getConstants().trAssessmentStatusNew(), Localized.getConstants()
-        .trAssessmentReturnToRequestQuestion(),
-        OrderStatus.REQUEST, true),
-    ANSWERED(Localized.getConstants().trAssessmentStatusAnswered(), Localized.getConstants()
-        .trAssessmentMarkAsAnsweredQuestion(),
-        null, false),
-    LOST(Localized.getConstants().trAssessmentStatusLost(), Localized.getConstants()
-        .trAssessmentMarkAsLostQuestion(),
-        OrderStatus.CANCELED, false),
-    ACTIVE(Localized.getConstants().trAssessmentStatusActive(), Localized.getConstants()
-        .trAssessmentReturnToOrderQuestion(),
-        OrderStatus.ACTIVE, true),
-    CANCELED(Localized.getConstants().trAssessmentStatusCanceled(), Localized.getConstants()
-        .trAssessmentCancelOrderQuestion(),
-        OrderStatus.CANCELED, false),
-    COMPLETED(Localized.getConstants().trAssessmentStatusCompleted(), Localized.getConstants()
-        .trAssessmentMarkAsCompletedQuestion(),
-        OrderStatus.COMPLETED, false);
-
-    public static boolean in(int status, AssessmentStatus... statuses) {
-      for (AssessmentStatus ts : statuses) {
-        if (ts.ordinal() == status) {
-          return true;
-        }
+  public enum AssessmentStatus implements HasLocalizedCaption {
+    NEW {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trAssessmentStatusNew();
       }
-      return false;
-    }
-
-    private final String caption;
-    private final String confirmation;
-    private final OrderStatus orderStatus;
-    private final boolean closable;
-
-    private AssessmentStatus(String caption, String confirmation, OrderStatus orderStatus,
-        boolean closable) {
-      this.caption = caption;
-      this.confirmation = confirmation;
-      this.orderStatus = orderStatus;
-      this.closable = closable;
-    }
+    },
+    ANSWERED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trAssessmentStatusAnswered();
+      }
+    },
+    LOST {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trAssessmentStatusLost();
+      }
+    },
+    APPROVED {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.trAssessmentStatusApproved();
+      }
+    };
 
     @Override
     public String getCaption() {
-      return caption;
-    }
-
-    public String getConfirmation() {
-      return confirmation;
-    }
-
-    public OrderStatus getOrderStatus() {
-      return orderStatus;
+      return getCaption(Localized.getConstants());
     }
 
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
-    }
-
-    public boolean isClosable() {
-      return closable;
     }
   }
 
@@ -256,10 +228,10 @@ public final class TransportConstants {
   }
 
   public enum OrderStatus implements HasLocalizedCaption {
-    NEW {
+    REQUEST {
       @Override
       public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusNew();
+        return constants.trOrderStatusRequest();
       }
     },
     ACTIVE {
@@ -279,17 +251,15 @@ public final class TransportConstants {
       public String getCaption(LocalizableConstants constants) {
         return constants.trOrderStatusCompleted();
       }
-    },
-    REQUEST {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.trOrderStatusRequest();
-      }
     };
 
     @Override
     public String getCaption() {
       return getCaption(Localized.getConstants());
+    }
+
+    public boolean is(Integer status) {
+      return status != null && ordinal() == status;
     }
   }
 
@@ -420,8 +390,10 @@ public final class TransportConstants {
   public static final String TBL_CARGO_INCOMES = "CargoIncomes";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
-  public static final String TBL_CARGO_ASSESSORS = "CargoAssessors";
   public static final String TBL_SERVICES = "Services";
+
+  public static final String TBL_ASSESSMENTS = "Assessments";
+  public static final String TBL_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";
@@ -473,7 +445,7 @@ public final class TransportConstants {
   public static final String VIEW_DRIVER_ABSENCE = "DriverAbsence";
   public static final String VIEW_ABSENCE_TYPES = "AbsenceTypes";
 
-  public static final String VIEW_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
+  public static final String VIEW_CHILD_ASSESSMENTS = "ChildAssessments";
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
 
   public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
@@ -507,6 +479,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_ID = "CargoID";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_MESSAGE = "Message";
+  public static final String COL_CARGO_TRIP = "CargoTrip";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
@@ -524,10 +497,9 @@ public final class TransportConstants {
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
-  public static final String COL_ASSESSOR = "Assessor";
-  public static final String COL_ASSESSOR_DATE = "Date";
-  public static final String COL_ASSESSOR_MANAGER = "Manager";
-  public static final String COL_ASSESSOR_NOTES = "Notes";
+  public static final String COL_ASSESSMENT = "Assessment";
+  public static final String COL_ASSESSMENT_STATUS = "Status";
+  public static final String COL_ASSESSMENT_NOTES = "Notes";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
@@ -576,7 +548,6 @@ public final class TransportConstants {
   public static final String COL_PLACE_COUNTRY = "Country";
   public static final String COL_PLACE_ADDRESS = "Address";
   public static final String COL_PLACE_POST_INDEX = "PostIndex";
-  public static final String COL_PLACE_TERMINAL = "Terminal";
   public static final String COL_PLACE_PHONE = "Phone";
   public static final String COL_PLACE_FAX = "Fax";
   public static final String COL_PLACE_NUMBER = "Number";
@@ -798,6 +769,7 @@ public final class TransportConstants {
   public static final String FORM_EXPEDITION_TRIP = "ExpeditionTrip";
   public static final String FORM_CARGO = "OrderCargo";
   public static final String FORM_ASSESSMENT = "Assessment";
+  public static final String FORM_ASSESSMENT_FORWARDER = "AssessmentForwarder";
   public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
 
   public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
@@ -833,6 +805,7 @@ public final class TransportConstants {
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
+  public static final String ALS_ORDER_STATUS = "OrderStatus";
 
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
@@ -846,7 +819,7 @@ public final class TransportConstants {
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
 
   public static final String ALS_LOADING_DATE = "LoadingDate";
-  public static final String ALS_LOADING_TERMINAL = "LoadingTerminal";
+  public static final String ALS_LOADING_NUMBER = "LoadingNumber";
   public static final String ALS_LOADING_CONTACT = "LoadingContact";
   public static final String ALS_LOADING_COMPANY = "LoadingCompany";
   public static final String ALS_LOADING_ADDRESS = "LoadingAddress";
@@ -856,7 +829,7 @@ public final class TransportConstants {
   public static final String ALS_LOADING_COUNTRY_CODE = "LoadingCountryCode";
 
   public static final String ALS_UNLOADING_DATE = "UnloadingDate";
-  public static final String ALS_UNLOADING_TERMINAL = "UnloadingTerminal";
+  public static final String ALS_UNLOADING_NUMBER = "UnloadingNumber";
   public static final String ALS_UNLOADING_CONTACT = "UnloadingContact";
   public static final String ALS_UNLOADING_COMPANY = "UnloadingCompany";
   public static final String ALS_UNLOADING_ADDRESS = "UnLoadingAddress";

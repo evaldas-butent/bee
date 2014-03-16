@@ -431,7 +431,7 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
-    GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
+    GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentRequestsGrid());
     GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICE_INCOMES, new CargoInvoiceIncomesGrid());
@@ -452,6 +452,7 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TRANSPORTATION,
         new AssessmentTransportationForm());
 

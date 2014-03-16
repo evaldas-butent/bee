@@ -5,7 +5,6 @@
   >
   <Columns>
     <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Assessor" />
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Service" />

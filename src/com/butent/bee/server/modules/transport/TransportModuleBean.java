@@ -16,6 +16,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -40,6 +41,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -133,9 +135,9 @@ public class TransportModuleBean implements BeeModule {
 
       Filter orderCargoFilter = Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
           COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-          ALS_LOADING_TERMINAL, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+          ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
           ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-          ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_TERMINAL, ALS_UNLOADING_CONTACT,
+          ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
           ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
           ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
           query);
@@ -211,8 +213,8 @@ public class TransportModuleBean implements BeeModule {
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
-      response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CARGO)));
+      response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
+          BeeUtils.toBoolean(reqInfo.getParameter("isPrimary")));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
@@ -299,31 +301,38 @@ public class TransportModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_CARGO_ASSESSORS) && event.isAfter()) {
-          for (int i = 0; i < 2; i++) {
-            String tbl = (i == 0) ? TBL_CARGO_INCOMES : TBL_CARGO_EXPENSES;
+        if (BeeUtils.same(event.getTargetName(), VIEW_CHILD_ASSESSMENTS) && event.isAfter()
+            && event.getRowset().getNumberOfRows() > 0) {
+          String primaryAssessment = SqlUtils.uniqueName();
+          String primaryCargo = SqlUtils.uniqueName();
 
+          for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
             SqlSelect query = new SqlSelect()
-                .addField(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS), COL_ASSESSOR)
-                .addFrom(TBL_CARGO_ASSESSORS)
+                .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
+                .addFrom(TBL_ASSESSMENTS)
+                .addFromInner(TBL_ASSESSMENTS, primaryAssessment,
+                    sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS,
+                        COL_ASSESSMENT))
+                .addFromInner(TBL_ORDER_CARGO, primaryCargo,
+                    sys.joinTables(TBL_ORDER_CARGO, primaryCargo, primaryAssessment, COL_CARGO))
                 .addFromInner(TBL_ORDER_CARGO,
-                    sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_ASSESSORS, COL_CARGO))
-                .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-                .addFromLeft(tbl, sys.joinTables(TBL_CARGO_ASSESSORS, tbl, COL_ASSESSOR))
-                .setWhere(event.getQuery().getWhere())
-                .addGroup(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS));
+                    sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
+                .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+                .addFromInner(tbl, SqlUtils.joinUsing(TBL_ASSESSMENTS, tbl, COL_CARGO))
+                .setWhere(sys.idInList(TBL_ASSESSMENTS, event.getRowset().getRowIds()))
+                .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
                 TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
                 SqlUtils.field(tbl, COL_CURRENCY),
                 SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-                SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
+                SqlUtils.field(primaryCargo, COL_CURRENCY));
 
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
             for (BeeRow row : event.getRowset().getRows()) {
-              row.setProperty((i == 0) ? VAR_INCOME : VAR_EXPENSE,
-                  rs.getValueByKey(COL_ASSESSOR, BeeUtils.toString(row.getId()), VAR_TOTAL));
+              row.setProperty((BeeUtils.same(tbl, TBL_CARGO_INCOMES)) ? VAR_INCOME : VAR_EXPENSE,
+                  rs.getValueByKey(COL_ASSESSMENT, BeeUtils.toString(row.getId()), VAR_TOTAL));
             }
           }
         }
@@ -493,6 +502,37 @@ public class TransportModuleBean implements BeeModule {
 
           event.getQuery().addFromInner(query, "subq",
               SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
+        }
+      }
+
+      @Subscribe
+      public void updateAssessmentRelations(ViewInsertEvent event) {
+        String tbl = sys.getViewSource(event.getTargetName());
+
+        if (BeeUtils.inListSame(tbl, TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS)
+            && event.isAfter()) {
+          String fld;
+          String tblFrom;
+          String joinFrom;
+
+          if (BeeUtils.same(tbl, TBL_ASSESSMENTS)) {
+            fld = COL_ORDER;
+            tblFrom = TBL_ORDER_CARGO;
+            joinFrom = COL_CARGO;
+          } else {
+            fld = COL_TRIP;
+            tblFrom = TBL_CARGO_TRIPS;
+            joinFrom = COL_CARGO_TRIP;
+          }
+          IsCondition clause = sys.idEquals(tbl, event.getRow().getId());
+
+          qs.updateData(new SqlUpdate(tbl)
+              .addExpression(fld, new SqlSelect()
+                  .addFields(tblFrom, fld)
+                  .addFrom(tbl)
+                  .addFromInner(tblFrom, sys.joinTables(tblFrom, tbl, joinFrom))
+                  .setWhere(clause))
+              .setWhere(clause));
         }
       }
     });
@@ -780,36 +820,51 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(wh)));
   }
 
-  private ResponseObject getAssessmentTotals(Long assessorId, Long cargoId) {
-    if (!DataUtils.isId(cargoId)) {
-      return ResponseObject.error("Cargo ID is not valid:", cargoId);
-    }
+  private ResponseObject getAssessmentTotals(Long assessmentId, boolean isPrimary) {
+    Assert.state(DataUtils.isId(assessmentId));
+
     SqlSelect query = null;
 
-    for (int i = 0; i < 2; i++) {
-      String tbl = (i == 0) ? TBL_CARGO_INCOMES : TBL_CARGO_EXPENSES;
+    for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
+      for (int i = 0; i < 2; i++) {
+        if (i > 0 && !isPrimary) {
+          break;
+        }
+        SqlSelect ss = new SqlSelect()
+            .addConstant(tbl + (i > 0 ? VAR_TOTAL : ""), COL_SERVICE)
+            .addFrom(tbl)
+            .addFromInner(TBL_ASSESSMENTS, SqlUtils.joinUsing(tbl, TBL_ASSESSMENTS, COL_CARGO))
+            .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
+            .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
 
-      SqlSelect ss = new SqlSelect()
-          .addConstant(tbl, COL_SERVICE)
-          .addFrom(tbl)
-          .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
-          .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-          .setWhere(SqlUtils.equals(tbl, COL_CARGO, cargoId));
+        String alsCargo;
 
-      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
-          TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
-          SqlUtils.field(tbl, COL_CURRENCY),
-          SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-          SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
+        if (i > 0) {
+          alsCargo = SqlUtils.uniqueName();
+          String primaryAssessment = SqlUtils.uniqueName();
 
-      ss.addSum(xpr, VAR_TOTAL)
-          .addSum(SqlUtils.sqlIf(SqlUtils.equals(tbl, COL_ASSESSOR, assessorId), xpr, null),
-              COL_AMOUNT);
+          ss.addFromInner(TBL_ASSESSMENTS, primaryAssessment,
+              sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS, COL_ASSESSMENT))
+              .addFromInner(TBL_ORDER_CARGO, alsCargo,
+                  sys.joinTables(TBL_ORDER_CARGO, alsCargo, primaryAssessment, COL_CARGO))
+              .setWhere(SqlUtils.equals(TBL_ASSESSMENTS, COL_ASSESSMENT, assessmentId));
+        } else {
+          alsCargo = TBL_ORDER_CARGO;
+          ss.setWhere(sys.idEquals(TBL_ASSESSMENTS, assessmentId));
+        }
+        IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+            TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+            SqlUtils.field(tbl, COL_CURRENCY),
+            SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
+            SqlUtils.field(alsCargo, COL_CURRENCY));
 
-      if (query == null) {
-        query = ss;
-      } else {
-        query.setUnionAllMode(true).addUnion(ss);
+        ss.addSum(xpr, COL_AMOUNT);
+
+        if (query == null) {
+          query = ss;
+        } else {
+          query.setUnionAllMode(true).addUnion(ss);
+        }
       }
     }
     return ResponseObject.response(qs.getData(query));
@@ -1193,13 +1248,13 @@ public class TransportModuleBean implements BeeModule {
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY))
-        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
         .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
-        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .setWhere(SqlUtils.and(tripWhere, handlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
   }
@@ -1236,13 +1291,13 @@ public class TransportModuleBean implements BeeModule {
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY))
-        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
         .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
-        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION, COL_CARGO_NOTES)
         .addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE))
         .addField(defLoadAlias, COL_PLACE_COUNTRY, defaultLoadingColumnAlias(COL_PLACE_COUNTRY))
@@ -1250,14 +1305,14 @@ public class TransportModuleBean implements BeeModule {
         .addField(defLoadAlias, COL_PLACE_POST_INDEX,
             defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(defLoadAlias, COL_PLACE_CITY, defaultLoadingColumnAlias(COL_PLACE_CITY))
-        .addField(defLoadAlias, COL_PLACE_TERMINAL, defaultLoadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(defLoadAlias, COL_PLACE_NUMBER, defaultLoadingColumnAlias(COL_PLACE_NUMBER))
         .addField(defUnlAlias, COL_PLACE_DATE, defaultUnloadingColumnAlias(COL_PLACE_DATE))
         .addField(defUnlAlias, COL_PLACE_COUNTRY, defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(defUnlAlias, COL_PLACE_ADDRESS, defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(defUnlAlias, COL_PLACE_POST_INDEX,
             defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(defUnlAlias, COL_PLACE_CITY, defaultUnloadingColumnAlias(COL_PLACE_CITY))
-        .addField(defUnlAlias, COL_PLACE_TERMINAL, defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(defUnlAlias, COL_PLACE_NUMBER, defaultUnloadingColumnAlias(COL_PLACE_NUMBER))
         .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_STATUS)
         .addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE)
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME)
@@ -1375,16 +1430,16 @@ public class TransportModuleBean implements BeeModule {
     query.addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS));
     query.addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX));
     query.addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY));
-    query.addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL));
+    query.addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER));
 
     query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
     query.addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY));
     query.addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS));
     query.addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX));
     query.addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY));
-    query.addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL));
+    query.addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER));
 
-    Set<Integer> statuses = Sets.newHashSet(OrderStatus.NEW.ordinal(),
+    Set<Integer> statuses = Sets.newHashSet(OrderStatus.REQUEST.ordinal(),
         OrderStatus.ACTIVE.ordinal());
     IsCondition cargoWhere = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
         SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
@@ -1422,13 +1477,13 @@ public class TransportModuleBean implements BeeModule {
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY))
-        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
         .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
-        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .setWhere(SqlUtils.and(cargoWhere, cargoHandlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
 

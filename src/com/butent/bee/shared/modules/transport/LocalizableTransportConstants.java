@@ -110,8 +110,6 @@ public interface LocalizableTransportConstants {
 
   String shippingSchedule();
 
-  String terminal();
-
   String trailers();
 
   String trailerTimeBoard();
@@ -122,37 +120,35 @@ public interface LocalizableTransportConstants {
 
   String trAssessment();
 
-  String trAssessmentCancelOrderQuestion();
+  String trAssessmentAskAnswered();
 
-  String trAssessmentMarkAsAnsweredQuestion();
+  String trAssessmentAskCanceled();
 
-  String trAssessmentMarkAsCompletedQuestion();
+  String trAssessmentAskCompleted();
 
-  String trAssessmentMarkAsLostQuestion();
+  String trAssessmentAskLost();
+
+  String trAssessmentAskOrder();
+
+  String trAssessmentAskRequest();
 
   String trAssessmentRejection();
 
-  String trAssessmentRejectionReasonRequired();
+  String trAssessmentRejectionReason();
 
-  String trAssessmentReturnToOrderQuestion();
-
-  String trAssessmentReturnToRequestQuestion();
-
-  String trAssessmentStatusActive();
+  String trAssessmentRequest();
 
   String trAssessmentStatusAnswered();
 
-  String trAssessmentStatusCanceled();
-
-  String trAssessmentStatusCompleted();
+  String trAssessmentStatusApproved();
 
   String trAssessmentStatusLost();
 
   String trAssessmentStatusNew();
 
-  String trAssessmentThereActiveChildrenOrders();
+  String trAssessmentToOrders();
 
-  String trAssessmentThereUnconfirmedAssessments();
+  String trAssessmentToRequests();
 
   String trAssignCargo();
 
@@ -179,8 +175,6 @@ public interface LocalizableTransportConstants {
   String trConfirmCreateNewOrder();
 
   String trConfirmProforma();
-
-  String trContractPrinting();
 
   String trCreateTransportation();
 
@@ -243,8 +237,6 @@ public interface LocalizableTransportConstants {
   String trOrderStatusCanceled();
 
   String trOrderStatusCompleted();
-
-  String trOrderStatusNew();
 
   String trOrderStatusRequest();
 

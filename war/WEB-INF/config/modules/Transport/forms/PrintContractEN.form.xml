@@ -16,69 +16,27 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Carrier: "; font-weight:normal;}
+      .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Customer: "; font-weight:normal;}
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
     <TextLabel source="Number" style="text-align:center; &bold;">
-      <renderToken source="Assessor" prefix="Freight transportation contract No. " />
-      <renderToken source="TripNo" prefix="-" />
+      <renderToken source="TripNo" prefix="Freight transportation contract No. " />
+      <renderToken source="Number" prefix="-" />
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 
     <Table class="&form;-table" style="&section;">
       <row>
-      <cell style="vertical-align:top;">
-        <FlowPanel>
-          <TextLabel source="ForwarderName" style="&bold;">
-            <renderToken source="ForwarderName" prefix="Carrier: " />
-          </TextLabel>
-          <TextLabel source="ForwarderCode">
-            <renderToken source="ForwarderCode" prefix="Company code: " />
-          </TextLabel>
-          <TextLabel source="ForwarderVATCode">
-            <renderToken source="ForwarderVATCode" prefix="VAT code: " />
-          </TextLabel>
-          <TextLabel source="ForwarderAddress">
-            <renderToken source="ForwarderAddress" prefix="Address: " />
-            <renderToken source="ForwarderCity" prefix=", " />
-            <renderToken source="ForwarderCountry" prefix=", " />
-            <renderToken source="ForwarderPostIndex" prefix=", " />
-          </TextLabel>
-          <TextLabel source="ForwarderPhone">
-            <renderToken source="ForwarderPhone" prefix="Phone: " suffix=" " />
-            <renderToken source="ForwarderMobile" prefix="Mobile: " suffix=" " />
-            <renderToken source="ForwarderFax" prefix="Fax: " suffix=" " />
-          </TextLabel>
-          <TextLabel source="ForwarderEmail">
-            <renderToken source="ForwarderEmail" prefix="E-mail: " />
-          </TextLabel>
-        </FlowPanel>
-      </cell>
+        <cell style="vertical-align:top;">
+          <FlowPanel name="Forwarder" class="&form;-forwarder">
+            <properties locale="en" />
+          </FlowPanel>
+        </cell>
         
-      <FlowPanel>
-        <TextLabel source="CompanyName" style="&bold;">
-          <renderToken source="CompanyName" />
-        </TextLabel>
-        <TextLabel source="CompanyCode">
-          <renderToken source="CompanyCode" prefix="Code: " />
-        </TextLabel>
-        <TextLabel source="CompanyVATCode">
-          <renderToken source="CompanyVATCode" prefix="VAT code: " />
-        </TextLabel>
-        <TextLabel source="CompanyAddress">
-          <renderToken source="CompanyAddress" prefix="Address: " />
-          <renderToken source="CompanyCity" prefix=", " />
-          <renderToken source="CompanyCountry" prefix=", " />
-          <renderToken source="CompanyPostIndex" prefix=", " />
-        </TextLabel>
-        <TextLabel source="CompanyPhone">
-          <renderToken source="CompanyPhone" prefix="Phone: " suffix=" " />
-          <renderToken source="CompanyMobile" prefix="Mobile: " suffix=" " />
-          <renderToken source="CompanyFax" prefix="Fax: " suffix=" " />
-        </TextLabel>
-        <TextLabel source="CompanyEmail">
-          <renderToken source="CompanyEmail" prefix="E-mail: " />
-        </TextLabel>
-      </FlowPanel>
+        <FlowPanel name="Customer" class="&form;-customer">
+          <properties locale="en" />
+        </FlowPanel>
       </row>
       <row>
         <Label html="Load" />

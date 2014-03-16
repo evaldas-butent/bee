@@ -12,7 +12,7 @@
     
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
-      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
+      <SimpleColumn name="Number" alias="LoadingNumber" />
       <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
       <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany" />
       <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" />
@@ -31,7 +31,7 @@
 
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
-      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
+      <SimpleColumn name="Number" alias="UnloadingNumber" />
       <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"  />
       <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany" />
       <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" />

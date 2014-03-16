@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:w="http://www.butent.com/widget"
 
   name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
-  flexGrow="1" disabledActions="add" order="AssessorID desc"
+  flexGrow="1" order="AssessmentID desc"
   >
-  <g:north size="40">
-    <w:HorizontalPanel>
-      <w:CheckBox name="Active" text="=trOrderStatusActive" checked="true" />
-      <w:CheckBox name="Completed" text="=trOrderStatusCompleted" />
-      <w:CheckBox name="Canceled" text="=trOrderStatusCanceled" checked="true" />
-    </w:HorizontalPanel>
-  </g:north>
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessor" caption="=captionPid" width="40" />
-    <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />
-    <DataColumn name="Status" width="70" />
+    <DataColumn name="Assessment" caption="=captionPid" width="40" />
+    <DataColumn name="Date" width="110" readOnly="true" />
+    <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     
@@ -41,6 +33,9 @@
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
 
     <DataColumn name="Number" caption="=refNumber" width="70" />
-    <DataColumn name="Cmr" caption="CMR" width="70" />
   </g:columns>
+
+  <g:predefinedFilter name="active" label="Vykdomi" initial="true">
+    <g:column name="OrderStatus" value="1" />
+  </g:predefinedFilter>  
 </g:Grid>

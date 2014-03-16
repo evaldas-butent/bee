@@ -1821,9 +1821,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
             info.add(place);
           }
 
-          String terminal = event.getTerminal();
-          if (!BeeUtils.isEmpty(terminal) && BeeUtils.containsSame(info, terminal)) {
-            info.add(terminal);
+          String number = event.getNumber();
+          if (!BeeUtils.isEmpty(number) && BeeUtils.containsSame(info, number)) {
+            info.add(number);
           }
         }
 

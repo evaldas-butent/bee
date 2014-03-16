@@ -46,6 +46,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
@@ -56,7 +57,6 @@ import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -650,7 +650,7 @@ public class UiServiceBean {
         for (BeeView view : views) {
           sources.put(view.getSourceName(), view.getName());
         }
-        
+
         boolean noViews = BeeUtils.same(tableName, BeeConst.STRING_MINUS);
 
         for (String name : names) {
@@ -666,10 +666,10 @@ public class UiServiceBean {
           } else {
             viewNames = BeeConst.STRING_MINUS;
           }
-          
+
           info.add(new ExtendedProperty(name, String.valueOf(fieldCount), viewNames));
         }
-        
+
       } else if (BeeUtils.same(tableName, BeeConst.STRING_ALL)) {
         for (String name : names) {
           PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
@@ -1463,27 +1463,40 @@ public class UiServiceBean {
       return ResponseObject.parameterNotFound(Service.VAR_VIEW_WHERE);
     }
 
-    String column = reqInfo.getParameter(Service.VAR_COLUMN);
-    if (BeeUtils.isEmpty(column)) {
+    String[] cols = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_COLUMN));
+    if (ArrayUtils.isEmpty(cols)) {
       return ResponseObject.parameterNotFound(Service.VAR_COLUMN);
     }
 
-    String value = reqInfo.getParameter(Service.VAR_VALUE);
-    if (BeeUtils.isEmpty(value)) {
+    String[] values = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_VALUE));
+    if (ArrayUtils.isEmpty(values)) {
       return ResponseObject.parameterNotFound(Service.VAR_VALUE);
     }
+    List<String> newValues = Lists.newArrayList(values);
 
-    BeeView view = sys.getView(viewName);
-    if (view.isReadOnly()) {
-      return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
+    if (cols.length != values.length) {
+      return ResponseObject.error("Columns does not match values");
     }
+    BeeRowSet rs = qs.getViewData(viewName, Filter.restore(where), null, Lists.newArrayList(cols));
+    List<BeeColumn> columns = Lists.newArrayList();
 
-    String tblName = view.getSourceName();
-    Filter filter = Filter.restore(where);
+    for (String col : cols) {
+      columns.add(rs.getColumn(col));
+    }
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      List<String> oldValues = Lists.newArrayList();
 
-    return qs.updateDataWithResponse(new SqlUpdate(tblName)
-        .setWhere(view.getCondition(filter, sys.getViewFinder()))
-        .addConstant(column, Value.restore(value)));
+      for (String col : cols) {
+        oldValues.add(rs.getString(i, col));
+      }
+      ResponseObject response = deb.commitRow(DataUtils.getUpdated(viewName, rs.getRow(i).getId(),
+          rs.getRow(i).getVersion(), columns, oldValues, newValues, null), RowInfo.class);
+
+      if (response.hasErrors()) {
+        return response;
+      }
+    }
+    return ResponseObject.response(rs.getNumberOfRows());
   }
 
   private ResponseObject updateAutocomplete(RequestInfo reqInfo) {

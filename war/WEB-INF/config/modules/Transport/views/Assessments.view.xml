@@ -2,35 +2,22 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:x="http://www.butent.com/expression"
 
-  name="Assessments" source="CargoAssessors"
+  name="Assessments" source="Assessments"
   newRowForm="Assessment" newRowCaption="=newAssessmentRequest"
   editForm="Assessment"
   >
   <Columns>
+    <SimpleColumn name="Assessment" />
     <SimpleColumn name="Status" />
-    <SimpleColumn name="Date" />
-    <SimpleColumn name="Assessor" />
+    <SimpleColumn name="Notes" />
+
     <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Notes" label="=trComment" />
-
-    <SimpleColumn name="Manager" />
-    <SimpleJoin name="Manager" joinType="INNER">
-      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" />
-          <SimpleColumn name="LastName" />
-        </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
-
     <SimpleJoin name="Cargo" joinType="INNER">
-      <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">
-        <SimpleColumn name="Date" alias="OrderDate" editable="true" />
+        <SimpleColumn name="Date" editable="true" />
         <SimpleColumn name="OrderNo" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
-        <SimpleColumn name="Notes" alias="Route" label="=route" editable="true" />
+        <SimpleColumn name="Notes" alias="OrderNotes" label="=route" editable="true" />
       
         <SimpleColumn name="Customer" editable="true" />
         <SimpleJoin joinType="LEFT" name="Customer">
@@ -51,35 +38,47 @@
             <SimpleColumn name="Email" alias="PersonEmail" />
           </SimpleJoin>
         </SimpleJoin>
+
+        <SimpleColumn name="Manager" editable="true" />
+        <SimpleJoin name="Manager" joinType="INNER">
+          <SimpleColumn name="CompanyPerson" />
+          <SimpleJoin name="CompanyPerson" joinType="LEFT">
+            <SimpleJoin name="Person" joinType="LEFT">
+              <SimpleColumn name="FirstName" />
+              <SimpleColumn name="LastName" />
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Notes" alias="CargoNotes" label="Papildoma informacija" editable="true" />
+      <SimpleColumn name="Number" label="=refNumber" editable="true" />
+      <SimpleColumn name="Description" editable="true" />
+      <SimpleColumn name="Notes" alias="CargoNotes" label="=additionalInfo" editable="true" />
+      <SimpleColumn name="LoadedKilometers" label="=trAssessmentPlannedKm" editable="true" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Contact" alias="Shipper" editable="true" />
-        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
-        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" editable="true" />
-        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" editable="true" />
-        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="=transportationNumber1" editable="true" />
-        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
+        <SimpleColumn name="Contact" alias="Shipper" label="=shipper" editable="true" />
+        <SimpleColumn name="Date" alias="LoadingDate" editable="true" label="=trLoadingDate" />
+        <SimpleColumn name="Address" alias="LoadingAddress" editable="true" label="=trLoadingAddress" />
+        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" editable="true" label="=trLoadingPostIndex" />
+        <SimpleColumn name="Number" alias="LoadingNumber" editable="true" label="=transportationNumber1" />
+        <SimpleColumn name="Country" alias="LoadingCountry" editable="true" label="=trLoadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
           <SimpleColumn name="Code" alias="LoadingCountryCode" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
-        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" editable="true" />
-        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" editable="true" />
-        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="=transportationNumber2" editable="true" />
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
+        <SimpleColumn name="Date" alias="UnloadingDate" editable="true" label="=trUnloadingDate" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" editable="true" label="=trUnloadingAddress" />
+        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" editable="true" label="=trUnloadingPostIndex" />
+        <SimpleColumn name="Number" alias="UnloadingNumber" editable="true" label="=transportationNumber2" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" label="=trUnloadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
           <SimpleColumn name="Code" alias="UnloadingCountryCode" />
         </SimpleJoin>
       </SimpleJoin>
-
-      <SimpleColumn name="Description" editable="true" />
 
       <SimpleColumn name="Weight" editable="true" />
       <SimpleColumn name="WeightUnit" editable="true" />
@@ -104,9 +103,6 @@
       <SimpleJoin joinType="LEFT" name="ValueCurrency">
         <SimpleColumn name="Name" alias="ValueCurrencyName" />
       </SimpleJoin>
-
-      <SimpleColumn name="Number" editable="true" />
-      <SimpleColumn name="Cmr" editable="true" />
 
       <SimpleColumn name="Partial" editable="true" />
       <SimpleColumn name="Outsized" editable="true" />

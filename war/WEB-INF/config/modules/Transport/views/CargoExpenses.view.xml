@@ -15,7 +15,6 @@
       </SimpleJoin>
     </SimpleJoin>
     
-    <SimpleColumn name="Assessor" />
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Service" />

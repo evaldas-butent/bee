@@ -6,7 +6,7 @@ import com.butent.bee.shared.time.TimeUtils;
 public abstract class Defaults {
 
   public enum DefaultExpression {
-    CURRENT_DATE, CURRENT_TIME, CURRENT_USER, NEXT_NUMBER
+    CURRENT_DATE, CURRENT_TIME, CURRENT_USER, NEXT_NUMBER, MAIN_CURRENCY
   }
 
   public Object getValue(DefaultExpression defExpr, Object defValue) {
@@ -26,6 +26,7 @@ public abstract class Defaults {
 
         case CURRENT_USER:
         case NEXT_NUMBER:
+        case MAIN_CURRENCY:
           Assert.unsupported();
           break;
       }

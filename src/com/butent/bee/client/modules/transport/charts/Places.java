@@ -98,7 +98,7 @@ final class Places {
     } else {
       return getPlaceInfo(item.getLoadingCountry(), item.getLoadingPlace(),
           item.getLoadingPostIndex(), item.getLoadingCity(),
-          item.getLoadingTerminal());
+          item.getLoadingNumber());
     }
   }
 
@@ -107,17 +107,17 @@ final class Places {
   }
   
   static String getPlaceInfo(Long countryId, String placeName, String postIndex, Long cityId,
-      String terminal) {
+      String number) {
     String countryLabel = getCountryLabel(countryId);
     String cityLabel = getCityLabel(cityId);
 
     if (BeeUtils.isEmpty(countryLabel) || BeeUtils.containsSame(placeName, countryLabel)
-        || BeeUtils.containsSame(terminal, countryLabel)) {
+        || BeeUtils.containsSame(number, countryLabel)) {
       return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, placeName, postIndex, cityLabel,
-          terminal);
+          number);
     } else {
       return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, postIndex,
-          cityLabel, terminal);
+          cityLabel, number);
     }
   }
   
@@ -143,7 +143,7 @@ final class Places {
     } else {
       return getPlaceInfo(item.getUnloadingCountry(), item.getUnloadingPlace(),
           item.getUnloadingPostIndex(), item.getUnloadingCity(),
-          item.getUnloadingTerminal());
+          item.getUnloadingNumber());
     }
   }
 

@@ -36,7 +36,7 @@
           <Label text="=personContact" horizontalAlignment="right" />
           <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
             choiceColumns="FirstName LastName CompanyName" options="Customer" />
-          <Label text="=manager" horizontalAlignment="right" />
+          <Label text="=manager" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
           <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
         </row>
       </Table>

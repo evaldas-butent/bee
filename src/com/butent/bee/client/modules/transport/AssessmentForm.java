@@ -1,15 +1,13 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Visibility;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -27,104 +25,190 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.modules.classifiers.ClassifierUtils;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.PrintFormInterceptor;
-import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.RowActionEvent;
-import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-public class AssessmentForm extends PrintFormInterceptor {
+public class AssessmentForm extends PrintFormInterceptor implements EditStopEvent.Handler {
 
-  private static class PrintForm extends AbstractFormInterceptor {
+  private class ChildAssessmentsGrid extends AbstractGridInterceptor implements ClickHandler {
     @Override
-    public void beforeRefresh(FormView form, IsRow row) {
-      Widget w = form.getWidgetByName("CustomerInfo");
-      if (w instanceof HasWidgets) {
-        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex("Customer")), w);
+    public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+        AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+        EditableColumn editable) {
+
+      if (BeeUtils.inListSame(columnName, COL_ASSESSMENT, COL_STATUS)) {
+        column.getCell().addClickHandler(this);
       }
-      w = form.getWidgetByName("ForwarderInfo");
-      if (w instanceof HasWidgets) {
-        ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex("Forwarder")), w);
+      return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editable);
+    }
+
+    @Override
+    public AbstractCellRenderer getRenderer(String columnName,
+        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+        CellSource cellSource) {
+
+      if (BeeUtils.same(columnName, COL_STATUS)) {
+        return new AbstractCellRenderer(cellSource) {
+          @Override
+          public String render(IsRow row) {
+            if (isRequest()) {
+              AssessmentStatus status = EnumUtils.getEnumByIndex(AssessmentStatus.class,
+                  Data.getInteger(VIEW_CHILD_ASSESSMENTS, row, COL_ASSESSMENT_STATUS));
+
+              if (isRevocable(status)) {
+                FaLabel lbl = new FaLabel(FontAwesome.UNDO, true);
+                lbl.getElement().getStyle().setMarginRight(2, Unit.PX);
+
+                return lbl.toString() + status.getCaption();
+              }
+              return status.getCaption();
+            } else {
+              return EnumUtils.getCaption(OrderStatus.class,
+                  Data.getInteger(VIEW_CHILD_ASSESSMENTS, row, ALS_ORDER_STATUS));
+            }
+          }
+        };
+      }
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+      if (event.getSource() instanceof AbstractCell<?>) {
+        CellContext context = ((AbstractCell<?>) event.getSource()).getEventContext();
+        final IsRow row = context.getRowValue();
+
+        switch (context.getGrid().getColumnId(context.getColumnIndex())) {
+          case COL_ASSESSMENT:
+            RowEditor.openRow(TBL_ASSESSMENTS, row.getId(), false, null);
+            break;
+
+          case COL_STATUS:
+            final String view = getViewName();
+            final AssessmentStatus status = EnumUtils.getEnumByIndex(AssessmentStatus.class,
+                Data.getInteger(view, row, COL_ASSESSMENT_STATUS));
+
+            if (isRevocable(status)) {
+              Global.inputString(loc.trAssessmentRejection(),
+                  loc.trAssessmentRejectionReason(),
+                  new StringCallback() {
+                    @Override
+                    public void onSuccess(String value) {
+                      Queries.update(view, row.getId(), row.getVersion(),
+                          Data.getColumns(view,
+                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_NOTES)),
+                          Lists.newArrayList(BeeUtils.toString(status.ordinal()),
+                              Data.getString(view, row, COL_ASSESSMENT_NOTES)),
+                          Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
+                              value), null, new RowUpdateCallback(view));
+                    }
+                  });
+            }
+            break;
+        }
       }
     }
 
     @Override
-    public FormInterceptor getInstance() {
-      return null;
-    }
-  }
+    public void onReadyForInsert(final GridView gridView, final ReadyForInsertEvent event) {
+      BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
-  private abstract class AssessmentGrid extends AbstractGridInterceptor {
-    @Override
-    public void beforeRefresh(GridPresenter presenter) {
-      presenter.getDataProvider().setParentFilter(COL_ASSESSOR, getFilter());
-    }
+      for (String col : new String[] {COL_ORDER_DATE, COL_ORDER_MANAGER, COL_ASSESSMENT_NOTES}) {
+        int idx = form.getDataIndex(col);
+        newRow.clearCell(idx);
 
-    @Override
-    public Map<String, Filter> getInitialParentFilters() {
-      if (currentRow == null) {
-        return super.getInitialParentFilters();
+        for (int i = 0; i < event.getColumns().size(); i++) {
+          if (BeeUtils.same(event.getColumns().get(i).getId(), col)) {
+            newRow.setValue(idx, event.getValues().get(i));
+            break;
+          }
+        }
+      }
+      if (isRequest()) {
+        newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
+        newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
       } else {
-        return ImmutableMap.of(COL_ASSESSOR, getFilter());
+        newRow.clearCell(form.getDataIndex(COL_ASSESSMENT_STATUS));
+        newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
       }
+      newRow.setValue(form.getDataIndex(COL_ASSESSMENT), form.getActiveRowId());
+      newRow.clearCell(form.getDataIndex(COL_CARGO));
+
+      Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(), form.getDataColumns(),
+          newRow), new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          Queries.getRow(gridView.getViewName(), result.getId(), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow res) {
+              event.getCallback().onSuccess(res);
+            }
+          });
+        }
+      });
+      event.consume();
     }
 
     @Override
-    public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
-      event.getColumns().add(DataUtils.getColumn(COL_ASSESSOR, gridView.getDataColumns()));
-      event.getValues().add(BeeUtils.toString(currentRow.getId()));
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      newRow.setValue(gridView.getDataIndex(COL_ASSESSMENT_NOTES),
+          form.getStringValue(COL_ASSESSMENT_NOTES));
+      return true;
     }
 
-    protected Filter getFilter() {
-      return Filter.equals(COL_ASSESSOR, currentRow.getId());
+    private boolean isRevocable(Enum<?> status) {
+      return Objects.equal(status, AssessmentStatus.ANSWERED);
     }
   }
 
-  private class ForwardersGrid extends AssessmentGrid {
+  private class ForwardersGrid extends AbstractGridInterceptor {
     private static final String SERVICE_CARGO = "ServiceCargo";
-    private static final String SERVICE_ASSESSOR = "ServiceAssessor";
     private static final String SUPPLIER = "Supplier";
     private static final String FORWARDER = "Forwarder";
 
@@ -134,29 +218,13 @@ public class AssessmentForm extends PrintFormInterceptor {
     }
 
     @Override
-    public void afterUpdateRow(IsRow result) {
+    public void afterDeleteRow(long rowId) {
       refresh();
     }
 
     @Override
-    public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
-      final long tripId = row.getLong(presenter.getGridView().getDataIndex(COL_TRIP));
-
-      Queries.deleteRow(VIEW_EXPEDITION_TRIPS, tripId, 0, new IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_EXPEDITION_TRIPS, tripId);
-          RowDeleteEvent.fire(BeeKeeper.getBus(), presenter.getViewName(), row.getId());
-          refresh();
-        }
-      });
-      return DeleteMode.CANCEL;
-    }
-
-    @Override
-    public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
-        Collection<RowInfo> selectedRows, DeleteMode defMode) {
-      return DeleteMode.SINGLE;
+    public void afterUpdateRow(IsRow result) {
+      refresh();
     }
 
     @Override
@@ -166,40 +234,16 @@ public class AssessmentForm extends PrintFormInterceptor {
       List<BeeColumn> columns = event.getColumns();
       List<String> values = event.getValues();
 
-      columns.add(DataUtils.getColumn(SERVICE_CARGO, gridView.getDataColumns()));
-      values.add(values.get(DataUtils.getColumnIndex(COL_CARGO, columns)));
+      String cargo = form.getStringValue(COL_CARGO);
 
-      columns.add(DataUtils.getColumn(SERVICE_ASSESSOR, gridView.getDataColumns()));
-      values.add(values.get(DataUtils.getColumnIndex(COL_ASSESSOR, columns)));
+      columns.add(DataUtils.getColumn(COL_CARGO, gridView.getDataColumns()));
+      values.add(cargo);
+      columns.add(DataUtils.getColumn(SERVICE_CARGO, gridView.getDataColumns()));
+      values.add(cargo);
 
       if (DataUtils.getColumn(SUPPLIER, columns) == null) {
         columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
         values.add(values.get(DataUtils.getColumnIndex(FORWARDER, columns)));
-      }
-    }
-
-    @Override
-    public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
-      IsRow row = event.getNewRow();
-
-      if (!DataUtils.isId(row.getLong(gridView.getDataIndex(SERVICE_CARGO)))) {
-        List<BeeColumn> columns = event.getColumns();
-        List<String> oldValues = event.getOldValues();
-        List<String> newValues = event.getNewValues();
-
-        columns.add(DataUtils.getColumn(SERVICE_CARGO, gridView.getDataColumns()));
-        oldValues.add(null);
-        newValues.add(row.getString(gridView.getDataIndex(COL_CARGO)));
-
-        columns.add(DataUtils.getColumn(SERVICE_ASSESSOR, gridView.getDataColumns()));
-        oldValues.add(null);
-        newValues.add(row.getString(gridView.getDataIndex(COL_ASSESSOR)));
-
-        if (DataUtils.getColumn(SUPPLIER, columns) == null) {
-          columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
-          oldValues.add(null);
-          newValues.add(row.getString(gridView.getDataIndex(FORWARDER)));
-        }
       }
     }
 
@@ -209,11 +253,13 @@ public class AssessmentForm extends PrintFormInterceptor {
     }
   }
 
-  private class ServicesGrid extends AssessmentGrid {
+  private class ServicesGrid extends AbstractGridInterceptor {
 
     @Override
     public void afterDeleteRow(long rowId) {
-      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ASSESSMENT_FORWARDERS);
+      if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
+      }
       refreshTotals();
     }
 
@@ -226,66 +272,10 @@ public class AssessmentForm extends PrintFormInterceptor {
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
           COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ASSESSMENT_FORWARDERS);
         refreshTotals();
       }
-    }
-  }
-
-  private class AssessorsGrid extends AssessmentGrid {
-    @Override
-    public void afterDeleteRow(long rowId) {
-      refreshTotals();
-    }
-
-    @Override
-    public DeleteMode getDeleteMode(GridPresenter presenter, final IsRow activeRow,
-        Collection<RowInfo> selectedRows, DeleteMode defMode) {
-
-      final String view = presenter.getViewName();
-      final int oldStatus = activeRow.getInteger(Data.getColumnIndex(view, COL_STATUS));
-
-      if (AssessmentStatus.ANSWERED.is(oldStatus)) {
-        Global.inputString(Localized.getConstants().trAssessmentRejection(),
-            Localized.getConstants().trAssessmentRejectionReasonRequired(),
-            new StringCallback() {
-              @Override
-              public void onSuccess(String value) {
-                Queries.update(view, activeRow.getId(), activeRow.getVersion(),
-                    Lists.newArrayList(Data.getColumn(view, COL_STATUS),
-                        Data.getColumn(view, COL_ASSESSOR_NOTES)),
-                    Lists.newArrayList(BeeUtils.toString(oldStatus),
-                        activeRow.getString(Data.getColumnIndex(view, COL_ASSESSOR_NOTES))),
-                    Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
-                        value), null,
-                    new RowUpdateCallback(view));
-              }
-            });
-        return DeleteMode.CANCEL;
-      } else {
-        return DeleteMode.SINGLE;
-      }
-    }
-
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(gridView.getDataIndex(COL_ASSESSOR_NOTES),
-          currentRow.getString(getFormView().getDataIndex(COL_ASSESSOR_NOTES)));
-
-      int status = currentRow.getInteger(getFormView().getDataIndex(COL_STATUS));
-
-      if (AssessmentStatus.ACTIVE.is(status)) {
-        newRow.setValue(gridView.getDataIndex(COL_STATUS), status);
-      }
-      return true;
-    }
-
-    @Override
-    protected Filter getFilter() {
-      if (isPrimaryRequest(currentRow)) {
-        return Filter.compareId(Operator.NE, currentRow.getId());
-      } else {
-        return super.getFilter();
+      if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
       }
     }
   }
@@ -293,108 +283,127 @@ public class AssessmentForm extends PrintFormInterceptor {
   private class StatusUpdater implements ClickHandler {
 
     private final AssessmentStatus status;
-    private final String preconditionError;
-    private FormView formView;
-    private int statusIdx;
-    private int orderStatusIdx;
-    private RowCallback rowCallback;
+    private final OrderStatus orderStatus;
+    private final boolean check;
+    private final boolean request;
+    private final String confirmationQuestion;
 
-    public StatusUpdater(AssessmentStatus status, String preconditionError) {
+    public StatusUpdater(AssessmentStatus status, String confirm) {
+      this(status, null, false, confirm);
+    }
+
+    public StatusUpdater(OrderStatus orderStatus, String confirm) {
+      this(orderStatus, null, false, confirm);
+    }
+
+    public StatusUpdater(AssessmentStatus status, OrderStatus orderStatus, boolean check,
+        String confirm) {
       this.status = status;
-      this.preconditionError = preconditionError;
+      this.orderStatus = orderStatus;
+      this.check = check;
+      this.confirmationQuestion = confirm;
+      this.request = true;
+    }
+
+    public StatusUpdater(OrderStatus orderStatus, AssessmentStatus status, boolean check,
+        String confirm) {
+      this.status = status;
+      this.orderStatus = orderStatus;
+      this.check = check;
+      this.confirmationQuestion = confirm;
+      this.request = false;
     }
 
     @Override
     public void onClick(ClickEvent event) {
-      if (formView == null) {
-        formView = getFormView();
-        statusIdx = formView.getDataIndex(COL_STATUS);
-        orderStatusIdx = formView.getDataIndex("OrderStatus");
-        rowCallback = new RowUpdateCallback(formView.getViewName());
-      }
-      if (isPrimaryRequest(currentRow) && !BeeUtils.isEmpty(preconditionError)) {
-        Queries.getRowCount(TBL_CARGO_ASSESSORS,
-            Filter.and(Filter.equals(COL_CARGO,
-                currentRow.getLong(getFormView().getDataIndex(COL_CARGO))),
-                Filter.compareId(Operator.NE, currentRow.getId()),
-                Filter.isNotEqual(COL_STATUS, IntegerValue.of(status))),
+      if (isPrimary() && check) {
+        Queries.getRowCount(VIEW_CHILD_ASSESSMENTS,
+            Filter.and(Filter.equals(COL_ASSESSMENT, form.getActiveRowId()),
+                request ? Filter.isNotEqual(COL_ASSESSMENT_STATUS, IntegerValue.of(status))
+                    : Filter.isNotEqual(ALS_ORDER_STATUS, IntegerValue.of(orderStatus))),
             new IntCallback() {
               @Override
               public void onSuccess(Integer result) {
                 if (BeeUtils.isPositive(result)) {
-                  Global.showError(preconditionError);
+                  Global.showError(Localized.getMessages().trAssessmentInvalidStatusError(result,
+                      request ? status.getCaption() : orderStatus.getCaption()));
                 } else {
-                  update();
+                  process();
                 }
               }
             });
       } else {
-        update();
+        process();
       }
     }
 
-    public void update() {
-      Global.confirm(status.getConfirmation(), new ConfirmationCallback() {
-        @Override
-        public void onConfirm() {
-          IsRow newRow = currentRow;
-
-          List<BeeColumn> columns = Lists.newArrayList(DataUtils.getColumn(COL_STATUS,
-              formView.getDataColumns()));
-          List<String> oldValues = Lists.newArrayList(newRow.getString(statusIdx));
-          List<String> newValues = Lists.newArrayList(BeeUtils.toString(status.ordinal()));
-
-          if (isPrimaryRequest(newRow) && status.getOrderStatus() != null) {
-            columns.add(DataUtils.getColumn("OrderStatus", formView.getDataColumns()));
-            oldValues.add(newRow.getString(orderStatusIdx));
-            newValues.add(BeeUtils.toString(status.getOrderStatus().ordinal()));
+    public void process() {
+      if (Objects.equal(orderStatus, OrderStatus.CANCELED)) {
+        Global.inputString(confirmationQuestion,
+            loc.trAssessmentRejectionReason(), new StringCallback() {
+              @Override
+              public void onSuccess(String value) {
+                update(value);
+              }
+            });
+      } else {
+        Global.confirm(confirmationQuestion, new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            update(null);
           }
-          Queries.update(formView.getViewName(), newRow.getId(), newRow.getVersion(),
-              columns, oldValues, newValues, formView.getChildrenForUpdate(), new RowCallback() {
-                @Override
-                public void onSuccess(final BeeRow result) {
-                  rowCallback.onSuccess(result);
-
-                  if (isPrimaryRequest(result)) {
-                    Queries.update(TBL_CARGO_ASSESSORS,
-                        Filter.and(Filter.equals(COL_CARGO,
-                            result.getLong(formView.getDataIndex(COL_CARGO))),
-                            Filter.compareId(Operator.NE, result.getId())),
-                        COL_STATUS, IntegerValue.of(status), new IntCallback() {
-                          @Override
-                          public void onSuccess(Integer res) {
-                            if (status.isClosable()) {
-                              DataChangeEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
-                                  DataChangeEvent.CANCEL_RESET_REFRESH);
-                            } else {
-                              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_ASSESSORS);
-                            }
-                          }
-                        });
-                  }
-                }
-              });
-        }
-      });
+        });
+      }
     }
-  }
 
-  public static void doRowAction(final RowActionEvent event) {
-    if (event.hasView(TBL_CARGO_ASSESSORS)) {
-      RowEditor.openRow(FORM_ASSESSMENT, Data.getDataInfo("Assessments"),
-          event.getRowId(), false, null, null, null);
+    public void update(String notes) {
+      final List<BeeColumn> columns = Lists.newArrayList();
+      List<String> oldValues = Lists.newArrayList();
+      final List<String> newValues = Lists.newArrayList();
+      final String viewName = form.getViewName();
 
-    } else if (event.hasView(VIEW_ASSESSMENT_FORWARDERS)) {
-      Global.choice(Localized.getConstants().trContractPrinting(), Localized.getConstants()
-          .chooseLanguage(),
-          Lists.newArrayList("LT", "RU", "EN"),
-          new ChoiceCallback() {
+      if (status != null) {
+        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_STATUS));
+        oldValues.add(form.getStringValue(COL_ASSESSMENT_STATUS));
+        newValues.add(BeeUtils.toString(status.ordinal()));
+      }
+      if (orderStatus != null) {
+        columns.add(Data.getColumn(viewName, ALS_ORDER_STATUS));
+        oldValues.add(form.getStringValue(ALS_ORDER_STATUS));
+        newValues.add(BeeUtils.toString(orderStatus.ordinal()));
+      }
+      if (!BeeUtils.isEmpty(notes)) {
+        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_NOTES));
+        oldValues.add(form.getStringValue(COL_ASSESSMENT_NOTES));
+        newValues.add(notes);
+      }
+      Queries.update(viewName, form.getActiveRowId(), form.getActiveRow().getVersion(),
+          columns, oldValues, newValues, form.getChildrenForUpdate(), new RowCallback() {
             @Override
-            public void onSuccess(int value) {
-              String printView = "PrintContract";
+            public void onSuccess(BeeRow result) {
+              new RowUpdateCallback(form.getViewName()).onSuccess(result);
 
-              RowEditor.openRow(printView + (value == 0 ? "LT" : (value == 1 ? "RU" : "EN")),
-                  Data.getDataInfo(printView), event.getRowId(), true, null, null, new PrintForm());
+              if (isPrimary() && !check) {
+                List<String> cols = Lists.newArrayList();
+
+                for (int i = 0; i < columns.size(); i++) {
+                  cols.add(columns.get(i).getId());
+                }
+                Queries.update(VIEW_CHILD_ASSESSMENTS,
+                    Filter.equals(COL_ASSESSMENT, result.getId()), cols, newValues,
+                    new IntCallback() {
+                      @Override
+                      public void onSuccess(Integer res) {
+                        if (BeeUtils.allNotNull(status, orderStatus)) {
+                          DataChangeEvent.fire(BeeKeeper.getBus(), viewName,
+                              DataChangeEvent.CANCEL_RESET_REFRESH);
+                        } else {
+                          DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                              VIEW_CHILD_ASSESSMENTS);
+                        }
+                      }
+                    });
+              }
             }
           });
     }
@@ -417,9 +426,11 @@ public class AssessmentForm extends PrintFormInterceptor {
       return;
     }
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
-    args.addDataItem(COL_CARGO, row.getLong(form.getDataIndex(COL_CARGO)));
-    args.addDataItem(COL_ASSESSOR, row.getId());
+    args.addDataItem(COL_ASSESSMENT, row.getId());
 
+    if (!DataUtils.isId(row.getLong(form.getDataIndex(COL_ASSESSMENT)))) {
+      args.addDataItem("isPrimary", 1);
+    }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -430,14 +441,16 @@ public class AssessmentForm extends PrintFormInterceptor {
         }
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
 
-        double incomeTotal = BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, VAR_TOTAL)), 2);
-        double expenseTotal = BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, VAR_TOTAL)), 2);
         double income = BeeUtils.round(BeeUtils
             .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, COL_AMOUNT)), 2);
         double expense = BeeUtils.round(BeeUtils
             .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, COL_AMOUNT)), 2);
+        double incomeTotal = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES + VAR_TOTAL, COL_AMOUNT)), 2)
+            + income;
+        double expenseTotal = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES + VAR_TOTAL,
+                COL_AMOUNT)), 2) + expense;
 
         if (incomeTotalWidget != null) {
           incomeTotalWidget.getElement().setInnerText(BeeUtils.toString(incomeTotal));
@@ -461,120 +474,93 @@ public class AssessmentForm extends PrintFormInterceptor {
     });
   }
 
-  private IsRow currentRow;
+  private FormView form;
+  private final LocalizableConstants loc = Localized.getConstants();
 
-  private final Button cmdNew = new Button(Localized.getConstants().crmRequest(),
-      new StatusUpdater(AssessmentStatus.NEW, null));
+  private final Button reqNew = new Button(loc.trAssessmentToRequests(),
+      new StatusUpdater(AssessmentStatus.NEW, loc.trAssessmentAskRequest()));
 
-  private final Button cmdLost = new Button(Localized.getConstants().trAssessmentStatusLost(),
-      new StatusUpdater(AssessmentStatus.LOST, null));
+  private final Button reqLost = new Button(AssessmentStatus.LOST.getCaption(),
+      new StatusUpdater(AssessmentStatus.LOST, loc.trAssessmentAskLost()));
 
-  private final Button cmdAnswered = new Button(Localized.getConstants()
-      .trAssessmentStatusAnswered(),
-      new StatusUpdater(AssessmentStatus.ANSWERED, Localized.getConstants()
-          .trAssessmentThereUnconfirmedAssessments()));
+  private final Button reqAnswered = new Button(AssessmentStatus.ANSWERED.getCaption(),
+      new StatusUpdater(AssessmentStatus.ANSWERED, null, true, loc.trAssessmentAskAnswered()));
 
-  private final Button cmdActive = new Button(Localized.getConstants()
-      .trOrder(),
-      new StatusUpdater(AssessmentStatus.ACTIVE, null));
+  private final Button reqApproved = new Button(loc.trAssessmentToOrders(),
+      new StatusUpdater(AssessmentStatus.APPROVED, OrderStatus.ACTIVE, false,
+          loc.trAssessmentAskOrder()));
 
-  private final Button cmdCompleted = new Button(Localized.getConstants()
-      .trAssessmentStatusCompleted(),
-      new StatusUpdater(AssessmentStatus.COMPLETED, Localized.getConstants()
-          .trAssessmentThereActiveChildrenOrders()));
+  private final Button ordRequest = new Button(loc.trAssessmentToRequests(),
+      new StatusUpdater(AssessmentStatus.NEW, OrderStatus.REQUEST, false,
+          loc.trAssessmentAskRequest()));
 
-  private final Button cmdCanceled = new Button(Localized.getConstants()
-      .trAssessmentStatusCanceled(),
-      new StatusUpdater(AssessmentStatus.CANCELED, null));
+  private final Button ordActive = new Button(loc.trAssessmentToOrders(),
+      new StatusUpdater(OrderStatus.ACTIVE, loc.trAssessmentAskOrder()));
 
-  private final List<ChildGrid> grids = Lists.newArrayList();
+  private final Button ordCanceled = new Button(OrderStatus.CANCELED.getCaption(),
+      new StatusUpdater(OrderStatus.CANCELED, loc.trAssessmentAskCanceled()));
+
+  private final Button ordCompleted = new Button(OrderStatus.COMPLETED.getCaption(),
+      new StatusUpdater(OrderStatus.COMPLETED, null, true, loc.trAssessmentAskCompleted()));
+
+  private ChildGrid childAssessments;
+  private Widget statusLabel;
 
   @Override
   public void afterCreateWidget(final String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof ChildGrid) {
-      AssessmentGrid interceptor = null;
+      ChildGrid grid = (ChildGrid) widget;
+      AbstractGridInterceptor interceptor = null;
 
-      if (BeeUtils.same(name, VIEW_ASSESSMENT_FORWARDERS)) {
+      if (BeeUtils.same(name, VIEW_CHILD_ASSESSMENTS)) {
+        childAssessments = grid;
+        interceptor = new ChildAssessmentsGrid();
+
+      } else if (BeeUtils.same(name, TBL_ASSESSMENT_FORWARDERS)) {
         interceptor = new ForwardersGrid();
 
       } else if (BeeUtils.inListSame(name, TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES)) {
         interceptor = new ServicesGrid();
-
-      } else if (BeeUtils.same(name, TBL_CARGO_ASSESSORS)) {
-        interceptor = new AssessorsGrid();
       }
       if (interceptor != null) {
-        ChildGrid grid = (ChildGrid) widget;
         grid.setGridInterceptor(interceptor);
-        grids.add(grid);
       }
     } else if (widget instanceof DataSelector && BeeUtils.same(name, COL_CURRENCY)) {
-      final FormView form = getFormView();
-      final DataSelector selector = (DataSelector) widget;
-
-      selector.addEditStopHandler(new EditStopEvent.Handler() {
-        @Override
-        public void onEditStop(EditStopEvent event) {
-          if (event.isChanged() && DataUtils.isId(currentRow.getId())) {
-            int idx = form.getDataIndex(COL_CURRENCY);
-            String oldCurrency = form.getOldRow().getString(idx);
-            String newCurrency = selector.getNormalizedValue();
-
-            if (!BeeUtils.same(oldCurrency, newCurrency)) {
-              final String viewName = form.getViewName();
-
-              Queries.update(viewName, form.getOldRow().getId(), form.getOldRow().getVersion(),
-                  Data.getColumns(viewName, Lists.newArrayList(COL_CURRENCY)),
-                  Lists.newArrayList(oldCurrency), Lists.newArrayList(newCurrency), null,
-                  new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow row) {
-                      RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, row);
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_ASSESSORS);
-                    }
-                  });
-            }
-          }
-        }
-      });
+      ((DataSelector) widget).addEditStopHandler(this);
+    } else if (BeeUtils.same(name, COL_STATUS)) {
+      statusLabel = widget.asWidget();
     }
   }
 
   @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.PRINT
-        && (!DataUtils.isId(currentRow.getId()) || !isPrimaryRequest(currentRow))) {
-      return false;
-    }
-    return super.beforeAction(action, presenter);
-  }
-
-  @Override
-  public void afterRefresh(final FormView form, final IsRow row) {
+  public void afterRefresh(final FormView formView, final IsRow row) {
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
-    if (currentRow == null) {
-      return;
-    }
-    boolean newRecord = !DataUtils.isId(currentRow.getId());
-    boolean primary = isPrimaryRequest(currentRow);
-    boolean owner = Objects.equal(currentRow.getLong(form.getDataIndex(COL_ASSESSOR_MANAGER)),
+    boolean newRecord = isNewRow();
+    boolean primary = isPrimary();
+    boolean request = isRequest();
+    boolean owner = Objects.equal(form.getLongValue(COL_ORDER_MANAGER),
         BeeKeeper.getUser().getUserId());
-    int status = currentRow.getInteger(form.getDataIndex(COL_STATUS));
 
-    String caption = AssessmentStatus.in(status,
-        AssessmentStatus.ACTIVE, AssessmentStatus.COMPLETED, AssessmentStatus.CANCELED)
-        ? (primary ? Localized.getConstants().trOrder() : Localized.getConstants().trChildOrder())
-        : (primary ? null : Localized.getConstants().trAssessment());
+    Integer status = form.getIntegerValue(COL_ASSESSMENT_STATUS);
+    int orderStatus = form.getIntegerValue(ALS_ORDER_STATUS);
+
+    String caption = request ? (primary ? loc.trAssessmentRequest() : loc.trAssessment())
+        : (primary ? loc.trOrder() : loc.trChildOrder());
 
     if (!BeeUtils.isEmpty(caption)) {
       header.setCaption(caption);
     }
+    if (statusLabel != null) {
+      statusLabel.getElement().setInnerText(request
+          ? EnumUtils.getCaption(AssessmentStatus.class, status)
+          : EnumUtils.getCaption(OrderStatus.class, orderStatus));
+    }
     if (owner && !newRecord) {
-      header.addCommandItem(new Button(Localized.getConstants().trWriteEmail(), new ClickHandler() {
+      header.addCommandItem(new Button(loc.trWriteEmail(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element div = Document.get().createDivElement();
@@ -595,49 +581,52 @@ public class AssessmentForm extends PrintFormInterceptor {
           NewMailMessage.create(recipient, null, null, null, div.getString(), null);
         }
       }));
-      if (AssessmentStatus.NEW.is(status)) {
-        header.addCommandItem(cmdAnswered);
-      }
-      if (primary) {
-        if (AssessmentStatus.in(status, AssessmentStatus.NEW, AssessmentStatus.ANSWERED)) {
-          header.addCommandItem(cmdLost);
+      if (request) {
+        if (AssessmentStatus.NEW.is(status)) {
+          header.addCommandItem(reqAnswered);
         }
-        if (!AssessmentStatus.NEW.is(status)) {
-          header.addCommandItem(cmdNew);
+        if (primary) {
+          if (AssessmentStatus.NEW.is(status) || AssessmentStatus.ANSWERED.is(status)) {
+            header.addCommandItem(reqLost);
+          }
+          if (!AssessmentStatus.NEW.is(status)) {
+            header.addCommandItem(reqNew);
+          }
+          if (AssessmentStatus.ANSWERED.is(status)) {
+            header.addCommandItem(reqApproved);
+          }
         }
-        if (AssessmentStatus.ANSWERED.is(status)) {
-          header.addCommandItem(cmdActive);
+      } else {
+        if (OrderStatus.ACTIVE.is(orderStatus)) {
+          header.addCommandItem(ordCompleted);
         }
-        if (AssessmentStatus.ACTIVE.is(status)) {
-          header.addCommandItem(cmdCanceled);
+        if (primary) {
+          if (OrderStatus.ACTIVE.is(orderStatus)) {
+            header.addCommandItem(ordCanceled);
+          } else {
+            header.addCommandItem(ordActive);
+
+            if (OrderStatus.CANCELED.is(orderStatus)) {
+              header.addCommandItem(ordRequest);
+            }
+          }
         }
-      }
-      if (AssessmentStatus.ACTIVE.is(status)) {
-        header.addCommandItem(cmdCompleted);
       }
     }
-    boolean ok = owner
-        && AssessmentStatus.in(status, AssessmentStatus.NEW, AssessmentStatus.ACTIVE);
+    form.setEnabled(newRecord || owner
+        && (AssessmentStatus.NEW.is(status) || OrderStatus.ACTIVE.is(orderStatus)));
 
-    form.setEnabled(ok && primary);
-
-    for (ChildGrid grid : grids) {
-      grid.setEnabled(ok);
-    }
-    Widget orderPanel = form.getWidgetByName("AmountsPanel");
-
-    if (orderPanel != null) {
-      orderPanel.getElement().getStyle()
-          .setVisibility((primary && !newRecord) ? Visibility.VISIBLE : Visibility.HIDDEN);
+    if (childAssessments != null && !primary) {
+      childAssessments.setEnabled(false);
     }
     refreshTotals();
   }
 
   @Override
   public FormInterceptor getPrintFormInterceptor() {
-    return new PrintForm() {
+    return new AssessmentPrintForm() {
       @Override
-      public void beforeRefresh(FormView form, IsRow row) {
+      public void beforeRefresh(FormView formView, IsRow row) {
         super.beforeRefresh(form, row);
         updateTotals(form, row, form.getWidgetByName(VAR_TOTAL), null, null, null, null);
       }
@@ -650,18 +639,45 @@ public class AssessmentForm extends PrintFormInterceptor {
   }
 
   @Override
-  public void onSetActiveRow(IsRow row) {
-    currentRow = row;
+  public void onEditStop(EditStopEvent event) {
+    if (event.isChanged() && !isNewRow()) {
+      final String viewName = form.getViewName();
+      String oldCurrency = form.getStringValue(COL_CURRENCY);
+      String newCurrency = ((DataSelector) event.getSource()).getNormalizedValue();
+
+      if (!BeeUtils.same(oldCurrency, newCurrency)) {
+        Queries.update(viewName, form.getActiveRowId(), form.getActiveRow().getVersion(),
+            Data.getColumns(viewName, Lists.newArrayList(COL_CURRENCY)),
+            Lists.newArrayList(oldCurrency), Lists.newArrayList(newCurrency), null,
+            new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow row) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, row);
+              }
+            });
+      }
+    }
   }
 
-  private boolean isPrimaryRequest(IsRow row) {
-    return !DataUtils.isId(row.getLong(getFormView().getDataIndex(COL_ASSESSOR)));
+  @Override
+  public void onLoad(FormView formView) {
+    this.form = formView;
+  }
+
+  private boolean isPrimary() {
+    return !DataUtils.isId(form.getLongValue(COL_ASSESSMENT));
+  }
+
+  private boolean isRequest() {
+    return OrderStatus.REQUEST.is(form.getIntegerValue(ALS_ORDER_STATUS));
+  }
+
+  private boolean isNewRow() {
+    return DataUtils.isNewRow(form.getActiveRow());
   }
 
   private void refreshTotals() {
-    final FormView form = getFormView();
-
-    updateTotals(form, currentRow, form.getWidgetByName(VAR_INCOME + VAR_TOTAL),
+    updateTotals(form, form.getActiveRow(), form.getWidgetByName(VAR_INCOME + VAR_TOTAL),
         form.getWidgetByName(VAR_EXPENSE + VAR_TOTAL), form.getWidgetByName("Profit"),
         form.getWidgetByName(VAR_INCOME), form.getWidgetByName(VAR_EXPENSE));
   }

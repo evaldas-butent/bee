@@ -5,9 +5,12 @@
   name="CargoInvoiceIncomes" source="CargoIncomes"
   >
   <Columns>
-    <SimpleColumn name="Assessor" />
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
+      <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
+        <IdColumn name="Assessment" />
+      </ExternalJoin>
+
       <SimpleColumn name="Cmr" />
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">

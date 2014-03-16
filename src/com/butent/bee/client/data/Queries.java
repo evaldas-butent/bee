@@ -95,7 +95,7 @@ public final class Queries {
       }
     });
   }
-  
+
   public static boolean checkResponse(String service, String viewName, ResponseObject response,
       Class<?> clazz, Callback<?> callback) {
 
@@ -122,7 +122,7 @@ public final class Queries {
   public static boolean checkRowResponse(String service, String viewName, ResponseObject response) {
     return checkResponse(service, viewName, response, BeeRow.class);
   }
-  
+
   public static void delete(final String viewName, Filter filter, final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(filter, "Delete: filter required");
@@ -518,7 +518,7 @@ public final class Queries {
       insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
     }
   }
-  
+
   public static void insertRows(BeeRowSet rowSet, final IntCallback callback) {
     if (!checkRowSet(Service.INSERT_ROWS, rowSet, callback)) {
       return;
@@ -550,16 +550,29 @@ public final class Queries {
     update(viewName, Filter.compareId(rowId), column, value, null);
   }
 
-  public static void update(final String viewName, Filter filter, String column, Value value,
-      final IntCallback callback) {
+  public static void update(String viewName, Filter filter, String column, Value value,
+      IntCallback callback) {
+    Assert.notNull(value);
+    update(viewName, filter, column, value.getString(), callback);
+  }
+
+  public static void update(String viewName, Filter filter, String column, String value,
+      IntCallback callback) {
+    Assert.notEmpty(column);
+    update(viewName, filter, Lists.newArrayList(column), Lists.newArrayList(value), callback);
+  }
+
+  public static void update(final String viewName, Filter filter, List<String> columns,
+      List<String> values, final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(filter);
-    Assert.notEmpty(column);
-    Assert.notNull(value);
+    Assert.notEmpty(columns);
+    Assert.notEmpty(values);
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
-        Service.VAR_VIEW_WHERE, filter.serialize(), Service.VAR_COLUMN, column,
-        Service.VAR_VALUE, value.serialize());
+        Service.VAR_VIEW_WHERE, filter.serialize(),
+        Service.VAR_COLUMN, Codec.beeSerialize(columns),
+        Service.VAR_VALUE, Codec.beeSerialize(values));
     ParameterList parameters = new ParameterList(Service.UPDATE, RpcParameter.Section.DATA, lst);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {

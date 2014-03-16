@@ -11,8 +11,13 @@
            xmlns:ui="http://www.butent.com/ui"
 >
   <FlowPanel style="&section;">
-    <Label text="=route" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="Route" required="true" visibleLines="7" style="width:400px;" />
+    <Label text="=route" class="bee-required" style="&labelLeft; vertical-align:top;" />
+    <InputArea source="OrderNotes" required="true" visibleLines="6" style="width:400px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
+    <Label text="=trAssessmentPlannedKm" style="&labelLeft;" />
+    <InputInteger source="LoadedKilometers" style="&inline; width:70px;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
@@ -23,8 +28,8 @@
   <FlowPanel style="&section;">
     <Label text="=date" style="&labelLeft;" />
     <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:40px;" />
-    <Label text="=date" style="&labelRight;" />
-    <InputDateTime source="UnloadingDate" style="&inline; width:110px;" />
+    <Label text="=date" class="bee-required" style="&labelRight;" />
+    <InputDateTime source="UnloadingDate" style="&inline; width:110px;" required="true" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
@@ -75,7 +80,7 @@
 
   &separator;
   <FlowPanel style="&section;">
-    <Label text="=cargo" class="bee-required" style="&labelLeft; vertical-align:top;" />
+    <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />
     <InputArea source="Description" visibleLines="4" style="width:200px;" />
     <VerticalPanel style="&inline;">
       <CheckBox source="Partial" text="=partialCargo" />

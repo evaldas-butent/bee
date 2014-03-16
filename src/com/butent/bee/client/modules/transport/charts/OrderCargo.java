@@ -48,14 +48,14 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
             row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
             row.getValue(loadingColumnAlias(COL_PLACE_POST_INDEX)),
             row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
-            row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL)),
+            row.getValue(loadingColumnAlias(COL_PLACE_NUMBER)),
             BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
                 maxUnload),
             row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY)),
             row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS)),
             row.getValue(unloadingColumnAlias(COL_PLACE_POST_INDEX)),
             row.getLong(unloadingColumnAlias(COL_PLACE_CITY)),
-            row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL)));
+            row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER)));
 
     if (!ChartHelper.isNormalized(orderCargo.getRange()) && orderCargo.getOrderDate() != null) {
       JustDate start = BeeUtils.nvl(orderCargo.getLoadingDate(),
@@ -87,14 +87,14 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private final String loadingPostIndex;
   private final Long loadingCity;
 
-  private final String loadingTerminal;
+  private final String loadingNumber;
   private final JustDate unloadingDate;
   private final Long unloadingCountry;
   private final String unloadingPlace;
   private final String unloadingPostIndex;
   private final Long unloadingCity;
 
-  private final String unloadingTerminal;
+  private final String unloadingNumber;
 
   private final String orderName;
 
@@ -103,9 +103,9 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   protected OrderCargo(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
       JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
-      Long loadingCity, String loadingTerminal,
+      Long loadingCity, String loadingNumber,
       JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
-      String unloadingPostIndex, Long unloadingCity, String unloadingTerminal) {
+      String unloadingPostIndex, Long unloadingCity, String unloadingNumber) {
     super();
 
     this.orderId = orderId;
@@ -126,14 +126,14 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     this.loadingPlace = loadingPlace;
     this.loadingPostIndex = loadingPostIndex;
     this.loadingCity = loadingCity;
-    this.loadingTerminal = loadingTerminal;
+    this.loadingNumber = loadingNumber;
 
     this.unloadingDate = unloadingDate;
     this.unloadingCountry = unloadingCountry;
     this.unloadingPlace = unloadingPlace;
     this.unloadingPostIndex = unloadingPostIndex;
     this.unloadingCity = unloadingCity;
-    this.unloadingTerminal = unloadingTerminal;
+    this.unloadingNumber = unloadingNumber;
 
     this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
 
@@ -156,8 +156,8 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   @Override
-  public String getLoadingPlace() {
-    return loadingPlace;
+  public String getLoadingNumber() {
+    return loadingNumber;
   }
 
   @Override
@@ -171,8 +171,8 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   @Override
-  public String getLoadingTerminal() {
-    return loadingTerminal;
+  public String getLoadingPlace() {
+    return loadingPlace;
   }
 
   @Override
@@ -191,8 +191,8 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   @Override
-  public String getUnloadingPlace() {
-    return unloadingPlace;
+  public String getUnloadingNumber() {
+    return unloadingNumber;
   }
 
   @Override
@@ -206,8 +206,8 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   @Override
-  public String getUnloadingTerminal() {
-    return unloadingTerminal;
+  public String getUnloadingPlace() {
+    return unloadingPlace;
   }
 
   void adjustRange(Range<JustDate> defaultRange) {

@@ -1,45 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AssessmentForwarders" source="CargoTrips" caption="Vežėjai"
+  name="AssessmentForwarders" source="AssessmentForwarders" caption="=carriers"
   >
   <Columns>
-    <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Trip" />
-    <SimpleColumn name="Assessor" />
+    <SimpleColumn name="Assessment" />
 
-    <SimpleJoin joinType="LEFT" name="Trip">
-      <SimpleColumn name="TripNo" />
-
-      <SimpleColumn name="Expedition" editable="true" />
-      <SimpleJoin joinType="LEFT" name="Expedition">
-        <SimpleColumn name="Name" alias="ExpeditionType" />
+    <SimpleJoin name="CargoTrip" joinType="INNER">
+      <SimpleColumn name="Cargo" />
+  
+      <SimpleJoin joinType="LEFT" name="Trip">
+        <SimpleColumn name="TripNo" />
+  
+        <SimpleColumn name="Expedition" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Expedition">
+          <SimpleColumn name="Name" alias="ExpeditionType" />
+        </SimpleJoin>
+  
+        <SimpleColumn name="Forwarder" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Forwarder">
+          <SimpleColumn name="Name" alias="ForwarderName" />
+        </SimpleJoin>
+  
+        <SimpleColumn name="ForwarderVehicle" editable="true" />
+        <SimpleColumn name="Notes" label="=transportOtherDetails" editable="true" />
       </SimpleJoin>
-
-      <SimpleColumn name="Forwarder" editable="true" />
-      <SimpleJoin joinType="LEFT" name="Forwarder">
-        <SimpleColumn name="Name" alias="ForwarderName" />
+  
+      <SimpleJoin name="LoadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="LoadingDate" editable="true" label="=trLoadingDate" />
+        <SimpleColumn name="Contact" alias="LoadingContact" editable="true" label="=trLoadingContact" />
+        <SimpleColumn name="Address" alias="LoadingAddress" editable="true" label="=trLoadingAddress" />
       </SimpleJoin>
-
-      <SimpleColumn name="ForwarderVehicle" editable="true" />
-      <SimpleColumn name="Notes" editable="true" />
+  
+      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+        <SimpleColumn name="Date" alias="UnloadingDate" editable="true" label="=trUnloadingDate" />
+        <SimpleColumn name="Contact" alias="UnloadingContact" editable="true" label="=trUnloadingContact" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" editable="true" label="=trUnloadingAddress" />
+      </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleJoin name="LoadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
-      <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
-      <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" />
-    </SimpleJoin>
-
-    <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-      <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
-      <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" />
-      <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" />
-    </SimpleJoin>
-
-    <SimpleJoin joinType="LEFT" name="CargoExpense">
+    <SimpleJoin joinType="INNER" name="CargoExpense">
       <SimpleColumn name="Cargo" alias="ServiceCargo" />
-      <SimpleColumn name="Assessor" alias="ServiceAssessor" />
 
       <SimpleColumn name="Service" editable="true" />
       <SimpleJoin joinType="LEFT" name="Service">
@@ -56,7 +57,7 @@
       </SimpleJoin>
       <SimpleColumn name="Date" editable="true" />
       <SimpleColumn name="Number" editable="true" />
-      <SimpleColumn name="Note" editable="true" />
+      <SimpleColumn name="Note" label="=transportConditions" editable="true" />
     </SimpleJoin>
   </Columns>
 </View>

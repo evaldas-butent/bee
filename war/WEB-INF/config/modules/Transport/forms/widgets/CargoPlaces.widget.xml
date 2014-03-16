@@ -56,7 +56,7 @@
     </row>
     <row>
       <Label text="=ref" horizontalAlignment="right" />
-      <InputArea source="LoadingTerminal" style="wdith: 155px;" />
+      <InputText source="LoadingNumber" />
     </row>
   </Table>
 
@@ -114,8 +114,8 @@
       <InputText source="UnloadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
-      <Label text="=ref" horizontalAlignment="right" decorator="caption-top" />
-      <InputArea source="UnloadingTerminal" style="wdith: 155px;" />
+      <Label text="=ref" horizontalAlignment="right" />
+      <InputText source="UnloadingNumber" />
     </row>
   </Table>
 </HorizontalPanel>

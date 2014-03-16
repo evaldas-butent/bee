@@ -251,6 +251,7 @@
       <xs:enumeration value="CargoRequests" />
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CategoryTree" />
+      <xs:enumeration value="ChildAssessments" />
       <xs:enumeration value="Cities" />
       <xs:enumeration value="Colors" />
       <xs:enumeration value="Companies" />

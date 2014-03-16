@@ -295,6 +295,7 @@
       <xs:enumeration value="CURRENT_TIME" />
       <xs:enumeration value="CURRENT_USER" />
       <xs:enumeration value="NEXT_NUMBER" />
+      <xs:enumeration value="MAIN_CURRENCY" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

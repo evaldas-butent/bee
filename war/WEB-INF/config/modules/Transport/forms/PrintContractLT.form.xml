@@ -21,18 +21,18 @@
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
     <TextLabel source="Number" style="text-align:center; &bold;">
-      <renderToken source="Assessor" prefix="Krovinio pervežimo sutartis Nr. " />
-      <renderToken source="TripNo" prefix="-" />
+      <renderToken source="TripNo" prefix="Krovinio pervežimo sutartis Nr. " />
+      <renderToken source="Number" prefix="-" />
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 
     <Table class="&form;-table" style="&section;">
       <row>
         <cell style="vertical-align:top;">
-          <FlowPanel name="ForwarderInfo" class="&form;-forwarder" />
+          <FlowPanel name="Forwarder" class="&form;-forwarder" />
         </cell>
         
-        <FlowPanel name="CustomerInfo" class="&form;-customer" />
+        <FlowPanel name="Customer" class="&form;-customer" />
       </row>
       <row>
         <Label html="Krovinys" />

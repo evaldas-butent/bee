@@ -18,6 +18,7 @@ public class ClientDefaults extends Defaults {
           break;
 
         case NEXT_NUMBER:
+        case MAIN_CURRENCY:
           break;
 
         default:

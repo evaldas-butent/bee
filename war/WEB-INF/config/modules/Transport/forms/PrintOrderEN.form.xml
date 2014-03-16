@@ -17,6 +17,7 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Forwarder: "; font-weight:normal;}
     </css>
     <HorizontalPanel>
       <Table>
@@ -30,7 +31,7 @@
         </row>
         <row>
           <Label html="Date:" style="text-align:right; &bold;" />
-          <DateTimeLabel source="OrderDate" format="DATE_SHORT" />
+          <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
       <Image  url="images/logo.png" />
@@ -41,14 +42,14 @@
 
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel name="CustomerInfo">
+          <FlowPanel name="Customer">
             <properties locale="en" />
           </FlowPanel>
         </cell>
 
         <cell style="vertical-align:top;">
           <FlowPanel>
-            <FlowPanel name="ForwarderInfo">
+            <FlowPanel name="Forwarder">
               <properties locale="en" />
             </FlowPanel>
             <br />
@@ -134,11 +135,11 @@
       <FlowPanel>
         <FlowPanel>
           <Label html="Vehicle no.:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="LoadingTerminal" style="&inline; margin-left:5px;" />
+          <TextLabel source="LoadingNumber" style="&inline; margin-left:5px;" />
         </FlowPanel>
         <FlowPanel>
           <Label html="2 Vehicle no.:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="UnloadingTerminal" style="&inline; margin-left:5px;" />
+          <TextLabel source="UnloadingNumber" style="&inline; margin-left:5px;" />
         </FlowPanel>
       </FlowPanel>
     </HorizontalPanel>

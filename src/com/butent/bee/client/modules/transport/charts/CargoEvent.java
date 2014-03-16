@@ -79,19 +79,19 @@ class CargoEvent {
     return handling;
   }
 
+  String getNumber() {
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingNumber() : cargo.getUnloadingNumber();
+    } else {
+      return loading ? handling.getLoadingNumber() : handling.getUnloadingNumber();
+    }
+  }
+
   String getPlace() {
     if (isCargoEvent()) {
       return loading ? cargo.getLoadingPlace() : cargo.getUnloadingPlace();
     } else {
       return loading ? handling.getLoadingPlace() : handling.getUnloadingPlace();
-    }
-  }
-
-  String getTerminal() {
-    if (isCargoEvent()) {
-      return loading ? cargo.getLoadingTerminal() : cargo.getUnloadingTerminal();
-    } else {
-      return loading ? handling.getLoadingTerminal() : handling.getUnloadingTerminal();
     }
   }
 

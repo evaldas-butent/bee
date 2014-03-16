@@ -12,6 +12,8 @@
   
   name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
   >
+  <f:properties reports="PrintContractLT, PrintContractEN, PrintContractRU" />
+
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <FlowPanel style="&section;">
       <Label text="=carrier" class="bee-required" style="&labelLeft; width:140px;" />
@@ -33,7 +35,7 @@
     <FlowPanel style="&section;">
       <Label text="=number" style="&labelLeft;" />
       <InputText source="Number" style="&input;" />
-      <Label text="=total" class="bee-required" style="&labelRight;" />
+      <Label text="=amount" class="bee-required" style="&labelRight;" />
       <InputCurrency source="Amount" style="&input; width:70px;" />
       <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" 
         editEnabled="false" />

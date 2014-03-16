@@ -14,6 +14,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
@@ -26,6 +27,9 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
+      if (DataUtils.isNewRow(getActiveRow())) {
+        return false;
+      }
       String print = getFormView().getProperty("reports");
 
       if (!BeeUtils.isEmpty(print)) {
@@ -86,7 +90,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
                 BeeUtils.overwrite(forms, descriptions);
 
                 if (captions.size() > 1) {
-                  Global.choice(Localized.getConstants().trInvoice(),
+                  Global.choice(null,
                       Localized.getConstants().choosePrintingForm(), captions, choice);
 
                 } else if (captions.size() == 1) {

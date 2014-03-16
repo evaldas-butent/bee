@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ChildAssessments"
+  source="Assessments"
+  caption="=assessments"
+  newRowCaption="=trNewAssessment"
+  >
+  <Columns>
+    <SimpleColumn name="Assessment" />
+    <SimpleColumn name="Status" />
+    <SimpleColumn name="Notes" />
+
+    <SimpleJoin name="Order" joinType="INNER">
+      <SimpleColumn name="Status" alias="OrderStatus" />
+      <SimpleColumn name="Date" />
+
+      <SimpleColumn name="Manager" />
+      <SimpleJoin name="Manager" joinType="INNER">
+        <SimpleColumn name="CompanyPerson" />
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" />
+            <SimpleColumn name="LastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>
