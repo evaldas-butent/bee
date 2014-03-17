@@ -2010,7 +2010,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     Set<Pattern> patterns = Sets.newHashSet();
     for (String s : NameUtils.NAME_SPLITTER.split(BeeUtils.remove(input, BeeConst.CHAR_MINUS))) {
-      patterns.add(Wildcards.getDefaultPattern(s, false, BeeConst.CHAR_EQ));
+      patterns.add(Wildcards.getDefaultPattern(s, false));
     }
 
     for (int i = 0; i < dataColumns.size(); i++) {

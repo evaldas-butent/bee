@@ -19,91 +19,96 @@
     <Table>
       <row>
         <Label text="=name" style="&lbl1;" class="bee-required" />
-        <InputText source="Name" style="width: 200px;"  />
-        <Label text="=companyStatus" style="&lbl1;" />
+        <InputText source="Name" style="width: 200px;" visible="true" />
+        <Label text="=companyStatus" style="&lbl1;" for="CompanyType" />
         <DataSelector source="CompanyType" style="width: 80px;"  />
-        <Label text="=group" style="&lbl1;" />
+        <Label text="=group" style="&lbl1;" for="CompanyGroup" />
         <DataSelector source="CompanyGroup" style="width: 80px;"  />
       </row>
       <row>
-        <Label text="=companyCode" style="&lbl1;" />
+        <Label text="=companyCode" style="&lbl1;" for="Code" />
         <InputText source="Code" />
-        <Label text="=companyVATCode" style="&lbl1;" />
+        <Label text="=companyVATCode" style="&lbl1;" for="VATCode" />
         <InputText source="VATCode" style="width: 120px;" upperCase="true" />
-        <Label text="=code" style="&lbl1;" module="Transport" />
+        <Label text="=code" style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="width: 140px;" module="Transport" />
       </row>
       <row>
-        <Label text="=priority" style="&lbl1;" />
+        <Label text="=priority" style="&lbl1;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 64px;" />
       </row>
     </Table> 
     
-   <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
-     open="true">  
-      <Label text="=contactInfo" style="text-transform: uppercase; " />
-       <FlowPanel class="flexible">
-        <xi:include href="widgets/ContactDetails.widget.xml" />     
-        <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
-      </FlowPanel>
-   </Disclosure>
+    <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
+      open="true">  
+       <Label text="=contactInfo" style="text-transform: uppercase; " />
+        <FlowPanel class="flexible">
+         <xi:include href="widgets/ContactDetails.widget.xml" />     
+         <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
+       </FlowPanel>
+    </Disclosure>
+    
     <TabbedPages class="flexible" style="margin-top: 15px;">
       <page>
         <text>=financialInfo</text>
         <Table>
           <row>
-            <Label text="=creditLimit" />
+            <Label text="=creditLimit" for="CreditLimit" />
             <FlowPanel>
               <InputInteger source="CreditLimit" style="width: 60px;" />
               <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
-                style="width:40px; margin-left:5px; display:inline-block;" />
+                style="width:40px; margin-left:5px; display:inline-block;" for="CreditLimit" />
             </FlowPanel>
             <cell rowSpan="5" verticalAlignment="top">
               <FlowPanel name="CreditInfo" />
             </cell>
           </row>
-          <row>
+          <row for="CreditTolerance">
             <Label text="=creditTolerance" />
             <InputInteger source="CreditTolerance" style="width: 60px;" />
           </row>
-          <row>
+          <row  for="CreditDays">
             <Label text="=creditDays" />
             <InputDecimal source="CreditDays" style="width: 40px;" />
           </row>
-          <row>
+          <row for="FinancialState">
             <Label text="=financialState" />
             <DataSelector source="FinancialState" />
           </row>
-          <row>
+          <row for="BankAccount">
             <Label text="=bankAccount" />
             <InputText source="BankAccount" />
           </row>
-          <row>
+          <row for="DaysAsBuyer">
             <Label text="=daysAsBuyer" />
             <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
           </row>
-          <row>
+          <row for="DaysAsSupplier">
             <Label text="=daysAsSupplier" />
             <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
           </row>
         </Table>
       </page>
+
       <page>
         <text>=personContacts</text>
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
+
       <page>
         <text>=responsibilities</text>
         <ChildGrid name="CompanyUsers" relColumn="Company" />
       </page>
+
       <page>
         <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
           <Table>
             <row>
-              <Label text="=companySize" />
+              <Label text="=companySize" for="CompanySize" />
               <DataSelector source="CompanySize" style="width: 100px;" />
-              <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;" />
+              <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;"
+                for="InformationSource" />
               <DataSelector source="InformationSource" style="width: 100px;" />
             </row>
             <row>
@@ -114,13 +119,14 @@
                   label="=companyActivities" style="width: 338px;" />
               </cell>
             </row>
-            <row>
+            <row for="Rating">
               <Label text="=rating" />
               <InputText source="Rating" style="width:100px;" />
             </row>
           </Table>
         </FlowPanel>
       </page>
+
       <page>
         <text>=relationshipInfo</text>
         <FlowPanel style="margin:5px;">
@@ -136,11 +142,13 @@
           </Table>
         </FlowPanel>
       </page>
+
       <page>
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="Company" />
       </page>
-      <page>
+
+      <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" />

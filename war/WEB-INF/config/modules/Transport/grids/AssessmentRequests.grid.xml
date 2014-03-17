@@ -3,7 +3,7 @@
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
   flexGrow="1" order="AssessmentID desc"
-  enableCopy="- Assessment Cargo= *Status *Date Number= Manager"
+  enableCopy="- Assessment Cargo *Status *Date Number Manager"
   >
   <g:columns>
     <IdColumn name="ID" width="40" />

@@ -4,30 +4,30 @@
 ]>
 <Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
   <row>
-    <Label text="=phones" style="&lbl;" />
+    <Label text="=phones" style="&lbl;" for="Phone" />
     <InputText source="Phone" />
-    <Label text="=mobile" style="&lbl;" />
+    <Label text="=mobile" style="&lbl;" for="Mobile" />
     <InputText source="Mobile" />
-    <Label text="=fax" style="&lbl;" />
+    <Label text="=fax" style="&lbl;" for="Fax" />
     <InputText source="Fax" />
   </row>
 
   <row>
-    <Label text="=email" style="&lbl;" />
-    <cell colSpan="2">
+    <Label text="=email" style="&lbl;" for="EmailId" />
+    <cell colSpan="2" for="EmailId" >
       <DataSelector source="EmailId" style="width: 100%;"
         renderColumns="Label Email">
         <renderer type="mail" />
       </DataSelector>
     </cell>
 
-    <Label text="=website" style="&lbl;" />
-    <cell colSpan="2">
+    <Label text="=website" style="&lbl;" for="Website" />
+    <cell colSpan="2" for="Website" >
       <InputText source="Website" style="width: 100%" />
     </cell>
   </row>
   
-  <row>
+  <row for="Address">
     <Label text="=address" style="&lbl;" />
     <cell colSpan="5">
       <InputText source="Address" style="width: 100%;" />
@@ -35,7 +35,7 @@
   </row>
   
   <row>
-    <Label text="=city" style="&lbl;" />
+    <Label text="=city" style="&lbl;" for="City" />
     <DataSelector source="City">
       <selectorColumn source="Name" />
       <selectorColumn source="CountryName" />
@@ -44,8 +44,8 @@
       </selectorColumn>
     </DataSelector>
 
-    <Label text="=country" style="&lbl;" />
-    <Table>
+    <Label text="=country" style="&lbl;" for="Country" />
+    <Table for="Country">
       <row>
         <DataSelector source="Country" style="width: 120px;">
           <renderToken source="CountryName" />
@@ -59,11 +59,11 @@
       </row>
     </Table>
 
-    <Label text="=postIndex" style="&lbl;" />
+    <Label text="=postIndex" style="&lbl;" for="PostIndex" />
     <InputText source="PostIndex" />
   </row>
   
-  <row>
+  <row for="SocialContacts">
     <Label text="=socialContacts" style="&lbl;" />
     <cell colSpan="5">
       <InputText source="SocialContacts" style="width: 100%;" />

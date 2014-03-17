@@ -191,7 +191,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
-import com.butent.bee.shared.utils.Wildcards.Pattern;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
@@ -2737,10 +2736,10 @@ public final class CliWorker {
     StyleUtils.setFontFamily(panel, FontAwesome.FAMILY);
     StyleUtils.setFontSize(panel, FontSize.MEDIUM);
 
-    Set<Pattern> patterns = Sets.newHashSet();
+    Set<String> context = Sets.newHashSet();
     if (!BeeUtils.isEmpty(names)) {
       for (String s : NameUtils.NAME_SPLITTER.split(names)) {
-        patterns.add(Wildcards.getDefaultPattern(s, false, BeeConst.CHAR_EQ));
+        context.add(s);
       }
     }
 
@@ -2754,8 +2753,18 @@ public final class CliWorker {
 
     int count = 0;
     for (FontAwesome fa : FontAwesome.values()) {
-      if (!patterns.isEmpty() && !Wildcards.contains(patterns, fa.name())) {
-        continue;
+      if (!context.isEmpty()) {
+        boolean ok = false;
+        for (String s : context) {
+          if (BeeUtils.containsSame(fa.name(), s)) {
+            ok = true;
+            break;
+          }
+        }
+        
+        if (!ok) {
+          continue;
+        }
       }
 
       FaLabel label = new FaLabel(fa, true);

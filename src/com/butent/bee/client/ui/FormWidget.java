@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -855,10 +854,16 @@ public enum FormWidget {
       if (BeeUtils.isBoolean(z)) {
         table.getCellFormatter().setWordWrap(row, col, BeeUtils.toBoolean(z));
       }
+      
+      z = element.getAttribute(UiConstants.ATTR_CLASS);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateClasses(table.getCellFormatter().ensureElement(row, col), z);
+      }
 
-      StyleUtils.updateAppearance(table.getCellFormatter().getElement(row, col),
-          element.getAttribute(UiConstants.ATTR_CLASS),
-          element.getAttribute(UiConstants.ATTR_STYLE));
+      z = element.getAttribute(UiConstants.ATTR_STYLE);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateStyle(table.getCellFormatter().ensureElement(row, col), z);
+      }
 
       String span = element.getAttribute(ATTR_COL_SPAN);
       if (BeeUtils.toInt(span) > 1) {
@@ -881,8 +886,15 @@ public enum FormWidget {
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_ROW)) {
-      StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(UiConstants.ATTR_CLASS),
-          element.getAttribute(UiConstants.ATTR_STYLE));
+      z = element.getAttribute(UiConstants.ATTR_CLASS);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateClasses(table.getRowFormatter().ensureElement(row), z);
+      }
+
+      z = element.getAttribute(UiConstants.ATTR_STYLE);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateStyle(table.getRowFormatter().ensureElement(row), z);
+      }
     }
   }
 
@@ -915,7 +927,7 @@ public enum FormWidget {
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {
-      StyleUtils.updateAppearance(DOM.getParent(cellContent.asWidget().getElement()),
+      StyleUtils.updateAppearance(cellContent.asWidget().getElement().getParentElement(),
           element.getAttribute(UiConstants.ATTR_CLASS),
           element.getAttribute(UiConstants.ATTR_STYLE));
     }

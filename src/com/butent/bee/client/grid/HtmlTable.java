@@ -217,6 +217,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
       ensureElement(row).addClassName(styleName);
     }
 
+    public Element ensureElement(int row) {
+      prepareRow(row);
+      return getElement(row);
+    }
+
     public Element getElement(int row) {
       checkRowBounds(row);
       return getTr(bodyElem, row);
@@ -252,11 +257,6 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
     public void setVisible(int row, boolean visible) {
       UIObject.setVisible(getElement(row), visible);
-    }
-
-    protected Element ensureElement(int row) {
-      prepareRow(row);
-      return getElement(row);
     }
 
     private native Element getTr(Element elem, int row) /*-{
