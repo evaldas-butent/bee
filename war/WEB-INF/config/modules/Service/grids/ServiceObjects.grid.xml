@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+  
+  name="ServiceObjects" viewName="ServiceObjects"
+  caption="=svcObjects" editShowId="true"
+  autoFit="true" enableCopy="Category"
+  >
+  
+  <g:west size="200" splitterSize="2">
+    <w:DataTree name="ServiceTree" caption="=categories" viewName="ServiceTree"
+        parentColumn="Parent">
+      <w:calc>
+        <ui:expression>row.CategoryName + (row.ObjectCount > 0 ? ' [' + row.ObjectCount + ']' : '')</ui:expression>
+      </w:calc>
+    </w:DataTree>
+  </g:west>
+  
+  <g:columns>
+    <IdColumn name="Id" caption="=captionId" />
+    <DataColumn name="CategoryName" visible="false" />
+    <DataColumn name="Address" visible="true" />
+    <RelColumn name="Customer" visible="true" />
+    <PropColumn name="Criterion" type="string" dynamic="true" />
+  </g:columns>
+</g:Grid>

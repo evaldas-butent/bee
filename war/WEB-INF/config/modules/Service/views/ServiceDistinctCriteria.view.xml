@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ServiceDistinctCriteria" source="ServiceCriteria" filter="Criterion"
+  >
+  <Columns>
+    <SimpleColumn name="Criterion" />
+
+    <SimpleJoin name="Group" joinType="INNER">
+      <HiddenColumn name="Name" />
+      
+      <HiddenColumn name="ServiceObject" />
+      <SimpleJoin name="ServiceObject" joinType="INNER">
+        <HiddenColumn name="Category" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <GroupBy columns="Criterion" />
+  <Order>
+    <OrderBy column="Criterion" />
+  </Order>
+</View>

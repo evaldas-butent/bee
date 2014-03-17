@@ -19,6 +19,7 @@
     <SimpleColumn name="Trip" />
     <SimpleColumn name="CargoRequest" />
     <SimpleColumn name="Discussion" />
+    <SimpleColumn name="ServiceObject" />
  </Columns>
 </View>
  

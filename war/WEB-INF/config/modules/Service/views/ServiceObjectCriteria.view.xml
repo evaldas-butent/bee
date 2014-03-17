@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ServiceObjectCriteria" source="ServiceCritGroups"
+  >
+  <Columns>
+    <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="Name" />
+    <HiddenColumn name="Ordinal" alias="GroupOrdinal" />
+
+    <ExternalJoin source="ServiceCriteria" name="Group" joinType="LEFT">
+      <IdColumn name="ID" />
+      <SimpleColumn name="Criterion" />
+      <SimpleColumn name="Value" />
+      <SimpleColumn name="Ordinal" />
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="GroupOrdinal" />
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

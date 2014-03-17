@@ -106,6 +106,14 @@
             targetRelColumn="Document" sourceRelColumn="Trip"
             renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber" />
         </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="ServiceObject" module="Service">
+          <Label text="=svcObjects" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="ServiceObjects" childTable="Relations" 
+            targetRelColumn="Document" sourceRelColumn="ServiceObject"
+            renderColumns="Address" choiceColumns="Address CustomerName" />
+        </FlowPanel>
       </FlowPanel>
     </page>
 

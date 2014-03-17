@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ServiceDistinctCritGroups" source="ServiceCritGroups" filter="Name"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+
+    <HiddenColumn name="ServiceObject" />
+    <SimpleJoin name="ServiceObject" joinType="INNER">
+      <HiddenColumn name="Category" />
+    </SimpleJoin>
+
+    <IdColumn name="Latest" aggregate="MAX" />
+  </Columns>
+  <GroupBy columns="Name" />
+  <Order>
+    <OrderBy column="Latest" descending="true" />
+    <OrderBy column="Name" />
+  </Order>
+</View>

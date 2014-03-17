@@ -7,6 +7,7 @@ import com.butent.bee.client.modules.discussions.DiscussionsKeeper;
 import com.butent.bee.client.modules.documents.DocumentHandler;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.mail.MailKeeper;
+import com.butent.bee.client.modules.service.ServiceKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -32,6 +33,7 @@ public final class ModuleManager {
 
     EcKeeper.register();
     DiscussionsKeeper.register();
+    ServiceKeeper.register();
   }
 
   private ModuleManager() {

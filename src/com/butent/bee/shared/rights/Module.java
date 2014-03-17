@@ -74,6 +74,12 @@ public enum Module implements HasLocalizedCaption {
       return constants.transport();
     }
   },
+  SERVICE {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.svcModule();
+    }
+  },
   ADMINISTRATION {
     @Override
     public String getCaption(LocalizableConstants constants) {
