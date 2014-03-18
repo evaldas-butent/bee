@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
-import static com.butent.bee.shared.modules.trade.TradeConstants.TBL_PURCHASE_ITEMS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -19,7 +19,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CargoCreditInvoiceForm extends PrintFormInterceptor {
+public class CargoPurchaseInvoiceForm extends PrintFormInterceptor {
 
   private ScheduledCommand refresher;
 
@@ -33,7 +33,7 @@ public class CargoCreditInvoiceForm extends PrintFormInterceptor {
       if (BeeUtils.same(name, getTradeItemsName())) {
         grid.setGridInterceptor(new InvoiceItemsGrid(getRefresher()));
 
-      } else if (BeeUtils.inListSame(name, VIEW_CARGO_CREDIT_INCOMES, VIEW_CARGO_INVOICE_INCOMES)) {
+      } else if (BeeUtils.inListSame(name, VIEW_CARGO_PURCHASES, VIEW_CARGO_SALES)) {
         grid.setGridInterceptor(new AbstractGridInterceptor() /* Kill default interceptor */);
       }
     }
@@ -41,7 +41,7 @@ public class CargoCreditInvoiceForm extends PrintFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new CargoCreditInvoiceForm();
+    return new CargoPurchaseInvoiceForm();
   }
 
   @Override

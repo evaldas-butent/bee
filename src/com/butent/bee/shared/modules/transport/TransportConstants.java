@@ -418,10 +418,11 @@ public final class TransportConstants {
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
   public static final String VIEW_WAITING_CARGO = "WaitingCargo";
-  public static final String VIEW_CARGO_INVOICE_INCOMES = "CargoInvoiceIncomes";
+  public static final String VIEW_CARGO_PURCHASES = "CargoPurchases";
+  public static final String VIEW_CARGO_SALES = "CargoSales";
+  public static final String VIEW_CARGO_CREDIT_SALES = "CargoCreditSales";
   public static final String VIEW_CARGO_INVOICES = "CargoInvoices";
-  public static final String VIEW_CARGO_CREDIT_INCOMES = "CargoCreditIncomes";
-  public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
+  public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
@@ -447,6 +448,8 @@ public final class TransportConstants {
 
   public static final String VIEW_CHILD_ASSESSMENTS = "ChildAssessments";
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
+  public static final String VIEW_ASSESSMENT_REQUESTS = "AssessmentRequests";
+  public static final String VIEW_ASSESSMENT_ORDERS = "AssessmentOrders";
 
   public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
@@ -773,9 +776,10 @@ public final class TransportConstants {
   public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
 
   public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
+  public static final String FORM_NEW_CARGO_PURCHASE_INVOICE = "NewCargoPurchaseInvoice";
   public static final String FORM_NEW_CARGO_CREDIT_INVOICE = "NewCargoCreditInvoice";
   public static final String FORM_CARGO_INVOICE = "CargoInvoice";
-  public static final String FORM_CARGO_CREDIT_INVOICE = "CargoCreditInvoice";
+  public static final String FORM_CARGO_PURCHASE_INVOICE = "CargoPurchaseInvoice";
 
   public static final String FORM_FX_SETTINGS = "TrFxSettings";
   public static final String FORM_SS_SETTINGS = "TrSsSettings";

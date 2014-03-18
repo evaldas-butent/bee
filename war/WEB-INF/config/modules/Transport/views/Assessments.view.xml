@@ -3,11 +3,12 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="Assessments" source="Assessments"
+  caption="=assessments"
   newRowForm="Assessment" newRowCaption="=newAssessmentRequest"
   editForm="Assessment"
   >
   <Columns>
-    <SimpleColumn name="Assessment" />
+    <SimpleColumn name="Assessment" label="=captionPid" />
     <SimpleColumn name="Status" />
     <SimpleColumn name="Notes" />
 
@@ -15,13 +16,13 @@
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" editable="true" />
-        <SimpleColumn name="OrderNo" />
+        <SimpleColumn name="OrderNo" label="=orderNumber" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
         <SimpleColumn name="Notes" alias="OrderNotes" label="=route" editable="true" />
       
         <SimpleColumn name="Customer" editable="true" />
         <SimpleJoin joinType="LEFT" name="Customer">
-          <SimpleColumn name="Name" alias="CustomerName" />
+          <SimpleColumn name="Name" alias="CustomerName" label="=customer" />
 
           <SimpleJoin name="Contact" joinType="LEFT">
             <SimpleColumn name="Email" alias="CustomerEmail" />
@@ -65,7 +66,7 @@
         <SimpleColumn name="Country" alias="LoadingCountry" editable="true" label="=trLoadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
@@ -76,7 +77,7 @@
         <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" label="=trUnloadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
         </SimpleJoin>
       </SimpleJoin>
 

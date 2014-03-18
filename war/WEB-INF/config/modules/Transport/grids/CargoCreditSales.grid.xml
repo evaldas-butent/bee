@@ -2,13 +2,13 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoCreditIncomes" viewName="CargoCreditIncomes"
+  name="CargoCreditSales" viewName="CargoCreditSales"
   flexGrow="1"
-  readOnly="true" caption="=trCreditIncomes"
+  readOnly="true" caption="=trCreditSales"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <DataColumn name="OrderDate" caption="=orderDate" />
+    <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
 
     <RelColumn name="Sale" editEnabled="true" renderColumns="Sale"
@@ -27,15 +27,15 @@
         </ui:function>
       </render>
     </DataColumn>
-    <DataColumn name="CustomerName" caption="=trdCustomer" />
-    <DataColumn name="PayerName" caption="=trdPayer" />
+    <DataColumn name="CustomerName" />
+    <DataColumn name="PayerName" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="=from" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="=to" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 

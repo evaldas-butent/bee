@@ -425,19 +425,20 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_CARGO_EXPENSES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_INVOICE_INCOMES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_INCOMES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer("CargoExpenseList", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_SALES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_SALES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
-    GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentRequestsGrid());
-    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());
+    GridFactory.registerGridInterceptor(VIEW_ASSESSMENT_REQUESTS, new AssessmentRequestsGrid());
+    GridFactory.registerGridInterceptor(VIEW_ASSESSMENT_ORDERS, new AssessmentOrdersGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICE_INCOMES, new CargoInvoiceIncomesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INCOMES, new CargoCreditIncomesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASES, new CargoPurchasesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new CargoInvoicesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new CargoInvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
@@ -457,7 +458,8 @@ public final class TransportHandler {
         new AssessmentTransportationForm());
 
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
-    FormFactory.registerFormInterceptor(FORM_CARGO_CREDIT_INVOICE, new CargoCreditInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PURCHASE_INVOICE,
+        new CargoPurchaseInvoiceForm());
 
     FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());

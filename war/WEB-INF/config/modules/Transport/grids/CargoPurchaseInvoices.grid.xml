@@ -2,10 +2,11 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoCreditInvoices" viewName="CargoCreditInvoices"
+  name="CargoPurchaseInvoices" viewName="CargoPurchaseInvoices"
   editShowId="true" flexGrow="1"
   disabledActions="add"
-  caption="=trCreditInvoices"
+  caption="=trPurchaseInvoices"
+  filter="Purchase"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />

@@ -486,7 +486,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   private final Button reqAnswered = new Button(AssessmentStatus.ANSWERED.getCaption(),
       new StatusUpdater(AssessmentStatus.ANSWERED, null, true, loc.trAssessmentAskAnswered()));
 
-  private final Button reqApproved = new Button(loc.trAssessmentToOrders(),
+  private final Button reqApproved = new Button(AssessmentStatus.APPROVED.getCaption(),
       new StatusUpdater(AssessmentStatus.APPROVED, OrderStatus.ACTIVE, false,
           loc.trAssessmentAskOrder()));
 
@@ -494,7 +494,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       new StatusUpdater(AssessmentStatus.NEW, OrderStatus.REQUEST, false,
           loc.trAssessmentAskRequest()));
 
-  private final Button ordActive = new Button(loc.trAssessmentToOrders(),
+  private final Button ordActive = new Button(OrderStatus.ACTIVE.getCaption(),
       new StatusUpdater(OrderStatus.ACTIVE, loc.trAssessmentAskOrder()));
 
   private final Button ordCanceled = new Button(OrderStatus.CANCELED.getCaption(),
@@ -605,10 +605,9 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
             header.addCommandItem(ordCanceled);
           } else {
             header.addCommandItem(ordActive);
-
-            if (OrderStatus.CANCELED.is(orderStatus)) {
-              header.addCommandItem(ordRequest);
-            }
+          }
+          if (!OrderStatus.COMPLETED.is(orderStatus)) {
+            header.addCommandItem(ordRequest);
           }
         }
       }

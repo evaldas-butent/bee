@@ -5,7 +5,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="CargoCreditInvoice" viewName="CargoCreditInvoices"
+  name="CargoPurchaseInvoice" viewName="CargoPurchaseInvoices"
   width="800" height="600"
   caption="=trCreditInvoice"
   >
@@ -66,9 +66,13 @@
           <InputArea source="Notes" class="occupy-1" />
         </SimplePanel>
       </page>
-      <page>
+      <page module="Transport">
         <text>=transportIncomes</text>
-        <ChildGrid name="CargoCreditIncomes" relColumn="Purchase" />
+        <ChildGrid name="CargoSales" relColumn="Purchase" />
+      </page>
+      <page module="Transport">
+        <text>=transportExpenses</text>
+        <ChildGrid name="CargoPurchases" relColumn="Purchase" />
       </page>
     </TabbedPages>
   </FlowPanel>

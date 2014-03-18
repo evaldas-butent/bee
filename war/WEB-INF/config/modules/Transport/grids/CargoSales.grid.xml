@@ -2,32 +2,33 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoInvoiceIncomes" viewName="CargoInvoiceIncomes"
+  name="CargoSales" viewName="CargoSales"
   flexGrow="1"
   readOnly="true" caption="=trOrderCargoIncomes"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <RelColumn name="Assessment" editEnabled="true" editViewName="Assessments" />
-    <DataColumn name="OrderDate" caption="=orderDate" />
+    <RelColumn name="Assessment" label="=trAssessment" editEnabled="true"
+      editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
+    <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
     <DataColumn name="Status" />    
-    <DataColumn name="CustomerName" caption="=customer" />
-    <DataColumn name="Payer" caption="=payer">
+    <DataColumn name="CustomerName" />
+    <DataColumn name="Payer">
       <render>
         <ui:expression>row.Company ? row.CompanyName : row.PayerName</ui:expression>
       </render>
     </DataColumn>
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="=from" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="=to" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
-    <DataColumn name="UnloadingDate" caption="=unloading" />
+    <DataColumn name="UnloadingDate" />
     <DataColumn name="Cmr" />
 
     <DataColumn name="ServiceName" />
@@ -46,8 +47,8 @@
 
     <DataColumn name="Note" />
 
-    <DataColumn name="Vehicle" caption="=trTruck" />
-    <DataColumn name="Trailer" caption="=trailer" />
-    <DataColumn name="Driver" caption="=vehicleDriver" searchBy="FirstName LastName" />
+    <DataColumn name="Vehicle" />
+    <DataColumn name="Trailer" />
+    <DataColumn name="Driver" searchBy="FirstName LastName" />
   </g:columns>
 </g:Grid>

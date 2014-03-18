@@ -6,33 +6,33 @@
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessment" caption="=captionPid" width="40" />
+    <IdColumn name="ID" caption="ID" width="40" />
+    <DataColumn name="Assessment" width="40" />
     <DataColumn name="Date" width="110" readOnly="true" />
     <DataColumn name="OrderStatus" width="70" />
-    <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
+    <DataColumn name="OrderNo" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     
-    <DataColumn name="CustomerName" caption="=customer" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="CustomerName" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="=from" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="=to" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
-    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Route"  />
+    <DataColumn name="Description" />
 
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
 
-    <DataColumn name="Number" caption="=refNumber" width="70" />
+    <DataColumn name="Number" width="70" />
   </g:columns>
 
   <g:predefinedFilter name="active" label="Vykdomi" initial="true">

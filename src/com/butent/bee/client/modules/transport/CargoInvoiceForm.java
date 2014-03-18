@@ -22,7 +22,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHandler {
+public class CargoInvoiceForm extends CargoPurchaseInvoiceForm implements ClickHandler {
 
   private final Button confirmAction = new Button(Localized.getConstants().trInvoice(), this);
 

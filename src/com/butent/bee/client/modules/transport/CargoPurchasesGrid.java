@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -26,20 +25,16 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.InputNumber;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -52,52 +47,48 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements ClickHandler {
+public class CargoPurchasesGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private UnboundSelector mainItem;
-  private InputNumber creditAmount;
-
-  @Override
-  public GridInterceptor getInstance() {
-    return new CargoCreditIncomesGrid();
-  }
 
   @Override
   public Map<String, Filter> getInitialParentFilters() {
-    return ImmutableMap.of("pyp",
-        Filter.and(Filter.isNull(COL_SALE_PROFORMA), Filter.isNull(COL_PURCHASE)));
+    return ImmutableMap.of("pyp", Filter.isNull(COL_PURCHASE));
+  }
+
+  @Override
+  public GridInterceptor getInstance() {
+    return new CargoPurchasesGrid();
   }
 
   @Override
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
-    CompoundFilter flt = CompoundFilter.or();
     final Set<Long> ids = Sets.newHashSet();
 
     for (RowInfo row : presenter.getGridView().getSelectedRows(SelectedRows.ALL)) {
-      flt.add(Filter.compareId(row.getId()));
       ids.add(row.getId());
     }
-    if (flt.isEmpty()) {
+    if (ids.isEmpty()) {
       presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
       return;
     }
-    Queries.getRowSet(VIEW_CARGO_CREDIT_INCOMES, null, flt, new RowSetCallback() {
+    Queries.getRowSet(getViewName(), null, Filter.idIn(ids), new RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
         Set<String> orders = Sets.newHashSet();
-        Map<Long, String> customers = Maps.newHashMap();
+        Map<Long, String> suppliers = Maps.newHashMap();
         Map<Long, String> currencies = Maps.newHashMap();
 
         boolean itemEmpty = false;
-        DataInfo info = Data.getDataInfo(VIEW_CARGO_CREDIT_INCOMES);
+        DataInfo info = Data.getDataInfo(getViewName());
 
         int item = info.getColumnIndex(ClassifierConstants.COL_ITEM);
         int order = info.getColumnIndex(COL_ORDER_NO);
-        int custId = info.getColumnIndex(COL_CUSTOMER);
-        int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
+        int suplId = info.getColumnIndex(COL_TRADE_SUPPLIER);
+        int suplName = info.getColumnIndex("SupplierName");
         int currId = info.getColumnIndex(COL_CURRENCY);
-        int currName = info.getColumnIndex(COL_CURRENCY + COL_CURRENCY_NAME);
+        int currName = info.getColumnIndex(ALS_CURRENCY_NAME);
 
         for (BeeRow row : result.getRows()) {
           if (!itemEmpty) {
@@ -105,26 +96,24 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
           }
           orders.add(row.getString(order));
 
-          Long id = row.getLong(custId);
-
+          Long id = row.getLong(suplId);
           if (DataUtils.isId(id)) {
-            customers.put(id, row.getString(custName));
+            suppliers.put(id, row.getString(suplName));
           }
           id = row.getLong(currId);
-
           if (DataUtils.isId(id)) {
             currencies.put(id, row.getString(currName));
           }
         }
         final boolean mainRequired = itemEmpty;
-        final DataInfo purchaseInfo = Data.getDataInfo(VIEW_CARGO_CREDIT_INVOICES);
+        final DataInfo purchaseInfo = Data.getDataInfo(VIEW_CARGO_PURCHASE_INVOICES);
 
         BeeRow newRow = RowFactory.createEmptyRow(purchaseInfo, true);
 
         newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
 
-        if (customers.size() == 1) {
-          for (Entry<Long, String> entry : customers.entrySet()) {
+        if (suppliers.size() == 1) {
+          for (Entry<Long, String> entry : suppliers.entrySet()) {
             newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_SUPPLIER), entry.getKey());
             newRow.setValue(purchaseInfo.getColumnIndex("SupplierName"), entry.getValue());
           }
@@ -132,39 +121,14 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
         if (currencies.size() == 1) {
           for (Entry<Long, String> entry : currencies.entrySet()) {
             newRow.setValue(purchaseInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
-            newRow.setValue(purchaseInfo.getColumnIndex(COL_CURRENCY + COL_CURRENCY_NAME),
-                entry.getValue());
+            newRow.setValue(purchaseInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
           }
         }
-        RowFactory.createRow(FORM_NEW_CARGO_CREDIT_INVOICE, null, purchaseInfo, newRow, null,
+        RowFactory.createRow(FORM_NEW_CARGO_PURCHASE_INVOICE, null, purchaseInfo, newRow, null,
             new AbstractFormInterceptor() {
               @Override
               public FormInterceptor getInstance() {
                 return this;
-              }
-
-              @Override
-              public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent ev) {
-                FormView form = getFormView();
-                Widget w = form.getWidgetByName("Cause");
-
-                if (w != null && w instanceof ListBox) {
-                  String cause = ((ListBox) w).getValue();
-                  int idx = -1;
-
-                  for (int i = 0; i < ev.getColumns().size(); i++) {
-                    if (BeeUtils.same(ev.getColumns().get(i).getId(), COL_TRADE_NOTES)) {
-                      idx = i;
-                      break;
-                    }
-                  }
-                  if (idx >= 0) {
-                    ev.getValues().set(idx, cause + "\n" + ev.getValues().get(idx));
-                  } else {
-                    ev.getColumns().add(Data.getColumn(form.getViewName(), COL_TRADE_NOTES));
-                    ev.getValues().add(cause);
-                  }
-                }
               }
 
               @Override
@@ -183,18 +147,12 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                     }
                   }
                 }
-                w = form.getWidgetByName(COL_TRADE_AMOUNT);
-
-                if (w != null && w instanceof InputNumber) {
-                  creditAmount = (InputNumber) w;
-                }
               }
             },
             new RowCallback() {
               @Override
               public void onCancel() {
                 mainItem = null;
-                creditAmount = null;
               }
 
               @Override
@@ -203,13 +161,10 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                 args.addDataItem(TradeConstants.COL_PURCHASE, row.getId());
                 args.addDataItem(COL_CURRENCY,
                     row.getLong(purchaseInfo.getColumnIndex(COL_CURRENCY)));
-                args.addDataItem("IdList", DataUtils.buildIdList(ids));
+                args.addDataItem(VAR_ID, DataUtils.buildIdList(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
                   args.addDataItem(ClassifierConstants.COL_ITEM, mainItem.getRelatedId());
-                }
-                if (creditAmount != null && BeeUtils.isPositive(creditAmount.getNumber())) {
-                  args.addDataItem(COL_TRADE_AMOUNT, creditAmount.getNumber());
                 }
                 BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
                   @Override
@@ -219,7 +174,7 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
                     if (!response.hasErrors()) {
                       Data.onViewChange(presenter.getViewName(),
                           DataChangeEvent.CANCEL_RESET_REFRESH);
-                      RowEditor.openRow(FORM_CARGO_CREDIT_INVOICE, purchaseInfo, row.getId());
+                      RowEditor.openRow(FORM_CARGO_PURCHASE_INVOICE, purchaseInfo, row.getId());
                     }
                   }
                 });
@@ -234,6 +189,6 @@ public class CargoCreditIncomesGrid extends AbstractGridInterceptor implements C
   public void onShow(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader()
-        .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
+        .addCommandItem(new Button(Localized.getConstants().createPurchaseInvoice(), this));
   }
 }

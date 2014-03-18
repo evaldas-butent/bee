@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CargoCreditIncomes" source="CargoIncomes"
+  name="CargoCreditSales" source="CargoIncomes" caption="=trCreditSales"
   >
   <Columns>
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">
-        <SimpleColumn name="Date" alias="OrderDate" />
+        <SimpleColumn name="Date" alias="OrderDate" label="=orderDate" />
         <SimpleColumn name="OrderNo" />
       </SimpleJoin>
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleJoin joinType="LEFT" name="Service">
+    <SimpleJoin joinType="INNER" name="Service">
       <SimpleColumn name="Item" />
       <SimpleColumn name="Name" alias="ServiceName" />
     </SimpleJoin>
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
-    <SimpleJoin joinType="LEFT" name="Currency">
+    <SimpleJoin joinType="INNER" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
     <SimpleColumn name="VatPlus" />
@@ -46,12 +46,12 @@
 
       <SimpleColumn name="Customer" />
       <SimpleJoin joinType="LEFT" name="Customer">
-        <SimpleColumn name="Name" alias="CustomerName" />
+        <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
       </SimpleJoin>
 
       <SimpleColumn name="Payer" />
       <SimpleJoin joinType="LEFT" name="Payer">
-        <SimpleColumn name="Name" alias="PayerName" />
+        <SimpleColumn name="Name" alias="PayerName" label="=trdPayer" />
       </SimpleJoin>
     </SimpleJoin>
 

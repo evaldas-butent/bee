@@ -54,6 +54,8 @@ public interface LocalizableTransportConstants {
 
   String createInvoice();
 
+  String createPurchaseInvoice();
+
   String createTripForCargoCaption();
 
   String createTripForCargoQuestion();
@@ -145,8 +147,6 @@ public interface LocalizableTransportConstants {
   String trAssessmentStatusLost();
 
   String trAssessmentStatusNew();
-
-  String trAssessmentToOrders();
 
   String trAssessmentToRequests();
 

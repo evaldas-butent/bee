@@ -2,8 +2,8 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="CargoCreditInvoices" source="Purchases"
-  editForm="CargoCreditInvoice"
+  name="CargoPurchaseInvoices" source="Purchases"
+  editForm="CargoPurchaseInvoice"
   >
   <Columns>
     <SimpleColumn name="Date" />
@@ -47,6 +47,13 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+    
+    <ExternalJoin name="Purchase" source="CargoExpenses" joinType="LEFT">
+      <AggregateColumn name="Purchase" aggregate="MAX" />
+    </ExternalJoin>
+    <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
+      <AggregateColumn name="Sale" aggregate="MAX" />
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

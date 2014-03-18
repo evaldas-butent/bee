@@ -2,29 +2,29 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="CargoInvoiceIncomes" source="CargoIncomes"
+  name="CargoSales" source="CargoIncomes" caption="=trOrderCargoIncomes"
   >
   <Columns>
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
       <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
-        <IdColumn name="Assessment" />
+        <IdColumn name="Assessment" aggregate="MAX" />
       </ExternalJoin>
 
       <SimpleColumn name="Cmr" />
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Status" />
-        <SimpleColumn name="Date" alias="OrderDate" />
+        <SimpleColumn name="Date" alias="OrderDate" label="=orderDate" />
         <SimpleColumn name="OrderNo" />
         
         <SimpleColumn name="Customer" />
         <SimpleJoin joinType="LEFT" name="Customer">
-          <SimpleColumn name="Name" alias="CustomerName" />
+          <SimpleColumn name="Name" alias="CustomerName" label="=customer" />
           <SimpleColumn name="CreditDays" alias="CustomerCreditDays" />
         </SimpleJoin>
 
-        <SimpleColumn name="Payer" />
+        <SimpleColumn name="Payer" label="=payer" />
         <SimpleJoin joinType="LEFT" name="Payer">
           <SimpleColumn name="Name" alias="PayerName" />
           <SimpleColumn name="CreditDays" alias="PayerCreditDays" />
@@ -32,33 +32,32 @@
       </SimpleJoin>
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
         </SimpleJoin>
-        <SimpleColumn name="Date" alias="UnloadingDate" />
+        <SimpleColumn name="Date" alias="UnloadingDate" label="=unloading" />
       </SimpleJoin>
-      
-      
+
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <SimpleJoin name="Trip" joinType="LEFT">
           <SimpleJoin name="Vehicle" joinType="LEFT">
-            <AggregateColumn name="Number" alias="Vehicle" aggregate="MAX" />
+            <AggregateColumn name="Number" alias="Vehicle" aggregate="MAX" label="=trTruck" />
           </SimpleJoin>
           <SimpleJoin name="Trailer" joinType="LEFT">
-            <AggregateColumn name="Number" alias="Trailer" aggregate="MAX" />
+            <AggregateColumn name="Number" alias="Trailer" aggregate="MAX" label="=trailer" />
           </SimpleJoin>
-        
+
           <ExternalJoin source="TripDrivers" name="Trip" joinType="LEFT">
             <SimpleJoin name="Driver" joinType="LEFT">
               <SimpleJoin name="CompanyPerson" joinType="LEFT">
                 <SimpleJoin name="Person" joinType="LEFT">
                   <HiddenColumn name="FirstName" />
                   <HiddenColumn name="LastName" />
-                  <AggregateColumn name="Driver" aggregate="MAX">
+                  <AggregateColumn name="Driver" aggregate="MAX" label="=vehicleDriver">
                     <x:concat>
                       <x:string>"FirstName"</x:string>
                       <x:string>' '</x:string>
@@ -73,7 +72,6 @@
             </SimpleJoin>
           </ExternalJoin>
         </SimpleJoin>
-        
       </ExternalJoin>
     </SimpleJoin>
 
@@ -98,11 +96,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="Note" />
-
-    <SimpleColumn name="Sale" />
-    <SimpleJoin name="Sale" joinType="LEFT">
-      <SimpleColumn name="Proforma" />
-    </SimpleJoin>
+    <HiddenColumn name="Sale" />
   </Columns>
   <Order>
     <OrderBy column="OrderDate" />

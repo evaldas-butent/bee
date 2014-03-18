@@ -71,9 +71,9 @@
           <InputArea source="Notes" class="occupy-1" />
         </SimplePanel>
       </page>
-      <page>
+      <page module="Transport">
         <text>=transportIncomes</text>
-        <ChildGrid name="CargoInvoiceIncomes" relColumn="Sale" />
+        <ChildGrid name="CargoSales" relColumn="Sale" />
       </page>
     </TabbedPages>
   </FlowPanel>

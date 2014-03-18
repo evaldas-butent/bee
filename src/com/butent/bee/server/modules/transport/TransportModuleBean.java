@@ -219,7 +219,7 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
       Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
-      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter("IdList"));
+      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID));
       Long item = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM));
 
       if (DataUtils.isId(saleId)) {

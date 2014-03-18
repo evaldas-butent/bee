@@ -3,7 +3,7 @@ package com.butent.bee.client.modules.transport;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_CARGO_INVOICE_INCOMES;
+import static com.butent.bee.shared.modules.transport.TransportConstants.VIEW_CARGO_SALES;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -38,11 +38,11 @@ class InvoiceCreator extends Image implements ClickHandler {
   public void onClick(ClickEvent event) {
     final Filter flt = Filter.and(filter, Filter.isNull(TradeConstants.COL_SALE));
 
-    Queries.getRowCount(VIEW_CARGO_INVOICE_INCOMES, flt, new IntCallback() {
+    Queries.getRowCount(VIEW_CARGO_SALES, flt, new IntCallback() {
       @Override
       public void onSuccess(Integer result) {
         if (BeeUtils.isPositive(result)) {
-          GridPanel grid = new GridPanel(VIEW_CARGO_INVOICE_INCOMES, GridOptions.forFilter(flt));
+          GridPanel grid = new GridPanel(VIEW_CARGO_SALES, GridOptions.forFilter(flt));
 
           StyleUtils.setSize(grid, 800, 600);
 

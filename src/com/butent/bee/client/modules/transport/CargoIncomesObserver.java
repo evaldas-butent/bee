@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -15,6 +14,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
@@ -23,7 +23,6 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -34,16 +33,15 @@ public final class CargoIncomesObserver implements RowInsertEvent.Handler, Handl
   }
 
   private final String viewName = TBL_CARGO_INCOMES;
-  private final Collection<HandlerRegistration> registry;
 
   private CargoIncomesObserver() {
-    this.registry = BeeKeeper.getBus().registerUpdateHandler(this, false);
-    this.registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
+    BeeKeeper.getBus().registerUpdateHandler(this, false);
+    BeeKeeper.getBus().registerRowInsertHandler(this, false);
   }
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
-    if (event.hasView(viewName) && BeeUtils.inListSame(event.getSourceName(), COL_DATE, COL_AMOUNT,
+    if (isTalkative(event) && BeeUtils.inListSame(event.getSourceName(), COL_DATE, COL_AMOUNT,
         COL_CURRENCY, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
       sayHello(event.getRowId());
     }
@@ -51,24 +49,20 @@ public final class CargoIncomesObserver implements RowInsertEvent.Handler, Handl
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (event.hasView(viewName)) {
+    if (isTalkative(event)) {
       sayHello(event.getRowId());
     }
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    if (event.hasView(viewName)) {
+    if (isTalkative(event)) {
       sayHello(event.getRowId());
     }
   }
 
-  public void stop() {
-    for (HandlerRegistration entry : registry) {
-      if (entry != null) {
-        entry.removeHandler();
-      }
-    }
+  private boolean isTalkative(ModificationEvent<?> event) {
+    return event.hasView(viewName) && !event.isSpookyActionAtADistance();
   }
 
   private void sayHello(Long id) {

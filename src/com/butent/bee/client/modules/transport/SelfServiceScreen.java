@@ -85,7 +85,7 @@ public class SelfServiceScreen extends ScreenImpl {
 
     Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
-        VIEW_CARGO_CREDIT_INVOICES));
+        VIEW_CARGO_PURCHASE_INVOICES));
     Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES));
 
@@ -99,7 +99,7 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);
 
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
-    GridFactory.hideColumn(VIEW_CARGO_CREDIT_INVOICES, "Select");
+    GridFactory.hideColumn(VIEW_CARGO_PURCHASE_INVOICES, "Select");
 
     FormFactory.hideWidget(DocumentConstants.FORM_DOCUMENT, "DocumentRelations");
 
@@ -144,7 +144,7 @@ public class SelfServiceScreen extends ScreenImpl {
             openGrid(VIEW_CARGO_INVOICES, saleFilter);
 
             Filter purchaseFilter = Filter.isEqual(TradeConstants.COL_TRADE_SUPPLIER, company);
-            openGrid(VIEW_CARGO_CREDIT_INVOICES, purchaseFilter);
+            openGrid(VIEW_CARGO_PURCHASE_INVOICES, purchaseFilter);
           }
         }));
   }
