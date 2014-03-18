@@ -289,7 +289,7 @@
 
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-label:hover,
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-selected {
-  border-bottom: 5px solid #fd6268;
+  border-bottom: 5px solid #5a6ba3;
 }
 
 .bee-MenuPopup {
@@ -437,7 +437,7 @@
   right: 0;
   top: 0;
   height: 30px;
-  background-color: #f0eeef;  
+  background-color: #EFF0F0;  
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1002,7 +1002,7 @@
 }
 
 .bee-TreeItem-selected {
-  background-color: #cfc;
+  background-color: #80c4f9;
 }
 
 .bee-TreeView-actions {
@@ -1119,13 +1119,15 @@
   padding: 0 10px;
   cursor: pointer;
   margin-left: 3px;
+  background-color: white;
 }
 .bee-TabbedPages-tab:hover {
-  border-color: #999;
+  background-color : whitesmoke;
 }
 
 .bee-TabbedPages-tabSelected {
-  border-color: green;
+  background-color: #f2f2f2;
+  border-bottom-color: transparent;
   z-index: 1;
   cursor: default;
 }
@@ -1143,7 +1145,7 @@
 
 .bee-StackHeader {
   cursor: pointer;
-  background-color: white;
+  background-color: #EFF0F0;
 }
 .bee-StackHeader:hover {
   background-color: #f2f2f2;
@@ -1195,9 +1197,11 @@
 }
 .bee-FavoritesDisplay tr td:first-child {
   padding-left: 20px;
+  background: whitesmoke;
 }
 .bee-FavoritesEditColumn, .bee-FavoritesDeleteColumn {
   width: 20px;
+  background: whitesmoke;
 }
 
 .bee-FavoritesDisplay tr:hover {
@@ -1278,7 +1282,7 @@
   cursor: pointer;
 }
 .bee-Workspace-tabSelected {
-  border-top: 2px solid #fd6268;
+  border-top: 2px solid #5a6ba3;;
   border-bottom-style: none;
 }
 .bee-Workspace-tabPanel > div:only-of-type {
@@ -1591,8 +1595,9 @@
   border-left: 5px solid white;
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
-  border-left: 5px solid #fd6268;
-  background-color: WhiteSmoke;
+  border-left: 5px solid #5a6ba3;;
+  background-color: #80c4f9;
+  color: white;
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
@@ -1667,7 +1672,7 @@
 
 .bee-Form-disabled .bee-disabled,
 .bee-Form-disabled .bee-disabled input {
-  background-color: #f3f3eb;
+  background-color: whitesmoke;
 }
 .bee-Form-disabled .bee-CheckBox.bee-disabled {
   background-color: inherit;
@@ -2295,7 +2300,7 @@
   display: inline-block;
   font-weight: bold;
   color: white;
-  background-color: #aaa;
+  background-image: linear-gradient(to bottom, #858a90, #CCCED1);
 }
 
 .bee-Online-item,
@@ -2343,7 +2348,7 @@
 .bee-Online-tweet:hover,
 .bee-Online-home:hover {
   color: white;
-  background-color: #080;
+  background-color: #80c4f9;
 }
 
 .bee-Room-container {
@@ -2369,7 +2374,7 @@
   cursor: pointer;
 }
 .bee-Room-container:hover .bee-Room-nameLabel {
-  color: #00e;
+  color: #556CCA;
 }
 
 .bee-Room-infoCommand,
@@ -2434,7 +2439,7 @@
 .bee-Room-settingsCommand:hover,
 .bee-Rooms-plus:hover:hover {
   color: white;
-  background-color: #080;
+  background-color: #80c4f9;
 }
 .bee-Room-deleteCommand:hover {
   color: white;
@@ -2541,7 +2546,7 @@
   cursor: pointer;
 }
 .bee-Chat-submit:hover {
-  background-color: #0a0;
+  background-color: #80c4f9;
   color: white;
 }
 
@@ -2620,7 +2625,7 @@
 .bee-Badge {
   padding: 1px 5px;
   font-size: 12px;
-  border-radius: 10px;
+  border-radius: 2px;
 }
 .bee-Badge-empty {
   visibility: hidden;
@@ -2658,7 +2663,7 @@
 .bee-News-refresh:hover,
 .bee-News-settings:hover {
   color: white;
-  background-color: #080;
+  background-color: #80c4f9;
 }
 
 .bee-News-disclosure {
@@ -2736,7 +2741,7 @@
 .bee-News-subscription-disclosure:hover,
 .bee-News-subscription-filter:hover {
   color: white;
-  background-color: #080;
+  background-color: #80c4f9;
 }
 
 .bee-News-subscription-disclosure {
@@ -2748,16 +2753,19 @@
   font-size: 18px;
   margin-left: 4px;
   margin-right: 2px;
+  border-radius: 4px;
 }
 
 .bee-News-subscription-new-size,
 .bee-News-subscription-upd-size {
   margin-left: 2px;
-  border: 1px solid silver;
+  border: 2px green;
   color: #888;
+  border-radius: 4px;
 }
 .bee-News-subscription-new-size {
-  background-color: lightgreen;
+  background-color: #aaa;
+  color: white ! important;
 }
 .bee-News-subscription-upd-size {
   background-color: yellow;
@@ -2790,14 +2798,14 @@
 .bee-News-headline-upd {
   width: 10px;
   height: 10px;
-  border: 1px solid silver;
+  border: 2px green;
   border-radius: 50%;
   display: inline-block;
   margin-left: 1em;
   margin-right: 4px;
 }
 .bee-News-headline-new {
-  background-color: lightgreen;
+  background-color: #aaa;
 }
 .bee-News-headline-upd {
   background-color: yellow;
