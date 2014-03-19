@@ -75,6 +75,22 @@ class CargoEvent {
     }
   }
 
+  Long getCityId() {
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingCity() : cargo.getUnloadingCity();
+    } else {
+      return loading ? handling.getLoadingCity() : handling.getUnloadingCity();
+    }
+  }
+
+  String getPostIndex() {
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingPostIndex() : cargo.getUnloadingPostIndex();
+    } else {
+      return loading ? handling.getLoadingPostIndex() : handling.getUnloadingPostIndex();
+    }
+  }
+
   CargoHandling getHandling() {
     return handling;
   }

@@ -387,7 +387,7 @@
 }
 
 .bee-tr-chart-shipment-day-label {
-  font-size: 12px;
+  font-size: smaller;
   line-height: 12px;
   overflow: hidden;
   word-wrap: break-word;

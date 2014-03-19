@@ -40,6 +40,16 @@
       <CheckBox source="FxPlaceInfo" style="&cb_inp;"/>
     </FlowPanel>
 
+     <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsPlaceCities" style="&lbl;" />
+      <CheckBox source="FxPlaceCities" style="&cb_inp;"/>
+    </FlowPanel>
+    
+    <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsPlaceCodes" style="&lbl;" />
+      <CheckBox source="FxPlaceCodes" style="&cb_inp;"/>
+    </FlowPanel>
+
     &separator;
     <FlowPanel style="&row;">
       <Label text="=trTbSettingsPixelsPerDay" style="&lbl;" />

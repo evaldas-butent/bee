@@ -111,6 +111,16 @@ final class TrailerTimeBoard extends VehicleTimeBoard {
   }
   
   @Override
+  protected String getShowPlaceCitiesColumnName() {
+    return COL_TRAILER_PLACE_CITIES;
+  }
+
+  @Override
+  protected String getShowPlaceCodesColumnName() {
+    return COL_TRAILER_PLACE_CODES;
+  }
+
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_TRAILER_STRIP_OPACITY;
   }

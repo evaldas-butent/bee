@@ -376,6 +376,16 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getShowPlaceCitiesColumnName() {
+    return COL_DTB_PLACE_CITIES;
+  }
+
+  @Override
+  protected String getShowPlaceCodesColumnName() {
+    return COL_DTB_PLACE_CODES;
+  }
+
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_DTB_STRIP_OPACITY;
   }

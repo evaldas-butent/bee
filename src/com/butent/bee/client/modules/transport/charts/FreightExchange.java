@@ -206,6 +206,16 @@ final class FreightExchange extends ChartBase {
   protected String getShowPlaceInfoColumnName() {
     return COL_FX_PLACE_INFO;
   }
+  
+  @Override
+  protected String getShowPlaceCitiesColumnName() {
+    return COL_FX_PLACE_CITIES;
+  }
+
+  @Override
+  protected String getShowPlaceCodesColumnName() {
+    return COL_FX_PLACE_CODES;
+  }
 
   @Override
   protected String getStripOpacityColumnName() {

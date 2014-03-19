@@ -179,6 +179,16 @@ final class ShippingSchedule extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getShowPlaceCitiesColumnName() {
+    return COL_SS_PLACE_CITIES;
+  }
+
+  @Override
+  protected String getShowPlaceCodesColumnName() {
+    return COL_SS_PLACE_CODES;
+  }
+
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_SS_STRIP_OPACITY;
   }

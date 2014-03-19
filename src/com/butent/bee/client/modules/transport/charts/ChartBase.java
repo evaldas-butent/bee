@@ -173,6 +173,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private boolean showCountryFlags;
   private boolean showPlaceInfo;
 
+  private boolean showPlaceCities;
+  private boolean showPlaceCodes;
+
   private int sliderWidth;
 
   private Widget startSliderLabel;
@@ -973,6 +976,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
   protected abstract String getShowPlaceInfoColumnName();
 
+  protected abstract String getShowPlaceCitiesColumnName();
+
+  protected abstract String getShowPlaceCodesColumnName();
+
   protected int getSliderWidth() {
     return sliderWidth;
   }
@@ -1133,6 +1140,9 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
 
     setShowCountryFlags(ChartHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
     setShowPlaceInfo(ChartHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
+
+    setShowPlaceCities(ChartHelper.getBoolean(getSettings(), getShowPlaceCitiesColumnName()));
+    setShowPlaceCodes(ChartHelper.getBoolean(getSettings(), getShowPlaceCodesColumnName()));
   }
 
   protected abstract List<ChartData> prepareFilterData(FilterType filterType);
@@ -1825,6 +1835,50 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
           if (!BeeUtils.isEmpty(number) && BeeUtils.containsSame(info, number)) {
             info.add(number);
           }
+          
+          if (showPlaceCities()) {
+            String cityLabel = Places.getCityLabel(event.getCityId());
+            if (!BeeUtils.isEmpty(cityLabel) && !BeeUtils.containsSame(info, cityLabel)) {
+              info.add(cityLabel);
+            }
+          }
+          
+        }
+
+        if (!info.isEmpty()) {
+          CustomDiv label = new CustomDiv(STYLE_SHIPMENT_DAY_LABEL);
+          label.setHtml(BeeUtils.join(BeeConst.STRING_SPACE, info));
+
+          widget.add(label);
+        }
+      }
+
+      if (showPlaceCities()) {
+        List<String> info = Lists.newArrayList();
+
+        for (CargoEvent event : events) {
+          String cityLabel = Places.getCityLabel(event.getCityId());
+          if (!BeeUtils.isEmpty(cityLabel) && !BeeUtils.containsSame(info, cityLabel)) {
+            info.add(cityLabel);
+          }
+        }
+
+        if (!info.isEmpty()) {
+          CustomDiv label = new CustomDiv(STYLE_SHIPMENT_DAY_LABEL);
+          label.setHtml(BeeUtils.join(BeeConst.STRING_SPACE, info));
+
+          widget.add(label);
+        }
+      }
+      
+      if (showPlaceCodes()) {
+        List<String> info = Lists.newArrayList();
+
+        for (CargoEvent event : events) {
+          String codeLabel = event.getPostIndex();
+          if (!BeeUtils.isEmpty(codeLabel) && !BeeUtils.containsSame(info, codeLabel)) {
+            info.add(codeLabel);
+          }
         }
 
         if (!info.isEmpty()) {
@@ -2027,12 +2081,28 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     this.showPlaceInfo = showPlaceInfo;
   }
 
+  private void setShowPlaceCities(boolean showPlaceCities) {
+    this.showPlaceCities = showPlaceCities;
+  }
+
+  private void setShowPlaceCodes(boolean showPlaceCodes) {
+    this.showPlaceCodes = showPlaceCodes;
+  }
+
   private boolean showCountryFlags() {
     return showCountryFlags;
   }
 
   private boolean showPlaceInfo() {
     return showPlaceInfo;
+  }
+
+  private boolean showPlaceCities() {
+    return showPlaceCities;
+  }
+
+  private boolean showPlaceCodes() {
+    return showPlaceCodes;
   }
 
   private void updateColorTheme(Long theme) {

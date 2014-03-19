@@ -46,6 +46,16 @@
       <CheckBox source="TrailerPlaceInfo" style="&cb_inp;"/>
     </FlowPanel>
 
+     <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsPlaceCities" style="&lbl;" />
+      <CheckBox source="TrailerPlaceCities" style="&cb_inp;"/>
+    </FlowPanel>
+    
+    <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsPlaceCodes" style="&lbl;" />
+      <CheckBox source="TrailerPlaceCodes" style="&cb_inp;"/>
+    </FlowPanel>
+
     &separator;
     <FlowPanel style="&row;">
       <Label text="=trTbSettingsPixelsPerDay" style="&lbl;" />

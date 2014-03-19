@@ -600,6 +600,9 @@ public final class TransportConstants {
   public static final String COL_FX_COUNTRY_FLAGS = "FxCountryFlags";
   public static final String COL_FX_PLACE_INFO = "FxPlaceInfo";
 
+  public static final String COL_FX_PLACE_CITIES = "FxPlaceCities";
+  public static final String COL_FX_PLACE_CODES = "FxPlaceCodes";
+
   public static final String COL_FX_PIXELS_PER_DAY = "FxPixelsPerDay";
   public static final String COL_FX_PIXELS_PER_ROW = "FxPixelsPerRow";
 
@@ -619,6 +622,8 @@ public final class TransportConstants {
 
   public static final String COL_SS_COUNTRY_FLAGS = "SsCountryFlags";
   public static final String COL_SS_PLACE_INFO = "SsPlaceInfo";
+  public static final String COL_SS_PLACE_CITIES = "SsPlaceCities";
+  public static final String COL_SS_PLACE_CODES = "SsPlaceCodes";
 
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
@@ -635,6 +640,9 @@ public final class TransportConstants {
 
   public static final String COL_DTB_COUNTRY_FLAGS = "DtbCountryFlags";
   public static final String COL_DTB_PLACE_INFO = "DtbPlaceInfo";
+
+  public static final String COL_DTB_PLACE_CITIES = "DtbPlaceCities";
+  public static final String COL_DTB_PLACE_CODES = "DtbPlaceCodes";
 
   public static final String COL_DTB_PIXELS_PER_DAY = "DtbPixelsPerDay";
   public static final String COL_DTB_PIXELS_PER_ROW = "DtbPixelsPerRow";
@@ -654,6 +662,9 @@ public final class TransportConstants {
   public static final String COL_TRUCK_COUNTRY_FLAGS = "TruckCountryFlags";
   public static final String COL_TRUCK_PLACE_INFO = "TruckPlaceInfo";
 
+  public static final String COL_TRUCK_PLACE_CITIES = "TruckPlaceCities";
+  public static final String COL_TRUCK_PLACE_CODES = "TruckPlaceCodes";
+
   public static final String COL_TRUCK_PIXELS_PER_DAY = "TruckPixelsPerDay";
   public static final String COL_TRUCK_PIXELS_PER_ROW = "TruckPixelsPerRow";
 
@@ -671,6 +682,8 @@ public final class TransportConstants {
   public static final String COL_TRAILER_SEPARATE_CARGO = "TrailerSeparateCargo";
   public static final String COL_TRAILER_COUNTRY_FLAGS = "TrailerCountryFlags";
   public static final String COL_TRAILER_PLACE_INFO = "TrailerPlaceInfo";
+  public static final String COL_TRAILER_PLACE_CITIES = "TrailerPlaceCities";
+  public static final String COL_TRAILER_PLACE_CODES = "TrailerPlaceCodes";
 
   public static final String COL_TRAILER_PIXELS_PER_DAY = "TrailerPixelsPerDay";
   public static final String COL_TRAILER_PIXELS_PER_ROW = "TrailerPixelsPerRow";

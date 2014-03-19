@@ -111,6 +111,16 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   }
   
   @Override
+  protected String getShowPlaceCitiesColumnName() {
+    return COL_TRUCK_PLACE_CITIES;
+  }
+
+  @Override
+  protected String getShowPlaceCodesColumnName() {
+    return COL_TRUCK_PLACE_CODES;
+  }
+
+  @Override
   protected String getStripOpacityColumnName() {
     return COL_TRUCK_STRIP_OPACITY;
   }
