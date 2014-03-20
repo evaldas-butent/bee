@@ -788,7 +788,8 @@ public class DiscussionsModuleBean implements BeeModule {
             COL_LAST_NAME)
         .addField(TBL_PERSONS, COL_PHOTO,
             COL_PHOTO)
-        .addCount(TBL_DISCUSSIONS_FILES, COL_FILE, COL_FILE)
+        .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE, 
+            AdministrationConstants.COL_FILE)
         .addExpr(
             SqlUtils.sqlIf(
                 SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
@@ -986,10 +987,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf =
-          new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE), DataUtils.getString(rowSet, row,
-              COL_FILE_NAME), DataUtils.getLong(rowSet, row,
-              COL_FILE_SIZE), DataUtils.getString(rowSet, row,
-              COL_FILE_TYPE));
+          new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
+              DataUtils.getString(rowSet, row, COL_FILE_NAME),
+              DataUtils.getLong(rowSet, row, COL_FILE_SIZE),
+              DataUtils.getString(rowSet, row, COL_FILE_TYPE));
 
       Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
 

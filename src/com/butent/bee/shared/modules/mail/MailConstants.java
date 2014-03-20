@@ -71,7 +71,6 @@ public final class MailConstants {
 
   public static final String COL_MESSAGE = "Message";
   public static final String COL_RAW_CONTENT = "RawContent";
-  public static final String COL_FILE = "File";
   public static final String COL_ATTACHMENT_NAME = "FileName";
   public static final String COL_ADDRESS = "Address";
   public static final String COL_ADDRESS_TYPE = "Type";

@@ -121,7 +121,6 @@ public final class DiscussionsConstants {
   public static final String COL_IMPORTANT = "Important";
   public static final String COL_MARK_NAME = "Name";
   public static final String COL_MARK_RESOURCE = "ImageResourceName";
-  public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "FileName";
   public static final String COL_FILE_SIZE = "FileSize";
   public static final String COL_FILE_TYPE = "FileType";

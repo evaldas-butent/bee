@@ -82,6 +82,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
@@ -1463,7 +1464,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     final List<BeeColumn> columns =
         Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_COMMENT,
-            COL_FILE, COL_CAPTION));
+            AdministrationConstants.COL_FILE, COL_CAPTION));
 
     for (final NewFileInfo fileInfo : files) {
       FileUtils.uploadFile(fileInfo, new Callback<Long>() {

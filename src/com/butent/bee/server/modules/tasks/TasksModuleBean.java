@@ -1142,7 +1142,7 @@ public class TasksModuleBean implements BeeModule {
 
   private SimpleRowSet getRecurringTaskFileData(long rtId) {
     return qs.getData(new SqlSelect()
-        .addFields(TBL_RT_FILES, COL_RTF_FILE, COL_RTF_CAPTION)
+        .addFields(TBL_RT_FILES, COL_FILE, COL_FILE_CAPTION)
         .addFrom(TBL_RT_FILES)
         .setWhere(SqlUtils.equals(TBL_RT_FILES, COL_RTF_RECURRING_TASK, rtId)));
   }
@@ -2258,8 +2258,8 @@ public class TasksModuleBean implements BeeModule {
         for (Long taskId : tasks) {
           SqlInsert si = new SqlInsert(TBL_TASK_FILES)
               .addConstant(COL_TASK, taskId)
-              .addConstant(COL_FILE, fileRow.getLong(COL_RTF_FILE))
-              .addConstant(COL_CAPTION, fileRow.getLong(COL_RTF_CAPTION));
+              .addConstant(COL_FILE, fileRow.getLong(COL_FILE))
+              .addConstant(COL_CAPTION, fileRow.getLong(COL_FILE_CAPTION));
 
           qs.insertData(si);
         }

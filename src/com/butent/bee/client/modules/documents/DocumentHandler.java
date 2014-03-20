@@ -258,7 +258,7 @@ public final class DocumentHandler {
         List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
         CellSource cellSource) {
 
-      if (BeeUtils.same(columnName, COL_FILE)) {
+      if (BeeUtils.same(columnName, AdministrationConstants.COL_FILE)) {
         return new FileLinkRenderer(DataUtils.getColumnIndex(columnName, dataColumns),
             DataUtils.getColumnIndex(COL_FILE_CAPTION, dataColumns),
             DataUtils.getColumnIndex(AdministrationConstants.ALS_FILE_NAME, dataColumns));
@@ -470,7 +470,7 @@ public final class DocumentHandler {
           BeeRow row = DataUtils.createEmptyRow(columns.size());
 
           Data.setValue(viewName, row, COL_DOCUMENT, docId);
-          Data.setValue(viewName, row, COL_FILE, result);
+          Data.setValue(viewName, row, AdministrationConstants.COL_FILE, result);
 
           Data.setValue(viewName, row, COL_FILE_DATE,
               BeeUtils.nvl(fileInfo.getFileDate(), fileInfo.getLastModified()));

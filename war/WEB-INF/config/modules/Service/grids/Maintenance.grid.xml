@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Maintenance" viewName="Maintenance" autoFit="true"
+  >
+  <g:columns>
+    <DataColumn name="Date" visible="true" />
+
+    <RelColumn name="Item" renderColumns="ItemName" visible="true" />
+    <DataColumn name="UnitName" />
+    <DataColumn name="Quantity" visible="true" />
+    <DataColumn name="Price" format="#.00" visible="true" />
+    <RelColumn name="Currency" caption="=currencyShort" />
+
+    <CalcColumn name="Total" type="decimal" label="=total" format="#.00">
+      <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
+    </CalcColumn>
+
+    <RelColumn name="Supplier" visible="false" />
+    <RelColumn name="Master" renderColumns="MasterFirstName MasterLastName"
+      choiceColumns="FirstName LastName CompanyName" />
+
+    <DataColumn name="Invoice" readOnly="true" />
+
+    <DataColumn name="Description" />
+    <DataColumn name="Notes" visible="false" />
+  </g:columns>
+</g:Grid>

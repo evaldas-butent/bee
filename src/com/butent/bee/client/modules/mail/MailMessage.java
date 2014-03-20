@@ -322,7 +322,7 @@ public class MailMessage extends AbstractFormInterceptor {
 
         for (SimpleRow attachment : packet.get(TBL_ATTACHMENTS)) {
           String[] info = new String[Ints.max(ATTA_ID, ATTA_NAME, ATTA_SIZE)];
-          info[ATTA_ID] = attachment.getValue(COL_FILE);
+          info[ATTA_ID] = attachment.getValue(AdministrationConstants.COL_FILE);
           info[ATTA_NAME] = BeeUtils.notEmpty(attachment.getValue(COL_ATTACHMENT_NAME),
               attachment.getValue(AdministrationConstants.COL_FILE_NAME));
           info[ATTA_SIZE] = attachment.getValue(AdministrationConstants.COL_FILE_SIZE);

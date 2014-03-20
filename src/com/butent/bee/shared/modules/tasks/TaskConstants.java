@@ -239,7 +239,6 @@ public final class TaskConstants {
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
 
-  public static final String COL_FILE = "File";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
@@ -302,8 +301,6 @@ public final class TaskConstants {
   public static final String COL_RTD_MODE = "Mode";
 
   public static final String COL_RTF_RECURRING_TASK = "RecurringTask";
-  public static final String COL_RTF_FILE = "File";
-  public static final String COL_RTF_CAPTION = "Caption";
 
   public static final String COL_RTEX_RECURRING_TASK = "RecurringTask";
   public static final String COL_RTEX_USER = "User";

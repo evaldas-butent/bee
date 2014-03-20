@@ -1,41 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="ServiceObject" caption="=svcObject"
+  name="ServiceObject" viewName="ServiceObjects" caption="=svcObject"
   >
   <FlowPanel class="flexBox-vertical">
-    <HorizontalPanel style="margin-bottom: 1ex;">
-      <Label text="=category" class="bee-required" for="Category" />
-      <DataSelector source="Category" />
-      <Label text="=address" class="bee-required" for="Address" />
-      <InputText source="Address" />
-      <Label text="=customer" for="Customer" />
-      <DataSelector source="Customer" />
-    </HorizontalPanel>
+    <xi:include href="widgets/ObjectHeader.widget.xml" />
+    <xi:include href="widgets/ObjectMainCriteria.widget.xml" />
     
     <TabbedPages class="flexible">
       <page>
-        <text>=criteria</text>
-        <FlowPanel class="flexBox-vertical">
-          <FieldSet style="margin: 10px; border:1px solid #ccc;">
-            <Legend name="MainCriteriaEditor" class="bee-Button" text="=mainCriteria" />
-            <FlowPanel name="MainCriteriaContainer" class="flexBox-horizontal"
-              style="max-height: 200px; overflow: auto;" />
-          </FieldSet>
+        <text>=svcSpecification</text>
+        <xi:include href="widgets/ObjectCriteria.widget.xml" />
+      </page>
 
-          <FlowPanel class="flexBox-horizontal-space-between flexible" style="overflow: scroll;">
-            <ChildGrid name="ServiceCritGroups" relColumn="ServiceObject" 
-              style="width: 350px; margin-right: 20px;" />
-            <ChildGrid class="flexible" name="ServiceCriteria" parent="ServiceCritGroups"
-              relColumn="Group" style="margin-top: 30px;" />
-          </FlowPanel>
-        </FlowPanel>
+      <page>
+        <text>=svcMaintenance</text>
+        <ChildGrid name="Maintenance" relColumn="ServiceObject" />
       </page>
 
       <page>
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="ServiceObject" />
+      </page>
+
+      <page>
+        <text>=files</text>
+        <ChildGrid name="ServiceFiles" relColumn="ServiceObject" />
       </page>
     </TabbedPages>
   </FlowPanel>

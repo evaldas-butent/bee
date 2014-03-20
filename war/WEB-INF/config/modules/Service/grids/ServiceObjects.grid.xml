@@ -5,15 +5,21 @@
   
   name="ServiceObjects" viewName="ServiceObjects"
   caption="=svcObjects" editShowId="true"
-  autoFit="true" enableCopy="Category"
+  autoFit="true"
   >
   
   <g:west size="200" splitterSize="2">
     <w:DataTree name="ServiceTree" caption="=categories" viewName="ServiceTree"
         parentColumn="Parent">
       <w:calc>
-        <ui:expression>row.CategoryName + (row.ObjectCount > 0 ? ' [' + row.ObjectCount + ']' : '')</ui:expression>
+        <ui:expression>row.Name + (row.ObjectCount > 0 ? ' [' + row.ObjectCount + ']' : '')</ui:expression>
       </w:calc>
+      <w:form>
+        <w:HorizontalPanel>
+          <w:Label text="=category" class="bee-required" style="padding-right: 1em;" />
+          <w:InputText source="Name" />
+        </w:HorizontalPanel>
+      </w:form>
     </w:DataTree>
   </g:west>
   

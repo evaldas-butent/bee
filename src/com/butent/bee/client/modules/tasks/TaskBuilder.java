@@ -35,6 +35,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -221,7 +222,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
 
       final List<BeeColumn> columns = Data.getColumns(VIEW_TASK_FILES,
-          Lists.newArrayList(COL_TASK, COL_FILE, COL_CAPTION));
+          Lists.newArrayList(COL_TASK, AdministrationConstants.COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : files) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {

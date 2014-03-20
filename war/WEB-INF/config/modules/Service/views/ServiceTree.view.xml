@@ -7,9 +7,10 @@
   <Columns>
     <SimpleColumn name="Parent" />
     <SimpleColumn name="Order" />
-    <SimpleColumn name="Name" alias="CategoryName" />
+    <SimpleColumn name="Name" />
     <SimpleJoin joinType="LEFT" name="Parent">
       <SimpleColumn alias="ParentOrder" name="Order" />
+      <SimpleColumn alias="ParentName" name="Name" />
     </SimpleJoin>
     <ExternalJoin source="ServiceObjects" joinType="LEFT" name="Category">
       <AggregateColumn alias="ObjectCount" aggregate="COUNT" name="Category" />

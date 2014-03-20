@@ -332,6 +332,7 @@
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="OrderCargo" />
@@ -366,6 +367,8 @@
       <xs:enumeration value="ServiceDistinctCriteria" />
       <xs:enumeration value="ServiceDistinctCritGroups" />
       <xs:enumeration value="ServiceDistinctCritValues" />
+      <xs:enumeration value="ServiceFiles" />
+      <xs:enumeration value="ServiceInvoices" />
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
       <xs:enumeration value="Services" />

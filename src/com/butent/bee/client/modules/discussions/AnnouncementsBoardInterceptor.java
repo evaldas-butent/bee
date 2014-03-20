@@ -40,6 +40,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
@@ -186,9 +187,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     String attachment = "";
 
-    if (rs.hasColumn(COL_FILE)) {
-      if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_FILE)])) {
-        int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_FILE)]);
+    if (rs.hasColumn(AdministrationConstants.COL_FILE)) {
+      if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)])) {
+        int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)]);
 
         if (BeeUtils.isPositive(fileCount)) {
           attachment = (new Image(Global.getImages().attachment())).toString();

@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -306,8 +307,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
 
       final List<BeeColumn> columns =
-          Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_FILE,
-              COL_CAPTION));
+          Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION,
+              AdministrationConstants.COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : files) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {

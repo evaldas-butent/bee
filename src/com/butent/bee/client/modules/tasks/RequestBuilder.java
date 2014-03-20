@@ -22,6 +22,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -74,7 +75,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
 
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
       final List<BeeColumn> columns = Data.getColumns(VIEW_REQUEST_FILES,
-          Lists.newArrayList(COL_REQUEST, COL_FILE, COL_CAPTION));
+          Lists.newArrayList(COL_REQUEST, AdministrationConstants.COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : ((FileCollector) widget).getFiles()) {
         Long file = null;

@@ -40,7 +40,6 @@ public final class DocumentConstants {
   public static final String COL_REGISTRATION_NUMBER = "RegistrationNumber";
   public static final String COL_DESCRIPTION = "Description";
 
-  public static final String COL_FILE = "File";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
   public static final String COL_FILE_CAPTION = "Caption";

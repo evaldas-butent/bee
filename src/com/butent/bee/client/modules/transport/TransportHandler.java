@@ -442,8 +442,8 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
-        new FileGridInterceptor(COL_CRF_REQUEST, COL_CRF_FILE, COL_CRF_CAPTION,
-            AdministrationConstants.ALS_FILE_NAME));
+        new FileGridInterceptor(COL_CRF_REQUEST, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
 

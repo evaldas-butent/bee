@@ -290,14 +290,16 @@ public final class AdministrationConstants {
   public static final String COL_OBJECT_NAME = "Name";
   public static final String COL_STATE = "State";
 
+  public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";
   public static final String COL_FILE_REPO = "Repository";
   public static final String COL_FILE_SIZE = "Size";
   public static final String COL_FILE_TYPE = "Type";
-  public static final String COL_FILE_FILE = "File";
   public static final String COL_FILE_PART = "Part";
 
+  public static final String COL_FILE_CAPTION = "Caption";
+  
   public static final String COL_REMINDER_NAME = "Name";
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_HOURS = "Hours";

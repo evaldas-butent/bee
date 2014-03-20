@@ -770,8 +770,6 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
 
   public static final String COL_CRF_REQUEST = "CargoRequest";
-  public static final String COL_CRF_FILE = "File";
-  public static final String COL_CRF_CAPTION = "Caption";
 
   public static final String COL_IMPORT_OPTION = "Option";
   public static final String COL_IMPORT_TYPE = "Type";

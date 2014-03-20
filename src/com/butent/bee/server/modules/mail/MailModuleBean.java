@@ -736,12 +736,13 @@ public class MailModuleBean implements BeeModule {
     packet.put(TBL_PARTS, newRs);
 
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
-        .addFields(TBL_ATTACHMENTS, COL_FILE, COL_ATTACHMENT_NAME)
+        .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
         .addFields(AdministrationConstants.TBL_FILES, AdministrationConstants.COL_FILE_NAME,
             AdministrationConstants.COL_FILE_SIZE)
         .addFrom(TBL_ATTACHMENTS)
         .addFromInner(AdministrationConstants.TBL_FILES,
-            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
+            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS,
+                AdministrationConstants.COL_FILE))
         .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
 
     return ResponseObject.response(packet);
@@ -816,12 +817,13 @@ public class MailModuleBean implements BeeModule {
     packet.put(COL_CONTENT, content.toString());
 
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
-        .addFields(TBL_ATTACHMENTS, COL_FILE, COL_ATTACHMENT_NAME)
+        .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
         .addFields(AdministrationConstants.TBL_FILES, AdministrationConstants.COL_FILE_NAME,
             AdministrationConstants.COL_FILE_SIZE)
         .addFrom(TBL_ATTACHMENTS)
         .addFromInner(AdministrationConstants.TBL_FILES,
-            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
+            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS,
+                AdministrationConstants.COL_FILE))
         .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
 
     return ResponseObject.response(packet);

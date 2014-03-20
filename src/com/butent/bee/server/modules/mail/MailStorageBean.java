@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -525,7 +526,7 @@ public class MailStorageBean {
 
         qs.insertData(new SqlInsert(TBL_ATTACHMENTS)
             .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_FILE, fileId)
+            .addConstant(AdministrationConstants.COL_FILE, fileId)
             .addConstant(COL_ATTACHMENT_NAME, fileName));
 
       } else if (alternative != null) {

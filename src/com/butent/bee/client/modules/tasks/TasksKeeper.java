@@ -187,8 +187,8 @@ public final class TasksKeeper {
 
     GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid());
     GridFactory.registerGridInterceptor(GRID_RT_FILES,
-        new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
-            AdministrationConstants.ALS_FILE_NAME));
+        new FileGridInterceptor(COL_RTF_RECURRING_TASK, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override

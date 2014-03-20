@@ -5,7 +5,7 @@
   idName="ObjectID"
   >
   <Fields>
-    <Relation name="Category" relation="ServiceTree" notNull="true" />
+    <Relation name="Category" relation="ServiceTree" notNull="true" label="=category" />
     <String name="Address" precision="100" notNull="true" label="=address" />
     <Relation name="Customer" relation="Companies" label="=customer" />
   </Fields>

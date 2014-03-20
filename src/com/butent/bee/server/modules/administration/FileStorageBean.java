@@ -93,7 +93,7 @@ public class FileStorageBean {
       SqlSelect query = new SqlSelect().setLimit(10)
           .addFields(TBL_FILE_PARTS, COL_FILE_PART)
           .addFrom(TBL_FILE_PARTS)
-          .setWhere(SqlUtils.equals(TBL_FILE_PARTS, COL_FILE_FILE, fileId))
+          .setWhere(SqlUtils.equals(TBL_FILE_PARTS, COL_FILE, fileId))
           .addOrder(TBL_FILE_PARTS, sys.getIdName(TBL_FILE_PARTS));
 
       File tmp = File.createTempFile("bee_", null);
@@ -282,7 +282,7 @@ public class FileStorageBean {
           try {
             while ((bytesRead = in.read(buffer)) > 0) {
               long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS)
-                  .addConstant(COL_FILE_FILE, id));
+                  .addConstant(COL_FILE, id));
 
               qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART, new ByteArrayInputStream(buffer));
             }

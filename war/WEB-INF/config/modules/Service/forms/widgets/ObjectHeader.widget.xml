@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/widget" 
+    style="border-collapse: collapse;" cellStyle="padding-top: 5px;">
+
+  <col index="0" cellStyle="text-align: right; padding-left: 1em; padding-right: 1em;" />
+
+  <row>
+    <Label text="=category" class="bee-required" for="Category" />
+    <DataSelector source="Category" renderColumns="CategoryName" choiceColumns="ParentName Name"
+      style="width: 200px;" />
+  </row>
+
+  <row>
+    <Label text="=address" class="bee-required" for="Address" />
+    <InputText source="Address" style="width: 400px;" />
+  </row>
+
+  <row>
+    <Label text="=customer" for="Customer" />
+    <DataSelector source="Customer" style="width: 200px;" />
+  </row>
+</Table>

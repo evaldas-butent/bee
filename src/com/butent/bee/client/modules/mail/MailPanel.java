@@ -729,7 +729,7 @@ public class MailPanel extends AbstractFormInterceptor {
         SimpleRowSet rs = SimpleRowSet.restore(packet.get(TBL_ATTACHMENTS));
 
         for (SimpleRow attach : rs) {
-          files.put(attach.getLong(COL_FILE),
+          files.put(attach.getLong(AdministrationConstants.COL_FILE),
               new NewFileInfo(BeeUtils.notEmpty(attach.getValue(COL_ATTACHMENT_NAME),
                   attach.getValue(AdministrationConstants.COL_FILE_NAME)),
                   attach.getLong(AdministrationConstants.COL_FILE_SIZE), null));
