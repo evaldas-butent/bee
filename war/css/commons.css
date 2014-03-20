@@ -20,6 +20,8 @@
 .bee-co-updateRates-highLabel {
   min-width: 80px;
   display: inline-block;
+  text-align: right;
+  padding-right: 9px
 }
 .bee-co-updateRates-lowInput,
 .bee-co-updateRates-highInput {
@@ -31,11 +33,11 @@
   max-height: 300px;
 }
 .bee-co-updateRates-rangeSeparator {
-  height: 1ex;
+  height: 5px;
 }
 .bee-co-updateRates-actionSeparator {
   height: 3ex;
 }
 .bee-co-updateRates-submit {
-  margin-left: 3em;
+  margin-left: 1em;
 }

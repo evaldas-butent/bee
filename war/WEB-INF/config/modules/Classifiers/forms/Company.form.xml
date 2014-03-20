@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE Form [
-  <!ENTITY lbl1 "margin-left: 1em; margin-right: 1em; text-align: right">
+  <!ENTITY lbl1 "margin-left: 1em; text-align: right; padding-right: 9px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget"
@@ -37,8 +37,8 @@
         <Label text="=priority" style="&lbl1;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 194px;" />
       </row>
-    </Table> 
-    
+    </Table>
+
     <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
       open="true">
        <Label text="=contactInfo" style="text-transform: uppercase; " />
@@ -47,13 +47,13 @@
          <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
        </FlowPanel>
     </Disclosure>
-    
+
     <TabbedPages class="flexible" style="margin-top: 15px;">
       <page>
         <text>=financialInfo</text>
         <Table>
           <row>
-            <Label text="=creditLimit" for="CreditLimit" />
+            <Label text="=creditLimit" for="CreditLimit" style="&lbl1;"/>
             <FlowPanel>
               <InputInteger source="CreditLimit" style="text-align: right" />
               <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
@@ -64,27 +64,27 @@
             </cell>
           </row>
           <row for="CreditTolerance">
-            <Label text="=creditTolerance" style="text-align: right"/>
+            <Label text="=creditTolerance" style="&lbl1;"/>
             <InputInteger source="CreditTolerance" style="width: 60px;" />
           </row>
           <row for="CreditDays">
-            <Label text="=creditDays" style="text-align: right"/>
+            <Label text="=creditDays" style="&lbl1;"/>
             <InputDecimal source="CreditDays" style="width: 60px;" />
           </row>
-          <row for="FinancialState">
-            <Label text="=financialState" style="text-align: right"/>
+        	<row for="FinancialState">
+            <Label text="=financialState" style="&lbl1;"/>
             <DataSelector source="FinancialState" />
           </row>
           <row>
-            <Label text="=bankAccount" style="text-align: right"/>
+            <Label text="=bankAccount" style="&lbl1;"/>
             <InputText source="BankAccount" />
           </row>
           <row for="DaysAsBuyer">
-            <Label text="=daysAsBuyer" />
+            <Label text="=daysAsBuyer" style="&lbl1;"/>
             <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
           </row>
           <row for="DaysAsSupplier">
-            <Label text="=daysAsSupplier" />
+            <Label text="=daysAsSupplier" style="&lbl1;"/>
             <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
           </row>
         </Table>
@@ -105,14 +105,14 @@
         <FlowPanel style="margin:5px;">
           <Table>
             <row>
-              <Label text="=companySize" style="text-align: right" for="CompanySize" />
+              <Label text="=companySize" style="&lbl1;" for="CompanySize" />
               <DataSelector source="CompanySize" style="width: 100px;" />
               <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;"
                 for="InformationSource" />
               <DataSelector source="InformationSource" style="width: 100px;" />
             </row>
             <row>
-              <Label text="=companyActivities" style="margin-right: 5px" />
+              <Label text="=companyActivities" style="&lbl1;" />
               <cell colSpan="3">
                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
                   targetRelColumn="Company" sourceRelColumn="Activity"
@@ -120,7 +120,7 @@
               </cell>
             </row>
             <row for="Rating">
-              <Label text="=rating" style="text-align: right"/>
+              <Label text="=rating" style="&lbl1;"/>
               <InputText source="Rating" style="width:100px;" />
             </row>
           </Table>
@@ -157,4 +157,4 @@
     </TabbedPages>
 
   </FlowPanel>
-</f:Form>  
+</f:Form>
