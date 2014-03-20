@@ -60,15 +60,13 @@
           </row>
           <row><text>&amp;nbsp;</text></row>
           <row>
-            <CheckBox name="Outsized" source="Outsized" text="=outsized" />
-          </row>
-          <row>
             <CheckBox source="Dangerous" text="=dangerous" />
           </row>
-          <row>
-            <cell style="vertical-align:top;">
+          <row style="vertical-align:top;">
+            <FlowPanel class="flexBox-vertical">
+              <CheckBox name="Outsized" source="Outsized" text="=outsized" style="margin-bottom: 4px;"/>
               <CheckBox name="Partial" source="Partial" text="=partial" />
-            </cell>
+            </FlowPanel>
             <Table name="Metrics">
               <row>
                 <Label text="=length" horizontalAlignment="right" />
@@ -109,13 +107,8 @@
           <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:5px;"/>
         </FlowPanel>
         <Label text="=notes" />
-        <cell rowSpan="4">
-          <InputArea source="Notes" characterWidth="30" visibleLines="4" />
-        </cell>
-        <Label text="=trDirections" />
-        <cell rowSpan="4">
-          <InputArea source="Directions" characterWidth="30" visibleLines="4" />
-        </cell>
+        
+        <Label text="=trDirections" />        
       </row>
       <row>
         <Label text="=number" horizontalAlignment="right" />
@@ -125,6 +118,12 @@
           <InputInteger source="Quantity" style="width:70px" />
           <DataSelector source="QuantityUnit" style="display:inline-block; width:40px; margin-left:5px;" />
         </FlowPanel>
+        <cell rowSpan="2">
+          <InputArea source="Notes" characterWidth="30" visibleLines="3" style="width: 150px" />
+        </cell>
+        <cell rowSpan="2">
+          <InputArea source="Directions" characterWidth="30" visibleLines="3" style="width: 150px" />
+        </cell>
       </row>
       <row>
         <Label text="=cargoTermsOfService" horizontalAlignment="right" />
