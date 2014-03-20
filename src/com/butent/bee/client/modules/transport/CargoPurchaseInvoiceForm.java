@@ -15,13 +15,27 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CargoPurchaseInvoiceForm extends PrintFormInterceptor {
 
   private ScheduledCommand refresher;
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    int idx = form.getDataIndex(COL_SALE);
+    boolean credit = idx != BeeConst.UNDEF && DataUtils.isId(row.getLong(idx));
+
+    form.getViewPresenter().getHeader().setCaption(credit
+        ? Localized.getConstants().trCreditInvoice()
+        : Localized.getConstants().trPurchaseInvoice());
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,

@@ -19,7 +19,7 @@
     <FlowPanel style="height:65%; overflow:auto;">
       <FlowPanel style="&section;">
         <Label text="=status" style="&labelLeft;" />
-        <Label name="Status" style="&input; font-weight:bold;" />
+        <FlowPanel name="Status" style="&input; font-weight:bold;" />
         <Label text="=customer" class="bee-required" style="&labelRight; width:120px;" />
         <DataSelector source="Customer" style="&input; width:200px;" />
       </FlowPanel>
@@ -46,16 +46,12 @@
         <Label text="=manager" class="bee-required" style="&labelLeft;" />
         <DataSelector source="Manager" style="&input; width:200px;" editSource="CompanyPerson"
           newRowEnabled="false" />
+        <CheckBox text="=trExpensesRegistered" name="ExpensesRegistered" source="ExpensesRegistered"
+          style="&inline; margin-left:10px;" disablable="false" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label text="=trComment" style="&labelLeft; vertical-align:top;" />
         <InputArea source="Notes" style="width:400px;" />
-      </FlowPanel>
-      <FlowPanel style="&section;">
-        <Label text="=transportationNumber1" style="&labelLeft;" />
-        <InputText source="LoadingNumber" style="&inline; width:130px;" />
-        <Label text="=transportationNumber2" style="&labelRight; width:100px;" />
-        <InputText source="UnloadingNumber" style="&inline; width:130px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

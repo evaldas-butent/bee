@@ -218,17 +218,18 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
+      Long purchaseId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PURCHASE));
       Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
       Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID));
       Long item = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM));
+      Double creditAmount = BeeUtils.toDoubleOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT));
 
       if (DataUtils.isId(saleId)) {
         response = createInvoiceItems(saleId, currency, ids, item);
+      } else if (BeeUtils.isPositive(creditAmount)) {
+        response = createCreditInvoiceItems(purchaseId, currency, ids, item, creditAmount);
       } else {
-        response = createCreditInvoiceItems(
-            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PURCHASE)),
-            BeeUtils.toDoubleOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT)),
-            currency, ids, item);
+        response = createPurchaseInvoiceItems(purchaseId, currency, ids, item);
       }
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(reqInfo.getParameter("view_name"),
@@ -590,8 +591,8 @@ public class TransportModuleBean implements BeeModule {
     });
   }
 
-  private ResponseObject createCreditInvoiceItems(Long purchaseId, Double amount, Long currency,
-      Set<Long> idList, Long mainItem) {
+  private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
+      Long mainItem, Double amount) {
 
     if (!DataUtils.isId(purchaseId)) {
       return ResponseObject.error("Wrong account ID");
@@ -817,6 +818,63 @@ public class TransportModuleBean implements BeeModule {
     }
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_INCOMES)
         .addConstant(COL_SALE, saleId)
+        .setWhere(wh)));
+  }
+
+  private ResponseObject createPurchaseInvoiceItems(Long purchaseId, Long currency,
+      Set<Long> idList, Long mainItem) {
+
+    if (!DataUtils.isId(purchaseId)) {
+      return ResponseObject.error("Wrong account ID");
+    }
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.error("Wrong currency ID");
+    }
+    if (BeeUtils.isEmpty(idList)) {
+      return ResponseObject.error("Empty ID list");
+    }
+    IsCondition wh = sys.idInList(TBL_CARGO_EXPENSES, idList);
+
+    SqlSelect ss = new SqlSelect()
+        .addFields(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
+        .addFrom(TBL_CARGO_EXPENSES)
+        .addFromInner(TBL_SERVICES,
+            sys.joinTables(TBL_SERVICES, TBL_CARGO_EXPENSES, COL_SERVICE))
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_EXPENSES, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .setWhere(SqlUtils.and(wh, SqlUtils.positive(TBL_CARGO_EXPENSES, COL_AMOUNT)))
+        .addGroup(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
+
+    if (DataUtils.isId(mainItem)) {
+      ss.addConstant(mainItem, COL_ITEM);
+    } else {
+      ss.addFields(TBL_SERVICES, COL_ITEM)
+          .addGroup(TBL_SERVICES, COL_ITEM);
+    }
+    IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT),
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY),
+        SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
+            SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
+
+    SimpleRowSet rs = qs.getData(ss.addSum(xpr, COL_AMOUNT));
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : rs) {
+      SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
+          .addConstant(COL_PURCHASE, purchaseId)
+          .addConstant(COL_ITEM, row.getLong(COL_ITEM))
+          .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
+          .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(row.getDouble(COL_AMOUNT), 2))
+          .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))
+          .addConstant(COL_TRADE_VAT, row.getDouble(COL_TRADE_VAT))
+          .addConstant(COL_TRADE_VAT_PERC, row.getBoolean(COL_TRADE_VAT_PERC));
+
+      qs.insertData(insert);
+    }
+    return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
+        .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
   }
 
@@ -2337,7 +2395,7 @@ public class TransportModuleBean implements BeeModule {
         break;
       }
       qs.updateData(new SqlUpdate(trade)
-          .addConstant("Exported", System.currentTimeMillis())
+          .addConstant(COL_TRADE_EXPORTED, System.currentTimeMillis())
           .setWhere(sys.idEquals(trade, invoice.getLong(itemsRelation))));
     }
     if (response.hasErrors()) {

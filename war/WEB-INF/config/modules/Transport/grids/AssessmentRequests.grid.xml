@@ -2,15 +2,15 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
-  flexGrow="1" order="AssessmentID desc"
-  enableCopy="- Assessment Cargo *Status *Date Number Manager"
+  flexGrow="1" order="AssessmentID desc" disabledActions="delete"
+  enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log"
   >
   <g:columns>
     <IdColumn name="ID" caption="ID" width="40" />
     <DataColumn name="Assessment" width="40" />
     <DataColumn name="Date" width="110" />
+    <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
-    <DataColumn name="OrderNo" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
@@ -31,8 +31,6 @@
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
-
-    <DataColumn name="Number" width="70" />
   </g:columns>
 
   <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">

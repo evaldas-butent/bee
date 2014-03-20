@@ -422,6 +422,7 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_SALES = "CargoSales";
   public static final String VIEW_CARGO_CREDIT_SALES = "CargoCreditSales";
   public static final String VIEW_CARGO_INVOICES = "CargoInvoices";
+  public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
@@ -503,6 +504,8 @@ public final class TransportConstants {
   public static final String COL_ASSESSMENT = "Assessment";
   public static final String COL_ASSESSMENT_STATUS = "Status";
   public static final String COL_ASSESSMENT_NOTES = "Notes";
+  public static final String COL_ASSESSMENT_LOG = "Log";
+  public static final String COL_ASSESSMENT_EXPENSES = "ExpensesRegistered";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";

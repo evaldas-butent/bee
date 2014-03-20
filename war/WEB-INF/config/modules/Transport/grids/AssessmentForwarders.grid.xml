@@ -8,9 +8,9 @@
   flexGrow="1"
   >
   <g:columns>
-    <DataColumn name="TripNo" />
-    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="80" format="DATE_SHORT" />
-    <DataColumn name="ForwarderName" caption="=carrier" />
-    <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
+    <DataColumn name="LoadingDate" width="80" format="DATE_SHORT" />
+    <DataColumn name="ForwarderName" />
+    <DataColumn name="ForwarderVehicle" />
+    <DataColumn name="ExpeditionType" />
   </g:columns>
 </g:Grid>

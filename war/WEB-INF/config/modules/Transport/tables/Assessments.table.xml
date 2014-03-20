@@ -10,6 +10,9 @@
     <Enum name="Status" key="AssessmentStatus" label="=status" />
     <Relation name="Cargo" unique="true" notNull="true" relation="OrderCargo" label="=cargo" />
     <Text name="Notes" label="=trComment" />
+    <Text name="Log" label="=history" />
+    <Boolean name="ExpensesRegistered" label="=trExpensesRegistered" />
+    
     <Relation name="Order" unique="true" relation="TransportationOrders" editable="true" />
   </Fields>
   <Indexes>

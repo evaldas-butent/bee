@@ -11,7 +11,6 @@
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" />
-        <SimpleColumn name="OrderNo" />
         <SimpleColumn name="Notes" alias="OrderNotes" />
         <SimpleColumn name="Customer" />
 
@@ -41,7 +40,6 @@
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Contact" alias="Shipper" />
         <SimpleColumn name="Date" alias="LoadingDate" />
-        <SimpleColumn name="Number" alias="LoadingNumber" />
 
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
@@ -50,7 +48,6 @@
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" />
-        <SimpleColumn name="Number" alias="UnloadingNumber" />
 
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />

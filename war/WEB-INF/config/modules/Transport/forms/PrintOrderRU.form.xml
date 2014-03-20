@@ -23,7 +23,9 @@
       <Table>
         <row>
           <Label html="Заказ №:" style="text-align:right; &bold;" />
-          <TextLabel source="OrderNo" />
+          <TextLabel>
+            <render><ui:expression>rowId</ui:expression></render>
+          </TextLabel>
         </row>
         <row>
           <Label html="Номер ссылки:" style="text-align:right; &bold;" />
@@ -129,17 +131,8 @@
     <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Дополнительная информация:" style="&bold;" />
       <TextLabel source="CargoNotes" style="white-space:pre-wrap;" />
-
-      <FlowPanel>
-        <FlowPanel>
-          <Label html="Номер автомобиля:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="LoadingNumber" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-        <FlowPanel>
-          <Label html="2 Номер автомобиля:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="UnloadingNumber" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-      </FlowPanel>
+      <Label html="Номера автомобилей:" style="&bold;" />
+      <Label name="ForwarderVehicle" />
     </HorizontalPanel>
 
     <HorizontalPanel class="&form;-table" style="&section;">

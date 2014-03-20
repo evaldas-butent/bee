@@ -96,7 +96,9 @@
     </SimpleJoin>
 
     <SimpleColumn name="Note" />
+    
     <HiddenColumn name="Sale" />
+    <HiddenColumn name="Purchase" />
   </Columns>
   <Order>
     <OrderBy column="OrderDate" />

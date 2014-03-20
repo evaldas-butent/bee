@@ -7,9 +7,8 @@
   
   name="CargoPurchaseInvoice" viewName="CargoPurchaseInvoices"
   width="800" height="600"
-  caption="=trCreditInvoice"
   >
-  <f:properties reports="PrintCargoCreditInvoice" />
+  <f:properties reports="PrintCargoInvoiceShort, PrintCargoCreditInvoice" />
 
   <FlowPanel class="flexBox-vertical">
     <Table>

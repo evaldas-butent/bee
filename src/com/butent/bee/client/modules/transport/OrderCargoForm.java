@@ -72,7 +72,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
         }
       });
     } else if (widget instanceof InputBoolean
-        && (BeeUtils.same(name, "Partial") || (BeeUtils.same(name, "Outsized")))) {
+        && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {

@@ -51,8 +51,8 @@
     <ExternalJoin name="Purchase" source="CargoExpenses" joinType="LEFT">
       <AggregateColumn name="Purchase" aggregate="MAX" />
     </ExternalJoin>
-    <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
-      <AggregateColumn name="Sale" aggregate="MAX" />
+    <ExternalJoin name="Purchase" source="CargoIncomes" joinType="LEFT">
+      <AggregateColumn name="Purchase" alias="SALE" aggregate="MAX" />
     </ExternalJoin>
   </Columns>
   <Order>

@@ -31,12 +31,11 @@ public class CargoInvoiceForm extends CargoPurchaseInvoiceForm implements ClickH
     int idx = form.getDataIndex(COL_SALE_PROFORMA);
     boolean proforma = idx != BeeConst.UNDEF && BeeUtils.unbox(row.getBoolean(idx));
 
-    form.getViewPresenter().getHeader().setCaption(proforma
-        ? Localized.getConstants().trProformaInvoice()
-        : Localized.getConstants().trInvoice());
-
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
+
+    header.setCaption(proforma ? Localized.getConstants().trProformaInvoice()
+        : Localized.getConstants().trInvoice());
 
     if (proforma && form.isEnabled()) {
       header.addCommandItem(confirmAction);

@@ -38,7 +38,7 @@
       <Label text="=amount" class="bee-required" style="&labelRight;" />
       <InputCurrency source="Amount" style="&input; width:70px;" />
       <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" 
-        editEnabled="false" />
+        editEnabled="false" placeholder="=currencyShort" />
     </FlowPanel>
 
     <FlowPanel style="&section;">
@@ -83,7 +83,7 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label text="=transportationNumber1" style="&labelLeft;" />
+      <Label text="=transportationNumber" style="&labelLeft;" />
       <InputText source="ForwarderVehicle" style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel style="&section;">

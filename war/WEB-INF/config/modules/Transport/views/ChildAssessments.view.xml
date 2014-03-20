@@ -10,6 +10,8 @@
     <SimpleColumn name="Assessment" />
     <SimpleColumn name="Status" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Log" />
+    <SimpleColumn name="ExpensesRegistered" />
 
     <SimpleJoin name="Order" joinType="INNER">
       <SimpleColumn name="Status" alias="OrderStatus" />

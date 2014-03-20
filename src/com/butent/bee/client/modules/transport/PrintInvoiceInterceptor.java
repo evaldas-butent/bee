@@ -46,7 +46,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     for (String name : companies.keySet()) {
-      Long id = form.getActiveRow().getLong(form.getDataIndex(name));
+      Long id = form.getLongValue(name);
 
       if (!DataUtils.isId(id) && !BeeUtils.same(name, COL_SALE_PAYER)) {
         id = BeeKeeper.getUser().getUserData().getCompany();
@@ -54,12 +54,11 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
       ClassifierUtils.getCompanyInfo(id, companies.get(name));
     }
     if (invoiceDetails != null) {
-      TradeUtils.getDocumentItems(getFormView().getViewName(), row.getId(), invoiceDetails);
+      TradeUtils.getDocumentItems(getViewName(), row.getId(), invoiceDetails);
     }
     for (Widget total : totals) {
-      TradeUtils.getTotalInWords(row.getDouble(form.getDataIndex(COL_TRADE_AMOUNT)),
-          row.getString(form.getDataIndex("CurrencyName")),
-          row.getString(form.getDataIndex("MinorName")), total);
+      TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
+          form.getStringValue("CurrencyName"), form.getStringValue("MinorName"), total);
     }
   }
 

@@ -11,12 +11,13 @@
     <SimpleColumn name="Assessment" label="=captionPid" />
     <SimpleColumn name="Status" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Log" />
+    <SimpleColumn name="ExpensesRegistered" />
 
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" editable="true" />
-        <SimpleColumn name="OrderNo" label="=orderNumber" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
         <SimpleColumn name="Notes" alias="OrderNotes" label="=route" editable="true" />
       
@@ -62,7 +63,6 @@
         <SimpleColumn name="Date" alias="LoadingDate" editable="true" label="=trLoadingDate" />
         <SimpleColumn name="Address" alias="LoadingAddress" editable="true" label="=trLoadingAddress" />
         <SimpleColumn name="PostIndex" alias="LoadingPostIndex" editable="true" label="=trLoadingPostIndex" />
-        <SimpleColumn name="Number" alias="LoadingNumber" editable="true" label="=transportationNumber1" />
         <SimpleColumn name="Country" alias="LoadingCountry" editable="true" label="=trLoadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
@@ -73,7 +73,6 @@
         <SimpleColumn name="Date" alias="UnloadingDate" editable="true" label="=trUnloadingDate" />
         <SimpleColumn name="Address" alias="UnloadingAddress" editable="true" label="=trUnloadingAddress" />
         <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" editable="true" label="=trUnloadingPostIndex" />
-        <SimpleColumn name="Number" alias="UnloadingNumber" editable="true" label="=transportationNumber2" />
         <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" label="=trUnloadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />

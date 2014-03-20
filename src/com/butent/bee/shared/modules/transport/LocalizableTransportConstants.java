@@ -178,6 +178,8 @@ public interface LocalizableTransportConstants {
 
   String trCreateTransportation();
 
+  String trCreditInvoice();
+
   String trDriverEndingDate();
 
   String trDriverExperience();
@@ -243,6 +245,8 @@ public interface LocalizableTransportConstants {
   String trPreInvoice();
 
   String trProformaInvoice();
+
+  String trPurchaseInvoice();
 
   String trRegistrationActionSubmit();
 

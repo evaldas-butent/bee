@@ -23,7 +23,9 @@
       <Table>
         <row>
           <Label html="Order No.:" style="text-align:right; &bold;" />
-          <TextLabel source="OrderNo" />
+          <TextLabel>
+            <render><ui:expression>rowId</ui:expression></render>
+          </TextLabel>
         </row>
         <row>
           <Label html="Ref number:" style="text-align:right; &bold;" />
@@ -131,17 +133,8 @@
     <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Additional information:" style="&bold;" />
       <TextLabel source="CargoNotes" style="white-space:pre-wrap;" />
-
-      <FlowPanel>
-        <FlowPanel>
-          <Label html="Vehicle no.:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="LoadingNumber" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-        <FlowPanel>
-          <Label html="2 Vehicle no.:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="UnloadingNumber" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-      </FlowPanel>
+      <Label html="Vehicle no.:" style="&bold;" />
+      <Label name="ForwarderVehicle" />
     </HorizontalPanel>
 
     <HorizontalPanel class="&form;-table" style="&section;">

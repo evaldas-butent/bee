@@ -685,6 +685,16 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public Double getDoubleValue(String source) {
+    int index = getDataIndex(source);
+    if (getActiveRow() != null && index >= 0) {
+      return getActiveRow().getDouble(index);
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public List<EditableWidget> getEditableWidgets() {
     return editableWidgets;
   }
@@ -1920,7 +1930,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     boolean rowEnabled = isRowEditable(false);
     boolean isNew = DataUtils.isNewRow(getActiveRow());
-    
+
     for (EditableWidget editableWidget : getEditableWidgets()) {
       Editor editor = editableWidget.getEditor();
       if (editor == null) {
@@ -1931,10 +1941,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       if (getActiveRow() == null) {
         editable = false;
-      
+
       } else {
         editable = rowEnabled;
-        
+
         if (editable && editableWidget.isReadOnly()) {
           if (isNew && editableWidget.hasColumn()) {
             BeeColumn column = editableWidget.getDataColumn();
@@ -1943,7 +1953,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
             editable = false;
           }
         }
-        
+
         if (editable) {
           editable = editableWidget.isEditable(getActiveRow());
         }

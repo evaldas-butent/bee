@@ -35,7 +35,6 @@
       </SimpleJoin>
       
       <SimpleJoin joinType="LEFT" name="Trip">
-        <SimpleColumn name="TripNo" />
         <SimpleColumn name="Forwarder" />
         <SimpleColumn name="ForwarderVehicle" />
         <SimpleColumn name="Notes" />

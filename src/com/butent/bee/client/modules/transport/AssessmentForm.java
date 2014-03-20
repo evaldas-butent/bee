@@ -2,12 +2,19 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -22,6 +29,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
@@ -33,8 +41,11 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.PrintFormInterceptor;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
@@ -49,10 +60,14 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -62,19 +77,26 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
-public class AssessmentForm extends PrintFormInterceptor implements EditStopEvent.Handler {
+public class AssessmentForm extends PrintFormInterceptor implements EditStopEvent.Handler,
+    ValueChangeHandler<String> {
 
   private class ChildAssessmentsGrid extends AbstractGridInterceptor implements ClickHandler {
     @Override
@@ -135,18 +157,18 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
                 Data.getInteger(view, row, COL_ASSESSMENT_STATUS));
 
             if (isRevocable(status)) {
-              Global.inputString(loc.trAssessmentRejection(),
-                  loc.trAssessmentRejectionReason(),
+              Global.inputString(loc.trAssessmentRejection(), loc.trAssessmentRejectionReason(),
                   new StringCallback() {
                     @Override
                     public void onSuccess(String value) {
-                      Queries.update(view, row.getId(), row.getVersion(),
-                          Data.getColumns(view,
-                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_NOTES)),
-                          Lists.newArrayList(BeeUtils.toString(status.ordinal()),
-                              Data.getString(view, row, COL_ASSESSMENT_NOTES)),
+                      String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
+
+                      Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
+                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                          Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
-                              value), null, new RowUpdateCallback(view));
+                              buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
+                          new RowUpdateCallback(view));
                     }
                   });
             }
@@ -179,6 +201,8 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       }
       newRow.setValue(form.getDataIndex(COL_ASSESSMENT), form.getActiveRowId());
       newRow.clearCell(form.getDataIndex(COL_CARGO));
+      newRow.clearCell(form.getDataIndex(COL_ASSESSMENT_EXPENSES));
+      newRow.clearCell(form.getDataIndex(COL_ASSESSMENT_LOG));
 
       Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(), form.getDataColumns(),
           newRow), new RowCallback() {
@@ -338,7 +362,8 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     }
 
     public void process() {
-      if (Objects.equal(orderStatus, OrderStatus.CANCELED)) {
+      if (Objects.equal(orderStatus, OrderStatus.CANCELED)
+          || Objects.equal(status, AssessmentStatus.LOST)) {
         Global.inputString(confirmationQuestion,
             loc.trAssessmentRejectionReason(), new StringCallback() {
               @Override
@@ -373,9 +398,11 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
         newValues.add(BeeUtils.toString(orderStatus.ordinal()));
       }
       if (!BeeUtils.isEmpty(notes)) {
-        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_NOTES));
-        oldValues.add(form.getStringValue(COL_ASSESSMENT_NOTES));
-        newValues.add(notes);
+        String oldLog = form.getStringValue(COL_ASSESSMENT_LOG);
+        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_LOG));
+        oldValues.add(oldLog);
+        newValues.add(buildLog(status != null ? status.getCaption() : orderStatus.getCaption(),
+            notes, oldLog));
       }
       Queries.update(viewName, form.getActiveRowId(), form.getActiveRow().getVersion(),
           columns, oldValues, newValues, form.getChildrenForUpdate(), new RowCallback() {
@@ -385,13 +412,17 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
 
               if (isPrimary() && !check) {
                 List<String> cols = Lists.newArrayList();
+                List<String> vals = Lists.newArrayList();
 
                 for (int i = 0; i < columns.size(); i++) {
-                  cols.add(columns.get(i).getId());
+                  if (BeeUtils.inListSame(columns.get(i).getId(),
+                      COL_ASSESSMENT_STATUS, ALS_ORDER_STATUS)) {
+                    cols.add(columns.get(i).getId());
+                    vals.add(newValues.get(i));
+                  }
                 }
                 Queries.update(VIEW_CHILD_ASSESSMENTS,
-                    Filter.equals(COL_ASSESSMENT, result.getId()), cols, newValues,
-                    new IntCallback() {
+                    Filter.equals(COL_ASSESSMENT, result.getId()), cols, vals, new IntCallback() {
                       @Override
                       public void onSuccess(Integer res) {
                         if (BeeUtils.allNotNull(status, orderStatus)) {
@@ -409,7 +440,12 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     }
   }
 
-  private static void updateTotals(final FormView form, IsRow row,
+  private static String buildLog(String caption, String value, String oldLog) {
+    return BeeUtils.join("\n--\n",
+        TimeUtils.nowMinutes().toCompactString() + " " + caption + ": " + value, oldLog);
+  }
+
+  private static void updateTotals(final FormView formView, IsRow row,
       final Widget incomeTotalWidget, final Widget expenseTotalWidget, final Widget profitWidget,
       final Widget incomeWidget, final Widget expenseWidget) {
 
@@ -428,13 +464,13 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
     args.addDataItem(COL_ASSESSMENT, row.getId());
 
-    if (!DataUtils.isId(row.getLong(form.getDataIndex(COL_ASSESSMENT)))) {
+    if (!DataUtils.isId(row.getLong(formView.getDataIndex(COL_ASSESSMENT)))) {
       args.addDataItem("isPrimary", 1);
     }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        response.notify(form);
+        response.notify(formView);
 
         if (response.hasErrors()) {
           return;
@@ -474,6 +510,27 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     });
   }
 
+  private static void updateVehicles(final Widget vehicleWidget, long assessmentId) {
+    if (vehicleWidget != null) {
+      Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, Lists.newArrayList(COL_FORWARDER_VEHICLE),
+          Filter.and(Filter.isEqual(COL_ASSESSMENT, new LongValue(assessmentId)),
+              Filter.notNull(COL_FORWARDER_VEHICLE)), new RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              StringBuilder vehicles = new StringBuilder();
+
+              for (int i = 0; i < result.getNumberOfRows(); i++) {
+                if (i > 0) {
+                  vehicles.append(", ");
+                }
+                vehicles.append(result.getString(i, COL_FORWARDER_VEHICLE));
+              }
+              vehicleWidget.getElement().setInnerText(vehicles.toString());
+            }
+          });
+    }
+  }
+
   private FormView form;
   private final LocalizableConstants loc = Localized.getConstants();
 
@@ -504,7 +561,9 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       new StatusUpdater(OrderStatus.COMPLETED, null, true, loc.trAssessmentAskCompleted()));
 
   private ChildGrid childAssessments;
-  private Widget statusLabel;
+  private HasWidgets statusLabel;
+  private InputBoolean expensesRegistered;
+  private ChildGrid childExpenses;
 
   @Override
   public void afterCreateWidget(final String name, IdentifiableWidget widget,
@@ -523,14 +582,32 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
 
       } else if (BeeUtils.inListSame(name, TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES)) {
         interceptor = new ServicesGrid();
+
+        if (BeeUtils.same(name, TBL_CARGO_EXPENSES)) {
+          childExpenses = grid;
+        }
       }
       if (interceptor != null) {
         grid.setGridInterceptor(interceptor);
       }
     } else if (widget instanceof DataSelector && BeeUtils.same(name, COL_CURRENCY)) {
       ((DataSelector) widget).addEditStopHandler(this);
-    } else if (BeeUtils.same(name, COL_STATUS)) {
-      statusLabel = widget.asWidget();
+
+    } else if (BeeUtils.same(name, COL_STATUS) && widget instanceof HasWidgets) {
+      statusLabel = (HasWidgets) widget;
+
+    } else if (BeeUtils.same(name, COL_ASSESSMENT_EXPENSES) && widget instanceof InputBoolean) {
+      expensesRegistered = (InputBoolean) widget;
+      expensesRegistered.addValueChangeHandler(this);
+
+    } else if (widget instanceof TabbedPages) {
+      ((TabbedPages) widget)
+          .addSelectionHandler(new SelectionHandler<Pair<Integer, SelectionOrigin>>() {
+            @Override
+            public void onSelection(SelectionEvent<Pair<Integer, SelectionOrigin>> event) {
+              onValueChange(null);
+            }
+          });
     }
   }
 
@@ -555,9 +632,25 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       header.setCaption(caption);
     }
     if (statusLabel != null) {
-      statusLabel.getElement().setInnerText(request
+      statusLabel.clear();
+      statusLabel.add(new InlineLabel(request
           ? EnumUtils.getCaption(AssessmentStatus.class, status)
-          : EnumUtils.getCaption(OrderStatus.class, orderStatus));
+          : EnumUtils.getCaption(OrderStatus.class, orderStatus)));
+
+      final String log = form.getStringValue(COL_ASSESSMENT_LOG);
+
+      if (!BeeUtils.isEmpty(log)) {
+        FaLabel lbl = new FaLabel(FontAwesome.COMMENT, true);
+        lbl.getElement().getStyle().setMarginLeft(5, Unit.PX);
+        lbl.getElement().getStyle().setCursor(Cursor.POINTER);
+        lbl.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            Global.showInfo(log);
+          }
+        });
+        statusLabel.add(lbl);
+      }
     }
     if (owner && !newRecord) {
       header.addCommandItem(new Button(loc.trWriteEmail(), new ClickHandler() {
@@ -618,7 +711,50 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     if (childAssessments != null && !primary) {
       childAssessments.setEnabled(false);
     }
+    onValueChange(null);
     refreshTotals();
+  }
+
+  @Override
+  public boolean beforeAction(final Action action, final Presenter presenter) {
+    if (action == Action.SAVE && !isNewRow()) {
+      final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
+      final String oldLog = form.getOldRow().getString(logIdx);
+      String newLog = form.getActiveRow().getString(logIdx);
+
+      if (Objects.equal(oldLog, newLog)) {
+        final Map<String, DateTime> dates = Maps.newLinkedHashMap();
+
+        for (String col : new String[] {"LoadingDate", "UnloadingDate"}) {
+          int idx = form.getDataIndex(col);
+          DateTime oldValue = form.getOldRow().getDateTime(idx);
+          DateTime value = form.getActiveRow().getDateTime(idx);
+
+          if (!Objects.equal(oldValue, value)) {
+            dates.put(Localized.maybeTranslate(form.getDataColumns().get(idx).getLabel()), value);
+          }
+        }
+        if (!BeeUtils.isEmpty(dates)) {
+          Global.inputString(BeeUtils.join("/", dates.keySet()), loc.trAssessmentRejectionReason(),
+              new StringCallback() {
+                @Override
+                public void onSuccess(String value) {
+                  String log = oldLog;
+
+                  for (Entry<String, DateTime> entry : dates.entrySet()) {
+                    log = buildLog(BeeUtils.joinWords(entry.getKey(),
+                        entry.getValue() != null ? entry.getValue().toCompactString()
+                            : loc.filterNullLabel()), value, log);
+                  }
+                  form.getActiveRow().setValue(logIdx, log);
+                  presenter.handleAction(action);
+                }
+              });
+          return false;
+        }
+      }
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -626,8 +762,9 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     return new AssessmentPrintForm() {
       @Override
       public void beforeRefresh(FormView formView, IsRow row) {
-        super.beforeRefresh(form, row);
-        updateTotals(form, row, form.getWidgetByName(VAR_TOTAL), null, null, null, null);
+        super.beforeRefresh(formView, row);
+        updateTotals(formView, row, formView.getWidgetByName(VAR_TOTAL), null, null, null, null);
+        updateVehicles(formView.getWidgetByName(COL_FORWARDER_VEHICLE), form.getActiveRowId());
       }
     };
   }
@@ -661,6 +798,15 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   @Override
   public void onLoad(FormView formView) {
     this.form = formView;
+  }
+
+  @Override
+  public void onValueChange(ValueChangeEvent<String> event) {
+    if (childExpenses != null && expensesRegistered != null) {
+      childExpenses.setEnabled(!expensesRegistered.isChecked()
+          && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
+          && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
+    }
   }
 
   private boolean isPrimary() {

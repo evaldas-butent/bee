@@ -31,6 +31,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_MANAGER = "Manager";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
+  public static final String COL_TRADE_EXPORTED = "Exported";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";

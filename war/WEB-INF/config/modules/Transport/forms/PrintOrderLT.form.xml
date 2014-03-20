@@ -23,7 +23,9 @@
       <Table>
         <row>
           <Label html="Užsakymo Nr.:" style="text-align:right; &bold;" />
-          <TextLabel source="OrderNo" />
+          <TextLabel>
+            <render><ui:expression>rowId</ui:expression></render>
+          </TextLabel>
         </row>
         <row>
           <Label html="Ref numeris:" style="text-align:right; &bold;" />
@@ -125,17 +127,8 @@
     <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Papildoma informacija:" style="&bold;" />
       <TextLabel source="CargoNotes" style="white-space:pre-wrap;" />
-
-      <FlowPanel>
-        <FlowPanel>
-          <Label html="Transporto priemonės nr.:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="LoadingNumber" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-        <FlowPanel>
-          <Label html="Transporto priemonės nr.2:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="UnloadingNumber" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-      </FlowPanel>
+      <Label html="Transporto priemonių nr.:" style="&bold;" />
+      <Label name="ForwarderVehicle" />
     </HorizontalPanel>
 
     <HorizontalPanel class="&form;-table" style="&section;">

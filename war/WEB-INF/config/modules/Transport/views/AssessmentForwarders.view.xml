@@ -10,16 +10,14 @@
       <SimpleColumn name="Cargo" />
   
       <SimpleJoin joinType="LEFT" name="Trip">
-        <SimpleColumn name="TripNo" />
-  
         <SimpleColumn name="Expedition" editable="true" />
         <SimpleJoin joinType="LEFT" name="Expedition">
-          <SimpleColumn name="Name" alias="ExpeditionType" />
+          <SimpleColumn name="Name" alias="ExpeditionType" label="=trExpeditionType" />
         </SimpleJoin>
   
         <SimpleColumn name="Forwarder" editable="true" />
         <SimpleJoin joinType="LEFT" name="Forwarder">
-          <SimpleColumn name="Name" alias="ForwarderName" />
+          <SimpleColumn name="Name" alias="ForwarderName" label="=carrier" />
         </SimpleJoin>
   
         <SimpleColumn name="ForwarderVehicle" editable="true" />

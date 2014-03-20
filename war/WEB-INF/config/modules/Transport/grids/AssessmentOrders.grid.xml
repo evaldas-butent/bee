@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
-  flexGrow="1" order="AssessmentID desc"
+  flexGrow="1" order="AssessmentID desc" disabledActions="add delete"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
@@ -10,7 +11,7 @@
     <DataColumn name="Assessment" width="40" />
     <DataColumn name="Date" width="110" readOnly="true" />
     <DataColumn name="OrderStatus" width="70" />
-    <DataColumn name="OrderNo" width="70" />
+    <DataColumn name="Number" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
@@ -31,9 +32,22 @@
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
-
-    <DataColumn name="Number" width="70" />
+    <DataColumn name="ExpensesRegistered" caption="S" width="15" sortable="false" />
+    <DataColumn name="Log" visible="false" />
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>="color:gold"</ui:inline>
+    <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.ExpensesRegistered</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>="color:green"</ui:inline>
+    <ui:expression>row.OrderStatus == 3</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>="color:blue"</ui:inline>
+    <ui:expression>row.OrderStatus == 1 &amp;&amp; new Date(row.UnloadingDate).toDateString() == new Date().toDateString()</ui:expression>
+  </g:rowStyle>
 
   <g:predefinedFilter name="active" label="Vykdomi" initial="true">
     <g:column name="OrderStatus" value="1" />
