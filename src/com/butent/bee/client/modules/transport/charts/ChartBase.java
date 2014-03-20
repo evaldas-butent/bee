@@ -141,6 +141,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private static final String STYLE_ITEM_PREFIX = STYLE_PREFIX + "item-";
   private static final String STYLE_ITEM_START = STYLE_ITEM_PREFIX + "start";
   private static final String STYLE_ITEM_END = STYLE_ITEM_PREFIX + "end";
+  private static final String STYLE_ITEM_HAS_HANDLING = STYLE_ITEM_PREFIX + "hasHandling";
   
   private final HeaderView headerView;
   private final Flow canvas;
@@ -1700,6 +1701,10 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
     if (getVisibleRange().contains(item.getRange().upperEndpoint())) {
       widget.addStyleName(STYLE_ITEM_END);
     }
+  }
+
+  protected void styleItemHasHandling(Widget widget) {
+    widget.addStyleName(STYLE_ITEM_HAS_HANDLING);
   }
 
   protected void updateMaxRange() {

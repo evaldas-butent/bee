@@ -346,6 +346,10 @@
   border-bottom-right-radius: 6px 50%;
 }
 
+.bee-tr-chart-item-hasHandling {
+  background-image: repeating-linear-gradient(90deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
+}
+
 .bee-tr-dtb-Trip-void,
 .bee-tr-vtb-Trip-void {
   position: absolute;

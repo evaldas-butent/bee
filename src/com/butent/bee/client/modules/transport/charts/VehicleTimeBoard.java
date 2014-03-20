@@ -829,6 +829,10 @@ abstract class VehicleTimeBoard extends ChartBase {
       freight.makeTarget(panel, STYLE_FREIGHT_DRAG_OVER);
     }
 
+    if (hasCargoHandling(freight.getCargoId())) {
+      styleItemHasHandling(panel);
+    }
+
     renderCargoShipment(panel, freight, freight.getTripTitle());
 
     return panel;
