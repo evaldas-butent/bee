@@ -183,6 +183,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     setWidget(gp.getWidget());
     setPresenter(gp);
+    
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().afterCreatePresenter(gp);
+    }
 
     if (Objects.equal(row, getPendingRow())) {
       updateFilter(row);

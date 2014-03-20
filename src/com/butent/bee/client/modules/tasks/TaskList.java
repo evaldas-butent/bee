@@ -128,6 +128,19 @@ final class TaskList {
     }
 
     @Override
+    public void afterCreatePresenter(GridPresenter presenter) {
+      presenter.getHeader().clearCommandPanel();
+
+      if (type.equals(TaskType.ALL) || type.equals(TaskType.DELEGATED)) {
+        FaLabel confirmTask = new FaLabel(FontAwesome.CHECK_SQUARE_O);
+        confirmTask.setTitle(Localized.getConstants().crmTaskConfirm());
+        confirmTask.addClickHandler(this);
+
+        presenter.getHeader().addCommandItem(confirmTask);
+      }
+    }
+
+    @Override
     public boolean beforeAction(Action action, final GridPresenter presenter) {
       if (action == Action.COPY) {
         if (presenter.getMainView().isEnabled() && presenter.getActiveRow() != null) {
@@ -311,19 +324,6 @@ final class TaskList {
     public boolean onLoad(GridDescription gridDescription) {
       gridDescription.setFilter(type.getFilter(new LongValue(userId)));
       return true;
-    }
-
-    @Override
-    public void onShow(GridPresenter presenter) {
-      presenter.getHeader().clearCommandPanel();
-
-      if (type.equals(TaskType.ALL) || type.equals(TaskType.DELEGATED)) {
-        FaLabel confirmTask = new FaLabel(FontAwesome.CHECK_SQUARE_O);
-        confirmTask.setTitle(Localized.getConstants().crmTaskConfirm());
-        confirmTask.addClickHandler(this);
-
-        presenter.getHeader().addCommandItem(confirmTask);
-      }
     }
 
     private void confirmTask(final GridView gridView, final IsRow row) {

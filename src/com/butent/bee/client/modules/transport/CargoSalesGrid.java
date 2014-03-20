@@ -56,6 +56,13 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
   private UnboundSelector mainItem;
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+    presenter.getHeader()
+        .addCommandItem(new Button(Localized.getConstants().createInvoice(), this));
+  }
+
+  @Override
   public Map<String, Filter> getInitialParentFilters() {
     return ImmutableMap.of("pyp", Filter.isNull(COL_SALE));
   }
@@ -242,12 +249,5 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
             });
       }
     });
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.getHeader().clearCommandPanel();
-    presenter.getHeader()
-        .addCommandItem(new Button(Localized.getConstants().createInvoice(), this));
   }
 }

@@ -60,6 +60,14 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
   }
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
+      provider = (LocalProvider) presenter.getDataProvider();
+      requery();
+    }
+  }
+
+  @Override
   public String getCaption() {
     return BeeUtils.joinWords(Localized.getConstants().actionAudit(),
         BeeUtils.parenthesize(Data.getViewCaption(viewName)));
@@ -86,14 +94,6 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
               null, PresenterCallback.SHOW_IN_POPUP);
         }
       }
-    }
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
-      provider = (LocalProvider) presenter.getDataProvider();
-      requery();
     }
   }
 

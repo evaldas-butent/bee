@@ -24,6 +24,11 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
   private InputBoolean finished;
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.handleAction(Action.REFRESH);
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
@@ -51,11 +56,6 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
   @Override
   public void beforeRefresh(GridPresenter presenter) {
     presenter.getDataProvider().setParentFilter("CustomFilter", getFilter());
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.handleAction(Action.REFRESH);
   }
 
   private Filter getFilter() {

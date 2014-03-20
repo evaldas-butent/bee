@@ -158,25 +158,6 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
-  private static class StarRenderer extends AbstractCellRenderer {
-
-    public static String render(boolean flagged) {
-      return flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
-    }
-
-    private final int flags;
-
-    public StarRenderer(List<? extends IsColumn> dataColumns) {
-      super(null);
-      flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
-    }
-
-    @Override
-    public String render(IsRow row) {
-      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)));
-    }
-  }
-
   private class ContentHandler implements ActiveRowChangeEvent.Handler {
     private final int messageId;
     private final int sender;
@@ -298,24 +279,6 @@ public class MailPanel extends AbstractFormInterceptor {
     private final Horizontal dummy = new Horizontal();
 
     @Override
-    public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-      return Data.createRowSet(gridDescription.getViewName());
-    }
-
-    @Override
-    public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
-        CellSource cellSource) {
-
-      if (BeeUtils.same(columnName, "Star")) {
-        return new StarRenderer(dataColumns);
-      } else if (BeeUtils.same(columnName, "Envelope")) {
-        return new EnvelopeRenderer(dataColumns);
-      }
-      return null;
-    }
-
-    @Override
     public void afterCreate(final GridView gridView) {
       Binder.addDragStartHandler(gridView.getGrid(), new DragStartHandler() {
         @Override
@@ -380,6 +343,37 @@ public class MailPanel extends AbstractFormInterceptor {
     }
 
     @Override
+    public void afterCreatePresenter(GridPresenter presenter) {
+      presenter.getGridView().getGrid()
+          .addActiveRowChangeHandler(new ContentHandler(presenter.getDataColumns()));
+
+      initFolders(false, new ScheduledCommand() {
+        @Override
+        public void execute() {
+          refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
+        }
+      });
+    }
+
+    @Override
+    public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
+      return Data.createRowSet(gridDescription.getViewName());
+    }
+
+    @Override
+    public AbstractCellRenderer getRenderer(String columnName,
+        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
+        CellSource cellSource) {
+
+      if (BeeUtils.same(columnName, "Star")) {
+        return new StarRenderer(dataColumns);
+      } else if (BeeUtils.same(columnName, "Envelope")) {
+        return new EnvelopeRenderer(dataColumns);
+      }
+      return null;
+    }
+
+    @Override
     public void onEditStart(final EditStartEvent event) {
       if ("Star".equals(event.getColumnId())) {
         final IsRow row = event.getRowValue();
@@ -401,18 +395,24 @@ public class MailPanel extends AbstractFormInterceptor {
             });
       }
     }
+  }
+
+  private static class StarRenderer extends AbstractCellRenderer {
+
+    public static String render(boolean flagged) {
+      return flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
+    }
+
+    private final int flags;
+
+    public StarRenderer(List<? extends IsColumn> dataColumns) {
+      super(null);
+      flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
+    }
 
     @Override
-    public void onShow(GridPresenter presenter) {
-      presenter.getGridView().getGrid()
-          .addActiveRowChangeHandler(new ContentHandler(presenter.getDataColumns()));
-
-      initFolders(false, new ScheduledCommand() {
-        @Override
-        public void execute() {
-          refresh(getCurrentAccount().getSystemFolderId(SystemFolder.Inbox));
-        }
-      });
+    public String render(IsRow row) {
+      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)));
     }
   }
 

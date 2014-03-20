@@ -59,6 +59,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   void afterCreateColumns(GridView gridView);
 
+  void afterCreatePresenter(GridPresenter presenter);
+
   void afterDeleteRow(long rowId);
 
   void afterInsertRow(IsRow result);
@@ -92,12 +94,12 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   boolean ensureRelId(IdCallback callback);
 
   String getColumnCaption(String columnName);
-
+  
   /**
    * Enables conditional styles for columns.
    */
   StyleProvider getColumnStyleProvider(String columnName);
-  
+
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
@@ -126,9 +128,9 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   GridInterceptor getInstance();
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
-
-  String getRowCaption(IsRow row, boolean edit);
   
+  String getRowCaption(IsRow row, boolean edit);
+
   /**
    * Enables conditional styles for rows.
    */
@@ -145,14 +147,12 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   boolean onLoadExtWidget(Element root);
 
   void onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
-
-  void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
   
+  void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
+
   boolean onRowInsert(RowInsertEvent event);
 
   void onSaveChanges(GridView gridView, SaveChangesEvent event);
-
-  void onShow(GridPresenter presenter);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
 

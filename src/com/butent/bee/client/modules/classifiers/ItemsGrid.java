@@ -4,7 +4,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
@@ -86,11 +85,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
       getGridPresenter().refresh(true);
     }
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    setGridPresenter(presenter);
   }
 
   public boolean showServices() {

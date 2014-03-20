@@ -50,9 +50,11 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    addNewMapping();
-    return false;
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
+      provider = (LocalProvider) presenter.getDataProvider();
+      requery();
+    }
   }
 
   @Override
@@ -61,6 +63,12 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
       return super.beforeAction(action, presenter);
     }
     requery();
+    return false;
+  }
+
+  @Override
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+    addNewMapping();
     return false;
   }
 
@@ -97,14 +105,6 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
   public void onParentRow(ParentRowEvent event) {
     this.parentId = event == null ? null : event.getRowId();
     requery();
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
-      provider = (LocalProvider) presenter.getDataProvider();
-      requery();
-    }
   }
 
   private void addNewMapping() {

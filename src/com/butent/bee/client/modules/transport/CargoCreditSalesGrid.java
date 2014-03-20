@@ -57,11 +57,18 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
   private InputNumber creditAmount;
 
     @Override
-    public Map<String, Filter> getInitialParentFilters() {
-      return ImmutableMap.of("pyp",
-          Filter.and(Filter.isNull(COL_SALE_PROFORMA), Filter.isNull(COL_PURCHASE)));
+    public void afterCreatePresenter(GridPresenter presenter) {
+      presenter.getHeader().clearCommandPanel();
+      presenter.getHeader()
+          .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
     }
  
+  @Override
+  public Map<String, Filter> getInitialParentFilters() {
+    return ImmutableMap.of("pyp",
+        Filter.and(Filter.isNull(COL_SALE_PROFORMA), Filter.isNull(COL_PURCHASE)));
+  }
+
   @Override
   public GridInterceptor getInstance() {
     return new CargoCreditSalesGrid();
@@ -225,12 +232,5 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
             });
       }
     });
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.getHeader().clearCommandPanel();
-    presenter.getHeader()
-        .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
   }
 }

@@ -643,7 +643,7 @@ public final class GridFactory {
         parentFilters, userFilterValues, userFilter, order, gridOptions);
 
     if (gridInterceptor != null) {
-      gridInterceptor.onShow(presenter);
+      gridInterceptor.afterCreatePresenter(presenter);
     }
 
     presenterCallback.onCreate(presenter);

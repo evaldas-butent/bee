@@ -1,0 +1,23 @@
+.bee-svc-invoice-builder-popup {
+  border: 2px solid #b4b4b4;
+  border-radius: 6px;
+  background-color: white;
+}
+
+.bee-svc-invoice-builder-wrapper {
+  margin: 1ex 1em;
+  max-height: 400px;
+  overflow: auto;
+}
+.bee-svc-invoice-builder-table {
+  border-collapse: collapse;
+}
+.bee-svc-invoice-builder-table td {
+  padding: 3px 5px;
+  border: 1px solid #ccc;
+}
+
+.bee-svc-invoice-builder-commands {
+  margin: 1ex 1em;
+  text-align: right;
+}

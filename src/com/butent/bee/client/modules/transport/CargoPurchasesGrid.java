@@ -52,6 +52,13 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
   private UnboundSelector mainItem;
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+    presenter.getHeader()
+        .addCommandItem(new Button(Localized.getConstants().createPurchaseInvoice(), this));
+  }
+
+  @Override
   public Map<String, Filter> getInitialParentFilters() {
     return ImmutableMap.of("pyp", Filter.isNull(COL_PURCHASE));
   }
@@ -183,12 +190,5 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
             });
       }
     });
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.getHeader().clearCommandPanel();
-    presenter.getHeader()
-        .addCommandItem(new Button(Localized.getConstants().createPurchaseInvoice(), this));
   }
 }

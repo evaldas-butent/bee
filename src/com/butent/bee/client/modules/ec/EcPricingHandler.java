@@ -69,27 +69,7 @@ class EcPricingHandler extends AbstractGridInterceptor {
   }
 
   @Override
-  public GridInterceptor getInstance() {
-    return new EcPricingHandler();
-  }
-  
-  @Override
-  public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription, CellSource cellSource) {
-
-    if (BeeUtils.same(columnName, "Name")) {
-      int nameIndex = DataUtils.getColumnIndex(EcConstants.COL_TCD_CATEGORY_NAME, dataColumns);
-      int fullNameIndex = DataUtils.getColumnIndex(EcConstants.COL_TCD_CATEGORY_FULL_NAME,
-          dataColumns);
-
-      return new CategoryNameRenderer(nameIndex, fullNameIndex, columnDescription.getOptions());
-    } else {
-      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
-    }
-  }
-
-  @Override
-  public void onShow(final GridPresenter presenter) {
+  public void afterCreatePresenter(final GridPresenter presenter) {
     EcKeeper.getConfiguration(new Consumer<Map<String, String>>() {
       @Override
       public void accept(Map<String, String> input) {
@@ -121,5 +101,25 @@ class EcPricingHandler extends AbstractGridInterceptor {
         presenter.getHeader().addCommandItem(dmpInput);
       }
     });
+  }
+  
+  @Override
+  public GridInterceptor getInstance() {
+    return new EcPricingHandler();
+  }
+
+  @Override
+  public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
+      ColumnDescription columnDescription, CellSource cellSource) {
+
+    if (BeeUtils.same(columnName, "Name")) {
+      int nameIndex = DataUtils.getColumnIndex(EcConstants.COL_TCD_CATEGORY_NAME, dataColumns);
+      int fullNameIndex = DataUtils.getColumnIndex(EcConstants.COL_TCD_CATEGORY_FULL_NAME,
+          dataColumns);
+
+      return new CategoryNameRenderer(nameIndex, fullNameIndex, columnDescription.getOptions());
+    } else {
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+    }
   }
 }

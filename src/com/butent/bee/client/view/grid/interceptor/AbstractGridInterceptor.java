@@ -85,6 +85,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
   }
@@ -337,10 +341,6 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
   }
 
   @Override

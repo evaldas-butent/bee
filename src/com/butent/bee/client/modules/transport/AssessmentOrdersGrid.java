@@ -47,6 +47,12 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
   private final Button action = new Button(Localized.getConstants().trCreateTransportation(), this);
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().addCommandItem(action);
+    super.afterCreatePresenter(presenter);
+  }
+
+  @Override
   public GridInterceptor getInstance() {
     return new AssessmentOrdersGrid();
   }
@@ -146,11 +152,5 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
         BeeKeeper.getUser().getUserId()), Filter.isNotEqual(ALS_ORDER_STATUS,
         IntegerValue.of(OrderStatus.REQUEST))));
     return true;
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.getHeader().addCommandItem(action);
-    super.onShow(presenter);
   }
 }
