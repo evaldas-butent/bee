@@ -6,7 +6,7 @@
   editShowId="true" flexGrow="1"
   disabledActions="add"
   caption="=trProformaInvoices"
-  filter="Proforma"
+  filter="Sale AND Proforma"
   >
   <g:columns>
     <IdColumn name="ID" caption="=trdInvoiceId" />

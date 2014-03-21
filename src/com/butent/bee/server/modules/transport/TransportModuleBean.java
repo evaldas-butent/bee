@@ -266,6 +266,7 @@ public class TransportModuleBean implements BeeModule {
     String module = getModule().getName();
 
     return Lists.newArrayList(
+        BeeParameter.createText(module, PRM_INVOICE_PREFIX, true, null),
         BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createText(module, "ERPCreditOperation", false, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL, false, null),

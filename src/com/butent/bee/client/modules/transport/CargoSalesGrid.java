@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
@@ -34,6 +35,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -142,7 +144,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         final boolean mainRequired = itemEmpty;
         final DataInfo saleInfo = Data.getDataInfo(VIEW_CARGO_INVOICES);
 
-        BeeRow newRow = RowFactory.createEmptyRow(saleInfo, true);
+        final BeeRow newRow = RowFactory.createEmptyRow(saleInfo, true);
 
         newRow.setValue(saleInfo.getColumnIndex(COL_NUMBER), BeeUtils.joinItems(orders));
         newRow.setValue(saleInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
@@ -185,68 +187,76 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
                 entry.getValue());
           }
         }
-        RowFactory.createRow(FORM_NEW_CARGO_INVOICE, null, saleInfo, newRow, null,
-            new AbstractFormInterceptor() {
-              @Override
-              public FormInterceptor getInstance() {
-                return this;
-              }
+        Global.getParameter(PRM_INVOICE_PREFIX, new Consumer<String>() {
+          @Override
+          public void accept(String prefix) {
+            newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
 
-              @Override
-              public void onStart(FormView form) {
-                Widget w = form.getWidgetByName("MainItem");
+            RowFactory.createRow(FORM_NEW_CARGO_INVOICE, null, saleInfo, newRow, null,
+                new AbstractFormInterceptor() {
+                  @Override
+                  public FormInterceptor getInstance() {
+                    return this;
+                  }
 
-                if (w != null && w instanceof UnboundSelector) {
-                  mainItem = (UnboundSelector) w;
+                  @Override
+                  public void onStart(FormView form) {
+                    Widget w = form.getWidgetByName("MainItem");
 
-                  if (mainRequired) {
-                    mainItem.setNullable(false);
-                    w = form.getWidgetByName("MainItemCaption");
+                    if (w != null && w instanceof UnboundSelector) {
+                      mainItem = (UnboundSelector) w;
 
-                    if (w != null) {
-                      w.addStyleName(StyleUtils.NAME_REQUIRED);
+                      if (mainRequired) {
+                        mainItem.setNullable(false);
+                        w = form.getWidgetByName("MainItemCaption");
+
+                        if (w != null) {
+                          w.addStyleName(StyleUtils.NAME_REQUIRED);
+                        }
+                      }
                     }
                   }
-                }
-              }
-            },
-            new RowCallback() {
-              @Override
-              public void onCancel() {
-                mainItem = null;
-              }
-
-              @Override
-              public void onSuccess(final BeeRow row) {
-                ParameterList args = TransportHandler.createArgs(SVC_CREATE_INVOICE_ITEMS);
-                args.addDataItem(COL_SALE, row.getId());
-                args.addDataItem(COL_CURRENCY, row.getLong(saleInfo.getColumnIndex(COL_CURRENCY)));
-                args.addDataItem(VAR_ID, DataUtils.buildIdList(ids));
-
-                if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
-                  args.addDataItem(COL_ITEM, mainItem.getRelatedId());
-                }
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                },
+                new RowCallback() {
                   @Override
-                  public void onResponse(ResponseObject response) {
-                    response.notify(presenter.getGridView());
+                  public void onCancel() {
+                    mainItem = null;
+                  }
 
-                    if (response.hasErrors()) {
-                      return;
-                    }
-                    Popup popup = UiHelper.getParentPopup(presenter.getGridView().getGrid());
+                  @Override
+                  public void onSuccess(final BeeRow row) {
+                    ParameterList args = TransportHandler.createArgs(SVC_CREATE_INVOICE_ITEMS);
+                    args.addDataItem(COL_SALE, row.getId());
+                    args.addDataItem(COL_CURRENCY,
+                        row.getLong(saleInfo.getColumnIndex(COL_CURRENCY)));
+                    args.addDataItem(VAR_ID, DataUtils.buildIdList(ids));
 
-                    if (popup != null) {
-                      popup.close();
+                    if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
+                      args.addDataItem(COL_ITEM, mainItem.getRelatedId());
                     }
-                    Data.onViewChange(presenter.getViewName(),
-                        DataChangeEvent.CANCEL_RESET_REFRESH);
-                    RowEditor.openRow(FORM_CARGO_INVOICE, saleInfo, row.getId());
+                    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject response) {
+                        response.notify(presenter.getGridView());
+
+                        if (response.hasErrors()) {
+                          return;
+                        }
+                        Popup popup = UiHelper.getParentPopup(presenter.getGridView().getGrid());
+
+                        if (popup != null) {
+                          popup.close();
+                        }
+                        Data.onViewChange(presenter.getViewName(),
+                            DataChangeEvent.CANCEL_RESET_REFRESH);
+                        RowEditor.openRow(FORM_CARGO_INVOICE, saleInfo, row.getId());
+                      }
+                    });
+                    onCancel();
                   }
                 });
-                onCancel();
-              }
-            });
+          }
+        });
       }
     });
   }

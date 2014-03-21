@@ -16,11 +16,11 @@
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <FlowPanel style="&section;">
-      <Label text="=carrier" class="bee-required" style="&labelLeft; width:140px;" />
+      <Label for="Forwarder" text="=carrier" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Forwarder" required="true" style="&input; width:200px;" />
     </FlowPanel>
-    <FlowPanel style="&section;">
-      <Label text="=trExpeditionType" class="bee-required" style="&labelLeft; width:140px;" />
+    <FlowPanel for="Expedition" style="&section;">
+      <Label for="Expedition" text="=trExpeditionType" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Expedition" required="true" style="&input; width:150px;"  />
     </FlowPanel>
 

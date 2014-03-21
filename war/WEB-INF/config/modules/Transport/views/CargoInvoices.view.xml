@@ -4,7 +4,6 @@
 
   name="CargoInvoices" source="Sales"
   editForm="CargoInvoice"
-  filter="Sale"
   >
   <Columns>
     <SimpleColumn name="Date" />

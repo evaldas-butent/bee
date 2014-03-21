@@ -441,8 +441,8 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   }
 
   private static String buildLog(String caption, String value, String oldLog) {
-    return BeeUtils.join("\n--\n",
-        TimeUtils.nowMinutes().toCompactString() + " " + caption + ": " + value, oldLog);
+    return BeeUtils.join("\n\n",
+        TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
   }
 
   private static void updateTotals(final FormView formView, IsRow row,
@@ -640,7 +640,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       final String log = form.getStringValue(COL_ASSESSMENT_LOG);
 
       if (!BeeUtils.isEmpty(log)) {
-        FaLabel lbl = new FaLabel(FontAwesome.COMMENT, true);
+        FaLabel lbl = new FaLabel(FontAwesome.COMMENT_O, true);
         lbl.getElement().getStyle().setMarginLeft(5, Unit.PX);
         lbl.getElement().getStyle().setCursor(Cursor.POINTER);
         lbl.addClickHandler(new ClickHandler() {

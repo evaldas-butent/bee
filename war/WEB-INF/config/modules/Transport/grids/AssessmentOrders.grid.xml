@@ -32,7 +32,9 @@
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
-    <DataColumn name="ExpensesRegistered" caption="S" width="15" sortable="false" />
+    <DataColumn name="ExpensesRegistered" caption="&#xf0f6;" width="15" sortable="false">
+      <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
+    </DataColumn>
     <DataColumn name="Log" visible="false" />
   </g:columns>
 
