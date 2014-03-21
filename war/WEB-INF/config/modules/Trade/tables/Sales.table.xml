@@ -32,6 +32,8 @@
 
     <Boolean name="Proforma" label="=trdProformaInvoice" />
     <DateTime name="Exported" label="=trdExported" />
+    
+    <Integer name="Kind" />
   </Fields>
 
   <Indexes>

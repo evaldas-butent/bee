@@ -56,13 +56,13 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
   private UnboundSelector mainItem;
   private InputNumber creditAmount;
 
-    @Override
-    public void afterCreatePresenter(GridPresenter presenter) {
-      presenter.getHeader().clearCommandPanel();
-      presenter.getHeader()
-          .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
-    }
- 
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+    presenter.getHeader()
+        .addCommandItem(new Button(Localized.getConstants().createCreditInvoice(), this));
+  }
+
   @Override
   public Map<String, Filter> getInitialParentFilters() {
     return ImmutableMap.of("pyp",

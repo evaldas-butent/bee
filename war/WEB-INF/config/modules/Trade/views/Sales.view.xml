@@ -29,5 +29,7 @@
     <SimpleColumn name="Payer" />
     
     <SimpleColumn name="Manager" />
+
+    <SimpleColumn name="Kind" />
   </Columns>
 </View>

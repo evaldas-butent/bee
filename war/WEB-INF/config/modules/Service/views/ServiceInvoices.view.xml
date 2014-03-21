@@ -3,15 +3,18 @@
       xmlns:x="http://www.butent.com/expression"
 
   name="ServiceInvoices" source="Sales"
-  filter="Invoice"
   caption="=svcInvoices"
+  editForm="ServiceInvoice"
   >
   <Columns>
     <SimpleColumn name="Date" />
+
     <SimpleColumn name="Number" />
     <SimpleColumn name="InvoicePrefix" />
     <SimpleColumn name="InvoiceNo" />
+
     <SimpleColumn name="Term" />
+    <SimpleColumn name="Proforma" />
 
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Exported" />
@@ -61,10 +64,8 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-    
-    <ExternalJoin name="Invoice" source="Maintenance" joinType="LEFT">
-      <AggregateColumn name="Invoice" aggregate="MAX" />
-    </ExternalJoin>
+
+    <SimpleColumn name="Kind" />
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

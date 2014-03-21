@@ -2,31 +2,19 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ServiceInvoices" viewName="ServiceInvoices"
+  name="ServiceInvoices" viewName="ServiceInvoices" filter="Kind 1"
   editShowId="true" flexGrow="1"
   disabledActions="add"
   caption="=svcInvoices"
   >
   <g:columns>
-    <SelectionColumn name="Select" width="20" />
+<!--     <SelectionColumn name="Select" width="20" /> -->
     <IdColumn name="ID" label="=trdInvoiceId" />
-    <DataColumn name="Date" />
-    <DataColumn name="Number" />
-    <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
-      <render>
-        <ui:function>
-          if (!row.InvoicePrefix) {
-            return row.InvoiceNo;
-          } else if(!row.InvoiceNo) {
-            return row.InvoicePrefix;
-          } else {
-            return row.InvoicePrefix + " " + row.InvoiceNo;
-          }
-        </ui:function>
-      </render>
-    </DataColumn>
-    <DataColumn name="CustomerName" label="=trdCustomer" />
-    <DataColumn name="PayerName" label="=trdPayer" />
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="InvoicePrefix" />
+    <DataColumn name="InvoiceNo" />
+    <DataColumn name="CustomerName" label="=trdCustomer" visible="true" />
+    <DataColumn name="PayerName" label="=trdPayer" visible="false" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
@@ -34,7 +22,7 @@
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />
 
-    <DataColumn name="Debt" caption="=trdDebt" format="0.00" />
+    <DataColumn name="Debt" format="0.00" />
 
     <DataColumn name="Exported" />
   </g:columns>

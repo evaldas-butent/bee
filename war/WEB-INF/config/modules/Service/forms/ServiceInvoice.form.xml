@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl "text-align: right; padding-left: 1em; padding-right: 1em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="ServiceInvoice" viewName="ServiceInvoices"
+  caption="=trInvoice"
+  width="800" height="600"
+  >
+  <f:properties reports="PrintServiceInvoice, PrintServiceProforma" />
+
+  <FlowPanel class="flexBox-vertical">
+    <Table style="border-collapse: collapse;" cellStyle="padding-top: 1ex; padding-bottom: 1ex;">
+      <row>
+        <Label text="=trdDate" class="bee-required" style="&lbl;" />
+        <InputDateTime source="Date" visible="true" />
+
+        <Label text="=trdInvoicePrefix" style="&lbl;" for="InvoicePrefix" />
+        <HorizontalPanel style="border-collapse: collapse;">
+          <InputText source="InvoicePrefix" upperCase="true" style="width: 50px;" />
+          <Label text="=trdInvoiceNo" style="&lbl;" for="InvoiceNo" />
+          <InputText source="InvoiceNo" />
+        </HorizontalPanel>
+      </row>
+
+      <row>
+        <Label text="=trdTerm" style="&lbl;" for="Term" />
+        <InputDate source="Term" style="width: 80px;" />
+
+        <Label text="=trdTotal" style="&lbl;" />
+        <HorizontalPanel style="border-collapse: collapse;">
+          <DecimalLabel source="Amount" format="0.00" style="font-weight: bold; margin-right: 5px;" />
+          <DataSelector source="Currency" renderColumns="CurrencyName" placeholder="=currencyShort"
+            style="width: 50px;" editEnabled="false" newRowEnabled="false" />
+        </HorizontalPanel>
+      </row>
+
+      <row>
+        <Label text="=trdSupplier" style="&lbl;" for="Supplier" />
+        <DataSelector source="Supplier" />
+        <Label text="=trdCustomer" class="bee-required" style="&lbl;" />
+        <DataSelector source="Customer" required="true" visible="true" />
+      </row>
+
+      <row>
+        <Label text="=trdManager" style="&lbl;" for="Manager" />
+        <DataSelector source="Manager" editSource="ManagerPerson" />
+        <Label text="=trdPayer" style="&lbl;" for="Payer" />
+        <DataSelector source="Payer" />
+      </row>
+    </Table>
+
+    <br/>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=trProductsServices</text>
+        <ChildGrid name="SaleItems" relColumn="Sale" />
+      </page>
+
+      <page>
+        <text>=trdNotes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

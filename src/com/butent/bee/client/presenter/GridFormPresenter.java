@@ -144,7 +144,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
           @Override
           public void onSave() {
-            save();
+            handleAction(Action.SAVE);
           }
         });
         break;

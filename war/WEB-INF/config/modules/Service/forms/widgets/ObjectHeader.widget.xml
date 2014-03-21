@@ -17,6 +17,6 @@
 
   <row>
     <Label text="=customer" for="Customer" />
-    <DataSelector source="Customer" style="width: 200px;" />
+    <DataSelector source="Customer" renderColumns="CustomerName" style="width: 200px;" />
   </row>
 </Table>

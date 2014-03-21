@@ -2,6 +2,10 @@ package com.butent.bee.shared.modules.service;
 
 public final class ServiceConstants {
 
+  public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
+  
+  public static final String TBL_MAINTENANCE = "Maintenance";
+
   public static final String VIEW_OBJECTS = "ServiceObjects";
 
   public static final String VIEW_CRITERIA_GROUPS = "ServiceCritGroups";
@@ -15,8 +19,10 @@ public final class ServiceConstants {
   public static final String VIEW_OBJECT_FILES = "ServiceFiles";
 
   public static final String VIEW_MAINTENANCE = "Maintenance";
+  public static final String VIEW_INVOICES = "ServiceInvoices";
 
   public static final String COL_OBJECT_CATEGORY = "Category";
+  public static final String COL_OBJECT_CUSTOMER = "Customer";
   
   public static final String COL_CRITERIA_GROUP = "Group";
   public static final String COL_CRITERIA_GROUP_NAME = "Name";
@@ -37,6 +43,9 @@ public final class ServiceConstants {
 
   public static final String ALS_CATEGORY_NAME = "CategoryName";
   public static final String ALS_ITEM_NAME = "ItemName";
+  public static final String ALS_CUSTOMER_NAME = "CustomerName";
+
+  public static final String PROP_MAIN_ITEM = "MainItem";
 
   public static final String STYLE_SHEET = "service";
   public static final String STYLE_PREFIX = "bee-svc-";
