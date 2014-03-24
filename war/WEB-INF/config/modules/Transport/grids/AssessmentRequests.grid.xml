@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
   flexGrow="1" order="AssessmentID desc" disabledActions="delete"
@@ -31,6 +32,22 @@
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
+
+    <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
+      <render>
+        <ui:function>
+          if (!row.MinVehicle) {
+            return row.MaxVehicle;
+          
+          } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
+            return row.MinVehicle;
+          
+          } else {
+            return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
   </g:columns>
 
   <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">

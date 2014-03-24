@@ -35,6 +35,23 @@
     <DataColumn name="ExpensesRegistered" caption="&#xf0f6;" width="15" sortable="false">
       <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
     </DataColumn>
+    
+    <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
+      <render>
+        <ui:function>
+          if (!row.MinVehicle) {
+            return row.MaxVehicle;
+          
+          } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
+            return row.MinVehicle;
+          
+          } else {
+            return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Log" visible="false" />
   </g:columns>
 
