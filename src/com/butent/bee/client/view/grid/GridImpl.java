@@ -566,8 +566,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (!BeeUtils.isEmpty(cd.getSortBy())) {
-      column.setSortBy(DataUtils.parseColumns(cd.getSortBy(), dataColumns,
-          gridDescription.getIdName(), gridDescription.getVersionName()));
+      column.setSortBy(NameUtils.toList(cd.getSortBy()));
     } else if (!BeeUtils.isEmpty(renderColumns)) {
       column.setSortBy(Lists.newArrayList(renderColumns));
     } else if (!BeeUtils.isEmpty(source)) {
@@ -575,8 +574,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (!BeeUtils.isEmpty(cd.getSearchBy())) {
-      column.setSearchBy(DataUtils.parseColumns(cd.getSearchBy(), dataColumns,
-          gridDescription.getIdName(), gridDescription.getVersionName()));
+      column.setSearchBy(NameUtils.toList(cd.getSearchBy()));
     } else if (!BeeUtils.isEmpty(column.getSortBy())) {
       column.setSearchBy(Lists.newArrayList(column.getSortBy()));
     } else if (!BeeUtils.isEmpty(source)) {
@@ -658,8 +656,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataColumns,
           gridDescription.getIdName(), gridDescription.getVersionName(), dataIndex, label,
-          column.getSearchBy(), filterSupplierType, renderColumns, column.getSortBy(),
-          enumKey, cd.getRelation(), cd.getFilterOptions());
+          column.getSearchBy(), cd.getValueType(), filterSupplierType, renderColumns,
+          column.getSortBy(), enumKey, cd.getRelation(), cd.getFilterOptions());
     }
 
     ColumnInfo columnInfo = new ColumnInfo(columnId, label, cellSource, column, header, footer,

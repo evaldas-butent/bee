@@ -1,7 +1,10 @@
 package com.butent.bee.client.view.search;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -12,18 +15,36 @@ public final class FilterSupplierFactory {
 
   public static AbstractFilterSupplier getSupplier(String viewName, List<BeeColumn> dataColumns,
       String idColumnName, String versionColumnName, int sourceIndex, String label,
-      List<String> searchColumns, FilterSupplierType type,
+      List<String> searchBy, ValueType valueType, FilterSupplierType supplierType,
       List<String> renderColumns, List<String> orderColumns,
       String enumKey, Relation relation, String options) {
 
     BeeColumn sourceColumn = BeeUtils.getQuietly(dataColumns, sourceIndex);
+    
+    List<BeeColumn> searchColumns = Lists.newArrayList();
+    if (!BeeUtils.isEmpty(searchBy)) {
+      for (String by : searchBy) {
+        BeeColumn column = DataUtils.getColumn(by, dataColumns);
+        
+        if (column != null) {
+          searchColumns.add(column);
+        } else if (BeeUtils.same(by, idColumnName)) {
+          searchColumns.add(BeeColumn.forRowId(idColumnName));
+        } else if (BeeUtils.same(by, versionColumnName)) {
+          searchColumns.add(BeeColumn.forRowVersion(versionColumnName));
+        } else {
+          searchColumns.add(new BeeColumn(BeeUtils.nvl(valueType, ValueType.TEXT), by));
+        }
+      }
+    }
+
     BeeColumn filterColumn = BeeUtils.isEmpty(searchColumns)
-        ? sourceColumn : DataUtils.getColumn(searchColumns.get(0), dataColumns);
+        ? sourceColumn : searchColumns.get(0);
 
     AbstractFilterSupplier supplier = null;
 
-    if (type != null) {
-      switch (type) {
+    if (supplierType != null) {
+      switch (supplierType) {
         case VALUE:
           supplier =
               new ValueFilterSupplier(viewName, dataColumns, idColumnName, versionColumnName,
