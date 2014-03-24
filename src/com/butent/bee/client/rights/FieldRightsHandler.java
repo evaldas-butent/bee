@@ -80,7 +80,7 @@ final class FieldRightsHandler extends MultiStateForm {
         
         List<BeeColumn> columns = view.getColumns();
         for (BeeColumn column : columns) {
-          if (!column.isForeign()) {
+          if (!column.isForeign() || column.isEditable()) {
             result.add(new RightsObject(column.getId(), Localized.getLabel(column), viewName));
           }
         }

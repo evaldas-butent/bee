@@ -402,7 +402,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String newService();
 
   String newTab();
-  
+
   String newThemeColors();
 
   String newUser();
@@ -554,7 +554,9 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String selectAtLeastOneRow();
-  
+
+  String selectionColumnLabel();
+
   String selectRole();
 
   String send();

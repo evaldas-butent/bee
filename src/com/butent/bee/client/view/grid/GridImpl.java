@@ -541,6 +541,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       case SELECTION:
         column = new SelectionColumn(getGrid());
         source = null;
+        if (BeeUtils.isEmpty(label)) {
+          label = Localized.getConstants().selectionColumnLabel();
+        }
         break;
 
       case ACTION:
