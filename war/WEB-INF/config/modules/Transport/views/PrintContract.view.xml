@@ -7,6 +7,18 @@
     <SimpleJoin name="CargoTrip" joinType="INNER">
       <SimpleJoin joinType="INNER" name="Cargo">
         <SimpleColumn name="Description" />
+        <SimpleColumn name="Weight" />
+        <SimpleJoin joinType="LEFT" name="WeightUnit">
+          <SimpleColumn name="Name" alias="WeightUnit" />
+        </SimpleJoin>
+        <SimpleColumn name="Volume" />
+        <SimpleJoin joinType="LEFT" name="VolumeUnit">
+          <SimpleColumn name="Name" alias="VolumeUnit" />
+        </SimpleJoin>
+        <SimpleColumn name="Quantity" />
+        <SimpleJoin joinType="LEFT" name="QuantityUnit">
+          <SimpleColumn name="Name" alias="QuantityUnit" />
+        </SimpleJoin>
 
         <SimpleJoin name="Order" joinType="INNER">
           <SimpleJoin name="Manager" joinType="INNER">
