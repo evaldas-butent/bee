@@ -3,6 +3,7 @@
 
   name="RelationTypeStates" source="RelationTypeStates" module="Classifiers.Contacts"
   caption="=clientsRelationTypeStates" newRowCaption="=newClientsRelationTypeState"
+  newRowForm="CompanyRelationTypeStates"
   >
   <Columns>
     <SimpleColumn name="Name" />
