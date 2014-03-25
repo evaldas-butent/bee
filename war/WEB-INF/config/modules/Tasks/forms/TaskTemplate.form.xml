@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+<!ENTITY lbl1 "width: 160px; text-align: right; padding-right: 9px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  name="TaskTemplates" viewName="TaskTemplates" caption="=crmNewTaskTemplate"
+  height="215" width="720">
+  <FlowPanel class="flexBox-vertical" style="padding: 15px 1em 45px 1em;">
+    <Table style="border-spacing: 5px;">
+      <row>
+        <Label text="=caption" class="bee-required"
+          horizontalAlignment="right" style="&lbl1;" />
+        <InputText source="Name" />
+        <Label text="=crmTaskPriority" horizontalAlignment="right"
+          style="&lbl1;" />
+        <ListBox source="Priority" style="width: 150px" />
+      </row>
+      <row>
+        <Label text="=crmTaskSubject" horizontalAlignment="right"
+          style="&lbl1;" />
+        <InputText source="Summary" />
+        <Label text="=crmTaskExpectedDuration"
+          horizontalAlignment="right" style="&lbl1;" />
+        <InputTime source="ExpectedDuration" />
+      </row>
+      <row>
+        <Label text="=personContact" horizontalAlignment="right"
+          style="&lbl1;" />
+        <DataSelector source="Contact" />
+        <Label text="=company" horizontalAlignment="right" style="&lbl1;" />
+        <DataSelector source="Company" />
+      </row>
+      <row>
+        <Label text="=taskReminder" horizontalAlignment="right"
+          style="&lbl1;" />
+        <DataSelector source="Reminder" />
+        <Label text="=description" horizontalAlignment="right"
+          style="&lbl1;" />
+        <InputArea source="Description" style="width: 150px" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

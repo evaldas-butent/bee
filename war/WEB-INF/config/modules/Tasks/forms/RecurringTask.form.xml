@@ -5,7 +5,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="RecurringTask" viewName="RecurringTasks" caption="=crmRecurringTask"
-  width="700" height="600">
+  width="700" height="675">
 
   <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
     <xi:include href="widgets/RTBody.widget.xml" />
