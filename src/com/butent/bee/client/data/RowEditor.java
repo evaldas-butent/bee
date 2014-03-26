@@ -256,9 +256,9 @@ public final class RowEditor {
     final ModalForm dialog =
         modal ? new ModalForm(presenter.getWidget().asWidget(), formView, false) : null;
 
-    final CloseCallback close = new CloseCallback() {
+    final RowCallback closer = new RowCallback() {
       @Override
-      public void onClose() {
+      public void onCancel() {
         closeForm();
         if (callback != null) {
           callback.onCancel();
@@ -266,23 +266,10 @@ public final class RowEditor {
       }
 
       @Override
-      public void onSave() {
-        if (validate(formView)) {
-          update(dataInfo, formView.getOldRow(), formView.getActiveRow(), formView,
-              new RowCallback() {
-                @Override
-                public void onCancel() {
-                  onClose();
-                }
-
-                @Override
-                public void onSuccess(BeeRow result) {
-                  closeForm();
-                  if (callback != null) {
-                    callback.onSuccess(result);
-                  }
-                }
-              });
+      public void onSuccess(BeeRow result) {
+        closeForm();
+        if (callback != null) {
+          callback.onSuccess(result);
         }
       }
 
@@ -305,15 +292,27 @@ public final class RowEditor {
 
         switch (action) {
           case CANCEL:
-            close.onClose();
+            closer.onCancel();
             break;
 
           case CLOSE:
-            formView.onClose(close);
+            formView.onClose(new CloseCallback() {
+              @Override
+              public void onClose() {
+                closer.onCancel();
+              }
+
+              @Override
+              public void onSave() {
+                handleAction(Action.SAVE);
+              }
+            });
             break;
 
           case SAVE:
-            close.onSave();
+            if (validate(formView)) {
+              update(dataInfo, formView.getOldRow(), formView.getActiveRow(), formView, closer);
+            }
             break;
 
           case PRINT:
@@ -390,7 +389,7 @@ public final class RowEditor {
 
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, dataInfo.getColumns(),
         formView.getChildrenForUpdate(), callback);
-    
+
     if (!event.isEmpty()) {
       AutocompleteProvider.retainValues(formView);
     }
