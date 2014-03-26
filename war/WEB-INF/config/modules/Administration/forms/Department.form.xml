@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Department" viewName="Departments" caption="=department"
+  width="500" height="300"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table style="border-spacing: 10px;">
+      <row for="DepartmentName">
+        <Label for="DepartmentName" />
+        <InputText source="DepartmentName" style="width: 200px;" />
+      </row>
+      <row for="DepartmentHead">
+        <Label for="DepartmentHead" />
+        <DataSelector name="DepartmentHead" source="DepartmentHead" style="width: 200px;"
+          newRowEnabled="false" editSource="CompanyPerson" renderColumns="FirstName LastName" />
+      </row>
+    </Table>
+
+    <br/>
+    <ChildGrid class="flexible" name="DepartmentEmployees" relColumn="Department" />
+  </FlowPanel>
+</f:Form>  

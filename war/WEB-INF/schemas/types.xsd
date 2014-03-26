@@ -225,6 +225,7 @@
       <xs:enumeration value="Appointments" />
       <xs:enumeration value="AppointmentStyles" />
       <xs:enumeration value="AppointmentTypes" />
+      <xs:enumeration value="AssessmentExecutors" />
       <xs:enumeration value="AssessmentForwarders" />
       <xs:enumeration value="Assessments" />
       <xs:enumeration value="AssessmentTransportations" />
@@ -275,6 +276,8 @@
       <xs:enumeration value="CurrencyRates" />
       <xs:enumeration value="DataCriteria" />
       <xs:enumeration value="DeliveryMethods" />
+      <xs:enumeration value="Departments" />
+      <xs:enumeration value="DepartmentEmployees" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="DiscussionsComments" />
       <xs:enumeration value="DiscussionsFiles" />

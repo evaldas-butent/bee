@@ -5,6 +5,9 @@ import com.butent.bee.shared.data.Defaults;
 
 public class ClientDefaults extends Defaults {
 
+  private static Long currency;
+  private static String currencyName;
+
   @Override
   public Object getValue(DefaultExpression defExpr, Object defValue) {
     Object value = null;
@@ -17,8 +20,11 @@ public class ClientDefaults extends Defaults {
           value = BeeKeeper.getUser().getUserId();
           break;
 
-        case NEXT_NUMBER:
         case MAIN_CURRENCY:
+          value = getCurrency();
+          break;
+
+        case NEXT_NUMBER:
           break;
 
         default:
@@ -27,5 +33,21 @@ public class ClientDefaults extends Defaults {
       }
     }
     return value;
+  }
+
+  public static Long getCurrency() {
+    return currency;
+  }
+
+  public static String getCurrencyName() {
+    return currencyName;
+  }
+
+  public static void setCurrency(Long currency) {
+    ClientDefaults.currency = currency;
+  }
+
+  public static void setCurrencyName(String currencyName) {
+    ClientDefaults.currencyName = currencyName;
   }
 }

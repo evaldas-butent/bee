@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AssessmentExecutors" source="Users"
+  >
+  <Columns>
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+      </SimpleJoin>
+      
+      <ExternalJoin name="CompanyPerson" source="DepartmentEmployees" joinType="LEFT">
+        <SimpleColumn name="Department" />
+        <SimpleJoin name="Department" joinType="LEFT">
+          <SimpleColumn name="DepartmentName" />
+        </SimpleJoin>
+        <ExternalJoin name="DepartmentHead" source="Departments" joinType="LEFT">
+          <SimpleColumn name="DepartmentHead" />
+        </ExternalJoin>
+      </ExternalJoin>
+    </SimpleJoin>
+
+  </Columns>
+  <Order>
+    <OrderBy column="DepartmentName" />
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+  </Order>
+</View>

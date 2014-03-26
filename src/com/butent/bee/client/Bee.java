@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Window;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -132,6 +134,10 @@ public class Bee implements EntryPoint {
     BeeKeeper.getUser().setUserData(userData);
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
+
+    ClientDefaults.setCurrency(BeeUtils
+        .toLongOrNull(data.get(AdministrationConstants.COL_CURRENCY)));
+    ClientDefaults.setCurrencyName(data.get(AdministrationConstants.ALS_CURRENCY_NAME));
 
     BeeKeeper.getScreen().start(userData);
 

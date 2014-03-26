@@ -6,6 +6,7 @@ name="Administration" label="=administration" order="1000" module="Administratio
   <Item name="Users" label="=users" service="grid" parameters="Users" />
   <Item name="UserGroupSettings" label="=userGroups" service="grid"
     parameters="UserGroupSettings" />
+  <Item name="Departments" label="=departments" service="grid" parameters="Departments" />
 
   <Item name="Parameters" label="=systemParameters" service="parameters" parameters="Administration"
     separator="true" />

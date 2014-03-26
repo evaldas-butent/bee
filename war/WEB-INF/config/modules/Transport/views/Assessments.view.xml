@@ -113,6 +113,12 @@
         <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
+        <AggregateColumn name="Sale" alias="IncomesRegistered" aggregate="MIN" />
+      </ExternalJoin>
+    </SimpleJoin>
     
     <ExternalJoin name="Assessment" source="AssessmentForwarders" joinType="LEFT">
       <SimpleJoin name="Trip" joinType="LEFT">

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Departments" source="Departments" module="Administration"
+  caption="=departments" newRowCaption="=newDepartment" newRowForm="Department" editForm="Department"
+  >
+  <Columns>
+    <SimpleColumn name="DepartmentName" />
+    <SimpleColumn name="DepartmentHead" />
+    
+    <SimpleJoin name="DepartmentHead" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="PositionName" />
+        </SimpleJoin>
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CompanyName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="DepartmentName" />
+  </Order>
+</View>

@@ -230,6 +230,8 @@ public final class AdministrationConstants {
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String TBL_DEPARTMENT_EMPLOYEES = "DepartmentEmployees";
+
   public static final String TBL_AUTOCOMPLETE = "Autocomplete";
 
   public static final String VIEW_USERS = "Users";
@@ -299,7 +301,7 @@ public final class AdministrationConstants {
   public static final String COL_FILE_PART = "Part";
 
   public static final String COL_FILE_CAPTION = "Caption";
-  
+
   public static final String COL_REMINDER_NAME = "Name";
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_REMINDER_HOURS = "Hours";
@@ -345,6 +347,10 @@ public final class AdministrationConstants {
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";
 
+  public static final String COL_DEPARTMENT = "Department";
+  public static final String COL_DEPARTMENT_NAME = "DepartmentName";
+  public static final String COL_DEPARTMENT_HEAD = "DepartmentHead";
+
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
@@ -358,6 +364,9 @@ public final class AdministrationConstants {
   public static final String ALS_OBJECT_NAME = "ObjectName";
 
   public static final String ALS_CURRENCY_NAME = "CurrencyName";
+
+  public static final String FORM_USER = "User";
+  public static final String FORM_DEPARTMENT = "Department";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
