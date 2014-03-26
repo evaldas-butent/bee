@@ -503,16 +503,17 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
     super(Document.get().createDivElement(), STYLE_PREFIX + "container");
     this.slides = slides;
 
-    int eff = BeeKeeper.getStorage().getInt(EFFECT_KEY);
+    Integer eff = BeeKeeper.getStorage().getInteger(EFFECT_KEY);
     if (!BeeUtils.isOrdinal(Effect.class, eff)) {
       eff = 0;
     }
     this.effect = Effect.values()[eff];
     
-    this.idleMillis = BeeUtils.positive(BeeKeeper.getStorage().getInt(IDLE_MILLIS_KEY),
-        IDLE_MILLIS_DEFAULT);
-    this.transitionMillis = BeeUtils.positive(BeeKeeper.getStorage().getInt(TRANSITION_MILLIS_KEY),
-        TRANSITION_MILLIS_DEFAULT);
+    Integer millis = BeeKeeper.getStorage().getInteger(IDLE_MILLIS_KEY);
+    this.idleMillis = BeeUtils.isPositive(millis) ? millis : IDLE_MILLIS_DEFAULT;
+
+    millis = BeeKeeper.getStorage().getInteger(TRANSITION_MILLIS_KEY);
+    this.transitionMillis = BeeUtils.isPositive(millis) ? millis : TRANSITION_MILLIS_DEFAULT;
 
     this.animation = new Animation();
 

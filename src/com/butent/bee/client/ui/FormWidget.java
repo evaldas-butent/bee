@@ -1586,7 +1586,7 @@ public enum FormWidget {
       case UNBOUND_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
-          widget = new UnboundSelector(relation);
+          widget = UnboundSelector.create(relation);
         }
         break;
 

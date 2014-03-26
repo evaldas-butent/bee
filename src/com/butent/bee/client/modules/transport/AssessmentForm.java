@@ -129,7 +129,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       relation.setFilter(Filter.or(Filter.any(COL_DEPARTMENT, departments),
           Filter.notNull(COL_DEPARTMENT_HEAD)));
 
-      final UnboundSelector user = new UnboundSelector(relation);
+      final UnboundSelector user = UnboundSelector.create(relation);
       container.setText(0, 0, loc.manager(), StyleUtils.NAME_REQUIRED);
       container.setWidget(0, 1, user);
 

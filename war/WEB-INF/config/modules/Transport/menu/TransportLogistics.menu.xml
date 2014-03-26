@@ -7,4 +7,5 @@ module="Transport.Logistics"
   <Item name="AssessmentRequests" label="=trAssessmentRequests" service="grid" parameters="AssessmentRequests" />
   <Item name="AssessmentOrders" label="=trAssessmentOrders" service="grid" parameters="AssessmentOrders" />
   <Item name="AssessmentTransportations" label="=trAssessmentTransportations" service="grid" parameters="AssessmentTransportations" separator="true" />
+  <Item name="AssessmentReports" label="=reports" service="form" parameters="AssessmentReports" separator="true" />
 </Entry>
