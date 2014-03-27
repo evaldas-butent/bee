@@ -2131,13 +2131,13 @@ public enum FormWidget {
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {
       String opt = XmlUtils.getText(child);
       if (!BeeUtils.isEmpty(opt) && parent instanceof RadioGroup) {
-        ((RadioGroup) parent).addOption(opt);
+        ((RadioGroup) parent).addOption(Localized.maybeTranslate(opt));
       }
 
     } else if (BeeUtils.same(childTag, HasItems.TAG_ITEM) && parent instanceof HasItems) {
       String item = XmlUtils.getText(child);
       if (!BeeUtils.isEmpty(item)) {
-        ((HasItems) parent).addItem(item);
+        ((HasItems) parent).addItem(Localized.maybeTranslate(item));
       }
 
     } else if (this == HEADER_CONTENT_FOOTER) {
