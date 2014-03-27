@@ -6,7 +6,7 @@
   editShowId="true" flexGrow="1"
   disabledActions="add"
   caption="=trInvoices"
-  filter="!(Proforma)"
+  filter="Sale AND !(Proforma)"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />

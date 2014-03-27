@@ -92,7 +92,8 @@ public final class AdministrationKeeper {
       }
     });
 
-    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
+    FormFactory.registerFormInterceptor(FORM_USER, new UserFormInterceptor());
+    FormFactory.registerFormInterceptor(FORM_DEPARTMENT, new DepartmentForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
 

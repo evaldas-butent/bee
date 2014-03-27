@@ -4,6 +4,7 @@
   name="Countries" source="Countries" module="Classifiers"
   caption="=countries" newRowCaption="=newCountry"
   newRowColumns="Name Code EUMember"
+  newRowForm="Country"
   >
   <Columns>
     <SimpleColumn name="Name" />

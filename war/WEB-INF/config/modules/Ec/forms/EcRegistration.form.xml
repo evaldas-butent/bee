@@ -16,72 +16,72 @@
       <col index="2" cellStyle="&colLabel;" />
 
       <row>
-        <Label text="=ecClientType" class="bee-required" />
-        <ListBox source="Type" />
-        <Label text="=ecBranchPrimary" class="bee-required" />
-        <DataSelector source="Branch" />
+        <Label for="Type" visible="true" />
+        <ListBox source="Type" visible="true" />
+        <Label text="=ecBranchPrimary" for="Branch" visible="true" />
+        <DataSelector source="Branch" visible="true" />
       </row>
 
       <row>
-        <Label text="=ecClientFirstName" class="bee-required" />
-        <InputText source="FirstName" />
-        <Label text="=ecClientLastName" class="bee-required" />
-        <InputText source="LastName" />
+        <Label for="FirstName" visible="true" />
+        <InputText source="FirstName" visible="true" />
+        <Label for="LastName" visible="true" />
+        <InputText source="LastName" visible="true" />
       </row>
 
       <row>
-        <Label text="=ecClientCompanyName" />
+        <Label for="CompanyName" />
         <InputText source="CompanyName" />
-        <Label text="=ecClientCompanyCode" />
+        <Label for="CompanyCode" />
         <InputText source="CompanyCode" />
       </row>
 
       <row>
-        <Label text="=ecClientVatCode" />
+        <Label for="VatCode" />
         <InputText source="VATCode" />
-        <Label text="=ecClientPersonCode" />
+        <Label for="PersonCode" />
         <InputText source="PersonCode" />
       </row>
 
       <row>
-        <Label text="=email" class="bee-required" />
-        <InputText source="Email" />
-        <Label text="=phone" class="bee-required" />
-        <InputText source="Phone" />
+        <Label for="Email" visible="true" />
+        <InputText source="Email" visible="true" />
+        <Label for="Phone" visible="true" />
+        <InputText source="Phone" visible="true" />
       </row>
 
       <row>
-        <Label text="=country" />
+        <Label for="Country" />
         <InputText source="Country" />
-        <Label text="=city" class="bee-required" />
-        <InputText source="City" />
+        <Label for="City" visible="true" />
+        <InputText source="City" visible="true" />
       </row>
 
       <row>
-        <Label text="=address" class="bee-required" />
-        <InputText source="Address" />
-        <Label text="=postIndex" class="bee-required" />
-        <InputText source="PostIndex" />
+        <Label for="Address" visible="true" />
+        <InputText source="Address" visible="true" />
+        <Label for="PostIndex" visible="true" />
+        <InputText source="PostIndex" visible="true" />
       </row>
 
       <row>
-        <Label text="=ecClientActivity" />
+        <Label for="Activity" />
         <InputArea source="Activity" style="&area;" />
-        <Label text="=notes" />
+        <Label for="Notes" />
         <InputArea source="Notes" style="width: 250px; height: 60px;" />
       </row>
 
       <row>
-        <Label text="=remoteHost" />
+        <Label for="Host" />
         <InputArea source="Host" style="&area;" />
-        <Label text="=userAgent" />
+        <Label for="Agent" />
         <InputArea source="Agent" style="width: 250px; height: 60px;" />
       </row>
 
       <row>
-        <Label text="=ecClientRegistrationDate" class="bee-required bee-hasDefaults" />
+        <Label for="Date" />
         <InputDateTime source="Date" />
-        <Label text="=language" />
+        <Label for="Language" />
         <ListBox source="Language" />
       </row>
     </Table>

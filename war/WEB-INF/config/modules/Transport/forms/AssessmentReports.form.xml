@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="AssessmentReports" caption="=reports"
+  >
+  <FlowPanel>
+    <HorizontalPanel>
+      <Label text="=dateFromShort" />
+      <InputDate name="startDate" />
+    </HorizontalPanel>
+    <HorizontalPanel>
+      <Label text="=dateToShort" />
+      <InputDate name="endDate" />
+    </HorizontalPanel>
+
+    <HorizontalPanel>
+      <Label text="=departments" />
+      <MultiSelector viewName="Departments" renderColumns="DepartmentName" newRowEnabled="false" />
+    </HorizontalPanel>
+    <HorizontalPanel>
+      <Label text="=ecManagers" />
+      <MultiSelector viewName="CompanyPersons" 
+        renderColumns="FirstName LastName CompanyName" newRowEnabled="false" />
+    </HorizontalPanel>
+
+    <HorizontalPanel>
+      <Label text="Pagal" />
+      <Radio>
+        <option>Įmonę</option>
+        <option>Padalinius</option>
+        <option>Vadybininkus</option>
+      </Radio>
+    </HorizontalPanel>
+
+    <HorizontalPanel>
+      <Button text="=doFilter" />
+      <Button text="=clear" />
+    </HorizontalPanel>
+  </FlowPanel>
+</f:Form>

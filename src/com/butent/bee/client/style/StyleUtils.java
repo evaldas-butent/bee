@@ -31,6 +31,7 @@ import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontVariant;
 import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.css.values.Position;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.TextTransform;
@@ -148,7 +149,6 @@ public final class StyleUtils {
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
   public static final String VALUE_INHERIT = "inherit";
-  public static final String VALUE_SCROLL = "scroll";
 
   public static final String NAME_HORIZONTAL = "horizontal";
   public static final String NAME_VERTICAL = "vertical";
@@ -261,7 +261,7 @@ public final class StyleUtils {
   }
 
   public static void alwaysScroll(Style st, ScrollBars scroll) {
-    setOverflow(st, scroll, VALUE_SCROLL);
+    setOverflow(st, scroll, Overflow.SCROLL);
   }
 
   public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
@@ -290,7 +290,7 @@ public final class StyleUtils {
   }
 
   public static void autoScroll(Style st, ScrollBars scroll) {
-    setOverflow(st, scroll, VALUE_AUTO);
+    setOverflow(st, scroll, Overflow.AUTO);
   }
 
   public static void autoScroll(UIObject obj, ScrollBars scroll) {
@@ -913,31 +913,6 @@ public final class StyleUtils {
     return sb.toString();
   }
 
-  public static ScrollBars getScroll(Element el) {
-    Assert.notNull(el);
-    return getScroll(el.getStyle());
-  }
-
-  public static ScrollBars getScroll(Style st) {
-    Assert.notNull(st);
-
-    if (isScroll(st.getOverflow())) {
-      return ScrollBars.BOTH;
-    }
-    if (isScroll(st.getOverflowX())) {
-      return ScrollBars.HORIZONTAL;
-    }
-    if (isScroll(st.getOverflowY())) {
-      return ScrollBars.VERTICAL;
-    }
-    return ScrollBars.NONE;
-  }
-
-  public static ScrollBars getScroll(UIObject obj) {
-    Assert.notNull(obj);
-    return getScroll(obj.getElement());
-  }
-
   public static String getStylePrimaryName(Element el) {
     Assert.notNull(el);
     String className = el.getClassName();
@@ -1059,7 +1034,7 @@ public final class StyleUtils {
   }
 
   public static void hideScroll(Style st, ScrollBars scroll) {
-    setOverflow(st, scroll, VALUE_HIDDEN);
+    setOverflow(st, scroll, Overflow.HIDDEN);
   }
 
   public static void hideScroll(UIObject obj) {
@@ -1884,25 +1859,25 @@ public final class StyleUtils {
     setOutlineStyle(obj.getElement(), value);
   }
 
-  public static void setOverflow(Element el, ScrollBars scroll, String value) {
+  public static void setOverflow(Element el, ScrollBars scroll, Overflow value) {
     Assert.notNull(el);
     setOverflow(el.getStyle(), scroll, value);
   }
 
-  public static void setOverflow(Style st, ScrollBars scroll, String value) {
+  public static void setOverflow(Style st, ScrollBars scroll, Overflow value) {
     Assert.notNull(st);
     Assert.notNull(scroll);
-    Assert.notEmpty(value);
+    Assert.notNull(value);
 
     switch (scroll) {
       case BOTH:
-        st.setProperty(STYLE_OVERFLOW, value);
+        setProperty(st, STYLE_OVERFLOW, value);
         break;
       case HORIZONTAL:
-        st.setProperty(STYLE_OVERFLOW_X, value);
+        setProperty(st, STYLE_OVERFLOW_X, value);
         break;
       case VERTICAL:
-        st.setProperty(STYLE_OVERFLOW_Y, value);
+        setProperty(st, STYLE_OVERFLOW_Y, value);
         break;
       case NONE:
         clearStyleProperty(st, STYLE_OVERFLOW);
@@ -1914,7 +1889,7 @@ public final class StyleUtils {
     }
   }
 
-  public static void setOverflow(UIObject obj, ScrollBars scroll, String value) {
+  public static void setOverflow(UIObject obj, ScrollBars scroll, Overflow value) {
     Assert.notNull(obj);
     setOverflow(obj.getElement(), scroll, value);
   }
@@ -2584,10 +2559,6 @@ public final class StyleUtils {
       idx++;
     }
     return BeeConst.UNDEF;
-  }
-
-  private static boolean isScroll(String value) {
-    return BeeUtils.inListSame(value, VALUE_AUTO, VALUE_SCROLL);
   }
 
   private static boolean isZero(String s) {

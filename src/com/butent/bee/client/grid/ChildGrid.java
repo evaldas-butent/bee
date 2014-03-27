@@ -135,6 +135,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getMainView().setEnabled(enabled);
+    } else {
+      setPendingEnabled(enabled);
     }
   }
 

@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class UnboundSelector extends DataSelector implements HandlesRendering, Launchable {
+public final class UnboundSelector extends DataSelector implements HandlesRendering, Launchable {
 
   public static UnboundSelector create(Relation relation) {
     Assert.notNull(relation);
@@ -55,7 +55,7 @@ public class UnboundSelector extends DataSelector implements HandlesRendering, L
 
   private boolean handledByForm;
 
-  public UnboundSelector(Relation relation) {
+  private UnboundSelector(Relation relation) {
     super(relation, true);
   }
 

@@ -188,7 +188,7 @@ public class DataEditorBean {
 
     BeeRow row = rs.getRow(rowIndex);
     boolean isNew = DataUtils.isNewRow(row);
-    
+
     Map<String, TableInfo> updates = Maps.newHashMap();
 
     if (!BeeUtils.isPositive(rs.getNumberOfColumns())) {
@@ -292,7 +292,7 @@ public class DataEditorBean {
       }
       event.setAfter();
       sys.postDataEvent(event);
-      
+
       if (isNew) {
         news.maybeRecordUpdate(rs.getViewName(), id);
       } else {
@@ -740,8 +740,23 @@ public class DataEditorBean {
         if (!BeeUtils.isEmpty(defaults)) {
           for (String fldName : defaults.keySet()) {
             if (!si.hasField(fldName) && !sys.isExtField(tblName, fldName)) {
-              Pair<DefaultExpression, Object> pair = defaults.get(fldName);
-              si.addConstant(fldName, srvDef.getValue(tblName, fldName, pair.getA(), pair.getB()));
+              DefaultExpression defExpr = defaults.get(fldName).getA();
+              Object defValue = defaults.get(fldName).getB();
+
+              if (defExpr == DefaultExpression.NEXT_NUMBER
+                  && defValue != null && sys.hasField(tblName, defValue.toString())) {
+
+                String fld = defValue.toString();
+                defValue = null;
+
+                for (FieldInfo col : baseUpdate) {
+                  if (BeeUtils.same(col.fieldName, fld)) {
+                    defValue = col.newValue;
+                    break;
+                  }
+                }
+              }
+              si.addConstant(fldName, srvDef.getValue(tblName, fldName, defExpr, defValue));
             }
           }
         }

@@ -32,10 +32,33 @@
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
-    <DataColumn name="ExpensesRegistered" caption="S" width="15" sortable="false" />
+    <DataColumn name="ExpensesRegistered" caption="&#xf0f6;" width="15" sortable="false">
+      <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
+    </DataColumn>
+    
+    <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
+      <render>
+        <ui:function>
+          if (!row.MinVehicle) {
+            return row.MaxVehicle;
+          
+          } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
+            return row.MinVehicle;
+          
+          } else {
+            return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Log" visible="false" />
   </g:columns>
 
+  <g:rowStyle>
+    <ui:inline>="color:black"</ui:inline>
+    <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.IncomesRegistered</ui:expression>
+  </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:gold"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.ExpensesRegistered</ui:expression>

@@ -3,6 +3,7 @@
 
   name="Units" source="Units" module="Classifiers"
   caption="=units" newRowCaption="=newUnit"
+  newRowForm="Unit"
   >
   <Columns>
     <SimpleColumn name="Name" />

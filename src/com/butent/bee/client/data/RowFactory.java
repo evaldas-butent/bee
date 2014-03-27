@@ -345,9 +345,9 @@ public final class RowFactory {
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
     final ModalForm dialog = new ModalForm(presenter.getWidget().asWidget(), formView, false);
 
-    final CloseCallback close = new CloseCallback() {
+    final RowCallback closer = new RowCallback() {
       @Override
-      public void onClose() {
+      public void onCancel() {
         dialog.close();
         if (callback != null) {
           callback.onCancel();
@@ -355,27 +355,14 @@ public final class RowFactory {
       }
 
       @Override
-      public void onSave() {
-        presenter.save(new RowCallback() {
-          @Override
-          public void onCancel() {
-            dialog.close();
-            if (callback != null) {
-              callback.onCancel();
-            }
-          }
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            dialog.close();
-            if (callback != null) {
-              callback.onSuccess(result);
-            }
-          }
-        });
+      public void onSuccess(BeeRow result) {
+        dialog.close();
+        if (callback != null) {
+          callback.onSuccess(result);
+        }
       }
     };
-
+    
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
@@ -386,15 +373,25 @@ public final class RowFactory {
 
         switch (action) {
           case CANCEL:
-            close.onClose();
+            closer.onCancel();
             break;
 
           case CLOSE:
-            formView.onClose(close);
+            formView.onClose(new CloseCallback() {
+              @Override
+              public void onClose() {
+                closer.onCancel();
+              }
+
+              @Override
+              public void onSave() {
+                handleAction(Action.SAVE);
+              }
+            });
             break;
 
           case SAVE:
-            close.onSave();
+            presenter.save(closer);
             break;
 
           default:

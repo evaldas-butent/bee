@@ -3,11 +3,13 @@ package com.butent.bee.shared.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -144,6 +146,10 @@ public final class RelationUtils {
       if (Defaults.DefaultExpression.CURRENT_USER.equals(column.getDefaults().getA())) {
         result += setUserFields(dataInfo, row, colName, userData);
       }
+
+      if (Defaults.DefaultExpression.MAIN_CURRENCY.equals(column.getDefaults().getA())) {
+        result += setCurrencyFields(dataInfo, row, colName);
+      }
     }
     return result;
   }
@@ -166,6 +172,31 @@ public final class RelationUtils {
       if (!BeeConst.isUndef(index)) {
         targetRow.setValue(index, sourceRow.getString(index));
         result++;
+      }
+    }
+    return result;
+  }
+
+  public static int setCurrencyFields(DataInfo dataInfo, IsRow row, String currencyColumn) {
+    int result = 0;
+    if (dataInfo == null || row == null || BeeUtils.isEmpty(currencyColumn)) {
+      return result;
+    }
+
+    Collection<ViewColumn> descendants = dataInfo.getDescendants(currencyColumn, false);
+    if (descendants.isEmpty()) {
+      return result;
+    }
+
+    for (ViewColumn vc : descendants) {
+      int index = dataInfo.getColumnIndex(vc.getName());
+      if (BeeConst.isUndef(index)) {
+        continue;
+      }
+      if (BeeUtils.same(vc.getField(), AdministrationConstants.COL_CURRENCY_NAME)) {
+        row.setValue(index, ClientDefaults.getCurrencyName());
+        result++;
+        break;
       }
     }
     return result;

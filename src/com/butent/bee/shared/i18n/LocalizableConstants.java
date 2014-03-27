@@ -375,6 +375,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String mainEmail();
 
+  String manager();
+
   String maxValue();
 
   String message();
@@ -386,6 +388,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String mobile();
 
   String name();
+
+  String newDepartmentEmployees();
 
   String newEmailAccount();
 
@@ -402,7 +406,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String newService();
 
   String newTab();
-  
+
   String newThemeColors();
 
   String newUser();
@@ -554,7 +558,9 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String selectAtLeastOneRow();
-  
+
+  String selectionColumnLabel();
+
   String selectRole();
 
   String send();

@@ -1358,7 +1358,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     for (String id : getDisablableWidgets()) {
       Widget widget = getWidgetById(id);
-      if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
+      if (widget instanceof HasEnabled) {
         ((HasEnabled) widget).setEnabled(enabled);
         widget.setStyleName(STYLE_WIDGET_DISABLED, !enabled);
       }

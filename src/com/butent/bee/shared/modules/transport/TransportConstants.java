@@ -350,6 +350,7 @@ public final class TransportConstants {
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
+  public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
 
   public static final String VAR_ID = Service.RPC_VAR_PREFIX + "id";
 

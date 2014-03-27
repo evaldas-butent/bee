@@ -44,8 +44,9 @@
       &separator;
       <FlowPanel style="&section;">
         <Label text="=manager" class="bee-required" style="&labelLeft;" />
-        <DataSelector source="Manager" style="&input; width:200px;" editSource="CompanyPerson"
-          newRowEnabled="false" />
+        <DataSelector name="Manager" source="Manager" style="&input; width:200px;"
+          viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
+          editSource="CompanyPerson" newRowEnabled="false" />
         <CheckBox text="=trExpensesRegistered" name="ExpensesRegistered" source="ExpensesRegistered"
           style="&inline; margin-left:10px;" disablable="false" />
       </FlowPanel>

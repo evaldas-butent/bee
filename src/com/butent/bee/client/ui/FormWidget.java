@@ -188,7 +188,7 @@ public enum FormWidget {
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DIV("div", null),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
-  FA_LABEL("FaLabel", EnumSet.of(Type.IS_LABEL)),
+  FA_LABEL("FaLabel", null),
   FIELD_SET("FieldSet", EnumSet.of(Type.HAS_CHILDREN)),
   FILE_COLLECTOR("FileCollector", null),
   FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
@@ -466,6 +466,22 @@ public enum FormWidget {
     EventUtils.addDomHandler(widget.asWidget(), event, handler);
   }
 
+  private static void associateLabel(IdentifiableWidget label, BeeColumn column) {
+    if (BeeUtils.isEmpty(label.getElement().getInnerHTML())) {
+      label.getElement().setInnerHTML(Localized.getLabel(column));
+    }
+    
+    if (column.isEditable()) {
+      if (!column.isNullable() && !label.getElement().hasClassName(StyleUtils.NAME_REQUIRED)) {
+        label.getElement().addClassName(StyleUtils.NAME_REQUIRED);
+      }
+
+      if (column.hasDefaults() && !label.getElement().hasClassName(StyleUtils.NAME_HAS_DEFAULTS)) {
+        label.getElement().addClassName(StyleUtils.NAME_HAS_DEFAULTS);
+      }
+    }
+  }
+
   private static IdentifiableWidget createFace(Element element) {
     Pair<String, Image> faceOptions = getFaceOptions(element);
     final IdentifiableWidget result;
@@ -613,16 +629,17 @@ public enum FormWidget {
     return ok;
   }
 
-  private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes) {
+  private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes,
+      String key) {
     if (columns == null && attributes == null) {
       return null;
     }
 
-    String source = attributes.get(UiConstants.ATTR_SOURCE);
-    if (BeeUtils.isEmpty(source)) {
+    String colName = attributes.get(key);
+    if (BeeUtils.isEmpty(colName)) {
       return null;
     }
-    return DataUtils.getColumn(source, columns);
+    return DataUtils.getColumn(colName, columns);
   }
 
   private static Edges getEdges(Element element) {
@@ -941,7 +958,7 @@ public enum FormWidget {
     this.tagName = tagName;
     this.types = types;
   }
-
+  
   public IdentifiableWidget create(String formName, Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       WidgetInterceptor widgetCallback) {
@@ -959,7 +976,7 @@ public enum FormWidget {
     Map<String, String> attributes = XmlUtils.getAttributes(element);
     List<Element> children = XmlUtils.getChildrenElements(element);
 
-    BeeColumn column = getColumn(columns, attributes);
+    BeeColumn column = getColumn(columns, attributes, UiConstants.ATTR_SOURCE);
 
     String html = getTextOrHtml(element);
 
@@ -1569,7 +1586,7 @@ public enum FormWidget {
       case UNBOUND_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
-          widget = new UnboundSelector(relation);
+          widget = UnboundSelector.create(relation);
         }
         break;
 
@@ -1670,7 +1687,7 @@ public enum FormWidget {
         }
         widgetDescription.setEnumKey(enumKey);
       }
-
+      
       setAttributes(widget, attributes);
       widgetDescription.setAttributes(attributes);
 
@@ -1695,6 +1712,12 @@ public enum FormWidget {
 
         if (widget instanceof HasBounds) {
           UiHelper.setDefaultBounds((HasBounds) widget, column);
+        }
+
+      } else if (isLabel() && attributes.containsKey(UiConstants.ATTR_FOR)) {
+        BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
+        if (forColumn != null) {
+          associateLabel(widget, forColumn);
         }
       }
 
@@ -1918,6 +1941,10 @@ public enum FormWidget {
 
   private boolean isCellVector() {
     return hasType(Type.CELL_VECTOR);
+  }
+
+  private boolean isLabel() {
+    return hasType(Type.IS_LABEL);
   }
 
   private boolean isTable() {

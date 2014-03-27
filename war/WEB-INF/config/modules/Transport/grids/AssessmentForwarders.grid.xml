@@ -11,6 +11,6 @@
     <DataColumn name="LoadingDate" width="80" format="DATE_SHORT" />
     <DataColumn name="ForwarderName" />
     <DataColumn name="ForwarderVehicle" />
-    <DataColumn name="ExpeditionType" />
+    <RelColumn name="Expedition" />
   </g:columns>
 </g:Grid>

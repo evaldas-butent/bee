@@ -12,8 +12,8 @@
   name="Company"
   viewName="Companies"
   caption="=client"
-  width="800"
-  height="500"
+  width="875"
+  height="565"
   >
   <FlowPanel class="flexBox-vertical">
     <Table>
