@@ -403,7 +403,7 @@ public final class CliWorker {
     } else if (z.startsWith("image")) {
       showImages(arr);
 
-    } else if ("import_cvs".equals(z)) {
+    } else if ("import_csv".equals(z)) {
       importCSV(arr);
 
     } else if ("inject".equals(z) && arr.length == 2) {
@@ -1684,12 +1684,8 @@ public final class CliWorker {
     }
 
     String servName = "";
-    if (BeeUtils.same(arr[1], "OsamaTiekejai")) {
-      servName = Service.IMPORT_OSAMA_TIEKEJAI;
-    } else if (BeeUtils.same(arr[1], "OsamaDarbuotojai")) {
-      servName = Service.IMPORT_OSAMA_DARBUOTOJIAI;
-    } else if (BeeUtils.same(arr[1], "OsamaPrekSist")) {
-      servName = Service.IMPORT_OSAMA_PREK_SIST;
+    if (BeeUtils.same(arr[1], "companies")) {
+      servName = Service.IMPORT_CSV_COMPANIES;
     }
 
     if (!BeeUtils.isEmpty(servName)) {
@@ -1706,11 +1702,11 @@ public final class CliWorker {
 
           for (final NewFileInfo fi : files) {
             logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
-            FileUtils.uploadFile(fi, new Callback<Long>() {
+            FileUtils.uploadTempFile(fi, new Callback<String>() {
               @Override
-              public void onSuccess(Long result) {
+              public void onSuccess(String result) {
                 BeeKeeper.getRpc().sendText(serviceName,
-                    BeeUtils.toString(result),
+                    result,
                     new ResponseCallback() {
                       @Override
                       public void onResponse(ResponseObject response) {
@@ -2045,8 +2041,8 @@ public final class CliWorker {
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
 
-    for (var i = 0; i < 6; i++) {
-      for (var j = 0; j < 6; j++) {
+    for ( var i = 0; i < 6; i++) {
+      for ( var j = 0; j < 6; j++) {
         ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
