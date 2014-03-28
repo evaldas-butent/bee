@@ -33,6 +33,7 @@ import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
@@ -44,6 +45,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -68,6 +70,7 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -216,11 +219,14 @@ public class TransportModuleBean implements BeeModule {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
           BeeUtils.toBoolean(reqInfo.getParameter("isPrimary")));
 
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_REPORT)) {
+      response = getAssessmentReport(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
       Long purchaseId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PURCHASE));
       Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
-      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID));
+      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_ID));
       Long item = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM));
       Double creditAmount = BeeUtils.toDoubleOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT));
 
@@ -879,6 +885,169 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(wh)));
   }
 
+  private ResponseObject getAssessmentReport(RequestInfo reqInfo) {
+    Long startDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_FROM));
+    Long endDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_TO));
+
+    Set<Long> departments = DataUtils.parseIdSet(reqInfo.getParameter(AR_DEPARTMENT));
+    Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(AR_MANAGER));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    String departmetQueryAlias = SqlUtils.uniqueName();
+
+    HasConditions where = SqlUtils.and(SqlUtils.notNull(TBL_ASSESSMENTS, COL_ASSESSMENT_STATUS));
+
+    if (startDate != null) {
+      where.add(SqlUtils.moreEqual(TBL_ORDERS, COL_ORDER_DATE, startDate));
+    }
+    if (endDate != null) {
+      where.add(SqlUtils.less(TBL_ORDERS, COL_ORDER_DATE, startDate));
+    }
+
+    if (!departments.isEmpty()) {
+      where.add(SqlUtils.inList(departmetQueryAlias, COL_DEPARTMENT, departments));
+    }
+    if (!managers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_USERS, COL_COMPANY_PERSON, managers));
+    }
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ASSESSMENTS, COL_ASSESSMENT_STATUS, COL_ASSESSMENT);
+
+    if (groupBy.contains(AR_MONTH)) {
+      query.addFields(TBL_ORDERS, COL_ORDER_DATE);
+      query.addEmptyNumeric(AR_YEAR, 4, 0);
+      query.addEmptyNumeric(AR_MONTH, 2, 0);
+    }
+
+    if (groupBy.contains(AR_DEPARTMENT)) {
+      query.addFields(departmetQueryAlias, COL_DEPARTMENT);
+    }
+    if (groupBy.contains(AR_MANAGER)) {
+      query.addFields(TBL_USERS, COL_COMPANY_PERSON);
+    }
+
+    query.addFrom(TBL_ASSESSMENTS);
+    if (!departments.isEmpty() || !managers.isEmpty() || !groupBy.isEmpty()) {
+      query.addFromInner(TBL_ORDER_CARGO,
+          sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
+      query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
+
+      if (!departments.isEmpty() || !managers.isEmpty()
+          || groupBy.contains(AR_DEPARTMENT) || groupBy.contains(AR_MANAGER)) {
+        query.addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER));
+
+        if (!departments.isEmpty() || groupBy.contains(AR_DEPARTMENT)) {
+          SqlSelect departmentQuery = new SqlSelect()
+              .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
+              .addMin(TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT)
+              .addFrom(TBL_DEPARTMENT_EMPLOYEES)
+              .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON);
+
+          query.addFromLeft(departmentQuery, departmetQueryAlias,
+              SqlUtils.join(departmetQueryAlias, COL_COMPANY_PERSON,
+                  TBL_USERS, COL_COMPANY_PERSON));
+        }
+      }
+    }
+
+    query.setWhere(where);
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    if (groupBy.contains(AR_MONTH)) {
+      SqlSelect rangeQuery = new SqlSelect()
+          .addMin(tmp, COL_ORDER_DATE, SqlUtils.uniqueName())
+          .addMax(tmp, COL_ORDER_DATE, SqlUtils.uniqueName())
+          .addFrom(tmp);
+
+      SimpleRowSet rangeData = qs.getData(rangeQuery);
+      if (DataUtils.isEmpty(rangeData)) {
+        qs.sqlDropTemp(tmp);
+        return ResponseObject.emptyResponse();
+      }
+
+      DateTime minDate = rangeData.getDateTime(0, 0);
+      DateTime maxDate = rangeData.getDateTime(0, 1);
+      
+      if (minDate == null || maxDate == null) {
+        qs.sqlDropTemp(tmp);
+        return ResponseObject.emptyResponse();
+      }
+
+      DateTime lower = DateTime.copyOf(minDate);
+      while (TimeUtils.isLeq(lower, maxDate)) {
+        DateTime upper = TimeUtils.startOfNextMonth(lower).getDateTime();
+
+        SqlUpdate update = new SqlUpdate(tmp)
+            .addConstant(AR_YEAR, lower.getYear())
+            .addConstant(AR_MONTH, lower.getMonth())
+            .setWhere(SqlUtils.and(SqlUtils.moreEqual(tmp, COL_ORDER_DATE, lower.getTime()),
+                SqlUtils.less(tmp, COL_ORDER_DATE, upper.getTime())));
+
+        qs.updateData(update);
+
+        lower = DateTime.copyOf(upper);
+      }
+    }
+
+    query = new SqlSelect();
+    query.addFrom(tmp);
+
+    for (String by : groupBy) {
+      switch (by) {
+        case AR_MONTH:
+          query.addFields(tmp, AR_YEAR, AR_MONTH);
+          query.addGroup(tmp, AR_YEAR, AR_MONTH);
+          query.addOrder(tmp, AR_YEAR, AR_MONTH);
+          break;
+
+        case AR_DEPARTMENT:
+          query.addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+
+          query.addFromLeft(TBL_DEPARTMENTS,
+              SqlUtils.join(TBL_DEPARTMENTS, sys.getIdName(TBL_DEPARTMENTS), tmp, COL_DEPARTMENT));
+
+          query.addGroup(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          query.addOrder(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          break;
+
+        case AR_MANAGER:
+          query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addFromLeft(TBL_COMPANY_PERSONS,
+              SqlUtils.join(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS),
+                  tmp, COL_COMPANY_PERSON));
+          query.addFromLeft(TBL_PERSONS,
+              sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+          query.addGroup(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          query.addOrder(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          break;
+      }
+    }
+
+    query.addCount(AR_RECEIVED);
+
+    IsExpression xpr = SqlUtils.field(tmp, COL_ASSESSMENT_STATUS);
+
+    query.addSum(SqlUtils.sqlCase(xpr, AssessmentStatus.ANSWERED.ordinal(), 1, 0), AR_ANSWERED);
+    query.addSum(SqlUtils.sqlCase(xpr, AssessmentStatus.LOST.ordinal(), 1, 0), AR_LOST);
+    query.addSum(SqlUtils.sqlCase(xpr, AssessmentStatus.APPROVED.ordinal(), 1, 0), AR_APPROVED);
+
+    query.addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmp, COL_ASSESSMENT), 0, 1), AR_SECONDARY);
+
+    SimpleRowSet result = qs.getData(query);
+    qs.sqlDropTemp(tmp);
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
+  }
+
   private ResponseObject getAssessmentTotals(Long assessmentId, boolean isPrimary) {
     Assert.state(DataUtils.isId(assessmentId));
 
@@ -1142,8 +1311,8 @@ public class TransportModuleBean implements BeeModule {
 
   private ResponseObject getColors(RequestInfo reqInfo) {
     Long theme;
-    if (reqInfo.hasParameter(VAR_ID)) {
-      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_ID));
+    if (reqInfo.hasParameter(Service.VAR_ID)) {
+      theme = BeeUtils.toLong(reqInfo.getParameter(Service.VAR_ID));
     } else {
       theme = null;
     }

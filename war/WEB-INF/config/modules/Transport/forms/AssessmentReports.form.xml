@@ -58,5 +58,7 @@
         </FlowPanel>
       </row>
     </Table>
+    
+    <FlowPanel name="DataContainer" />
   </FlowPanel>
 </f:Form>

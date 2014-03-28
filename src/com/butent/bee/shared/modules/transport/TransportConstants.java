@@ -3,7 +3,6 @@ package com.butent.bee.shared.modules.transport;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -340,6 +339,7 @@ public final class TransportConstants {
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
+  public static final String SVC_GET_ASSESSMENT_REPORT = "GetAssessmentReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_IMPORT_MAPPINGS = "GetImportMappings";
   public static final String SVC_DO_IMPORT = "DoImport";
@@ -351,8 +351,6 @@ public final class TransportConstants {
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
-
-  public static final String VAR_ID = Service.RPC_VAR_PREFIX + "id";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -870,6 +868,18 @@ public final class TransportConstants {
   public static final String DATA_TYPE_DRIVER = "Driver";
 
   public static final String DEFAULT_CARGO_DESCRIPTION = "*";
+
+  public static final String AR_YEAR = "Year";
+  public static final String AR_MONTH = "Month";
+  public static final String AR_DEPARTMENT = "Department";
+  public static final String AR_MANAGER = "Manager";
+
+  public static final String AR_RECEIVED = "Received";
+  public static final String AR_ANSWERED = "Answered";
+  public static final String AR_LOST = "Lost";
+  public static final String AR_APPROVED = "Approved";
+
+  public static final String AR_SECONDARY = "Secondary";
 
   public static final String STYLE_SHEET = "transport";
 
