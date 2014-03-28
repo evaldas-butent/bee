@@ -789,6 +789,7 @@ public final class TransportConstants {
   public static final String FORM_ASSESSMENT = "Assessment";
   public static final String FORM_ASSESSMENT_FORWARDER = "AssessmentForwarder";
   public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
+  public static final String FORM_ASSESSMENT_REPORTS = "AssessmentReports";
 
   public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
   public static final String FORM_NEW_CARGO_PURCHASE_INVOICE = "NewCargoPurchaseInvoice";
