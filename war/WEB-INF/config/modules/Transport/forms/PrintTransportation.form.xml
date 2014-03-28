@@ -71,7 +71,16 @@
       </span>
     </HtmlPanel>
     <Label html="3. Apmokėjimo sąlygos" style="&section;"/>
-    <TextLabel source="Notes" />
+    
+    <TextLabel name="transportationPrice"  source="TransportationPrice" >
+      <renderToken source="TransportationPrice" />
+      <renderToken source="TransportationCurrencyName" suffix=" {price_in_eur}"/>
+      <renderToken source="TransportationVATType" prefix=" + "/>
+      <renderToken source="PaymentDays" prefix=" per " suffix=" d. po sąskaitos faktūros ir 2 CMR originalų gavimo." />
+    </TextLabel>
+    <Label name="customerFax" text="Atsiųskite šios sutarties kopiją faksu {fax} nurodant visą reikiamą informaciją." />
+    <Label html="Sutarties patvirtinimo laukiama per 1 val. nuo jos gavimo, nepatvirtinus sutarties laikoma, kad užsakymas priimtas tarp Užsakovo ir Vežėjo sutinkant su šios sutarties sąlygomis." />
+    
     <Table style="width:100%; margin-top:10px; padding-left: 1em;">
       <row style="&bold;">
         <Label html="Užsakovas" />

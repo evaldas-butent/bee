@@ -6,6 +6,9 @@
   >
   <Columns>
     <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Rate" />

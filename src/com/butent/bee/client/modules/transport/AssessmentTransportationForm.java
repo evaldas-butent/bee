@@ -41,15 +41,29 @@ import java.util.Map;
 public class AssessmentTransportationForm extends PrintFormInterceptor {
 
   private static final String WIDGET_NAME_FIRST_PARAGRAPH = "firstParagraph";
+  private static final String WIDGET_NAME_CUSOTMER_FAX = "customerFax";
+  private static final String WIDGET_NAME_TRANSPORTATION_PRICE = "transportationPrice";
+
+  private static final String REPLACEMENT_FAX = "{fax}";
+  private static final String REPLACEMENT_PRICE_IN_EUR = "{price_in_eur}";
+
   private static final List<String> PARAGRAPH_TEXT = Lists.newArrayList("atstovaujama",
       "toliau vadinamas \"Užsakovu\" ir", "atstovaujama", "________________________________",
       ", toliau vadinamas \"Vežėju\" sudarė šią krovinio vežimo sutartį");
+
+  private static final String TEXT_PRICE_IN_EUR = "({price_in_eur} pagal kursą EUR)";
+
+  private static final double FIXED_EUR_CURRENCY_RATE = 3.4528;
+  private static final String EUR_CURRENCY_LABEL = "eur";
 
   private Widget totals;
   private Widget cargo;
   private Widget firstParagraph;
   private Widget forwarderDetails;
   private Widget customerDetails;
+
+  private String customerFax = "";
+  private String priceInEur = "";
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -172,6 +186,8 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
           }
         });
 
+    calculateTransportationPriceInEur(form, row);
+
     forwarderDetails = new Flow();
     customerDetails = new Flow();
     firstParagraph = new Flow();
@@ -210,7 +226,23 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
         if (BeeUtils.same(name, WIDGET_NAME_FIRST_PARAGRAPH)) {
           widget.getElement().setInnerText(firstParagraph.getElement().getInnerText());
         }
+
+        if (BeeUtils.same(name, WIDGET_NAME_CUSOTMER_FAX)) {
+          widget.getElement().setInnerText(
+              BeeUtils.replace(widget.getElement().getInnerText(), REPLACEMENT_FAX,
+                  getCustomerFax()));
+        }
         super.afterCreateWidget(name, widget, callback);
+      }
+
+      @Override
+      public void afterRefresh(FormView form, IsRow row) {
+        Widget widget = form.getWidgetByName(WIDGET_NAME_TRANSPORTATION_PRICE);
+        if (widget != null) {
+          widget.getElement().setInnerHTML(
+              BeeUtils.replace(widget.getElement().getInnerHTML(), REPLACEMENT_PRICE_IN_EUR,
+                  getPriceInEur()));
+        }
       }
 
       @Override
@@ -225,7 +257,42 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     return new AssessmentTransportationForm();
   }
 
-  private static void renderFirstParagraph(final FormView form, final IsRow row,
+  private String getCustomerFax() {
+    return customerFax;
+  }
+
+  private void setCustomerFax(String customerFax) {
+    this.customerFax = customerFax;
+  }
+
+  private String getPriceInEur() {
+    return priceInEur;
+  }
+
+  private void setPriceInEur(String priceInEur) {
+    this.priceInEur = priceInEur;
+  }
+
+  private void calculateTransportationPriceInEur(FormView form, IsRow row) {
+    String selectedCurrency = row.getString(form.getDataIndex("TransportationCurrencyName"));
+
+    if (BeeUtils.same(selectedCurrency, EUR_CURRENCY_LABEL)) {
+      setPriceInEur(BeeConst.STRING_EMPTY);
+    } else {
+      double price = BeeUtils.unbox(row.getDouble(form.getDataIndex("TransportationPrice")));
+      if (!BeeUtils.isPositive(price)) {
+        setPriceInEur(BeeConst.STRING_EMPTY);
+        return;
+      }
+
+      double exchange = price * FIXED_EUR_CURRENCY_RATE;
+
+      setPriceInEur(BeeUtils.replace(TEXT_PRICE_IN_EUR, REPLACEMENT_PRICE_IN_EUR,
+          BeeUtils.toString(exchange, 2)));
+    }
+  }
+
+  private void renderFirstParagraph(final FormView form, final IsRow row,
       final Widget widget) {
     final UserInfo info = BeeKeeper.getUser();
     final DataInfo viewInfo = Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES);
@@ -249,9 +316,12 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
                   ClassifierConstants.COL_COMPANY_NAME))
                   + BeeConst.STRING_COMMA, resutlRow.getString(viewInfo.getColumnIndex(
                   ClassifierConstants.ALS_COMPANY_TYPE_NAME)));
+              String fax = resutlRow.getString(viewInfo.getColumnIndex(
+                  ClassifierConstants.COL_FAX));
 
               if (id == BeeUtils.unbox(info.getCompany())) {
                 customerCompanySignature = signature;
+                setCustomerFax(fax);
               } else if (id == BeeUtils.unbox(row.getLong(form.getDataIndex(COL_FORWARDER)))) {
                 forwarderCompanySignature = signature;
               }

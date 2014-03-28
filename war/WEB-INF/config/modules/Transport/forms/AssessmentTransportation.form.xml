@@ -5,6 +5,7 @@
   <!ENTITY inline "display:inline-block;">
   <!ENTITY labelLeft "&inline; width:140px; padding-top:1px;">
   <!ENTITY summary "font-size: large; margin-left: 1em; margin-bottom: 5px; outline: none;">
+  <!ENTITY header "font-style: italic;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -13,7 +14,7 @@
   >
   <f:properties reports="PrintTransportation" />
 
-  <FlowPanel style="padding: 10px 2px 2px 10px;">
+  <FlowPanel style="padding: 10px 20px 10px 20px;">
     <css id="&form;">
       .&form; table {border-collapse:collapse;}
       .&form; tr:first-child {text-align:center; font-weight:bold;}
@@ -40,8 +41,24 @@
       <InputText source="ForwarderDriver" style="&inline; width:200px;"  />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label text="=transportConditions" style="&labelLeft; vertical-align:top;" />
-      <InputArea source="Notes" style="width:400px;" />
+      <Label text="=transportConditions" style="&header;" />
+    </FlowPanel>
+    <FlowPanel style="&section;">      
+      <Label text="=price" class="bee-required" style="&labelLeft;" />
+      <InputCurrency source="TransportationPrice" style="width: 100px;" /> 
+      <DataSelector disablable="true" editEnabled="false" source="TransportationCurrency" style="width:50px; margin-left: 8px" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=vat" class="bee-requred" style="&labelLeft;" />
+      <ListBox source="TransportationVATType">
+          <item>PVM (21%)</item>
+          <item>PVM (0%, 45 str.)</item>
+          <item>Menamas</item>
+          <item>be PVM (13/2 str.)</item>
+      </ListBox>       
+      
+      <Label text="=unitDays" class="bee-required" style="&labelLeft;margin-left:8px;" />
+      <InputInteger source="PaymentDays" minValue="0" style="width: 50px;" /> 
     </FlowPanel>
     <hr/>
     <Details style="&section;" open="true">

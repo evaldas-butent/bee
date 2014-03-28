@@ -9,7 +9,16 @@
     <SimpleColumn name="ForwarderVehicle" />
     <SimpleColumn name="ForwarderDriver" />
     <SimpleColumn name="Notes" />
-
+    <SimpleColumn name="TransportationPrice" />
+    
+    <SimpleColumn name="TransportationCurrency" />
+    <SimpleJoin joinType="LEFT" name="TransportationCurrency">
+      <SimpleColumn name="Name" alias="TransportationCurrencyName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="PaymentDays" />
+    <SimpleColumn name="TransportationVATType" />
+    
     <SimpleColumn name="Expedition" />
     <SimpleJoin joinType="LEFT" name="Expedition">
       <SimpleColumn name="Name" alias="ExpeditionType" />
