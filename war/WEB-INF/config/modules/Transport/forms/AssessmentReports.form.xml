@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="AssessmentReports" caption="=trAssessmentReports"
-  enabledActions="refresh filter remove_filter"
+  enabledActions="filter"
   >
   <FlowPanel>
     <Table style="border-collapse: collapse; margin-top: 1ex;">
@@ -59,6 +59,7 @@
       </row>
     </Table>
     
+    <br/>
     <FlowPanel name="DataContainer" />
   </FlowPanel>
 </f:Form>

@@ -221,6 +221,8 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_REPORT)) {
       response = getAssessmentReport(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_MANAGERS_BY_DEPARTMENT)) {
+      response = getManagersByDepartment(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
@@ -902,7 +904,7 @@ public class TransportModuleBean implements BeeModule {
       where.add(SqlUtils.moreEqual(TBL_ORDERS, COL_ORDER_DATE, startDate));
     }
     if (endDate != null) {
-      where.add(SqlUtils.less(TBL_ORDERS, COL_ORDER_DATE, startDate));
+      where.add(SqlUtils.less(TBL_ORDERS, COL_ORDER_DATE, endDate));
     }
 
     if (!departments.isEmpty()) {
@@ -970,7 +972,7 @@ public class TransportModuleBean implements BeeModule {
 
       DateTime minDate = rangeData.getDateTime(0, 0);
       DateTime maxDate = rangeData.getDateTime(0, 1);
-      
+
       if (minDate == null || maxDate == null) {
         qs.sqlDropTemp(tmp);
         return ResponseObject.emptyResponse();
@@ -1004,16 +1006,19 @@ public class TransportModuleBean implements BeeModule {
           break;
 
         case AR_DEPARTMENT:
+          query.addFields(tmp, COL_DEPARTMENT);
           query.addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
 
           query.addFromLeft(TBL_DEPARTMENTS,
               SqlUtils.join(TBL_DEPARTMENTS, sys.getIdName(TBL_DEPARTMENTS), tmp, COL_DEPARTMENT));
 
+          query.addGroup(tmp, COL_DEPARTMENT);
           query.addGroup(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
           query.addOrder(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
           break;
 
         case AR_MANAGER:
+          query.addFields(tmp, COL_COMPANY_PERSON);
           query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
 
           query.addFromLeft(TBL_COMPANY_PERSONS,
@@ -1022,8 +1027,11 @@ public class TransportModuleBean implements BeeModule {
           query.addFromLeft(TBL_PERSONS,
               sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
 
-          query.addGroup(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          query.addGroup(tmp, COL_COMPANY_PERSON);
+          query.addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
           query.addOrder(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          query.addOrder(tmp, COL_COMPANY_PERSON);
           break;
       }
     }
@@ -1735,6 +1743,46 @@ public class TransportModuleBean implements BeeModule {
         .addOrder(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE), sys.getView(TBL_IMPORT_MAPPINGS));
 
     return ResponseObject.response(rs);
+  }
+
+  private ResponseObject getManagersByDepartment(RequestInfo reqInfo) {
+    String input = reqInfo.getParameter(COL_DEPARTMENT);
+    if (BeeUtils.isEmpty(input)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DEPARTMENT);
+    }
+
+    Set<Long> departments = DataUtils.parseIdSet(input);
+
+    SqlSelect departmentQuery = new SqlSelect()
+        .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
+        .addMin(TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT)
+        .addFrom(TBL_DEPARTMENT_EMPLOYEES)
+        .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON);
+
+    String departmetQueryAlias = SqlUtils.uniqueName();
+
+    IsCondition where;
+    if (departments.isEmpty()) {
+      where = SqlUtils.isNull(departmetQueryAlias, COL_DEPARTMENT);
+    } else {
+      where = SqlUtils.inList(departmetQueryAlias, COL_DEPARTMENT, departments);
+    }
+
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_USERS, COL_COMPANY_PERSON)
+        .addFrom(TBL_ORDERS)
+        .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
+        .addFromLeft(departmentQuery, departmetQueryAlias,
+            SqlUtils.join(departmetQueryAlias, COL_COMPANY_PERSON, TBL_USERS, COL_COMPANY_PERSON))
+        .setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(DataUtils.buildIdList(data.getLongColumn(0)));
+    }
   }
 
   private BeeRowSet getSettings() {

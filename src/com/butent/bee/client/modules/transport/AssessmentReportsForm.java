@@ -1,6 +1,13 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -9,9 +16,17 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.HasIndexedWidgets;
@@ -25,6 +40,11 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -32,17 +52,20 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasStringValue;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
+import java.util.Set;
 
-public class AssessmentReportsForm extends AbstractFormInterceptor {
+public class AssessmentReportsForm extends AbstractFormInterceptor implements Printable {
 
   private static BeeLogger logger = LogUtils.getLogger(AssessmentReportsForm.class);
-  
+
   private static final String STORAGE_KEY_PREFIX = "AssessmentReports_";
 
   private static final String NAME_START_DATE = "StartDate";
@@ -77,9 +100,31 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
   private static final String STYLE_APPROVED = STYLE_PREFIX + "approved";
   private static final String STYLE_SECONDARY = STYLE_PREFIX + "secondary";
 
-  private static String renderPercent(Integer x, Integer y) {
-    if (BeeUtils.isPositive(x) && BeeUtils.isPositive(y)) {
-      return BeeUtils.toString(x * 100d / y, 2);
+  private static final String STYLE_DETAILS = STYLE_PREFIX + "details";
+  private static final String STYLE_SUMMARY = STYLE_PREFIX + "summary";
+
+  private static final NumberFormat percentFormat = Format.getNumberFormat("0.0");
+  private static final NumberFormat quantityFormat = Format.getNumberFormat("#,###");
+
+  private static void drillDown(String caption, Filter filter, boolean modal) {
+    GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
+    PresenterCallback presenterCallback =
+        modal ? PresenterCallback.SHOW_IN_POPUP : PresenterCallback.SHOW_IN_NEW_TAB;
+
+    GridFactory.openGrid("AssessmentReportDrillDown", null, gridOptions, presenterCallback);
+  }
+
+  private static String renderPercent(int x, int y) {
+    if (x > 0 && y > 0) {
+      return percentFormat.format(x * 100d / y);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
+  private static String renderQuantity(int x) {
+    if (x > 0) {
+      return quantityFormat.format(x);
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -103,9 +148,15 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       case FILTER:
         doReport();
         return false;
-      
+
       case REMOVE_FILTER:
         clearFilter();
+        return false;
+
+      case PRINT:
+        if (hasReport()) {
+          Printer.print(this);
+        }
         return false;
 
       default:
@@ -114,10 +165,24 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public String getCaption() {
+    return getFormView().getCaption();
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new AssessmentReportsForm();
   }
-  
+
+  @Override
+  public Element getPrintElement() {
+    if (hasReport()) {
+      return getDataContainer().getWidget(0).getElement();
+    } else {
+      return null;
+    }
+  }
+
   @Override
   public void onLoad(FormView form) {
     Long user = BeeKeeper.getUser().getUserId();
@@ -157,7 +222,12 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       }
     }
   }
-  
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    return true;
+  }
+
   @Override
   public void onUnload(FormView form) {
     Long user = BeeKeeper.getUser().getUserId();
@@ -194,41 +264,34 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       widgetNotFound(name);
     }
   }
-  
+
   private void clearFilter() {
     clearEditor(NAME_START_DATE);
     clearEditor(NAME_END_DATE);
 
     clearEditor(NAME_DEPARTMENTS);
     clearEditor(NAME_MANAGERS);
-
-    for (String groupName : NAME_GROUP_BY) {
-      Widget widget = getFormView().getWidgetByName(groupName);
-      if (widget instanceof ListBox) {
-        ((ListBox) widget).setSelectedIndex(0);
-      }
-    }
   }
 
   private void doReport() {
     DateTime start = getDateTime(NAME_START_DATE);
     DateTime end = getDateTime(NAME_END_DATE);
-    
+
     if (start != null && end != null && TimeUtils.isMore(start, end)) {
       getFormView().notifyWarning(Localized.getConstants().invalidRange(),
           TimeUtils.renderPeriod(start, end));
       return;
     }
-    
+
     ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_REPORT);
-    
+
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
     }
     if (end != null) {
       params.addDataItem(Service.VAR_TO, end.getTime());
     }
-    
+
     String departments = getEditorValue(NAME_DEPARTMENTS);
     if (!BeeUtils.isEmpty(departments)) {
       params.addDataItem(AR_DEPARTMENT, departments);
@@ -237,7 +300,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(managers)) {
       params.addDataItem(AR_MANAGER, managers);
     }
-    
+
     List<String> groupBy = Lists.newArrayList();
     for (String groupName : NAME_GROUP_BY) {
       Widget widget = getFormView().getWidgetByName(groupName);
@@ -259,24 +322,24 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
           default:
             group = null;
         }
-        
+
         if (group != null && !groupBy.contains(group)) {
           groupBy.add(group);
         }
       }
     }
-    
+
     if (!groupBy.isEmpty()) {
       params.addDataItem(Service.VAR_GROUP_BY, NameUtils.join(groupBy));
     }
-    
+
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasMessages()) {
           response.notify(getFormView());
         }
-        
+
         if (response.hasResponse(SimpleRowSet.class)) {
           renderData(SimpleRowSet.restore(response.getResponseAsString()));
         } else {
@@ -285,7 +348,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       }
     });
   }
-  
+
   private HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
     if (widget instanceof HasIndexedWidgets) {
@@ -295,7 +358,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       return null;
     }
   }
-  
+
   private DateTime getDateTime(String name) {
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof InputDateTime) {
@@ -305,7 +368,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       return null;
     }
   }
-  
+
   private String getEditorValue(String name) {
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof HasStringValue) {
@@ -315,198 +378,460 @@ public class AssessmentReportsForm extends AbstractFormInterceptor {
       return null;
     }
   }
-  
-  private void renderData(SimpleRowSet data) {
+
+  private String getFilterLabel(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+
+    if (widget instanceof MultiSelector) {
+      MultiSelector selector = (MultiSelector) widget;
+      List<Long> ids = DataUtils.parseIdList(selector.getValue());
+
+      if (ids.isEmpty()) {
+        return null;
+      } else {
+        List<String> labels = Lists.newArrayList();
+        for (Long id : ids) {
+          labels.add(selector.getRowLabel(id));
+        }
+
+        return BeeUtils.joinItems(labels);
+      }
+
+    } else {
+      widgetNotFound(name);
+      return null;
+    }
+  }
+
+  private boolean hasReport() {
+    HasIndexedWidgets container = getDataContainer();
+    return container != null && !container.isEmpty();
+  }
+
+  private void renderData(final SimpleRowSet data) {
     HasIndexedWidgets container = getDataContainer();
     if (container == null) {
       return;
     }
-    
+
     if (!container.isEmpty()) {
       container.clear();
     }
-    
-    HtmlTable table = new HtmlTable(STYLE_TABLE);
-    
+
+    final HtmlTable table = new HtmlTable(STYLE_TABLE);
+
     int row = 0;
+    int c1 = 0;
+    int c2 = 0;
     int col = 0;
+
+    int colYear = BeeConst.UNDEF;
+    int colMonth = BeeConst.UNDEF;
+    int colDepartment = BeeConst.UNDEF;
+    int colManager = BeeConst.UNDEF;
+    int colReceived = BeeConst.UNDEF;
+    int colAnswered = BeeConst.UNDEF;
+    int colLost = BeeConst.UNDEF;
+    int colApproved = BeeConst.UNDEF;
+    int colSecondary = BeeConst.UNDEF;
+
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
 
       switch (colName) {
         case AR_YEAR:
-          table.setText(row, col, Localized.getConstants().year(), STYLE_HEADER);
-          table.getCellFormatter().setRowSpan(row, col, 2);
+          colYear = col;
+
+          table.setText(row, c1, Localized.getConstants().year(), STYLE_HEADER);
+          table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          c1++;
           col++;
           break;
 
         case AR_MONTH:
-          table.setText(row, col, Localized.getConstants().month(), STYLE_HEADER);
-          table.getCellFormatter().setRowSpan(row, col, 2);
+          colMonth = col;
+
+          table.setText(row, c1, Localized.getConstants().month(), STYLE_HEADER);
+          table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          c1++;
+          col++;
+          break;
+
+        case AdministrationConstants.COL_DEPARTMENT:
+          colDepartment = col;
+
+          table.setText(row, c1, Localized.getConstants().department(), STYLE_HEADER);
+          table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          c1++;
           col++;
           break;
 
         case AdministrationConstants.COL_DEPARTMENT_NAME:
-          table.setText(row, col, Localized.getConstants().department(), STYLE_HEADER);
-          table.getCellFormatter().setRowSpan(row, col, 2);
+          break;
+
+        case ClassifierConstants.COL_COMPANY_PERSON:
+          colManager = col;
+
+          table.setText(row, c1, Localized.getConstants().manager(), STYLE_HEADER);
+          table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          c1++;
           col++;
           break;
 
         case ClassifierConstants.COL_FIRST_NAME:
-          table.setText(row, col, Localized.getConstants().manager(), STYLE_HEADER);
-          table.getCellFormatter().setRowSpan(row, col, 2);
-          col++;
-          break;
-          
         case ClassifierConstants.COL_LAST_NAME:
           break;
 
         case AR_RECEIVED:
-          table.setText(row, col, Localized.getConstants().trAssessmentReportReceived(),
+          colReceived = col;
+
+          table.setText(row, c1, Localized.getConstants().trAssessmentReportReceived(),
               STYLE_HEADER);
-          table.getCellFormatter().setRowSpan(row, col, 2);
+          table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          c1++;
           col++;
           break;
 
         case AR_ANSWERED:
-          table.setText(row, col, Localized.getConstants().trAssessmentReportAnswered(),
-              STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, col, 2);
+          colAnswered = col;
 
-          table.setText(row + 1, col, Localized.getConstants().trAssessmentReportQuantity(),
+          table.setText(row, c1, Localized.getConstants().trAssessmentReportAnswered(),
+              STYLE_HEADER_1);
+          table.getCellFormatter().setColSpan(row, c1, 2);
+
+          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
               STYLE_HEADER_2);
-          table.setText(row + 1, col + 1, Localized.getConstants().trAssessmentReportPercent(),
+          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
               STYLE_HEADER_2);
+
+          c1++;
+          c2 += 2;
           col += 2;
           break;
 
         case AR_LOST:
-          table.setText(row, col, Localized.getConstants().trAssessmentReportLost(),
+          colLost = col;
+
+          table.setText(row, c1, Localized.getConstants().trAssessmentReportLost(),
               STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, col, 2);
-          
-          table.setText(row + 1, col, Localized.getConstants().trAssessmentReportQuantity(),
+          table.getCellFormatter().setColSpan(row, c1, 2);
+
+          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
               STYLE_HEADER_2);
-          table.setText(row + 1, col + 1, Localized.getConstants().trAssessmentReportPercent(),
+          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
               STYLE_HEADER_2);
+
+          c1++;
+          c2 += 2;
           col += 2;
           break;
 
         case AR_APPROVED:
-          table.setText(row, col, Localized.getConstants().trAssessmentReportApproved(),
+          colApproved = col;
+
+          table.setText(row, c1, Localized.getConstants().trAssessmentReportApproved(),
               STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, col, 2);
-          
-          table.setText(row + 1, col, Localized.getConstants().trAssessmentReportQuantity(),
+          table.getCellFormatter().setColSpan(row, c1, 3);
+
+          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
               STYLE_HEADER_2);
-          table.setText(row + 1, col + 1, 
+          table.setText(row + 1, c2 + 1,
               Localized.getConstants().trAssessmentReportApprovedToReceived(), STYLE_HEADER_2);
-          table.setText(row + 1, col + 2, 
+          table.setText(row + 1, c2 + 2,
               Localized.getConstants().trAssessmentReportApprovedToAnswered(), STYLE_HEADER_2);
+
+          c1++;
+          c2 += 3;
           col += 3;
           break;
 
         case AR_SECONDARY:
-          table.setText(row, col, Localized.getConstants().trAssessmentReportSecondary(),
+          colSecondary = col;
+
+          table.setText(row, c1, Localized.getConstants().trAssessmentReportSecondary(),
               STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, col, 2);
-          
-          table.setText(row + 1, col, Localized.getConstants().trAssessmentReportQuantity(),
+          table.getCellFormatter().setColSpan(row, c1, 2);
+
+          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
               STYLE_HEADER_2);
-          table.setText(row + 1, col + 1, Localized.getConstants().trAssessmentReportPercent(),
+          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
               STYLE_HEADER_2);
-          col += 2;
+
+          c1++;
+          c2 += 2;
+          col += 3;
           break;
-          
+
         default:
           logger.warning("column not recognized", colName);
       }
     }
-    
+
+    int totReceived = 0;
+    int totAnswered = 0;
+    int totLost = 0;
+    int totApproved = 0;
+    int totSecondary = 0;
+
     row = 2;
+
     for (int i = 0; i < data.getNumberOfRows(); i++) {
-      
-      col = 0;
+      int received = BeeUtils.unbox(data.getInt(i, AR_RECEIVED));
+      int answered = BeeUtils.unbox(data.getInt(i, AR_ANSWERED));
+      int lost = BeeUtils.unbox(data.getInt(i, AR_LOST));
+      int approved = BeeUtils.unbox(data.getInt(i, AR_APPROVED));
+      int secondary = BeeUtils.unbox(data.getInt(i, AR_SECONDARY));
+
       for (int j = 0; j < data.getNumberOfColumns(); j++) {
         String colName = data.getColumnName(j);
-        String value = data.getValue(i, j);
 
         switch (colName) {
           case AR_YEAR:
-            table.setText(row, col++, value, STYLE_YEAR);
+            table.setText(row, colYear, data.getValue(i, colName), STYLE_YEAR);
             break;
 
           case AR_MONTH:
-            table.setText(row, col++, Format.renderMonthFullStandalone(BeeUtils.toInt(value)),
-                STYLE_MONTH);
+            table.setText(row, colMonth,
+                Format.renderMonthFullStandalone(data.getInt(i, colName)), STYLE_MONTH);
             break;
 
           case AdministrationConstants.COL_DEPARTMENT_NAME:
-            table.setText(row, col++, value, STYLE_DEPARTMENT);
+            table.setText(row, colDepartment, data.getValue(i, colName), STYLE_DEPARTMENT);
             break;
 
           case ClassifierConstants.COL_FIRST_NAME:
-            table.setText(row, col++, 
-                BeeUtils.joinWords(value, data.getValue(i, ClassifierConstants.COL_LAST_NAME)),
-                STYLE_MANAGER);
+            table.setText(row, colManager, BeeUtils.joinWords(data.getValue(i, colName),
+                data.getValue(i, ClassifierConstants.COL_LAST_NAME)), STYLE_MANAGER);
             break;
 
           case AR_RECEIVED:
-            table.setText(row, col++, value,
-                StyleUtils.buildClasses(STYLE_RECEIVED, STYLE_QUANTITY));
+            table.setText(row, colReceived, renderQuantity(received),
+                STYLE_RECEIVED, STYLE_QUANTITY);
             break;
 
           case AR_ANSWERED:
-            if (BeeUtils.isPositiveInt(value)) {
-              table.setText(row, col, value,
-                  StyleUtils.buildClasses(STYLE_ANSWERED, STYLE_QUANTITY));
-              table.setText(row, col + 1, 
-                  renderPercent(BeeUtils.toInt(value), data.getInt(i, AR_RECEIVED)),
-                  StyleUtils.buildClasses(STYLE_ANSWERED, STYLE_PERCENT));
-            }
-            col += 2;
+            table.setText(row, colAnswered, renderQuantity(answered),
+                STYLE_ANSWERED, STYLE_QUANTITY);
+            table.setText(row, colAnswered + 1, renderPercent(answered, received),
+                STYLE_ANSWERED, STYLE_PERCENT);
             break;
 
           case AR_LOST:
-            if (BeeUtils.isPositiveInt(value)) {
-              table.setText(row, col, value,
-                  StyleUtils.buildClasses(STYLE_LOST, STYLE_QUANTITY));
-              table.setText(row, col + 1, 
-                  renderPercent(BeeUtils.toInt(value), data.getInt(i, AR_RECEIVED)),
-                  StyleUtils.buildClasses(STYLE_LOST, STYLE_PERCENT));
-            }
-            col += 2;
+            table.setText(row, colLost, renderQuantity(lost), STYLE_LOST, STYLE_QUANTITY);
+            table.setText(row, colLost + 1, renderPercent(lost, received),
+                STYLE_LOST, STYLE_PERCENT);
             break;
 
           case AR_APPROVED:
-            if (BeeUtils.isPositiveInt(value)) {
-              table.setText(row, col, value,
-                  StyleUtils.buildClasses(STYLE_APPROVED, STYLE_QUANTITY));
-              table.setText(row, col + 1, 
-                  renderPercent(BeeUtils.toInt(value), data.getInt(i, AR_RECEIVED)),
-                  StyleUtils.buildClasses(STYLE_APPROVED, STYLE_PERCENT));
-              table.setText(row, col + 2, 
-                  renderPercent(BeeUtils.toInt(value), data.getInt(i, AR_ANSWERED)),
-                  StyleUtils.buildClasses(STYLE_APPROVED, STYLE_PERCENT));
-            }
-            col += 3;
+            table.setText(row, colApproved, renderQuantity(approved),
+                STYLE_APPROVED, STYLE_QUANTITY);
+
+            table.setText(row, colApproved + 1, renderPercent(approved, received),
+                STYLE_APPROVED, STYLE_PERCENT);
+            table.setText(row, colApproved + 2, renderPercent(approved, answered + approved),
+                STYLE_APPROVED, STYLE_PERCENT);
             break;
 
           case AR_SECONDARY:
-            if (BeeUtils.isPositiveInt(value)) {
-              table.setText(row, col, value,
-                  StyleUtils.buildClasses(STYLE_SECONDARY, STYLE_QUANTITY));
-              table.setText(row, col + 1, 
-                  renderPercent(BeeUtils.toInt(value), data.getInt(i, AR_RECEIVED)),
-                  StyleUtils.buildClasses(STYLE_SECONDARY, STYLE_PERCENT));
-            }
-            col += 2;
+            table.setText(row, colSecondary, renderQuantity(secondary),
+                STYLE_SECONDARY, STYLE_QUANTITY);
+            table.setText(row, colSecondary + 1, renderPercent(secondary, received),
+                STYLE_SECONDARY, STYLE_PERCENT);
             break;
-          
+        }
+      }
+
+      totReceived += received;
+      totAnswered += answered;
+      totLost += lost;
+      totApproved += approved;
+      totSecondary += secondary;
+
+      table.getRowFormatter().addStyleName(row, STYLE_DETAILS);
+      DomUtils.setDataIndex(table.getRow(row), i);
+
+      row++;
+    }
+
+    if (data.getNumberOfRows() > 1) {
+      table.setText(row, colReceived, renderQuantity(totReceived),
+          STYLE_RECEIVED, STYLE_QUANTITY);
+
+      table.setText(row, colAnswered, renderQuantity(totAnswered),
+          STYLE_ANSWERED, STYLE_QUANTITY);
+      table.setText(row, colAnswered + 1, renderPercent(totAnswered, totReceived),
+          STYLE_ANSWERED, STYLE_PERCENT);
+
+      table.setText(row, colLost, renderQuantity(totLost), STYLE_LOST, STYLE_QUANTITY);
+      table.setText(row, colLost + 1, renderPercent(totLost, totReceived),
+          STYLE_LOST, STYLE_PERCENT);
+
+      table.setText(row, colApproved, renderQuantity(totApproved),
+          STYLE_APPROVED, STYLE_QUANTITY);
+
+      table.setText(row, colApproved + 1, renderPercent(totApproved, totReceived),
+          STYLE_APPROVED, STYLE_PERCENT);
+      table.setText(row, colApproved + 2, renderPercent(totApproved, totAnswered + totApproved),
+          STYLE_APPROVED, STYLE_PERCENT);
+
+      table.setText(row, colSecondary, renderQuantity(totSecondary),
+          STYLE_SECONDARY, STYLE_QUANTITY);
+      table.setText(row, colSecondary + 1, renderPercent(totSecondary, totReceived),
+          STYLE_SECONDARY, STYLE_PERCENT);
+
+      table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
+    }
+
+    table.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        TableCellElement cellElement =
+            DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
+        TableRowElement rowElement = DomUtils.getParentRow(cellElement, false);
+
+        if (cellElement != null
+            && !BeeUtils.isEmpty(cellElement.getInnerText())
+            && (cellElement.hasClassName(STYLE_QUANTITY) || cellElement.hasClassName(STYLE_PERCENT))
+            && rowElement != null && rowElement.hasClassName(STYLE_DETAILS)) {
+
+          int dataIndex = DomUtils.getDataIndexInt(rowElement);
+
+          if (!BeeConst.isUndef(dataIndex)) {
+            boolean modal = Popup.getActivePopup() != null
+                || EventUtils.hasModifierKey(event.getNativeEvent());
+            showDetails(data.getRow(dataIndex), cellElement, modal);
+          }
+        }
+      }
+    });
+
+    container.add(table);
+  }
+
+  private void showDetails(SimpleRow dataRow, TableCellElement cellElement, final boolean modal) {
+    Set<Long> departments = Sets.newHashSet();
+
+    final CompoundFilter filter = Filter.and();
+    List<String> captions = Lists.newArrayList();
+
+    String[] colNames = dataRow.getColumnNames();
+
+    DateTime start = getDateTime(NAME_START_DATE);
+    DateTime end = getDateTime(NAME_END_DATE);
+
+    if (ArrayUtils.contains(colNames, AR_YEAR) && ArrayUtils.contains(colNames, AR_MONTH)) {
+      Integer year = BeeUtils.unbox(dataRow.getInt(AR_YEAR));
+      Integer month = BeeUtils.unbox(dataRow.getInt(AR_MONTH));
+
+      if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
+        if (start == null && end == null) {
+          captions.add(BeeUtils.joinWords(year, Format.renderMonthFullStandalone(month)));
+        }
+
+        YearMonth ym = new YearMonth(year, month);
+
+        if (start == null) {
+          start = ym.getDate().getDateTime();
+        }
+        if (end == null) {
+          end = TimeUtils.startOfNextMonth(ym).getDateTime();
         }
       }
     }
-    
-    container.add(table);
+
+    if (start != null) {
+      filter.add(Filter.isMoreEqual(COL_ORDER_DATE, new DateTimeValue(start)));
+    }
+    if (end != null) {
+      filter.add(Filter.isLess(COL_ORDER_DATE, new DateTimeValue(end)));
+    }
+
+    if (captions.isEmpty() && (start != null || end != null)) {
+      captions.add(TimeUtils.renderPeriod(start, end));
+    }
+
+    if (ArrayUtils.contains(colNames, ClassifierConstants.COL_COMPANY_PERSON)) {
+      Long companyPerson = dataRow.getLong(ClassifierConstants.COL_COMPANY_PERSON);
+      if (DataUtils.isId(companyPerson)) {
+        filter.add(Filter.equals(ClassifierConstants.COL_COMPANY_PERSON, companyPerson));
+        captions.add(BeeUtils.joinWords(dataRow.getValue(ClassifierConstants.COL_FIRST_NAME),
+            dataRow.getValue(ClassifierConstants.COL_LAST_NAME)));
+      }
+
+    } else {
+      if (ArrayUtils.contains(colNames, AdministrationConstants.COL_DEPARTMENT)) {
+        departments.add(dataRow.getLong(AdministrationConstants.COL_DEPARTMENT));
+        captions.add(dataRow.getValue(AdministrationConstants.COL_DEPARTMENT_NAME));
+
+      } else {
+        String input = getEditorValue(NAME_DEPARTMENTS);
+        if (!BeeUtils.isEmpty(input)) {
+          departments.addAll(DataUtils.parseIdSet(input));
+          captions.add(getFilterLabel(NAME_DEPARTMENTS));
+        }
+      }
+
+      String managers = getEditorValue(NAME_MANAGERS);
+      if (!BeeUtils.isEmpty(managers)) {
+        filter.add(Filter.any(ClassifierConstants.COL_COMPANY_PERSON,
+            DataUtils.parseIdSet(managers)));
+        captions.add(getFilterLabel(NAME_MANAGERS));
+      }
+    }
+
+    AssessmentStatus status = null;
+
+    if (cellElement.hasClassName(STYLE_ANSWERED)) {
+      status = AssessmentStatus.ANSWERED;
+      captions.add(Localized.getConstants().trAssessmentReportAnswered());
+
+    } else if (cellElement.hasClassName(STYLE_LOST)) {
+      status = AssessmentStatus.LOST;
+      captions.add(Localized.getConstants().trAssessmentReportLost());
+
+    } else if (cellElement.hasClassName(STYLE_APPROVED)) {
+      status = AssessmentStatus.APPROVED;
+      captions.add(Localized.getConstants().trAssessmentReportApproved());
+
+    } else if (cellElement.hasClassName(STYLE_SECONDARY)) {
+      filter.add(Filter.notNull(COL_ASSESSMENT));
+      captions.add(Localized.getConstants().trAssessmentReportSecondary());
+    }
+
+    if (status != null) {
+      filter.add(Filter.isEqual(COL_ASSESSMENT_STATUS, new IntegerValue(status.ordinal())));
+    }
+
+    final String caption = BeeUtils.joinItems(captions);
+
+    if (departments.isEmpty()) {
+      drillDown(caption, filter, modal);
+
+    } else {
+      ParameterList params = TransportHandler.createArgs(SVC_GET_MANAGERS_BY_DEPARTMENT);
+
+      String value = DataUtils.buildIdList(departments);
+      if (BeeUtils.isEmpty(value)) {
+        value = BeeConst.STRING_ZERO;
+      }
+      params.addDataItem(AdministrationConstants.COL_DEPARTMENT, value);
+
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse()) {
+            filter.add(Filter.any(ClassifierConstants.COL_COMPANY_PERSON,
+                DataUtils.parseIdSet(response.getResponseAsString())));
+          }
+
+          drillDown(caption, filter, modal);
+        }
+      });
+    }
   }
 }
