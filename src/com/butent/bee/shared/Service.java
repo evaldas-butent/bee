@@ -71,6 +71,7 @@ public final class Service {
   public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
+  public static final String INSERT_ROW_SILENTLY = DATA_SERVICE_PREFIX + "insert_row_silently";
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";

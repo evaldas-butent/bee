@@ -30,11 +30,8 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -144,13 +141,5 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
             }
           }
         });
-  }
-
-  @Override
-  public boolean onLoad(GridDescription gridDescription) {
-    gridDescription.setFilter(Filter.and(Filter.equals(COL_ORDER_MANAGER,
-        BeeKeeper.getUser().getUserId()), Filter.isNotEqual(ALS_ORDER_STATUS,
-        IntegerValue.of(OrderStatus.REQUEST))));
-    return true;
   }
 }

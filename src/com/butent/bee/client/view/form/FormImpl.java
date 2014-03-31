@@ -314,7 +314,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final String STYLE_FORM = "bee-Form";
   private static final String STYLE_FORM_DISABLED = "bee-Form-disabled";
-
   private static final String STYLE_WIDGET_DISABLED = "bee-disabled";
 
   private static final String NEW_ROW_CAPTION = "Create New";

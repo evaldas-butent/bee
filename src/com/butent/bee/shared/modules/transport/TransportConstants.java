@@ -449,8 +449,7 @@ public final class TransportConstants {
 
   public static final String VIEW_CHILD_ASSESSMENTS = "ChildAssessments";
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
-  public static final String VIEW_ASSESSMENT_REQUESTS = "AssessmentRequests";
-  public static final String VIEW_ASSESSMENT_ORDERS = "AssessmentOrders";
+  public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
 
   public static final String VIEW_REGISTRATIONS = "TranspRegistrations";
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
@@ -808,6 +807,9 @@ public final class TransportConstants {
   public static final String FORM_CARGO_REQUEST = "CargoRequest";
 
   public static final String FORM_IMPORT_OPTION = "ImportOption";
+
+  public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
+  public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
 
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";

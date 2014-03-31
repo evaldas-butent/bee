@@ -84,8 +84,6 @@ public interface LocalizableTransportConstants {
 
   String loading();
 
-  String newAssessmentRequest();
-
   String newCargo();
 
   String newTransportationOrder();
@@ -239,6 +237,8 @@ public interface LocalizableTransportConstants {
   String trLoadingNumber();
 
   String trLogistics();
+
+  String trNewAssessment();
 
   String trNewExpedition();
 

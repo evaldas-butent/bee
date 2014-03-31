@@ -44,7 +44,7 @@
       &separator;
       <FlowPanel style="&section;">
         <Label text="=manager" class="bee-required" style="&labelLeft;" />
-        <DataSelector name="Manager" source="Manager" style="&input; width:200px;"
+        <DataSelector name="Manager" source="Manager" style="&input; width:200px;" caching="local"
           viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
           editSource="CompanyPerson" newRowEnabled="false" />
         <CheckBox text="=trExpensesRegistered" name="ExpensesRegistered" source="ExpensesRegistered"
@@ -55,8 +55,8 @@
         <InputArea source="Notes" style="width:400px;" />
       </FlowPanel>
 
+      &separator;
       <FlowPanel style="&section;">
-        &separator;
         <Label text="=currency" class="bee-hasDefaults bee-required" style="&labelLeft;" />
         <DataSelector name="Currency" source="Currency" required="true"
           style="&inline; width:40px; margin-right:20px;" editEnabled="false" />
@@ -70,9 +70,26 @@
           <InlineLabel name="Profit" style="font-weight:bold;" />
         </FlowPanel>
       </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label text="=crmTaskObservers" style="&labelLeft;" />
+        <ChildSelector childTable="AssessmentObservers" viewName="AssessmentExecutors"
+          targetRelColumn="Assessment" sourceRelColumn="User"
+          choiceColumns="FirstName LastName DepartmentName" renderColumns="FirstName LastName"
+          editEnabled="false" newRowEnabled="false" caching="local"
+          style="&inline; width:400px;" label="=crmTaskObservers" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label text="=crmTaskObserverGroups" style="&labelLeft;" />
+        <ChildSelector childTable="AssessmentOGroups" viewName="UserGroupSettings"
+          targetRelColumn="Assessment" sourceRelColumn="Group" renderColumns="Name"
+          editPopup="true" newRowEnabled="false" style="&inline; width:400px;"
+          label="=crmTaskObserverGroups" filter="Owner {u} or Visibility" />
+      </FlowPanel>
+      &separator;
     </FlowPanel>
 
-    &separator;
     <TabbedPages class="flexible" style="&section; min-height:100px;">
       <page>
         <text>=carriers</text>

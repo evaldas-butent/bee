@@ -28,5 +28,7 @@
     <RelColumn name="Supplier" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
+    <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true" renderColumns="Purchase"
+      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>
 </g:Grid>

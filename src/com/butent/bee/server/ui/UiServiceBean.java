@@ -181,6 +181,8 @@ public class UiServiceBean {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
       response = insertRows(reqInfo);
+    } else if (BeeUtils.same(svc, Service.INSERT_ROW_SILENTLY)) {
+      response = insertRowSilently(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
@@ -979,6 +981,10 @@ public class UiServiceBean {
     }
 
     return ResponseObject.response(count);
+  }
+
+  private ResponseObject insertRowSilently(RequestInfo reqInfo) {
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), RowInfo.class);
   }
 
   private ResponseObject rebuildData(RequestInfo reqInfo) {

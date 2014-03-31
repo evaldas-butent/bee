@@ -113,10 +113,25 @@
         <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>
     </SimpleJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentObservers" joinType="LEFT">
+      <HiddenColumn name="User" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentOGroups" joinType="LEFT">
+      <SimpleJoin name="Group" joinType="LEFT">
+        <ExternalJoin name="Group" source="UserGroups" joinType="LEFT">
+          <HiddenColumn name="User" alias="Group" />
+        </ExternalJoin>
+      </SimpleJoin>
+    </ExternalJoin>
 
     <SimpleJoin name="Cargo" joinType="INNER">
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
-        <AggregateColumn name="Sale" alias="IncomesRegistered" aggregate="MIN" />
+        <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN" />
+      </ExternalJoin>
+      <ExternalJoin name="Cargo" source="CargoExpenses" joinType="LEFT">
+        <AggregateColumn name="Purchase" alias="ExpensesCommited" aggregate="MIN" />
       </ExternalJoin>
     </SimpleJoin>
     
