@@ -347,8 +347,8 @@ public class TecDocBean {
             .addFromInner("tof_des_texts", SqlUtils.join("tof_country_designations",
                 "cds_tex_id", "tof_des_texts", "tex_id"))
             .setWhere(SqlUtils.and(SqlUtils.equals("tof_country_designations", "cds_lng_id", 34),
-                SqlUtils.equals(SqlUtils.substring("tof_country_designations", "cds_ctm", 3, 1),
-                    "1"))) // Austria
+                SqlUtils.equals(SqlUtils.substring("tof_country_designations", "cds_ctm", 41, 1),
+                    "1"))) // Šveicarija
             .addGroup("tof_country_designations", "cds_id")));
 
     init.add(SqlUtils.createIndex("_country_designations", SqlUtils.uniqueName(),

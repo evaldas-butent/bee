@@ -58,7 +58,7 @@
   </g:columns>
 
   <g:rowStyle>
-    <ui:inline>="color:black"</ui:inline>
+    <ui:inline>="color:brown"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.IncomesCommited</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
@@ -76,22 +76,5 @@
 
   <g:predefinedFilter name="active" label="Vykdomi" initial="true">
     <g:column name="OrderStatus" value="1" />
-  </g:predefinedFilter>  
-
-  <g:predefinedFilter name="black" label="Juodi">
-    <g:column name="OrderStatus" value="3" />
-    <g:column name="IncomesCommited" emptyValues="true" />
-  </g:predefinedFilter>  
-
-  <g:predefinedFilter name="gold" label="Geltoni">
-    <g:column name="OrderStatus" value="3" />
-    <g:column name="IncomesCommited" emptyValues="false" />
-    <g:column name="ExpensesCommited" emptyValues="true" />
-  </g:predefinedFilter>  
-
-  <g:predefinedFilter name="green" label="Žali">
-    <g:column name="OrderStatus" value="3" />
-    <g:column name="IncomesCommited" emptyValues="false" />
-    <g:column name="ExpensesCommited" emptyValues="false" />
   </g:predefinedFilter>  
 </g:Grid>
