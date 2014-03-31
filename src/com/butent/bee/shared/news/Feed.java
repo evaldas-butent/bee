@@ -273,6 +273,18 @@ public enum Feed implements HasLocalizedCaption {
       return constants.feedTrDrivers();
     }
   },
+  
+  ASSESSMENT_REQUESTS(ModuleAndSub.of(Module.TRANSPORT , SubModule.LOGISTICS), 
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList("ID", TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+        @Override
+        public String getCaption(LocalizableConstants constants) {
+         return constants.feedTrAssessmentRequests();
+        }
+    
+  },
 
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS, Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {

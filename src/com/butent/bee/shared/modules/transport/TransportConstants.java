@@ -447,6 +447,7 @@ public final class TransportConstants {
   public static final String VIEW_DRIVER_ABSENCE = "DriverAbsence";
   public static final String VIEW_ABSENCE_TYPES = "AbsenceTypes";
 
+  public static final String VIEW_ASSESSMENTS = "Assessments";
   public static final String VIEW_CHILD_ASSESSMENTS = "ChildAssessments";
   public static final String VIEW_ASSESSMENT_TRANSPORTATIONS = "AssessmentTransportations";
   public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
@@ -501,6 +502,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
   public static final String COL_ASSESSMENT = "Assessment";
+  public static final String COL_ASSESSMENT_ID = "AssessmentID";
   public static final String COL_ASSESSMENT_STATUS = "Status";
   public static final String COL_ASSESSMENT_NOTES = "Notes";
   public static final String COL_ASSESSMENT_LOG = "Log";
@@ -827,6 +829,7 @@ public final class TransportConstants {
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
   public static final String ALS_ORDER_STATUS = "OrderStatus";
+  public static final String ALS_ORDER_NOTES = "OrderNotes";
 
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
@@ -836,6 +839,7 @@ public final class TransportConstants {
 
   public static final String ALS_ABSENCE_NAME = "AbsenceName";
   public static final String ALS_ABSENCE_LABEL = "AbsenceLabel";
+  public static final String ALS_CUSTOMER_NAME = "CustomerName";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
 
