@@ -35,6 +35,9 @@
     <DataColumn name="ExpensesRegistered" caption="&#xf0f6;" width="15" sortable="false">
       <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
     </DataColumn>
+
+    <DataColumn name="IncomesCommited" label="Paj." width="15" sortable="false" visible="false" />
+    <DataColumn name="ExpensesCommited" label="Išl." width="15" sortable="false" visible="false" />
     
     <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
       <render>
@@ -56,7 +59,7 @@
   </g:columns>
 
   <g:rowStyle>
-    <ui:inline>="color:black"</ui:inline>
+    <ui:inline>="color:brown"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.IncomesRegistered</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
@@ -74,5 +77,22 @@
 
   <g:predefinedFilter name="active" label="Vykdomi" initial="true">
     <g:column name="OrderStatus" value="1" />
+  </g:predefinedFilter>  
+
+  <g:predefinedFilter name="brown" label="Rudi">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="true" />
+  </g:predefinedFilter>  
+
+  <g:predefinedFilter name="gold" label="Geltoni">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="false" />
+    <g:column name="ExpensesCommited" emptyValues="true" />
+  </g:predefinedFilter>  
+
+  <g:predefinedFilter name="green" label="Žali">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="false" />
+    <g:column name="ExpensesCommited" emptyValues="false" />
   </g:predefinedFilter>  
 </g:Grid>
