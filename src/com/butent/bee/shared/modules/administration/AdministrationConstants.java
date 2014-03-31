@@ -230,6 +230,7 @@ public final class AdministrationConstants {
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String TBL_DEPARTMENTS = "Departments";
   public static final String TBL_DEPARTMENT_EMPLOYEES = "DepartmentEmployees";
 
   public static final String TBL_AUTOCOMPLETE = "Autocomplete";

@@ -93,6 +93,11 @@ public final class Service {
   public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
   public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
 
+  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
+  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
+  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
+  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
+
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -165,15 +170,6 @@ public final class Service {
 
   public static final String VAR_CHILDREN = RPC_VAR_PREFIX + "children";
 
-  public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
-
-  public static final String VIEW_COLUMN_SEPARATOR = " ";
-
-  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
-  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
-  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
-  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
-
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
   public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
@@ -189,6 +185,14 @@ public final class Service {
   public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
 
   public static final String VAR_RIGHTS = RPC_VAR_PREFIX + "rights";
+
+  public static final String VAR_FROM = RPC_VAR_PREFIX + "from";
+  public static final String VAR_TO = RPC_VAR_PREFIX + "to";
+  public static final String VAR_GROUP_BY = RPC_VAR_PREFIX + "group_by";
+
+  public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
+
+  public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

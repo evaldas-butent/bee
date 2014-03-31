@@ -37,6 +37,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -229,7 +230,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
                     args.addDataItem(COL_SALE, row.getId());
                     args.addDataItem(COL_CURRENCY,
                         row.getLong(saleInfo.getColumnIndex(COL_CURRENCY)));
-                    args.addDataItem(VAR_ID, DataUtils.buildIdList(ids));
+                    args.addDataItem(Service.VAR_ID, DataUtils.buildIdList(ids));
 
                     if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
                       args.addDataItem(COL_ITEM, mainItem.getRelatedId());

@@ -34,6 +34,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -207,7 +208,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
                 args.addDataItem(TradeConstants.COL_PURCHASE, row.getId());
                 args.addDataItem(COL_CURRENCY,
                     row.getLong(purchaseInfo.getColumnIndex(COL_CURRENCY)));
-                args.addDataItem(VAR_ID, DataUtils.buildIdList(ids));
+                args.addDataItem(Service.VAR_ID, DataUtils.buildIdList(ids));
 
                 if (mainItem != null && DataUtils.isId(mainItem.getRelatedId())) {
                   args.addDataItem(ClassifierConstants.COL_ITEM, mainItem.getRelatedId());

@@ -57,6 +57,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -2113,7 +2114,7 @@ abstract class ChartBase extends Flow implements Presenter, View, Printable, Han
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {
-      args.addQueryItem(VAR_ID, theme);
+      args.addQueryItem(Service.VAR_ID, theme);
     }
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

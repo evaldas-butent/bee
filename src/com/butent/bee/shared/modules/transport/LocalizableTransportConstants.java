@@ -138,6 +138,24 @@ public interface LocalizableTransportConstants {
 
   String trAssessmentRejectionReason();
 
+  String trAssessmentReportAnswered();
+  
+  String trAssessmentReportApproved();
+  
+  String trAssessmentReportApprovedToReceived();
+  
+  String trAssessmentReportApprovedToAnswered();
+  
+  String trAssessmentReportLost();
+  
+  String trAssessmentReportPercent();
+  
+  String trAssessmentReportQuantity();
+  
+  String trAssessmentReportReceived();
+  
+  String trAssessmentReportSecondary();
+  
   String trAssessmentRequest();
 
   String trAssessmentStatusAnswered();

@@ -204,6 +204,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String deleteRowQuestion();
 
   String deleteSelectedRow();
+  
+  String department();
 
   String description();
 
@@ -386,6 +388,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String minValue();
 
   String mobile();
+
+  String month();
 
   String name();
 
@@ -660,6 +664,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String workdayTransitionNearest();
 
   String workdayTransitionNone();
+
+  String year();
 
   String yes();
 }
