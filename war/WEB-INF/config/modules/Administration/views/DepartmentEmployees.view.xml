@@ -19,6 +19,9 @@
         <SimpleColumn name="Name" alias="CompanyName" />
       </SimpleJoin>
     </SimpleJoin>
+    <ExternalJoin name="DepartmentHead" source="Departments" joinType="LEFT">
+      <SimpleColumn name="DepartmentHead" />
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="LastName" />

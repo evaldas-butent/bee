@@ -36,7 +36,7 @@ public enum MenuService {
       AdministrationConstants.VIEW_CURRENCY_RATES),
 
   @XmlEnumValue("calendar_reports")
-  CALENDAR_REPORTS(RightsState.VIEW, 
+  CALENDAR_REPORTS(RightsState.VIEW,
       Sets.newHashSet(CalendarConstants.VIEW_REPORT_OPTIONS, CalendarConstants.VIEW_APPOINTMENTS)),
 
   @XmlEnumValue("task_list")
@@ -76,7 +76,10 @@ public enum MenuService {
       Sets.newHashSet(TransportConstants.VIEW_VEHICLES, TransportConstants.VIEW_TRIPS)),
   @XmlEnumValue("trailer_time_board")
   TRAILER_TIME_BOARD(RightsState.VIEW,
-      Sets.newHashSet(TransportConstants.VIEW_VEHICLES, TransportConstants.VIEW_TRIPS));
+      Sets.newHashSet(TransportConstants.VIEW_VEHICLES, TransportConstants.VIEW_TRIPS)),
+
+  @XmlEnumValue("assessments_grid")
+  ASSESSMENTS_GRID(RightsState.VIEW, TransportConstants.TBL_ASSESSMENTS);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;

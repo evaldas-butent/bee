@@ -36,5 +36,6 @@
     </SimpleJoin>
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
+    <SimpleColumn name="Purchase" />
   </Columns>
 </View>

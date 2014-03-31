@@ -1,8 +1,10 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -23,6 +25,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -85,6 +88,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -95,6 +99,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -122,14 +127,16 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
       HtmlTable container = new HtmlTable();
 
-      Relation relation = Relation.create("AssessmentExecutors",
+      Relation relation = Relation.create(VIEW_ASSESSMENT_EXECUTORS,
           Lists.newArrayList(COL_LAST_NAME, COL_FIRST_NAME, COL_DEPARTMENT_NAME));
       relation.disableNewRow();
       relation.disableEdit();
-      relation.setFilter(Filter.or(Filter.any(COL_DEPARTMENT, departments),
+      relation.setCaching(Caching.LOCAL);
+      relation.setFilter(Filter.or(Filter.any(COL_DEPARTMENT, employees.get(userPerson)),
           Filter.notNull(COL_DEPARTMENT_HEAD)));
 
-      final UnboundSelector user = UnboundSelector.create(relation);
+      final UnboundSelector user = UnboundSelector.create(relation,
+          Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
       container.setText(0, 0, loc.manager(), StyleUtils.NAME_REQUIRED);
       container.setWidget(0, 1, user);
 
@@ -138,7 +145,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       container.setText(1, 0, loc.comment());
       container.setWidget(1, 1, notes);
 
-      Global.inputWidget(loc.newAssessmentRequest(), container, new InputCallback() {
+      Global.inputWidget(loc.trNewAssessment(), container, new InputCallback() {
         @Override
         public String getErrorMessage() {
           if (BeeUtils.isEmpty(user.getNormalizedValue())) {
@@ -168,9 +175,9 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
           newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
 
           Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
-              form.getDataColumns(), newRow), new RowCallback() {
+              form.getDataColumns(), newRow), new Callback<RowInfo>() {
             @Override
-            public void onSuccess(BeeRow result) {
+            public void onSuccess(RowInfo result) {
               Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
                 @Override
                 public void onSuccess(BeeRow res) {
@@ -535,27 +542,6 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     });
   }
 
-  private static void updateVehicles(final Widget vehicleWidget, long assessmentId) {
-    if (vehicleWidget != null) {
-      Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, Lists.newArrayList(COL_FORWARDER_VEHICLE),
-          Filter.and(Filter.isEqual(COL_ASSESSMENT, new LongValue(assessmentId)),
-              Filter.notNull(COL_FORWARDER_VEHICLE)), new RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              StringBuilder vehicles = new StringBuilder();
-
-              for (int i = 0; i < result.getNumberOfRows(); i++) {
-                if (i > 0) {
-                  vehicles.append(", ");
-                }
-                vehicles.append(result.getString(i, COL_FORWARDER_VEHICLE));
-              }
-              vehicleWidget.getElement().setInnerText(vehicles.toString());
-            }
-          });
-    }
-  }
-
   private FormView form;
   private final LocalizableConstants loc = Localized.getConstants();
 
@@ -590,7 +576,9 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   private InputBoolean expensesRegistered;
   private ChildGrid childExpenses;
   private DataSelector manager;
-  private final List<Long> departments = Lists.newArrayList();
+  private final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
+  private final Map<Long, Long> departments = Maps.newHashMap();
+  private final Multimap<Long, Long> employees = HashMultimap.create();
 
   @Override
   public void afterCreateWidget(final String name, IdentifiableWidget widget,
@@ -645,15 +633,17 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   }
 
   @Override
-  public void afterRefresh(final FormView formView, final IsRow row) {
+  public void afterRefresh(FormView formView, IsRow row) {
+    if (form == null) {
+      return;
+    }
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
 
     boolean newRecord = isNewRow();
     boolean primary = isPrimary();
     boolean request = isRequest();
-    boolean owner = Objects.equal(form.getLongValue(COL_ORDER_MANAGER),
-        BeeKeeper.getUser().getUserId());
+    boolean executor = isExecutor();
 
     Integer status = form.getIntegerValue(COL_ASSESSMENT_STATUS);
     int orderStatus = form.getIntegerValue(ALS_ORDER_STATUS);
@@ -685,21 +675,22 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
         statusLabel.add(lbl);
       }
     }
-    if (owner && !newRecord) {
+    if (executor && !newRecord) {
       header.addCommandItem(new Button(loc.trWriteEmail(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element div = Document.get().createDivElement();
           StyleUtils.setWhiteSpace(div, WhiteSpace.PRE_WRAP);
+          IsRow activeRow = form.getActiveRow();
           div.setInnerHTML("\n\n---\n"
-              + BeeUtils.joinWords(row.getString(form.getDataIndex("FirstName")),
-                  row.getString(form.getDataIndex("LastName"))));
+              + BeeUtils.joinWords(activeRow.getString(form.getDataIndex("FirstName")),
+                  activeRow.getString(form.getDataIndex("LastName"))));
 
           Set<Long> recipient = null;
-          Long addr = row.getLong(form.getDataIndex("PersonEmail"));
+          Long addr = activeRow.getLong(form.getDataIndex("PersonEmail"));
 
           if (addr == null) {
-            addr = row.getLong(form.getDataIndex("CustomerEmail"));
+            addr = activeRow.getLong(form.getDataIndex("CustomerEmail"));
           }
           if (addr != null) {
             recipient = Sets.newHashSet(addr);
@@ -738,11 +729,14 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
         }
       }
     }
-    form.setEnabled(newRecord || owner
+    form.setEnabled(newRecord || executor
         && (AssessmentStatus.NEW.is(status) || OrderStatus.ACTIVE.is(orderStatus)));
 
     if (childAssessments != null && !primary) {
       childAssessments.setEnabled(false);
+    }
+    if (manager != null && manager.isEnabled() && !departments.containsValue(userPerson)) {
+      manager.setEnabled(false);
     }
     onValueChange(null);
     refreshTotals();
@@ -799,6 +793,27 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
         updateTotals(formView, row, formView.getWidgetByName(VAR_TOTAL), null, null, null, null);
         updateVehicles(formView.getWidgetByName(COL_FORWARDER_VEHICLE), form.getActiveRowId());
       }
+
+      private void updateVehicles(final Widget vehicleWidget, long assessmentId) {
+        if (vehicleWidget != null) {
+          Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, Lists.newArrayList(COL_FORWARDER_VEHICLE),
+              Filter.and(Filter.isEqual(COL_ASSESSMENT, new LongValue(assessmentId)),
+                  Filter.notNull(COL_FORWARDER_VEHICLE)), new RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  StringBuilder vehicles = new StringBuilder();
+
+                  for (int i = 0; i < result.getNumberOfRows(); i++) {
+                    if (i > 0) {
+                      vehicles.append(", ");
+                    }
+                    vehicles.append(result.getString(i, COL_FORWARDER_VEHICLE));
+                  }
+                  vehicleWidget.getElement().setInnerText(vehicles.toString());
+                }
+              });
+        }
+      }
     };
   }
 
@@ -810,8 +825,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
-      manager.setAdditionalFilter(Filter.or(Filter.any(COL_DEPARTMENT, departments),
-          Filter.notNull(COL_DEPARTMENT_HEAD)));
+      manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
     }
   }
 
@@ -837,18 +851,20 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   }
 
   @Override
-  public void onLoad(FormView formView) {
-    this.form = formView;
-
-    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT),
-        Filter.isEqual(COL_COMPANY_PERSON,
-            new LongValue(BeeKeeper.getUser().getUserData().getCompanyPerson())),
+  public void onLoad(final FormView formView) {
+    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES,
+        Lists.newArrayList(COL_DEPARTMENT, COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD), null,
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             for (BeeRow row : result) {
-              departments.add(row.getLong(0));
+              Long department = row.getLong(0);
+              Long employer = row.getLong(1);
+              departments.put(department, row.getLong(2) != null ? employer : null);
+              employees.put(employer, department);
             }
+            form = formView;
+            afterRefresh(form, form.getActiveRow());
           }
         });
   }
@@ -860,6 +876,20 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
           && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
           && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
     }
+  }
+
+  private boolean isExecutor() {
+    Long person = form.getLongValue(COL_COMPANY_PERSON);
+
+    if (Objects.equal(person, userPerson)) {
+      return true;
+    }
+    for (Long department : employees.get(person)) {
+      if (Objects.equal(departments.get(department), userPerson)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean isPrimary() {

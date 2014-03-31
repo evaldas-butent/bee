@@ -4,12 +4,14 @@
 
   name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
   flexGrow="1" order="AssessmentID desc" disabledActions="add delete"
+  filter="OrderStatus!=0"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" caption="ID" width="40" />
     <DataColumn name="Assessment" width="40" />
     <DataColumn name="Date" width="110" readOnly="true" />
+    <RelColumn name="Manager" />
     <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
@@ -26,7 +28,7 @@
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route"  />
+    <DataColumn name="OrderNotes"  />
     <DataColumn name="Description" />
 
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
@@ -57,11 +59,11 @@
 
   <g:rowStyle>
     <ui:inline>="color:black"</ui:inline>
-    <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.IncomesRegistered</ui:expression>
+    <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.IncomesCommited</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:gold"</ui:inline>
-    <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.ExpensesRegistered</ui:expression>
+    <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.ExpensesCommited</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
     <ui:inline>="color:green"</ui:inline>
@@ -74,5 +76,22 @@
 
   <g:predefinedFilter name="active" label="Vykdomi" initial="true">
     <g:column name="OrderStatus" value="1" />
+  </g:predefinedFilter>  
+
+  <g:predefinedFilter name="black" label="Juodi">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="true" />
+  </g:predefinedFilter>  
+
+  <g:predefinedFilter name="gold" label="Geltoni">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="false" />
+    <g:column name="ExpensesCommited" emptyValues="true" />
+  </g:predefinedFilter>  
+
+  <g:predefinedFilter name="green" label="Žali">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="false" />
+    <g:column name="ExpensesCommited" emptyValues="false" />
   </g:predefinedFilter>  
 </g:Grid>

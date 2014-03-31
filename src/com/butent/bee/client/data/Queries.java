@@ -509,6 +509,29 @@ public final class Queries {
     insertRow(rs, callback);
   }
 
+  public static void insertRow(BeeRowSet rowSet, final Callback<RowInfo> callback) {
+    final String service = Service.INSERT_ROW_SILENTLY;
+
+    if (!checkRowSet(service, rowSet, callback)) {
+      return;
+    }
+    final String viewName = rowSet.getViewName();
+
+    BeeKeeper.getRpc().sendText(service, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(service, viewName, response, RowInfo.class, callback)) {
+          RowInfo rowInfo = RowInfo.restore((String) response.getResponse());
+          if (rowInfo == null) {
+            error(callback, Lists.newArrayList(service, viewName, "cannot restore rowInfo"));
+          } else if (callback != null) {
+            callback.onSuccess(rowInfo);
+          }
+        }
+      }
+    });
+  }
+
   public static void insertRow(BeeRowSet rowSet, RowCallback callback) {
     doRow(Service.INSERT_ROW, rowSet, callback);
   }
