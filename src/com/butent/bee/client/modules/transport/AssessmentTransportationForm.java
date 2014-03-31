@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -17,6 +18,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.output.PrintFormInterceptor;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -71,13 +73,15 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
 
     if (BeeUtils.same(name, "Totals")) {
       totals = widget.asWidget();
-
     } else if (BeeUtils.same(name, COL_CARGO)) {
       cargo = widget.asWidget();
+    } else if (widget instanceof HasEnabled && BeeUtils.same(name, "TransportationCurrency")) {
+      ((HasEnabled) widget).setEnabled(false);
+      StyleUtils.setStyleName(widget.getElement(), "bee-disabled", true);
     }
     super.afterCreateWidget(name, widget, callback);
   }
-
+  
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     if (!BeeUtils.anyNotNull(totals, cargo)) {
@@ -207,6 +211,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
   @Override
   public FormInterceptor getPrintFormInterceptor() {
     return new AbstractFormInterceptor() {
+      private String replacementTempalte = "";
       @Override
       public void afterCreateWidget(String name, IdentifiableWidget widget,
           WidgetDescriptionCallback callback) {
@@ -239,11 +244,15 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
       public void afterRefresh(FormView form, IsRow row) {
         Widget widget = form.getWidgetByName(WIDGET_NAME_TRANSPORTATION_PRICE);
         if (widget != null) {
+          if (BeeUtils.isEmpty(replacementTempalte)) {
+            replacementTempalte = widget.getElement().getInnerHTML();
+          }
           widget.getElement().setInnerHTML(
-              BeeUtils.replace(widget.getElement().getInnerHTML(), REPLACEMENT_PRICE_IN_EUR,
+              BeeUtils.replace(replacementTempalte, REPLACEMENT_PRICE_IN_EUR,
                   getPriceInEur()));
         }
       }
+
 
       @Override
       public FormInterceptor getInstance() {

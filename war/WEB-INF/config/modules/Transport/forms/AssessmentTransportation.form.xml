@@ -46,7 +46,7 @@
     <FlowPanel style="&section;">      
       <Label text="=price" class="bee-required" style="&labelLeft;" />
       <InputCurrency source="TransportationPrice" style="width: 100px;" /> 
-      <DataSelector disablable="true" editEnabled="false" source="TransportationCurrency" style="width:50px; margin-left: 8px" />
+      <DataSelector name="TransportationCurrency" class="bee-disabled" editEnabled="false" source="TransportationCurrency" style="width:50px; margin-left: 8px" />
     </FlowPanel>
     <FlowPanel style="&section;">
       <Label text="=vat" class="bee-requred" style="&labelLeft;" />
