@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Printer;
@@ -359,7 +360,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
             new HistoryHandler(getGridView().getViewName(), ids), null,
-            PresenterCallback.SHOW_IN_POPUP);
+            ModalGrid.opener(500, 500));
         break;
 
       case BOOKMARK:

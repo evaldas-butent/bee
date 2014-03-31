@@ -16,6 +16,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -38,6 +39,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -108,8 +110,13 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
 
   private static void drillDown(String caption, Filter filter, boolean modal) {
     GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
-    PresenterCallback presenterCallback =
-        modal ? PresenterCallback.SHOW_IN_POPUP : PresenterCallback.SHOW_IN_NEW_TAB;
+
+    PresenterCallback presenterCallback;
+    if (modal) {
+      presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 50, CssUnit.PCT);
+    } else {
+      presenterCallback = PresenterCallback.SHOW_IN_NEW_TAB;
+    }
 
     GridFactory.openGrid("AssessmentReportDrillDown", null, gridOptions, presenterCallback);
   }
@@ -803,11 +810,14 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
       captions.add(Localized.getConstants().trAssessmentReportSecondary());
     }
 
-    if (status != null) {
+    if (status == null) {
+      filter.add(Filter.notNull(COL_ASSESSMENT_STATUS));
+    } else {
       filter.add(Filter.isEqual(COL_ASSESSMENT_STATUS, new IntegerValue(status.ordinal())));
     }
 
-    final String caption = BeeUtils.joinItems(captions);
+    final String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
+        Localized.getConstants().trAssessmentRequests());
 
     if (departments.isEmpty()) {
       drillDown(caption, filter, modal);

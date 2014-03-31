@@ -26,6 +26,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
@@ -61,8 +62,12 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public void closeWidget(IdentifiableWidget widget) {
-    if (widget != null && Objects.equal(widget, getActiveWidget())) {
-      getScreenPanel().remove(widget);
+    if (widget != null) {
+      if (UiHelper.isModal(widget.asWidget())) {
+        UiHelper.closeDialog(widget.asWidget());
+      } else if (Objects.equal(widget, getActiveWidget())) {
+        getScreenPanel().remove(widget);
+      }
     }
   }
 
@@ -94,7 +99,7 @@ public class EcScreen extends ScreenImpl {
     }
     return result;
   }
-  
+
   @Override
   public UserInterface getUserInterface() {
     return UserInterface.E_COMMERCE;
@@ -109,7 +114,7 @@ public class EcScreen extends ScreenImpl {
     EcKeeper.showPromo(true);
     EcKeeper.restoreShoppingCarts();
   }
-  
+
   @Override
   public void onWidgetChange(IdentifiableWidget widget) {
   }
@@ -123,7 +128,7 @@ public class EcScreen extends ScreenImpl {
   public void showInfo() {
     Global.showInfo(NameUtils.getName(this),
         Lists.newArrayList("Center Width " + getActivePanelWidth(),
-        "Center Height " + getActivePanelHeight()));
+            "Center Height " + getActivePanelHeight()));
   }
 
   @Override
@@ -209,7 +214,6 @@ public class EcScreen extends ScreenImpl {
     return Pair.of(wrapper, 0);
   }
 
-  
   @Override
   protected void onUserSignatureClick(long userId) {
     PasswordService.change();

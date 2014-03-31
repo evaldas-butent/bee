@@ -1,5 +1,6 @@
 package com.butent.bee.client.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.IndexedPanel;
 
 import com.butent.bee.client.output.Printable;
@@ -34,6 +35,8 @@ public interface HeaderView extends View, IndexedPanel, Printable {
 
   boolean isActionEnabled(Action action);
 
+  boolean isActionOrCommand(Element target);
+  
   void removeCaptionStyle(String style);
 
   void setCaption(String caption);

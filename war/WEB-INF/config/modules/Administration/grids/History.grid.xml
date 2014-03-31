@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="History" readOnly="true" disabledActions="audit close" caption="=history"
+  name="History" readOnly="true" disabledActions="audit" caption="=history"
   >
   <g:columns>
     <DataColumn name="Time" caption="=historyTime" />
