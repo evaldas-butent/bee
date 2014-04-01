@@ -8,6 +8,7 @@
   editForm="Assessment"
   >
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Assessment" label="=captionPid" />
     <SimpleColumn name="Status" />
     <SimpleColumn name="Notes" />

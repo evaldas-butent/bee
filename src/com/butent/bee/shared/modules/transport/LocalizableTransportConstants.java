@@ -156,6 +156,8 @@ public interface LocalizableTransportConstants {
   
   String trAssessmentRequest();
 
+  String trAssessmentRequests();
+
   String trAssessmentStatusAnswered();
 
   String trAssessmentStatusApproved();

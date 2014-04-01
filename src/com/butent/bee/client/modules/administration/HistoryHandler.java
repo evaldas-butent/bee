@@ -12,6 +12,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.LocalProvider;
+import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -19,7 +20,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.Assert;
@@ -91,7 +91,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
         if (DataUtils.isId(id)) {
           GridFactory.openGrid(GRID_HISTORY,
               new HistoryHandler(relation, Lists.newArrayList(id)),
-              null, PresenterCallback.SHOW_IN_POPUP);
+              null, ModalGrid.opener(500, 500));
         }
       }
     }

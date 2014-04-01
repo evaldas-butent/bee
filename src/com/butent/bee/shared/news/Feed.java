@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
@@ -272,6 +273,54 @@ public enum Feed implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrDrivers();
     }
+  },
+  
+  ASSESSMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+        @Override
+        public String getCaption(LocalizableConstants constants) {
+         return constants.feedTrAssessmentAllRequests();
+        }
+    
+  },
+
+  ASSESSMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentMyRequests();
+    }
+
+  },
+
+  ASSESSMENT_ORDERS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentAllOrders();
+    }
+
+  },
+
+  ASSESSMENT_ORDERS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentMyOrders();
+    }
+
   },
 
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,

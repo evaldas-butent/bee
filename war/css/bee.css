@@ -675,7 +675,9 @@
   background-color: #eee;
 }
 
-.bee-DialogBox, .bee-ModalForm {
+.bee-DialogBox,
+.bee-ModalForm,
+.bee-ModalGrid {
   border: 1px solid #b4b4b4;
   border-radius: 2px;
   background-color: WhiteSmoke;
@@ -694,7 +696,8 @@
   -ms-flex-align: center;
 }
 .bee-Body > div.bee-DialogBox:last-of-type .bee-Dialog-header,
-.bee-Body > div.bee-ModalForm:last-of-type > .bee-ModalForm-content > .bee-Header-container {
+.bee-Body > div.bee-ModalForm:last-of-type > .bee-ModalForm-content > .bee-Header-container,
+.bee-Body > div.bee-ModalGrid:last-of-type > .bee-ModalGrid-content > .bee-Header-container {
   background-image: linear-gradient(to bottom, #feffff, #d2ebf9);
 }
 
@@ -715,7 +718,8 @@
   margin: 1ex 1em;
 }
 
-.bee-ModalForm-content > .bee-Header-container {
+.bee-ModalForm-content > .bee-Header-container,
+.bee-ModalGrid-content > .bee-Header-container {
   cursor: move;
 }
 
@@ -1264,6 +1268,7 @@
   top: 0;
   bottom: 0;
 }
+.bee-ModalGrid > .bee-GridContainer,
 .flexible > .bee-GridContainer {
   height: 100%;
 }

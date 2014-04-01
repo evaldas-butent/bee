@@ -104,6 +104,11 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
 
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_STATUS);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_CARGO_NOTES);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_CARGO_NOTES);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT_LOG);
   }
 
   private static void initUsageTables() {
@@ -131,6 +136,9 @@ public final class NewsConstants {
 
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");
+
+    usageTables.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.TBL_ASSESSMENTS_USAGE);
+
     usageTables.put(DiscussionsConstants.TBL_DISCUSSIONS,
         DiscussionsConstants.TBL_DISCUSSIONS_USAGE);
   }
