@@ -137,7 +137,7 @@ public final class NewsConstants {
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");
 
-    usageTables.put(TransportConstants.TBL_ASSESSMENTS, "AssessmentsUsage");
+    usageTables.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.TBL_ASSESSMENTS_USAGE);
 
     usageTables.put(DiscussionsConstants.TBL_DISCUSSIONS,
         DiscussionsConstants.TBL_DISCUSSIONS_USAGE);
