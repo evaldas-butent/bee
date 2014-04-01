@@ -14,7 +14,9 @@
     <RelColumn name="Manager" />
     <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="Number" width="70" />
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
 
@@ -38,8 +40,8 @@
       <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
     </DataColumn>
 
-    <DataColumn name="IncomesCommited" label="Paj." width="15" sortable="false" visible="false" />
-    <DataColumn name="ExpensesCommited" label="Išl." width="15" sortable="false" visible="false" />
+    <DataColumn name="IncomesCommited" label="Paj." width="15" sortable="false" filterOptions="empty" visible="false" />
+    <DataColumn name="ExpensesCommited" label="Išl." width="15" sortable="false" filterOptions="empty" visible="false" />
     
     <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
       <render>
@@ -57,7 +59,16 @@
       </render>
     </CalcColumn>
 
+    <PropColumn name="Income" type="decimal" caption="=income" format="0.00" />
+    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00" />
+    <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
+      <render>
+        <ui:expression>row.Income - row.Expense</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Log" visible="false" />
+    <DataColumn name="LogCount" />
   </g:columns>
 
   <g:rowStyle>

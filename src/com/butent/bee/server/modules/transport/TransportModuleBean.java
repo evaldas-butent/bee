@@ -59,6 +59,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
@@ -311,20 +312,24 @@ public class TransportModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), VIEW_CHILD_ASSESSMENTS) && event.isAfter()
-            && event.getRowset().getNumberOfRows() > 0) {
-          String primaryAssessment = SqlUtils.uniqueName();
-          String primaryCargo = SqlUtils.uniqueName();
+        if (BeeUtils.inListSame(event.getTargetName(), TBL_ASSESSMENTS, VIEW_CHILD_ASSESSMENTS)
+            && event.isAfter() && event.getRowset().getNumberOfRows() > 0) {
+
+          String primaryAssessment;
+          String primaryCargo;
+
+          if (BeeUtils.same(event.getTargetName(), TBL_ASSESSMENTS)) {
+            primaryAssessment = null;
+            primaryCargo = TBL_ORDER_CARGO;
+          } else {
+            primaryAssessment = SqlUtils.uniqueName();
+            primaryCargo = SqlUtils.uniqueName();
+          }
 
           for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
             SqlSelect query = new SqlSelect()
                 .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
                 .addFrom(TBL_ASSESSMENTS)
-                .addFromInner(TBL_ASSESSMENTS, primaryAssessment,
-                    sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS,
-                        COL_ASSESSMENT))
-                .addFromInner(TBL_ORDER_CARGO, primaryCargo,
-                    sys.joinTables(TBL_ORDER_CARGO, primaryCargo, primaryAssessment, COL_CARGO))
                 .addFromInner(TBL_ORDER_CARGO,
                     sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
                 .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
@@ -332,6 +337,13 @@ public class TransportModuleBean implements BeeModule {
                 .setWhere(sys.idInList(TBL_ASSESSMENTS, event.getRowset().getRowIds()))
                 .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
+            if (!BeeUtils.isEmpty(primaryAssessment)) {
+              query.addFromInner(TBL_ASSESSMENTS, primaryAssessment,
+                  sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS,
+                      COL_ASSESSMENT))
+                  .addFromInner(TBL_ORDER_CARGO, primaryCargo,
+                      sys.joinTables(TBL_ORDER_CARGO, primaryCargo, primaryAssessment, COL_CARGO));
+            }
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
                 TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
                 SqlUtils.field(tbl, COL_CURRENCY),

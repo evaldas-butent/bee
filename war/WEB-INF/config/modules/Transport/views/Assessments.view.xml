@@ -12,6 +12,7 @@
     <SimpleColumn name="Status" />
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Log" />
+    <SimpleColumn name="LogCount" />
     <SimpleColumn name="ExpensesRegistered" />
 
     <SimpleColumn name="Cargo" />

@@ -774,6 +774,11 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
                             : loc.filterNullLabel()), value, log);
                   }
                   form.getActiveRow().setValue(logIdx, log);
+
+                  int cntIdx = form.getDataIndex(COL_ASSESSMENT_LOG + "Count");
+                  form.getActiveRow().setValue(cntIdx,
+                      BeeUtils.unbox(form.getActiveRow().getInteger(cntIdx)) + dates.size());
+
                   presenter.handleAction(action);
                 }
               });

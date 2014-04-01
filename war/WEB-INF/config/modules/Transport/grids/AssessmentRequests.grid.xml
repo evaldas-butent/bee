@@ -14,7 +14,9 @@
     <RelColumn name="Manager" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
 
@@ -48,6 +50,14 @@
             return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
           }
         </ui:function>
+      </render>
+    </CalcColumn>
+
+    <PropColumn name="Income" type="decimal" caption="=income" format="0.00" />
+    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00" />
+    <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
+      <render>
+        <ui:expression>row.Income - row.Expense</ui:expression>
       </render>
     </CalcColumn>
   </g:columns>
