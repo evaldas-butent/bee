@@ -275,7 +275,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String feedTasksObserved();
 
+  String feedTrAssessmentAllOrders();
+
   String feedTrAssessmentAllRequests();
+
+  String feedTrAssessmentMyOrders();
 
   String feedTrAssessmentMyRequests();
 

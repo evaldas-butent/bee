@@ -299,6 +299,30 @@ public enum Feed implements HasLocalizedCaption {
 
   },
 
+  ASSESSMENT_ORDERS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentAllOrders();
+    }
+
+  },
+
+  ASSESSMENT_ORDERS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentMyOrders();
+    }
+
+  },
+
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS, Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
     @Override
