@@ -14,7 +14,9 @@
     <RelColumn name="Manager" />
     <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="Number" width="70" />
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
 
@@ -37,6 +39,15 @@
     <DataColumn name="ExpensesRegistered" caption="&#xf0f6;" width="15" sortable="false">
       <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
     </DataColumn>
+
+    <CalcColumn name="IncomesCommited" type="boolean" sortable="false" label="=trdInvoiceId"
+      filterOptions="empty" visible="false" searchBy="IncomesCommited">
+      <render><ui:expression>row.IncomesCommited ? true : false</ui:expression></render>
+    </CalcColumn>
+    <CalcColumn name="ExpensesCommited" type="boolean" sortable="false" label="=trdPurchaseId"
+      filterOptions="empty" visible="false" searchBy="ExpensesCommited">
+      <render><ui:expression>row.ExpensesCommited ? true : false</ui:expression></render>
+    </CalcColumn>
     
     <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
       <render>

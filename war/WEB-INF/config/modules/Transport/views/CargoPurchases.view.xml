@@ -47,6 +47,7 @@
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" label="=supplier" />
+      <SimpleColumn name="CreditDays" />
     </SimpleJoin>
 
     <SimpleColumn name="Note" />

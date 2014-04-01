@@ -30,6 +30,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -42,6 +43,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -85,7 +87,7 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
       @Override
       public void onSuccess(BeeRowSet result) {
         Set<String> orders = Sets.newHashSet();
-        Map<Long, String> suppliers = Maps.newHashMap();
+        Map<Long, Pair<String, Integer>> suppliers = Maps.newHashMap();
         Map<Long, String> currencies = Maps.newHashMap();
 
         boolean itemEmpty = false;
@@ -106,7 +108,8 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
 
           Long id = row.getLong(suplId);
           if (DataUtils.isId(id)) {
-            suppliers.put(id, row.getString(suplName));
+            suppliers.put(id, Pair.of(row.getString(suplName),
+                row.getInteger(info.getColumnIndex("CreditDays"))));
           }
           id = row.getLong(currId);
           if (DataUtils.isId(id)) {
@@ -121,9 +124,17 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
         newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
 
         if (suppliers.size() == 1) {
-          for (Entry<Long, String> entry : suppliers.entrySet()) {
+          for (Entry<Long, Pair<String, Integer>> entry : suppliers.entrySet()) {
             newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_SUPPLIER), entry.getKey());
-            newRow.setValue(purchaseInfo.getColumnIndex("SupplierName"), entry.getValue());
+            newRow.setValue(purchaseInfo.getColumnIndex("SupplierName"), entry.getValue().getA());
+
+            Integer days = entry.getValue().getB();
+
+            if (BeeUtils.isPositive(days)) {
+              newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_TERM),
+                  TimeUtils.nextDay(newRow.getDateTime(purchaseInfo.getColumnIndex(COL_DATE)),
+                      days));
+            }
           }
         }
         if (currencies.size() == 1) {

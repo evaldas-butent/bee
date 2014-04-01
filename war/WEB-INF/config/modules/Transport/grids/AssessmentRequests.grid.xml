@@ -14,7 +14,9 @@
     <RelColumn name="Manager" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
 
