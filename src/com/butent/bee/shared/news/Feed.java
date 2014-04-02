@@ -15,6 +15,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -274,17 +275,17 @@ public enum Feed implements HasLocalizedCaption {
       return constants.feedTrDrivers();
     }
   },
-  
+
   ASSESSMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
       Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
           TransportConstants.ALS_CUSTOMER_NAME)) {
 
-        @Override
-        public String getCaption(LocalizableConstants constants) {
-         return constants.feedTrAssessmentAllRequests();
-        }
-    
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentAllRequests();
+    }
+
   },
 
   ASSESSMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
@@ -347,7 +348,7 @@ public enum Feed implements HasLocalizedCaption {
 
   },
 
-  CARGO_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_SALES,
+  CARGO_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
       TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
           TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
 

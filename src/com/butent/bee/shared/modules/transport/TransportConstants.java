@@ -397,7 +397,6 @@ public final class TransportConstants {
   public static final String TBL_ASSESSMENTS = "Assessments";
   public static final String TBL_ASSESSMENTS_USAGE = "AssessmentsUsage";
   public static final String TBL_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
-  public static final String TBL_SALES = "Sales";
   public static final String TBL_SALES_USAGE = "SalesUsage";
 
   public static final String TBL_DRIVERS = "Drivers";

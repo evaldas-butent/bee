@@ -40,12 +40,12 @@
       <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
     </DataColumn>
 
-    <CalcColumn name="IncomesCommited" type="boolean" sortable="false" label="=trdInvoiceId"
-      filterOptions="empty" visible="false" searchBy="IncomesCommited">
+    <CalcColumn name="IncomesCommited" type="boolean" sortable="false" visible="false"
+      label="=trdInvoiceId" searchBy="Incomes" filterOptions="empty">
       <render><ui:expression>row.IncomesCommited ? true : false</ui:expression></render>
     </CalcColumn>
-    <CalcColumn name="ExpensesCommited" type="boolean" sortable="false" label="=trdPurchaseId"
-      filterOptions="empty" visible="false" searchBy="ExpensesCommited">
+    <CalcColumn name="ExpensesCommited" type="boolean" sortable="false" visible="false"
+      label="=trdPurchaseId" searchBy="Expenses" filterOptions="empty">
       <render><ui:expression>row.ExpensesCommited ? true : false</ui:expression></render>
     </CalcColumn>
     
