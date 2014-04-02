@@ -240,10 +240,10 @@
   cursor: pointer;
 }
 .bee-crm-rt-value-toggle-checked {
-  background-color: #bfb;
+  background-color: #80c4f9;
 }
 .bee-crm-rt-value-toggle:hover {
-  outline: red solid 1px;
+  outline: #5a6ba3 solid 1px;
   outline-offset: -1px;
 }
 

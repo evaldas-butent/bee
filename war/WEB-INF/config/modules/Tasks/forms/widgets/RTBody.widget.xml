@@ -12,30 +12,29 @@
   
   <!ENTITY tod "width: 50px;">
   <!ENTITY timeStep "30">
+  <!ENTITY lbl1 "width: 115px; text-align: right; padding-right: 9px;">
+  <!ENTITY lbl2 "text-align: right; padding-right: 9px;">
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget">
-  <Table style="&tbl;" cellStyle="padding-bottom: 5px;">
-    <col index="0" cellStyle="&col1;" />
-    <col index="2" cellStyle="&clbl;" />
-
+  <Table style="border-spacing: 5px;">
     <row>
-      <Label text="=crmRTScheduleFrom" class="bee-required" />
+      <Label text="=crmRTScheduleFrom" class="bee-required" style="&lbl1;"/>
       <InputDate source="ScheduleFrom" style="width: 100px;" />
-      <Label text="=crmRTScheduleUntil" />
-      <InputDate source="ScheduleUntil" style="width: 100px;" />
-    </row>
-
-    <row>
-      <Label text="=crmRTScheduleDays" />
-      <InputSpinner source="ScheduleDays" minValue="-1" maxValue="999" style="width: 60px;" />
-      <Label text="=priority" />
+	  <Label text="=priority" style="&lbl1; width: 135px;"/>
       <Radio source="Priority" />
     </row>
 
     <row>
-      <Label text="=company" />
+	 <Label text="=crmRTScheduleUntil" style="&lbl1;"/>
+      <InputDate source="ScheduleUntil" style="width: 100px;" />
+      <Label text="=crmRTScheduleDays" style="&lbl1; width: 135px;"/>
+      <InputSpinner source="ScheduleDays" minValue="-1" maxValue="999" style="width: 60px;" />
+    </row>
+
+    <row>
+      <Label text="=company" style="&lbl1;"/>
       <DataSelector source="Company" editPopup="true" newRowEnabled="false" />
-      <Label text="=personContact" />
+      <Label text="=personContact" style="&lbl1; width: 135px;"/>
       <DataSelector source="Contact" editPopup="true" newRowEnabled="false"
         renderColumns="ContactFirstName ContactLastName"
         choiceColumns="FirstName LastName CompanyName" options="Company" />
@@ -43,16 +42,14 @@
   </Table>
   
   <br/>
-  <Table style="&tbl;" cellStyle="&cell;">
-    <col index="0" cellStyle="&col1;" />
-
+  <Table style="border-spacing: 5px;">
     <row>
-      <Label text="=taskTheme" class="bee-required" />
-      <InputText source="Summary" style="&inp2x; margin-bottom: 1ex;" autocomplete="true" />
+      <Label text="=taskTheme" class="bee-required" style="&lbl1;"/>
+      <InputText source="Summary" style="&inp2x;" autocomplete="true"/>
     </row>
 
     <row>
-      <Label text="=crmTaskExecutors" />
+      <Label text="=crmTaskExecutors" style="&lbl1;"/>
       <ChildSelector childTable="RTExecutors" viewName="Users" property="Executors"
         targetRelColumn="RecurringTask" sourceRelColumn="User"
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp2x;"
@@ -60,7 +57,7 @@
     </row>
 
     <row>
-      <Label text="=crmTaskExecutorGroups" />
+      <Label text="=crmTaskExecutorGroups" style="&lbl1;"/>
       <ChildSelector childTable="RTExecutorGroups" viewName="UserGroupSettings"
         targetRelColumn="RecurringTask" sourceRelColumn="Group"
         property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
@@ -68,7 +65,7 @@
     </row>
 
     <row>
-      <Label text="=crmTaskObservers" />
+      <Label text="=crmTaskObservers" style="&lbl1;"/>
       <ChildSelector childTable="RTObservers" viewName="Users" property="Observers"
         targetRelColumn="RecurringTask" sourceRelColumn="User"      
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp2x;"
@@ -76,7 +73,7 @@
     </row>
 
     <row>
-      <Label text="=crmTaskObserverGroups" />
+      <Label text="=crmTaskObserverGroups" style="&lbl1;"/>
       <ChildSelector childTable="RTObserverGroups" viewName="UserGroupSettings"
         targetRelColumn="RecurringTask" sourceRelColumn="Group"      
         property="ObserverGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
@@ -85,27 +82,23 @@
   </Table>
   
   <br/>
-  <Table style="&tbl;" cellStyle="&cell;">
-    <col index="0" cellStyle="&col1;" />
-    <col index="2" cellStyle="&clbl;" />
-    <col index="4" cellStyle="&clbl;" />
-
+  <Table style="border-spacing:5px;" >
     <row>
-      <Label text="=crmRTStartAt" />
+      <Label text="=crmRTStartAt" style="&lbl2;"/>
       <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />
-      <Label text="=crmRTDurationDays" />
+      <Label text="=crmRTDurationDays" style="&lbl1;"/>
       <InputSpinner source="DurationDays" minValue="0" maxValue="31" style="&spinner;" />
-      <Label text="=crmRTDurationTime" />
+      <Label text="=crmRTDurationTime" style="&lbl1;"/>
       <InputTimeOfDay source="DurationTime" step="&timeStep;" style="&tod;" />
     </row>
 
     <row>
-      <Label text="=taskReminder" />
+      <Label text="=taskReminder" style="&lbl2;"/>
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" 
         style="width: 100px;" />
-      <Label text="=crmRTRemindBefore" />
+      <Label text="=crmRTRemindBefore" style="&lbl1;"/>
       <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="&spinner;" />
-      <Label text="=crmRTRemindAt" />
+      <Label text="=crmRTRemindAt" style="&lbl1;"/>
       <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
     </row>
   </Table>
