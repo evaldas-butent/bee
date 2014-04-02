@@ -4,6 +4,7 @@
   name="AssessmentTransportations" source="Trips" filter="!(AssessmentForwarder) AND Assessment"
   >
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="TripNo" />
     <SimpleColumn name="ForwarderVehicle" />

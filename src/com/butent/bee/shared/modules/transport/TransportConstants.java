@@ -380,6 +380,7 @@ public final class TransportConstants {
   public static final String TBL_TRIP_FUEL_COSTS = "TripFuelCosts";
   public static final String TBL_TRIP_ROUTES = "TripRoutes";
   public static final String TBL_TRIP_FUEL_CONSUMPTIONS = "TripFuelConsumptions";
+  public static final String TBL_TRIP_USAGE = "TripUsage";
 
   public static final String TBL_TRANSPORT_SETTINGS = "TransportSettings";
 
@@ -831,6 +832,10 @@ public final class TransportConstants {
   public static final String ALS_ORDER_DATE = "OrderDate";
   public static final String ALS_ORDER_STATUS = "OrderStatus";
   public static final String ALS_ORDER_NOTES = "OrderNotes";
+
+  public static final String ALS_FORWARDER_NAME = "ForwarderName";
+  public static final String ALS_EXPEDITION_TYPE = "ExpeditionType";
+  public static final String ALS_ASSESSMENT_FORWARDER = "AssessmentForwarder";
 
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";

@@ -33,6 +33,7 @@ import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -62,6 +63,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -688,6 +690,67 @@ public class TransportModuleBean implements BeeModule {
       }
 
     });
+
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS,
+        new UsageQueryProvider() {
+
+          @Override
+          public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+              DateTime startDate) {
+            SqlSelect select = new SqlSelect()
+              .addFields(TBL_TRIP_USAGE, COL_TRIP)
+              .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)
+                .addFrom(TBL_TRIP_USAGE)
+                .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+                    TBL_TRIP_USAGE, COL_TRIP))
+                .addFromLeft(
+                    TBL_ASSESSMENT_FORWARDERS,
+                    SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(
+                    TBL_CARGO_TRIPS,
+                    SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(TBL_ASSESSMENTS,
+                    SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+                .setWhere(SqlUtils.and(
+                    SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
+                    SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                    SqlUtils.equals(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                    SqlUtils.notNull(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)))
+                .addGroup(TBL_TRIP_USAGE, COL_TRIP);
+            return select;
+          }
+
+          @Override
+          public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+              DateTime startDate) {
+            SqlSelect select = new SqlSelect()
+                .addFields(TBL_TRIP_USAGE, COL_TRIP)
+                .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE)
+                .addFrom(TBL_TRIP_USAGE)
+                .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+                    TBL_TRIP_USAGE, COL_TRIP))
+                .addFromLeft(
+                    TBL_ASSESSMENT_FORWARDERS,
+                    SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(
+                    TBL_CARGO_TRIPS,
+                    SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(TBL_ASSESSMENTS,
+                    SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+                .setWhere(SqlUtils.and(
+                    SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
+                            SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                            SqlUtils.notEqual(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                            SqlUtils.more(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE,
+                                NewsHelper.getStartTime(startDate))))
+                .addGroup(TBL_TRIP_USAGE, COL_TRIP);
+            return select;
+          }
+        });
   }
 
   private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
