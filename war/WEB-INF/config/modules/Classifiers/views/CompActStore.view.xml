@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CompActStore" source="CompActStore" module="Classifiers.Contacts"
+  >
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleColumn name="Activity" />
+ </Columns>
+</View>
+ 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE FlowPanel [
-  <!ENTITY tbl "border-collapse: collapse;">
   <!ENTITY col0 "text-align: right; padding-right: 1em;">
   <!ENTITY col2 "padding-left: 5px;">
 ]>
@@ -8,9 +7,7 @@
   <br/>
   <FlowPanel name="DomValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;">
-    <col index="0" cellStyle="&col0;" />
-    <col index="2" cellStyle="&col2;" />
+  <Table style="border-spacing: 5px;">
 
     <row>
       <Label text="=crmRTDayOfMonth" class="bee-crm-rt-cron-label" />
@@ -26,10 +23,7 @@
   <br/>
   <FlowPanel name="MonthValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;">
-    <col index="0" cellStyle="&col0;" />
-    <col index="2" cellStyle="&col2;" />
-
+  <Table style="border-spacing: 5px;">
     <row>
       <Label text="=crmRTMonth" class="bee-crm-rt-cron-label" />
       <InputText source="Month" class="bee-crm-rt-cron-input" />
@@ -44,9 +38,7 @@
   <br/>
   <FlowPanel name="DowValues" class="bee-crm-rt-cron-values" />
 
-  <Table style="&tbl;">
-    <col index="0" cellStyle="&col0;" />
-    <col index="2" cellStyle="&col2;" />
+  <Table style="border-spacing: 5px;">
 
     <row>
       <Label text="=crmRTDayOfWeek" class="bee-crm-rt-cron-label" />
@@ -58,9 +50,8 @@
       <div name="DowError" class="bee-crm-rt-cron-error" />
     </row>
   </Table>
-  
-  <br/>
-  <HorizontalPanel style="&tbl;" cellStyle="padding-right: 1em;">
+
+  <HorizontalPanel style="border-spacing: 5px;" cellStyle="padding-right: 1em;">
     <Label text="=crmRTWorkdayTransition" />
     <Radio source="WorkdayTransition" />
   </HorizontalPanel>  

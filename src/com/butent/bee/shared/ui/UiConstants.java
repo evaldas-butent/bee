@@ -66,6 +66,7 @@ public final class UiConstants {
   public static final String TAG_GRID_PANEL = "GridPanel";
 
   public static final String TAG_DATA_TREE = "DataTree";
+  public static final String TAG_MULTI_SELECTOR = "MultiSelector";
 
   public static final int MAX_PASSWORD_LENGTH = 30;
 

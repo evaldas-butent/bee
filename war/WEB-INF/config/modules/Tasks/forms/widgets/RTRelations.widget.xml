@@ -1,37 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE FlowPanel [
   <!ENTITY inp "width: 500px;">
+  <!ENTITY lbl1 "width: 115px; text-align: right; padding-right: 9px;">
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget">
   <br/>
 
-  <Table xmlns="http://www.butent.com/widget" style="border-collapse: collapse; margin-top: 2ex;"
-      cellStyle="padding-bottom: 3px;">
-    <col index="0" cellStyle="text-align: right; vertical-align: top; padding-right: 1em;" />
-
+  <Table xmlns="http://www.butent.com/widget" style="border-spacing: 5px;">
     <row data="Relations" for="Company" module="Classifiers.Contacts">
-      <Label text="=companies" />
+      <Label text="=companies" style="&lbl1;"/>
       <ChildSelector childTable="Relations" viewName="Companies" property="Companies"
         targetRelColumn="RecurringTask" sourceRelColumn="Company"      
         renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row data="Relations" for="Person" module="Classifiers.Contacts">
-      <Label text="=persons" />
+      <Label text="=persons" style="&lbl1;"/>
       <ChildSelector childTable="Relations" viewName="Persons" property="Persons"
         targetRelColumn="RecurringTask" sourceRelColumn="Person"      
         renderColumns="FirstName LastName" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row data="Relations" for="Document" module="Documents">
-      <Label text="=documents" />
+      <Label text="=documents" style="&lbl1;"/>
       <ChildSelector childTable="Relations" viewName="Documents" property="Documents"
         targetRelColumn="RecurringTask" sourceRelColumn="Document"      
         renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp;" />
     </row>
 
     <row data="Relations" for="Appointment" module="Calendar">
-      <Label text="=calAppointments" />
+      <Label text="=calAppointments" style="&lbl1;"/>
       <ChildSelector childTable="Relations" viewName="Appointments" property="Appointments"
         targetRelColumn="RecurringTask" sourceRelColumn="Appointment"      
         renderColumns="Summary" choiceColumns="Summary StartDateTime EndDateTime"
@@ -39,14 +37,14 @@
     </row>
 
     <row data="Relations" for="Discussion" module="Discussions">
-      <Label text="=discussions" />
+      <Label text="=discussions" style="&lbl1;"/>
       <ChildSelector childTable="Relations" viewName="Discussions" property="Discussions"
         targetRelColumn="RecurringTask" sourceRelColumn="Discussion"      
         renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp;" />
     </row>
 
     <row data="Relations" for="Task">
-      <Label text="=tasks" />
+      <Label text="=tasks" style="&lbl1;"/>
       <ChildSelector childTable="Relations" viewName="Tasks" property="Tasks"
         targetRelColumn="RecurringTask" sourceRelColumn="Task"      
         renderColumns="Summary ExecutorFirstName ExecutorLastName"

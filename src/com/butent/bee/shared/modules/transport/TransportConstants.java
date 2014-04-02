@@ -380,6 +380,7 @@ public final class TransportConstants {
   public static final String TBL_TRIP_FUEL_COSTS = "TripFuelCosts";
   public static final String TBL_TRIP_ROUTES = "TripRoutes";
   public static final String TBL_TRIP_FUEL_CONSUMPTIONS = "TripFuelConsumptions";
+  public static final String TBL_TRIP_USAGE = "TripUsage";
 
   public static final String TBL_TRANSPORT_SETTINGS = "TransportSettings";
 
@@ -388,6 +389,7 @@ public final class TransportConstants {
   public static final String TBL_CARGO_TRIPS = "CargoTrips";
   public static final String TBL_CARGO_PLACES = "CargoPlaces";
   public static final String TBL_CARGO_INCOMES = "CargoIncomes";
+  public static final String TBL_CARGO_INCOMES_USAGE = "CargoIncomesUsage";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_SERVICES = "Services";
@@ -395,6 +397,7 @@ public final class TransportConstants {
   public static final String TBL_ASSESSMENTS = "Assessments";
   public static final String TBL_ASSESSMENTS_USAGE = "AssessmentsUsage";
   public static final String TBL_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
+  public static final String TBL_SALES_USAGE = "SalesUsage";
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";
@@ -517,6 +520,7 @@ public final class TransportConstants {
   public static final String COL_MODEL_NAME = "ModelName";
   public static final String COL_NUMBER = "Number";
   public static final String COL_TYPE_NAME = "TypeName";
+  public static final String COL_EXPORTED = "Exported";
 
   public static final String COL_COSTS_DATE = "Date";
   public static final String COL_COSTS_ITEM = "Item";
@@ -542,6 +546,7 @@ public final class TransportConstants {
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
+  public static final String COL_NOTE = "Note";
 
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CARGO_DIRECTIONS = "Directions";
@@ -832,6 +837,10 @@ public final class TransportConstants {
   public static final String ALS_ORDER_STATUS = "OrderStatus";
   public static final String ALS_ORDER_NOTES = "OrderNotes";
 
+  public static final String ALS_FORWARDER_NAME = "ForwarderName";
+  public static final String ALS_EXPEDITION_TYPE = "ExpeditionType";
+  public static final String ALS_ASSESSMENT_FORWARDER = "AssessmentForwarder";
+
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
 
@@ -863,6 +872,8 @@ public final class TransportConstants {
   public static final String ALS_UNLOADING_CITY_NAME = "UnloadingCityName";
   public static final String ALS_UNLOADING_COUNTRY_NAME = "UnloadingCountryName";
   public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
+
+  public static final String ALS_PAYER_NAME = "PayerName";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";

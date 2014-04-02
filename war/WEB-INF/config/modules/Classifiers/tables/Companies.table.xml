@@ -22,8 +22,8 @@
 
     <String name="Rating" precision="100" label="=companyRating" />
 
-    <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="=companyRelation" />
-    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="=companyRelationState" />
+    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" 
+      label="=companyRelationState" />
 
     <String name="ExchangeCode" precision="30" label="=exchangeCode" />
 

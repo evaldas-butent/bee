@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CompRelTypeStore"
+  idName="CompRelTypeStoreID"
+  >
+  <Fields>
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="=company" />
+    <Relation name="RelationType" notNull="true" relation="CompanyRelationTypes" cascade="DELETE"
+      label="=companyRelationType" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Company RelationType" />
+  </Constraints>
+</Table>

@@ -253,8 +253,7 @@ public final class RowEditor {
 
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
         DataUtils.getRowCaption(dataInfo, oldRow), enabledActions, disabledActions);
-    final ModalForm dialog =
-        modal ? new ModalForm(presenter.getWidget().asWidget(), formView, false) : null;
+    final ModalForm dialog = modal ? new ModalForm(presenter, formView, false) : null;
 
     final RowCallback closer = new RowCallback() {
       @Override

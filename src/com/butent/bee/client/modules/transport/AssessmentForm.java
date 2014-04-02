@@ -92,6 +92,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
@@ -732,9 +733,13 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     form.setEnabled(newRecord || executor
         && (AssessmentStatus.NEW.is(status) || OrderStatus.ACTIVE.is(orderStatus)));
 
+    if (expensesRegistered != null) {
+      expensesRegistered.setEnabled(executor);
+    }
     if (childAssessments != null && !primary) {
       childAssessments.setEnabled(false);
     }
+    LogUtils.getRootLogger().warning(departments);
     if (manager != null && manager.isEnabled() && !departments.containsValue(userPerson)) {
       manager.setEnabled(false);
     }
@@ -831,6 +836,8 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
       manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
+    } else if (event.isChanged()) {
+
     }
   }
 
@@ -865,8 +872,11 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
             for (BeeRow row : result) {
               Long department = row.getLong(0);
               Long employer = row.getLong(1);
-              departments.put(department, row.getLong(2) != null ? employer : null);
               employees.put(employer, department);
+
+              if (departments.get(department) == null) {
+                departments.put(department, row.getLong(2) != null ? employer : null);
+              }
             }
             form = formView;
             afterRefresh(form, form.getActiveRow());
@@ -877,7 +887,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   @Override
   public void onValueChange(ValueChangeEvent<String> event) {
     if (childExpenses != null && expensesRegistered != null) {
-      childExpenses.setEnabled(!expensesRegistered.isChecked()
+      childExpenses.setEnabled(isExecutor() && !expensesRegistered.isChecked()
           && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
           && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
     }

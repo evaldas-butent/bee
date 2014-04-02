@@ -256,6 +256,7 @@
       <xs:enumeration value="ChildAssessments" />
       <xs:enumeration value="Cities" />
       <xs:enumeration value="Colors" />
+      <xs:enumeration value="CompActStore" />
       <xs:enumeration value="Companies" />
       <xs:enumeration value="CompaniesAndPersons" />
       <xs:enumeration value="CompanyActivities" />
@@ -268,6 +269,7 @@
       <xs:enumeration value="CompanySizes" />
       <xs:enumeration value="CompanyTypes" />
       <xs:enumeration value="CompanyUsers" />
+      <xs:enumeration value="CompRelTypeStore" />
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="Criteria" />

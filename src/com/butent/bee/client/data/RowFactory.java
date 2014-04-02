@@ -343,7 +343,7 @@ public final class RowFactory {
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
-    final ModalForm dialog = new ModalForm(presenter.getWidget().asWidget(), formView, false);
+    final ModalForm dialog = new ModalForm(presenter, formView, false);
 
     final RowCallback closer = new RowCallback() {
       @Override

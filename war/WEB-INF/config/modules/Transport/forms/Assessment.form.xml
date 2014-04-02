@@ -48,7 +48,7 @@
           viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
           editSource="CompanyPerson" newRowEnabled="false" />
         <CheckBox text="=trExpensesRegistered" name="ExpensesRegistered" source="ExpensesRegistered"
-          style="&inline; margin-left:10px;" disablable="false" />
+          style="&inline; margin-left:10px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label text="=trComment" style="&labelLeft; vertical-align:top;" />

@@ -130,10 +130,22 @@
 
     <SimpleJoin name="Cargo" joinType="INNER">
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
-        <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN" />
+        <HiddenColumn name="Sale" alias="Incomes" />
+        <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN">
+          <x:nvl type="LONG">
+            <x:number>"Incomes"</x:number>
+            <x:number>0</x:number>
+          </x:nvl>
+        </AggregateColumn>
       </ExternalJoin>
       <ExternalJoin name="Cargo" source="CargoExpenses" joinType="LEFT">
-        <AggregateColumn name="Purchase" alias="ExpensesCommited" aggregate="MIN" />
+        <HiddenColumn name="Purchase" alias="Expenses" />
+        <AggregateColumn name="Purchase" alias="ExpensesCommited" aggregate="MIN">
+          <x:nvl type="LONG">
+            <x:number>"Expenses"</x:number>
+            <x:number>0</x:number>
+          </x:nvl>
+        </AggregateColumn>
       </ExternalJoin>
     </SimpleJoin>
     
