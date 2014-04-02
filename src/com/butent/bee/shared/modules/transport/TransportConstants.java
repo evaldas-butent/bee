@@ -389,6 +389,7 @@ public final class TransportConstants {
   public static final String TBL_CARGO_TRIPS = "CargoTrips";
   public static final String TBL_CARGO_PLACES = "CargoPlaces";
   public static final String TBL_CARGO_INCOMES = "CargoIncomes";
+  public static final String TBL_CARGO_INCOMES_USAGE = "CargoIncomesUsage";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_SERVICES = "Services";
@@ -543,6 +544,7 @@ public final class TransportConstants {
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
+  public static final String COL_NOTE = "Note";
 
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CARGO_DIRECTIONS = "Directions";
@@ -868,6 +870,8 @@ public final class TransportConstants {
   public static final String ALS_UNLOADING_CITY_NAME = "UnloadingCityName";
   public static final String ALS_UNLOADING_COUNTRY_NAME = "UnloadingCountryName";
   public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
+
+  public static final String ALS_PAYER_NAME = "PayerName";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";
