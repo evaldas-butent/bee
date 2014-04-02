@@ -3,7 +3,6 @@
   <!ENTITY lbl1 "margin-left: 1em; text-align: right; padding-right: 9px;">
   <!ENTITY inp1 "width: 180px;">
 ]>
-
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -71,26 +70,32 @@
               <FlowPanel name="CreditInfo" />
             </cell>
           </row>
+
           <row for="CreditTolerance">
             <Label text="=creditTolerance" style="&lbl1;"/>
             <InputInteger source="CreditTolerance" style="width: 60px;" />
           </row>
+
           <row for="CreditDays">
             <Label text="=creditDays" style="&lbl1;"/>
             <InputDecimal source="CreditDays" style="width: 60px;" />
           </row>
-        	<row for="FinancialState">
+
+          <row for="FinancialState">
             <Label text="=financialState" style="&lbl1;"/>
             <DataSelector source="FinancialState" />
           </row>
+
           <row>
             <Label text="=bankAccount" style="&lbl1;"/>
             <InputText source="BankAccount" />
           </row>
+
           <row for="DaysAsBuyer">
             <Label text="=daysAsBuyer" style="&lbl1;"/>
             <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
           </row>
+
           <row for="DaysAsSupplier">
             <Label text="=daysAsSupplier" style="&lbl1;"/>
             <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
@@ -113,10 +118,9 @@
         <FlowPanel style="margin:5px;">
           <Table>
             <row>
-              <Label text="=companySize" style="&lbl1;" for="CompanySize" />
+              <Label style="&lbl1;" for="CompanySize" />
               <DataSelector source="CompanySize" style="width: 100px;" />
-              <Label text="=informationSource" style="margin-left: 8px; margin-right: 8px;"
-                for="InformationSource" />
+              <Label style="margin-left: 8px; margin-right: 8px;" for="InformationSource" />
               <DataSelector source="InformationSource" style="width: 100px;" />
             </row>
             <row data="CompActStore">

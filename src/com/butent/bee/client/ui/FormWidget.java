@@ -226,7 +226,8 @@ public enum FormWidget {
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
-  MULTI_SELECTOR("MultiSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
+  MULTI_SELECTOR(UiConstants.TAG_MULTI_SELECTOR,
+      EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
   ORDERED_LIST("OrderedList", null),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
@@ -253,7 +254,7 @@ public enum FormWidget {
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
   VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
   TREE("Tree", EnumSet.of(Type.FOCUSABLE)),
-  DATA_TREE("DataTree", EnumSet.of(Type.FOCUSABLE));
+  DATA_TREE(UiConstants.TAG_DATA_TREE, EnumSet.of(Type.FOCUSABLE));
 
   private final class HeaderAndContent {
     private final String headerTag;

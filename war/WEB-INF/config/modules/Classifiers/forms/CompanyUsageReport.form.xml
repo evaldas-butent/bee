@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inp "width: 200px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="CompanyUsageReport" caption="=contactReportCompanyUsage"
+  enabledActions="refresh filter"
+  >
+  <FlowPanel>
+    <Table style="border-collapse: collapse; margin-top: 1ex;">
+      <col index="0" cellStyle="padding: 4px 10px; text-align: right;" />
+      <col index="1" cellStyle="padding: 4px 0" />
+      <col index="2" cellStyle="padding: 4px 10px; text-align: right;" />
+      <col index="3" cellStyle="padding: 4px 0" />
+
+      <row>
+        <Label text="=companyStatus" data="CompanyTypes" />
+        <MultiSelector name="CompanyType" viewName="CompanyTypes" renderColumns="Name"
+          newRowEnabled="false" style="&inp;" />
+
+        <Label text="=group" data="CompanyGroups" />
+        <MultiSelector name="CompanyGroup" viewName="CompanyGroups" renderColumns="Name"
+          newRowEnabled="false" style="&inp;" />
+      </row>
+
+      <row>
+        <Label text="=priority" data="CompanyPriorities" />
+        <MultiSelector name="CompanyPriority" viewName="CompanyPriorities" renderColumns="Name"
+          newRowEnabled="false" style="&inp;" />
+
+        <Label text="=companyRelation" data="CompRelTypeStore" />
+        <MultiSelector name="RelationType" viewName="CompanyRelationTypes" renderColumns="Name"
+          newRowEnabled="false" data="CompRelTypeStore" style="&inp;" />
+      </row>
+
+      <row>
+        <Label text="=status" data="RelationTypeStates" />
+        <MultiSelector name="CompanyRelationTypeState" viewName="RelationTypeStates"
+          renderColumns="Name" newRowEnabled="false" style="&inp;" />
+
+        <Label text="=financialState" data="FinancialStates" />
+        <MultiSelector name="FinancialState" viewName="FinancialStates" renderColumns="Name"
+          newRowEnabled="false" style="&inp;" />
+      </row>
+
+      <row>
+        <Label text="=companySize" data="CompanySizes" />
+        <MultiSelector name="CompanySize" viewName="CompanySizes" renderColumns="SizeName"
+          newRowEnabled="false" style="&inp;" />
+
+        <Label text="=informationSource" data="InformationSources" />
+        <MultiSelector name="InformationSource" viewName="InformationSources" renderColumns="Name"
+          newRowEnabled="false" style="&inp;" />
+      </row>
+
+      <row>
+        <Label text="=companyActivities" data="CompActStore" />
+        <MultiSelector name="Activity" viewName="CompanyActivities" renderColumns="Name"
+          newRowEnabled="false" data="CompActStore" style="&inp;" />
+      </row>
+    </Table>
+    
+    <br/>
+    <FlowPanel name="DataContainer" />
+  </FlowPanel>
+</f:Form>

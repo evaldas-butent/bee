@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="ContactReports" label="=contactReports" parent="Contacts" order="20" 
+>
+  <Item name="CompanyRelationTypeReport" label="=contactReportCompanyByType" service="form"
+    parameters="CompanyRelationTypeReport" />
+  <Item name="CompanyUsageReport" label="=contactReportCompanyUsage" service="form"
+    parameters="CompanyUsageReport" />
+</Entry>
