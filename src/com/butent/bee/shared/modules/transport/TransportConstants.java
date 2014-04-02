@@ -397,6 +397,8 @@ public final class TransportConstants {
   public static final String TBL_ASSESSMENTS = "Assessments";
   public static final String TBL_ASSESSMENTS_USAGE = "AssessmentsUsage";
   public static final String TBL_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
+  public static final String TBL_SALES = "Sales";
+  public static final String TBL_SALES_USAGE = "SalesUsage";
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";
@@ -519,6 +521,7 @@ public final class TransportConstants {
   public static final String COL_MODEL_NAME = "ModelName";
   public static final String COL_NUMBER = "Number";
   public static final String COL_TYPE_NAME = "TypeName";
+  public static final String COL_EXPORTED = "Exported";
 
   public static final String COL_COSTS_DATE = "Date";
   public static final String COL_COSTS_ITEM = "Item";
