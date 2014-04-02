@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE Form [
   <!ENTITY lbl1 "margin-left: 1em; text-align: right; padding-right: 9px;">
+  <!ENTITY inp1 "width: 180px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget"
@@ -19,23 +19,31 @@
     <Table>
       <row>
         <Label text="=name" style="&lbl1;" class="bee-required" />
-        <InputText source="Name" style="width: 194px;" visible="true" />
-        <Label text="=companyStatus" style="&lbl1;" for="CompanyType" />
-        <DataSelector source="CompanyType" style="width: 194px;"  />
-        <Label text="=group" style="&lbl1;" for="CompanyGroup" />
-        <DataSelector source="CompanyGroup" style="width: 194px;"  />
+        <InputText source="Name" style="&inp1;" visible="true" />
+        <Label style="&lbl1;" for="CompanyType" />
+        <DataSelector source="CompanyType" style="&inp1;"  />
+        <Label style="&lbl1;" for="CompanyGroup" />
+        <DataSelector source="CompanyGroup" style="&inp1;"  />
       </row>
+
       <row>
-        <Label text="=companyCode" style="&lbl1;" for="Code" />
-        <InputText source="Code" style="width: 194px;"/>
-        <Label text="=companyVATCode" style="&lbl1;" for="VATCode" />
-        <InputText source="VATCode" style="width: 194px;" upperCase="true" />
+        <Label style="&lbl1;" for="Code" />
+        <InputText source="Code" style="&inp1;"/>
+        <Label style="&lbl1;" for="VATCode" />
+        <InputText source="VATCode" style="&inp1;" upperCase="true" />
         <Label text="=code" style="&lbl1;" module="Transport" for="ExchangeCode" />
-        <InputText source="ExchangeCode" style="width: 194px;" module="Transport" />
+        <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
       </row>
+
       <row>
-        <Label text="=priority" style="&lbl1;" for="CompanyPriority" />
-        <DataSelector source="CompanyPriority" style="width: 194px;" />
+        <Label style="&lbl1;" for="CompanyPriority" />
+        <DataSelector source="CompanyPriority" style="&inp1;" />
+        <Label text="=companyRelation" style="&lbl1;" data="CompRelTypeStore" />
+        <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
+          targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="false"
+          label="=companyRelationType" style="&inp1;" data="CompRelTypeStore" />
+        <Label text="=status" style="&lbl1;" for="CompanyRelationTypeState" />
+        <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
       </row>
     </Table>
 
@@ -111,7 +119,7 @@
                 for="InformationSource" />
               <DataSelector source="InformationSource" style="width: 100px;" />
             </row>
-            <row>
+            <row data="CompActStore">
               <Label text="=companyActivities" style="&lbl1;" />
               <cell colSpan="3">
                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
@@ -122,22 +130,6 @@
             <row for="Rating">
               <Label text="=rating" style="&lbl1;"/>
               <InputText source="Rating" style="width:100px;" />
-            </row>
-          </Table>
-        </FlowPanel>
-      </page>
-
-      <page>
-        <text>=relationshipInfo</text>
-        <FlowPanel style="margin:5px;">
-          <Table>
-            <row>
-              <DataSelector source="CompanyRelationType" caption="=relationship" style="width: 75px;"
-               d:size="52" d:unit="px" />
-            </row>
-            <row>
-              <DataSelector source="CompanyRelationTypeState" caption="=status" style="width: 75px;"
-              d:size="53" d:unit="px" />
             </row>
           </Table>
         </FlowPanel>

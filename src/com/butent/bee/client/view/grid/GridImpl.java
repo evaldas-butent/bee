@@ -1653,7 +1653,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     Widget container = gfp.getWidget().asWidget();
 
     if (asPopup) {
-      ModalForm popup = new ModalForm(container, formView, true);
+      ModalForm popup = new ModalForm(gfp, formView, true);
 
       popup.setOnSave(new PreviewConsumer() {
         @Override
