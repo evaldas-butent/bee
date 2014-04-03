@@ -5,6 +5,9 @@ public final class ClassifierConstants {
   public static final String SVC_CREATE_COMPANY = "create_company";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
+  public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
+  public static final String SVC_GET_COMPANY_USAGE_REPORT = "get_company_usage_report";
+  
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
   public static final String TBL_CATEGORIES = "CategoryTree";
@@ -17,6 +20,9 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
+
+  public static final String TBL_COMPANY_RELATION_TYPES = "CompanyRelationTypes";
+  public static final String TBL_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
 
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_POSITIONS = "Positions";
@@ -105,6 +111,9 @@ public final class ClassifierConstants {
   public static final String COL_WAREHOUSE_NAME = "Name";
   public static final String COL_WAREHOUSE_SUPPLIER_CODE = "SupplierCode";
   public static final String COL_WAREHOUSE_BRANCH = "Branch";
+
+  public static final String COL_RELATION_TYPE = "RelationType";
+  public static final String COL_RELATION_TYPE_NAME = "Name";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

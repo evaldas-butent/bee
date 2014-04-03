@@ -6,7 +6,7 @@ import com.google.common.collect.Ordering;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.i18n.Collator;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.view.DataInfo;

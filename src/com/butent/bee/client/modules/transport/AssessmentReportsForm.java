@@ -2,12 +2,10 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -16,30 +14,21 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.output.Printable;
-import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -52,11 +41,10 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
-import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -64,19 +52,15 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Set;
 
-public class AssessmentReportsForm extends AbstractFormInterceptor implements Printable {
+public class AssessmentReportsForm extends ReportInterceptor {
 
   private static BeeLogger logger = LogUtils.getLogger(AssessmentReportsForm.class);
-
-  private static final String STORAGE_KEY_PREFIX = "AssessmentReports_";
 
   private static final String NAME_START_DATE = "StartDate";
   private static final String NAME_END_DATE = "EndDate";
 
   private static final String NAME_DEPARTMENTS = "Departments";
   private static final String NAME_MANAGERS = "Managers";
-
-  private static final String NAME_DATA_CONTAINER = "DataContainer";
 
   private static final List<String> NAME_GROUP_BY =
       Lists.newArrayList("Group0", "Group1", "Group2");
@@ -105,89 +89,14 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
   private static final String STYLE_DETAILS = STYLE_PREFIX + "details";
   private static final String STYLE_SUMMARY = STYLE_PREFIX + "summary";
 
-  private static final NumberFormat percentFormat = Format.getNumberFormat("0.0");
-  private static final NumberFormat quantityFormat = Format.getNumberFormat("#,###");
-
-  private static void drillDown(String caption, Filter filter, boolean modal) {
-    GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
-
-    PresenterCallback presenterCallback;
-    if (modal) {
-      presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 50, CssUnit.PCT);
-    } else {
-      presenterCallback = PresenterCallback.SHOW_IN_NEW_TAB;
-    }
-
-    GridFactory.openGrid("AssessmentReportDrillDown", null, gridOptions, presenterCallback);
-  }
-
-  private static String renderPercent(int x, int y) {
-    if (x > 0 && y > 0) {
-      return percentFormat.format(x * 100d / y);
-    } else {
-      return BeeConst.STRING_EMPTY;
-    }
-  }
-
-  private static String renderQuantity(int x) {
-    if (x > 0) {
-      return quantityFormat.format(x);
-    } else {
-      return BeeConst.STRING_EMPTY;
-    }
-  }
-
-  private static String storageKey(String name, long user) {
-    return STORAGE_KEY_PREFIX + name + user;
-  }
-
-  private static void widgetNotFound(String name) {
-    logger.severe("widget not found", name);
-  }
+  private static final String DRILL_DOWN_GRID_NAME = "AssessmentReportDrillDown";
 
   AssessmentReportsForm() {
   }
 
   @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
-    switch (action) {
-      case REFRESH:
-      case FILTER:
-        doReport();
-        return false;
-
-      case REMOVE_FILTER:
-        clearFilter();
-        return false;
-
-      case PRINT:
-        if (hasReport()) {
-          Printer.print(this);
-        }
-        return false;
-
-      default:
-        return super.beforeAction(action, presenter);
-    }
-  }
-
-  @Override
-  public String getCaption() {
-    return getFormView().getCaption();
-  }
-
-  @Override
   public FormInterceptor getInstance() {
     return new AssessmentReportsForm();
-  }
-
-  @Override
-  public Element getPrintElement() {
-    if (hasReport()) {
-      return getDataContainer().getWidget(0).getElement();
-    } else {
-      return null;
-    }
   }
 
   @Override
@@ -231,11 +140,6 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
   }
 
   @Override
-  public boolean onPrint(Element source, Element target) {
-    return true;
-  }
-
-  @Override
   public void onUnload(FormView form) {
     Long user = BeeKeeper.getUser().getUserId();
     if (!DataUtils.isId(user)) {
@@ -263,16 +167,8 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
     }
   }
 
-  private void clearEditor(String name) {
-    Widget widget = getFormView().getWidgetByName(name);
-    if (widget instanceof Editor) {
-      ((Editor) widget).clearValue();
-    } else {
-      widgetNotFound(name);
-    }
-  }
-
-  private void clearFilter() {
+  @Override
+  protected void clearFilter() {
     clearEditor(NAME_START_DATE);
     clearEditor(NAME_END_DATE);
 
@@ -280,13 +176,12 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
     clearEditor(NAME_MANAGERS);
   }
 
-  private void doReport() {
+  @Override
+  protected void doReport() {
     DateTime start = getDateTime(NAME_START_DATE);
     DateTime end = getDateTime(NAME_END_DATE);
 
-    if (start != null && end != null && TimeUtils.isMore(start, end)) {
-      getFormView().notifyWarning(Localized.getConstants().invalidRange(),
-          TimeUtils.renderPeriod(start, end));
+    if (!checkRange(start, end)) {
       return;
     }
 
@@ -318,7 +213,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
 
         switch (index) {
           case 1:
-            group = AR_MONTH;
+            group = BeeConst.MONTH;
             break;
           case 2:
             group = AR_DEPARTMENT;
@@ -356,63 +251,9 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
     });
   }
 
-  private HasIndexedWidgets getDataContainer() {
-    Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
-    if (widget instanceof HasIndexedWidgets) {
-      return (HasIndexedWidgets) widget;
-    } else {
-      widgetNotFound(NAME_DATA_CONTAINER);
-      return null;
-    }
-  }
-
-  private DateTime getDateTime(String name) {
-    Widget widget = getFormView().getWidgetByName(name);
-    if (widget instanceof InputDateTime) {
-      return ((InputDateTime) widget).getDateTime();
-    } else {
-      widgetNotFound(name);
-      return null;
-    }
-  }
-
-  private String getEditorValue(String name) {
-    Widget widget = getFormView().getWidgetByName(name);
-    if (widget instanceof HasStringValue) {
-      return ((HasStringValue) widget).getValue();
-    } else {
-      widgetNotFound(name);
-      return null;
-    }
-  }
-
-  private String getFilterLabel(String name) {
-    Widget widget = getFormView().getWidgetByName(name);
-
-    if (widget instanceof MultiSelector) {
-      MultiSelector selector = (MultiSelector) widget;
-      List<Long> ids = DataUtils.parseIdList(selector.getValue());
-
-      if (ids.isEmpty()) {
-        return null;
-      } else {
-        List<String> labels = Lists.newArrayList();
-        for (Long id : ids) {
-          labels.add(selector.getRowLabel(id));
-        }
-
-        return BeeUtils.joinItems(labels);
-      }
-
-    } else {
-      widgetNotFound(name);
-      return null;
-    }
-  }
-
-  private boolean hasReport() {
-    HasIndexedWidgets container = getDataContainer();
-    return container != null && !container.isEmpty();
+  @Override
+  protected String getStorageKeyPrefix() {
+    return "AssessmentReports_";
   }
 
   private void renderData(final SimpleRowSet data) {
@@ -446,7 +287,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
       String colName = data.getColumnName(j);
 
       switch (colName) {
-        case AR_YEAR:
+        case BeeConst.YEAR:
           colYear = col;
 
           table.setText(row, c1, Localized.getConstants().year(), STYLE_HEADER);
@@ -456,7 +297,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
           col++;
           break;
 
-        case AR_MONTH:
+        case BeeConst.MONTH:
           colMonth = col;
 
           table.setText(row, c1, Localized.getConstants().month(), STYLE_HEADER);
@@ -598,11 +439,11 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
         String colName = data.getColumnName(j);
 
         switch (colName) {
-          case AR_YEAR:
+          case BeeConst.YEAR:
             table.setText(row, colYear, data.getValue(i, colName), STYLE_YEAR);
             break;
 
-          case AR_MONTH:
+          case BeeConst.MONTH:
             table.setText(row, colMonth,
                 Format.renderMonthFullStandalone(data.getInt(i, colName)), STYLE_MONTH);
             break;
@@ -731,9 +572,11 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
     DateTime start = getDateTime(NAME_START_DATE);
     DateTime end = getDateTime(NAME_END_DATE);
 
-    if (ArrayUtils.contains(colNames, AR_YEAR) && ArrayUtils.contains(colNames, AR_MONTH)) {
-      Integer year = BeeUtils.unbox(dataRow.getInt(AR_YEAR));
-      Integer month = BeeUtils.unbox(dataRow.getInt(AR_MONTH));
+    if (ArrayUtils.contains(colNames, BeeConst.YEAR) 
+        && ArrayUtils.contains(colNames, BeeConst.MONTH)) {
+
+      Integer year = BeeUtils.unbox(dataRow.getInt(BeeConst.YEAR));
+      Integer month = BeeUtils.unbox(dataRow.getInt(BeeConst.MONTH));
 
       if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
         if (start == null && end == null) {
@@ -820,7 +663,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
         Localized.getConstants().trAssessmentRequests());
 
     if (departments.isEmpty()) {
-      drillDown(caption, filter, modal);
+      drillDown(DRILL_DOWN_GRID_NAME, caption, filter, modal);
 
     } else {
       ParameterList params = TransportHandler.createArgs(SVC_GET_MANAGERS_BY_DEPARTMENT);
@@ -839,7 +682,7 @@ public class AssessmentReportsForm extends AbstractFormInterceptor implements Pr
                 DataUtils.parseIdSet(response.getResponseAsString())));
           }
 
-          drillDown(caption, filter, modal);
+          drillDown(DRILL_DOWN_GRID_NAME, caption, filter, modal);
         }
       });
     }

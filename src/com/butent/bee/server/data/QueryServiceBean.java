@@ -707,6 +707,46 @@ public class QueryServiceBean {
     return response;
   }
 
+  public long setYearMonth(String target, String dtCol, String yearCol, String monthCol) {
+    long result = 0;
+
+    SqlSelect rangeQuery = new SqlSelect()
+        .addMin(target, dtCol, SqlUtils.uniqueName())
+        .addMax(target, dtCol, SqlUtils.uniqueName())
+        .addFrom(target);
+
+    SimpleRowSet rangeData = getData(rangeQuery);
+    if (DataUtils.isEmpty(rangeData)) {
+      return result;
+    }
+
+    DateTime minDate = rangeData.getDateTime(0, 0);
+    DateTime maxDate = rangeData.getDateTime(0, 1);
+
+    if (minDate == null || maxDate == null) {
+      return result;
+    }
+
+    DateTime lower = DateTime.copyOf(minDate);
+    while (TimeUtils.isLeq(lower, maxDate)) {
+      DateTime upper = TimeUtils.startOfNextMonth(lower).getDateTime();
+
+      SqlUpdate update = new SqlUpdate(target)
+          .addConstant(yearCol, lower.getYear())
+          .addConstant(monthCol, lower.getMonth())
+          .setWhere(SqlUtils.and(SqlUtils.moreEqual(target, dtCol, lower.getTime()),
+              SqlUtils.less(target, dtCol, upper.getTime())));
+
+      int count = updateData(update);
+      if (count > 0) {
+        result += count;
+      }
+
+      lower = DateTime.copyOf(upper);
+    }
+    return result;
+  }
+
   public int sqlCount(SqlSelect query) {
     SimpleRowSet res;
     SqlSelect ss = query.copyOf().resetOrder();

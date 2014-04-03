@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;

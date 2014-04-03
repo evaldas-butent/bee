@@ -176,6 +176,16 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     Assert.lengthEquals(row, getNumberOfColumns());
     rows.add(row);
   }
+  
+  public void append(SimpleRowSet other) {
+    if (other != null && other.getNumberOfRows() > 0) {
+      Assert.isTrue(getNumberOfColumns() == other.getNumberOfColumns());
+      
+      for (int i = 0; i < other.getNumberOfRows(); i++) {
+        rows.add(ArrayUtils.copyOf(other.rows.get(i)));
+      }
+    }
+  }
 
   @Override
   public void deserialize(String s) {

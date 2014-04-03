@@ -162,6 +162,9 @@ public final class BeeConst {
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;
 
+  public static final String YEAR = "Year";
+  public static final String MONTH = "Month";
+  
   public static final Set<String> EMPTY_IMMUTABLE_STRING_SET = Collections.emptySet();
   public static final List<String> EMPTY_IMMUTABLE_STRING_LIST = Collections.emptyList();
   

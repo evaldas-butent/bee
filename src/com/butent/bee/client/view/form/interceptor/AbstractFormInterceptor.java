@@ -1,4 +1,4 @@
-package com.butent.bee.client.ui;
+package com.butent.bee.client.view.form.interceptor;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -8,7 +8,9 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
@@ -28,7 +30,7 @@ import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
 
-public abstract class AbstractFormInterceptor implements FormFactory.FormInterceptor {
+public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   private FormView formView;
 
