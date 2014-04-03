@@ -19,7 +19,7 @@
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
-    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+    <CalcColumn name="Total" type="decimal" caption="=totalOf" format="0.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
