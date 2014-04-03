@@ -2,10 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
-import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -16,9 +13,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.Format;
@@ -34,11 +28,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.filter.CompoundFilter;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -46,7 +37,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class CompanyTypeReport extends ReportInterceptor {
   
@@ -291,96 +281,12 @@ public class CompanyTypeReport extends ReportInterceptor {
     table.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        TableCellElement cellElement =
-            DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
-        TableRowElement rowElement = DomUtils.getParentRow(cellElement, false);
-
-        if (cellElement != null
-            && !BeeUtils.isEmpty(cellElement.getInnerText())
-            && rowElement != null && rowElement.hasClassName(STYLE_DETAILS)) {
-
-          int dataIndex = DomUtils.getDataIndexInt(rowElement);
-
-          if (!BeeConst.isUndef(dataIndex)) {
-            boolean modal = Popup.getActivePopup() != null
-                || EventUtils.hasModifierKey(event.getNativeEvent());
-//            showDetails(data.getRow(dataIndex), cellElement, modal);
-          }
-        }
       }
     });
 
     container.add(table);
   }
 
-  private void showDetails(SimpleRow dataRow, final boolean modal) {
-    Set<Long> departments = Sets.newHashSet();
-
-    final CompoundFilter filter = Filter.and();
-    List<String> captions = Lists.newArrayList();
-
-    String[] colNames = dataRow.getColumnNames();
-
-    DateTime start = getDateTime(NAME_START_DATE);
-    DateTime end = getDateTime(NAME_END_DATE);
-
-    if (ArrayUtils.contains(colNames, BeeConst.YEAR) 
-        && ArrayUtils.contains(colNames, BeeConst.MONTH)) {
-      Integer year = BeeUtils.unbox(dataRow.getInt(BeeConst.YEAR));
-      Integer month = BeeUtils.unbox(dataRow.getInt(BeeConst.MONTH));
-
-      if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
-        if (start == null && end == null) {
-          captions.add(BeeUtils.joinWords(year, Format.renderMonthFullStandalone(month)));
-        }
-
-        YearMonth ym = new YearMonth(year, month);
-
-        if (start == null) {
-          start = ym.getDate().getDateTime();
-        }
-        if (end == null) {
-          end = TimeUtils.startOfNextMonth(ym).getDateTime();
-        }
-      }
-    }
-
-    if (start != null) {
-//      filter.add(Filter.isMoreEqual(COL_ORDER_DATE, new DateTimeValue(start)));
-    }
-    if (end != null) {
-//      filter.add(Filter.isLess(COL_ORDER_DATE, new DateTimeValue(end)));
-    }
-
-    if (captions.isEmpty() && (start != null || end != null)) {
-      captions.add(TimeUtils.renderPeriod(start, end));
-    }
-
-    if (ArrayUtils.contains(colNames, COL_COMPANY_PERSON)) {
-      Long companyPerson = dataRow.getLong(COL_COMPANY_PERSON);
-      if (DataUtils.isId(companyPerson)) {
-        filter.add(Filter.equals(COL_COMPANY_PERSON, companyPerson));
-        captions.add(BeeUtils.joinWords(dataRow.getValue(COL_FIRST_NAME),
-            dataRow.getValue(COL_LAST_NAME)));
-      }
-
-    } else {
-      String types = getEditorValue(NAME_TYPES);
-      if (!BeeUtils.isEmpty(types)) {
-        filter.add(Filter.any(COL_COMPANY_PERSON,
-            DataUtils.parseIdSet(types)));
-        captions.add(getFilterLabel(types));
-      }
-    }
-
-    final String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
-        Localized.getConstants().trAssessmentRequests());
-
-    if (departments.isEmpty()) {
-//      drillDown(caption, filter, modal);
-    }
-  }
-  
   private static Table<YearMonth, Type, Integer> transformData(SimpleRowSet data) {
     Table<YearMonth, Type, Integer> table = HashBasedTable.create();
     
