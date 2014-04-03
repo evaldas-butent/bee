@@ -15,6 +15,11 @@
     <SimpleColumn name="Log" />
     <SimpleColumn name="ExpensesRegistered" />
 
+    <SimpleColumn name="Department" />
+    <SimpleJoin joinType="LEFT" name="Department">
+      <SimpleColumn name="DepartmentName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
       <SimpleJoin name="Order" joinType="INNER">

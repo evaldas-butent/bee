@@ -815,13 +815,13 @@ public class UiServiceBean {
         String companyCountry = BeeUtils.isEmpty(data[6]) ? "#" : data[6];
         String companyPhone = BeeUtils.isEmpty(data[7]) ? null : data[7];
         String companyEMail = BeeUtils.isEmpty(data[8]) ? null : data[8];
-        
+
         if (BeeUtils.isEmpty(companyName)) {
           logger.warning("Record was skipped");
         }
 
         Filter filterCompany = Filter.contains(COL_COMPANY_NAME, companyName);
-        
+
         if (!BeeUtils.isEmpty(companyCode)) {
           filterCompany = Filter.or(Filter.contains(COL_COMPANY_CODE, companyCode),
               Filter.contains(COL_COMPANY_NAME, companyName));
@@ -834,39 +834,39 @@ public class UiServiceBean {
           logger.warning("Company ", companyName, companyCode, "allready exists !");
           continue;
         }
-        
+
         insert = new SqlInsert(TBL_COMPANIES)
-        .addFields(COL_COMPANY_CODE, COL_COMPANY_NAME, COL_COMPANY_VAT_CODE, "Notes")
+            .addFields(COL_COMPANY_CODE, COL_COMPANY_NAME, COL_COMPANY_VAT_CODE, "Notes")
             .addValues(companyCode, companyName, companyVatCode, "Imported "
                 + (new DateTime().toTimeStamp()));
-        
+
         logger.info("do sql", insert.getQuery());
-        
+
         long companyId = qs.insertData(insert);
-        
+
         insert = new SqlInsert(TBL_CONTACTS)
-                .addFields(COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
-                .addValues(companyAddress, companyPostCode, companyPhone);
+            .addFields(COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
+            .addValues(companyAddress, companyPostCode, companyPhone);
 
         logger.info("do sql", insert.getQuery());
 
         long contactId = qs.insertData(insert);
 
         SqlUpdate update = new SqlUpdate(TBL_COMPANIES)
-                .addConstant(COL_CONTACT, contactId)
-                .setWhere(SqlUtils.equals(TBL_COMPANIES,
-                    sys.getIdName(TBL_COMPANIES), companyId));
+            .addConstant(COL_CONTACT, contactId)
+            .setWhere(SqlUtils.equals(TBL_COMPANIES,
+                sys.getIdName(TBL_COMPANIES), companyId));
 
         logger.info("do sql", update.getQuery());
-        
-        qs.updateData(update);      
-        
+
+        qs.updateData(update);
+
         BeeRowSet filteredCities = new BeeRowSet();
         if (!BeeUtils.isEmpty(companyCity)) {
           Filter filterCity = Filter.contains("Name", companyCity);
           filteredCities = qs.getViewData(VIEW_CITIES, filterCity);
         }
-        
+
         if (!filteredCities.isEmpty()) {
 
           long countryId =
@@ -925,7 +925,7 @@ public class UiServiceBean {
             qs.updateData(update);
           }
         }
-        
+
         if (!BeeUtils.isEmpty(companyEMail)) {
           Filter filterEMail = Filter.contains(COL_EMAIL, companyEMail);
           BeeRowSet filteredEMails = qs.getViewData("Emails", filterEMail);
@@ -1141,11 +1141,15 @@ public class UiServiceBean {
       for (String col : cols) {
         oldValues.add(rs.getString(i, col));
       }
-      ResponseObject response = deb.commitRow(DataUtils.getUpdated(viewName, rs.getRow(i).getId(),
-          rs.getRow(i).getVersion(), columns, oldValues, newValues, null), RowInfo.class);
+      BeeRowSet childRs = DataUtils.getUpdated(viewName, rs.getRow(i).getId(),
+          rs.getRow(i).getVersion(), columns, oldValues, newValues, null);
 
-      if (response.hasErrors()) {
-        return response;
+      if (childRs != null) {
+        ResponseObject response = deb.commitRow(childRs, RowInfo.class);
+
+        if (response.hasErrors()) {
+          return response;
+        }
       }
     }
     return ResponseObject.response(rs.getNumberOfRows());

@@ -9,7 +9,9 @@
     <Relation name="Assessment" relation="Assessments" cascade="DELETE" label="=trAssessment" />
     <Enum name="Status" key="AssessmentStatus" label="=status" />
     <Relation name="Cargo" unique="true" notNull="true" relation="OrderCargo" label="=cargo" />
+    <Relation name="Department" notNull="true" relation="Departments" label="=department" />
     <Text name="Notes" label="=trComment" />
+
     <Text name="Log" label="=modifications" />
     <Boolean name="ExpensesRegistered" label="=trExpensesRegistered" />
     
