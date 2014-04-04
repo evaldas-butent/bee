@@ -3,9 +3,10 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
-  <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
+  <!ENTITY labelLeft "&inline; width:125px; text-align: right; padding-right: 9px;">
+  <!ENTITY labelRight "&inline; width:125px; text-align:right; padding-right: 9px;">
   <!ENTITY input "&inline; width:110px;">
+  <!ENTITY lbl1 "width: 73px; text-align: right; padding-right: 9px;">
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget"
            xmlns:ui="http://www.butent.com/ui"
@@ -20,90 +21,110 @@
     <InputInteger source="LoadedKilometers" style="&inline; width:70px;" />
   </FlowPanel>
 
-  <FlowPanel style="&section;">
-    <Label text="=cargoLoading" style="font-weight: bold; &inline; width:150px; margin-left:100px;" />
-    <Label text="=unloading" style="font-weight: bold; &labelLeft; margin-left:70px;" />
-  </FlowPanel>
+  <FlowPanel style="&section; padding: 15px 1em 45px 1em;">
+    <Table style="border-spacing: 5px;">
+      <row>
+        <Label text="=cargoLoading"
+          style="font-weight: bold; &inline; width:150px; margin-left:100px;" />
+        <Label text="=unloading"
+          style="font-weight: bold; &labelLeft; margin-left:70px;" />
+      </row>
+      <row>
+        <Label text="=date" style="&labelLeft;" />
+        <InputDateTime source="LoadingDate" style="&inline; width:110px;" />
+        <Label text="=date" class="bee-required" style="&labelRight;" />
+        <InputDateTime source="UnloadingDate" style="&inline; width:110px;"
+          required="true" />
+      </row>
+      <row>
+        <Label text="=country" class="bee-required" style="&labelLeft;" />
+        <FlowPanel style="&inline; width:150px;">
+          <DataSelector source="LoadingCountry" style="&inline; width:130px;"
+            required="true">
+            <renderToken source="LoadingCountryName" />
+            <renderToken source="LoadingCountryCode" prefix=" ("
+              suffix=")" />
+            <selectorColumn source="Name" />
+            <selectorColumn source="Code">
+              <ui:renderer type="flag" />
+            </selectorColumn>
+          </DataSelector>
+          <Flag source="LoadingCountryCode" style="&inline; padding-left:2px;" />
+        </FlowPanel>
+        <Label text="=country" class="bee-required" style="&labelRight;" />
+        <FlowPanel style="&inline; width:150px;">
+          <DataSelector source="UnloadingCountry" style="&inline; width:130px;"
+            required="true">
+            <renderToken source="UnloadingCountryName" />
+            <renderToken source="UnloadingCountryCode"
+              prefix=" (" suffix=")" />
+            <selectorColumn source="Name" />
+            <selectorColumn source="Code">
+              <ui:renderer type="flag" />
+            </selectorColumn>
+          </DataSelector>
+          <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
+        </FlowPanel>
+      </row>
+      <row>
+        <Label text="=address" style="&labelLeft;" />
+        <InputText source="LoadingAddress"
+          style="&inline; width:130px; margin-right:20px;" />
+        <Label text="=address" style="&labelRight;" />
+        <InputText source="UnloadingAddress" style="&inline; width:130px;" />
+      </row>
+      <row>
+        <Label text="=postIndex" style="&labelLeft;" />
+        <InputText source="LoadingPostIndex"
+          style="&inline; width:90px; margin-right:20px;" />
+        <Label text="=postIndex" style="&labelRight;" />
+        <InputText source="UnloadingPostIndex" style="&inline; width:90px;" />
+      </row>
 
-  <FlowPanel style="&section;">
-    <Label text="=date" style="&labelLeft;" />
-    <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:40px;" />
-    <Label text="=date" class="bee-required" style="&labelRight;" />
-    <InputDateTime source="UnloadingDate" style="&inline; width:110px;" required="true" />
-  </FlowPanel>
+    </Table>
 
-  <FlowPanel style="&section;">
-    <Label text="=country" class="bee-required" style="&labelLeft;" />
-    <FlowPanel style="&inline; width:150px;">
-      <DataSelector source="LoadingCountry" style="&inline; width:130px;" required="true" >
-        <renderToken source="LoadingCountryName" />
-        <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
-        <selectorColumn source="Name" />
-        <selectorColumn source="Code">
-          <ui:renderer type="flag" />
-        </selectorColumn>
-      </DataSelector>
-      <Flag source="LoadingCountryCode" style="&inline; padding-left:2px;" />
+
+    <FlowPanel style="&section;">
     </FlowPanel>
-    <Label text="=country" class="bee-required" style="&labelRight;" />
-    <FlowPanel style="&inline; width:150px;">
-      <DataSelector source="UnloadingCountry" style="&inline; width:130px;" required="true" >
-        <renderToken source="UnloadingCountryName" />
-        <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
-        <selectorColumn source="Name" />
-        <selectorColumn source="Code">
-          <ui:renderer type="flag" />
-        </selectorColumn>
-      </DataSelector>
-      <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
+
+    <FlowPanel style="&section;">
+      <Label text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
+      <InputArea source="CargoNotes" style="width:400px;" />
     </FlowPanel>
-  </FlowPanel>
-
-  <FlowPanel style="&section;">
-    <Label text="=address" style="&labelLeft;" />
-    <InputText source="LoadingAddress" style="&inline; width:130px; margin-right:20px;" />
-    <Label text="=address" style="&labelRight;" />
-    <InputText source="UnloadingAddress" style="&inline; width:130px;" />
-  </FlowPanel>
-
-  <FlowPanel style="&section;">
-    <Label text="=postIndex" style="&labelLeft;" />
-    <InputText source="LoadingPostIndex" style="&inline; width:90px; margin-right:20px;" />
-    <Label text="=postIndex" style="&labelRight; width:100px" />
-    <InputText source="UnloadingPostIndex" style="&inline; width:90px;" />
-  </FlowPanel>
-
-  <FlowPanel style="&section;">
-    <Label text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="CargoNotes" style="width:400px;" />
-  </FlowPanel>
 
   &separator;
-  <FlowPanel style="&section;">
-    <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />
-    <InputArea source="Description" visibleLines="4" style="width:200px;" />
-    <VerticalPanel style="&inline;">
-      <CheckBox source="Partial" text="=partialCargo" />
-      <CheckBox source="Outsized" text="=outsized" />
-      <CheckBox source="Dangerous" text="=dangerous" />
-    </VerticalPanel>
-  </FlowPanel>
-    
-  <FlowPanel style="&section;">
-    <Label text="=quantity" style="&labelLeft;" />
-    <InputInteger source="Quantity" style="&input;" />
-    <DataSelector source="QuantityUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
-    <Label text="=weight" style="&labelRight;" />
-    <InputDecimal source="Weight" format="#.000" style="&input;" />
-    <DataSelector source="WeightUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
-  </FlowPanel>
+    <FlowPanel style="&section;">
+      <Label text="=cargo" class="bee-hasDefaults bee-required"
+        style="&labelLeft; vertical-align:top;" />
+      <InputArea source="Description" visibleLines="4"
+        style="width:200px;" />
+      <VerticalPanel style="&inline;">
+        <CheckBox source="Partial" text="=partialCargo" />
+        <CheckBox source="Outsized" text="=outsized" />
+        <CheckBox source="Dangerous" text="=dangerous" />
+      </VerticalPanel>
+    </FlowPanel>
 
-  <FlowPanel style="&section;">
-    <Label text="=volume" style="&labelLeft;" />
-    <InputDecimal source="Volume" format="#.000" style="&input;" />
-    <DataSelector source="VolumeUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
-    <Label text="=valuation" style="&labelRight;" />
-    <InputCurrency source="Value" style="&input;" />
-    <DataSelector source="ValueCurrency" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
+    <FlowPanel style="&section;">
+      <Label text="=quantity" style="&labelLeft;" />
+      <InputInteger source="Quantity" style="&input;" />
+      <DataSelector source="QuantityUnit"
+        style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
+      <Label text="=weight" style="&labelRight;" />
+      <InputDecimal source="Weight" format="#.000" style="&input;" />
+      <DataSelector source="WeightUnit"
+        style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
+    </FlowPanel>
+
+    <FlowPanel style="&section;">
+      <Label text="=volume" style="&labelLeft;" />
+      <InputDecimal source="Volume" format="#.000" style="&input;" />
+      <DataSelector source="VolumeUnit"
+        style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
+      <Label text="=valuation" style="&labelRight;" />
+      <InputCurrency source="Value" style="&input;" />
+      <DataSelector source="ValueCurrency"
+        style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
+    </FlowPanel>
   </FlowPanel>
 </FlowPanel>
