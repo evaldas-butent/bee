@@ -172,7 +172,8 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
           BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
           for (String col : new String[] {COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
-              COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG}) {
+              COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG,
+              "LogCount", "Finished", "FinishedCount"}) {
             newRow.clearCell(form.getDataIndex(col));
           }
           if (isRequest()) {
@@ -329,22 +330,39 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
       }
-      refreshTotals();
+      refresh();
     }
 
     @Override
     public void afterInsertRow(IsRow result) {
-      refreshTotals();
+      refresh();
     }
 
     @Override
     public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
           COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-        refreshTotals();
+        refresh();
       }
       if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
+      }
+    }
+
+    private void refresh() {
+      refreshTotals();
+
+      if (BeeUtils.same(getViewName(), TBL_CARGO_INCOMES)
+          && BeeUtils.unbox(form.getBooleanValue("Finished"))) {
+
+        int idx = form.getDataIndex("FinishedCount");
+        int cnt = BeeUtils.unbox(form.getActiveRow().getInteger(idx)) + 1;
+
+        form.getOldRow().setValue(idx, cnt);
+        form.getActiveRow().setValue(idx, cnt);
+
+        Queries.update(form.getViewName(), form.getActiveRowId(), "FinishedCount",
+            new IntegerValue(cnt));
       }
     }
   }
@@ -396,6 +414,21 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
                 if (BeeUtils.isPositive(result)) {
                   Global.showError(Localized.getMessages().trAssessmentInvalidStatusError(result,
                       request ? status.getCaption() : orderStatus.getCaption()));
+
+                } else if (Objects.equal(orderStatus, OrderStatus.COMPLETED)) {
+                  Queries.getRowCount(TBL_CARGO_INCOMES,
+                      Filter.and(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
+                          Filter.isNull(COL_SALE)),
+                      new IntCallback() {
+                        @Override
+                        public void onSuccess(Integer res) {
+                          if (BeeUtils.isPositive(res)) {
+                            form.notifySevere("Yra neišrašytų sąskaitų", BeeUtils.toString(res));
+                          } else {
+                            process();
+                          }
+                        }
+                      });
                 } else {
                   process();
                 }
@@ -441,6 +474,12 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
         columns.add(Data.getColumn(viewName, ALS_ORDER_STATUS));
         oldValues.add(form.getStringValue(ALS_ORDER_STATUS));
         newValues.add(BeeUtils.toString(orderStatus.ordinal()));
+
+        if (Objects.equal(orderStatus, OrderStatus.COMPLETED)) {
+          columns.add(Data.getColumn(viewName, "Finished"));
+          oldValues.add(form.getStringValue("Finished"));
+          newValues.add("1");
+        }
       }
       if (!BeeUtils.isEmpty(notes)) {
         String oldLog = form.getStringValue(COL_ASSESSMENT_LOG);

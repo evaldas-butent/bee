@@ -57,6 +57,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   long getActiveRowId();
 
+  Boolean getBooleanValue(String source);
+
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();

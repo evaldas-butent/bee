@@ -102,7 +102,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         DataInfo info = Data.getDataInfo(VIEW_CARGO_SALES);
 
         int item = info.getColumnIndex(COL_ITEM);
-        int order = info.getColumnIndex(COL_ORDER_NO);
+        int order = info.getColumnIndex(COL_ASSESSMENT);
         int vehicle = info.getColumnIndex(COL_VEHICLE);
         int trailer = info.getColumnIndex(COL_TRAILER);
         int driver = info.getColumnIndex(COL_DRIVER);

@@ -29,9 +29,9 @@
     <DataColumn name="Number" caption="=number" />
     <DataColumn name="Note" caption="=note" />
 
-    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" renderColumns="Sale"
+    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true"
       editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
-    <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true" renderColumns="Purchase"
+    <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true"
       editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>
 </g:Grid>

@@ -75,6 +75,7 @@
 
     <DataColumn name="Log" visible="false" />
     <DataColumn name="LogCount" />
+    <DataColumn name="FinishedCount" />
   </g:columns>
 
   <g:rowStyle>

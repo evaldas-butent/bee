@@ -94,7 +94,7 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
         DataInfo info = Data.getDataInfo(getViewName());
 
         int item = info.getColumnIndex(ClassifierConstants.COL_ITEM);
-        int order = info.getColumnIndex(COL_ORDER_NO);
+        int order = info.getColumnIndex(COL_ASSESSMENT);
         int suplId = info.getColumnIndex(COL_TRADE_SUPPLIER);
         int suplName = info.getColumnIndex("SupplierName");
         int currId = info.getColumnIndex(COL_CURRENCY);

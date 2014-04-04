@@ -4,7 +4,7 @@
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
   flexGrow="1" order="AssessmentID desc" disabledActions="delete"
-  enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log"
+  enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log*, Finished*"
   filter="Status"
   >
   <g:columns>

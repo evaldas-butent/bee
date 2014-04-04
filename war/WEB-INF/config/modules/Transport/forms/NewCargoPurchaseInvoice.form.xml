@@ -24,8 +24,8 @@
         <Label text="=trdInvoicePrefix" style="&lbl;" />
         <FlowPanel>
           <InputText source="InvoicePrefix" upperCase="true" style="width:50px;" />
-          <InlineLabel text="=trdInvoiceNo" style="margin-left:5px;" />
-          <InputText source="InvoiceNo" />
+          <InlineLabel text="=trdInvoiceNo" class="bee-required" style="margin-left:5px;" />
+          <InputText source="InvoiceNo" required="true" />
         </FlowPanel>
       </row>
       <row>
