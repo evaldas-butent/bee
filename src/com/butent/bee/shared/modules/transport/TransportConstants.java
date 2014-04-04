@@ -391,6 +391,7 @@ public final class TransportConstants {
   public static final String TBL_CARGO_INCOMES = "CargoIncomes";
   public static final String TBL_CARGO_INCOMES_USAGE = "CargoIncomesUsage";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
+  public static final String TBL_CARGO_EXPENSES_USAGE = "CargoExpensesUsage";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_SERVICES = "Services";
 
@@ -544,6 +545,7 @@ public final class TransportConstants {
   public static final String COL_PAYER_NAME = "PayerName";
 
   public static final String COL_SERVICE = "Service";
+  public static final String COL_SERVICE_NAME = "ServiceName";
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";

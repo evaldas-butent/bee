@@ -117,6 +117,10 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TradeConstants.COL_PURCHASE);
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_AMOUNT);
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_NOTE);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_CARGO);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_DATE);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_SERVICE);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_NUMBER);
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_NUMBER);
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_EXPORTED);
   }
@@ -150,6 +154,9 @@ public final class NewsConstants {
     usageTables.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.TBL_ASSESSMENTS_USAGE);
     usageTables.put(TransportConstants.TBL_CARGO_INCOMES,
         TransportConstants.TBL_CARGO_INCOMES_USAGE);
+
+    usageTables.put(TransportConstants.TBL_CARGO_EXPENSES,
+        TransportConstants.TBL_CARGO_EXPENSES_USAGE);
 
     usageTables.put(TradeConstants.TBL_SALES, TransportConstants.TBL_SALES_USAGE);
 
